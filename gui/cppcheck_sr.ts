@@ -5,27 +5,32 @@
     <name>About</name>
     <message>
         <location filename="about.ui" line="14"/>
+        <location filename="temp/ui_about.h" line="129"/>
         <source>About Cppcheck</source>
         <translation type="unfinished">About Cppcheck</translation>
     </message>
     <message>
         <location filename="about.ui" line="64"/>
+        <location filename="temp/ui_about.h" line="131"/>
         <source>Version %1</source>
         <translation type="unfinished">Version %1</translation>
     </message>
     <message>
         <location filename="about.ui" line="71"/>
+        <location filename="temp/ui_about.h" line="132"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation type="unfinished">Cppcheck - A tool for static C/C++ code analysis.</translation>
     </message>
     <message>
         <location filename="about.ui" line="81"/>
+        <location filename="temp/ui_about.h" line="133"/>
         <source>Copyright © 2007-%1 Cppcheck team.</source>
         <oldsource>Copyright © 2007-2021 Cppcheck team.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
+        <location filename="temp/ui_about.h" line="134"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
         <translation type="unfinished">This program is licensed under the terms
@@ -33,6 +38,7 @@ of the GNU General Public License version 3</translation>
     </message>
     <message>
         <location filename="about.ui" line="102"/>
+        <location filename="temp/ui_about.h" line="136"/>
         <source>Visit Cppcheck homepage at %1</source>
         <translation type="unfinished">Visit Cppcheck homepage at %1</translation>
     </message>
@@ -42,16 +48,23 @@ of the GNU General Public License version 3</translation>
         <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="temp/ui_about.h" line="137"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ApplicationDialog</name>
     <message>
         <location filename="applicationdialog.ui" line="23"/>
+        <location filename="temp/ui_applicationdialog.h" line="160"/>
         <source>Add an application</source>
         <translation type="unfinished">Add a new application</translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="41"/>
+        <location filename="temp/ui_applicationdialog.h" line="161"/>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
 The following texts in parameters are replaced with appropriate values when application is executed:
@@ -67,21 +80,25 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="76"/>
+        <location filename="temp/ui_applicationdialog.h" line="172"/>
         <source>&amp;Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="86"/>
+        <location filename="temp/ui_applicationdialog.h" line="173"/>
         <source>&amp;Executable:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="96"/>
+        <location filename="temp/ui_applicationdialog.h" line="174"/>
         <source>&amp;Parameters:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="138"/>
+        <location filename="temp/ui_applicationdialog.h" line="175"/>
         <source>Browse</source>
         <translation type="unfinished">Browse</translation>
     </message>
@@ -110,41 +127,49 @@ Parameters: -l(line) (file)</source>
     <name>ComplianceReportDialog</name>
     <message>
         <location filename="compliancereportdialog.ui" line="14"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="111"/>
         <source>Compliance Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="29"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="113"/>
         <source>Project name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="22"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="112"/>
         <source>Project version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="42"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="114"/>
         <source>Coding Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="50"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="115"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="55"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="116"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="60"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="117"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="70"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="119"/>
         <source>List of files with md5 checksums</source>
         <translation type="unfinished"></translation>
     </message>
@@ -193,16 +218,19 @@ Parameters: -l(line) (file)</source>
     <name>HelpDialog</name>
     <message>
         <location filename="helpdialog.ui" line="14"/>
+        <location filename="temp/ui_helpdialog.h" line="88"/>
         <source>Cppcheck GUI help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="34"/>
+        <location filename="temp/ui_helpdialog.h" line="89"/>
         <source>Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="44"/>
+        <location filename="temp/ui_helpdialog.h" line="90"/>
         <source>Index</source>
         <translation type="unfinished"></translation>
     </message>
@@ -221,16 +249,19 @@ Parameters: -l(line) (file)</source>
     <name>LibraryAddFunctionDialog</name>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="23"/>
+        <location filename="temp/ui_libraryaddfunctiondialog.h" line="104"/>
         <source>Add function</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="34"/>
+        <location filename="temp/ui_libraryaddfunctiondialog.h" line="105"/>
         <source>Function name(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="44"/>
+        <location filename="temp/ui_libraryaddfunctiondialog.h" line="106"/>
         <source>Number of arguments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -239,86 +270,103 @@ Parameters: -l(line) (file)</source>
     <name>LibraryDialog</name>
     <message>
         <location filename="librarydialog.ui" line="14"/>
+        <location filename="temp/ui_librarydialog.h" line="275"/>
         <source>Library Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="22"/>
+        <location filename="temp/ui_librarydialog.h" line="276"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="29"/>
+        <location filename="temp/ui_librarydialog.h" line="277"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="36"/>
+        <location filename="temp/ui_librarydialog.h" line="278"/>
         <source>Save as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="62"/>
+        <location filename="temp/ui_librarydialog.h" line="279"/>
         <source>Functions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="71"/>
+        <location filename="temp/ui_librarydialog.h" line="280"/>
         <source>Sort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="111"/>
+        <location filename="temp/ui_librarydialog.h" line="281"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="131"/>
+        <location filename="temp/ui_librarydialog.h" line="282"/>
         <source>Filter:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="164"/>
+        <location filename="temp/ui_librarydialog.h" line="283"/>
         <source>Comments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="204"/>
+        <location filename="temp/ui_librarydialog.h" line="284"/>
         <source>noreturn</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="212"/>
+        <location filename="temp/ui_librarydialog.h" line="285"/>
         <source>False</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="217"/>
+        <location filename="temp/ui_librarydialog.h" line="286"/>
         <source>True</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="222"/>
+        <location filename="temp/ui_librarydialog.h" line="287"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="232"/>
+        <location filename="temp/ui_librarydialog.h" line="289"/>
         <source>return value must be used</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="239"/>
+        <location filename="temp/ui_librarydialog.h" line="290"/>
         <source>ignore function in leaks checking</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="246"/>
+        <location filename="temp/ui_librarydialog.h" line="291"/>
         <source>Arguments</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="258"/>
+        <location filename="temp/ui_librarydialog.h" line="292"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -367,11 +415,13 @@ Parameters: -l(line) (file)</source>
     <name>LibraryEditArgDialog</name>
     <message>
         <location filename="libraryeditargdialog.ui" line="14"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="283"/>
         <source>Edit argument</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="20"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="285"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Is bool value allowed? For instance result from comparison or from &apos;!&apos; operator.&lt;/p&gt;
 &lt;p&gt;Typically, set this if the argument is a pointer, size, etc.&lt;/p&gt;
@@ -382,11 +432,13 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="28"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="292"/>
         <source>Not bool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="35"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="294"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Is a null parameter value allowed?&lt;/p&gt;
 &lt;p&gt;Typically this should be used on any pointer parameter that does not allow null.&lt;/p&gt;
@@ -397,78 +449,99 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="43"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="301"/>
         <source>Not null</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="50"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="302"/>
         <source>Not uninit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="57"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="303"/>
         <source>String</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="70"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="304"/>
         <source>Format string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="92"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="305"/>
         <source>Min size of buffer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="101"/>
         <location filename="libraryeditargdialog.ui" line="203"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="306"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="315"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="109"/>
         <location filename="libraryeditargdialog.ui" line="214"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="307"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="316"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="114"/>
         <location filename="libraryeditargdialog.ui" line="219"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="308"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="317"/>
         <source>argvalue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="119"/>
         <location filename="libraryeditargdialog.ui" line="224"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="309"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="318"/>
         <source>mul</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="124"/>
         <location filename="libraryeditargdialog.ui" line="229"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="310"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="319"/>
         <source>strlen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="132"/>
         <location filename="libraryeditargdialog.ui" line="237"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="312"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="321"/>
         <source>Arg</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="159"/>
         <location filename="libraryeditargdialog.ui" line="264"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="313"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="322"/>
         <source>Arg2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="194"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="314"/>
         <source>and</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="310"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="323"/>
         <source>Valid values</source>
         <translation type="unfinished"></translation>
     </message>
@@ -491,143 +564,174 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="1948"/>
         <location filename="mainwindow.cpp" line="2020"/>
         <location filename="mainwindow.cpp" line="2094"/>
+        <location filename="temp/ui_mainwindow.h" line="521"/>
+        <location filename="temp/ui_mainwindow.h" line="630"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="208"/>
+        <location filename="temp/ui_mainwindow.h" line="681"/>
         <source>A&amp;nalyze</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="264"/>
+        <location filename="temp/ui_mainwindow.h" line="685"/>
         <source>Standard</source>
         <translation type="unfinished">Standard</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="132"/>
+        <location filename="temp/ui_mainwindow.h" line="677"/>
         <source>&amp;File</source>
         <translation type="unfinished">&amp;File</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="152"/>
+        <location filename="temp/ui_mainwindow.h" line="678"/>
         <source>&amp;View</source>
         <translation type="unfinished">&amp;View</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="156"/>
+        <location filename="temp/ui_mainwindow.h" line="679"/>
         <source>&amp;Toolbars</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="212"/>
+        <location filename="temp/ui_mainwindow.h" line="682"/>
         <source>C++ standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="224"/>
+        <location filename="temp/ui_mainwindow.h" line="683"/>
         <source>&amp;C standard</source>
         <oldsource>C standard</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="251"/>
+        <location filename="temp/ui_mainwindow.h" line="684"/>
         <source>&amp;Edit</source>
         <translation type="unfinished">&amp;Edit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="312"/>
+        <location filename="temp/ui_mainwindow.h" line="522"/>
         <source>&amp;License...</source>
         <translation type="unfinished">&amp;License...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="317"/>
+        <location filename="temp/ui_mainwindow.h" line="523"/>
         <source>A&amp;uthors...</source>
         <translation type="unfinished">A&amp;uthors...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="326"/>
+        <location filename="temp/ui_mainwindow.h" line="524"/>
         <source>&amp;About...</source>
         <translation type="unfinished">&amp;About...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="331"/>
+        <location filename="temp/ui_mainwindow.h" line="525"/>
         <source>&amp;Files...</source>
         <translation type="unfinished">&amp;Files...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="334"/>
         <location filename="mainwindow.ui" line="337"/>
+        <location filename="temp/ui_mainwindow.h" line="526"/>
+        <location filename="temp/ui_mainwindow.h" line="528"/>
         <source>Analyze files</source>
         <oldsource>Check files</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="340"/>
+        <location filename="temp/ui_mainwindow.h" line="531"/>
         <source>Ctrl+F</source>
         <translation type="unfinished">Ctrl+F</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="349"/>
+        <location filename="temp/ui_mainwindow.h" line="533"/>
         <source>&amp;Directory...</source>
         <translation type="unfinished">&amp;Directory...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="352"/>
         <location filename="mainwindow.ui" line="355"/>
+        <location filename="temp/ui_mainwindow.h" line="534"/>
+        <location filename="temp/ui_mainwindow.h" line="536"/>
         <source>Analyze directory</source>
         <oldsource>Check directory</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="358"/>
+        <location filename="temp/ui_mainwindow.h" line="539"/>
         <source>Ctrl+D</source>
         <translation type="unfinished">Ctrl+D</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="370"/>
+        <location filename="temp/ui_mainwindow.h" line="543"/>
         <source>Ctrl+R</source>
         <translation type="unfinished">Ctrl+R</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="388"/>
+        <location filename="temp/ui_mainwindow.h" line="546"/>
         <source>&amp;Stop</source>
         <translation type="unfinished">&amp;Stop</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="391"/>
         <location filename="mainwindow.ui" line="394"/>
+        <location filename="temp/ui_mainwindow.h" line="547"/>
+        <location filename="temp/ui_mainwindow.h" line="549"/>
         <source>Stop analysis</source>
         <oldsource>Stop checking</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="397"/>
+        <location filename="temp/ui_mainwindow.h" line="552"/>
         <source>Esc</source>
         <translation type="unfinished">Esc</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="406"/>
+        <location filename="temp/ui_mainwindow.h" line="554"/>
         <source>&amp;Save results to file...</source>
         <translation type="unfinished">&amp;Save results to file...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="409"/>
+        <location filename="temp/ui_mainwindow.h" line="556"/>
         <source>Ctrl+S</source>
         <translation type="unfinished">Ctrl+S</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="414"/>
+        <location filename="temp/ui_mainwindow.h" line="558"/>
         <source>&amp;Quit</source>
         <translation type="unfinished">&amp;Quit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="426"/>
+        <location filename="temp/ui_mainwindow.h" line="562"/>
         <source>&amp;Clear results</source>
         <translation type="unfinished">&amp;Clear results</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="435"/>
+        <location filename="temp/ui_mainwindow.h" line="563"/>
         <source>&amp;Preferences</source>
         <translation type="unfinished">&amp;Preferences</translation>
     </message>
@@ -635,6 +739,8 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="468"/>
         <location filename="mainwindow.ui" line="471"/>
         <location filename="mainwindow.cpp" line="2318"/>
+        <location filename="temp/ui_mainwindow.h" line="570"/>
+        <location filename="temp/ui_mainwindow.h" line="572"/>
         <source>Show errors</source>
         <translation type="unfinished"></translation>
     </message>
@@ -642,17 +748,22 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="614"/>
         <location filename="mainwindow.ui" line="617"/>
         <location filename="mainwindow.cpp" line="2319"/>
+        <location filename="temp/ui_mainwindow.h" line="612"/>
+        <location filename="temp/ui_mainwindow.h" line="614"/>
         <source>Show warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="632"/>
         <location filename="mainwindow.ui" line="635"/>
+        <location filename="temp/ui_mainwindow.h" line="617"/>
+        <location filename="temp/ui_mainwindow.h" line="619"/>
         <source>Show performance warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="643"/>
+        <location filename="temp/ui_mainwindow.h" line="621"/>
         <source>Show &amp;hidden</source>
         <translation type="unfinished"></translation>
     </message>
@@ -664,101 +775,121 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="mainwindow.ui" line="658"/>
+        <location filename="temp/ui_mainwindow.h" line="624"/>
         <source>Show information messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="673"/>
+        <location filename="temp/ui_mainwindow.h" line="628"/>
         <source>Show portability warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="688"/>
+        <location filename="temp/ui_mainwindow.h" line="632"/>
         <source>Show Cppcheck results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="700"/>
+        <location filename="temp/ui_mainwindow.h" line="634"/>
         <source>Clang</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="703"/>
+        <location filename="temp/ui_mainwindow.h" line="636"/>
         <source>Show Clang results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="711"/>
+        <location filename="temp/ui_mainwindow.h" line="638"/>
         <source>&amp;Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="714"/>
+        <location filename="temp/ui_mainwindow.h" line="640"/>
         <source>Filter results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="730"/>
+        <location filename="temp/ui_mainwindow.h" line="642"/>
         <source>Windows 32-bit ANSI</source>
         <translation>Windows 32-bit ANSI</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="738"/>
+        <location filename="temp/ui_mainwindow.h" line="643"/>
         <source>Windows 32-bit Unicode</source>
         <translation>Windows 32-bit Unicode</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="746"/>
+        <location filename="temp/ui_mainwindow.h" line="644"/>
         <source>Unix 32-bit</source>
         <translation>Unix 32-bit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="754"/>
+        <location filename="temp/ui_mainwindow.h" line="645"/>
         <source>Unix 64-bit</source>
         <translation>Unix 64-bit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="762"/>
+        <location filename="temp/ui_mainwindow.h" line="646"/>
         <source>Windows 64-bit</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="848"/>
+        <location filename="temp/ui_mainwindow.h" line="654"/>
         <source>&amp;Print...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="851"/>
+        <location filename="temp/ui_mainwindow.h" line="656"/>
         <source>Print the Current Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="856"/>
+        <location filename="temp/ui_mainwindow.h" line="658"/>
         <source>Print Pre&amp;view...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="859"/>
+        <location filename="temp/ui_mainwindow.h" line="660"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="867"/>
+        <location filename="temp/ui_mainwindow.h" line="664"/>
         <source>Open library editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="476"/>
+        <location filename="temp/ui_mainwindow.h" line="574"/>
         <source>&amp;Check all</source>
         <translation type="unfinished">&amp;Check all</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="84"/>
+        <location filename="temp/ui_mainwindow.h" line="675"/>
         <source>Checking for updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="100"/>
+        <location filename="temp/ui_mainwindow.h" line="676"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
     </message>
@@ -770,232 +901,278 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="mainwindow.ui" line="301"/>
+        <location filename="temp/ui_mainwindow.h" line="687"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="367"/>
+        <location filename="temp/ui_mainwindow.h" line="541"/>
         <source>&amp;Reanalyze modified files</source>
         <oldsource>&amp;Recheck modified files</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="379"/>
+        <location filename="temp/ui_mainwindow.h" line="545"/>
         <source>Reanal&amp;yze all files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="417"/>
+        <location filename="temp/ui_mainwindow.h" line="560"/>
         <source>Ctrl+Q</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="447"/>
+        <location filename="temp/ui_mainwindow.h" line="564"/>
         <source>Style war&amp;nings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="465"/>
+        <location filename="temp/ui_mainwindow.h" line="569"/>
         <source>E&amp;rrors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="481"/>
+        <location filename="temp/ui_mainwindow.h" line="575"/>
         <source>&amp;Uncheck all</source>
         <translation type="unfinished">&amp;Uncheck all</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="486"/>
+        <location filename="temp/ui_mainwindow.h" line="576"/>
         <source>Collapse &amp;all</source>
         <translation type="unfinished">Collapse &amp;all</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="491"/>
+        <location filename="temp/ui_mainwindow.h" line="577"/>
         <source>&amp;Expand all</source>
         <translation type="unfinished">&amp;Expand all</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="499"/>
+        <location filename="temp/ui_mainwindow.h" line="578"/>
         <source>&amp;Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="502"/>
+        <location filename="temp/ui_mainwindow.h" line="580"/>
         <source>Standard items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="518"/>
+        <location filename="temp/ui_mainwindow.h" line="589"/>
         <source>Toolbar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="526"/>
+        <location filename="temp/ui_mainwindow.h" line="590"/>
         <source>&amp;Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="529"/>
+        <location filename="temp/ui_mainwindow.h" line="592"/>
         <source>Error categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="534"/>
+        <location filename="temp/ui_mainwindow.h" line="594"/>
         <source>&amp;Open XML...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="543"/>
+        <location filename="temp/ui_mainwindow.h" line="595"/>
         <source>Open P&amp;roject File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="546"/>
+        <location filename="temp/ui_mainwindow.h" line="597"/>
         <source>Ctrl+Shift+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="555"/>
+        <location filename="temp/ui_mainwindow.h" line="599"/>
         <source>Sh&amp;ow Scratchpad...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="560"/>
+        <location filename="temp/ui_mainwindow.h" line="600"/>
         <source>&amp;New Project File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="563"/>
+        <location filename="temp/ui_mainwindow.h" line="602"/>
         <source>Ctrl+Shift+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="568"/>
+        <location filename="temp/ui_mainwindow.h" line="604"/>
         <source>&amp;Log View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="571"/>
+        <location filename="temp/ui_mainwindow.h" line="606"/>
         <source>Log View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="579"/>
+        <location filename="temp/ui_mainwindow.h" line="608"/>
         <source>C&amp;lose Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="587"/>
+        <location filename="temp/ui_mainwindow.h" line="609"/>
         <source>&amp;Edit Project File...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="599"/>
+        <location filename="temp/ui_mainwindow.h" line="610"/>
         <source>&amp;Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="611"/>
+        <location filename="temp/ui_mainwindow.h" line="611"/>
         <source>&amp;Warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="629"/>
+        <location filename="temp/ui_mainwindow.h" line="616"/>
         <source>Per&amp;formance warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="655"/>
+        <location filename="temp/ui_mainwindow.h" line="622"/>
         <source>&amp;Information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="670"/>
+        <location filename="temp/ui_mainwindow.h" line="626"/>
         <source>&amp;Portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="770"/>
+        <location filename="temp/ui_mainwindow.h" line="647"/>
         <source>P&amp;latforms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="784"/>
+        <location filename="temp/ui_mainwindow.h" line="648"/>
         <source>C++&amp;11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="795"/>
+        <location filename="temp/ui_mainwindow.h" line="649"/>
         <source>C&amp;99</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="803"/>
+        <location filename="temp/ui_mainwindow.h" line="650"/>
         <source>&amp;Posix</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="811"/>
+        <location filename="temp/ui_mainwindow.h" line="651"/>
         <source>C&amp;11</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="835"/>
+        <location filename="temp/ui_mainwindow.h" line="652"/>
         <source>&amp;C89</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="843"/>
+        <location filename="temp/ui_mainwindow.h" line="653"/>
         <source>&amp;C++03</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="864"/>
+        <location filename="temp/ui_mainwindow.h" line="662"/>
         <source>&amp;Library Editor...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="875"/>
+        <location filename="temp/ui_mainwindow.h" line="666"/>
         <source>&amp;Auto-detect language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="883"/>
+        <location filename="temp/ui_mainwindow.h" line="667"/>
         <source>&amp;Enforce C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="891"/>
+        <location filename="temp/ui_mainwindow.h" line="668"/>
         <source>E&amp;nforce C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="902"/>
+        <location filename="temp/ui_mainwindow.h" line="669"/>
         <source>C++14</source>
         <translation type="unfinished">C++14</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="910"/>
+        <location filename="temp/ui_mainwindow.h" line="670"/>
         <source>Reanalyze and check library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="918"/>
+        <location filename="temp/ui_mainwindow.h" line="671"/>
         <source>Check configuration (defines, includes)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="926"/>
+        <location filename="temp/ui_mainwindow.h" line="672"/>
         <source>C++17</source>
         <translation type="unfinished">C++17</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="937"/>
+        <location filename="temp/ui_mainwindow.h" line="673"/>
         <source>C++20</source>
         <translation type="unfinished">C++20</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="964"/>
+        <location filename="temp/ui_mainwindow.h" line="674"/>
         <source>Compliance report...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1036,32 +1213,39 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="mainwindow.ui" line="507"/>
+        <location filename="temp/ui_mainwindow.h" line="582"/>
         <source>&amp;Contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="282"/>
+        <location filename="temp/ui_mainwindow.h" line="686"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="450"/>
         <location filename="mainwindow.ui" line="453"/>
+        <location filename="temp/ui_mainwindow.h" line="565"/>
+        <location filename="temp/ui_mainwindow.h" line="567"/>
         <source>Show style warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="510"/>
+        <location filename="temp/ui_mainwindow.h" line="584"/>
         <source>Open the help contents</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="513"/>
+        <location filename="temp/ui_mainwindow.h" line="587"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="198"/>
+        <location filename="temp/ui_mainwindow.h" line="680"/>
         <source>&amp;Help</source>
         <translation type="unfinished">&amp;Help</translation>
     </message>
@@ -1496,31 +1680,36 @@ Options:
     <name>NewSuppressionDialog</name>
     <message>
         <location filename="newsuppressiondialog.ui" line="17"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="113"/>
         <source>New suppression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="25"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="114"/>
         <source>Error ID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="32"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="115"/>
         <source>File name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="42"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="116"/>
         <source>Line number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="52"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="117"/>
         <source>Symbol name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.cpp" line="82"/>
+        <location filename="newsuppressiondialog.cpp" line="81"/>
         <source>Edit suppression</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1562,48 +1751,57 @@ Options:
     <name>ProjectFile</name>
     <message>
         <location filename="projectfile.ui" line="14"/>
+        <location filename="temp/ui_projectfile.h" line="862"/>
         <source>Project File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="24"/>
+        <location filename="temp/ui_projectfile.h" line="889"/>
         <source>Paths and Defines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="30"/>
+        <location filename="temp/ui_projectfile.h" line="863"/>
         <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
         <oldsource>Import Project (Visual studio / compile database)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="231"/>
+        <location filename="temp/ui_projectfile.h" line="877"/>
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="389"/>
+        <location filename="temp/ui_projectfile.h" line="892"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="864"/>
+        <location filename="temp/ui_projectfile.h" line="942"/>
         <source>MISRA rule texts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="871"/>
+        <location filename="temp/ui_projectfile.h" line="944"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="878"/>
+        <location filename="temp/ui_projectfile.h" line="946"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="73"/>
+        <location filename="temp/ui_projectfile.h" line="867"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1611,27 +1809,34 @@ Options:
         <location filename="projectfile.ui" line="60"/>
         <location filename="projectfile.ui" line="422"/>
         <location filename="projectfile.ui" line="609"/>
+        <location filename="temp/ui_projectfile.h" line="865"/>
+        <location filename="temp/ui_projectfile.h" line="898"/>
         <source>Browse...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="76"/>
+        <location filename="temp/ui_projectfile.h" line="869"/>
         <source>Analyze all Visual Studio configurations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="113"/>
+        <location filename="temp/ui_projectfile.h" line="870"/>
         <source>Selected VS Configurations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="147"/>
+        <location filename="temp/ui_projectfile.h" line="871"/>
         <source>Paths:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="181"/>
         <location filename="projectfile.ui" line="296"/>
+        <location filename="temp/ui_projectfile.h" line="872"/>
+        <location filename="temp/ui_projectfile.h" line="884"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1639,6 +1844,9 @@ Options:
         <location filename="projectfile.ui" line="188"/>
         <location filename="projectfile.ui" line="303"/>
         <location filename="projectfile.ui" line="683"/>
+        <location filename="temp/ui_projectfile.h" line="873"/>
+        <location filename="temp/ui_projectfile.h" line="885"/>
+        <location filename="temp/ui_projectfile.h" line="927"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1647,88 +1855,109 @@ Options:
         <location filename="projectfile.ui" line="310"/>
         <location filename="projectfile.ui" line="690"/>
         <location filename="projectfile.ui" line="733"/>
+        <location filename="temp/ui_projectfile.h" line="874"/>
+        <location filename="temp/ui_projectfile.h" line="886"/>
+        <location filename="temp/ui_projectfile.h" line="928"/>
+        <location filename="temp/ui_projectfile.h" line="931"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="242"/>
+        <location filename="temp/ui_projectfile.h" line="879"/>
         <source>Undefines:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="252"/>
+        <location filename="temp/ui_projectfile.h" line="881"/>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="265"/>
+        <location filename="temp/ui_projectfile.h" line="883"/>
         <source>Include Paths:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="330"/>
+        <location filename="temp/ui_projectfile.h" line="887"/>
         <source>Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="337"/>
+        <location filename="temp/ui_projectfile.h" line="888"/>
         <source>Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="368"/>
+        <location filename="temp/ui_projectfile.h" line="890"/>
         <source>Platform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="403"/>
         <location filename="projectfile.ui" line="481"/>
+        <location filename="temp/ui_projectfile.h" line="905"/>
+        <location filename="temp/ui_projectfile.h" line="915"/>
         <source>Analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="415"/>
+        <location filename="temp/ui_projectfile.h" line="896"/>
         <source>This is a workfolder that Cppcheck will use for various purposes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="448"/>
+        <location filename="temp/ui_projectfile.h" line="901"/>
         <source>Clang (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="458"/>
+        <location filename="temp/ui_projectfile.h" line="902"/>
         <source>Check level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="464"/>
+        <location filename="temp/ui_projectfile.h" line="903"/>
         <source>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="471"/>
+        <location filename="temp/ui_projectfile.h" line="904"/>
         <source>Exhaustive -- meant for nightly builds etc. Analysis time can be longer (10x slower than compilation is OK).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="487"/>
+        <location filename="temp/ui_projectfile.h" line="907"/>
         <source>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="522"/>
+        <location filename="temp/ui_projectfile.h" line="912"/>
         <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
         <oldsource>Check code in unused templates  (slower and less accurate analysis)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="534"/>
+        <location filename="temp/ui_projectfile.h" line="913"/>
         <source>Max CTU depth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="565"/>
+        <location filename="temp/ui_projectfile.h" line="914"/>
         <source>Max recursion in template instantiation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1739,21 +1968,25 @@ Options:
     </message>
     <message>
         <location filename="projectfile.ui" line="620"/>
+        <location filename="temp/ui_projectfile.h" line="932"/>
         <source>Warning options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="626"/>
+        <location filename="temp/ui_projectfile.h" line="916"/>
         <source>Root path:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="632"/>
+        <location filename="temp/ui_projectfile.h" line="918"/>
         <source>Filepaths in warnings will be relative to this path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="642"/>
+        <location filename="temp/ui_projectfile.h" line="920"/>
         <source>Warning tags (separated by semicolon)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1774,164 +2007,202 @@ Options:
     </message>
     <message>
         <location filename="projectfile.ui" line="925"/>
+        <location filename="temp/ui_projectfile.h" line="948"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="934"/>
+        <location filename="temp/ui_projectfile.h" line="949"/>
         <source>CERT-INT35-C:  int precision (if size equals precision, you can leave empty)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="953"/>
+        <location filename="temp/ui_projectfile.h" line="951"/>
         <source>Autosar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="969"/>
+        <location filename="temp/ui_projectfile.h" line="953"/>
         <source>Bug hunting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="979"/>
+        <location filename="temp/ui_projectfile.h" line="954"/>
         <source>External tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="409"/>
+        <location filename="temp/ui_projectfile.h" line="894"/>
         <source>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="362"/>
+        <location filename="temp/ui_projectfile.h" line="893"/>
         <source>Types and Functions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="380"/>
+        <location filename="temp/ui_projectfile.h" line="891"/>
         <source>Libraries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="432"/>
+        <location filename="temp/ui_projectfile.h" line="899"/>
         <source>Parser</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="438"/>
+        <location filename="temp/ui_projectfile.h" line="900"/>
         <source>Cppcheck (built in)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="490"/>
+        <location filename="temp/ui_projectfile.h" line="909"/>
         <source>Check that each class has a safe public interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="506"/>
+        <location filename="temp/ui_projectfile.h" line="910"/>
         <source>Limit analysis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="512"/>
+        <location filename="temp/ui_projectfile.h" line="911"/>
         <source>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="648"/>
+        <location filename="temp/ui_projectfile.h" line="922"/>
         <source>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="658"/>
+        <location filename="temp/ui_projectfile.h" line="924"/>
         <source>Exclude source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="669"/>
+        <location filename="temp/ui_projectfile.h" line="925"/>
         <source>Exclude folder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="676"/>
+        <location filename="temp/ui_projectfile.h" line="926"/>
         <source>Exclude file...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="715"/>
+        <location filename="temp/ui_projectfile.h" line="929"/>
         <source>Suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="726"/>
+        <location filename="temp/ui_projectfile.h" line="930"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="779"/>
         <location filename="projectfile.ui" line="785"/>
+        <location filename="temp/ui_projectfile.h" line="933"/>
+        <location filename="temp/ui_projectfile.h" line="957"/>
         <source>Addons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="791"/>
+        <location filename="temp/ui_projectfile.h" line="934"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="801"/>
+        <location filename="temp/ui_projectfile.h" line="935"/>
         <source>Y2038</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="808"/>
+        <location filename="temp/ui_projectfile.h" line="936"/>
         <source>Thread safety</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="818"/>
+        <location filename="temp/ui_projectfile.h" line="937"/>
         <source>Coding standards</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="826"/>
+        <location filename="temp/ui_projectfile.h" line="938"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="834"/>
+        <location filename="temp/ui_projectfile.h" line="939"/>
         <source>2012</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="839"/>
         <location filename="projectfile.ui" line="902"/>
+        <location filename="temp/ui_projectfile.h" line="940"/>
         <source>2023</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="946"/>
+        <location filename="temp/ui_projectfile.h" line="950"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="963"/>
+        <location filename="temp/ui_projectfile.h" line="952"/>
         <source>Bug hunting (Premium)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="992"/>
+        <location filename="temp/ui_projectfile.h" line="956"/>
         <source>Clang analyzer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="985"/>
+        <location filename="temp/ui_projectfile.h" line="955"/>
         <source>Clang-tidy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="221"/>
+        <location filename="temp/ui_projectfile.h" line="875"/>
         <source>Defines:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="temp/ui_projectfile.h" line="947"/>
+        <source>Misra C++ 2008</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2300,27 +2571,27 @@ Options:
         <translation type="unfinished">Undefined file</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="865"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1060"/>
+        <location filename="resultstree.cpp" line="1058"/>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1064"/>
+        <location filename="resultstree.cpp" line="1062"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="1063"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1065"/>
         <source>Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2335,27 +2606,27 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="864"/>
         <source>Recheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="866"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="869"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="888"/>
+        <location filename="resultstree.cpp" line="886"/>
         <source>Suppress selected id(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="870"/>
+        <location filename="resultstree.cpp" line="868"/>
         <source>Open containing folder</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2365,42 +2636,42 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="907"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="911"/>
+        <location filename="resultstree.cpp" line="909"/>
         <source>No tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="942"/>
-        <location filename="resultstree.cpp" line="956"/>
+        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="954"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="943"/>
+        <location filename="resultstree.cpp" line="941"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <translation type="unfinished">You can open this error by specifying applications in program&apos;s settings.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="957"/>
+        <location filename="resultstree.cpp" line="955"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="983"/>
+        <location filename="resultstree.cpp" line="981"/>
         <source>Could not find the file!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1046"/>
+        <location filename="resultstree.cpp" line="1044"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2409,7 +2680,7 @@ Please check the application path and parameters are correct.</source>
 Please check the application path and parameters are correct.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1068"/>
+        <location filename="resultstree.cpp" line="1066"/>
         <source>Select Directory</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2553,21 +2824,25 @@ To toggle what kind of errors are shown, open view menu.</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="26"/>
+        <location filename="temp/ui_resultsview.h" line="147"/>
         <source>Results</source>
         <translation type="unfinished">Results</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="60"/>
+        <location filename="temp/ui_resultsview.h" line="148"/>
         <source>Critical errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="92"/>
+        <location filename="temp/ui_resultsview.h" line="149"/>
         <source>Analysis Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="114"/>
+        <location filename="temp/ui_resultsview.h" line="150"/>
         <source>Warning Details</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2576,26 +2851,31 @@ To toggle what kind of errors are shown, open view menu.</translation>
     <name>ScratchPad</name>
     <message>
         <location filename="scratchpad.ui" line="14"/>
+        <location filename="temp/ui_scratchpad.h" line="106"/>
         <source>Scratchpad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="20"/>
+        <location filename="temp/ui_scratchpad.h" line="107"/>
         <source>Copy or write some C/C++ code here:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="37"/>
+        <location filename="temp/ui_scratchpad.h" line="108"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
+        <location filename="temp/ui_scratchpad.h" line="109"/>
         <source>filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="78"/>
+        <location filename="temp/ui_scratchpad.h" line="110"/>
         <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2604,81 +2884,97 @@ To toggle what kind of errors are shown, open view menu.</translation>
     <name>Settings</name>
     <message>
         <location filename="settings.ui" line="14"/>
+        <location filename="temp/ui_settings.h" line="491"/>
         <source>Preferences</source>
         <translation type="unfinished">Preferences</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
+        <location filename="temp/ui_settings.h" line="503"/>
         <source>General</source>
         <translation type="unfinished">General</translation>
     </message>
     <message>
         <location filename="settings.ui" line="202"/>
+        <location filename="temp/ui_settings.h" line="504"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="41"/>
+        <location filename="temp/ui_settings.h" line="492"/>
         <source>Number of threads: </source>
         <translation type="unfinished">Number of threads: </translation>
     </message>
     <message>
         <location filename="settings.ui" line="85"/>
+        <location filename="temp/ui_settings.h" line="493"/>
         <source>Ideal count:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="114"/>
+        <location filename="temp/ui_settings.h" line="494"/>
         <source>Force checking all #ifdef configurations</source>
         <translation type="unfinished">Check all #ifdef configurations</translation>
     </message>
     <message>
         <location filename="settings.ui" line="121"/>
+        <location filename="temp/ui_settings.h" line="495"/>
         <source>Show full path of files</source>
         <translation type="unfinished">Show full path of files</translation>
     </message>
     <message>
         <location filename="settings.ui" line="128"/>
+        <location filename="temp/ui_settings.h" line="496"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
         <translation type="unfinished">Show &quot;No errors found&quot; message when no errors found</translation>
     </message>
     <message>
         <location filename="settings.ui" line="135"/>
+        <location filename="temp/ui_settings.h" line="497"/>
         <source>Display error Id in column &quot;Id&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
+        <location filename="temp/ui_settings.h" line="498"/>
         <source>Enable inline suppressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="149"/>
+        <location filename="temp/ui_settings.h" line="499"/>
         <source>Check for inconclusive errors also</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="156"/>
+        <location filename="temp/ui_settings.h" line="500"/>
         <source>Show statistics on check completion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="163"/>
+        <location filename="temp/ui_settings.h" line="501"/>
         <source>Check for updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="183"/>
+        <location filename="temp/ui_settings.h" line="502"/>
         <source>Show internal warnings in log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="294"/>
+        <location filename="temp/ui_settings.h" line="522"/>
         <source>Addons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="300"/>
+        <location filename="temp/ui_settings.h" line="513"/>
         <source>Python binary (leave this empty to use python in the PATH)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2686,112 +2982,137 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <location filename="settings.ui" line="311"/>
         <location filename="settings.ui" line="352"/>
         <location filename="settings.ui" line="397"/>
+        <location filename="temp/ui_settings.h" line="514"/>
+        <location filename="temp/ui_settings.h" line="521"/>
+        <location filename="temp/ui_settings.h" line="524"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="330"/>
+        <location filename="temp/ui_settings.h" line="516"/>
         <source>MISRA addon</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="338"/>
+        <location filename="temp/ui_settings.h" line="517"/>
         <source>MISRA rule texts file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="345"/>
+        <location filename="temp/ui_settings.h" line="519"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="378"/>
+        <location filename="temp/ui_settings.h" line="527"/>
         <source>Clang</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="384"/>
+        <location filename="temp/ui_settings.h" line="523"/>
         <source>Clang path (leave empty to use system PATH)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="407"/>
+        <location filename="temp/ui_settings.h" line="525"/>
         <source>Visual Studio headers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="413"/>
+        <location filename="temp/ui_settings.h" line="526"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="443"/>
+        <location filename="temp/ui_settings.h" line="534"/>
         <source>Code Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="449"/>
+        <location filename="temp/ui_settings.h" line="528"/>
         <source>Code Editor Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="455"/>
+        <location filename="temp/ui_settings.h" line="529"/>
         <source>System Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="462"/>
+        <location filename="temp/ui_settings.h" line="530"/>
         <source>Default Light Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="469"/>
+        <location filename="temp/ui_settings.h" line="531"/>
         <source>Default Dark Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="478"/>
+        <location filename="temp/ui_settings.h" line="532"/>
         <source>Custom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="216"/>
+        <location filename="temp/ui_settings.h" line="506"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="191"/>
+        <location filename="temp/ui_settings.h" line="508"/>
         <source>Applications</source>
         <translation type="unfinished">Applications</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
         <location filename="settings.ui" line="485"/>
+        <location filename="temp/ui_settings.h" line="505"/>
+        <location filename="temp/ui_settings.h" line="533"/>
         <source>Edit...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="223"/>
+        <location filename="temp/ui_settings.h" line="507"/>
         <source>Set as default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="246"/>
+        <location filename="temp/ui_settings.h" line="511"/>
         <source>Reports</source>
         <translation type="unfinished">Reports</translation>
     </message>
     <message>
         <location filename="settings.ui" line="252"/>
+        <location filename="temp/ui_settings.h" line="509"/>
         <source>Save all errors when creating report</source>
         <translation type="unfinished">Save all errors when creating report</translation>
     </message>
     <message>
         <location filename="settings.ui" line="259"/>
+        <location filename="temp/ui_settings.h" line="510"/>
         <source>Save full path to files in reports</source>
         <translation type="unfinished">Save full path to files in reports</translation>
     </message>
     <message>
         <location filename="settings.ui" line="280"/>
+        <location filename="temp/ui_settings.h" line="512"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2851,118 +3172,142 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <location filename="statsdialog.ui" line="248"/>
         <location filename="statsdialog.cpp" line="187"/>
         <location filename="statsdialog.cpp" line="234"/>
+        <location filename="temp/ui_statsdialog.h" line="394"/>
+        <location filename="temp/ui_statsdialog.h" line="414"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
         <location filename="statsdialog.cpp" line="225"/>
+        <location filename="temp/ui_statsdialog.h" line="400"/>
         <source>Project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="33"/>
+        <location filename="temp/ui_statsdialog.h" line="395"/>
         <source>Project:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="53"/>
+        <location filename="temp/ui_statsdialog.h" line="396"/>
         <source>Paths:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="85"/>
+        <location filename="temp/ui_statsdialog.h" line="397"/>
         <source>Include paths:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="108"/>
+        <location filename="temp/ui_statsdialog.h" line="398"/>
         <source>Defines:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="131"/>
+        <location filename="temp/ui_statsdialog.h" line="399"/>
         <source>Undefines:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
         <location filename="statsdialog.cpp" line="230"/>
+        <location filename="temp/ui_statsdialog.h" line="406"/>
         <source>Previous Scan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="171"/>
+        <location filename="temp/ui_statsdialog.h" line="401"/>
         <source>Path Selected:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="181"/>
+        <location filename="temp/ui_statsdialog.h" line="402"/>
         <source>Number of Files Scanned:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="201"/>
+        <location filename="temp/ui_statsdialog.h" line="404"/>
         <source>Scan Duration:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="254"/>
+        <location filename="temp/ui_statsdialog.h" line="407"/>
         <source>Errors:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="271"/>
+        <location filename="temp/ui_statsdialog.h" line="408"/>
         <source>Warnings:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="288"/>
+        <location filename="temp/ui_statsdialog.h" line="409"/>
         <source>Stylistic warnings:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="305"/>
+        <location filename="temp/ui_statsdialog.h" line="410"/>
         <source>Portability warnings:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="322"/>
+        <location filename="temp/ui_statsdialog.h" line="411"/>
         <source>Performance issues:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="339"/>
+        <location filename="temp/ui_statsdialog.h" line="412"/>
         <source>Information messages:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="356"/>
+        <location filename="temp/ui_statsdialog.h" line="413"/>
         <source>Active checkers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="374"/>
+        <location filename="temp/ui_statsdialog.h" line="415"/>
         <source>Checkers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="399"/>
+        <location filename="temp/ui_statsdialog.h" line="417"/>
         <source>History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="405"/>
+        <location filename="temp/ui_statsdialog.h" line="416"/>
         <source>File:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="443"/>
+        <location filename="temp/ui_statsdialog.h" line="418"/>
         <source>Copy to Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="450"/>
+        <location filename="temp/ui_statsdialog.h" line="419"/>
         <source>Pdf Export</source>
         <translation type="unfinished"></translation>
     </message>

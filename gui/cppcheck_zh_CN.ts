@@ -5,33 +5,39 @@
     <name>About</name>
     <message>
         <location filename="about.ui" line="14"/>
+        <location filename="temp/ui_about.h" line="129"/>
         <source>About Cppcheck</source>
         <translation>关于 Cppcheck</translation>
     </message>
     <message>
         <location filename="about.ui" line="64"/>
+        <location filename="temp/ui_about.h" line="131"/>
         <source>Version %1</source>
         <translation>版本 %1</translation>
     </message>
     <message>
         <location filename="about.ui" line="71"/>
+        <location filename="temp/ui_about.h" line="132"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - C/C++ 静态代码分析工具。</translation>
     </message>
     <message>
         <location filename="about.ui" line="81"/>
+        <location filename="temp/ui_about.h" line="133"/>
         <source>Copyright © 2007-%1 Cppcheck team.</source>
         <oldsource>Copyright © 2007-2021 Cppcheck team.</oldsource>
         <translation>版权所有 © 2007-%1 Cppcheck 团队。</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
+        <location filename="temp/ui_about.h" line="134"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
         <translation>该程序在 GNU 通用公共授权版本 3 的条款下发布</translation>
     </message>
     <message>
         <location filename="about.ui" line="102"/>
+        <location filename="temp/ui_about.h" line="136"/>
         <source>Visit Cppcheck homepage at %1</source>
         <translation>访问 Cppcheck 主页: %1</translation>
     </message>
@@ -41,16 +47,23 @@ of the GNU General Public License version 3</source>
         <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="temp/ui_about.h" line="137"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ApplicationDialog</name>
     <message>
         <location filename="applicationdialog.ui" line="23"/>
+        <location filename="temp/ui_applicationdialog.h" line="160"/>
         <source>Add an application</source>
         <translation>添加应用程序</translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="41"/>
+        <location filename="temp/ui_applicationdialog.h" line="161"/>
         <source>Here you can add an application that can open error files. Specify a name for the application, the application executable and command line parameters for the application.
 
 The following texts in parameters are replaced with appropriate values when application is executed:
@@ -76,21 +89,25 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="76"/>
+        <location filename="temp/ui_applicationdialog.h" line="172"/>
         <source>&amp;Name:</source>
         <translation>名称(&amp;N):</translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="86"/>
+        <location filename="temp/ui_applicationdialog.h" line="173"/>
         <source>&amp;Executable:</source>
         <translation>可执行文件(&amp;E):</translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="96"/>
+        <location filename="temp/ui_applicationdialog.h" line="174"/>
         <source>&amp;Parameters:</source>
         <translation>参数(&amp;P):</translation>
     </message>
     <message>
         <location filename="applicationdialog.ui" line="138"/>
+        <location filename="temp/ui_applicationdialog.h" line="175"/>
         <source>Browse</source>
         <translation>浏览</translation>
     </message>
@@ -119,41 +136,49 @@ Parameters: -l(line) (file)</source>
     <name>ComplianceReportDialog</name>
     <message>
         <location filename="compliancereportdialog.ui" line="14"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="111"/>
         <source>Compliance Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="29"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="113"/>
         <source>Project name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="22"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="112"/>
         <source>Project version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="42"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="114"/>
         <source>Coding Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="50"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="115"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="55"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="116"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="60"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="117"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="70"/>
+        <location filename="temp/ui_compliancereportdialog.h" line="119"/>
         <source>List of files with md5 checksums</source>
         <translation type="unfinished"></translation>
     </message>
@@ -202,16 +227,19 @@ Parameters: -l(line) (file)</source>
     <name>HelpDialog</name>
     <message>
         <location filename="helpdialog.ui" line="14"/>
+        <location filename="temp/ui_helpdialog.h" line="88"/>
         <source>Cppcheck GUI help</source>
         <translation>Cppcheck GUI 帮助</translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="34"/>
+        <location filename="temp/ui_helpdialog.h" line="89"/>
         <source>Contents</source>
         <translation>内容</translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="44"/>
+        <location filename="temp/ui_helpdialog.h" line="90"/>
         <source>Index</source>
         <translation>索引</translation>
     </message>
@@ -230,16 +258,19 @@ Parameters: -l(line) (file)</source>
     <name>LibraryAddFunctionDialog</name>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="23"/>
+        <location filename="temp/ui_libraryaddfunctiondialog.h" line="104"/>
         <source>Add function</source>
         <translation>添加函数</translation>
     </message>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="34"/>
+        <location filename="temp/ui_libraryaddfunctiondialog.h" line="105"/>
         <source>Function name(s)</source>
         <translation>函数名</translation>
     </message>
     <message>
         <location filename="libraryaddfunctiondialog.ui" line="44"/>
+        <location filename="temp/ui_libraryaddfunctiondialog.h" line="106"/>
         <source>Number of arguments</source>
         <translation>参数个数</translation>
     </message>
@@ -248,86 +279,103 @@ Parameters: -l(line) (file)</source>
     <name>LibraryDialog</name>
     <message>
         <location filename="librarydialog.ui" line="14"/>
+        <location filename="temp/ui_librarydialog.h" line="275"/>
         <source>Library Editor</source>
         <translation>库编辑器</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="22"/>
+        <location filename="temp/ui_librarydialog.h" line="276"/>
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="29"/>
+        <location filename="temp/ui_librarydialog.h" line="277"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="36"/>
+        <location filename="temp/ui_librarydialog.h" line="278"/>
         <source>Save as</source>
         <translation>另存为</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="62"/>
+        <location filename="temp/ui_librarydialog.h" line="279"/>
         <source>Functions</source>
         <translation>函数</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="71"/>
+        <location filename="temp/ui_librarydialog.h" line="280"/>
         <source>Sort</source>
         <translation>排序</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="111"/>
+        <location filename="temp/ui_librarydialog.h" line="281"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="131"/>
+        <location filename="temp/ui_librarydialog.h" line="282"/>
         <source>Filter:</source>
         <translation>过滤：</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="164"/>
+        <location filename="temp/ui_librarydialog.h" line="283"/>
         <source>Comments</source>
         <translation>注释</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="204"/>
+        <location filename="temp/ui_librarydialog.h" line="284"/>
         <source>noreturn</source>
         <translation>无返回</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="212"/>
+        <location filename="temp/ui_librarydialog.h" line="285"/>
         <source>False</source>
         <translation>否</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="217"/>
+        <location filename="temp/ui_librarydialog.h" line="286"/>
         <source>True</source>
         <translation>是</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="222"/>
+        <location filename="temp/ui_librarydialog.h" line="287"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="232"/>
+        <location filename="temp/ui_librarydialog.h" line="289"/>
         <source>return value must be used</source>
         <translation>返回值必须被使用</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="239"/>
+        <location filename="temp/ui_librarydialog.h" line="290"/>
         <source>ignore function in leaks checking</source>
         <translation>在泄漏检查中忽略函数</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="246"/>
+        <location filename="temp/ui_librarydialog.h" line="291"/>
         <source>Arguments</source>
         <translation>参数</translation>
     </message>
     <message>
         <location filename="librarydialog.ui" line="258"/>
+        <location filename="temp/ui_librarydialog.h" line="292"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
@@ -376,11 +424,13 @@ Parameters: -l(line) (file)</source>
     <name>LibraryEditArgDialog</name>
     <message>
         <location filename="libraryeditargdialog.ui" line="14"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="283"/>
         <source>Edit argument</source>
         <translation>编辑参数</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="20"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="285"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Is bool value allowed? For instance result from comparison or from &apos;!&apos; operator.&lt;/p&gt;
 &lt;p&gt;Typically, set this if the argument is a pointer, size, etc.&lt;/p&gt;
@@ -396,11 +446,13 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="28"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="292"/>
         <source>Not bool</source>
         <translation>非布尔值</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="35"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="294"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Is a null parameter value allowed?&lt;/p&gt;
 &lt;p&gt;Typically this should be used on any pointer parameter that does not allow null.&lt;/p&gt;
@@ -416,78 +468,99 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="43"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="301"/>
         <source>Not null</source>
         <translation>非空</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="50"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="302"/>
         <source>Not uninit</source>
         <translation>非未初始化</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="57"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="303"/>
         <source>String</source>
         <translation>字符串</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="70"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="304"/>
         <source>Format string</source>
         <translation>格式化字符串</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="92"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="305"/>
         <source>Min size of buffer</source>
         <translation>最小缓冲区大小</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="101"/>
         <location filename="libraryeditargdialog.ui" line="203"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="306"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="315"/>
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="109"/>
         <location filename="libraryeditargdialog.ui" line="214"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="307"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="316"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="114"/>
         <location filename="libraryeditargdialog.ui" line="219"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="308"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="317"/>
         <source>argvalue</source>
         <translation>argvalue</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="119"/>
         <location filename="libraryeditargdialog.ui" line="224"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="309"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="318"/>
         <source>mul</source>
         <translation>mul</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="124"/>
         <location filename="libraryeditargdialog.ui" line="229"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="310"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="319"/>
         <source>strlen</source>
         <translation>strlen</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="132"/>
         <location filename="libraryeditargdialog.ui" line="237"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="312"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="321"/>
         <source>Arg</source>
         <translation>参数1</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="159"/>
         <location filename="libraryeditargdialog.ui" line="264"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="313"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="322"/>
         <source>Arg2</source>
         <translation>参数2</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="194"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="314"/>
         <source>and</source>
         <translation>并且</translation>
     </message>
     <message>
         <location filename="libraryeditargdialog.ui" line="310"/>
+        <location filename="temp/ui_libraryeditargdialog.h" line="323"/>
         <source>Valid values</source>
         <translation>有效值</translation>
     </message>
@@ -510,154 +583,188 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.cpp" line="1948"/>
         <location filename="mainwindow.cpp" line="2020"/>
         <location filename="mainwindow.cpp" line="2094"/>
+        <location filename="temp/ui_mainwindow.h" line="521"/>
+        <location filename="temp/ui_mainwindow.h" line="630"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="132"/>
+        <location filename="temp/ui_mainwindow.h" line="677"/>
         <source>&amp;File</source>
         <translation>文件(&amp;F)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="152"/>
+        <location filename="temp/ui_mainwindow.h" line="678"/>
         <source>&amp;View</source>
         <translation>查看(&amp;V)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="156"/>
+        <location filename="temp/ui_mainwindow.h" line="679"/>
         <source>&amp;Toolbars</source>
         <translation>工具栏(&amp;T)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="198"/>
+        <location filename="temp/ui_mainwindow.h" line="680"/>
         <source>&amp;Help</source>
         <translation>帮助(&amp;H)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="212"/>
+        <location filename="temp/ui_mainwindow.h" line="682"/>
         <source>C++ standard</source>
         <translation>C++ 标准</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="224"/>
+        <location filename="temp/ui_mainwindow.h" line="683"/>
         <source>&amp;C standard</source>
         <oldsource>C standard</oldsource>
         <translation>&amp;C 标准</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="251"/>
+        <location filename="temp/ui_mainwindow.h" line="684"/>
         <source>&amp;Edit</source>
         <translation>编辑(&amp;E)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="264"/>
+        <location filename="temp/ui_mainwindow.h" line="685"/>
         <source>Standard</source>
         <translation>标准</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="282"/>
+        <location filename="temp/ui_mainwindow.h" line="686"/>
         <source>Categories</source>
         <translation>分类</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="312"/>
+        <location filename="temp/ui_mainwindow.h" line="522"/>
         <source>&amp;License...</source>
         <translation>许可证(&amp;L)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="317"/>
+        <location filename="temp/ui_mainwindow.h" line="523"/>
         <source>A&amp;uthors...</source>
         <translation>作者(&amp;U)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="326"/>
+        <location filename="temp/ui_mainwindow.h" line="524"/>
         <source>&amp;About...</source>
         <translation>关于(&amp;A)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="331"/>
+        <location filename="temp/ui_mainwindow.h" line="525"/>
         <source>&amp;Files...</source>
         <translation>文件(&amp;F)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="334"/>
         <location filename="mainwindow.ui" line="337"/>
+        <location filename="temp/ui_mainwindow.h" line="526"/>
+        <location filename="temp/ui_mainwindow.h" line="528"/>
         <source>Analyze files</source>
         <oldsource>Check files</oldsource>
         <translation>分析文件</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="340"/>
+        <location filename="temp/ui_mainwindow.h" line="531"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="349"/>
+        <location filename="temp/ui_mainwindow.h" line="533"/>
         <source>&amp;Directory...</source>
         <translation>目录(&amp;D)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="352"/>
         <location filename="mainwindow.ui" line="355"/>
+        <location filename="temp/ui_mainwindow.h" line="534"/>
+        <location filename="temp/ui_mainwindow.h" line="536"/>
         <source>Analyze directory</source>
         <oldsource>Check directory</oldsource>
         <translation>分析目录</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="358"/>
+        <location filename="temp/ui_mainwindow.h" line="539"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="370"/>
+        <location filename="temp/ui_mainwindow.h" line="543"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="388"/>
+        <location filename="temp/ui_mainwindow.h" line="546"/>
         <source>&amp;Stop</source>
         <translation>停止(&amp;S)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="391"/>
         <location filename="mainwindow.ui" line="394"/>
+        <location filename="temp/ui_mainwindow.h" line="547"/>
+        <location filename="temp/ui_mainwindow.h" line="549"/>
         <source>Stop analysis</source>
         <oldsource>Stop checking</oldsource>
         <translation>停止分析</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="397"/>
+        <location filename="temp/ui_mainwindow.h" line="552"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="406"/>
+        <location filename="temp/ui_mainwindow.h" line="554"/>
         <source>&amp;Save results to file...</source>
         <translation>保存结果到文件(&amp;S)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="409"/>
+        <location filename="temp/ui_mainwindow.h" line="556"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="414"/>
+        <location filename="temp/ui_mainwindow.h" line="558"/>
         <source>&amp;Quit</source>
         <translation>退出(&amp;Q)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="426"/>
+        <location filename="temp/ui_mainwindow.h" line="562"/>
         <source>&amp;Clear results</source>
         <translation>清空结果(&amp;C)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="435"/>
+        <location filename="temp/ui_mainwindow.h" line="563"/>
         <source>&amp;Preferences</source>
         <translation>首选项(&amp;P)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="450"/>
         <location filename="mainwindow.ui" line="453"/>
+        <location filename="temp/ui_mainwindow.h" line="565"/>
+        <location filename="temp/ui_mainwindow.h" line="567"/>
         <source>Show style warnings</source>
         <translation>显示风格警告</translation>
     </message>
@@ -665,6 +772,8 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="468"/>
         <location filename="mainwindow.ui" line="471"/>
         <location filename="mainwindow.cpp" line="2318"/>
+        <location filename="temp/ui_mainwindow.h" line="570"/>
+        <location filename="temp/ui_mainwindow.h" line="572"/>
         <source>Show errors</source>
         <translation>显示错误</translation>
     </message>
@@ -676,101 +785,121 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="mainwindow.ui" line="658"/>
+        <location filename="temp/ui_mainwindow.h" line="624"/>
         <source>Show information messages</source>
         <translation>显示信息消息</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="673"/>
+        <location filename="temp/ui_mainwindow.h" line="628"/>
         <source>Show portability warnings</source>
         <translation>显示可移植性警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="688"/>
+        <location filename="temp/ui_mainwindow.h" line="632"/>
         <source>Show Cppcheck results</source>
         <translation>显示 Cppcheck 结果</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="700"/>
+        <location filename="temp/ui_mainwindow.h" line="634"/>
         <source>Clang</source>
         <translation>Clang</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="703"/>
+        <location filename="temp/ui_mainwindow.h" line="636"/>
         <source>Show Clang results</source>
         <translation>显示 Clang 结果</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="711"/>
+        <location filename="temp/ui_mainwindow.h" line="638"/>
         <source>&amp;Filter</source>
         <translation>滤器(&amp;F)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="714"/>
+        <location filename="temp/ui_mainwindow.h" line="640"/>
         <source>Filter results</source>
         <translation>过滤结果</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="730"/>
+        <location filename="temp/ui_mainwindow.h" line="642"/>
         <source>Windows 32-bit ANSI</source>
         <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="738"/>
+        <location filename="temp/ui_mainwindow.h" line="643"/>
         <source>Windows 32-bit Unicode</source>
         <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="746"/>
+        <location filename="temp/ui_mainwindow.h" line="644"/>
         <source>Unix 32-bit</source>
         <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="754"/>
+        <location filename="temp/ui_mainwindow.h" line="645"/>
         <source>Unix 64-bit</source>
         <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="762"/>
+        <location filename="temp/ui_mainwindow.h" line="646"/>
         <source>Windows 64-bit</source>
         <translation></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="848"/>
+        <location filename="temp/ui_mainwindow.h" line="654"/>
         <source>&amp;Print...</source>
         <translation>打印(&amp;P)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="851"/>
+        <location filename="temp/ui_mainwindow.h" line="656"/>
         <source>Print the Current Report</source>
         <translation>打印当前报告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="856"/>
+        <location filename="temp/ui_mainwindow.h" line="658"/>
         <source>Print Pre&amp;view...</source>
         <translation>打印预览(&amp;v)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="859"/>
+        <location filename="temp/ui_mainwindow.h" line="660"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation>打开当前结果的打印预览窗口</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="867"/>
+        <location filename="temp/ui_mainwindow.h" line="664"/>
         <source>Open library editor</source>
         <translation>打开库编辑器</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="579"/>
+        <location filename="temp/ui_mainwindow.h" line="608"/>
         <source>C&amp;lose Project File</source>
         <translation>关闭项目文件(&amp;L)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="587"/>
+        <location filename="temp/ui_mainwindow.h" line="609"/>
         <source>&amp;Edit Project File...</source>
         <translation>编辑项目文件(&amp;E)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="599"/>
+        <location filename="temp/ui_mainwindow.h" line="610"/>
         <source>&amp;Statistics</source>
         <translation>统计(&amp;S)</translation>
     </message>
@@ -778,32 +907,40 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="614"/>
         <location filename="mainwindow.ui" line="617"/>
         <location filename="mainwindow.cpp" line="2319"/>
+        <location filename="temp/ui_mainwindow.h" line="612"/>
+        <location filename="temp/ui_mainwindow.h" line="614"/>
         <source>Show warnings</source>
         <translation>显示警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="632"/>
         <location filename="mainwindow.ui" line="635"/>
+        <location filename="temp/ui_mainwindow.h" line="617"/>
+        <location filename="temp/ui_mainwindow.h" line="619"/>
         <source>Show performance warnings</source>
         <translation>显示性能警告</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="643"/>
+        <location filename="temp/ui_mainwindow.h" line="621"/>
         <source>Show &amp;hidden</source>
         <translation>显示隐藏项(&amp;H)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="476"/>
+        <location filename="temp/ui_mainwindow.h" line="574"/>
         <source>&amp;Check all</source>
         <translation>全部选中(&amp;C)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="84"/>
+        <location filename="temp/ui_mainwindow.h" line="675"/>
         <source>Checking for updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="100"/>
+        <location filename="temp/ui_mainwindow.h" line="676"/>
         <source>Hide</source>
         <translation type="unfinished">隐藏</translation>
     </message>
@@ -815,237 +952,284 @@ Parameters: -l(line) (file)</source>
     </message>
     <message>
         <location filename="mainwindow.ui" line="208"/>
+        <location filename="temp/ui_mainwindow.h" line="681"/>
         <source>A&amp;nalyze</source>
         <translation>分析(&amp;A)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="301"/>
+        <location filename="temp/ui_mainwindow.h" line="687"/>
         <source>Filter</source>
         <translation>滤器</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="367"/>
+        <location filename="temp/ui_mainwindow.h" line="541"/>
         <source>&amp;Reanalyze modified files</source>
         <oldsource>&amp;Recheck modified files</oldsource>
         <translation>重新分析已修改的文件(&amp;R)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="379"/>
+        <location filename="temp/ui_mainwindow.h" line="545"/>
         <source>Reanal&amp;yze all files</source>
         <translation>重新分析全部文件(&amp;y)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="417"/>
+        <location filename="temp/ui_mainwindow.h" line="560"/>
         <source>Ctrl+Q</source>
         <translation>Ctrl+Q</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="447"/>
+        <location filename="temp/ui_mainwindow.h" line="564"/>
         <source>Style war&amp;nings</source>
         <translation>风格警告(&amp;n)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="465"/>
+        <location filename="temp/ui_mainwindow.h" line="569"/>
         <source>E&amp;rrors</source>
         <translation>编辑(&amp;r)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="481"/>
+        <location filename="temp/ui_mainwindow.h" line="575"/>
         <source>&amp;Uncheck all</source>
         <translation>全部取消选中(&amp;U)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="486"/>
+        <location filename="temp/ui_mainwindow.h" line="576"/>
         <source>Collapse &amp;all</source>
         <translation>全部折叠(&amp;A)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="491"/>
+        <location filename="temp/ui_mainwindow.h" line="577"/>
         <source>&amp;Expand all</source>
         <translation>全部展开(&amp;E)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="499"/>
+        <location filename="temp/ui_mainwindow.h" line="578"/>
         <source>&amp;Standard</source>
         <translation>标准(&amp;S)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="502"/>
+        <location filename="temp/ui_mainwindow.h" line="580"/>
         <source>Standard items</source>
         <translation>标准项</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="507"/>
+        <location filename="temp/ui_mainwindow.h" line="582"/>
         <source>&amp;Contents</source>
         <translation>内容(&amp;C)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="510"/>
+        <location filename="temp/ui_mainwindow.h" line="584"/>
         <source>Open the help contents</source>
         <translation>打开帮助内容</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="513"/>
+        <location filename="temp/ui_mainwindow.h" line="587"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="518"/>
+        <location filename="temp/ui_mainwindow.h" line="589"/>
         <source>Toolbar</source>
         <translation>工具栏</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="526"/>
+        <location filename="temp/ui_mainwindow.h" line="590"/>
         <source>&amp;Categories</source>
         <translation>分类(&amp;C)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="529"/>
+        <location filename="temp/ui_mainwindow.h" line="592"/>
         <source>Error categories</source>
         <translation>错误分类</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="534"/>
+        <location filename="temp/ui_mainwindow.h" line="594"/>
         <source>&amp;Open XML...</source>
         <translation>打开 XML (&amp;O)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="543"/>
+        <location filename="temp/ui_mainwindow.h" line="595"/>
         <source>Open P&amp;roject File...</source>
         <translation>打开项目文件(&amp;R)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="546"/>
+        <location filename="temp/ui_mainwindow.h" line="597"/>
         <source>Ctrl+Shift+O</source>
         <translation>Ctrl+Shift+O</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="555"/>
+        <location filename="temp/ui_mainwindow.h" line="599"/>
         <source>Sh&amp;ow Scratchpad...</source>
         <translation>显示便条(&amp;o)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="560"/>
+        <location filename="temp/ui_mainwindow.h" line="600"/>
         <source>&amp;New Project File...</source>
         <translation>新建项目文件(&amp;N)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="563"/>
+        <location filename="temp/ui_mainwindow.h" line="602"/>
         <source>Ctrl+Shift+N</source>
         <translation>Ctrl+Shift+N</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="568"/>
+        <location filename="temp/ui_mainwindow.h" line="604"/>
         <source>&amp;Log View</source>
         <translation>日志视图(&amp;L)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="571"/>
+        <location filename="temp/ui_mainwindow.h" line="606"/>
         <source>Log View</source>
         <translation>日志视图</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="611"/>
+        <location filename="temp/ui_mainwindow.h" line="611"/>
         <source>&amp;Warnings</source>
         <translation>警告(&amp;W)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="629"/>
+        <location filename="temp/ui_mainwindow.h" line="616"/>
         <source>Per&amp;formance warnings</source>
         <translation>性能警告(&amp;f)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="655"/>
+        <location filename="temp/ui_mainwindow.h" line="622"/>
         <source>&amp;Information</source>
         <translation>信息(&amp;I)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="670"/>
+        <location filename="temp/ui_mainwindow.h" line="626"/>
         <source>&amp;Portability</source>
         <translation>可移植性(&amp;P)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="770"/>
+        <location filename="temp/ui_mainwindow.h" line="647"/>
         <source>P&amp;latforms</source>
         <translation>平台(&amp;l)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="784"/>
+        <location filename="temp/ui_mainwindow.h" line="648"/>
         <source>C++&amp;11</source>
         <translation>C++&amp;11</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="795"/>
+        <location filename="temp/ui_mainwindow.h" line="649"/>
         <source>C&amp;99</source>
         <translation>C&amp;99</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="803"/>
+        <location filename="temp/ui_mainwindow.h" line="650"/>
         <source>&amp;Posix</source>
         <translation>&amp;Posix</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="811"/>
+        <location filename="temp/ui_mainwindow.h" line="651"/>
         <source>C&amp;11</source>
         <translation>C&amp;11</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="835"/>
+        <location filename="temp/ui_mainwindow.h" line="652"/>
         <source>&amp;C89</source>
         <translation>&amp;C89</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="843"/>
+        <location filename="temp/ui_mainwindow.h" line="653"/>
         <source>&amp;C++03</source>
         <translation>&amp;C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="864"/>
+        <location filename="temp/ui_mainwindow.h" line="662"/>
         <source>&amp;Library Editor...</source>
         <translation>库编辑器(&amp;L)...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="875"/>
+        <location filename="temp/ui_mainwindow.h" line="666"/>
         <source>&amp;Auto-detect language</source>
         <translation>自动检测语言(&amp;A)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="883"/>
+        <location filename="temp/ui_mainwindow.h" line="667"/>
         <source>&amp;Enforce C++</source>
         <translation>&amp;Enforce C++</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="891"/>
+        <location filename="temp/ui_mainwindow.h" line="668"/>
         <source>E&amp;nforce C</source>
         <translation>E&amp;nforce C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="902"/>
+        <location filename="temp/ui_mainwindow.h" line="669"/>
         <source>C++14</source>
         <translation>C++14</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="910"/>
+        <location filename="temp/ui_mainwindow.h" line="670"/>
         <source>Reanalyze and check library</source>
         <translation>重新分析并检查库</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="918"/>
+        <location filename="temp/ui_mainwindow.h" line="671"/>
         <source>Check configuration (defines, includes)</source>
         <translation>检查配置(defines, includes)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="926"/>
+        <location filename="temp/ui_mainwindow.h" line="672"/>
         <source>C++17</source>
         <translation>C++17</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="937"/>
+        <location filename="temp/ui_mainwindow.h" line="673"/>
         <source>C++20</source>
         <translation>C++20</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="964"/>
+        <location filename="temp/ui_mainwindow.h" line="674"/>
         <source>Compliance report...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1554,31 +1738,36 @@ Options:
     <name>NewSuppressionDialog</name>
     <message>
         <location filename="newsuppressiondialog.ui" line="17"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="113"/>
         <source>New suppression</source>
         <translation>新建抑制</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="25"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="114"/>
         <source>Error ID</source>
         <translation>错误 ID</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="32"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="115"/>
         <source>File name</source>
         <translation>文件名</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="42"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="116"/>
         <source>Line number</source>
         <translation>行号</translation>
     </message>
     <message>
         <location filename="newsuppressiondialog.ui" line="52"/>
+        <location filename="temp/ui_newsuppressiondialog.h" line="117"/>
         <source>Symbol name</source>
         <translation>符号名</translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.cpp" line="82"/>
+        <location filename="newsuppressiondialog.cpp" line="81"/>
         <source>Edit suppression</source>
         <translation>编辑抑制</translation>
     </message>
@@ -1620,48 +1809,57 @@ Options:
     <name>ProjectFile</name>
     <message>
         <location filename="projectfile.ui" line="14"/>
+        <location filename="temp/ui_projectfile.h" line="862"/>
         <source>Project File</source>
         <translation>项目文件</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="24"/>
+        <location filename="temp/ui_projectfile.h" line="889"/>
         <source>Paths and Defines</source>
         <translation>路径和定义</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="30"/>
+        <location filename="temp/ui_projectfile.h" line="863"/>
         <source>Import Project (Visual studio / compile database/ Borland C++ Builder 6)</source>
         <oldsource>Import Project (Visual studio / compile database)</oldsource>
         <translation>导入项目 (Visual studio / compile database/ Borland C++ Builder 6)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="231"/>
+        <location filename="temp/ui_projectfile.h" line="877"/>
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
         <translation>定义必须用分号分隔。例如：DEF1;DEF2=5;DEF3=int</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="389"/>
+        <location filename="temp/ui_projectfile.h" line="892"/>
         <source>Note: Put your own custom .cfg files in the same folder as the project file. You should see them above.</source>
         <translation>注意：把你自己的 .cfg 文件放在和项目文件相同的文件夹中。你应该在上面看到它们。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="648"/>
+        <location filename="temp/ui_projectfile.h" line="922"/>
         <source>If tags are added, you will be able to right click on warnings and set one of these tags. You can manually categorize warnings.</source>
         <translation>如果添加了标记，您将能够右键单击警告并设置其中一个标记。您可以手动对警告进行分类。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="658"/>
+        <location filename="temp/ui_projectfile.h" line="924"/>
         <source>Exclude source files</source>
         <translation>排除源文件</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="669"/>
+        <location filename="temp/ui_projectfile.h" line="925"/>
         <source>Exclude folder...</source>
         <translation>排除文件夹...</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="676"/>
+        <location filename="temp/ui_projectfile.h" line="926"/>
         <source>Exclude file...</source>
         <translation>排除文件...</translation>
     </message>
@@ -1671,21 +1869,25 @@ Options:
     </message>
     <message>
         <location filename="projectfile.ui" line="864"/>
+        <location filename="temp/ui_projectfile.h" line="942"/>
         <source>MISRA rule texts</source>
         <translation>MISRA 规则文本</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="871"/>
+        <location filename="temp/ui_projectfile.h" line="944"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;从 MISRA C 2012 PDF 的附录 A &amp;quot;指南摘要&amp;quot; 复制/粘贴文本到一个文本文件。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="878"/>
+        <location filename="temp/ui_projectfile.h" line="946"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="73"/>
+        <location filename="temp/ui_projectfile.h" line="867"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You have a choice:&lt;/p&gt;&lt;p&gt; * Analyze all Debug and Release configurations&lt;/p&gt;&lt;p&gt; * Only analyze the first matching Debug configuration&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;您有一个选择：&lt;/p&gt;&lt;p&gt; * 分析所有的 Debug 和 Release 配置&lt;/p&gt;&lt;p&gt; * 只分析第一个匹配的 Debug 配置&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -1693,27 +1895,34 @@ Options:
         <location filename="projectfile.ui" line="60"/>
         <location filename="projectfile.ui" line="422"/>
         <location filename="projectfile.ui" line="609"/>
+        <location filename="temp/ui_projectfile.h" line="865"/>
+        <location filename="temp/ui_projectfile.h" line="898"/>
         <source>Browse...</source>
         <translation>浏览...</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="76"/>
+        <location filename="temp/ui_projectfile.h" line="869"/>
         <source>Analyze all Visual Studio configurations</source>
         <translation>分析全部 Visual Studio 配置</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="113"/>
+        <location filename="temp/ui_projectfile.h" line="870"/>
         <source>Selected VS Configurations</source>
         <translation>已选择的 VS 配置</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="147"/>
+        <location filename="temp/ui_projectfile.h" line="871"/>
         <source>Paths:</source>
         <translation>路径:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="181"/>
         <location filename="projectfile.ui" line="296"/>
+        <location filename="temp/ui_projectfile.h" line="872"/>
+        <location filename="temp/ui_projectfile.h" line="884"/>
         <source>Add...</source>
         <translation>添加...</translation>
     </message>
@@ -1721,6 +1930,9 @@ Options:
         <location filename="projectfile.ui" line="188"/>
         <location filename="projectfile.ui" line="303"/>
         <location filename="projectfile.ui" line="683"/>
+        <location filename="temp/ui_projectfile.h" line="873"/>
+        <location filename="temp/ui_projectfile.h" line="885"/>
+        <location filename="temp/ui_projectfile.h" line="927"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
@@ -1729,83 +1941,103 @@ Options:
         <location filename="projectfile.ui" line="310"/>
         <location filename="projectfile.ui" line="690"/>
         <location filename="projectfile.ui" line="733"/>
+        <location filename="temp/ui_projectfile.h" line="874"/>
+        <location filename="temp/ui_projectfile.h" line="886"/>
+        <location filename="temp/ui_projectfile.h" line="928"/>
+        <location filename="temp/ui_projectfile.h" line="931"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="242"/>
+        <location filename="temp/ui_projectfile.h" line="879"/>
         <source>Undefines:</source>
         <translation>未定义：</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="252"/>
+        <location filename="temp/ui_projectfile.h" line="881"/>
         <source>Undefines must be separated by a semicolon. Example: UNDEF1;UNDEF2;UNDEF3</source>
         <translation>未定义必须用分号分隔。例如：UNDEF1;UNDEF2;UNDEF3</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="265"/>
+        <location filename="temp/ui_projectfile.h" line="883"/>
         <source>Include Paths:</source>
         <translation>包含目录：</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="362"/>
+        <location filename="temp/ui_projectfile.h" line="893"/>
         <source>Types and Functions</source>
         <translation>类型和函数</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="403"/>
         <location filename="projectfile.ui" line="481"/>
+        <location filename="temp/ui_projectfile.h" line="905"/>
+        <location filename="temp/ui_projectfile.h" line="915"/>
         <source>Analysis</source>
         <translation>分析</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="415"/>
+        <location filename="temp/ui_projectfile.h" line="896"/>
         <source>This is a workfolder that Cppcheck will use for various purposes.</source>
         <translation>这是一个 Cppcheck 将用于各种目的的工作文件夹。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="432"/>
+        <location filename="temp/ui_projectfile.h" line="899"/>
         <source>Parser</source>
         <translation>解析器</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="438"/>
+        <location filename="temp/ui_projectfile.h" line="900"/>
         <source>Cppcheck (built in)</source>
         <translation>Cppcheck (内建)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="458"/>
+        <location filename="temp/ui_projectfile.h" line="902"/>
         <source>Check level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="464"/>
+        <location filename="temp/ui_projectfile.h" line="903"/>
         <source>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="471"/>
+        <location filename="temp/ui_projectfile.h" line="904"/>
         <source>Exhaustive -- meant for nightly builds etc. Analysis time can be longer (10x slower than compilation is OK).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="490"/>
+        <location filename="temp/ui_projectfile.h" line="909"/>
         <source>Check that each class has a safe public interface</source>
         <translation>检查每个类是否有一个安全的公共接口</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="506"/>
+        <location filename="temp/ui_projectfile.h" line="910"/>
         <source>Limit analysis</source>
         <translation>极限分析</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="522"/>
+        <location filename="temp/ui_projectfile.h" line="912"/>
         <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
         <oldsource>Check code in unused templates  (slower and less accurate analysis)</oldsource>
         <translation>检查未使用模板中的代码（正常情况下应该是打开，但理论上可以忽略未使用模板中的警告）</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="534"/>
+        <location filename="temp/ui_projectfile.h" line="913"/>
         <source>Max CTU depth</source>
         <translation>最大 CTU 深度</translation>
     </message>
@@ -1831,170 +2063,209 @@ Options:
     </message>
     <message>
         <location filename="projectfile.ui" line="925"/>
+        <location filename="temp/ui_projectfile.h" line="948"/>
         <source>Cert C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="934"/>
+        <location filename="temp/ui_projectfile.h" line="949"/>
         <source>CERT-INT35-C:  int precision (if size equals precision, you can leave empty)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="953"/>
+        <location filename="temp/ui_projectfile.h" line="951"/>
         <source>Autosar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="969"/>
+        <location filename="temp/ui_projectfile.h" line="953"/>
         <source>Bug hunting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="979"/>
+        <location filename="temp/ui_projectfile.h" line="954"/>
         <source>External tools</source>
         <translation>外部工具</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="330"/>
+        <location filename="temp/ui_projectfile.h" line="887"/>
         <source>Up</source>
         <translation>向上</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="337"/>
+        <location filename="temp/ui_projectfile.h" line="888"/>
         <source>Down</source>
         <translation>向下</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="368"/>
+        <location filename="temp/ui_projectfile.h" line="890"/>
         <source>Platform</source>
         <translation>平台</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="448"/>
+        <location filename="temp/ui_projectfile.h" line="901"/>
         <source>Clang (experimental)</source>
         <translation>Clang (实验性的)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="487"/>
+        <location filename="temp/ui_projectfile.h" line="907"/>
         <source>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</source>
         <translation>如果你想要设计你的类尽可能的灵活和健壮，那么公共接口必须非常健壮。Cppcheck 将假设参数可以取 *任何* 值。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="512"/>
+        <location filename="temp/ui_projectfile.h" line="911"/>
         <source>Check code in headers  (should be ON normally. if you want a limited quick analysis then turn this OFF)</source>
         <translation>检查头文件中的代码（通常应该是打开的。如果您想要一个有限的快速分析，那么关掉它)）</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="565"/>
+        <location filename="temp/ui_projectfile.h" line="914"/>
         <source>Max recursion in template instantiation</source>
         <translation>模板实例化中的最大递归</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="620"/>
+        <location filename="temp/ui_projectfile.h" line="932"/>
         <source>Warning options</source>
         <translation>警告选项</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="626"/>
+        <location filename="temp/ui_projectfile.h" line="916"/>
         <source>Root path:</source>
         <translation>根路径：</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="632"/>
+        <location filename="temp/ui_projectfile.h" line="918"/>
         <source>Filepaths in warnings will be relative to this path</source>
         <translation>警告中的文件路径将相对于此路径</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="642"/>
+        <location filename="temp/ui_projectfile.h" line="920"/>
         <source>Warning tags (separated by semicolon)</source>
         <translation>警告标志（用分号隔开）</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="409"/>
+        <location filename="temp/ui_projectfile.h" line="894"/>
         <source>Cppcheck build dir (whole program analysis, incremental analysis, statistics, etc)</source>
         <translation>Cppcheck 构建目录 (整个程序分析、增量分析、统计数据等)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="380"/>
+        <location filename="temp/ui_projectfile.h" line="891"/>
         <source>Libraries</source>
         <translation>库</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="715"/>
+        <location filename="temp/ui_projectfile.h" line="929"/>
         <source>Suppressions</source>
         <translation>抑制</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="726"/>
+        <location filename="temp/ui_projectfile.h" line="930"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="779"/>
         <location filename="projectfile.ui" line="785"/>
+        <location filename="temp/ui_projectfile.h" line="933"/>
+        <location filename="temp/ui_projectfile.h" line="957"/>
         <source>Addons</source>
         <translation>插件</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="791"/>
+        <location filename="temp/ui_projectfile.h" line="934"/>
         <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; being installed.</source>
         <translation>注意：插件需要安装  &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt;。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="801"/>
+        <location filename="temp/ui_projectfile.h" line="935"/>
         <source>Y2038</source>
         <translation>Y2038</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="808"/>
+        <location filename="temp/ui_projectfile.h" line="936"/>
         <source>Thread safety</source>
         <translation>线程安全</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="818"/>
+        <location filename="temp/ui_projectfile.h" line="937"/>
         <source>Coding standards</source>
         <translation>编码标准</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="826"/>
+        <location filename="temp/ui_projectfile.h" line="938"/>
         <source>Misra C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="834"/>
+        <location filename="temp/ui_projectfile.h" line="939"/>
         <source>2012</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="839"/>
         <location filename="projectfile.ui" line="902"/>
+        <location filename="temp/ui_projectfile.h" line="940"/>
         <source>2023</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="946"/>
+        <location filename="temp/ui_projectfile.h" line="950"/>
         <source>Cert C++</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="963"/>
+        <location filename="temp/ui_projectfile.h" line="952"/>
         <source>Bug hunting (Premium)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="992"/>
+        <location filename="temp/ui_projectfile.h" line="956"/>
         <source>Clang analyzer</source>
         <translation>Clang analyzer</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="985"/>
+        <location filename="temp/ui_projectfile.h" line="955"/>
         <source>Clang-tidy</source>
         <translation>Clang-tidy</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="221"/>
+        <location filename="temp/ui_projectfile.h" line="875"/>
         <source>Defines:</source>
         <translation>定义:</translation>
+    </message>
+    <message>
+        <location filename="temp/ui_projectfile.h" line="947"/>
+        <source>Misra C++ 2008</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2366,27 +2637,27 @@ Options:
         <translation>未定义文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="865"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1060"/>
+        <location filename="resultstree.cpp" line="1058"/>
         <source>Could not find file:</source>
         <translation>找不到文件：</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1064"/>
+        <location filename="resultstree.cpp" line="1062"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>请选择文件夹 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="1063"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>选择目录 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1067"/>
+        <location filename="resultstree.cpp" line="1065"/>
         <source>Please select the directory where file is located.</source>
         <translation>请选择文件所在的目录。</translation>
     </message>
@@ -2401,27 +2672,27 @@ Options:
         <translation>注意</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="864"/>
         <source>Recheck</source>
         <translation>重新检查</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="866"/>
         <source>Hide</source>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="869"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Hide all with id</source>
         <translation>隐藏全部 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="888"/>
+        <location filename="resultstree.cpp" line="886"/>
         <source>Suppress selected id(s)</source>
         <translation>抑制选择的 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="870"/>
+        <location filename="resultstree.cpp" line="868"/>
         <source>Open containing folder</source>
         <translation>打开包含的文件夹</translation>
     </message>
@@ -2431,23 +2702,23 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="907"/>
         <source>Tag</source>
         <translation>标记</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="911"/>
+        <location filename="resultstree.cpp" line="909"/>
         <source>No tag</source>
         <translation>取消标记</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="942"/>
-        <location filename="resultstree.cpp" line="956"/>
+        <location filename="resultstree.cpp" line="940"/>
+        <location filename="resultstree.cpp" line="954"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="943"/>
+        <location filename="resultstree.cpp" line="941"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2457,7 +2728,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="957"/>
+        <location filename="resultstree.cpp" line="955"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2466,12 +2737,12 @@ Please select the default editor application in preferences/Applications.</sourc
 请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="983"/>
+        <location filename="resultstree.cpp" line="981"/>
         <source>Could not find the file!</source>
         <translation>找不到文件！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1046"/>
+        <location filename="resultstree.cpp" line="1044"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2480,7 +2751,7 @@ Please check the application path and parameters are correct.</source>
 请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1068"/>
+        <location filename="resultstree.cpp" line="1066"/>
         <source>Select Directory</source>
         <translation>选择目录</translation>
     </message>
@@ -2531,21 +2802,25 @@ Please check the application path and parameters are correct.</source>
     <name>ResultsView</name>
     <message>
         <location filename="resultsview.ui" line="26"/>
+        <location filename="temp/ui_resultsview.h" line="147"/>
         <source>Results</source>
         <translation>结果</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="60"/>
+        <location filename="temp/ui_resultsview.h" line="148"/>
         <source>Critical errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="92"/>
+        <location filename="temp/ui_resultsview.h" line="149"/>
         <source>Analysis Log</source>
         <translation>分析日志</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="114"/>
+        <location filename="temp/ui_resultsview.h" line="150"/>
         <source>Warning Details</source>
         <translation>警告详情</translation>
     </message>
@@ -2659,26 +2934,31 @@ To toggle what kind of errors are shown, open view menu.</source>
     <name>ScratchPad</name>
     <message>
         <location filename="scratchpad.ui" line="14"/>
+        <location filename="temp/ui_scratchpad.h" line="106"/>
         <source>Scratchpad</source>
         <translation>便条</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="20"/>
+        <location filename="temp/ui_scratchpad.h" line="107"/>
         <source>Copy or write some C/C++ code here:</source>
         <translation>在这里复制或输入一些 C/C++ 代码：</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="37"/>
+        <location filename="temp/ui_scratchpad.h" line="108"/>
         <source>Optionally enter a filename (mainly for automatic language detection) and click on &quot;Check&quot;:</source>
         <translation>可选择输入文件名 (主要用来自动语言检测) 然后点击 &quot;检查&quot;：</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="71"/>
+        <location filename="temp/ui_scratchpad.h" line="109"/>
         <source>filename</source>
         <translation>文件名</translation>
     </message>
     <message>
         <location filename="scratchpad.ui" line="78"/>
+        <location filename="temp/ui_scratchpad.h" line="110"/>
         <source>Check</source>
         <translation>检查</translation>
     </message>
@@ -2687,82 +2967,98 @@ To toggle what kind of errors are shown, open view menu.</source>
     <name>Settings</name>
     <message>
         <location filename="settings.ui" line="14"/>
+        <location filename="temp/ui_settings.h" line="491"/>
         <source>Preferences</source>
         <translation>首选项</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
+        <location filename="temp/ui_settings.h" line="503"/>
         <source>General</source>
         <translation>常规</translation>
     </message>
     <message>
         <location filename="settings.ui" line="202"/>
+        <location filename="temp/ui_settings.h" line="504"/>
         <source>Add...</source>
         <translation>添加...</translation>
     </message>
     <message>
         <location filename="settings.ui" line="41"/>
+        <location filename="temp/ui_settings.h" line="492"/>
         <source>Number of threads: </source>
         <translation>线程个数: </translation>
     </message>
     <message>
         <location filename="settings.ui" line="85"/>
+        <location filename="temp/ui_settings.h" line="493"/>
         <source>Ideal count:</source>
         <translation>理想个数:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="114"/>
+        <location filename="temp/ui_settings.h" line="494"/>
         <source>Force checking all #ifdef configurations</source>
         <oldsource>Check all #ifdef configurations</oldsource>
         <translation>强制检查所有 #ifdef 配置</translation>
     </message>
     <message>
         <location filename="settings.ui" line="121"/>
+        <location filename="temp/ui_settings.h" line="495"/>
         <source>Show full path of files</source>
         <translation>显示文件的完整路径</translation>
     </message>
     <message>
         <location filename="settings.ui" line="128"/>
+        <location filename="temp/ui_settings.h" line="496"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
         <translation>当未找到错误，显示“未发现错误”消息</translation>
     </message>
     <message>
         <location filename="settings.ui" line="135"/>
+        <location filename="temp/ui_settings.h" line="497"/>
         <source>Display error Id in column &quot;Id&quot;</source>
         <translation>在列“Id”中显示错误 Id</translation>
     </message>
     <message>
         <location filename="settings.ui" line="142"/>
+        <location filename="temp/ui_settings.h" line="498"/>
         <source>Enable inline suppressions</source>
         <translation>启用内联方案</translation>
     </message>
     <message>
         <location filename="settings.ui" line="149"/>
+        <location filename="temp/ui_settings.h" line="499"/>
         <source>Check for inconclusive errors also</source>
         <translation>检查不确定的错误</translation>
     </message>
     <message>
         <location filename="settings.ui" line="156"/>
+        <location filename="temp/ui_settings.h" line="500"/>
         <source>Show statistics on check completion</source>
         <translation>检查完成后显示统计数据</translation>
     </message>
     <message>
         <location filename="settings.ui" line="163"/>
+        <location filename="temp/ui_settings.h" line="501"/>
         <source>Check for updates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="183"/>
+        <location filename="temp/ui_settings.h" line="502"/>
         <source>Show internal warnings in log</source>
         <translation>在日志中显示内建警告</translation>
     </message>
     <message>
         <location filename="settings.ui" line="294"/>
+        <location filename="temp/ui_settings.h" line="522"/>
         <source>Addons</source>
         <translation>插件</translation>
     </message>
     <message>
         <location filename="settings.ui" line="300"/>
+        <location filename="temp/ui_settings.h" line="513"/>
         <source>Python binary (leave this empty to use python in the PATH)</source>
         <translation>Python 二进制 (留空将使用 PATH 路径中的 python)</translation>
     </message>
@@ -2770,112 +3066,137 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="settings.ui" line="311"/>
         <location filename="settings.ui" line="352"/>
         <location filename="settings.ui" line="397"/>
+        <location filename="temp/ui_settings.h" line="514"/>
+        <location filename="temp/ui_settings.h" line="521"/>
+        <location filename="temp/ui_settings.h" line="524"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
         <location filename="settings.ui" line="330"/>
+        <location filename="temp/ui_settings.h" line="516"/>
         <source>MISRA addon</source>
         <translation>MISRA 插件</translation>
     </message>
     <message>
         <location filename="settings.ui" line="338"/>
+        <location filename="temp/ui_settings.h" line="517"/>
         <source>MISRA rule texts file</source>
         <translation>MISRA 规则文本文件</translation>
     </message>
     <message>
         <location filename="settings.ui" line="345"/>
+        <location filename="temp/ui_settings.h" line="519"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;从 MISRA C 2012 PDF 的附录 A &amp;quot;指南摘要&amp;quot; 复制/粘贴文本到一个文本文件。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="378"/>
+        <location filename="temp/ui_settings.h" line="527"/>
         <source>Clang</source>
         <translation>Clang</translation>
     </message>
     <message>
         <location filename="settings.ui" line="384"/>
+        <location filename="temp/ui_settings.h" line="523"/>
         <source>Clang path (leave empty to use system PATH)</source>
         <translation>Clang 路径 (留空将使用系统 PATH 路径)</translation>
     </message>
     <message>
         <location filename="settings.ui" line="407"/>
+        <location filename="temp/ui_settings.h" line="525"/>
         <source>Visual Studio headers</source>
         <translation>Visual Studio 头文件</translation>
     </message>
     <message>
         <location filename="settings.ui" line="413"/>
+        <location filename="temp/ui_settings.h" line="526"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Paths to Visual Studio headers, separated by semicolon &apos;;&apos;.&lt;/p&gt;&lt;p&gt;You can open a Visual Studio command prompt, write &amp;quot;SET INCLUDE&amp;quot;. Then copy/paste the paths.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Visual Studio 头文件路径，用分号 &apos;;&apos; 分割。&lt;/p&gt;&lt;p&gt;你可以打开一个 Visual Studio 命令提示符，输入 &amp;quot;SET INCLUDE&amp;quot;。然后复制/粘贴路径。&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="settings.ui" line="443"/>
+        <location filename="temp/ui_settings.h" line="534"/>
         <source>Code Editor</source>
         <translation>代码编辑器</translation>
     </message>
     <message>
         <location filename="settings.ui" line="449"/>
+        <location filename="temp/ui_settings.h" line="528"/>
         <source>Code Editor Style</source>
         <translation>代码编辑器风格</translation>
     </message>
     <message>
         <location filename="settings.ui" line="455"/>
+        <location filename="temp/ui_settings.h" line="529"/>
         <source>System Style</source>
         <translation>系统风格</translation>
     </message>
     <message>
         <location filename="settings.ui" line="462"/>
+        <location filename="temp/ui_settings.h" line="530"/>
         <source>Default Light Style</source>
         <translation>默认浅色风格</translation>
     </message>
     <message>
         <location filename="settings.ui" line="469"/>
+        <location filename="temp/ui_settings.h" line="531"/>
         <source>Default Dark Style</source>
         <translation>默认深色风格</translation>
     </message>
     <message>
         <location filename="settings.ui" line="478"/>
+        <location filename="temp/ui_settings.h" line="532"/>
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
         <location filename="settings.ui" line="216"/>
+        <location filename="temp/ui_settings.h" line="506"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
         <location filename="settings.ui" line="191"/>
+        <location filename="temp/ui_settings.h" line="508"/>
         <source>Applications</source>
         <translation>应用程序</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
         <location filename="settings.ui" line="485"/>
+        <location filename="temp/ui_settings.h" line="505"/>
+        <location filename="temp/ui_settings.h" line="533"/>
         <source>Edit...</source>
         <translation>编辑...</translation>
     </message>
     <message>
         <location filename="settings.ui" line="223"/>
+        <location filename="temp/ui_settings.h" line="507"/>
         <source>Set as default</source>
         <translation>设为默认</translation>
     </message>
     <message>
         <location filename="settings.ui" line="246"/>
+        <location filename="temp/ui_settings.h" line="511"/>
         <source>Reports</source>
         <translation>报告</translation>
     </message>
     <message>
         <location filename="settings.ui" line="252"/>
+        <location filename="temp/ui_settings.h" line="509"/>
         <source>Save all errors when creating report</source>
         <translation>创建报告时，保存所有错误</translation>
     </message>
     <message>
         <location filename="settings.ui" line="259"/>
+        <location filename="temp/ui_settings.h" line="510"/>
         <source>Save full path to files in reports</source>
         <translation>在报告中保存文件的完整路径</translation>
     </message>
     <message>
         <location filename="settings.ui" line="280"/>
+        <location filename="temp/ui_settings.h" line="512"/>
         <source>Language</source>
         <translation>语言</translation>
     </message>
@@ -2935,118 +3256,142 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="statsdialog.ui" line="248"/>
         <location filename="statsdialog.cpp" line="187"/>
         <location filename="statsdialog.cpp" line="234"/>
+        <location filename="temp/ui_statsdialog.h" line="394"/>
+        <location filename="temp/ui_statsdialog.h" line="414"/>
         <source>Statistics</source>
         <translation>统计</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
         <location filename="statsdialog.cpp" line="225"/>
+        <location filename="temp/ui_statsdialog.h" line="400"/>
         <source>Project</source>
         <translation>项目</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="33"/>
+        <location filename="temp/ui_statsdialog.h" line="395"/>
         <source>Project:</source>
         <translation>项目:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="53"/>
+        <location filename="temp/ui_statsdialog.h" line="396"/>
         <source>Paths:</source>
         <translation>路径:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="85"/>
+        <location filename="temp/ui_statsdialog.h" line="397"/>
         <source>Include paths:</source>
         <translation>包含路径:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="108"/>
+        <location filename="temp/ui_statsdialog.h" line="398"/>
         <source>Defines:</source>
         <translation>定义:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="131"/>
+        <location filename="temp/ui_statsdialog.h" line="399"/>
         <source>Undefines:</source>
         <translation>未定义：</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
         <location filename="statsdialog.cpp" line="230"/>
+        <location filename="temp/ui_statsdialog.h" line="406"/>
         <source>Previous Scan</source>
         <translation>上一次扫描</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="171"/>
+        <location filename="temp/ui_statsdialog.h" line="401"/>
         <source>Path Selected:</source>
         <translation>选中的路径:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="181"/>
+        <location filename="temp/ui_statsdialog.h" line="402"/>
         <source>Number of Files Scanned:</source>
         <translation>扫描的文件数:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="201"/>
+        <location filename="temp/ui_statsdialog.h" line="404"/>
         <source>Scan Duration:</source>
         <translation>扫描时间:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="254"/>
+        <location filename="temp/ui_statsdialog.h" line="407"/>
         <source>Errors:</source>
         <translation>错误:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="271"/>
+        <location filename="temp/ui_statsdialog.h" line="408"/>
         <source>Warnings:</source>
         <translation>警告:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="288"/>
+        <location filename="temp/ui_statsdialog.h" line="409"/>
         <source>Stylistic warnings:</source>
         <translation>Stylistic 警告:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="305"/>
+        <location filename="temp/ui_statsdialog.h" line="410"/>
         <source>Portability warnings:</source>
         <translation>可移植性警告:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="322"/>
+        <location filename="temp/ui_statsdialog.h" line="411"/>
         <source>Performance issues:</source>
         <translation>性能警告:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="339"/>
+        <location filename="temp/ui_statsdialog.h" line="412"/>
         <source>Information messages:</source>
         <translation>信息:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="356"/>
+        <location filename="temp/ui_statsdialog.h" line="413"/>
         <source>Active checkers:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="374"/>
+        <location filename="temp/ui_statsdialog.h" line="415"/>
         <source>Checkers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="399"/>
+        <location filename="temp/ui_statsdialog.h" line="417"/>
         <source>History</source>
         <translation>历史</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="405"/>
+        <location filename="temp/ui_statsdialog.h" line="416"/>
         <source>File:</source>
         <translation>文件：</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="443"/>
+        <location filename="temp/ui_statsdialog.h" line="418"/>
         <source>Copy to Clipboard</source>
         <translation>复制到剪贴板</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="450"/>
+        <location filename="temp/ui_statsdialog.h" line="419"/>
         <source>Pdf Export</source>
         <translation>导出 PDF</translation>
     </message>
