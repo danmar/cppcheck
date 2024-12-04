@@ -151,6 +151,12 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == QString(CppcheckXml::CheckLevelExhaustiveElementName))
                 mCheckLevel = CheckLevel::exhaustive;
 
+            if (xmlReader.name() == QString(CppcheckXml::CheckLevelNormalElementName))
+                mCheckLevel = CheckLevel::normal;
+
+            if (xmlReader.name() == QString(CppcheckXml::CheckLevelReducedElementName))
+                mCheckLevel = CheckLevel::reduced;
+
             // Find include directory from inside project element
             if (xmlReader.name() == QString(CppcheckXml::IncludeDirElementName))
                 readIncludeDirs(xmlReader);
@@ -804,11 +810,6 @@ void ProjectFile::setCheckLevel(ProjectFile::CheckLevel checkLevel)
     mCheckLevel = checkLevel;
 }
 
-bool ProjectFile::isCheckLevelExhaustive() const
-{
-    return mCheckLevel == CheckLevel::exhaustive;
-}
-
 void ProjectFile::setWarningTags(std::size_t hash, const QString& tags)
 {
     if (tags.isEmpty())
@@ -1011,10 +1012,20 @@ bool ProjectFile::write(const QString &filename)
         }
     }
 
-    if (mCheckLevel == CheckLevel::exhaustive) {
+    switch (mCheckLevel) {
+    case CheckLevel::reduced:
+        xmlWriter.writeStartElement(CppcheckXml::CheckLevelReducedElementName);
+        xmlWriter.writeEndElement();
+        break;
+    case CheckLevel::normal:
+        xmlWriter.writeStartElement(CppcheckXml::CheckLevelNormalElementName);
+        xmlWriter.writeEndElement();
+        break;
+    case CheckLevel::exhaustive:
         xmlWriter.writeStartElement(CppcheckXml::CheckLevelExhaustiveElementName);
         xmlWriter.writeEndElement();
-    }
+        break;
+    };
 
     // Cppcheck Premium
     if (mBughunting) {

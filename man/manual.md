@@ -1086,6 +1086,12 @@ Example usage:
 
 # Check Level
 
+## Reduced
+
+The "reduced" check level performs a limited data flow analysis. If developers
+want to run cppcheck directly during development and require faster results
+than "normal" provides then this reduced checking can be an option.
+
 ## Normal
 
 The "normal" check level is chosen by default. Our aim is that this checking level will provide an effective checking in "reasonable" time.

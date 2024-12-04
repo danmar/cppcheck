@@ -168,6 +168,8 @@ namespace CppcheckXml {
     static constexpr char WarningElementName[] = "warning";
     static constexpr char HashAttributeName[] = "hash";
     static constexpr char CheckLevelExhaustiveElementName[] = "check-level-exhaustive";
+    static constexpr char CheckLevelNormalElementName[] = "check-level-normal";
+    static constexpr char CheckLevelReducedElementName[] = "check-level-reduced";
     static constexpr char CheckHeadersElementName[] = "check-headers";
     static constexpr char CheckUnusedTemplatesElementName[] = "check-unused-templates";
     static constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";

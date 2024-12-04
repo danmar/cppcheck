@@ -471,7 +471,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
                 Settings::CheckLevel level = Settings::CheckLevel::normal;
                 const std::string level_s(argv[i] + 14);
-                if (level_s == "normal")
+                if (level_s == "reduced")
+                    level = Settings::CheckLevel::reduced;
+                else if (level_s == "normal")
                     level = Settings::CheckLevel::normal;
                 else if (level_s == "exhaustive")
                     level = Settings::CheckLevel::exhaustive;
@@ -949,6 +951,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--performance-valueflow-max-if-count=", 37) == 0) {
                 if (!parseNumberArg(argv[i], 37, mSettings.vfOptions.maxIfCount, true))
+                    return Result::Fail;
+            }
+
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-iterations=", 39) == 0) {
+                if (!parseNumberArg(argv[i], 39, mSettings.vfOptions.maxIterations, true))
                     return Result::Fail;
             }
 
@@ -1528,8 +1535,9 @@ void CmdLineParser::printHelp() const
         "    --check-config       Check cppcheck configuration. The normal code\n"
         "                         analysis is disabled by this flag.\n"
         "    --check-level=<level>\n"
-        "                         Configure how much checking you want:\n"
-        "                          * normal: Cppcheck uses some compromises in the checking so\n"
+        "                         Configure how much valueflow analysis you want:\n"
+        "                          * reduced: Reduce valueflow to finish checking quickly.\n"
+        "                          * normal: Cppcheck uses some compromises in the analysis so\n"
         "                            the checking will finish in reasonable time.\n"
         "                          * exhaustive: deeper analysis that you choose when you can\n"
         "                            wait.\n"
