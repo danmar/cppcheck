@@ -67,6 +67,7 @@ endif()
 option(CPPCHK_GLIBCXX_DEBUG "Usage of STL debug checks in Debug build"                      ON)
 option(DISALLOW_THREAD_EXECUTOR "Disallow usage of ThreadExecutor for -j"                   OFF)
 option(USE_BOOST            "Usage of Boost"                                                OFF)
+option(USE_BOOST_INT128     "Usage of Boost.Multiprecision 128-bit integer for Mathlib"     OFF)
 option(USE_LIBCXX           "Use libc++ instead of libstdc++"                               OFF)
 
 if(DISALLOW_THREAD_EXECUTOR AND WIN32)
