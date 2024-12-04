@@ -453,4 +453,6 @@ bool isExhaustiveSwitch(const Token *startbrace);
 
 bool isUnreachableOperand(const Token *tok);
 
+const Token *skipUnreachableBranch(const Token *tok);
+
 #endif // astutilsH

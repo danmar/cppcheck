@@ -1300,6 +1300,7 @@ public:
 
     const ValueFlow::Value * getValueLE(MathLib::bigint val, const Settings &settings) const;
     const ValueFlow::Value * getValueGE(MathLib::bigint val, const Settings &settings) const;
+    const ValueFlow::Value * getValueNE(MathLib::bigint val) const;
 
     const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings &settings) const;
 

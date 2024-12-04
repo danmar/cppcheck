@@ -3797,3 +3797,78 @@ bool isUnreachableOperand(const Token *tok)
 
     return false;
 }
+
+static bool unknownLeafValuesAreTemplateArgs(const Token *tok)
+{
+    if (!tok)
+        return true;
+
+    if (!tok->astOperand1() && !tok->astOperand2())
+        return tok->isTemplateArg() || tok->hasKnownIntValue();
+
+    return unknownLeafValuesAreTemplateArgs(tok->astOperand1())
+           && unknownLeafValuesAreTemplateArgs(tok->astOperand2());
+}
+
+static const Token *skipUnreachableIfBranch(const Token *tok)
+{
+    const Token *condTok = tok->linkAt(-1);
+    if (!condTok)
+        return tok;
+
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
+        return tok;
+
+    condTok = condTok->astOperand2();
+    if (!condTok)
+        return tok;
+
+    if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() == 0)
+        || (unknownLeafValuesAreTemplateArgs(condTok) && condTok->getValue(0))) {
+        tok = tok->link();
+    }
+
+    return tok;
+}
+
+static const Token *skipUnreachableElseBranch(const Token *tok)
+{
+    if (!Token::simpleMatch(tok->tokAt(-2), "} else {"))
+        return tok;
+
+    const Token *condTok = tok->linkAt(-2);
+    if (!condTok)
+        return tok;
+
+    condTok = condTok->linkAt(-1);
+    if (!condTok)
+        return tok;
+
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if (") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr ("))
+        return tok;
+
+    condTok = condTok->astOperand2();
+
+    if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() != 0)
+        || (unknownLeafValuesAreTemplateArgs(condTok) && condTok->getValueNE(0))) {
+        tok = tok->link();
+    }
+
+    return tok;
+}
+
+const Token *skipUnreachableBranch(const Token *tok)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return tok;
+
+    if (tok->scope()->type == Scope::ScopeType::eIf) {
+        return skipUnreachableIfBranch(tok);
+    }
+
+    if (tok->scope()->type == Scope::ScopeType::eElse) {
+        return skipUnreachableElseBranch(tok);
+    }
+
+    return tok;
+}
