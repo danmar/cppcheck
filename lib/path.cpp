@@ -18,6 +18,10 @@
 
 //#define LOG_EMACS_MARKER
 
+#if defined(__CYGWIN__)
+#define _POSIX_C_SOURCE 200112L // required to have readlink()
+#endif
+
 #include "path.h"
 #include "utils.h"
 
