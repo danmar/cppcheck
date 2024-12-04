@@ -278,7 +278,8 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
@@ -310,7 +311,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
@@ -350,7 +352,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
@@ -391,7 +394,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>

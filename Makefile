@@ -395,6 +395,7 @@ install: cppcheck
 ifdef FILESDIR
 	install -d ${DESTDIR}${FILESDIR}
 	install -d ${DESTDIR}${FILESDIR}/addons
+	install -m 644 addons/*.json ${DESTDIR}${FILESDIR}/addons
 	install -m 644 addons/*.py ${DESTDIR}${FILESDIR}/addons
 	install -d ${DESTDIR}${FILESDIR}/cfg
 	install -m 644 cfg/*.cfg ${DESTDIR}${FILESDIR}/cfg
