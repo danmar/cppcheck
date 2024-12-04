@@ -310,10 +310,17 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         else
             item->setCheckState(Qt::Unchecked);
     }
-    if (projectFile->isCheckLevelExhaustive())
-        mUI->mCheckLevelExhaustive->setChecked(true);
-    else
+    switch (projectFile->getCheckLevel()) {
+    case ProjectFile::CheckLevel::reduced:
+        mUI->mCheckLevelReduced->setChecked(true);
+        break;
+    case ProjectFile::CheckLevel::normal:
         mUI->mCheckLevelNormal->setChecked(true);
+        break;
+    case ProjectFile::CheckLevel::exhaustive:
+        mUI->mCheckLevelExhaustive->setChecked(true);
+        break;
+    };
     mUI->mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI->mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI->mInlineSuppressions->setChecked(projectFile->getInlineSuppression());
@@ -460,7 +467,12 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setCheckPaths(getCheckPaths());
     projectFile->setExcludedPaths(getExcludedPaths());
     projectFile->setLibraries(getLibraries());
-    projectFile->setCheckLevel(mUI->mCheckLevelExhaustive->isChecked() ? ProjectFile::CheckLevel::exhaustive : ProjectFile::CheckLevel::normal);
+    if (mUI->mCheckLevelReduced->isChecked())
+        projectFile->setCheckLevel(ProjectFile::CheckLevel::reduced);
+    else if (mUI->mCheckLevelNormal->isChecked())
+        projectFile->setCheckLevel(ProjectFile::CheckLevel::normal);
+    else // if (mUI->mCheckLevelExhaustive->isChecked())
+        projectFile->setCheckLevel(ProjectFile::CheckLevel::exhaustive);
     projectFile->clangParser = mUI->mBtnClangParser->isChecked();
     projectFile->safeChecks.classes = mUI->mBtnSafeClasses->isChecked();
     if (mUI->mComboBoxPlatform->currentText().endsWith(".xml"))

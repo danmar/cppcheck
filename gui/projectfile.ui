@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>940</width>
-    <height>701</height>
+    <height>704</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="mTabPathsAndDefines">
       <attribute name="title">
@@ -458,6 +458,13 @@
           <string>Check level</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_18">
+          <item>
+           <widget class="QRadioButton" name="mCheckLevelReduced">
+            <property name="text">
+             <string>Reduced -- meant for usage where developer wants results directly. Limited and faster analysis with fewer results.</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QRadioButton" name="mCheckLevelNormal">
             <property name="text">

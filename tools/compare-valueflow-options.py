@@ -202,4 +202,4 @@ if __name__ == "__main__":
         packages_processed += 1
         print(str(packages_processed) + ' of ' + str(args.p) + ' packages processed\n')
 
-    print('Result saved to: ' + result_file)
+    print('Result saved to: ' + results_file)

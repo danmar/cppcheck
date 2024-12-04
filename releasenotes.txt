@@ -10,7 +10,8 @@ GUI:
 -
 
 Changed interface:
--
+-Added `reduced` check level. It can be activated with `--check-level=reduced`. You get faster analysis
+but some fewer results. The motivation is to be able to make analysis time "acceptable" for direct usage.
 
 Deprecations:
 -
