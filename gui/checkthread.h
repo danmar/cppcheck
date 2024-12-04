@@ -20,7 +20,7 @@
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
-#include "cppcheck.h"
+#include "settings.h"
 #include "suppressions.h"
 
 #include <atomic>
@@ -34,7 +34,6 @@
 #include <QStringList>
 #include <QThread>
 
-class Settings;
 class ThreadResult;
 struct FileSettings;
 
@@ -55,7 +54,7 @@ public:
      *
      * @param settings settings for cppcheck
      */
-    void check(const Settings &settings);
+    void setSettings(const Settings &settings);
 
     /**
      * @brief Run whole program analysis
@@ -130,13 +129,11 @@ protected:
     std::atomic<State> mState{Ready};
 
     ThreadResult &mResult;
-    /**
-     * @brief Cppcheck itself
-     */
-    CppCheck mCppcheck;
+
+    Settings mSettings;
 
 private:
-    void runAddonsAndTools(const FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName);
 
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
