@@ -140,15 +140,9 @@ ifndef CXXFLAGS
 endif
 
 ifeq (g++, $(findstring g++,$(CXX)))
-    override CXXFLAGS += -std=gnu++0x -pipe
-else ifeq (clang++, $(findstring clang++,$(CXX)))
-    override CXXFLAGS += -std=c++0x
-else ifeq ($(CXX), c++)
-    ifeq ($(shell uname -s), Darwin)
-        override CXXFLAGS += -std=c++0x
-    endif
+    override CXXFLAGS += -pipe
 endif
-
+override CXXFLAGS += -std=c++11
 ifeq ($(HAVE_RULES),yes)
     PCRE_CONFIG = $(shell which pcre-config)
     ifeq ($(PCRE_CONFIG),)
