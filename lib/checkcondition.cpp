@@ -368,13 +368,13 @@ void CheckCondition::comparison()
         const Token *expr2 = tok->astOperand2();
         if (!expr1 || !expr2)
             continue;
-        if (expr1->isNumber())
+        if (expr1->hasKnownIntValue())
             std::swap(expr1,expr2);
-        if (!expr2->isNumber())
+        if (!expr2->hasKnownIntValue())
             continue;
         if (!compareTokenFlags(expr1, expr2, /*macro*/ true))
             continue;
-        const MathLib::bigint num2 = MathLib::toBigNumber(expr2->str());
+        const MathLib::bigint num2 = expr2->getKnownIntValue();
         if (num2 < 0)
             continue;
         if (!Token::Match(expr1,"[&|]"))
