@@ -737,7 +737,7 @@ static std::vector<ValueFlow::Value> pruneLifetimes(std::vector<ValueFlow::Value
             return astHasToken(tok1, tok2) || astHasToken(tok2, tok1);
         });
         auto root = std::min_element(start, it, [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
-            return astHasToken(x.tokvalue, y.tokvalue);
+            return x.tokvalue != y.tokvalue && astHasToken(x.tokvalue, y.tokvalue);
         });
         result.push_back(*root);
         start = it;
