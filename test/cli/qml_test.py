@@ -2,7 +2,6 @@
 # python3 -m pytest test-qml.py
 
 import os
-import pytest
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -54,8 +53,6 @@ def test_unused_functions_j():
     assert ret == 0, stdout
 
 
-# TODO: fillSampleData is not unused
-@pytest.mark.xfail(strict=True)
 def test_unused_functions_builddir(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
