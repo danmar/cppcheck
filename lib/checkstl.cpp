@@ -725,6 +725,26 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     return false;
 }
 
+static std::vector<ValueFlow::Value> pruneLifetimes(std::vector<ValueFlow::Value> lifetimes)
+{
+    std::vector<ValueFlow::Value> result;
+    auto start = lifetimes.begin();
+    while (start != lifetimes.end())
+    {
+        const Token* tok1 = start->tokvalue;
+        auto it = std::partition(start, lifetimes.end(), [&](const ValueFlow::Value& v) {
+            const Token* tok2 = v.tokvalue;
+            return astHasToken(tok1, tok2) || astHasToken(tok2, tok1);
+            });
+        auto root = std::min_element(start, it, [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+            return astHasToken(x.tokvalue, y.tokvalue);
+            });
+        result.push_back(*root);
+        start = it;
+    }
+    return result;
+}
+
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
     auto findIterVal = [](const std::vector<ValueFlow::Value>& values, const std::vector<ValueFlow::Value>::const_iterator beg) {
@@ -739,13 +759,9 @@ static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigi
         if (it2 == values.cend())
             return *it;
     }
+    values = pruneLifetimes(values);
     if (values.size() == 1)
         return values.front();
-    it = std::find_if(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
-        return v.tokvalue->str() == ".";
-    });
-    if (it != values.cend())
-        return *it;
     return ValueFlow::Value{};
 }
 
