@@ -4083,17 +4083,17 @@ private:
 
     void nullpointerOutOfMemory() {
         check("void f() {\n"
-                "    int *p = malloc(10);\n"
-                "    *p = 0;\n"
-                "    free(p);\n"
-                "}");
+              "    int *p = malloc(10);\n"
+              "    *p = 0;\n"
+              "    free(p);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) If memory allocation fail: null pointer dereference: p\n", errout_str());
 
         check("void f() {\n"
-                "    int *p = malloc(10);\n"
-                "    *(p+2) = 0;\n"
-                "    free(p);\n"
-                "}");
+              "    int *p = malloc(10);\n"
+              "    *(p+2) = 0;\n"
+              "    free(p);\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) If memory allocation fail: pointer addition with NULL pointer.\n", errout_str());
     }
 
