@@ -6382,7 +6382,7 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
             // (ptr, ptr) is empty
             // TODO: Use lifetime values to check if it points to the same address
             if (args[0]->exprId() == args[1]->exprId())
-                return {makeContainerSizeValue(std::size_t{0}, known)};
+                return {makeContainerSizeValue(MathLib::bigint{0}, known)};
             // TODO: Insert iterator positions for pointers
             if (Token::simpleMatch(args[1], "+")) {
                 nonneg int const eid = args[0]->exprId();
@@ -6427,7 +6427,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
 {
     std::vector<const Token*> args = getArguments(tok);
     if (args.empty())
-        return {makeContainerSizeValue(std::size_t{0}, known)};
+        return {makeContainerSizeValue(MathLib::bigint{0}, known)};
     bool initList = tok->str() == "{";
     // Try to disambiguate init list from constructor
     if (initList && args.size() < 4) {
@@ -6461,7 +6461,7 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructor(const Token
 {
     std::vector<const Token*> args = getArguments(tok);
     if (args.empty())
-        return {makeContainerSizeValue(std::size_t{0}, known)};
+        return {makeContainerSizeValue(MathLib::bigint{0}, known)};
     // Init list in constructor
     if (args.size() == 1 && Token::simpleMatch(args[0], "{"))
         return getInitListSize(args[0], valueType, settings, known);
