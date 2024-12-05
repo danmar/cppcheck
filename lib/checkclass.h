@@ -37,14 +37,6 @@ class ErrorLogger;
 class Settings;
 class Token;
 
-namespace CTU {
-    class FileInfo;
-}
-
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 /// @addtogroup Checks
 /// @{
 
@@ -202,8 +194,8 @@ private:
     void operatorEqShouldBeLeftUnimplementedError(const Token *tok);
     void operatorEqMissingReturnStatementError(const Token *tok, bool error);
     void operatorEqToSelfError(const Token *tok);
-    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic);
-    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
+    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic, bool foundAllBaseClasses = true);
+    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic, bool foundAllBaseClasses = true);
     void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname, const std::string& argname = {});
     void suggestInitializationList(const Token *tok, const std::string& varname);
     void selfInitializationError(const Token* tok, const std::string& varname);

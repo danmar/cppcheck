@@ -2435,8 +2435,10 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::vector<int> v[2]);\n" // #13052
-              "int g(const std::array<std::vector<int>, 2> a) { return a[0][0]; }\n");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'a' should be passed by const reference.\n", errout_str());
+              "void g(const std::vector<int> v[2]);\n"
+              "void g(const std::vector<int> v[2]) {}\n"
+              "int h(const std::array<std::vector<int>, 2> a) { return a[0][0]; }\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'a' should be passed by const reference.\n", errout_str());
 
         /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
@@ -4371,6 +4373,16 @@ private:
               "    return a[j][i];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'a' can be declared as const array\n",
+                      errout_str());
+
+        check("void f(int n, int v[42]) {\n" // #12796
+              "    int j = 0;\n"
+              "    for (int i = 0; i < n; ++i) {\n"
+              "        j += 1;\n"
+              "        if (j == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as const array\n",
                       errout_str());
     }
 
@@ -9367,6 +9379,35 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        // #13326
+        check("template<int b>\n"
+              "int f(int a)\n"
+              "{\n"
+              "    if constexpr (b >= 0) {\n"
+              "        return a << b;\n"
+              "    } else {\n"
+              "        return a << -b;\n"
+              "    }\n"
+              "}\n"
+              "int g() {\n"
+              "    return f<1>(2)\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("template<int b>\n"
+              "int f(int a)\n"
+              "{\n"
+              "    if constexpr (b >= 0) {\n"
+              "        return a << b;\n"
+              "    } else {\n"
+              "        return a << -b;\n"
+              "    }\n"
+              "}\n"
+              "int g() {\n"
+              "    return f<-1>(2)\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void incompleteArrayFill() {
@@ -12164,6 +12205,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Argument 'i-1*i' to init list { is always 0. It does not matter what value 'i' has.\n"
                       "[test.cpp:4]: (style) Argument 'i-1*i' to constructor S is always 0. It does not matter what value 'i' has.\n",
                       errout_str());
+
+        checkP("#define MACRO(X) std::abs(X ? 0 : a)\n"
+               "int f(int a) {\n"
+               "    return MACRO(true);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void knownArgumentHiddenVariableExpression() {

@@ -252,6 +252,7 @@ private:
         TEST_CASE(exprid10);
         TEST_CASE(exprid11);
         TEST_CASE(exprid12);
+        TEST_CASE(exprid13);
 
         TEST_CASE(structuredBindings);
     }
@@ -3125,6 +3126,30 @@ private:
                       tokenize("void foo() {\n"
                                "  struct ABC abc = {.a { abc.a },.b= { abc.b } };\n"
                                "}"));
+
+        ASSERT_EQUALS("1: struct T { int a@1 ; } ;\n" // #13123
+                      "2: void f ( int a@2 ) {\n"
+                      "3: struct T t@3 ; t@3 = { . a@4 = 1 } ;\n"
+                      "4: }\n",
+                      tokenize("struct T { int a; };\n"
+                               "void f(int a) {\n"
+                               "    struct T t = { .a = 1 };\n"
+                               "}\n"));
+
+        ASSERT_EQUALS("1: struct S { int x@1 ; } ;\n" // TODO: set some varid for designated initializer?
+                      "2: void f0 ( S s@2 ) ;\n"
+                      "3: void f1 ( int n@3 ) {\n"
+                      "4: if ( int x@4 = n@3 ) {\n"
+                      "5: f0 ( S { . x = x@4 } ) ;\n"
+                      "6: }\n"
+                      "7: }\n",
+                      tokenize("struct S { int x; };\n"
+                               "void f0(S s);\n"
+                               "void f1(int n) {\n"
+                               "    if (int x = n) {\n"
+                               "        f0(S{ .x = x });\n"
+                               "    }\n"
+                               "}\n"));
     }
 
     void varid_arrayinit() {
@@ -4307,6 +4332,23 @@ private:
                           "5: [ ] ( S * s@4 ) { s@4 .@UNIQUE p@5 .@UNIQUE release (@UNIQUE ) ; }\n"
                           "6: } ;\n"
                           "7: }\n";
+        ASSERT_EQUALS(exp, tokenizeExpr(code));
+    }
+
+    void exprid13()
+    {
+        const char code[] = "struct S { int s; };\n" // #11488
+                            "struct T { struct S s; };\n"
+                            "struct U { struct T t; };\n"
+                            "void f() {\n"
+                            "    struct U u = { .t = { .s = { .s = 1 } } };\n"
+                            "}\n";
+        const char* exp = "1: struct S { int s ; } ;\n"
+                          "2: struct T { struct S s ; } ;\n"
+                          "3: struct U { struct T t ; } ;\n"
+                          "4: void f ( ) {\n"
+                          "5: struct U u@4 ; u@4 = { .@UNIQUE t@5 = { . s = { . s = 1 } } } ;\n"
+                          "6: }\n";
         ASSERT_EQUALS(exp, tokenizeExpr(code));
     }
 

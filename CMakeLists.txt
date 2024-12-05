@@ -4,6 +4,8 @@ if(MSVC)
 endif()
 project(Cppcheck VERSION 2.16.99 LANGUAGES CXX)
 
+include(cmake/options.cmake)
+
 include(cmake/cxx11.cmake)
 use_cxx11()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,7 +16,6 @@ include(GNUInstallDirs)
 
 include(cmake/compilerCheck.cmake)
 include(cmake/versions.cmake)
-include(cmake/options.cmake)
 include(cmake/findDependencies.cmake)
 include(cmake/compileroptions.cmake)
 include(cmake/compilerDefinitions.cmake)

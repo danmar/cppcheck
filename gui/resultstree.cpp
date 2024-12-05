@@ -1524,7 +1524,7 @@ void ResultsTree::setCheckDirectory(const QString &dir)
 }
 
 
-const QString& ResultsTree::getCheckDirectory()
+const QString& ResultsTree::getCheckDirectory() const
 {
     return mCheckPath;
 }

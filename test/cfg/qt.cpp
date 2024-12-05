@@ -665,6 +665,7 @@ namespace {
     class Fred : public QObject {
         Q_OBJECT
     private slots:
+        // cppcheck-suppress functionStatic
         void foo();
     };
     void Fred::foo() {}
@@ -726,6 +727,7 @@ namespace {
         ~MyObject1() {}
     public slots:
     signals:
+        // cppcheck-suppress functionStatic
         void test() {}
     };
 

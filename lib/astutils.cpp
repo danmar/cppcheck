@@ -2551,7 +2551,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     }
 
     if (const Variable* var = tok->variable()) {
-        if (tok == var->nameToken() && (!var->isReference() || var->isConst()) && (!var->isClass() || (var->valueType() && var->valueType()->container))) // const ref or passed to (copy) ctor
+        if (tok == var->nameToken() && (!var->isReference() || (var->isConst() && var->type() == tok1->type())) && (!var->isClass() || (var->valueType() && var->valueType()->container))) // const ref or passed to (copy) ctor
             return false;
     }
 
@@ -2833,6 +2833,41 @@ const Token* findExpression(const Token* start, const nonneg int exprid)
     return nullptr;
 }
 
+const Token* findEscapeStatement(const Scope* scope, const Library* library)
+{
+    if (!scope)
+        return nullptr;
+    for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        const Scope* escapeScope = tok->scope();
+        if (!escapeScope->isExecutable()) { // skip type definitions
+            tok = escapeScope->bodyEnd;
+            continue;
+        }
+        if (const Token* lambdaEnd = findLambdaEndToken(tok)) { // skip lambdas
+            tok = lambdaEnd;
+            continue;
+        }
+        if (!tok->isName())
+            continue;
+        if (isEscapeFunction(tok, library))
+            return tok;
+        if (!tok->isKeyword())
+            continue;
+        if (Token::Match(tok, "goto|return|throw")) // TODO: check try/catch, labels?
+            return tok;
+        if (!Token::Match(tok, "break|continue"))
+            continue;
+        const bool isBreak = tok->str()[0] == 'b';
+        while (escapeScope && escapeScope != scope) {
+            if (escapeScope->isLoopScope() || (isBreak && escapeScope->type == Scope::ScopeType::eSwitch))
+                return nullptr;
+            escapeScope = escapeScope->nestedIn;
+        }
+        return tok;
+    }
+    return nullptr;
+}
+
 // Thread-unsafe memoization
 template<class F, class R=decltype(std::declval<F>()())>
 static std::function<R()> memoize(F f)
@@ -2878,7 +2913,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         auto expr = getExprTok();
-        if (!expr)
+        if (!expr && !(tok->valueType() && tok->valueType()->pointer == 0 && tok->valueType()->reference == Reference::None))
             aliased = true;
         if (!aliased)
             aliased = isAliasOf(tok, expr, &i);
@@ -3761,4 +3796,79 @@ bool isUnreachableOperand(const Token *tok)
     }
 
     return false;
+}
+
+static bool unknownLeafValuesAreTemplateArgs(const Token *tok)
+{
+    if (!tok)
+        return true;
+
+    if (!tok->astOperand1() && !tok->astOperand2())
+        return tok->isTemplateArg() || tok->hasKnownIntValue();
+
+    return unknownLeafValuesAreTemplateArgs(tok->astOperand1())
+           && unknownLeafValuesAreTemplateArgs(tok->astOperand2());
+}
+
+static const Token *skipUnreachableIfBranch(const Token *tok)
+{
+    const Token *condTok = tok->linkAt(-1);
+    if (!condTok)
+        return tok;
+
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr"))
+        return tok;
+
+    condTok = condTok->astOperand2();
+    if (!condTok)
+        return tok;
+
+    if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() == 0)
+        || (unknownLeafValuesAreTemplateArgs(condTok) && condTok->getValue(0))) {
+        tok = tok->link();
+    }
+
+    return tok;
+}
+
+static const Token *skipUnreachableElseBranch(const Token *tok)
+{
+    if (!Token::simpleMatch(tok->tokAt(-2), "} else {"))
+        return tok;
+
+    const Token *condTok = tok->linkAt(-2);
+    if (!condTok)
+        return tok;
+
+    condTok = condTok->linkAt(-1);
+    if (!condTok)
+        return tok;
+
+    if (!Token::simpleMatch(condTok->tokAt(-1), "if (") && !Token::simpleMatch(condTok->tokAt(-2), "if constexpr ("))
+        return tok;
+
+    condTok = condTok->astOperand2();
+
+    if ((condTok->hasKnownIntValue() && condTok->getKnownIntValue() != 0)
+        || (unknownLeafValuesAreTemplateArgs(condTok) && condTok->getValueNE(0))) {
+        tok = tok->link();
+    }
+
+    return tok;
+}
+
+const Token *skipUnreachableBranch(const Token *tok)
+{
+    if (!Token::simpleMatch(tok, "{"))
+        return tok;
+
+    if (tok->scope()->type == Scope::ScopeType::eIf) {
+        return skipUnreachableIfBranch(tok);
+    }
+
+    if (tok->scope()->type == Scope::ScopeType::eElse) {
+        return skipUnreachableElseBranch(tok);
+    }
+
+    return tok;
 }

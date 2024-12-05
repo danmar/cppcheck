@@ -36,7 +36,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     if(WARNINGS_ARE_ERRORS)
         add_compile_options(-Werror)
     endif()
-    add_compile_options(-pedantic)
+    add_compile_options(-pedantic) # TODO: is this implied by -Weverything?
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wall)
     add_compile_options(-Wextra)
     add_compile_options(-Wcast-qual)                # Cast for removing type qualifiers
@@ -47,7 +50,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wpacked)                   #
     add_compile_options(-Wredundant-decls)          # if anything is declared more than once in the same scope
     add_compile_options(-Wundef)
-    add_compile_options(-Wno-missing-braces)
     add_compile_options(-Wno-sign-compare)
     add_compile_options(-Wno-multichar)
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
@@ -58,16 +60,31 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     #add_compile_options(-Wsign-conversion) # too many warnings
     #add_compile_options(-Wunreachable-code) # some GCC versions report lots of warnings
     #add_compile_options(-Wsign-promo)
-endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # use pipes instead of temporary files - greatly reduces I/O usage
     add_compile_options(-pipe)
 
-    add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
-    add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
     add_compile_options_safe(-Wuseless-cast)
+    # add_compile_options_safe(-Wsuggest-attribute=returns_nonnull) # reports the warning even if the attribute is set
+
+    # TODO: evaluate
+    #add_compile_options_safe(-Wduplicated-branches)
+    #add_compile_options_safe(-Wduplicated-cond)
+    #add_compile_options_safe(-Wformat=2)
+    #add_compile_options_safe(-Wformat-overflow=2)
+    #add_compile_options_safe(-Wformat-signedness)
+    #add_compile_options_safe(-Wnull-dereference)
+    #add_compile_options_safe(-Wnrvo)
+    #add_compile_options_safe(-Wimplicit-fallthrough=5)
+    #add_compile_options_safe(-Wmissing-include-dirs)
+    #add_compile_options_safe(-Wunused)
+    #add_compile_options_safe(-Wunused-const-variable)
+    #add_compile_options_safe(-Wuninitialized)
+    #add_compile_options_safe(-Wsuggest-attribute=pure)
+    #add_compile_options_safe(-Wsuggest-attribute=const)
+    #add_compile_options_safe(-Wunused-macros)
+    #add_compile_options_safe(-Wpedantic)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
         # TODO: verify this regression still exists in clang-15
@@ -103,11 +120,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options_safe(-Wno-implicit-float-conversion)
     add_compile_options_safe(-Wno-switch-enum)
     add_compile_options_safe(-Wno-float-conversion)
-    add_compile_options_safe(-Wno-enum-enum-conversion)
     add_compile_options_safe(-Wno-date-time)
     add_compile_options(-Wno-disabled-macro-expansion)
     add_compile_options_safe(-Wno-bitwise-instead-of-logical)
-    add_compile_options_safe(-Wno-switch-default)
+    add_compile_options(-Wno-sign-compare)
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
@@ -124,9 +140,13 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # only needs to be addressed to work around issues in older compilers
     add_compile_options_safe(-Wno-return-std-move-in-c++11)
 
+    # this is reported even when it is unnecessary i.e. -Wswitch-enum warnings have been mitigated
+    add_compile_options_safe(-Wno-switch-default)
+
     # warnings we are currently not interested in
     add_compile_options(-Wno-four-char-constants)
     add_compile_options(-Wno-weak-vtables)
+    add_compile_options(-Wno-multichar)
 
     if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
       message(FATAL_ERROR "Do not use clang to generate code coverage. Use GCC instead.")

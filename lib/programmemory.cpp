@@ -1384,12 +1384,12 @@ namespace {
                         std::equal(conditions1.begin(), conditions1.end(), conditions2.begin(), &TokenExprIdEqual))
                         return value;
                     std::vector<const Token*> diffConditions1 = setDifference(conditions1, conditions2);
-                    std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
                     pruneConditions(diffConditions1, !b, condValues);
+                    if (diffConditions1.size() == conditions1.size())
+                        continue;
+                    std::vector<const Token*> diffConditions2 = setDifference(conditions2, conditions1);
                     pruneConditions(diffConditions2, !b, executeAll(diffConditions2));
                     if (diffConditions1.size() != diffConditions2.size())
-                        continue;
-                    if (diffConditions1.size() == conditions1.size())
                         continue;
                     for (const Token* cond1 : diffConditions1) {
                         auto it = std::find_if(diffConditions2.begin(), diffConditions2.end(), [&](const Token* cond2) {
@@ -1707,9 +1707,10 @@ namespace {
                     continue;
                 if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
                     continue;
-                ValueFlow::Value v2 = utils::as_const(*pm).at(value.tokvalue->exprId());
-                if (!v2.isIntValue() && value.intvalue != 0)
+                const ValueFlow::Value& v_ref = utils::as_const(*pm).at(value.tokvalue->exprId());
+                if (!v_ref.isIntValue() && value.intvalue != 0)
                     continue;
+                ValueFlow::Value v2 = v_ref;
                 v2.intvalue += value.intvalue;
                 return v2;
             }

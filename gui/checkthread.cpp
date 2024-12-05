@@ -36,6 +36,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <QByteArray>
@@ -61,7 +62,7 @@ static QString unquote(QString s) {
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
+int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress [passedByValue,passedByValueCallback]
 {
     output.clear();
 
@@ -106,15 +107,13 @@ int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, 
 
 
 CheckThread::CheckThread(ThreadResult &result) :
-    mResult(result),
-    mCppcheck(result, true, executeCommand)
+    mResult(result)
 {}
 
-void CheckThread::check(const Settings &settings)
+void CheckThread::setSettings(const Settings &settings)
 {
     mFiles.clear();
-    mCppcheck.settings() = settings;
-    start();
+    mSettings = settings; // this is a copy
 }
 
 void CheckThread::analyseWholeProgram(const QStringList &files, const std::string& ctuInfo)
@@ -130,6 +129,9 @@ void CheckThread::run()
 {
     mState = Running;
 
+    CppCheck cppcheck(mResult, true, executeCommand);
+    cppcheck.settings() = std::move(mSettings);
+
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         std::string ctuInfo;
@@ -139,7 +141,7 @@ void CheckThread::run()
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
             return FileWithDetails{file.toStdString(), 0};
         });
-        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2, {}, ctuInfo);
+        cppcheck.analyseWholeProgram(cppcheck.settings().buildDir, files2, {}, ctuInfo);
         mFiles.clear();
         emit done();
         return;
@@ -148,8 +150,8 @@ void CheckThread::run()
     QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
-        mCppcheck.check(FileWithDetails(file.toStdString()));
-        runAddonsAndTools(nullptr, file);
+        cppcheck.check(FileWithDetails(file.toStdString()));
+        runAddonsAndTools(cppcheck.settings(), nullptr, file);
         emit fileChecked(file);
 
         if (mState == Running)
@@ -161,8 +163,8 @@ void CheckThread::run()
     while (fileSettings && mState == Running) {
         file = QString::fromStdString(fileSettings->filename());
         qDebug() << "Checking file" << file;
-        mCppcheck.check(*fileSettings);
-        runAddonsAndTools(fileSettings, QString::fromStdString(fileSettings->filename()));
+        cppcheck.check(*fileSettings);
+        runAddonsAndTools(cppcheck.settings(), fileSettings, QString::fromStdString(fileSettings->filename()));
         emit fileChecked(file);
 
         if (mState == Running)
@@ -177,7 +179,7 @@ void CheckThread::run()
     emit done();
 }
 
-void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QString &fileName)
+void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName)
 {
     for (const QString& addon : mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
@@ -229,7 +231,7 @@ void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QStr
                 args << ("-std=" + QString::fromStdString(fileSettings->standard));
             else {
                 // TODO: pass C or C++ standard based on file type
-                const std::string std = mCppcheck.settings().standards.getCPP();
+                const std::string std = settings.standards.getCPP();
                 if (!std.empty()) {
                     args << ("-std=" + QString::fromStdString(std));
                 }
@@ -237,7 +239,7 @@ void CheckThread::runAddonsAndTools(const FileSettings *fileSettings, const QStr
 
             QString analyzerInfoFile;
 
-            const std::string &buildDir = mCppcheck.settings().buildDir;
+            const std::string &buildDir = settings.buildDir;
             if (!buildDir.empty()) {
                 analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg));
 

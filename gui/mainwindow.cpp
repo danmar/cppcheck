@@ -1134,10 +1134,17 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
 
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
-        if (mProjectFile->isCheckLevelExhaustive())
-            result.setCheckLevel(Settings::CheckLevel::exhaustive);
-        else
+        switch (mProjectFile->getCheckLevel()) {
+        case ProjectFile::CheckLevel::reduced:
+            result.setCheckLevel(Settings::CheckLevel::reduced);
+            break;
+        case ProjectFile::CheckLevel::normal:
             result.setCheckLevel(Settings::CheckLevel::normal);
+            break;
+        case ProjectFile::CheckLevel::exhaustive:
+            result.setCheckLevel(Settings::CheckLevel::exhaustive);
+            break;
+        };
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
         result.safeChecks.classes = mProjectFile->safeChecks.classes;

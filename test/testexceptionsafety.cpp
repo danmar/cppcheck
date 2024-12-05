@@ -361,6 +361,17 @@ private:
         // avoid false positives
         check("const char *func() throw() { return 0; }");
         ASSERT_EQUALS("", errout_str());
+
+
+        // #11691: FP throwInNoexceptFunction with if constexpr in template
+        check("template<bool IsNoThrow>\n"
+              "static void foo(size_t Size) noexcept(IsNoThrow) {\n"
+              "    if constexpr (!IsNoThrow) {\n"
+              "        throw std::bad_alloc();\n"
+              "    }\n"
+              "}\n"
+              "foo<true>(123);\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void unhandledExceptionSpecification1() { // #4800

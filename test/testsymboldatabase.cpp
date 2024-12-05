@@ -424,6 +424,7 @@ private:
         TEST_CASE(symboldatabase104);
         TEST_CASE(symboldatabase105);
         TEST_CASE(symboldatabase106);
+        TEST_CASE(symboldatabase107);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -521,6 +522,7 @@ private:
         TEST_CASE(findFunction55); // #13004
         TEST_CASE(findFunction56);
         TEST_CASE(findFunction57);
+        TEST_CASE(findFunction58); // #13310
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
@@ -5655,6 +5657,22 @@ private:
         }
     }
 
+    void symboldatabase107() {
+        {
+            GET_SYMBOL_DB_DBG("void g(int);\n" // #13329
+                              "void f(int** pp) {\n"
+                              "    for (int i = 0; i < 2; i++) {\n"
+                              "        g(*pp[i]);\n"
+                              "    }\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout_str());
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
+            ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+        }
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -8374,6 +8392,19 @@ private:
         const Token* T = Token::findsimplematch(S, "T (");
         ASSERT(T && T->function());
         ASSERT_EQUALS(T->function()->tokenDef->linenr(), 6);
+    }
+
+    void findFunction58() { // #13310
+        GET_SYMBOL_DB("class C {\n"
+                      "    enum class abc : uint8_t {\n"
+                      "        a,b,c\n"
+                      "    };\n"
+                      "    void a();\n"
+                      "};\n");
+        const Token *a1 = Token::findsimplematch(tokenizer.tokens(), "a ,");
+        ASSERT(a1 && !a1->function());
+        const Token *a2 = Token::findsimplematch(tokenizer.tokens(), "a (");
+        ASSERT(a2 && a2->function());
     }
 
     void findFunctionRef1() {

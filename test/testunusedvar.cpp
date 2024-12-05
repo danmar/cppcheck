@@ -70,6 +70,8 @@ private:
         TEST_CASE(structmember23);
         TEST_CASE(structmember24); // #10847
         TEST_CASE(structmember25);
+        TEST_CASE(structmember26); // #13345
+        TEST_CASE(structmember27); // #13367
         TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
 
@@ -1959,6 +1961,25 @@ private:
                       "[test.cpp:3]: (style) struct member 'S::i' is never used.\n"
                       "[test.cpp:6]: (style) struct member 'T::s' is never used.\n"
                       "[test.cpp:7]: (style) struct member 'T::j' is never used.\n",
+                      errout_str());
+    }
+
+    void structmember26() { // #13345
+        checkStructMemberUsage("struct foobar {\n"
+                               "   char unused;\n"
+                               "};\n"
+                               "size_t offset_unused = offsetof(struct foobar, unused);\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structmember27() { // #13367
+        checkStructMemberUsage("typedef struct pathNode_s {\n"
+                               "    struct pathNode_s*  next;\n"
+                               "} pathNode_t;\n"
+                               "void f() {\n"
+                               "    x<pathNode_t, offsetof( pathNode_t, next )> y;\n"
+                               "}\n");
+        ASSERT_EQUALS("", // don't crash
                       errout_str());
     }
 

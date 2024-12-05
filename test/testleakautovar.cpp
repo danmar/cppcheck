@@ -64,6 +64,9 @@ private:
         TEST_CASE(assign25);
         TEST_CASE(assign26);
 
+        TEST_CASE(memcpy1); // #11542
+        TEST_CASE(memcpy2);
+
         TEST_CASE(isAutoDealloc);
 
         TEST_CASE(realloc1);
@@ -633,6 +636,24 @@ private:
               "    x = p != nullptr ? p : nullptr;\n"
               "}", true);
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void memcpy1() { // #11542
+        const Settings s = settingsBuilder().library("std.cfg").build();
+        check("void f(char** old, char* value) {\n"
+              "    char *str = strdup(value);\n"
+              "    memcpy(old, &str, sizeof(char*));\n"
+              "}\n", &s);
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void memcpy2() {
+        const Settings s = settingsBuilder().library("std.cfg").build();
+        check("void f(char* old, char* value, size_t len) {\n"
+              "    char *str = strdup(value);\n"
+              "    memcpy(old, str, len);\n"
+              "}\n", &s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: str\n", errout_str());
     }
 
     void isAutoDealloc() {
@@ -3404,6 +3425,7 @@ private:
         TEST_CASE(memleak_getline);
         TEST_CASE(deallocuse_fdopen);
         TEST_CASE(doublefree_fdopen); // #12781
+        TEST_CASE(memleak_open); // #13356
     }
 
     void memleak_getline() {
@@ -3442,6 +3464,17 @@ private:
               "        return;\n"
               "    }\n"
               "    fclose(stream);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void memleak_open() { // #13356
+        check("int f() {\n"
+              "    int fd = open(\"abc \", O_RDONLY);\n"
+              "    if (fd > -1) {\n"
+              "        return fd;\n"
+              "    }\n"
+              "    return -1;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

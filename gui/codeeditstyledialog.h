@@ -43,7 +43,7 @@ public:
     explicit StyleEditDialog(const CodeEditorStyle& newStyle,
                              QWidget *parent = nullptr);
 
-    CodeEditorStyle getStyle();
+    CodeEditorStyle getStyle() const;
 
 private:
     void updateControls();

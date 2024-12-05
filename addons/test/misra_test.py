@@ -116,7 +116,6 @@ def test_rules_suppression(checker, capsys):
 
     for src in test_sources:
         re_suppressed= r"\[%s\:[0-9]+\]" % src
-        dump_remove(src)
         dump_create(src, "--suppressions-list=addons/test/misra/suppressions.txt","--inline-suppr")
         checker.parseDump(src + ".dump")
         captured = capsys.readouterr().err

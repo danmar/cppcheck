@@ -1407,8 +1407,11 @@ void CheckOther::checkPassByReference()
         if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
             continue;
 
+        if (var->isArray() && var->getTypeName() != "std::array")
+            continue;
+
         const bool isConst = var->isConst();
-        if (isConst && !var->isArray()) {
+        if (isConst) {
             passedByValueError(var, inconclusive, isRangeBasedFor);
             continue;
         }
@@ -3111,6 +3114,8 @@ void CheckOther::checkNegativeBitwiseShift()
     logChecker("CheckOther::checkNegativeBitwiseShift");
 
     for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        tok = skipUnreachableBranch(tok);
+
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
 
@@ -3897,7 +3902,7 @@ void CheckOther::checkKnownArgument()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!tok->hasKnownIntValue())
+            if (!tok->hasKnownIntValue() || tok->isExpandedMacro())
                 continue;
             if (Token::Match(tok, "++|--|%assign%"))
                 continue;

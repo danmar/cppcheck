@@ -35,3 +35,5 @@ endif()
 if (REGISTER_GUI_TESTS)
     add_test(NAME test-xmlreportv2 COMMAND $<TARGET_FILE:test-xmlreportv2>)
 endif()
+
+add_dependencies(gui-tests test-xmlreportv2)

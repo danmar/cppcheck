@@ -57,7 +57,7 @@ static constexpr int NEW_ARRAY = -2;
 static constexpr int NEW = -1;
 
 static const std::array<std::pair<std::string, std::string>, 4> alloc_failed_conds {{{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}}};
-static const std::array<std::pair<std::string, std::string>, 4> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}}};
+static const std::array<std::pair<std::string, std::string>, 5> alloc_success_conds {{{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}, {">", "-1"}}};
 
 static bool isAutoDeallocType(const Type* type) {
     if (!type || !type->classScope)
@@ -362,6 +362,40 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             ftok = ftok->next();
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
+
+        // bailout for variable passed to library function with out parameter
+        if (const Library::Function *libFunc = mSettings->library.getFunction(ftok)) {
+            using ArgumentChecks = Library::ArgumentChecks;
+            using Direction = ArgumentChecks::Direction;
+            const std::vector<const Token *> args = getArguments(ftok);
+            const std::map<int, ArgumentChecks> &argChecks = libFunc->argumentChecks;
+            bool hasOutParam = std::any_of(argChecks.cbegin(), argChecks.cend(), [](const std::pair<int, ArgumentChecks> &pair) {
+                return std::any_of(pair.second.direction.cbegin(), pair.second.direction.cend(), [](const Direction dir) {
+                    return dir == Direction::DIR_OUT;
+                });
+            });
+            if (hasOutParam) {
+                for (int i = 0; i < args.size(); i++) {
+                    if (!argChecks.count(i + 1))
+                        continue;
+                    const ArgumentChecks argCheck = argChecks.at(i + 1);
+                    const bool isInParam = std::any_of(argCheck.direction.cbegin(), argCheck.direction.cend(), [&](const Direction dir) {
+                        return dir == Direction::DIR_IN;
+                    });
+                    if (!isInParam)
+                        continue;
+                    const Token *inTok = args[i];
+                    int indirect = 0;
+                    while (inTok->isUnaryOp("&")) {
+                        inTok = inTok->astOperand1();
+                        indirect++;
+                    }
+                    if (inTok->isVariable() && indirect) {
+                        varInfo.erase(inTok->varId());
+                    }
+                }
+            }
+        }
 
         auto isAssignment = [](const Token* varTok) -> const Token* {
             if (varTok->varId()) {

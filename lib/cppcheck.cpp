@@ -19,6 +19,7 @@
 #include "cppcheck.h"
 
 #include "addoninfo.h"
+#include "analyzerinfo.h"
 #include "check.h"
 #include "checkunusedfunctions.h"
 #include "clangimport.h"
@@ -623,6 +624,20 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
+static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings)
+{
+    std::ostringstream toolinfo;
+    toolinfo << CPPCHECK_VERSION_STRING;
+    toolinfo << (settings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::style) ? 's' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
+    toolinfo << (settings.severity.isEnabled(Severity::information) ? 'i' : ' ');
+    toolinfo << settings.userDefines;
+    settings.supprs.nomsg.dump(toolinfo);
+    return preprocessor.calculateHash(tokens, toolinfo.str());
+}
+
 unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
@@ -664,20 +679,41 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
     try {
         if (mSettings.library.markupFile(file.spath())) {
-            if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || !mSettings.buildDir.empty())) {
+            if (!mSettings.buildDir.empty())
+                mAnalyzerInformation.reset(new AnalyzerInformation);
+
+            if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || mAnalyzerInformation)) {
+                std::size_t hash = 0;
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(mSettings, *this);
                 // enforce the language since markup files are special and do not adhere to the enforced language
                 tokenizer.list.setLang(Standards::Language::C, true);
                 if (fileStream) {
-                    tokenizer.list.createTokens(*fileStream, file.spath());
+                    std::vector<std::string> files{file.spath()};
+                    simplecpp::TokenList tokens(*fileStream, files);
+                    if (mAnalyzerInformation) {
+                        const Preprocessor preprocessor(mSettings, *this);
+                        hash = calculateHash(preprocessor, tokens, mSettings);
+                    }
+                    tokenizer.list.createTokens(std::move(tokens));
                 }
                 else {
-                    std::ifstream in(file.spath());
-                    tokenizer.list.createTokens(in, file.spath());
+                    std::vector<std::string> files{file.spath()};
+                    simplecpp::TokenList tokens(file.spath(), files);
+                    if (mAnalyzerInformation) {
+                        const Preprocessor preprocessor(mSettings, *this);
+                        hash = calculateHash(preprocessor, tokens, mSettings);
+                    }
+                    tokenizer.list.createTokens(std::move(tokens));
                 }
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
-                // TODO: set analyzer information
+
+                if (mAnalyzerInformation) {
+                    std::list<ErrorMessage> errors;
+                    mAnalyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors);
+                    mAnalyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo());
+                    mAnalyzerInformation->close();
+                }
             }
             return EXIT_SUCCESS;
         }
@@ -740,22 +776,14 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         }
         preprocessor.removeComments(tokens1);
 
-        if (!mSettings.buildDir.empty()) {
-            // Get toolinfo
-            std::ostringstream toolinfo;
-            toolinfo << CPPCHECK_VERSION_STRING;
-            toolinfo << (mSettings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::style) ? 's' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
-            toolinfo << (mSettings.severity.isEnabled(Severity::information) ? 'i' : ' ');
-            toolinfo << mSettings.userDefines;
-            mSettings.supprs.nomsg.dump(toolinfo);
+        if (!mSettings.buildDir.empty())
+            mAnalyzerInformation.reset(new AnalyzerInformation);
 
+        if (mAnalyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = preprocessor.calculateHash(tokens1, toolinfo.str());
+            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings);
             std::list<ErrorMessage> errors;
-            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
+            if (!mAnalyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();
@@ -1012,8 +1040,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         reportErr(errmsg);
     }
 
-    if (!mSettings.buildDir.empty()) {
-        mAnalyzerInformation.close();
+    if (mAnalyzerInformation) {
+        mAnalyzerInformation.reset();
     }
 
     // In jointSuppressionReport mode, unmatched suppressions are
@@ -1101,12 +1129,12 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         return;
     }
 
-    if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
+    if (mSettings.useSingleJob() || mAnalyzerInformation) {
         // Analyse the tokens..
-
-        if (CTU::FileInfo * const fi1 = CTU::getFileInfo(tokenizer)) {
-            if (!mSettings.buildDir.empty())
-                mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+        {
+            CTU::FileInfo * const fi1 = CTU::getFileInfo(tokenizer);
+            if (mAnalyzerInformation)
+                mAnalyzerInformation->setFileInfo("ctu", fi1->toString());
             if (mSettings.useSingleJob())
                 mFileInfo.push_back(fi1);
             else
@@ -1117,8 +1145,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
                 if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings)) {
-                    if (!mSettings.buildDir.empty())
-                        mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+                    if (mAnalyzerInformation)
+                        mAnalyzerInformation->setFileInfo(check->name(), fi->toString());
                     if (mSettings.useSingleJob())
                         mFileInfo.push_back(fi);
                     else
@@ -1128,8 +1156,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         }
     }
 
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mSettings.buildDir.empty()) {
-        mAnalyzerInformation.setFileInfo("CheckUnusedFunctions", unusedFunctionsChecker.analyzerInfo());
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) && mAnalyzerInformation) {
+        mAnalyzerInformation->setFileInfo("CheckUnusedFunctions", unusedFunctionsChecker.analyzerInfo());
     }
 
 #ifdef HAVE_RULES
@@ -1423,8 +1451,11 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
+        // TODO: can this conflict when using -j?
         fileList = Path::getPathFromFilename(files[0]) + FILELIST;
         std::ofstream fout(fileList);
+        filesDeleter.addFile(fileList);
+        // TODO: check if file could be created
         for (const std::string& f: files)
             fout << f << std::endl;
     }
@@ -1664,8 +1695,8 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mErrorList.emplace(std::move(errmsg)).second)
         return;
 
-    if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg);
+    if (mAnalyzerInformation)
+        mAnalyzerInformation->reportErr(msg);
 
     if (!mSettings.supprs.nofail.isSuppressed(errorMessage) && !mSettings.supprs.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;

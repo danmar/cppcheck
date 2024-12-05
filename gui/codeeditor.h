@@ -35,7 +35,6 @@
 class CodeEditorStyle;
 class QPaintEvent;
 class QRect;
-class QResizeEvent;
 class QTextDocument;
 
 class Highlighter : public QSyntaxHighlighter {

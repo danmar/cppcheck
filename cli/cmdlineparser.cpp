@@ -471,7 +471,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
                 Settings::CheckLevel level = Settings::CheckLevel::normal;
                 const std::string level_s(argv[i] + 14);
-                if (level_s == "normal")
+                if (level_s == "reduced")
+                    level = Settings::CheckLevel::reduced;
+                else if (level_s == "normal")
                     level = Settings::CheckLevel::normal;
                 else if (level_s == "exhaustive")
                     level = Settings::CheckLevel::exhaustive;
@@ -530,14 +532,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
-                mSettings.buildDir = Path::fromNativeSeparators(argv[i] + 21);
-                if (endsWith(mSettings.buildDir, '/'))
-                    mSettings.buildDir.pop_back();
-
-                if (!Path::isDirectory(mSettings.buildDir)) {
-                    mLogger.printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
+                std::string path = Path::fromNativeSeparators(argv[i] + 21);
+                if (path.empty()) {
+                    mLogger.printError("no path has been specified for --cppcheck-build-dir");
                     return Result::Fail;
                 }
+                mSettings.buildDir = std::move(path);
+                if (endsWith(mSettings.buildDir, '/'))
+                    mSettings.buildDir.pop_back();
             }
 
             else if (std::strcmp(argv[i], "--cpp-header-probe") == 0) {
@@ -913,6 +915,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.maxCtuDepth = temp;
             }
 
+            // undocumented option for usage in Python tests to indicate that no build dir should be injected
+            else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {
+                mSettings.buildDir.clear();
+            }
+
             else if (std::strcmp(argv[i], "--no-cpp-header-probe") == 0) {
                 mSettings.cppHeaderProbe = false;
             }
@@ -944,6 +951,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--performance-valueflow-max-if-count=", 37) == 0) {
                 if (!parseNumberArg(argv[i], 37, mSettings.vfOptions.maxIfCount, true))
+                    return Result::Fail;
+            }
+
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-iterations=", 39) == 0) {
+                if (!parseNumberArg(argv[i], 39, mSettings.vfOptions.maxIterations, true))
                     return Result::Fail;
             }
 
@@ -1458,6 +1470,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         return Result::Fail;
     }
 
+    if (!mSettings.buildDir.empty() && !Path::isDirectory(mSettings.buildDir)) {
+        mLogger.printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
+        return Result::Fail;
+    }
+
     // Print error only if we have "real" command and expect files
     if (mPathNames.empty() && project.guiProject.pathNames.empty() && project.fileSettings.empty()) {
         // TODO: this message differs from the one reported in fillSettingsFromArgs()
@@ -1518,8 +1535,9 @@ void CmdLineParser::printHelp() const
         "    --check-config       Check cppcheck configuration. The normal code\n"
         "                         analysis is disabled by this flag.\n"
         "    --check-level=<level>\n"
-        "                         Configure how much checking you want:\n"
-        "                          * normal: Cppcheck uses some compromises in the checking so\n"
+        "                         Configure how much valueflow analysis you want:\n"
+        "                          * reduced: Reduce valueflow to finish checking quickly.\n"
+        "                          * normal: Cppcheck uses some compromises in the analysis so\n"
         "                            the checking will finish in reasonable time.\n"
         "                          * exhaustive: deeper analysis that you choose when you can\n"
         "                            wait.\n"

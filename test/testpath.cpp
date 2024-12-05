@@ -49,6 +49,8 @@ private:
         TEST_CASE(identifyWithCppProbe);
         TEST_CASE(is_header);
         TEST_CASE(simplifyPath);
+        TEST_CASE(getAbsolutePath);
+        TEST_CASE(exists);
     }
 
     void removeQuotationMarks() const {
@@ -436,6 +438,101 @@ private:
 
         ASSERT_EQUALS("//home/file.cpp", Path::simplifyPath("\\\\home\\test\\..\\file.cpp"));
         ASSERT_EQUALS("//file.cpp", Path::simplifyPath("\\\\home\\..\\test\\..\\file.cpp"));
+    }
+
+    void getAbsolutePath() const {
+        const std::string cwd = Path::getCurrentPath();
+
+        ScopedFile file("testabspath.txt", "");
+        std::string expected = Path::toNativeSeparators(Path::join(cwd, "testabspath.txt"));
+
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath("testabspath.txt"));
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath("./testabspath.txt"));
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath(".\\testabspath.txt"));
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath("test/../testabspath.txt"));
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath("test\\..\\testabspath.txt"));
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath("./test/../testabspath.txt"));
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath(".\\test\\../testabspath.txt"));
+
+        ASSERT_EQUALS(expected, Path::getAbsoluteFilePath(Path::join(cwd, "testabspath.txt")));
+
+        std::string cwd_up = Path::getPathFromFilename(cwd);
+        cwd_up.pop_back(); // remove trailing slash
+        ASSERT_EQUALS(cwd_up, Path::getAbsoluteFilePath(Path::join(cwd, "..")));
+        ASSERT_EQUALS(cwd_up, Path::getAbsoluteFilePath(Path::join(cwd, "../")));
+        ASSERT_EQUALS(cwd_up, Path::getAbsoluteFilePath(Path::join(cwd, "..\\")));
+        ASSERT_EQUALS(cwd_up, Path::getAbsoluteFilePath(Path::join(cwd, "./../")));
+        ASSERT_EQUALS(cwd_up, Path::getAbsoluteFilePath(Path::join(cwd, ".\\..\\")));
+
+        ASSERT_EQUALS(cwd, Path::getAbsoluteFilePath("."));
+#ifndef _WIN32
+        TODO_ASSERT_EQUALS(cwd, "", Path::getAbsoluteFilePath("./"));
+        TODO_ASSERT_EQUALS(cwd, "", Path::getAbsoluteFilePath(".\\"));
+#else
+        ASSERT_EQUALS(cwd, Path::getAbsoluteFilePath("./"));
+        ASSERT_EQUALS(cwd, Path::getAbsoluteFilePath(".\\"));
+#endif
+
+        ASSERT_EQUALS("", Path::getAbsoluteFilePath(""));
+
+#ifndef _WIN32
+        // the underlying realpath() call only returns something if the path actually exists
+        ASSERT_THROW_EQUALS_2(Path::getAbsoluteFilePath("testabspath2.txt"), std::runtime_error, "path 'testabspath2.txt' does not exist");
+#else
+        ASSERT_EQUALS(Path::toNativeSeparators(Path::join(cwd, "testabspath2.txt")), Path::getAbsoluteFilePath("testabspath2.txt"));
+#endif
+
+#ifdef _WIN32
+        // determine an existing drive letter
+        std::string drive = Path::getCurrentPath().substr(0, 2);
+        ASSERT_EQUALS(drive + "", Path::getAbsoluteFilePath(drive + "\\"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path\\"));
+        ASSERT_EQUALS(drive + "\\path\\files.txt", Path::getAbsoluteFilePath(drive + "\\path\\files.txt"));
+        ASSERT_EQUALS(drive + "", Path::getAbsoluteFilePath(drive + "//"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "//path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "//path/"));
+        ASSERT_EQUALS(drive + "\\path\\files.txt", Path::getAbsoluteFilePath(drive + "//path/files.txt"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\\\path"));
+        ASSERT_EQUALS(drive + "", Path::getAbsoluteFilePath(drive + "/"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "/path"));
+
+        drive[0] = static_cast<char>(toupper(drive[0]));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "/path"));
+
+        drive[0] = static_cast<char>(tolower(drive[0]));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "\\path"));
+        ASSERT_EQUALS(drive + "\\path", Path::getAbsoluteFilePath(drive + "/path"));
+
+        ASSERT_EQUALS("1:\\path\\files.txt", Path::getAbsoluteFilePath("1:\\path\\files.txt")); // treated as valid drive
+        ASSERT_EQUALS(
+            Path::toNativeSeparators(Path::join(Path::getCurrentPath(), "CC:\\path\\files.txt")),
+            Path::getAbsoluteFilePath("CC:\\path\\files.txt")); // treated as filename
+        ASSERT_EQUALS("1:\\path\\files.txt", Path::getAbsoluteFilePath("1:/path/files.txt")); // treated as valid drive
+        ASSERT_EQUALS(
+            Path::toNativeSeparators(Path::join(Path::getCurrentPath(), "CC:\\path\\files.txt")),
+            Path::getAbsoluteFilePath("CC:/path/files.txt")); // treated as filename
+#endif
+
+#ifndef _WIN32
+        ASSERT_THROW_EQUALS_2(Path::getAbsoluteFilePath("C:\\path\\files.txt"), std::runtime_error, "path 'C:\\path\\files.txt' does not exist");
+#endif
+
+        // TODO: test UNC paths
+        // TODO: test with symlinks
+    }
+
+    void exists() const {
+        ScopedFile file("testpath.txt", "", "testpath");
+        ScopedFile file2("testpath2.txt", "");
+        ASSERT_EQUALS(true, Path::exists("testpath"));
+        ASSERT_EQUALS(true, Path::exists("testpath/testpath.txt"));
+        ASSERT_EQUALS(true, Path::exists("testpath2.txt"));
+
+        ASSERT_EQUALS(false, Path::exists("testpath2"));
+        ASSERT_EQUALS(false, Path::exists("testpath/testpath2.txt"));
+        ASSERT_EQUALS(false, Path::exists("testpath.txt"));
     }
 };
 

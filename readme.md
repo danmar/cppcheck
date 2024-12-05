@@ -1,8 +1,9 @@
 # **Cppcheck** 
 
-OSS-Fuzz|Coverity Scan Build Status|License|
-|:--:|:--:|:--:|
-[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
+|release-windows|OSS-Fuzz|Coverity Scan Build Status|include-what-you-use|License|
+|:--:|:--:|:--:|:--:|:--:|
+|[![release-windows](https://github.com/danmar/cppcheck/actions/workflows/release-windows.yml/badge.svg?branch=main)](https://github.com/danmar/cppcheck/actions/workflows/release-windows.yml)|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![include-what-you-use](https://github.com/danmar/cppcheck/actions/workflows/iwyu.yml/badge.svg?branch=main)](https://github.com/danmar/cppcheck/actions/workflows/iwyu.yml)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+
 
 ## About the name
 

@@ -35,6 +35,9 @@ endif()
 
 if(Boost_FOUND)
     add_definitions(-DHAVE_BOOST)
+    if(USE_BOOST_INT128)
+        add_definitions(-DHAVE_BOOST_INT128)
+    endif()
 endif()
 
 if(ENABLE_CHECK_INTERNAL)

@@ -65,7 +65,7 @@ void SelectColorButton::setColor(const QColor& color)
 }
 
 // cppcheck-suppress unusedFunction
-const QColor& SelectColorButton::getColor()
+const QColor& SelectColorButton::getColor() const
 {
     return mColor;
 }
@@ -122,7 +122,7 @@ void SelectFontWeightCombo::setWeight(QFont::Weight weight)
 }
 
 // cppcheck-suppress unusedFunction
-const QFont::Weight& SelectFontWeightCombo::getWeight()
+const QFont::Weight& SelectFontWeightCombo::getWeight() const
 {
     return mWeight;
 }

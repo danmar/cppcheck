@@ -26,6 +26,10 @@
 #include <cstdint>
 #include <string>
 
+#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+#include <boost/multiprecision/cpp_int.hpp>
+#endif
+
 /// @addtogroup Core
 /// @{
 
@@ -35,6 +39,14 @@ class CPPCHECKLIB MathLib {
     friend class TestMathLib;
 
 public:
+#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+    using bigint = boost::multiprecision::int128_t;
+    using biguint = boost::multiprecision::uint128_t;
+#else
+    using bigint = long long;
+    using biguint = unsigned long long;
+#endif
+
     /** @brief value class */
     class value {
     private:
@@ -66,8 +78,6 @@ public:
         value shiftRight(const value &v) const;
     };
 
-    using bigint = long long;
-    using biguint = unsigned long long;
     static const int bigint_bits;
 
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */

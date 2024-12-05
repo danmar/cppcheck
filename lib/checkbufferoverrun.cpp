@@ -500,7 +500,7 @@ void CheckBufferOverrun::pointerArithmetic()
                 const std::vector<const Token *> indexTokens{indexToken};
                 const std::vector<ValueFlow::Value>& indexValues =
                     getOverrunIndexValues(tok, arrayToken, dimensions, indexTokens, path);
-                if (!indexValues.empty())
+                if (!indexValues.empty() && !isUnreachableOperand(tok))
                     pointerArithmeticError(tok, indexToken, &indexValues.front());
             }
 

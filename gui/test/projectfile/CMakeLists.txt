@@ -18,3 +18,5 @@ endif()
 if (REGISTER_GUI_TESTS)
     add_test(NAME test-projectfile COMMAND $<TARGET_FILE:test-projectfile>)
 endif()
+
+add_dependencies(gui-tests test-projectfile)

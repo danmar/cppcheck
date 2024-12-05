@@ -1734,6 +1734,8 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     continue;
                 if (tok->isControlFlowKeyword())
                     continue;
+                if (Token::Match(tok->tokAt(-1), ". %name%") && Token::Match(tok->tokAt(-2), "[{,]")) // designated initializers
+                    continue;
 
                 if (Token::Match(tok, "%name% <") && tok->linkAt(1)) {
                     tok->exprId(id);
@@ -2378,7 +2380,7 @@ void Variable::evaluate(const Settings& settings)
         std::string strtype = mTypeStartToken->str();
         for (const Token *typeToken = mTypeStartToken; Token::Match(typeToken, "%type% :: %type%"); typeToken = typeToken->tokAt(2))
             strtype += "::" + typeToken->strAt(2);
-        setFlag(fIsClass, !lib.podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && strtype != "...");
+        setFlag(fIsClass, !lib.podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference() && strtype != "...");
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, ::isStlStringType(mTypeStartToken));
         setFlag(fIsSmartPointer, mTypeStartToken->isCpp() && lib.isSmartPointer(mTypeStartToken));
@@ -4574,13 +4576,15 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
     }
 }
 
-bool Function::isImplicitlyVirtual(bool defaultVal) const
+bool Function::isImplicitlyVirtual(bool defaultVal, bool* pFoundAllBaseClasses) const
 {
     if (hasVirtualSpecifier() || hasOverrideSpecifier() || hasFinalSpecifier())
         return true;
     bool foundAllBaseClasses = true;
     if (getOverriddenFunction(&foundAllBaseClasses)) //If it overrides a base class's method then it's virtual
         return true;
+    if (pFoundAllBaseClasses)
+        *pFoundAllBaseClasses = foundAllBaseClasses;
     if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
     return defaultVal; //If we can't see all the bases classes then we can't say conclusively
@@ -5017,7 +5021,8 @@ static const Token* skipPointers(const Token* tok)
             tok = tok->tokAt(2);
     }
 
-    if (Token::simpleMatch(tok, "( *") && Token::simpleMatch(tok->link()->previous(), "] ) ;")) {
+    if (Token::simpleMatch(tok, "( *") && Token::simpleMatch(tok->link()->previous(), "] ) ;") &&
+        (tok->tokAt(-1)->isStandardType() || tok->tokAt(-1)->isKeyword() || tok->strAt(-1) == "*")) {
         const Token *tok2 = skipPointers(tok->next());
         if (Token::Match(tok2, "%name% [") && Token::simpleMatch(tok2->linkAt(1), "] ) ;"))
             return tok2;
@@ -5993,6 +5998,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
 
 const Function* SymbolDatabase::findFunction(const Token* const tok) const
 {
+    if (tok->tokType() == Token::Type::eEnumerator)
+        return nullptr;
+
     // find the scope this function is in
     const Scope *currScope = tok->scope();
     while (currScope && currScope->isExecutable()) {

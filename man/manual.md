@@ -913,6 +913,7 @@ Carriage return
 You can add remark comments in the source code that justify why there is a warning/violation.
 
 Such a remark comment shall:
+
  * start with REMARK.
  * can either be added above the source code that generates the warning, or after the code on the same line.
 
@@ -1084,6 +1085,12 @@ Example usage:
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
 # Check Level
+
+## Reduced
+
+The "reduced" check level performs a limited data flow analysis. If developers
+want to run cppcheck directly during development and require faster results
+than "normal" provides then this reduced checking can be an option.
 
 ## Normal
 

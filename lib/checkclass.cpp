@@ -42,10 +42,6 @@
 
 #include "xml.h"
 
-namespace CTU {
-    class FileInfo;
-}
-
 //---------------------------------------------------------------------------
 
 // Register CheckClass..
@@ -2176,7 +2172,8 @@ void CheckClass::checkConst()
             }
 
             // check if base class function is virtual
-            if (!scope->definedType->derivedFrom.empty() && func.isImplicitlyVirtual(true))
+            bool foundAllBaseClasses = true;
+            if (!scope->definedType->derivedFrom.empty() && func.isImplicitlyVirtual(true, &foundAllBaseClasses) && foundAllBaseClasses)
                 continue;
 
             MemberAccess memberAccessed = MemberAccess::NONE;
@@ -2204,9 +2201,9 @@ void CheckClass::checkConst()
                 functionName += "]";
 
             if (func.isInline())
-                checkConstError(func.token, classname, functionName, suggestStatic);
+                checkConstError(func.token, classname, functionName, suggestStatic, foundAllBaseClasses);
             else // not inline
-                checkConstError2(func.token, func.tokenDef, classname, functionName, suggestStatic);
+                checkConstError2(func.token, func.tokenDef, classname, functionName, suggestStatic, foundAllBaseClasses);
         }
     }
 }
@@ -2281,9 +2278,12 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
         // check each base class
+        bool foundAllBaseClasses = true;
         for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
             // find the base class
             const Type *derivedFrom = i.type;
+            if (!derivedFrom)
+                foundAllBaseClasses = false;
 
             // find the function in the base class
             if (derivedFrom && derivedFrom->classScope && derivedFrom->classScope != scope) {
@@ -2291,6 +2291,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
                     return true;
             }
         }
+        if (!foundAllBaseClasses)
+            return true;
     }
 
     return false;
@@ -2630,35 +2632,41 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
     return true;
 }
 
-void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)
+void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic, bool foundAllBaseClasses)
 {
-    checkConstError2(tok, nullptr, classname, funcname, suggestStatic);
+    checkConstError2(tok, nullptr, classname, funcname, suggestStatic, foundAllBaseClasses);
 }
 
-void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic)
+void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic, bool foundAllBaseClasses)
 {
     std::list<const Token *> toks{ tok1 };
     if (tok2)
         toks.push_back(tok2);
-    if (!suggestStatic)
+    if (!suggestStatic) {
+        const std::string msg = foundAllBaseClasses ?
+                                "Technically the member function '$symbol' can be const.\nThe member function '$symbol' can be made a const " :
+                                "Either there is a missing 'override', or the member function '$symbol' can be const.\nUnless it overrides a base class member, the member function '$symbol' can be made a const ";
         reportError(toks, Severity::style, "functionConst",
                     "$symbol:" + classname + "::" + funcname +"\n"
-                    "Technically the member function '$symbol' can be const.\n"
-                    "The member function '$symbol' can be made a const "
+                    + msg +
                     "function. Making this function 'const' should not cause compiler errors. "
                     "Even though the function can be made const function technically it may not make "
                     "sense conceptually. Think about your design and the task of the function first - is "
                     "it a function that must not change object internal state?", CWE398, Certainty::inconclusive);
-    else
+    }
+    else {
+        const std::string msg = foundAllBaseClasses ?
+                                "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\nThe member function '$symbol' can be made a static " :
+                                "Either there is a missing 'override', or the member function '$symbol' can be static.\nUnless it overrides a base class member, the member function '$symbol' can be made a static ";
         reportError(toks, Severity::performance, "functionStatic",
                     "$symbol:" + classname + "::" + funcname +"\n"
-                    "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\n"
-                    "The member function '$symbol' can be made a static "
+                    + msg +
                     "function. Making a function static can bring a performance benefit since no 'this' instance is "
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
                     "is it a function that must not access members of class instances? And maybe it is more appropriate "
                     "to move this function to an unnamed namespace.", CWE398, Certainty::inconclusive);
+    }
 }
 
 //---------------------------------------------------------------------------

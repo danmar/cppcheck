@@ -248,6 +248,7 @@ private:
         TEST_CASE(pointer_out_of_bounds_2);
         TEST_CASE(pointer_out_of_bounds_3);
         TEST_CASE(pointer_out_of_bounds_4);
+        TEST_CASE(pointer_out_of_bounds_5); // #10227
         TEST_CASE(pointer_out_of_bounds_sub);
 
         TEST_CASE(strcat1);
@@ -2578,6 +2579,19 @@ private:
               "    return buf[0];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout_str());
+
+        check("void f() {\n"
+              "    const int a[10] = {};\n"
+              "    for (int n = 0; 1; ++n) {\n"
+              "        if (a[n] < 1) {\n"
+              "            switch (a[n]) {\n"
+              "            case 0:\n"
+              "                break;\n"
+              "            }\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index 9998, which is out of bounds.\n", errout_str());
     }
 
     void array_index_for_neq() {
@@ -3863,6 +3877,12 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void pointer_out_of_bounds_5() { // #10227
+        check("int foo(char str[6]) {\n"
+              "    return !((0 && *(\"STRING\" + 14) == 0) || memcmp(str, \"STRING\", 6) == 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
 
     void pointer_out_of_bounds_sub() {
         // extracttests.start: void dostuff(char *);

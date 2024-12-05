@@ -30,8 +30,6 @@
 #include <unordered_set>
 #include <utility>
 
-class Token;
-
 template<class Predicate, class Compare>
 static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values, Predicate pred, Compare compare)
 {

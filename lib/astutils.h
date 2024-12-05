@@ -118,6 +118,9 @@ const Token* findExpression(nonneg int exprid,
                             const std::function<bool(const Token*)>& pred);
 const Token* findExpression(const Token* start, nonneg int exprid);
 
+/** Does code execution escape from the given scope? */
+const Token* findEscapeStatement(const Scope* scope, const Library* library);
+
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 std::vector<Token*> astFlatten(Token* tok, const char* op);
 
@@ -449,5 +452,7 @@ bool isUnevaluated(const Token *tok);
 bool isExhaustiveSwitch(const Token *startbrace);
 
 bool isUnreachableOperand(const Token *tok);
+
+const Token *skipUnreachableBranch(const Token *tok);
 
 #endif // astutilsH

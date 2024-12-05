@@ -17,6 +17,7 @@
  */
 
 #include "testresultstree.h"
+
 #include "resultstree.h"
 
 // headers that declare mocked functions/variables
@@ -24,15 +25,26 @@
 #include "common.h"
 #include "threadhandler.h"
 #include "projectfile.h"
-#include "xmlreportv2.h"
 
+#include "application.h"
 #include "cppcheck.h"
+#include "erroritem.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "path.h"
+#include "report.h"
 #include "settings.h"
+#include "showtypes.h"
+#include "suppressions.h"
+#include "xmlreport.h"
 
+#include <cstddef>
+#include <set>
+#include <string>
 #include <utility>
 
+#include <QModelIndex>
+#include <QString>
 #include <QtTest>
 
 class TestReport : public Report {
@@ -54,6 +66,7 @@ public:
 };
 
 // Mock GUI...
+ProjectFile::ProjectFile(QObject *parent) : QObject(parent) {}
 ProjectFile *ProjectFile::mActiveProject;
 void ProjectFile::addSuppression(const SuppressionList::Suppression & /*unused*/) {}
 QString ProjectFile::getWarningTags(std::size_t /*unused*/) const {
@@ -66,11 +79,21 @@ bool ProjectFile::write(const QString & /*unused*/) {
 std::string severityToString(Severity severity) {
     return std::to_string((int)severity);
 }
+ApplicationList::ApplicationList(QObject *parent) : QObject(parent) {}
+ApplicationList::~ApplicationList() = default;
 int ApplicationList::getApplicationCount() const {
     return 0;
 }
+ThreadHandler::ThreadHandler(QObject *parent) : QObject(parent) {}
+ThreadHandler::~ThreadHandler() = default;
 bool ThreadHandler::isChecking() const {
     return false;
+}
+void ThreadHandler::stop() {
+    throw 1;
+}
+void ThreadHandler::threadDone() {
+    throw 1;
 }
 Application& ApplicationList::getApplication(const int /*unused*/) {
     throw 1;
@@ -89,6 +112,15 @@ QString XmlReport::unquoteMessage(const QString &message) {
     return message;
 }
 XmlReport::XmlReport(const QString& filename) : Report(filename) {}
+void ThreadResult::fileChecked(const QString & /*unused*/) {
+    throw 1;
+}
+void ThreadResult::reportOut(const std::string & /*unused*/, Color /*unused*/) {
+    throw 1;
+}
+void ThreadResult::reportErr(const ErrorMessage & /*unused*/) {
+    throw 1;
+}
 
 // Mock LIB...
 bool Path::isHeader(std::string const& /*unused*/) {
