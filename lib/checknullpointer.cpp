@@ -468,11 +468,11 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 
         std::string id = "nullPointer";
         if (value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
-            errmsg += " (if there has been failed memory allocation)";
+            errmsg += " (if memory allocation failed)";
             id += "OutOfMemory";
         }
         else if (value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
-            errmsg += " (if there has been failed resource allocation)";
+            errmsg += " (if resource allocation failed)";
             id += "OutOfResources";
         }
 
