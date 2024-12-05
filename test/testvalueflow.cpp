@@ -1820,6 +1820,23 @@ private:
                "    }\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 2U, 0));
+
+        code = "struct S {\n" // #12848
+               "    S* next;\n"
+               "    int a;\n"
+               "};\n"
+               "void f(S* x, int i) {\n"
+               "    while (x) {\n"
+               "        if (x->a == 0) {\n"
+               "            x = x->next;\n"
+               "            continue;\n"
+               "        }\n"
+               "        if (i == 0)\n"
+               "            break;\n"
+               "        x->a = i--;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 13U, 0));
     }
 
     void valueFlowBeforeConditionTernaryOp() { // bailout: ?:
