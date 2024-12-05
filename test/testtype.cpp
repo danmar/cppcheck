@@ -44,6 +44,7 @@ private:
         TEST_CASE(longCastReturn);
         TEST_CASE(checkFloatToIntegerOverflow);
         TEST_CASE(integerOverflow); // #11794
+        TEST_CASE(shiftTooManyBits); // #11496
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -587,6 +588,18 @@ private:
                "    i << 2;\n"
                "}", s, "test.cpp");
         ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout_str());
+    }
+
+    void shiftTooManyBits() { // #11496
+        check("template<unsigned int width> struct B {\n"
+              "    unsigned long long f(unsigned int n) const {\n"
+              "        if (width == 1)\n"
+              "            return 1ULL << width;\n"
+              "        return 0;\n"
+              "    }\n"
+              "};\n"
+              "static B<64> b;\n", settingsDefault);
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
