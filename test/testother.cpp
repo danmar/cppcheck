@@ -10534,6 +10534,23 @@ private:
               "    return j;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #12894
+              "    std::string a;\n"
+              "    void f(const S& s);\n"
+              "    void g(const S& s);\n"
+              "};\n"
+              "void S::f(const S& s) {\n"
+              "    std::string x = a;\n"
+              "    this->operator=(s);\n"
+              "    a = x;\n"
+              "}\n"
+              "void S::g(const S& s) {\n"
+              "    std::string x = a;\n"
+              "    operator=(s);\n"
+              "    a = x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void varFuncNullUB() { // #4482
