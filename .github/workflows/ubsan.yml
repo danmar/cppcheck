@@ -120,6 +120,13 @@ jobs:
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
+      - name: Run test/cli (--cppcheck-build-dir)
+        run: |
+          pwd=$(pwd)
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
+        env:
+          TEST_CPPCHECK_INJECT_BUILDDIR: injected
+
       - name: Generate dependencies
         run: |
           # make sure auto-generated GUI files exist
