@@ -217,7 +217,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
     return_code, stdout, stderr = run_cppcheck()
 
-    if 'TEST_CPPCHECK_INJECT_BUILDDIR' in os.environ:
+    if builddir_tmp:
         # run it again with the generated cache and make sure the output is identical
 
         def get_cache_contents():
