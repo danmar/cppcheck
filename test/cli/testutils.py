@@ -233,13 +233,22 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
         return_code_1, stdout_1, stderr_1 = run_cppcheck()
 
-        assert return_code == return_code_1, 'exitcode different with cached results'
-        assert stdout == stdout_1, 'stdout different with cached results'
-        assert stderr == stderr_1, 'stderr different with cached results'
+        assert return_code == return_code_1
+        print(stdout)
+        print(stdout_1)
+        stdout_lines = stdout.splitlines()
+        # strip some common output only seen during analysis
+        stdout_lines = [entry for entry in stdout_lines if not entry.startswith('Processing rule: ')]
+        stdout_lines = [entry for entry in stdout_lines if not entry.startswith('progress: ')]
+        assert stdout_lines == stdout_1.splitlines()
+        print(stderr)
+        print(stderr_1)
+        assert stderr == stderr_1
+        #register_assert_rewrite
 
         cache_content_1 = get_cache_contents()
 
-        assert cache_content == cache_content_1, 'cache contents changed in-between runs'
+        assert cache_content == cache_content_1
 
     if builddir_tmp:
         builddir_tmp.cleanup()
