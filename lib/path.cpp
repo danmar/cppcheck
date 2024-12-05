@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
-#undef __STRICT_ANSI__
-#endif
-
 //#define LOG_EMACS_MARKER
+
+#if defined(__CYGWIN__)
+#define _POSIX_C_SOURCE 200112L // required to have readlink()
+#endif
 
 #include "path.h"
 #include "utils.h"
