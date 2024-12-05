@@ -139,7 +139,7 @@ public:
      * @return Directory containing source files
      */
 
-    QString getCheckDirectory();
+    QString getCheckDirectory() const;
 
     /**
      * Set settings used in checking
@@ -331,7 +331,7 @@ public slots:
      * @brief Slot printing the current report to the printer.
      * @param printer The printer used for printing the report.
      */
-    void print(QPrinter* printer);
+    void print(QPrinter* printer) const;
 
     /**
      * @brief Slot opening a print preview dialog

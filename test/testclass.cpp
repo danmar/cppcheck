@@ -187,6 +187,7 @@ private:
         TEST_CASE(const93);
         TEST_CASE(const94);
         TEST_CASE(const95); // #13320 - do not warn about r-value ref method
+        TEST_CASE(const96);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -5041,7 +5042,7 @@ private:
                    "public:\n"
                    "    void f(){}\n"
                    "};");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Either there is a missing 'override', or the member function 'derived::f' can be static.\n", errout_str());
     }
 
     void const34() { // ticket #1964
@@ -5827,7 +5828,8 @@ private:
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
                    "};\n", nullptr, false);
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::GetAudioFrame' can be static.\n",
+                      errout_str());
     }
 
     void const62() {
@@ -6674,8 +6676,6 @@ private:
                    "struct S<0> {};\n"
                    "struct D : S<150> {};\n");
         // don't hang
-        // we are not interested in the output - just consume it
-        ignore_errout();
     }
 
     void const93() { // #12162
@@ -6712,6 +6712,15 @@ private:
                    "    std::string get() && { return x; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void const96() { // #13282
+        checkConst("struct S : B {\n"
+                   "    bool f() { return b; }\n"
+                   "    bool g() override { return b; }\n"
+                   "    bool b;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Either there is a missing 'override', or the member function 'S::f' can be const.\n", errout_str());
     }
 
     void const_handleDefaultParameters() {

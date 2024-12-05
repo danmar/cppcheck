@@ -235,7 +235,7 @@ void StyleEditDialog::updateStyle()
     mSampleEditor->setStyle(mStyleOutgoing);
 }
 
-CodeEditorStyle StyleEditDialog::getStyle()
+CodeEditorStyle StyleEditDialog::getStyle() const
 {
     return mStyleOutgoing;
 }

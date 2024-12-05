@@ -4576,13 +4576,15 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
     }
 }
 
-bool Function::isImplicitlyVirtual(bool defaultVal) const
+bool Function::isImplicitlyVirtual(bool defaultVal, bool* pFoundAllBaseClasses) const
 {
     if (hasVirtualSpecifier() || hasOverrideSpecifier() || hasFinalSpecifier())
         return true;
     bool foundAllBaseClasses = true;
     if (getOverriddenFunction(&foundAllBaseClasses)) //If it overrides a base class's method then it's virtual
         return true;
+    if (pFoundAllBaseClasses)
+        *pFoundAllBaseClasses = foundAllBaseClasses;
     if (foundAllBaseClasses) //If we've seen all the base classes and none of the above were true then it must not be virtual
         return false;
     return defaultVal; //If we can't see all the bases classes then we can't say conclusively

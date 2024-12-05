@@ -36,7 +36,7 @@ public:
     explicit SelectColorButton(QWidget* parent);
 
     void setColor(const QColor& color);
-    const QColor& getColor();
+    const QColor& getColor() const;
 
 signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
@@ -57,7 +57,7 @@ public:
     explicit SelectFontWeightCombo(QWidget* parent);
 
     void setWeight(QFont::Weight weight);
-    const QFont::Weight& getWeight();
+    const QFont::Weight& getWeight() const;
 
 signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
