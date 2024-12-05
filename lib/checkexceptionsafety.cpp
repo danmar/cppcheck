@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "astutils.h"
 
 #include <list>
 #include <set>
@@ -239,7 +240,6 @@ void CheckExceptionSafety::catchExceptionByValueError(const Token *tok)
                 "as a (const) reference which is usually recommended in C++.", CWE398, Certainty::normal);
 }
 
-
 static const Token * functionThrowsRecursive(const Function * function, std::set<const Function *> & recursive)
 {
     // check for recursion and bail if found
@@ -251,6 +251,7 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
 
     for (const Token *tok = function->functionScope->bodyStart->next();
          tok != function->functionScope->bodyEnd; tok = tok->next()) {
+        tok = skipUnreachableBranch(tok);
         if (Token::simpleMatch(tok, "try {"))
             tok = tok->linkAt(1);  // skip till start of catch clauses
         if (tok->str() == "throw")
