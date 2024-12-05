@@ -6951,7 +6951,7 @@ static void valueFlowUnknownFunctionReturn(TokenList& tokenlist, const Settings&
         if (!tok->astParent() || tok->str() != "(" || !tok->previous()->isName())
             continue;
 
-        if (settings.library.getAllocFuncInfo(tok->astOperand1()) && settings.library.returnValueType(tok->astOperand1()).find("*") != std::string::npos) {
+        if (settings.library.getAllocFuncInfo(tok->astOperand1()) && settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
             // Allocation function that returns a pointer
             ValueFlow::Value value(0);
             value.setPossible();
