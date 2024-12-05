@@ -3470,7 +3470,7 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
             tok = tok->tokAt(2);
         } else if (Token::Match(tok, "%var% . reset ( )") && selfPointer == tok->variable())
             freeToken = tok;
-        else if (Token::Match(tok->previous(), "!!. %name% (") && tok->function() && tok->function()->nestedIn == classScope) {
+        else if (Token::Match(tok->previous(), "!!. %name% (") && tok->function() && tok->function()->nestedIn == classScope && tok->function()->type == Function::eFunction) {
             if (isDestroyed) {
                 thisUseAfterFree(selfPointer->nameToken(), freeToken, tok);
                 return true;
