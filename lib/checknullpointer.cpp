@@ -555,7 +555,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
         id += "OutOfMemory";
     }
     else if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
-        errmsg = "If resource allocation fail: " + std::tolower(errmsg[0]) + errmsg.substr(1);
+        errmsg = "If resource allocation fail: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
         id += "OutOfResources";
     }
 
