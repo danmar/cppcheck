@@ -1218,6 +1218,7 @@ class CppcheckData:
         """
         :param filename: Path to Cppcheck dump file
         """
+        self.language = None
         self.filename = filename
         self.rawTokens = []
         self.platform = None
@@ -1234,6 +1235,8 @@ class CppcheckData:
         for event, node in ElementTree.iterparse(self.filename, events=('start', 'end')):
             if platform_done and rawtokens_done and suppressions_done:
                 break
+            if node.tag == 'dumps':
+                self.language = node.get('language')
             if node.tag == 'platform' and event == 'start':
                 self.platform = Platform(node)
                 platform_done = True
