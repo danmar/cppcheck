@@ -2079,7 +2079,7 @@ void Tokenizer::simplifyTypedefCpp()
                         for (const std::string &p : pointers)
                             // cppcheck-suppress useStlAlgorithm
                             tok2 = simplifyTypedefInsertToken(tok2, p, location);
-                        if (constTok) {
+                        if (constTok && !functionPtr) {
                             tok2 = simplifyTypedefInsertToken(tok2, "const", location);
                             constTok->deleteThis();
                         }
