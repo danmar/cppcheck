@@ -691,8 +691,6 @@ int main(int argc, char **argv)
                                 "-Wpacked "
                                 "-Wredundant-decls "
                                 "-Wundef "
-                                "-Wno-shadow "
-                                "-Wno-missing-braces "
                                 "-Wno-sign-compare "
                                 "-Wno-multichar "
                                 "-Woverloaded-virtual "
