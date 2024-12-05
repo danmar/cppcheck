@@ -72,6 +72,8 @@ void CheckType::checkTooBigBitwiseShift()
         if (tok->isCpp() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
             tok = tok->linkAt(2);
 
+        tok = skipUnreachableBranch(tok);
+
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
 
