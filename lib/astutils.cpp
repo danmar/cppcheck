@@ -2676,11 +2676,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
             return false;
 
         const Token *ftok = tok2->astParent()->astOperand2();
-        const Token* ctok = tok2->astParent();
-        if (Token::simpleMatch(ctok->astOperand1(), "."))
-            ctok = ctok->astOperand1()->astOperand2();
-        else
-            ctok = ctok->astOperand1();
+        const Token* ctok = tok2;
+        if (Token::simpleMatch(tok2, "."))
+            ctok = tok2->astOperand2();
         if (astIsContainer(ctok) && ctok->valueType() && ctok->valueType()->container) {
             const Library::Container* c = ctok->valueType()->container;
             const Library::Container::Action action = c->getAction(ftok->str());
