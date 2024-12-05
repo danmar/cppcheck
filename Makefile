@@ -592,7 +592,7 @@ $(libcppdir)/mathlib.o: lib/mathlib.cpp externals/simplecpp/simplecpp.h lib/conf
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/mathlib.cpp
 
 $(libcppdir)/path.o: lib/path.cpp externals/simplecpp/simplecpp.h lib/config.h lib/path.h lib/standards.h lib/utils.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/path.cpp
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -U__STRICT_ANSI__ -c -o $@ $(libcppdir)/path.cpp
 
 $(libcppdir)/pathanalysis.o: lib/pathanalysis.cpp lib/astutils.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/pathanalysis.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/pathanalysis.cpp
