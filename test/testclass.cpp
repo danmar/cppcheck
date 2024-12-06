@@ -188,6 +188,7 @@ private:
         TEST_CASE(const94);
         TEST_CASE(const95); // #13320 - do not warn about r-value ref method
         TEST_CASE(const96);
+        TEST_CASE(const97);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6721,6 +6722,45 @@ private:
                    "    bool b;\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Either there is a missing 'override', or the member function 'S::f' can be const.\n", errout_str());
+    }
+
+    void const97() { // #13301
+        checkConst("struct S {\n"
+                   "    std::vector<int> v;\n"
+                   "    int f() {\n"
+                   "        const int& r = v.front();\n"
+                   "        return r;\n"
+                   "    }\n"
+                   "    int g() {\n"
+                   "        const int& r = v.at(0);\n"
+                   "        return r;\n"
+                   "    }\n"
+                   "    void h() {\n"
+                   "        if (v.front() == 0) {}\n"
+                   "        if (1 == v.front()) {}\n"
+                   "    }\n"
+                   "    void i() {\n"
+                   "        v.at(0) = 0;\n"
+                   "    }\n"
+                   "    void j() {\n"
+                   "        dostuff(1, v.at(0));\n"
+                   "    }\n"
+                   "    void k() {\n"
+                   "        int& r = v.front();\n"
+                   "        r = 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:7]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
+                      errout_str());
+
+        checkConst("struct B { std::string s; };\n"
+                   "struct D : B {\n"
+                   "    bool f(std::string::iterator it) { return it == B::s.begin(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'D::f' can be const.\n",
+                      errout_str());
     }
 
     void const_handleDefaultParameters() {
