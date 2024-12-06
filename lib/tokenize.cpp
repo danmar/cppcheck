@@ -7892,15 +7892,6 @@ bool Tokenizer::simplifyRedundantParentheses()
             continue;
         }
 
-        while (Token::simpleMatch(tok, "( (") &&
-               tok->link() && tok->link()->previous() == tok->linkAt(1)) {
-            // We have "(( *something* ))", remove the inner
-            // parentheses
-            tok->deleteNext();
-            tok->link()->tokAt(-2)->deleteNext();
-            ret = true;
-        }
-
         if (isCPP() && Token::Match(tok->tokAt(-2), "[;{}=(] new (") && Token::Match(tok->link(), ") [;,{}[]")) {
             // Remove the parentheses in "new (type)" constructs
             tok->link()->deleteThis();
@@ -7971,7 +7962,7 @@ bool Tokenizer::simplifyRedundantParentheses()
         }
 
         while (Token::Match(tok->previous(), "[{([,] ( !!{") &&
-               Token::Match(tok->link(), ") [;,])]") &&
+               Token::Match(tok->link(), ") [;,])] !!{") &&
                !Token::simpleMatch(tok->tokAt(-2), "operator ,") && // Ticket #5709
                !Token::findsimplematch(tok, ",", tok->link())) {
             // We have "( ... )", remove the parentheses

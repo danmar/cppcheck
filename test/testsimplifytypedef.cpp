@@ -1154,7 +1154,7 @@ private:
             "int main ( ) "
             "{ "
             ""
-            "VERIFY ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ; "
+            "VERIFY ( ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ) ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
