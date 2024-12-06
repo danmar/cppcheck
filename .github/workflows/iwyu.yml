@@ -31,7 +31,7 @@ jobs:
       image: ${{ matrix.image }}
 
     env:
-      QT_VERSION: 6.8.0
+      QT_VERSION: 6.8.1
 
     steps:
       - uses: actions/checkout@v4
@@ -156,7 +156,7 @@ jobs:
     if: ${{ github.repository_owner == 'danmar' }}
 
     env:
-      QT_VERSION: 6.8.0
+      QT_VERSION: 6.8.1
 
     steps:
       - uses: actions/checkout@v4
