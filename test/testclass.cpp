@@ -6715,13 +6715,22 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void const96() { // #13282
-        checkConst("struct S : B {\n"
+    void const96() {
+        checkConst("struct S : B {\n" // #13282
                    "    bool f() { return b; }\n"
                    "    bool g() override { return b; }\n"
                    "    bool b;\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Either there is a missing 'override', or the member function 'S::f' can be const.\n", errout_str());
+
+        checkConst("struct B;\n" // #13382
+                   "struct S : B {\n"
+                   "    void f();\n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    B::g(0);\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void const97() { // #13301
