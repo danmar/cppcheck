@@ -4525,7 +4525,7 @@ class MisraChecker:
         else:
             self.printStatus('Checking ' + dumpfile + '...')
 
-        self.is_cpp = data.files and data.files[0].endswith('.cpp')
+        self.is_cpp = data.language == 'cpp'
 
         for cfgNumber, cfg in enumerate(data.iterconfigurations()):
             if not self.settings.quiet:
