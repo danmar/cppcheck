@@ -2282,7 +2282,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
             // find the base class
             const Type *derivedFrom = i.type;
-            if (!derivedFrom)
+            if (!derivedFrom || !derivedFrom->classScope)
                 foundAllBaseClasses = false;
 
             // find the function in the base class
