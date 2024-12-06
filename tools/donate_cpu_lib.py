@@ -544,7 +544,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
                 cmd += dir_to_scan
             _, st_stdout, _, _ = __run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
-            if not gdb_pos == -1:
+            if gdb_pos != -1:
                 last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
                 if last_check_pos == -1:
                     stacktrace = st_stdout[gdb_pos:]
@@ -764,10 +764,10 @@ class LibraryIncludes:
 def get_compiler_version():
     if __make_cmd == 'msbuild.exe':
         _, _, stderr, _ = __run_command('cl.exe', False)
-        return stderr.split('\n')[0]
+        return stderr.split('\n', maxsplit=1)[0]
 
     _, stdout, _, _ = __run_command('g++ --version', False)
-    return stdout.split('\n')[0]
+    return stdout.split('\n', maxsplit=1)[0]
 
 
 def get_client_version():
