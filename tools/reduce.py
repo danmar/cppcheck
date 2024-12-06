@@ -64,7 +64,7 @@ class Reduce:
             timeout = self.__elapsed_time * 2
         p = subprocess.Popen(self.__cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         try:
-            comm = self.__communicate(p, timeout=timeout)
+            stdout, stderr = self.__communicate(p, timeout=timeout)
         except TimeoutExpired:
             print('timeout')
             p.kill()
@@ -78,13 +78,13 @@ class Reduce:
             if p.returncode != 0:
                 return True
         elif p.returncode == 0:
-            out = comm[0] + '\n' + comm[1]
+            out = stdout + '\n' + stderr
             if self.__expected in out:
                 return True
         else:
             # Something could be wrong, for example the command line for Cppcheck (CMD).
             # Print the output to give a hint how to fix it.
-            print('Error: {}\n{}'.format(comm[0], comm[1]))
+            print('Error: {}\n{}'.format(stdout, stderr))
         return False
 
     def __writefile(self, filename, filedata):

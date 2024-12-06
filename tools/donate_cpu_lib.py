@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.65"
+CLIENT_VERSION = "1.3.66"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -403,13 +403,12 @@ def __run_command(cmd, print_cmd=True):
     if print_cmd:
         print(cmd)
     time_start = time.time()
-    comm = None
     if sys.platform == 'win32':
         p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape')
     else:
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape', preexec_fn=os.setsid)
     try:
-        comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
+        stdout, stderr = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
@@ -422,16 +421,16 @@ def __run_command(cmd, print_cmd=True):
                 child.terminate()
             try:
                 # call with timeout since it might get stuck e.g. gcc-arm-none-eabi
-                comm = p.communicate(timeout=5)
+                stdout, stderr = p.communicate(timeout=5)
                 p = None
             except subprocess.TimeoutExpired:
                 pass
     finally:
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-            comm = p.communicate()
+            stdout, stderr = p.communicate()
+            p = None
     time_stop = time.time()
-    stdout, stderr = comm
     elapsed_time = time_stop - time_start
     return return_code, stdout, stderr, elapsed_time
 
@@ -545,7 +544,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, 
                 cmd += dir_to_scan
             _, st_stdout, _, _ = __run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
-            if not gdb_pos == -1:
+            if gdb_pos != -1:
                 last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
                 if last_check_pos == -1:
                     stacktrace = st_stdout[gdb_pos:]
@@ -765,10 +764,10 @@ class LibraryIncludes:
 def get_compiler_version():
     if __make_cmd == 'msbuild.exe':
         _, _, stderr, _ = __run_command('cl.exe', False)
-        return stderr.split('\n')[0]
+        return stderr.split('\n', maxsplit=1)[0]
 
     _, stdout, _, _ = __run_command('g++ --version', False)
-    return stdout.split('\n')[0]
+    return stdout.split('\n', maxsplit=1)[0]
 
 
 def get_client_version():

@@ -10,16 +10,17 @@ def run(cppcheck_path, options):
     print('running {}'.format(cppcheck_path))
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True) as p:
         stdout, stderr = p.communicate()
-        # only 0 and 1 are well-defined in this case
-        if p.returncode > 1:
-            print('error')
-            return None, None, None
-        # signals are reported as negative exitcode (e.g. SIGSEGV -> -11)
-        if p.returncode < 0:
-            print('crash')
-            return p.returncode, stderr, stdout
-        print('done')
-        return p.returncode, stderr, stdout
+        rc = p.returncode
+    # only 0 and 1 are well-defined in this case
+    if rc > 1:
+        print('error')
+        return None, None, None
+    # signals are reported as negative exitcode (e.g. SIGSEGV -> -11)
+    if rc < 0:
+        print('crash')
+        return rc, stderr, stdout
+    print('done')
+    return rc, stderr, stdout
 
 
 # TODO: check arguments

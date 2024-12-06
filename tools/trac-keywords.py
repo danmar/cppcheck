@@ -8,8 +8,9 @@ TRACDB = 'trac.db'
 def readdb():
     cmds = ['sqlite3', TRACDB, 'SELECT id,keywords FROM ticket WHERE status<>"closed";']
     with subprocess.Popen(cmds, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
-        comm = p.communicate()
-    data = comm[0]
+        # TODO: handle p.returncode?
+        stdout, _ = p.communicate()
+    data = stdout
     ret = {}
     for line in data.splitlines():
         pos1 = line.find('|')

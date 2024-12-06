@@ -1714,8 +1714,9 @@ def get_path_premium_addon():
 
 def cmd_output(cmd):
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
-        comm = p.communicate()
-        out = comm[0]
-        if p.returncode == 1 and len(comm[1]) > 2:
-            out = comm[1]
-        return out.decode(encoding='utf-8', errors='ignore')
+        stdout, stderr = p.communicate()
+        rc = p.returncode
+    out = stdout
+    if rc == 1 and len(stderr) > 2:
+        out = stderr
+    return out.decode(encoding='utf-8', errors='ignore')
