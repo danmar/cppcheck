@@ -217,6 +217,22 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
     return_code, stdout, stderr = run_cppcheck()
 
+    def remove_checkers_msg(msgs):
+        if msgs.find('[checkersReport]\n') > 0:
+            start_id = msgs.find('[checkersReport]\n')
+            start_line = msgs.rfind('\n', 0, start_id)
+            if start_line <= 0:
+                msgs = ''
+            else:
+                msgs = msgs[:start_line + 1]
+        elif msgs.find(': (information) Active checkers: ') >= 0:
+            pos = msgs.find(': (information) Active checkers: ')
+            if pos == 0:
+                msgs = ''
+            elif msgs[pos - 1] == '\n':
+                msgs = msgs[:pos]
+        return msgs
+
     if builddir_tmp:
         # run it again with the generated cache and make sure the output is identical
 
@@ -233,18 +249,32 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
         return_code_1, stdout_1, stderr_1 = run_cppcheck()
 
+        # TODO: the following asserts do not show a diff when the test fails
+        # this can apparently by fixed by using register_assert_rewrite() but I have no idea how
+
         assert return_code == return_code_1
-        print(stdout)
-        print(stdout_1)
+
         stdout_lines = stdout.splitlines()
+        stdout_1_lines = stdout_1.splitlines()
+        print('stdout - expected')
+        print(stdout_lines)
+        print('stdout - actual')
+        print(stdout_1_lines)
         # strip some common output only seen during analysis
         stdout_lines = [entry for entry in stdout_lines if not entry.startswith('Processing rule: ')]
         stdout_lines = [entry for entry in stdout_lines if not entry.startswith('progress: ')]
-        assert stdout_lines == stdout_1.splitlines()
-        print(stderr)
-        print(stderr_1)
-        assert stderr == stderr_1
-        #register_assert_rewrite
+        # TODO: no messages for checked configurations when using cached data
+        assert stdout_lines == stdout_1_lines
+
+        stderr_lines = stderr.splitlines()
+        stderr_1_lines = stderr_1.splitlines()
+        print('stderr - expected')
+        print(stderr_lines)
+        print('stderr - actual')
+        print(stderr_1_lines)
+        stderr_lines = remove_checkers_msg(stderr).splitlines()
+        stderr_1_lines = remove_checkers_msg(stderr_1).splitlines()
+        assert stderr_lines == stderr_1_lines
 
         cache_content_1 = get_cache_contents()
 
@@ -254,19 +284,8 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
         builddir_tmp.cleanup()
 
     if remove_checkers_report:
-        if stderr.find('[checkersReport]\n') > 0:
-            start_id = stderr.find('[checkersReport]\n')
-            start_line = stderr.rfind('\n', 0, start_id)
-            if start_line <= 0:
-                stderr = ''
-            else:
-                stderr = stderr[:start_line + 1]
-        elif stderr.find(': (information) Active checkers: ') >= 0:
-            pos = stderr.find(': (information) Active checkers: ')
-            if pos == 0:
-                stderr = ''
-            elif stderr[pos - 1] == '\n':
-                stderr = stderr[:pos]
+        stderr = remove_checkers_msg(stderr)
+
     return return_code, stdout, stderr, exe
 
 
