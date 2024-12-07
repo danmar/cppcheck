@@ -272,6 +272,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
         print(stderr_lines)
         print('stderr - actual')
         print(stderr_1_lines)
+        # TODO: filter out checkersReport because reports different amount of active checkers for cached runs
         stderr_lines = remove_checkers_msg(stderr).splitlines()
         stderr_1_lines = remove_checkers_msg(stderr_1).splitlines()
         assert stderr_lines == stderr_1_lines
