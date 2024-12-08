@@ -107,6 +107,7 @@ void CheckFunctions::invalidFunctionUsage()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            tok = skipUnreachableBranch(tok);
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
