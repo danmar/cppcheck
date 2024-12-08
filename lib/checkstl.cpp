@@ -725,6 +725,28 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     return false;
 }
 
+// First it groups the lifetimes together using std::partition with the lifetimes that refer to the same token or token of a subexpression.
+// Then it finds the lifetime in that group that refers to the "highest" parent using std::min_element and adds that to the vector.
+static std::vector<ValueFlow::Value> pruneLifetimes(std::vector<ValueFlow::Value> lifetimes)
+{
+    std::vector<ValueFlow::Value> result;
+    auto start = lifetimes.begin();
+    while (start != lifetimes.end())
+    {
+        const Token* tok1 = start->tokvalue;
+        auto it = std::partition(start, lifetimes.end(), [&](const ValueFlow::Value& v) {
+            const Token* tok2 = v.tokvalue;
+            return astHasToken(tok1, tok2) || astHasToken(tok2, tok1);
+        });
+        auto root = std::min_element(start, it, [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+            return x.tokvalue != y.tokvalue && astHasToken(x.tokvalue, y.tokvalue);
+        });
+        result.push_back(*root);
+        start = it;
+    }
+    return result;
+}
+
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
     auto findIterVal = [](const std::vector<ValueFlow::Value>& values, const std::vector<ValueFlow::Value>::const_iterator beg) {
@@ -732,7 +754,7 @@ static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigi
             return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
         });
     };
-    std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, false, path);
+    std::vector<ValueFlow::Value> values = pruneLifetimes(ValueFlow::getLifetimeObjValues(tok, false, path));
     auto it = findIterVal(values, values.begin());
     if (it != values.end()) {
         auto it2 = findIterVal(values, it + 1);
