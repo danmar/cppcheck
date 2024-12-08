@@ -1446,11 +1446,12 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     if (mSettings.addons.empty() || files.empty())
         return;
 
-    FilesDeleter filesDeleter;
+    const bool isCtuInfo = endsWith(files[0], ".ctu-info");
 
+    FilesDeleter filesDeleter;
     std::string fileList;
 
-    if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
+    if (files.size() >= 2) {
         // TODO: can this conflict when using -j?
         fileList = Path::getPathFromFilename(files[0]) + FILELIST + ("-" + std::to_string(mSettings.pid)) + ".txt";
         std::ofstream fout(fileList);
@@ -1466,7 +1467,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string ctuInfo;
 
     for (const AddonInfo &addonInfo : mSettings.addonInfos) {
-        if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
+        if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
 
         const std::vector<picojson::value> results =
@@ -1532,7 +1533,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
         }
     }
 
-    if (!mSettings.buildDir.empty() && fileList.empty()) {
+    if (!mSettings.buildDir.empty() && !isCtuInfo) {
         const std::string& ctuInfoFile = getCtuInfoFileName(files[0]);
         std::ofstream fout(ctuInfoFile);
         fout << ctuInfo;
