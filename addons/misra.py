@@ -1588,16 +1588,23 @@ class MisraChecker:
 
     def misra_2_5(self, dumpfile, cfg):
         used_macros = []
+        unused_macro = {}
         for m in cfg.macro_usage:
             used_macros.append(m.name)
-        summary = []
         for directive in cfg.directives:
-            res = re.match(r'#define[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
-            if res:
-                macro_name = res.group(1)
-                summary.append({'name': macro_name, 'used': (macro_name in used_macros), 'file': directive.file, 'line': directive.linenr, 'column': directive.column})
-        if len(summary) > 0:
-            cppcheckdata.reportSummary(dumpfile, 'MisraMacro', summary)
+            res_define = re.match(r'#define[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
+            res_undef = re.match(r'#undef[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
+            if res_define:
+                macro_name = res_define.group(1)
+                unused_macro[macro_name+'_define'] = {'name': macro_name+'_define', 'used': (macro_name in used_macros),
+                                            'file': directive.file,'line': directive.linenr, 'column': directive.column}
+            elif res_undef:
+                macro_name = res_undef.group(1)
+                unused_macro[macro_name+'_undef'] = {'name': macro_name + '_undef', 'used': (macro_name in used_macros),
+                                            'file': directive.file,
+                                            'line': directive.linenr, 'column': directive.column}
+        if unused_macro:
+            cppcheckdata.reportSummary(dumpfile, 'MisraMacro', list(unused_macro.values()))
 
     def misra_2_7(self, data):
         for func in data.functions:
@@ -4801,10 +4808,15 @@ class MisraChecker:
         unused_tags = [tag for tag in all_tagname_info.values() if not tag['used']]
         for tag in unused_tags:
             self.reportError(Location(tag), 2, 4)
-
-        unused_macros = [m for m in all_macro_info.values() if not m['used']]
-        for m in unused_macros:
-            self.reportError(Location(m), 2, 5)
+        for m_key,m_value in all_macro_info.items():
+            i = m_key.rfind('_')
+            m_key_name,m_directive = m_key[:i], m_key[i+1: ]
+            if m_directive == 'undef' and m_key_name + '_define' in all_macro_info:
+                continue
+            if m_directive == 'define' and m_key_name + '_undef' in all_macro_info:
+                continue
+            if not m_value['used']:
+                self.reportError(Location(m_value), 2, 5)
 
         all_external_identifiers = all_external_identifiers_decl
         all_external_identifiers.update(all_external_identifiers_def)
