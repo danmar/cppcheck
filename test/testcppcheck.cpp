@@ -244,7 +244,7 @@ private:
         ASSERT_EQUALS(expected2, cppcheck.getLibraryDumpData());
     }
 
-    void getClangFlagsIncludeFile() {
+    void getClangFlagsIncludeFile() const {
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
         cppcheck.settings().userIncludes.emplace_back("1.h");
