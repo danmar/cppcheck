@@ -641,7 +641,7 @@ namespace ValueFlow
                         const ValueType *dst = tok->valueType();
                         if (dst) {
                             const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-                            long long newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
+                            MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue < v.intvalue) {
                                     v.invertBound();
@@ -671,7 +671,7 @@ namespace ValueFlow
                         const ValueType *dst = tok->valueType();
                         if (dst) {
                             const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-                            long long newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
+                            MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue > v.intvalue) {
                                     v.invertBound();
