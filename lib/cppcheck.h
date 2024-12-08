@@ -181,8 +181,9 @@ private:
     /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
+     * @param analyzerInformation the analyzer infomation
      */
-    void checkNormalTokens(const Tokenizer &tokenizer);
+    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation);
 
     /**
      * Execute addons
@@ -225,8 +226,6 @@ private:
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
-
-    std::unique_ptr<AnalyzerInformation> mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
     ExecuteCmdFn mExecuteCommand;
