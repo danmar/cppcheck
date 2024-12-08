@@ -1452,7 +1452,6 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
     std::string fileList;
 
     if (files.size() >= 2) {
-        // TODO: can this conflict when using -j?
         fileList = Path::getPathFromFilename(files[0]) + FILELIST + ("-" + std::to_string(mSettings.pid)) + ".txt";
         std::ofstream fout(fileList);
         filesDeleter.addFile(fileList);
