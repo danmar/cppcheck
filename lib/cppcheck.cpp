@@ -1260,15 +1260,15 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         mErrorLogger.reportErr(errmsg);
     }
 
-    if (analyzerInformation) {
-        mLogger->setAnalyzerInfo(nullptr);
-        analyzerInformation.reset();
-    }
-
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
     if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
         SuppressionList::reportUnmatchedSuppressions(mSettings.supprs.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+    }
+
+    if (analyzerInformation) {
+        mLogger->setAnalyzerInfo(nullptr);
+        analyzerInformation.reset();
     }
 
     // TODO: clear earlier?
