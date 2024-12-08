@@ -160,6 +160,13 @@ public:
 
     std::string getLibraryDumpData() const;
 
+    /**
+     * @brief Get the clang command line flags using the Settings
+     * @param fileLang language guessed from filename
+     * @return Clang command line flags
+     */
+    std::string getClangFlags(Standards::Language fileLang) const;
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */

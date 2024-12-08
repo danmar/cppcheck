@@ -424,6 +424,35 @@ std::string CppCheck::getLibraryDumpData() const {
     return out;
 }
 
+std::string CppCheck::getClangFlags(Standards::Language fileLang) const {
+    std::string flags;
+
+    const Standards::Language lang = mSettings.enforcedLang != Standards::None ? mSettings.enforcedLang : fileLang;
+
+    switch (lang) {
+    case Standards::Language::C:
+        flags = "-x c ";
+        if (!mSettings.standards.stdValueC.empty())
+            flags += "-std=" + mSettings.standards.stdValueC + " ";
+        break;
+    case Standards::Language::CPP:
+        flags += "-x c++ ";
+        if (!mSettings.standards.stdValueCPP.empty())
+            flags += "-std=" + mSettings.standards.stdValueCPP + " ";
+        break;
+    };
+
+    for (const std::string &i: mSettings.includePaths)
+        flags += "-I" + i + " ";
+
+    flags += getDefinesFlags(mSettings.userDefines);
+
+    for (const std::string &i: mSettings.userIncludes)
+        flags += "--include " + cmdFileName(i) + " ";
+
+    return flags;
+}
+
 unsigned int CppCheck::checkClang(const FileWithDetails &file)
 {
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -433,12 +462,6 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         mErrorLogger.reportOut(std::string("Checking ") + file.spath() + " ...", Color::FgGreen);
 
     // TODO: get language from FileWithDetails object
-    bool isCpp;
-    if (mSettings.enforcedLang != Standards::None)
-        isCpp = (mSettings.enforcedLang == Standards::CPP);
-    else
-        isCpp = Path::identify(file.spath(), mSettings.cppHeaderProbe) == Standards::Language::CPP;
-    const std::string langOpt = isCpp ? "-x c++" : "-x c";
     const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), emptyString);
     const std::string clangcmd = analyzerInfo + ".clang-cmd";
     const std::string clangStderr = analyzerInfo + ".clang-stderr";
@@ -451,18 +474,9 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     }
 #endif
 
-    std::string flags(langOpt + " ");
-    if (isCpp && !mSettings.standards.stdValueCPP.empty())
-        flags += "-std=" + mSettings.standards.stdValueCPP + " ";
-    if (!isCpp && !mSettings.standards.stdValueC.empty())
-        flags += "-std=" + mSettings.standards.stdValueC + " ";
-
-    for (const std::string &i: mSettings.includePaths)
-        flags += "-I" + i + " ";
-
-    flags += getDefinesFlags(mSettings.userDefines);
-
-    const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " + flags + file.spath();
+    const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
+                              getClangFlags(Path::identify(file.spath(), mSettings.cppHeaderProbe)) +
+                              file.spath();
     const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
     if (!mSettings.buildDir.empty()) {
         std::ofstream fout(clangcmd);
