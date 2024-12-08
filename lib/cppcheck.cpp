@@ -441,7 +441,7 @@ std::string CppCheck::getClangFlags(Standards::Language fileLang) const {
         if (!mSettings.standards.stdValueCPP.empty())
             flags += "-std=" + mSettings.standards.stdValueCPP + " ";
         break;
-    };
+    }
 
     for (const std::string &i: mSettings.includePaths)
         flags += "-I" + i + " ";
