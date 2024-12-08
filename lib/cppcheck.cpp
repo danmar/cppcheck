@@ -430,6 +430,7 @@ std::string CppCheck::getClangFlags(Standards::Language fileLang) const {
     const Standards::Language lang = mSettings.enforcedLang != Standards::None ? mSettings.enforcedLang : fileLang;
 
     switch (lang) {
+    case Standards::Language::None:
     case Standards::Language::C:
         flags = "-x c ";
         if (!mSettings.standards.stdValueC.empty())
