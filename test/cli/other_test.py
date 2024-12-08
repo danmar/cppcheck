@@ -2316,3 +2316,66 @@ void f(bool b)
     hash_2 = root.get('hash')
 
     assert hash_1 != hash_2
+
+
+# TODO: remove all overrides when fully fixed
+def __test_inline_suppr(tmp_path, extra_args):  # #13087
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f() {
+  // cppcheck-suppress memleak
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--inline-suppr',
+        str(test_file)
+    ]
+
+    args += extra_args
+
+    exitcode, stdout, stderr, = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:4:0: information: Unmatched suppression: memleak [unmatchedSuppression]'.format(test_file)
+    ]
+
+
+def test_inline_suppr(tmp_path):
+    __test_inline_suppr(tmp_path, ['-j1'])
+
+
+def test_inline_suppr_j(tmp_path):
+    __test_inline_suppr(tmp_path, ['-j2'])
+
+
+def test_inline_suppr_builddir(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+@pytest.mark.xfail(strict=False)
+def test_inline_suppr_builddir_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+def test_inline_suppr_builddir_j(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+
+
+def test_inline_suppr_builddir_j_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
