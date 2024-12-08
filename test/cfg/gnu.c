@@ -53,6 +53,7 @@ int deallocuse_backtrace(int size) {
     void **buffer = (void **)malloc(sizeof(void *) * size);
     free(buffer);
     // cppcheck-suppress deallocuse
+    // cppcheck-suppress nullPointerOutOfMemory
     int numEntries = backtrace(buffer, size);
     return numEntries;
 }
@@ -331,6 +332,7 @@ void valid_code(int argInt1, va_list valist_arg, const int * parg)
     // cppcheck-suppress valueFlowBailoutIncompleteVar
     const void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
+    // cppcheck-suppress nullPointerOutOfMemory
     munmap(p_mmap, 1);
 
     uint16_t i16_1 = 0, i16_2;
@@ -427,6 +429,7 @@ void memleak_asprintf8(const char *fmt, const int arg) // #12204
 void memleak_xmalloc()
 {
     char *p = (char*)xmalloc(10);
+    // cppcheck-suppress nullPointerOutOfMemory
     p[9] = 0;
     // cppcheck-suppress memleak
 }
@@ -464,14 +467,18 @@ void bufferAccessOutOfBounds()
     sethostname(buf, 4);
 
     char * pAlloc1 = xcalloc(2, 4);
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 8);
     // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 9);
     free(pAlloc1);
 
     char * pAlloc2 = xmalloc(4);
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc2, 0, 4);
     // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc2, 0, 5);
 
     pAlloc2 = xrealloc(pAlloc2, 10);

@@ -921,11 +921,13 @@ typedef struct {
 
 S_memalign* posix_memalign_memleak(size_t n) { // #12248
     S_memalign* s = malloc(sizeof(*s));
+    // cppcheck-suppress nullPointerOutOfMemory
     s->N = n;
     if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
         free(s);
         return NULL;
     }
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(s->data, 0, n * sizeof(int));
     return s;
 }
@@ -1155,13 +1157,16 @@ int munmap_no_double_free(int tofd, // #11396
         return -1;
     }
 
+    // cppcheck-suppress nullPointerOutOfMemory
     memcpy(tptr,fptr,len);
 
+    // cppcheck-suppress nullPointerOutOfMemory
     if ((rc = munmap(fptr,len)) != 0) {
         // cppcheck-suppress memleak
         return -1;
     }
 
+    // cppcheck-suppress nullPointerOutOfMemory
     if ((rc = munmap(tptr,len)) != 0) {
         return -1;
     }
@@ -1181,6 +1186,7 @@ void resourceLeak_fdopen2(const char* fn) // #2767
     // cppcheck-suppress valueFlowBailoutIncompleteVar
     int fi = open(fn, O_RDONLY);
     FILE* fd = fdopen(fi, "r");
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fd);
 }
 
@@ -1240,8 +1246,10 @@ void resourceLeak_open2(void)
 void noleak(int x, int y, int z)
 {
     DIR *p1 = fdopendir(x);
+    // cppcheck-suppress nullPointerOutOfResources
     closedir(p1);
     DIR *p2 = opendir("abc");
+    // cppcheck-suppress nullPointerOutOfResources
     closedir(p2);
     int s = socket(AF_INET,SOCK_STREAM,0);
     close(s);

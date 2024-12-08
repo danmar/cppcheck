@@ -63,6 +63,7 @@ void em_asm_ptr_memleak_test()
     const char *str = static_cast<char*>(EM_ASM_PTR({
         return stringToNewUTF8("Hello");
     }));
+    // cppcheck-suppress nullPointerOutOfMemory
     printf("%s", str);
 
     // cppcheck-suppress memleak

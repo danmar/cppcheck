@@ -353,9 +353,11 @@ void invalidFunctionArgStr_fopen(const char * const fileName, const char * const
     const char modeBuf[] = {'r'};
     // cppcheck-suppress invalidFunctionArgStr
     FILE *fp = fopen(fileName, modeBuf);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
     // cppcheck-suppress invalidFunctionArgStr
     fp = fopen(fileNameBuf, mode);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 

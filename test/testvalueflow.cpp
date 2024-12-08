@@ -137,7 +137,8 @@ private:
         TEST_CASE(valueFlowDynamicBufferSize);
 
         TEST_CASE(valueFlowSafeFunctionParameterValues);
-        TEST_CASE(valueFlowUnknownFunctionReturn);
+        TEST_CASE(valueFlowUnknownFunctionReturnRand);
+        TEST_CASE(valueFlowUnknownFunctionReturnMalloc);
 
         TEST_CASE(valueFlowPointerAliasDeref);
 
@@ -7240,7 +7241,7 @@ private:
     }
 
 
-    void valueFlowUnknownFunctionReturn() {
+    void valueFlowUnknownFunctionReturnRand() {
         const char *code;
         std::list<ValueFlow::Value> values;
         /*const*/ Settings s = settingsBuilder().library("std.cfg").build();
@@ -7252,6 +7253,19 @@ private:
         ASSERT_EQUALS(INT_MIN, values.front().intvalue);
         ASSERT_EQUALS(INT_MAX, values.back().intvalue);
     }
+
+    void valueFlowUnknownFunctionReturnMalloc() { // #4626
+        const char *code;
+        const Settings s = settingsBuilder().library("std.cfg").build();
+
+        code = "ptr = malloc(10);";
+        const auto& values = tokenValues(code, "(", &s);
+        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(true, values.front().isIntValue());
+        ASSERT_EQUALS(true, values.front().isPossible());
+        ASSERT_EQUALS(0, values.front().intvalue);
+    }
+
 
     void valueFlowPointerAliasDeref() {
         const char* code;
