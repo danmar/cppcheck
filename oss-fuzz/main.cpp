@@ -18,16 +18,22 @@
 
 #include "cppcheck.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "filesettings.h"
-#include "type2.h"
+#include "settings.h"
 
-#ifdef NO_FUZZ
+#include <string>
+
+#ifndef NO_FUZZ
+#include <cstddef>
+#include <cstdint>
+
+#include "type2.h"
+#else
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
 #endif
-
-enum class Color : std::uint8_t;
 
 class DummyErrorLogger : public ErrorLogger {
 public:
