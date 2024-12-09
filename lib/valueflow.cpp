@@ -6960,18 +6960,19 @@ static void valueFlowUnknownFunctionReturn(TokenList& tokenlist, const Settings&
         if (!tok->astParent() || tok->str() != "(" || !tok->previous()->isName())
             continue;
 
-        if (settings.library.getAllocFuncInfo(tok->astOperand1()) && settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
-            // Allocation function that returns a pointer
-            ValueFlow::Value value(0);
-            value.setPossible();
-            value.errorPath.emplace_back(tok, "Assuming allocation function fails");
-            const auto* f = settings.library.getAllocFuncInfo(tok->astOperand1());
-            if (Library::ismemory(f->groupId))
-                value.unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::outOfMemory;
-            else
-                value.unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::outOfResources;
-            setTokenValue(tok, value, settings);
-            continue;
+        if (const auto* f = settings.library.getAllocFuncInfo(tok->astOperand1())) {
+            if (settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
+                // Allocation function that returns a pointer
+                ValueFlow::Value value(0);
+                value.setPossible();
+                value.errorPath.emplace_back(tok, "Assuming allocation function fails");
+                if (Library::ismemory(f->groupId))
+                    value.unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::outOfMemory;
+                else
+                    value.unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::outOfResources;
+                setTokenValue(tok, value, settings);
+                continue;
+            }
         }
 
         if (settings.checkUnknownFunctionReturn.find(tok->strAt(-1)) == settings.checkUnknownFunctionReturn.end())
