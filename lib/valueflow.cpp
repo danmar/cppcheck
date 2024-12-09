@@ -6970,7 +6970,7 @@ static void valueFlowUnknownFunctionReturn(TokenList& tokenlist, const Settings&
                     value.unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::outOfMemory;
                 else
                     value.unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::outOfResources;
-                setTokenValue(tok, value, settings);
+                setTokenValue(tok, std::move(value), settings);
                 continue;
             }
         }
