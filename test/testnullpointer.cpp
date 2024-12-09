@@ -2769,7 +2769,7 @@ private:
               "    (*kep)->next = 0;\n"
               "    (*kep)->len = slen;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) If memory allocation fail: null pointer dereference: *kep\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) If memory allocation fails, then there is a possible null pointer dereference: *kep\n", errout_str());
     }
 
     void nullpointer95() // #11142
@@ -4087,7 +4087,7 @@ private:
               "    *p = 0;\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) If memory allocation fail: null pointer dereference: p\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) If memory allocation fails, then there is a possible null pointer dereference: p\n", errout_str());
 
         check("void f() {\n"
               "    int *p = malloc(10);\n"
