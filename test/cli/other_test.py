@@ -7,6 +7,7 @@ import pytest
 import json
 
 from testutils import cppcheck, assert_cppcheck, cppcheck_ex
+from xml.etree import ElementTree
 
 
 def __remove_std_lookup_log(l : list, exepath):
@@ -2269,3 +2270,49 @@ def test_dumpfile_platform(tmpdir):
                 break
     assert ' wchar_t_bit="' in platform
     assert ' size_t_bit="' in platform
+
+
+def test_builddir_hash_check_level(tmp_path):  # #13376
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(bool b)
+{
+    for (int i = 0; i < 2; ++i)
+    {
+        if (i == 0) {}
+        if (b) continue;
+    }
+}
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    args = [
+        '--enable=warning',  # to execute the code which generates the normalCheckLevelMaxBranches message
+        '--enable=information',  # to show the normalCheckLevelMaxBranches message
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stderr == '{}:0:0: information: Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches. [normalCheckLevelMaxBranches]\n'.format(test_file)
+
+    cache_file = (build_dir / 'test.a1')
+
+    root = ElementTree.fromstring(cache_file.read_text())
+    hash_1 = root.get('hash')
+
+    args += ['--check-level=exhaustive']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stderr == ''
+
+    root = ElementTree.fromstring(cache_file.read_text())
+    hash_2 = root.get('hash')
+
+    assert hash_1 != hash_2

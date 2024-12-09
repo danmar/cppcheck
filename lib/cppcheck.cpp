@@ -649,6 +649,8 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
     toolinfo << (settings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
     toolinfo << (settings.severity.isEnabled(Severity::information) ? 'i' : ' ');
     toolinfo << settings.userDefines;
+    toolinfo << std::to_string(static_cast<std::uint8_t>(settings.checkLevel));
+    // TODO: do we need to add more options?
     settings.supprs.nomsg.dump(toolinfo);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
