@@ -94,7 +94,7 @@ namespace ValueFlow
         return true;
     }
 
-    long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign)
+    MathLib::bigint truncateIntValue(MathLib::bigint value, size_t value_size, const ValueType::Sign dst_sign)
     {
         if (value_size == 0)
             return value;

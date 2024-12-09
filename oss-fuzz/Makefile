@@ -156,7 +156,7 @@ $(libcppdir)/symboldatabase.o: ../lib/symboldatabase.cpp ../lib/addoninfo.h ../l
 $(libcppdir)/addoninfo.o: ../lib/addoninfo.cpp ../externals/picojson/picojson.h ../lib/addoninfo.h ../lib/config.h ../lib/json.h ../lib/path.h ../lib/standards.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/addoninfo.cpp
 
-$(libcppdir)/analyzerinfo.o: ../lib/analyzerinfo.cpp ../externals/tinyxml2/tinyxml2.h ../lib/analyzerinfo.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/utils.h ../lib/xml.h
+$(libcppdir)/analyzerinfo.o: ../lib/analyzerinfo.cpp ../externals/tinyxml2/tinyxml2.h ../lib/analyzerinfo.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/utils.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/analyzerinfo.cpp
 
 $(libcppdir)/astutils.o: ../lib/astutils.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkclass.h ../lib/config.h ../lib/errortypes.h ../lib/findtoken.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
@@ -297,7 +297,7 @@ $(libcppdir)/pathanalysis.o: ../lib/pathanalysis.cpp ../lib/astutils.h ../lib/co
 $(libcppdir)/pathmatch.o: ../lib/pathmatch.cpp ../lib/config.h ../lib/path.h ../lib/pathmatch.h ../lib/standards.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/pathmatch.cpp
 
-$(libcppdir)/platform.o: ../lib/platform.cpp ../externals/tinyxml2/tinyxml2.h ../lib/config.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/xml.h
+$(libcppdir)/platform.o: ../lib/platform.cpp ../externals/tinyxml2/tinyxml2.h ../lib/config.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/platform.cpp
 
 $(libcppdir)/preprocessor.o: ../lib/preprocessor.cpp ../externals/simplecpp/simplecpp.h ../lib/addoninfo.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/standards.h ../lib/suppressions.h ../lib/utils.h
