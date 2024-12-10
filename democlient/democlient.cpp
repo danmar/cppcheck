@@ -16,15 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cppcheck.h"
+#include "errorlogger.h"
+#include "errortypes.h"
+#include "filesettings.h"
+#include "settings.h"
+#include "version.h"
+
+#include <algorithm>
 #include <ctime>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
 
-#include "cppcheck.h"
-#include "filesettings.h"
-#include "version.h"
+enum class Color : std::uint8_t;
 
 static void unencode(const char *src, char *dest)
 {
