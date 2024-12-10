@@ -1519,7 +1519,9 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                     return {{tok, true, std::move(errorPath)}};
                 const Token* contok = var->nameToken()->astParent()->astOperand2();
                 if (astIsContainer(contok))
-                    return ValueFlow::LifetimeToken::setAddressOf(getLifetimeTokens(contok, escape, std::move(errorPath), pred, settings, depth - 1), false);
+                    return ValueFlow::LifetimeToken::setAddressOf(
+                        getLifetimeTokens(contok, escape, std::move(errorPath), pred, settings, depth - 1),
+                        false);
                 return std::vector<ValueFlow::LifetimeToken>{};
             } else {
                 return std::vector<ValueFlow::LifetimeToken> {};
@@ -1607,7 +1609,9 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                 if (v.tokvalue == tok)
                     continue;
                 errorPath.insert(errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
-                return ValueFlow::LifetimeToken::setAddressOf(getLifetimeTokens(v.tokvalue, escape, std::move(errorPath), pred, settings, depth - 1), false);
+                return ValueFlow::LifetimeToken::setAddressOf(
+                    getLifetimeTokens(v.tokvalue, escape, std::move(errorPath), pred, settings, depth - 1),
+                    false);
             }
         } else {
             return ValueFlow::LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, settings, depth - 1),
