@@ -185,6 +185,18 @@ private:
     void checkNormalTokens(const Tokenizer &tokenizer);
 
     /**
+     * @brief Set classification for an error message
+     * @param errMsg error message
+     */
+    void setClassification(ErrorMessage &errMsg) const;
+
+    /**
+     * @brief Set guideline for an error message
+     * @param errMsg error message
+     */
+    void setGuideline(ErrorMessage &errMsg) const;
+
+    /**
      * Execute addons
      */
     void executeAddons(const std::vector<std::string>& files, const std::string& file0);
