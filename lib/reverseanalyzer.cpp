@@ -48,10 +48,10 @@ namespace {
         std::pair<bool, bool> evalCond(const Token* tok) const {
             std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
             // TODO: We should convert to bool
-            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x == 1;
             });
-            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x == 0;
             });
             return std::make_pair(checkThen, checkElse);

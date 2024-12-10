@@ -342,7 +342,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (dst) {
                 const size_t sz = ValueFlow::getSizeOf(*dst, settings);
                 if (sz > 0 && sz < sizeof(MathLib::biguint)) {
-                    long long newvalue = ValueFlow::truncateIntValue(value->intvalue, sz, dst->sign);
+                    MathLib::bigint newvalue = ValueFlow::truncateIntValue(value->intvalue, sz, dst->sign);
 
                     /* Handle overflow/underflow for value bounds */
                     if (value->bound != ValueFlow::Value::Bound::Point) {
@@ -1482,7 +1482,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             return;
         const Token* parent = tok->astParent();
         const Library::Container* container = getLibraryContainer(tok);
-        int n = 0;
+        MathLib::bigint n = 0;
 
         if (container->stdStringLike && Token::simpleMatch(parent, "+=") && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
