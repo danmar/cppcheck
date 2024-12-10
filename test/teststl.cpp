@@ -2263,6 +2263,14 @@ private:
               "    v.erase(v.begin(), v.end());\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        // #13408
+        check("void f(const std::vector<int>& v) {\n"
+              "    for (const auto& i : v) {\n"
+              "        if (std::distance(&*v.cbegin(), &i)) {}\n"
+              "    }   \n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void eraseIteratorOutOfBounds() {
