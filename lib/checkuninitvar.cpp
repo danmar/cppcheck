@@ -1666,6 +1666,8 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isleaf = isLeafDot(tok) || uninitderef;
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
                         continue;
+                    if (isWithinScope(tok, tok->variable(), Scope::ScopeType::eLambda))
+                        continue;
                 }
                 const ExprUsage usage = getExprUsage(tok, v->indirect, *mSettings);
                 if (usage == ExprUsage::NotUsed || usage == ExprUsage::Inconclusive)
