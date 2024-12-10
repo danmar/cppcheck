@@ -485,7 +485,11 @@ std::string ErrorMessage::toXML() const
     tinyxml2::XMLPrinter printer(nullptr, false, 2);
     printer.OpenElement("error", false);
     printer.PushAttribute("id", id.c_str());
+    if (!guideline.empty())
+        printer.PushAttribute("guideline", guideline.c_str());
     printer.PushAttribute("severity", severityToString(severity).c_str());
+    if (!classification.empty())
+        printer.PushAttribute("classification", classification.c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
     if (cwe.id)
