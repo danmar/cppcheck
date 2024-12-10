@@ -174,6 +174,12 @@ public:
     /** remark from REMARK comment */
     std::string remark;
 
+    /** misra/autosar/certc classification/level */
+    std::string classification;
+
+    /** misra/autosar/certc guideline */
+    std::string guideline;
+
     /** Warning hash */
     std::size_t hash;
 
