@@ -1227,6 +1227,28 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.reportProgress = tmp;
             }
 
+            else if (std::strncmp(argv[i], "--report-type=", 14) == 0) {
+                const std::string typeStr = argv[i] + 14;
+                if (typeStr == "normal") {
+                    mSettings.reportType = Settings::ReportType::Normal;
+                } else if (typeStr == "autosar") {
+                    mSettings.reportType = Settings::ReportType::Autosar;
+                } else if (typeStr == "certC") {
+                    mSettings.reportType = Settings::ReportType::CertC;
+                } else if (typeStr == "certCpp") {
+                    mSettings.reportType = Settings::ReportType::CertCpp;
+                } else if (typeStr == "misraC") {
+                    mSettings.reportType = Settings::ReportType::MisraC;
+                } else if (typeStr == "misraCpp2008") {
+                    mSettings.reportType = Settings::ReportType::MisraCpp2008;
+                } else if (typeStr == "misraCpp2023") {
+                    mSettings.reportType = Settings::ReportType::MisraCpp2023;
+                } else {
+                    mLogger.printError("Unknown report type \'" + typeStr + "\'");
+                    return Result::Fail;
+                }
+            }
+
             // Rule given at command line
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
 #ifdef HAVE_RULES
@@ -1824,6 +1846,8 @@ void CmdLineParser::printHelp() const
         "                         currently only possible to apply the base paths to\n"
         "                         files that are on a lower level in the directory tree.\n"
         "    --report-progress    Report progress messages while checking a file (single job only).\n"
+        "    --report-type=<type>\n"
+        "                         TODO:decsription\n"
         "    --rule=<rule>        Match regular expression.\n"
         "    --rule-file=<file>   Use given rule file. For more information, see:\n"
         "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"

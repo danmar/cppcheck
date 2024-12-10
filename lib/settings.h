@@ -110,6 +110,19 @@ public:
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 
+    enum class ReportType : std::uint8_t {
+        Normal,
+        Autosar,
+        CertC,
+        CertCpp,
+        MisraC,
+        MisraCpp2008,
+        MisraCpp2023,
+    };
+
+    /** @brief Report type */
+    ReportType reportType = ReportType::Normal;
+
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
 
