@@ -1714,6 +1714,12 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
     case Settings::ReportType::Autosar:
         errMsg.classification = getClassification(checkers::autosarInfo, guideline);
         return;
+    case Settings::ReportType::CertC:
+        errMsg.classification = getClassification(checkers::certCInfo, guideline);
+        return;
+    case Settings::ReportType::CertCpp:
+        errMsg.classification = getClassification(checkers::certCppInfo, guideline);
+        return;
     case Settings::ReportType::MisraC:
     {
         std::array<std::string, 2> split;
@@ -1774,6 +1780,14 @@ void CppCheck::setGuideline(ErrorMessage &errMsg) const {
         }
         if (errId.rfind("premium-misra-cpp-2008-", 0) == 0) {
             errMsg.guideline = errId.substr(23);
+        }
+        return;
+    case Settings::ReportType::CertC:
+    case Settings::ReportType::CertCpp:
+        if (errId.rfind("premium-cert-", 0) == 0) {
+            errMsg.guideline = errId.substr(13);
+            std::transform(errMsg.guideline.begin(), errMsg.guideline.end(),
+                           errMsg.guideline.begin(), static_cast<int (*)(int)>(std::toupper));
         }
         return;
     case Settings::ReportType::MisraC:
