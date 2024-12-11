@@ -1675,23 +1675,6 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
     }
 }
 
-// Split a string into a constant number of parts
-template<std::size_t N>
-static bool staticSplit(const std::string &str, char delim, std::array<std::string, N> &substrs) {
-    std::size_t i, pos = 0;
-    for (i = 0; pos < str.length(); i++) {
-        if (i == N)
-            return false;
-        std::size_t prev = pos;
-        pos = str.find(delim, pos);
-        if (pos == std::string::npos)
-            pos = str.length();
-        substrs[i] = str.substr(prev, pos - prev);
-        pos++;
-    }
-    return i == N;
-}
-
 void CppCheck::setClassification(ErrorMessage &errMsg) const {
     if (errMsg.guideline.empty())
         setGuideline(errMsg);
@@ -1722,13 +1705,13 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
         return;
     case Settings::ReportType::MisraC:
     {
-        std::array<std::string, 2> split;
-        if (!staticSplit(guideline, '.', split))
+        std::vector<std::string> components = split(guideline, ".");
+        if (components.size() != 2)
             return;
 
         const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
         const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
-                return i.a == std::stoi(split[0]) && i.b == std::stoi(split[1]);
+                return i.a == std::stoi(components[0]) && i.b == std::stoi(components[1]);
             });
 
         if (it == info.cend())
@@ -1740,22 +1723,22 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
     case Settings::ReportType::MisraCpp2008:
     case Settings::ReportType::MisraCpp2023:
     {
-        char delim;
+        std::string delim;
         const std::vector<checkers::MisraCppInfo> *info;
         if (mSettings.reportType == Settings::ReportType::MisraCpp2008) {
-            delim = '-';
+            delim = "-";
             info = &checkers::misraCpp2008Rules;
         } else {
-            delim = '.';
+            delim = ".";
             info = &checkers::misraCpp2023Rules;
         }
 
-        std::array<std::string, 3> split;
-        if (!staticSplit(guideline, delim, split))
+        std::vector<std::string> components = split(guideline, delim);
+        if (components.size() != 3)
             return;
 
         const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) {
-                return i.a == std::stoi(split[0]) && i.b == std::stoi(split[1]) && i.c == std::stoi(split[2]);
+                return i.a == std::stoi(components[0]) && i.b == std::stoi(components[1]) && i.c == std::stoi(components[2]);
             });
 
         if (it == info->cend())
