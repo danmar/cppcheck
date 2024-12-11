@@ -2574,6 +2574,12 @@ namespace {
     }
 }
 
+static bool
+isStaticAssert(const Token *tok)
+{
+    return Token::Match(tok, "_Static_assert|static_assert (");
+}
+
 void CheckOther::checkDuplicateExpression()
 {
     {
@@ -2700,7 +2706,7 @@ void CheckOther::checkDuplicateExpression()
                                     while (parent && parent->astParent()) {
                                         parent = parent->astParent();
                                     }
-                                    if (parent && parent->previous() && parent->strAt(-1) == "static_assert") {
+                                    if (parent && isStaticAssert(parent->previous())) {
                                         continue;
                                     }
                                 }
