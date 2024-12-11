@@ -1678,11 +1678,11 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 // Split a string into a constant number of parts
 template<std::size_t N>
 static bool staticSplit(const std::string &str, char delim, std::array<std::string, N> &substrs) {
-    std::size_t i, prev, pos = 0;
+    std::size_t i, pos = 0;
     for (i = 0; pos < str.length(); i++) {
         if (i == N)
             return false;
-        prev = pos;
+        std::size_t prev = pos;
         pos = str.find(delim, pos);
         if (pos == std::string::npos)
             pos = str.length();
