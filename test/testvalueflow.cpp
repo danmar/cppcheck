@@ -136,7 +136,8 @@ private:
 
         TEST_CASE(valueFlowDynamicBufferSize);
 
-        TEST_CASE(valueFlowSafeFunctionParameterValues);
+        TEST_CASE(valueFlowSafeFunctionParameterValues);        
+        TEST_CASE(valueFlowUnknownFunctionReturn);
         TEST_CASE(valueFlowUnknownFunctionReturnRand);
         TEST_CASE(valueFlowUnknownFunctionReturnMalloc);
 
@@ -7240,6 +7241,14 @@ private:
         ASSERT_EQUALS(100, values.back().intvalue);
     }
 
+    void valueFlowUnknownFunctionReturn() {
+        const char code[] = "template <typename T>\n" // #13409
+                            "struct S {\n"
+                            "    std::max_align_t T::* m;\n"
+                            "    S(std::max_align_t T::* p) : m(p) {}\n"
+                            "};\n";
+        (void)valueOfTok(code, ":"); // don't crash
+    }
 
     void valueFlowUnknownFunctionReturnRand() {
         const char *code;
