@@ -1782,7 +1782,7 @@ void CppCheck::setGuideline(ErrorMessage &errMsg) const {
         return;
     case Settings::ReportType::MisraC:
         if (errId.rfind("misra-c20", 0) == 0) {
-            errMsg.guideline = errId.substr(errId.rfind("-") + 1);
+            errMsg.guideline = errId.substr(errId.rfind('-') + 1);
         }
         return;
     case Settings::ReportType::MisraCpp2008:
