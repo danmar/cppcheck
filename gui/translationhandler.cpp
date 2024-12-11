@@ -28,7 +28,11 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QTranslator>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtPreprocessorSupport>
+#else
 #include <QtGlobal>
+#endif
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"

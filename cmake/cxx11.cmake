@@ -1,6 +1,6 @@
 macro(use_cxx11)
   # some GitHub Action Windows runners randomly fail with a complaint that Qt6 requires a C++17 compiler
-  if(MSVC AND USE_QT6)
+  if(MSVC)
     # CMAKE_CXX_STANDARD 17 was added in CMake 3.8
     set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to use")
   elseif(USE_BOOST AND USE_BOOST_INT128)

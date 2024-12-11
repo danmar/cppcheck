@@ -21,6 +21,9 @@
 #include <QDebug>
 #include <QList>
 #include <QSet>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 CheckStatistics::CheckStatistics(QObject *parent)
     : QObject(parent)
