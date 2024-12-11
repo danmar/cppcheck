@@ -637,7 +637,12 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
 
-    findAndReplace(result, "{id}", id);
+    // replace id with guideline if present
+    // replace severity with classification if present
+    const std::string idStr = guideline.empty() ? id : guideline;
+    const std::string severityStr = classification.empty() ? severityToString(severity) : classification;
+
+    findAndReplace(result, "{id}", idStr);
 
     std::string::size_type pos1 = result.find("{inconclusive:");
     while (pos1 != std::string::npos) {
@@ -647,7 +652,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         findAndReplace(result, replaceFrom, replaceWith);
         pos1 = result.find("{inconclusive:", pos1);
     }
-    findAndReplace(result, "{severity}", severityToString(severity));
+    findAndReplace(result, "{severity}", severityStr);
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     findAndReplace(result, "{remark}", remark);
