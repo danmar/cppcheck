@@ -20,6 +20,7 @@ defaults:
     shell: msys2 {0}
 
 jobs:
+  # TODO: add CMake build
   build_mingw:
     strategy:
       matrix:
