@@ -136,7 +136,7 @@ private:
 
         TEST_CASE(valueFlowDynamicBufferSize);
 
-        TEST_CASE(valueFlowSafeFunctionParameterValues);        
+        TEST_CASE(valueFlowSafeFunctionParameterValues);
         TEST_CASE(valueFlowUnknownFunctionReturn);
         TEST_CASE(valueFlowUnknownFunctionReturnRand);
         TEST_CASE(valueFlowUnknownFunctionReturnMalloc);
