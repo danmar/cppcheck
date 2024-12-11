@@ -187,6 +187,8 @@ jobs:
       - name: test donate_cpu_server
         run: |
           python -m pytest -Werror --strict-markers -vv tools/donate_cpu_server_test.py
+          # TODO: why is this file generated? also should be in a temporary folder if possible
+          rm -f tools/donate-cpu-server.log
         env:
           PYTHONPATH: ./tools
 
