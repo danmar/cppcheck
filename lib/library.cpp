@@ -1205,6 +1205,8 @@ const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    if (!tok)
+        return nullptr;
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mAlloc, funcname);
 }
@@ -1214,6 +1216,8 @@ const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    if (!tok)
+        return nullptr;
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mDealloc, funcname);
 }
@@ -1223,6 +1227,8 @@ const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
 {
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    if (!tok)
+        return nullptr;
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mRealloc, funcname);
 }
