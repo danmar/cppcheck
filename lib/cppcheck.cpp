@@ -136,9 +136,6 @@ static std::vector<std::string> split(const std::string &str, const std::string 
 
 static std::string getDumpFileName(const Settings& settings, const std::string& filename)
 {
-    if (!settings.dumpFile.empty())
-        return settings.dumpFile;
-
     std::string extension;
     if (settings.dump || !settings.buildDir.empty())
         extension = ".dump";
