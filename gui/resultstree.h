@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "showtypes.h"
+#include "checkers.h"
 
 #include <cstdint>
 
@@ -185,7 +186,7 @@ public:
 
     void keyPressEvent(QKeyEvent *event) override;
 
-    void setReportType(ReportType reportType);
+    void setReportType(checkers::ReportType reportType);
 
 signals:
     /**
