@@ -1675,12 +1675,9 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
     }
 }
 
-void CppCheck::setClassification(ErrorMessage &errMsg) const {
-    if (errMsg.guideline.empty())
-        setGuideline(errMsg);
-
-    if (errMsg.guideline.empty())
-        return;
+std::string CppCheck::getClassification(const std::string &guideline, Settings::ReportType reportType) {
+    if (guideline.empty())
+        return "";
 
     const auto getClassification = [](const std::vector<checkers::Info> &info, const std::string &guideline) -> std::string {
         const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::Info &i) {
@@ -1691,23 +1688,18 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
         return it->classification;
     };
 
-    const std::string guideline = errMsg.guideline;
-
-    switch (mSettings.reportType) {
+    switch (reportType) {
     case Settings::ReportType::Autosar:
-        errMsg.classification = getClassification(checkers::autosarInfo, guideline);
-        return;
+        return getClassification(checkers::autosarInfo, guideline);
     case Settings::ReportType::CertC:
-        errMsg.classification = getClassification(checkers::certCInfo, guideline);
-        return;
+        return getClassification(checkers::certCInfo, guideline);
     case Settings::ReportType::CertCpp:
-        errMsg.classification = getClassification(checkers::certCppInfo, guideline);
-        return;
+        return getClassification(checkers::certCppInfo, guideline);
     case Settings::ReportType::MisraC:
     {
         std::vector<std::string> components = split(guideline, ".");
         if (components.size() != 2)
-            return;
+            return "";
 
         const int a = std::stoi(components[0]);
         const int b = std::stoi(components[1]);
@@ -1718,17 +1710,16 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
             });
 
         if (it == info.cend())
-            return;
+            return "";
 
-        errMsg.classification = it->str;
-        return;
+        return it->str;
     }
     case Settings::ReportType::MisraCpp2008:
     case Settings::ReportType::MisraCpp2023:
     {
         std::string delim;
         const std::vector<checkers::MisraCppInfo> *info;
-        if (mSettings.reportType == Settings::ReportType::MisraCpp2008) {
+        if (reportType == Settings::ReportType::MisraCpp2008) {
             delim = "-";
             info = &checkers::misraCpp2008Rules;
         } else {
@@ -1738,7 +1729,7 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
 
         std::vector<std::string> components = split(guideline, delim);
         if (components.size() != 3)
-            return;
+            return "";
 
         const int a = std::stoi(components[0]);
         const int b = std::stoi(components[1]);
@@ -1749,55 +1740,52 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
             });
 
         if (it == info->cend())
-            return;
+            return "";
 
-        errMsg.classification = it->classification;
-        return;
+        return it->classification;
     }
     default:
-        return;
+        return "";
     }
 }
 
-void CppCheck::setGuideline(ErrorMessage &errMsg) const {
-    const std::string &errId = errMsg.id;
-
-    switch (mSettings.reportType) {
+std::string CppCheck::getGuideline(const std::string &errId, Settings::ReportType reportType)
+{
+    switch (reportType) {
     case Settings::ReportType::Autosar:
         if (errId.rfind("premium-autosar-", 0) == 0) {
-            errMsg.guideline = errId.substr(16);
-            return;
+            return errId.substr(16);
         }
         if (errId.rfind("premium-misra-cpp-2008-", 0) == 0) {
-            errMsg.guideline = errId.substr(23);
+            return errId.substr(23);
         }
-        return;
+        return "";
     case Settings::ReportType::CertC:
     case Settings::ReportType::CertCpp:
         if (errId.rfind("premium-cert-", 0) == 0) {
-            errMsg.guideline = errId.substr(13);
-            std::transform(errMsg.guideline.begin(), errMsg.guideline.end(),
-                           errMsg.guideline.begin(), static_cast<int (*)(int)>(std::toupper));
+            std::string guideline = errId.substr(13);
+            std::transform(guideline.begin(), guideline.end(),
+                           guideline.begin(), static_cast<int (*)(int)>(std::toupper));
+            return guideline;
         }
-        return;
+        return "";
     case Settings::ReportType::MisraC:
         if (errId.rfind("misra-c20", 0) == 0) {
-            errMsg.guideline = errId.substr(errId.rfind('-') + 1);
+            return errId.substr(errId.rfind('-') + 1);
         }
-        return;
+        return "";
     case Settings::ReportType::MisraCpp2008:
         if (errId.rfind("misra-cpp-2008-", 0) == 0) {
-            errMsg.guideline = errId.substr(15);
+            return errId.substr(15);
         }
-        return;
+        return "";
     case Settings::ReportType::MisraCpp2023:
         if (errId.rfind("misra-cpp-2023-", 0) == 0) {
-            errMsg.guideline = errId.substr(15);
+            return errId.substr(15);
         }
-        return;
+        return "";
     default:
-        errMsg.guideline = "";
-        return;
+        return "";
     }
 }
 
@@ -1894,9 +1882,6 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                     continue;
             }
             errmsg.file0 = file0;
-
-            setGuideline(errmsg);
-            setClassification(errmsg);
 
             mErrorLogger.reportErr(errmsg);
         }
