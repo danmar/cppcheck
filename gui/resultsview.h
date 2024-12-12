@@ -22,6 +22,7 @@
 
 #include "report.h"
 #include "showtypes.h"
+#include "common.h"
 
 #include <cstdint>
 
@@ -39,7 +40,6 @@ class QPrinter;
 class QSettings;
 class CheckStatistics;
 class QPoint;
-enum class ReportType : std::uint8_t;
 namespace Ui {
     class ResultsView;
 }

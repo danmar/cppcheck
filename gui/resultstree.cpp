@@ -20,7 +20,6 @@
 
 #include "application.h"
 #include "applicationlist.h"
-#include "checkers.h"
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
