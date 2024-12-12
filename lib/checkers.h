@@ -29,6 +29,16 @@ namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;
     extern CPPCHECKLIB const std::map<std::string, std::string> premiumCheckers;
 
+    enum class ReportType {
+        normal,
+        autosar,
+        certC,
+        certCpp,
+        misraC,
+        misraCpp2008,
+        misraCpp2023,
+    };
+
     struct CPPCHECKLIB MisraInfo {
         int a;
         int b;
@@ -73,6 +83,9 @@ namespace checkers {
     extern std::vector<Info> autosarInfo;
     extern std::vector<Info> certCInfo;
     extern std::vector<Info> certCppInfo;
+
+    extern CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
+    extern CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType);
 }
 
 #endif

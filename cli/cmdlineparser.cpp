@@ -1230,19 +1230,19 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--report-type=", 14) == 0) {
                 const std::string typeStr = argv[i] + 14;
                 if (typeStr == "normal") {
-                    mSettings.reportType = Settings::ReportType::Normal;
+                    mSettings.reportType = checkers::ReportType::normal;
                 } else if (typeStr == "autosar") {
-                    mSettings.reportType = Settings::ReportType::Autosar;
+                    mSettings.reportType = checkers::ReportType::autosar;
                 } else if (typeStr == "certC") {
-                    mSettings.reportType = Settings::ReportType::CertC;
+                    mSettings.reportType = checkers::ReportType::certC;
                 } else if (typeStr == "certCpp") {
-                    mSettings.reportType = Settings::ReportType::CertCpp;
+                    mSettings.reportType = checkers::ReportType::certCpp;
                 } else if (typeStr == "misraC") {
-                    mSettings.reportType = Settings::ReportType::MisraC;
+                    mSettings.reportType = checkers::ReportType::misraC;
                 } else if (typeStr == "misraCpp2008") {
-                    mSettings.reportType = Settings::ReportType::MisraCpp2008;
+                    mSettings.reportType = checkers::ReportType::misraCpp2008;
                 } else if (typeStr == "misraCpp2023") {
-                    mSettings.reportType = Settings::ReportType::MisraCpp2023;
+                    mSettings.reportType = checkers::ReportType::misraCpp2023;
                 } else {
                     mLogger.printError("Unknown report type \'" + typeStr + "\'");
                     return Result::Fail;

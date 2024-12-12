@@ -20,6 +20,7 @@
 // python3 tools/get_checkers.py > lib/checkers.cpp
 
 #include "checkers.h"
+#include "utils.h"
 
 namespace checkers {
     const std::map<std::string, std::string> allCheckers{
@@ -2096,3 +2097,119 @@ std::vector<checkers::Info> checkers::certCppInfo{
     {"MSC53-CPP", "L2"},
     {"MSC54-CPP", "L2"},
 };
+
+namespace checkers {
+    std::string getClassification(const std::string &guideline, ReportType reportType) {
+        if (guideline.empty())
+            return "";
+
+        const auto getClassification = [](const std::vector<checkers::Info> &info, const std::string &guideline) -> std::string {
+            const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::Info &i) {
+                return caseInsensitiveStringCompare(i.guideline, guideline) == 0;
+            });
+            if (it == info.cend())
+                return "";
+            return it->classification;
+        };
+
+        switch (reportType) {
+        case ReportType::autosar:
+            return getClassification(checkers::autosarInfo, guideline);
+        case ReportType::certC:
+            return getClassification(checkers::certCInfo, guideline);
+        case ReportType::certCpp:
+            return getClassification(checkers::certCppInfo, guideline);
+        case ReportType::misraC:
+        {
+            std::vector<std::string> components = splitStringVector(guideline, '.');
+            if (components.size() != 2)
+                return "";
+
+            const int a = std::stoi(components[0]);
+            const int b = std::stoi(components[1]);
+
+            const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
+            const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
+                    return i.a == a && i.b == b;
+                });
+
+            if (it == info.cend())
+                return "";
+
+            return it->str;
+        }
+        case ReportType::misraCpp2008:
+        case ReportType::misraCpp2023:
+        {
+            char delim;
+            const std::vector<checkers::MisraCppInfo> *info;
+            if (reportType == ReportType::misraCpp2008) {
+                delim = '-';
+                info = &checkers::misraCpp2008Rules;
+            } else {
+                delim = '.';
+                info = &checkers::misraCpp2023Rules;
+            }
+
+            std::vector<std::string> components = splitStringVector(guideline, delim);
+            if (components.size() != 3)
+                return "";
+
+            const int a = std::stoi(components[0]);
+            const int b = std::stoi(components[1]);
+            const int c = std::stoi(components[2]);
+
+            const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) {
+                    return i.a == a && i.b == b && i.c == c;
+                });
+
+            if (it == info->cend())
+                return "";
+
+            return it->classification;
+        }
+        default:
+            return "";
+        }
+    }
+
+    std::string getGuideline(const std::string &errId, ReportType reportType)
+    {
+        switch (reportType) {
+        case ReportType::autosar:
+            if (errId.rfind("premium-autosar-", 0) == 0) {
+                return errId.substr(16);
+            }
+            if (errId.rfind("premium-misra-cpp-2008-", 0) == 0) {
+                return errId.substr(23);
+            }
+            return "";
+        case ReportType::certC:
+        case ReportType::certCpp:
+            if (errId.rfind("premium-cert-", 0) == 0) {
+                std::string guideline = errId.substr(13);
+                std::transform(guideline.begin(), guideline.end(),
+                               guideline.begin(), static_cast<int (*)(int)>(std::toupper));
+                return guideline;
+            }
+            return "";
+        case ReportType::misraC:
+            if (errId.rfind("misra-c20", 0) == 0) {
+                return errId.substr(errId.rfind('-') + 1);
+            }
+            return "";
+        case ReportType::misraCpp2008:
+            if (errId.rfind("misra-cpp-2008-", 0) == 0) {
+                return errId.substr(15);
+            }
+            return "";
+        case ReportType::misraCpp2023:
+            if (errId.rfind("misra-cpp-2023-", 0) == 0) {
+                return errId.substr(15);
+            }
+            return "";
+        default:
+            return "";
+        }
+    }
+}
