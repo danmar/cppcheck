@@ -24,6 +24,8 @@
 #include <QMap>
 #include <QString>
 
+#include "checkers.h"
+
 /// @addtogroup GUI
 /// @{
 
@@ -52,7 +54,7 @@
 
 // Report type
 #define SETTINGS_REPORT_TYPE            "Report type"
-enum class ReportType : std::uint8_t { normal=0, autosar=1, certC=2, certCpp=3, misraC=4, misraCpp2008=5, misraCpp2023=6 };
+using ReportType = checkers::ReportType;
 
 // Show * states
 #define SETTINGS_SHOW_STYLE             "Show style"
