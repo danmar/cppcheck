@@ -404,6 +404,14 @@ static inline T* empty_if_null(T* p)
  */
 CPPCHECKLIB std::vector<std::string> splitString(const std::string& str, char sep);
 
+/**
+ * Split string by given sperator.
+ * @param str The string to split
+ * @param sep The seperator
+ * @return The vector of seperate strings (including empty ones). The whole input string if no seperator found.
+ */
+CPPCHECKLIB std::vector<std::string> splitStringVector(const std::string& str, char sep);
+
 namespace utils {
     template<class T>
     constexpr typename std::add_const<T>::type & as_const(T& t) noexcept

@@ -201,3 +201,21 @@ std::vector<std::string> splitString(const std::string& str, char sep)
     }
     return l;
 }
+
+std::vector<std::string> splitStringVector(const std::string& str, char sep)
+{
+    if (std::strchr(str.c_str(), sep) == nullptr)
+        return {str};
+
+    std::vector<std::string> l;
+    std::string p(str);
+    for (;;) {
+        const std::string::size_type pos = p.find(sep);
+        if (pos == std::string::npos)
+            break;
+        l.push_back(p.substr(0,pos));
+        p = p.substr(pos+1);
+    }
+    l.push_back(std::move(p));
+    return l;
+}
