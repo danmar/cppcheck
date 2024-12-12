@@ -487,7 +487,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
     return std::any_of(configs_if.cbegin(), configs_if.cend(),
-                       [=](const std::string &cfg) {
+                       [&](const std::string &cfg) {
         return hasDefine(userDefines, cfg);
     });
 }
