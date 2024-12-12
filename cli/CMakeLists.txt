@@ -76,7 +76,7 @@ if (BUILD_CLI)
         COMPONENT applications)
 
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/htmlreport/cppcheck-htmlreport
-        RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
+        DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
         COMPONENT applications)
 
     install(FILES ${addons_py}
