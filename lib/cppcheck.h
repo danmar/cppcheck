@@ -160,6 +160,20 @@ public:
      */
     std::string getClangFlags(Standards::Language fileLang) const;
 
+    /**
+     * @brief Get classification from a guideline
+     * @param guideline guideline string
+     * @param reportType report type
+     */
+    static std::string getClassification(const std::string &guideline, Settings::ReportType reportType);
+
+    /**
+     * @brief Get guideline from an error id
+     * @param errId error id string
+     * @param reportType report type
+     */
+    static std::string getGuideline(const std::string &errId, Settings::ReportType reportType);
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
@@ -184,18 +198,6 @@ private:
      * @param analyzerInformation the analyzer infomation
      */
     void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation);
-
-    /**
-     * @brief Set classification for an error message
-     * @param errMsg error message
-     */
-    void setClassification(ErrorMessage &errMsg) const;
-
-    /**
-     * @brief Set guideline for an error message
-     * @param errMsg error message
-     */
-    void setGuideline(ErrorMessage &errMsg) const;
 
     /**
      * Execute addons
