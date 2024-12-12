@@ -1709,9 +1709,12 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
         if (components.size() != 2)
             return;
 
+        const int a = std::stoi(components[0]);
+        const int b = std::stoi(components[1]);
+
         const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
         const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
-                return i.a == std::stoi(components[0]) && i.b == std::stoi(components[1]);
+                return i.a == a && i.b == b;
             });
 
         if (it == info.cend())
@@ -1737,8 +1740,12 @@ void CppCheck::setClassification(ErrorMessage &errMsg) const {
         if (components.size() != 3)
             return;
 
+        const int a = std::stoi(components[0]);
+        const int b = std::stoi(components[1]);
+        const int c = std::stoi(components[2]);
+
         const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) {
-                return i.a == std::stoi(components[0]) && i.b == std::stoi(components[1]) && i.c == std::stoi(components[2]);
+                return i.a == a && i.b == b && i.c == c;
             });
 
         if (it == info->cend())
