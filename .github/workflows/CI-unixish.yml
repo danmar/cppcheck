@@ -144,16 +144,18 @@ jobs:
           # pcre was removed from runner images in November 2022
           brew install coreutils qt@6 pcre
 
-      - name: CMake build on ubuntu (with GUI)
+      - name: Run CMake on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build cmake.output -- -j$(nproc)
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install
 
-      - name: CMake build on macos (with GUI)
+      - name: Run CMake on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+
+      - name: Run CMake build
+        run: |
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -164,6 +166,10 @@ jobs:
         run: |
           pushd cmake.output
           ctest --output-on-failure -j$(nproc)
+
+      - name: Run CMake install
+        run: |
+          cmake --build cmake.output --target install
 
   build_uchar:
 
@@ -381,6 +387,11 @@ jobs:
       - name: Validate
         run: |
           make -j$(nproc) checkCWEEntries validateXML
+
+      - name: Test install
+        run: |
+          # this is only to test the "install" target - since we did not build with FILESDIR it would not work as intended
+          make DESTDIR=cppcheck-make-install FILESDIR=/share/Cppcheck install
 
       - name: Test Signalhandler
         run: |

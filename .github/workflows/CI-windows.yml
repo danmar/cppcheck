@@ -49,20 +49,22 @@ jobs:
           modules: 'qtcharts'
           cache: true
 
-      - name: Build GUI release (Qt 5)
+      - name: Run CMake for GUI release (Qt 5)
         if: startsWith(matrix.qt_ver, '5')
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
 
-      - name: Build GUI release (Qt 6)
+      - name: Run CMake for GUI release (Qt 6)
         if: startsWith(matrix.qt_ver, '6')
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
+
+      - name: Run CMake build
+        run: |
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       - name: Deploy GUI
@@ -72,6 +74,10 @@ jobs:
           del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
 
       # TODO: run GUI tests
+
+      - name: Run CMake install
+        run: |
+          cmake --build build --target install
 
   build:
     strategy:
