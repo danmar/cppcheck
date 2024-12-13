@@ -2177,12 +2177,10 @@ namespace checkers {
     {
         switch (reportType) {
         case ReportType::autosar:
-            if (errId.rfind("premium-autosar-", 0) == 0) {
+            if (errId.rfind("premium-autosar-", 0) == 0)
                 return errId.substr(16);
-            }
-            if (errId.rfind("premium-misra-cpp-2008-", 0) == 0) {
-                return errId.substr(23);
-            }
+            if (errId.rfind("premium-misra-cpp-2008-", 0) == 0)
+                return "M" + errId.substr(23);
             return "";
         case ReportType::certC:
         case ReportType::certCpp:
@@ -2194,19 +2192,16 @@ namespace checkers {
             }
             return "";
         case ReportType::misraC:
-            if (errId.rfind("misra-c20", 0) == 0) {
+            if (errId.rfind("misra-c20", 0) == 0)
                 return errId.substr(errId.rfind('-') + 1);
-            }
             return "";
         case ReportType::misraCpp2008:
-            if (errId.rfind("misra-cpp-2008-", 0) == 0) {
+            if (errId.rfind("misra-cpp-2008-", 0) == 0)
                 return errId.substr(15);
-            }
             return "";
         case ReportType::misraCpp2023:
-            if (errId.rfind("misra-cpp-2023-", 0) == 0) {
+            if (errId.rfind("misra-cpp-2023-", 0) == 0)
                 return errId.substr(15);
-            }
             return "";
         default:
             return "";
