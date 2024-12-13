@@ -398,6 +398,7 @@ jobs:
         run: |
           # this is only to test the "install" target - since we did not build with FILESDIR it would not work as intended
           make DESTDIR=cppcheck-make-install FILESDIR=/share/Cppcheck install
+          rm -rf cppcheck-make-install
 
       - name: Test Signalhandler
         run: |
