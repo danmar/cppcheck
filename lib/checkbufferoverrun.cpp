@@ -675,7 +675,7 @@ void CheckBufferOverrun::bufferOverflow()
                             continue;
                     }
                 }
-                const bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
+                const bool error = std::none_of(minsizes->begin(), minsizes->end(), [&](const Library::ArgumentChecks::MinSize &minsize) {
                     return checkBufferSize(tok, minsize, args, bufferSize.intvalue, *mSettings, mTokenizer);
                 });
                 if (error)
