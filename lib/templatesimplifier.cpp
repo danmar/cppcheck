@@ -3391,7 +3391,7 @@ void TemplateSimplifier::replaceTemplateUsage(
             if (tok->isName() && tok->templateSimplifierPointers() && !tok->templateSimplifierPointers()->empty()) {
                 for (auto ti = mTemplateInstantiations.cbegin(); ti != mTemplateInstantiations.cend();) {
                     if (ti->token() == tok) {
-                        ti = mTemplateInstantiations.erase(ti);
+                        mTemplateInstantiations.erase(ti);
                         break;
                     }
                     ++ti;
