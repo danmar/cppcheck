@@ -269,6 +269,7 @@ namespace ValueFlow
         Bound bound = Bound::Point;
 
         /** value relies on safe checking */
+        // cppcheck-suppress premium-misra-cpp-2023-12.2.1
         bool safe : 1;
 
         /** Conditional value */
