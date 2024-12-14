@@ -271,7 +271,6 @@ def test_execute_addon_failure_json_ctu_notexist(tmpdir):
 
     _, _, stderr = cppcheck(args)
     ec = 1 if os.name == 'nt' else 127
-    print(stderr)
     assert stderr.splitlines() == [
         "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]".format(test_file, ec),
         ":0:0: error: Bailing out from analysis: Whole program analysis failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]".format(ec)
@@ -2734,3 +2733,55 @@ void f() {
     assert stderr.splitlines() == [
         '{}:3:13: error: Internal Error. MathLib::toBigUNumber: out_of_range: 0x10000000000000000 [internalError]'.format(test_file)
     ]
+
+
+def __test_addon_suppr(tmp_path, extra_args):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+// cppcheck-suppress misra-c2012-2.3
+typedef int MISRA_5_6_VIOLATION;
+typedef int MISRA_5_6_VIOLATION_1;
+        """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=style',
+        '--addon=misra',
+        str(test_file)
+    ]
+
+    args += extra_args
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:4:1: style: misra violation (use --rule-texts=<file> to get proper output) [misra-c2012-2.3]'.format(test_file),
+    ]
+
+
+# TODO: remove override when all issues are fixed
+def test_addon_suppr_inline(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j1'])
+
+
+# TODO: remove override when all issues are fixed
+@pytest.mark.xfail(strict=True)  # TODO: inline suppression does not work
+def test_addon_suppr_inline_j(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
+
+
+def test_addon_suppr_cli_line(tmp_path):
+    __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
+
+
+@pytest.mark.xfail(strict=True)  # #13437 - TODO: suppression needs to match the whole input path
+def test_addon_suppr_cli_file_line(tmp_path):
+    __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:test.c:3'])
+
+
+def test_addon_suppr_cli_absfile_line(tmp_path):
+    test_file = tmp_path / 'test.c'
+    __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:{}:3'.format(test_file)])
