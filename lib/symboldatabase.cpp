@@ -1250,13 +1250,13 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
             mVariableList.push_back(membervar);
         } else
             mVariableList[membertok->varId()] = membervar;
-        varIds.insert(std::make_pair(vartok->varId(), memberId));
+        varIds.emplace(vartok->varId(), memberId);
         varId = varIds.find(vartok->varId());
     }
     MemberIdMap::const_iterator memberId = varId->second.find(membervar->nameToken()->varId());
     if (memberId == varId->second.cend()) {
         if (membertok->varId() == 0) {
-            varId->second.insert(std::make_pair(membervar->nameToken()->varId(), mTokenizer.newVarId()));
+            varId->second.emplace(membervar->nameToken()->varId(), mTokenizer.newVarId());
             mVariableList.push_back(membervar);
             memberId = varId->second.find(membervar->nameToken()->varId());
         } else

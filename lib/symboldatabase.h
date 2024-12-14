@@ -1162,7 +1162,7 @@ public:
 
         const Function * back = &functionList.back();
 
-        functionMap.insert(make_pair(back->tokenDef->str(), back));
+        functionMap.emplace(back->tokenDef->str(), back);
     }
 
     AccessControl defaultAccess() const;

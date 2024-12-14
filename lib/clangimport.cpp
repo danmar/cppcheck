@@ -234,26 +234,26 @@ namespace clangimport {
 
         void enumDecl(const std::string &addr, Token *nameToken, Enumerator *enumerator) {
             Decl decl(nameToken, enumerator);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
             nameToken->enumerator(enumerator);
             notFound(addr);
         }
 
         void funcDecl(const std::string &addr, Token *nameToken, Function *function) {
             Decl decl(nameToken, function);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
             nameToken->function(function);
             notFound(addr);
         }
 
         void scopeDecl(const std::string &addr, Scope *scope) {
             Decl decl(scope);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
         }
 
         void varDecl(const std::string &addr, Token *def, Variable *var) {
             Decl decl(def, var);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
             def->varId(++mVarId);
             def->variable(var);
             if (def->valueType())

@@ -5933,7 +5933,7 @@ static void valueFlowUninit(TokenList& tokenlist, ErrorLogger& errorLogger, cons
                     Token* tok2 = p.first;
                     const ValueFlow::Value& v = p.second;
                     // Try to insert into map
-                    auto pp = partialReads.insert(std::make_pair(tok2, v));
+                    auto pp = partialReads.emplace(tok2, v);
                     ValueFlow::Value& v2 = pp.first->second;
                     const bool inserted = pp.second;
                     // Merge the two values if it is already in map

@@ -984,7 +984,7 @@ namespace {
             void add(const Reference& r) {
                 if (!r.tok)
                     return;
-                expressions.insert(std::make_pair(r.tok->exprId(), r));
+                expressions.emplace(r.tok->exprId(), r);
             }
 
             std::vector<Reference> invalidTokens() const {
