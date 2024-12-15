@@ -281,9 +281,8 @@ void CheckIO::checkFileUsage()
                 if (!fileTok || !fileTok->varId() || fileTok->strAt(1) == "[")
                     continue;
 
-                if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
-                    filepointers.emplace(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM));
-                }
+                // function call indicates: Its a File
+                filepointers.emplace(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM));
 
                 Filepointer& f = filepointers[fileTok->varId()];
 
