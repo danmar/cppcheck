@@ -3665,7 +3665,7 @@ void Tokenizer::simplifyExternC()
     }
 }
 
-void Tokenizer::simplifyRoundCurlyParentheses()
+void Tokenizer::simplifyCompoundStatements()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::Match(tok, "[;{}:] ( {") &&
@@ -3683,6 +3683,8 @@ void Tokenizer::simplifyRoundCurlyParentheses()
             tok->deleteThis();
             tok->deleteNext(3);
         }
+        else if (tok->str() == "(")
+            tok = tok->link();
     }
 }
 
@@ -5615,8 +5617,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (isCPP())
         simplifyExternC();
 
-    // simplify weird but legal code: "[;{}] ( { code; } ) ;"->"[;{}] code;"
-    simplifyRoundCurlyParentheses();
+    // simplify compound statements: "[;{}] ( { code; } ) ;"->"[;{}] code;"
+    simplifyCompoundStatements();
 
     // check for simple syntax errors..
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
