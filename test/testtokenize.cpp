@@ -310,7 +310,7 @@ private:
         TEST_CASE(simplifyCAlternativeTokens);
 
         // x = ({ 123; });  =>  { x = 123; }
-        TEST_CASE(simplifyRoundCurlyParentheses);
+        TEST_CASE(simplifyCompoundStatements);
 
         TEST_CASE(simplifyOperatorName1);
         TEST_CASE(simplifyOperatorName2);
@@ -5059,9 +5059,12 @@ private:
         ignore_errout();
     }
 
-    void simplifyRoundCurlyParentheses() {
+    void simplifyCompoundStatements() {
         ASSERT_EQUALS("; x = 123 ;", tokenizeAndStringify(";x=({123;});"));
         ASSERT_EQUALS("; x = y ;", tokenizeAndStringify(";x=({y;});"));
+        // #13419: Do not simplify compound statements in for loop
+        ASSERT_EQUALS("void foo ( int x ) { for ( ; ( { { } ; x < 1 ; } ) ; ) }",
+                      tokenizeAndStringify("void foo(int x) { for (;({ {}; x<1; });) }"));
     }
 
     void simplifyOperatorName1() {
