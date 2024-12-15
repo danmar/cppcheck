@@ -2316,3 +2316,153 @@ void f(bool b)
     hash_2 = root.get('hash')
 
     assert hash_1 != hash_2
+
+
+def test_def_undef(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#ifndef DEF_1
+    {int i = *((int*)0);}
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-DDEF_1',
+        '-UDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: DEF_1=1...'.format(test_file)  # TODO: should not print DEF_1 - see #13335
+    ]
+    assert stderr.splitlines() == [
+        '{}:5:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+@pytest.mark.xfail(strict=True)
+def test_def_def(tmp_path):  # #13334
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#if DEF_1 == 3
+    {int i = *((int*)0);}
+#endif
+#if DEF_1 == 7
+    {int i = *((int*)0);}
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-DDEF_1=3',
+        '-DDEF_1=7',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: DEF_1=3;DEF_1=7...'.format(test_file)  # TODO: should not print DEF_1 twice - see #13335
+    ]
+    assert stderr.splitlines() == [
+        '{}:8:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+@pytest.mark.xfail(strict=True)
+def test_def_undef_def(tmp_path):  # #13334
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#ifdef DEF_1
+    {int i = *((int*)0);}
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-DDEF_1',
+        '-UDEF_1',
+        '-DDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: DEF_1=1;DEF_1=1...'.format(test_file)  # TODO: should not print DEF_1 twice - see #13335
+    ]
+    assert stderr.splitlines() == [
+        '{}:5:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+def test_undef(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#ifndef DEF_1
+    {int i = *((int*)0);}
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-UDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr.splitlines() == [
+        '{}:5:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+@pytest.mark.xfail(strict=True)
+def test_undef_src(tmp_path):  # #13340
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+#define DEF_1
+
+void f()
+{
+#ifdef DEF_1
+    {int i = *((int*)0);}
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-UDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr.splitlines() == [
+        '{}:7:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
