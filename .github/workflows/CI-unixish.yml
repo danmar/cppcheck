@@ -398,22 +398,27 @@ jobs:
         run: |
           # this is only to test the "install" target - since we did not build with FILESDIR it would not work as intended
           make DESTDIR=cppcheck-make-install FILESDIR=/share/Cppcheck install
+          rm -rf cppcheck-make-install
 
       - name: Test Signalhandler
         run: |
-          cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
-          cmake --build cmake.output.signal --target test-signalhandler -- -j$(nproc)
-          cp cmake.output.signal/bin/test-s* .
+          cmake -S . -B build.cmake.signal -G "Unix Makefiles" -DBUILD_TESTS=On
+          cmake --build build.cmake.signal --target test-signalhandler -- -j$(nproc)
+          # TODO: how to run this without copying the file?
+          cp build.cmake.signal/bin/test-s* .
           python3 -m pytest -Werror --strict-markers -vv test/signal/test-signalhandler.py
+          rm test-signalhandler
 
       # no unix backtrace support on MacOs
       - name: Test Stacktrace
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.signal -G "Unix Makefiles" -DBUILD_TESTS=On
-          cmake --build cmake.output.signal --target test-stacktrace -- -j$(nproc)
-          cp cmake.output.signal/bin/test-s* .
+          cmake -S . -B build.cmake.stack -G "Unix Makefiles" -DBUILD_TESTS=On
+          cmake --build build.cmake.stack --target test-stacktrace -- -j$(nproc)
+          # TODO: how to run this without copying the file?
+          cp build.cmake.stack/bin/test-s* .
           python3 -m pytest -Werror --strict-markers -vv test/signal/test-stacktrace.py
+          rm test-stacktrace
 
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
@@ -468,6 +473,17 @@ jobs:
         run: |
           warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
           g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
+
+      - name: Show all ignored files
+        if: false  # TODO: currently lists all the contents of ignored folders - we only need what actually matched
+        run: |
+          git ls-files --others --ignored --exclude-standard
+
+      - name: Check for changed and unversioned files
+        run: |
+          # TODO: how to do this with a single command?
+          git status --ignored=no
+          git status --ignored=no | grep -q 'working tree clean'
 
   selfcheck:
     needs: build # wait for all tests to be successful first
