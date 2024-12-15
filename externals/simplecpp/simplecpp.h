@@ -99,13 +99,13 @@ namespace simplecpp {
      */
     class SIMPLECPP_LIB Token {
     public:
-        Token(const TokenString &s, const Location &loc) :
-            location(loc), previous(nullptr), next(nullptr), string(s) {
+        Token(const TokenString &s, const Location &loc, bool wsahead = false) :
+            whitespaceahead(wsahead), location(loc), previous(nullptr), next(nullptr), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), location(tok.location), previous(nullptr), next(nullptr), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {
+            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), whitespaceahead(tok.whitespaceahead), location(tok.location), previous(nullptr), next(nullptr), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {
         }
 
         void flags() {
@@ -137,6 +137,7 @@ namespace simplecpp {
         bool comment;
         bool name;
         bool number;
+        bool whitespaceahead;
         Location location;
         Token *previous;
         Token *next;
@@ -158,6 +159,8 @@ namespace simplecpp {
         void setExpandedFrom(const Token *tok, const Macro* m) {
             mExpandedFrom = tok->mExpandedFrom;
             mExpandedFrom.insert(m);
+            if (tok->whitespaceahead)
+                whitespaceahead = true;
         }
         bool isExpandedFrom(const Macro* m) const {
             return mExpandedFrom.find(m) != mExpandedFrom.end();
