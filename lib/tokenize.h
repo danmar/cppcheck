@@ -390,11 +390,13 @@ public:
 private:
 
     /** Report that there is an unhandled "class x y {" code */
-    void unhandled_macro_class_x_y(const Token *tok) const;
+    void unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const;
 
     /** Check configuration (unknown macros etc) */
     void checkConfiguration() const;
     void macroWithSemicolonError(const Token *tok, const std::string &macroName) const;
+
+    void invalidConstFunctionTypeError(const Token *tok) const;
 
     /**
      * Is there C++ code in C file?
@@ -628,6 +630,8 @@ public:
     void setDirectives(std::list<Directive> directives);
 
     std::string dumpTypedefInfo() const;
+
+    static void getErrorMessages(ErrorLogger& errorLogger, const Settings& settings);
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
