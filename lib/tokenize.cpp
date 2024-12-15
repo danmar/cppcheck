@@ -5907,13 +5907,15 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
                        (simplification != 2U && mSettings.debugnormal);
 
     if (debug && list.front()) {
+        const bool xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
+
         list.front()->printOut(out, nullptr, list.getFiles());
 
-        if (mSettings.xml)
+        if (xml)
             out << "<debug>" << std::endl;
 
         if (mSymbolDatabase) {
-            if (mSettings.xml)
+            if (xml)
                 mSymbolDatabase->printXml(out);
             else if (mSettings.verbose) {
                 mSymbolDatabase->printOut("Symbol database");
@@ -5921,11 +5923,11 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         }
 
         if (mSettings.verbose)
-            list.front()->printAst(mSettings.verbose, mSettings.xml, list.getFiles(), out);
+            list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
 
-        list.front()->printValueFlow(mSettings.xml, out);
+        list.front()->printValueFlow(xml, out);
 
-        if (mSettings.xml)
+        if (xml)
             out << "</debug>" << std::endl;
     }
 
