@@ -30,6 +30,7 @@ def checker():
     return MisraChecker(settings)
 
 
+# FIXME: files are generates in the source tree so it will cause issues if tests are run with xdist.
 @pytest.fixture
 def test_files():
     for f in TEST_SOURCE_FILES:
