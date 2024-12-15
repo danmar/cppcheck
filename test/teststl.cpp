@@ -6365,6 +6365,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout_str());
+
+        // #13410
+        check("int f(std::vector<int>& v) {\n"
+            "    const int* i = &*v.cbegin();\n"
+            "    v.push_back(1);\n"
+            "    return *i;\n"
+            "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n", errout_str());
     }
 
     void invalidContainerLoop() {
