@@ -1063,7 +1063,6 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                 flipped = true;
             else if (!std::equal(tokens.cbegin(), tokens.cend(), branches.cbegin(), &isSameToken))
                 continue;
-            const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
             std::vector<ValueFlow::Value> values;
             for (const Token* tok2 : tokens) {
                 if (tok2->hasKnownIntValue()) {
@@ -1083,6 +1082,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                     });
                 }
             }
+            const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
             for (ValueFlow::Value& value : values) {
                 value.setImpossible();
                 if (isMin) {
@@ -2076,12 +2076,12 @@ struct LifetimeStore {
         for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(argtok, settings)) {
             if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                 continue;
-            ErrorPath er = errorPath;
-            er.insert(er.end(), lt.errorPath.cbegin(), lt.errorPath.cend());
             if (!lt.token)
                 return false;
             if (!pred(lt.token))
                 return false;
+            ErrorPath er = errorPath;
+            er.insert(er.end(), lt.errorPath.cbegin(), lt.errorPath.cend());
             er.emplace_back(argtok, message);
 
             ValueFlow::Value value;
@@ -3336,7 +3336,6 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
             Token* parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
-            Token* blockTok = parenTok->link()->tokAt(1);
             const Token* condTok = parenTok->astOperand2();
             if (condTok->exprId() == 0)
                 continue;
@@ -3347,6 +3346,7 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
             const bool isOp = condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp;
             const bool is1 = isOp || astIsBool(condTok);
 
+            Token* blockTok = parenTok->link()->tokAt(1);
             Token* startTok = blockTok;
             // Inner condition
             {
@@ -3703,8 +3703,11 @@ static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const S
             if (astIsFloat(tok->astOperand2(), false))
                 continue;
 
-            SymbolicInferModel leftModel{tok->astOperand1()};
-            std::vector<ValueFlow::Value> values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+            std::vector<ValueFlow::Value> values;
+            {
+                SymbolicInferModel leftModel{tok->astOperand1()};
+                values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+            }
             if (values.empty()) {
                 SymbolicInferModel rightModel{tok->astOperand2()};
                 values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
