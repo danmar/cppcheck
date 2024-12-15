@@ -1098,7 +1098,7 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
                     return v;
             if (errorPath)
                 errorPath->insert(errorPath->end(), val.errorPath.cbegin(), val.errorPath.cend());
-            if(const ValueFlow::Value* v = getInnerLifetime(val.tokvalue, id, errorPath, depth - 1))
+            if (const ValueFlow::Value* v = getInnerLifetime(val.tokvalue, id, errorPath, depth - 1))
                 return v;
             continue;
         }
