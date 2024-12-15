@@ -1008,18 +1008,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             }
         }
 
-        FilesDeleter filesDeleter;
-
-        // write dump file xml prolog
-        std::ofstream fdump;
-        std::string dumpFile;
-        createDumpFile(mSettings, file, fdump, dumpFile);
-        if (fdump.is_open()) {
-            fdump << dumpProlog;
-            if (!mSettings.dump)
-                filesDeleter.addFile(dumpFile);
-        }
-
         // Get directives
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
         preprocessor.simplifyPragmaAsm(tokens1);
@@ -1065,6 +1053,18 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             } else {
                 mTooManyConfigs = true;
             }
+        }
+
+        FilesDeleter filesDeleter;
+
+        // write dump file xml prolog
+        std::ofstream fdump;
+        std::string dumpFile;
+        createDumpFile(mSettings, file, fdump, dumpFile);
+        if (fdump.is_open()) {
+            fdump << dumpProlog;
+            if (!mSettings.dump)
+                filesDeleter.addFile(dumpFile);
         }
 
         std::set<unsigned long long> hashes;
@@ -1231,6 +1231,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             mErrorLogger.reportErr(errmsg);
         }
 
+        // TODO: will not be closed if we encountered an exception
         // dumped all configs, close root </dumps> element now
         if (fdump.is_open()) {
             fdump << "</dumps>" << std::endl;
