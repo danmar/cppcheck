@@ -780,12 +780,12 @@ void TemplateSimplifier::getTemplateInstantiations()
 
     for (const auto & decl : mTemplateDeclarations) {
         if (decl.isFunction())
-            functionNameMap.insert(std::make_pair(decl.name(), &decl));
+            functionNameMap.emplace(decl.name(), &decl);
     }
 
     for (const auto & decl : mTemplateForwardDeclarations) {
         if (decl.isFunction())
-            functionNameMap.insert(std::make_pair(decl.name(), &decl));
+            functionNameMap.emplace(decl.name(), &decl);
     }
 
     const Token *skip = nullptr;

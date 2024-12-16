@@ -2472,8 +2472,8 @@ void CheckOther::checkInvalidFree()
             // Keep track of which variables were assigned addresses to newly-allocated memory
             if ((tok->isCpp() && Token::Match(tok, "%var% = new")) ||
                 (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
-                allocation.insert(std::make_pair(tok->varId(), tok->strAt(2)));
-                inconclusive.insert(std::make_pair(tok->varId(), false));
+                allocation.emplace(tok->varId(), tok->strAt(2));
+                inconclusive.emplace(tok->varId(), false);
             }
 
             // If a previously-allocated pointer is incremented or decremented, any subsequent

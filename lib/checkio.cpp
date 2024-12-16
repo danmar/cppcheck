@@ -141,11 +141,11 @@ void CheckIO::checkFileUsage()
 
         if (var->isLocal()) {
             if (var->nameToken()->strAt(1) == "(") // initialize by calling "ctor"
-                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(OpenMode::UNKNOWN_OM)));
+                filepointers.emplace(var->declarationId(), Filepointer(OpenMode::UNKNOWN_OM));
             else
-                filepointers.insert(std::make_pair(var->declarationId(), Filepointer(OpenMode::CLOSED)));
+                filepointers.emplace(var->declarationId(), Filepointer(OpenMode::CLOSED));
         } else {
-            filepointers.insert(std::make_pair(var->declarationId(), Filepointer(OpenMode::UNKNOWN_OM)));
+            filepointers.emplace(var->declarationId(), Filepointer(OpenMode::UNKNOWN_OM));
             // TODO: If all fopen calls we find open the file in the same type, we can set Filepointer::mode
         }
     }
@@ -281,9 +281,8 @@ void CheckIO::checkFileUsage()
                 if (!fileTok || !fileTok->varId() || fileTok->strAt(1) == "[")
                     continue;
 
-                if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
-                    filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM)));
-                }
+                // function call indicates: Its a File
+                filepointers.emplace(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM));
 
                 Filepointer& f = filepointers[fileTok->varId()];
 
