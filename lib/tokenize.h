@@ -396,6 +396,8 @@ private:
     void checkConfiguration() const;
     void macroWithSemicolonError(const Token *tok, const std::string &macroName) const;
 
+    void invalidConstFunctionTypeError(const Token *tok) const;
+
     /**
      * Is there C++ code in C file?
      */
@@ -628,6 +630,8 @@ public:
     void setDirectives(std::list<Directive> directives);
 
     std::string dumpTypedefInfo() const;
+
+    static void getErrorMessages(ErrorLogger& errorLogger, const Settings& settings);
 private:
     const Token *processFunc(const Token *tok2, bool inOperator) const;
     Token *processFunc(Token *tok2, bool inOperator);
