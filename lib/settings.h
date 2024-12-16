@@ -134,7 +134,7 @@ public:
     /**
      * Check code in the headers, this is on by default but can
      * be turned off to save CPU */
-    bool checkHeaders = true;
+    bool checkHeaders = true; // TODO: CLI
 
     /** Check for incomplete info in library files? */
     bool checkLibrary{};
@@ -146,10 +146,10 @@ public:
     std::string checkersReportFilename;
 
     /** @brief check unknown function return values */
-    std::set<std::string> checkUnknownFunctionReturn;
+    std::set<std::string> checkUnknownFunctionReturn; // TODO: move to Library?
 
     /** Check unused/uninstantiated templates */
-    bool checkUnusedTemplates = true;
+    bool checkUnusedTemplates = true; // TODO: CLI
 
     /** Use Clang */
     bool clang{};
@@ -158,10 +158,10 @@ public:
     std::string clangExecutable = "clang";
 
     /** Use clang-tidy */
-    bool clangTidy{};
+    bool clangTidy{}; // TODO: CLI
 
     /** Internal: Clear the simplecpp non-existing include cache */
-    bool clearIncludeCache{};
+    bool clearIncludeCache{}; // internal
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -260,8 +260,10 @@ public:
     /** Library */
     Library library;
 
+#ifdef HAS_THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage{};
+#endif
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
@@ -282,7 +284,7 @@ public:
     Platform platform;
 
     /** @brief pid of cppcheck. Intention is that this is set in the main process. */
-    int pid;
+    int pid; // internal
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -449,11 +451,8 @@ public:
     /** @brief Is --verbose given? */
     bool verbose{};
 
-    /** @brief write XML results (--xml) */
-    bool xml{};
-
     /** @brief XML version (--xml-version=..) */
-    int xml_version = 2;
+    int xml_version = 2; // TODO: integrate into outputFormat enum?
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
