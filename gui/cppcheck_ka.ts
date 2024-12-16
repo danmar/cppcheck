@@ -1985,72 +1985,77 @@ Options:
         <translation>პროექტის ფაილი: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="572"/>
+        <location filename="projectfiledialog.cpp" line="575"/>
         <source>Select Cppcheck build dir</source>
         <translation>აირჩიეთ Cppcheck-ის აგების საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="841"/>
+        <location filename="projectfiledialog.cpp" line="844"/>
         <source>Select include directory</source>
         <translation>აირჩიეთ ჩასასმელი საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="821"/>
+        <location filename="projectfiledialog.cpp" line="824"/>
         <source>Select a directory to check</source>
         <translation>აირჩიეთ შესამოწმებელი საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="443"/>
+        <location filename="projectfiledialog.cpp" line="391"/>
+        <source>Note: Open source Cppcheck does not fully implement Misra C 2012</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.cpp" line="446"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (ვერ ვიპოვე)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="611"/>
+        <location filename="projectfiledialog.cpp" line="614"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="612"/>
+        <location filename="projectfiledialog.cpp" line="615"/>
         <source>Compile database</source>
         <translation>მონაცემთა ბაზის კომპილაცია</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="613"/>
+        <location filename="projectfiledialog.cpp" line="616"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="614"/>
+        <location filename="projectfiledialog.cpp" line="617"/>
         <source>Import Project</source>
         <translation>პროექტის შემოტანა</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="861"/>
+        <location filename="projectfiledialog.cpp" line="864"/>
         <source>Select directory to ignore</source>
         <translation>აირჩიეთ გამოსატოვებელი საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="869"/>
+        <location filename="projectfiledialog.cpp" line="872"/>
         <source>Source files</source>
         <translation>კოდის ფაილები</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="870"/>
+        <location filename="projectfiledialog.cpp" line="873"/>
         <source>All files</source>
         <translation>ყველა ფაილი</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="871"/>
+        <location filename="projectfiledialog.cpp" line="874"/>
         <source>Exclude file</source>
         <translation>ფაილის ამოღება</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="955"/>
+        <location filename="projectfiledialog.cpp" line="958"/>
         <source>Select MISRA rule texts file</source>
         <translation>აირჩიეთ MISRA-ის წესების ტექსტის ფაილი</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="957"/>
+        <location filename="projectfiledialog.cpp" line="960"/>
         <source>MISRA rule texts file (%1)</source>
         <translation>MISRA-ის წესის ტექსტების ფაილი (%1)</translation>
     </message>
