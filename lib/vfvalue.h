@@ -33,6 +33,8 @@
 #include <type_traits>
 #include <vector>
 
+FORCE_WARNING_CLANG_PUSH("-Wpadded")
+
 class Token;
 
 namespace ValueFlow
@@ -43,6 +45,10 @@ namespace ValueFlow
 
         explicit Value(long long val = 0, Bound b = Bound::Point) :
             bound(b),
+            safe(false),
+            conditional(false),
+            macro(false),
+            defaultArg(false),
             intvalue(val),
             varvalue(val),
             wideintvalue(val)
@@ -262,6 +268,53 @@ namespace ValueFlow
         /** The value bound  */
         Bound bound = Bound::Point;
 
+        /** value relies on safe checking */
+        // cppcheck-suppress premium-misra-cpp-2023-12.2.1
+        bool safe : 1;
+
+        /** Conditional value */
+        bool conditional : 1;
+
+        /** Value is is from an expanded macro */
+        bool macro : 1;
+
+        /** Is this value passed as default parameter to the function? */
+        bool defaultArg : 1;
+
+        long long : 4; // padding
+
+        /** kind of moved  */
+        enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
+
+        enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
+
+        enum class LifetimeKind : std::uint8_t {
+            // Pointer points to a member of lifetime
+            Object,
+            // A member of object points to the lifetime
+            SubObject,
+            // Lambda has captured lifetime(similar to SubObject)
+            Lambda,
+            // Iterator points to the lifetime of a container(similar to Object)
+            Iterator,
+            // A pointer that holds the address of the lifetime
+            Address
+        } lifetimeKind = LifetimeKind::Object;
+
+        /** How known is this value */
+        enum class ValueKind : std::uint8_t {
+            /** This value is possible, other unlisted values may also be possible */
+            Possible,
+            /** Only listed values are possible */
+            Known,
+            /** Inconclusive */
+            Inconclusive,
+            /** Listed values are impossible */
+            Impossible
+        } valueKind = ValueKind::Possible;
+
+        std::int8_t indirect{}; // TODO: can we reduce the size?
+
         /** int value (or sometimes bool value?) */
         long long intvalue{};
 
@@ -279,12 +332,12 @@ namespace ValueFlow
 
         ErrorPath errorPath;
 
-        ErrorPath debugPath;
+        ErrorPath debugPath; // TODO: make lighter by default
 
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId{};
 
-        enum class UnknownFunctionReturn : uint8_t {
+        enum class UnknownFunctionReturn : std::uint8_t {
             no,             // not unknown function return
             outOfMemory,    // out of memory
             outOfResources, // out of resource
@@ -292,22 +345,7 @@ namespace ValueFlow
         };
         UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
 
-        /** value relies on safe checking */
-        bool safe{};
-
-        /** Conditional value */
-        bool conditional{};
-
-        /** Value is is from an expanded macro */
-        bool macro{};
-
-        /** Is this value passed as default parameter to the function? */
-        bool defaultArg{};
-
-        int8_t indirect{};
-
-        /** kind of moved  */
-        enum class MoveKind : std::uint8_t { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
+        long long : 24; // padding
 
         /** Path id */
         MathLib::bigint path{};
@@ -320,37 +358,10 @@ namespace ValueFlow
         // Set to where a lifetime is captured by value
         const Token* capturetok{};
 
-        enum class LifetimeKind : std::uint8_t {
-            // Pointer points to a member of lifetime
-            Object,
-            // A member of object points to the lifetime
-            SubObject,
-            // Lambda has captured lifetime(similar to SubObject)
-            Lambda,
-            // Iterator points to the lifetime of a container(similar to Object)
-            Iterator,
-            // A pointer that holds the address of the lifetime
-            Address
-        } lifetimeKind = LifetimeKind::Object;
-
-        enum class LifetimeScope : std::uint8_t { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
-
         RET_NONNULL static const char* toString(MoveKind moveKind);
         RET_NONNULL static const char* toString(LifetimeKind lifetimeKind);
         RET_NONNULL static const char* toString(LifetimeScope lifetimeScope);
         RET_NONNULL static const char* toString(Bound bound);
-
-        /** How known is this value */
-        enum class ValueKind : std::uint8_t {
-            /** This value is possible, other unlisted values may also be possible */
-            Possible,
-            /** Only listed values are possible */
-            Known,
-            /** Inconclusive */
-            Inconclusive,
-            /** Listed values are impossible */
-            Impossible
-        } valueKind = ValueKind::Possible;
 
         void setKnown() {
             valueKind = ValueKind::Known;
@@ -418,5 +429,7 @@ namespace ValueFlow
         };
     };
 }
+
+FORCE_WARNING_CLANG_POP
 
 #endif // vfvalueH
