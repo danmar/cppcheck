@@ -485,6 +485,57 @@ void CheckBool::assignBoolToFloatError(const Token *tok)
                 "Boolean value assigned to floating point variable.", CWE704, Certainty::normal);
 }
 
+//---------------------------------------------------------------------------
+// Check for direct assignment of 0/1 literals to boolean variables
+// bool x = 1; -> bool x = true;
+// bool y = 0; -> bool y = false;
+//---------------------------------------------------------------------------
+void CheckBool::checkAssignedLiteralToBoolean()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    logChecker("CheckBool::checkAssignedLiteralToBoolean"); // style
+
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->str() != "=")
+                continue;
+
+            // Check if left operand is boolean
+            const Token* varTok = tok->astOperand1();
+            if (!varTok || !varTok->variable() || !isBool(varTok->variable()))
+                continue;
+
+            // Check if right operand is a numeric literal 0 or 1
+            const Token* valTok = tok->astOperand2();
+            if (!valTok || !valTok->isNumber())
+                continue;
+
+            const std::string& value = valTok->str();
+            if (value == "0" || value == "1") {
+                assignedLiteralToBooleanError(tok, value);
+            }
+        }
+    }
+}
+
+void CheckBool::assignedLiteralToBooleanError(const Token* tok, const std::string& value)
+{
+    const std::string suggestion = (value == "0" ? "false" : "true");
+    reportError(
+        tok,
+        Severity::style,
+        "assignedLiteralToBoolean",
+        "Boolean variable assigned a numeric literal '" + value + "'. Consider using '" + suggestion + "' instead.\n"
+        "Using numeric literals (0 or 1) for boolean assignments is not recommended. "
+        "Use 'false' or 'true' instead for better code readability and maintainability.",
+        CWE398,
+        Certainty::normal
+    );
+}
+
 void CheckBool::returnValueOfFunctionReturningBool()
 {
     if (!mSettings->severity.isEnabled(Severity::style))

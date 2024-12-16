@@ -63,6 +63,7 @@ private:
         checkBool.checkIncrementBoolean();
         checkBool.checkAssignBoolToPointer();
         checkBool.checkBitwiseOnBoolean();
+        checkBool.checkAssignedLiteralToBoolean();
     }
 
     /** @brief %Check for comparison of function returning bool*/
@@ -86,6 +87,9 @@ private:
     /** @brief %Check for using bool in bitwise expression */
     void checkBitwiseOnBoolean();
 
+    /** @brief %Check for using literal in bool expression */
+    void checkAssignedLiteralToBoolean();
+
     /** @brief %Check for comparing a bool expression with an integer other than 0 or 1 */
     void checkComparisonOfBoolExpressionWithInt();
 
@@ -105,6 +109,7 @@ private:
     void assignBoolToPointerError(const Token *tok);
     void assignBoolToFloatError(const Token *tok);
     void bitwiseOnBooleanError(const Token* tok, const std::string& expression, const std::string& op, bool isCompound = false);
+    void assignedLiteralToBooleanError(const Token* tok, const std::string& value);
     void comparisonOfBoolExpressionWithIntError(const Token *tok, bool not0or1);
     void pointerArithBoolError(const Token *tok);
     void returnValueBoolError(const Token *tok);
