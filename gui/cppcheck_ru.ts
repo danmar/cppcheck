@@ -2003,84 +2003,74 @@ Options:
         <translation>Файл проекта: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="574"/>
+        <location filename="projectfiledialog.cpp" line="572"/>
         <source>Select Cppcheck build dir</source>
         <translation>Выбрать директорию сборки Cppcheck</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="843"/>
+        <location filename="projectfiledialog.cpp" line="841"/>
         <source>Select include directory</source>
         <translation>Выберите директорию для поиска заголовочных файлов</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="823"/>
+        <location filename="projectfiledialog.cpp" line="821"/>
         <source>Select a directory to check</source>
         <translation>Выберите директорию для проверки</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="444"/>
+        <location filename="projectfiledialog.cpp" line="443"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (не найден)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="613"/>
+        <location filename="projectfiledialog.cpp" line="611"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="614"/>
+        <location filename="projectfiledialog.cpp" line="612"/>
         <source>Compile database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="615"/>
+        <location filename="projectfiledialog.cpp" line="613"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="616"/>
+        <location filename="projectfiledialog.cpp" line="614"/>
         <source>Import Project</source>
         <translation>Импорт проекта</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="863"/>
+        <location filename="projectfiledialog.cpp" line="861"/>
         <source>Select directory to ignore</source>
         <translation>Выберите директорию, которую надо проигнорировать</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="871"/>
+        <location filename="projectfiledialog.cpp" line="869"/>
         <source>Source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="872"/>
+        <location filename="projectfiledialog.cpp" line="870"/>
         <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="873"/>
+        <location filename="projectfiledialog.cpp" line="871"/>
         <source>Exclude file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="957"/>
+        <location filename="projectfiledialog.cpp" line="955"/>
         <source>Select MISRA rule texts file</source>
         <translation>Выбрать файл текстов правил MISRA</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="959"/>
+        <location filename="projectfiledialog.cpp" line="957"/>
         <source>MISRA rule texts file (%1)</source>
         <translation>Файл текстов правил MISRA (%1)</translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="976"/>
-        <source>Select license file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfiledialog.cpp" line="976"/>
-        <source>License file (%1)</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2113,7 +2103,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="280"/>
+        <location filename="projectfiledialog.cpp" line="279"/>
         <source> (Not found)</source>
         <translation> (Недоступно)</translation>
     </message>
