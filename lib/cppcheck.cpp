@@ -1682,8 +1682,15 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
         if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
 
-        const std::vector<picojson::value> results =
-            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
+        std::vector<picojson::value> results;
+
+        try {
+            results = executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
+        } catch (const InternalError& e) {
+            const std::string ctx = isCtuInfo ? "Whole program analysis" : "Checking file";
+            const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, file0, "Bailing out from analysis: " + ctx + " failed");
+            mErrorLogger.reportErr(errmsg);
+        }
 
         const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
 
@@ -1779,12 +1786,7 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
-    try {
-        executeAddons(ctuInfoFiles, "");
-    } catch (const InternalError& e) {
-        const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
-        mErrorLogger.reportErr(errmsg);
-    }
+    executeAddons(ctuInfoFiles, "");
 }
 
 Settings &CppCheck::settings()
