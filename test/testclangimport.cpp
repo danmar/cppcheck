@@ -101,9 +101,7 @@ private:
         TEST_CASE(recordDecl1);
         TEST_CASE(recordDecl2);
         TEST_CASE(switchStmt);
-        TEST_CASE(typedefDecl1);
-        TEST_CASE(typedefDecl2);
-        TEST_CASE(typedefDecl3);
+        TEST_CASE(typedefDeclPrologue);
         TEST_CASE(unaryExprOrTypeTraitExpr1);
         TEST_CASE(unaryExprOrTypeTraitExpr2);
         TEST_CASE(unaryOperator);
@@ -928,24 +926,30 @@ private:
                       parse(clang));
     }
 
-    void typedefDecl1() {
-        const char clang[] = "|-TypedefDecl 0x2d60180 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
-                             "| `-BuiltinType 0x2d5fe80 '__int128'";
-        ASSERT_EQUALS("typedef __int128 __int128_t ;", parse(clang));
-    }
+    void typedefDeclPrologue()
+    {
+        // these TypedefDecl are included in *any* AST dump and we should ignore them as they should not be of interest to us
+        // see https://github.com/llvm/llvm-project/issues/120228#issuecomment-2549212109 for an explanation
+        const char clang[] =
+            "TranslationUnitDecl 0x60efd80ef9f8 <<invalid sloc>> <invalid sloc>\n"
+            "|-TypedefDecl 0x60efd80f0228 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
+            "| `-BuiltinType 0x60efd80effc0 '__int128'\n"
+            "|-TypedefDecl 0x60efd80f0298 <<invalid sloc>> <invalid sloc> implicit __uint128_t 'unsigned __int128'\n"
+            "| `-BuiltinType 0x60efd80effe0 'unsigned __int128'\n"
+            "|-TypedefDecl 0x60efd80f05a0 <<invalid sloc>> <invalid sloc> implicit __NSConstantString 'struct __NSConstantString_tag'\n"
+            "| `-RecordType 0x60efd80f0370 'struct __NSConstantString_tag'\n"
+            "|   `-Record 0x60efd80f02f0 '__NSConstantString_tag'\n"
+            "|-TypedefDecl 0x60efd80f0648 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'\n"
+            "| `-PointerType 0x60efd80f0600 'char *'\n"
+            "|   `-BuiltinType 0x60efd80efaa0 'char'\n"
+            "|-TypedefDecl 0x60efd80f0940 <<invalid sloc>> <invalid sloc> implicit __builtin_va_list 'struct __va_list_tag[1]'\n"
+            "| `-ConstantArrayType 0x60efd80f08e0 'struct __va_list_tag[1]' 1\n"
+            "|   `-RecordType 0x60efd80f0720 'struct __va_list_tag'\n"
+            "|     `-Record 0x60efd80f06a0 '__va_list_tag'\n"
+            "`-FunctionDecl 0x60efd8151470 <a.cpp:1:1, line:3:1> line:1:6 f 'void ()'\n"
+            "`-CompoundStmt 0x60efd8151560 <line:2:1, line:3:1>\n";
 
-    void typedefDecl2() {
-        const char clang[] = "|-TypedefDecl 0x2d604a8 <<invalid sloc>> <invalid sloc> implicit __NSConstantString 'struct __NSConstantString_tag'\n"
-                             "| `-RecordType 0x2d602c0 'struct __NSConstantString_tag'\n"
-                             "|   `-Record 0x2d60238 '__NSConstantString_tag'";
-        ASSERT_EQUALS("typedef struct __NSConstantString_tag __NSConstantString ;", parse(clang));
-    }
-
-    void typedefDecl3() {
-        const char clang[] = "|-TypedefDecl 0x2d60540 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'\n"
-                             "| `-PointerType 0x2d60500 'char *'\n"
-                             "|   `-BuiltinType 0x2d5f980 'char'";
-        ASSERT_EQUALS("typedef char * __builtin_ms_va_list ;", parse(clang));
+        ASSERT_EQUALS("void f ( ) ;", parse(clang));
     }
 
     void unaryExprOrTypeTraitExpr1() {
@@ -1333,20 +1337,6 @@ private:
 
     void crash() {
         const char* clang = "TranslationUnitDecl 0x56037914f998 <<invalid sloc>> <invalid sloc>\n"
-                            "|-TypedefDecl 0x560379150200 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
-                            "| `-BuiltinType 0x56037914ff60 '__int128'\n"
-                            "|-TypedefDecl 0x560379150270 <<invalid sloc>> <invalid sloc> implicit __uint128_t 'unsigned __int128'\n"
-                            "| `-BuiltinType 0x56037914ff80 'unsigned __int128'\n"
-                            "|-TypedefDecl 0x5603791505e8 <<invalid sloc>> <invalid sloc> implicit __NSConstantString '__NSConstantString_tag'\n"
-                            "| `-RecordType 0x560379150360 '__NSConstantString_tag'\n"
-                            "|   `-CXXRecord 0x5603791502c8 '__NSConstantString_tag'\n"
-                            "|-TypedefDecl 0x560379150680 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'\n"
-                            "| `-PointerType 0x560379150640 'char *'\n"
-                            "|   `-BuiltinType 0x56037914fa40 'char'\n"
-                            "|-TypedefDecl 0x5603791968f8 <<invalid sloc>> <invalid sloc> implicit __builtin_va_list '__va_list_tag[1]'\n"
-                            "| `-ConstantArrayType 0x5603791968a0 '__va_list_tag[1]' 1 \n"
-                            "|   `-RecordType 0x560379150770 '__va_list_tag'\n"
-                            "|     `-CXXRecord 0x5603791506d8 '__va_list_tag'\n"
                             "|-ClassTemplateDecl 0x560379196b58 <test1.cpp:1:1, col:50> col:37 A\n"
                             "| |-TemplateTypeParmDecl 0x560379196950 <col:11> col:19 typename depth 0 index 0\n"
                             "| |-TemplateTypeParmDecl 0x5603791969f8 <col:21> col:29 typename depth 0 index 1\n"
