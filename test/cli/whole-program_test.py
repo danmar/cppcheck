@@ -358,3 +358,18 @@ def test_checkclass_project_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
+
+
+def test_ctu_fail(tmpdir):
+    # 13440 - handle InternalError exception during whole program analysis
+
+    with open(tmpdir / 'foo.json', 'wt') as f:
+        f.write('{ "executable": "notexist", "ctu": true }')
+
+    test_file = tmpdir / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(';\n')
+
+    _, _, stderr = cppcheck(['--addon=foo.json', '--template=daca2', 'test.c'], cwd=tmpdir)
+    last_line = stderr.strip().splitlines()[-1]
+    assert ''':0:0: error: Bailing out from analysis: Addon 'foo.json' failed: Failed to execute addon 'foo.json' - exitcode is 127 [internalError]''' == last_line
