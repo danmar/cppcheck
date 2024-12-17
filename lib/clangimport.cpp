@@ -504,7 +504,9 @@ void clangimport::AstNode::dumpAst(int num, int indent) const
 
 void clangimport::AstNode::setLocations(TokenList &tokenList, int file, int line, int col)
 {
-    for (const std::string &ext: mExtTokens) {
+    if (mExtTokens.size() >= 2)
+    {
+        const std::string &ext = mExtTokens[1];
         if (startsWith(ext, "<col:"))
             col = strToInt<int>(ext.substr(5, ext.find_first_of(",>", 5) - 5));
         else if (startsWith(ext, "<line:")) {
@@ -520,6 +522,11 @@ void clangimport::AstNode::setLocations(TokenList &tokenList, int file, int line
                 const std::string::size_type sep2 = ext.find(':', sep1 + 1);
                 file = tokenList.appendFileIfNew(ext.substr(1, sep1 - 1));
                 line = strToInt<int>(ext.substr(sep1 + 1, sep2 - sep1 - 1));
+            }
+            else {
+                // these are encountered in every AST dump by some built-in TypedefDecl
+                if (ext != "<<invalid sloc>")
+                    throw InternalError(nullptr, "invalid AST location: " + ext, InternalError::AST);
             }
         }
     }

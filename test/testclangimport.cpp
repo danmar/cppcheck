@@ -128,6 +128,7 @@ private:
         TEST_CASE(symbolDatabaseVariablePointerRef);
         TEST_CASE(symbolDatabaseNodeType1);
         TEST_CASE(symbolDatabaseForVariable);
+        TEST_CASE(stdinLoc);
 
         TEST_CASE(valueFlow1);
         TEST_CASE(valueFlow2);
@@ -1318,6 +1319,16 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("const signed char *", tok->valueType()->str());
+    }
+
+    void stdinLoc() {
+        // we should never encounter this
+        /*
+           int i;
+         */
+        const char clang[] = "`-VarDecl 0x5776bb240470 <<stdin>:1:1, col:5> col:5 i 'int'\n";
+
+        ASSERT_THROW_INTERNAL_EQUALS(parse(clang), AST, "invalid AST location: <<stdin>");
     }
 
     void crash() {
