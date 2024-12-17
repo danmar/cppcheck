@@ -555,8 +555,9 @@ void clangimport::AstNode::setLocations(TokenList &tokenList, int file, int line
                 line = strToInt<int>(ext.substr(sep1 + 1, sep2 - sep1 - 1));
             }
             else {
-                // these are encountered in every AST dump by some built-in TypedefDecl
-                if (ext != "<<invalid sloc>")
+                // "<invalid sloc>" are encountered in every AST dump by some built-in TypedefDecl
+                // an completely empty location block was encountered with a CompoundStmt
+                if (ext != "<<invalid sloc>" && ext != "<>")
                     throw InternalError(nullptr, "invalid AST location: " + ext, InternalError::AST);
             }
         }
