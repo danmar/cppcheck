@@ -527,6 +527,7 @@ bool clangimport::AstNode::isPrologueTypedefDecl() const
         type == "'char *'" ||
         type == "'struct __va_list_tag[1]'")
     {
+        // NOLINTNEXTLINE(readability-simplify-boolean-expr)
         return true;
     }
 
