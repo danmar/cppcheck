@@ -162,7 +162,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
     // Check that all include paths exist
     {
-        for (std::list<std::string>::const_iterator iter = mSettings.includePaths.cbegin();
+        for (auto iter = mSettings.includePaths.cbegin();
              iter != mSettings.includePaths.cend();
              ) {
             const std::string path(Path::toNativeSeparators(*iter));

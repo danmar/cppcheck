@@ -191,7 +191,7 @@ Tokenizer::~Tokenizer()
 
 nonneg int Tokenizer::sizeOfType(const std::string& type) const
 {
-    const std::map<std::string, int>::const_iterator it = mTypeSize.find(type);
+    const auto it = utils::as_const(mTypeSize).find(type);
     if (it == mTypeSize.end()) {
         const Library::PodType* podtype = mSettings.library.podtype(type);
         if (!podtype)
@@ -210,7 +210,7 @@ nonneg int Tokenizer::sizeOfType(const Token *type) const
     if (type->tokType() == Token::eString)
         return Token::getStrLength(type) + 1U;
 
-    const std::map<std::string, int>::const_iterator it = mTypeSize.find(type->str());
+    const auto it = utils::as_const(mTypeSize).find(type->str());
     if (it == mTypeSize.end()) {
         const Library::PodType* podtype = mSettings.library.podtype(type->str());
         if (!podtype)
@@ -4199,7 +4199,7 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
             mVariableId_global[varname] = mVariableId[varname];
         return;
     }
-    std::unordered_map<std::string, nonneg int>::iterator it = mVariableId.find(varname);
+    const auto it = mVariableId.find(varname);
     if (it == mVariableId.end()) {
         mScopeInfo.top().emplace_back(varname, 0);
         mVariableId[varname] = ++mVarId;
@@ -4372,7 +4372,7 @@ static void setVarIdStructMembers(Token *&tok1,
                 tok = tok->link();
             if (Token::Match(tok->previous(), "[,{] . %name% =|{")) {
                 tok = tok->next();
-                const std::map<std::string, nonneg int>::const_iterator it = members.find(tok->str());
+                const auto it = utils::as_const(members).find(tok->str());
                 if (it == members.cend()) {
                     members[tok->str()] = ++varId;
                     tok->varId(varId);
@@ -4406,7 +4406,7 @@ static void setVarIdStructMembers(Token *&tok1,
             break;
 
         std::map<std::string, nonneg int>& members = structMembers[struct_varid];
-        const std::map<std::string, nonneg int>::const_iterator it = members.find(tok->str());
+        const auto it = utils::as_const(members).find(tok->str());
         if (it == members.cend()) {
             members[tok->str()] = ++varId;
             tok->varId(varId);
@@ -4462,7 +4462,7 @@ static bool setVarIdClassDeclaration(Token* const startToken,
             --indentlevel;
             inEnum = false;
         } else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
-            const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+            const auto it = variableMap.map(false).find(tok->str());
             if (it != variableMap.map(false).end()) {
                 tok->varId(it->second);
             }
@@ -4480,7 +4480,7 @@ static bool setVarIdClassDeclaration(Token* const startToken,
                 }
 
                 if (!inEnum) {
-                    const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+                    const auto it = variableMap.map(false).find(tok->str());
                     if (it != variableMap.map(false).end()) {
                         tok->varId(it->second);
                         setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
@@ -4518,7 +4518,7 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
         if (Token::Match(tok2, "%name% ::"))
             continue;
 
-        const std::map<std::string, nonneg int>::const_iterator it = varlist.find(tok2->str());
+        const auto it = utils::as_const(varlist).find(tok2->str());
         if (it != varlist.end()) {
             tok2->varId(it->second);
             setVarIdStructMembers(tok2, structMembers, varId_);
@@ -4832,7 +4832,7 @@ void Tokenizer::setVarIdPass1()
                         while (tok != end) {
                             if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") &&
                                                    Token::Match(tok->tokAt(-1), ":: %name%"))) {
-                                const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+                                const auto it = variableMap.map(false).find(tok->str());
                                 if (it != variableMap.map(false).end())
                                     tok->varId(it->second);
                             }
@@ -4900,7 +4900,7 @@ void Tokenizer::setVarIdPass1()
 
             if (tok->varId() == 0 && (!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) &&
                 !Token::simpleMatch(tok->next(), ": ;") && !(tok->tokAt(-1) && Token::Match(tok->tokAt(-2), "{|, ."))) {
-                const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
+                const auto it = variableMap.map(globalNamespace).find(tok->str());
                 if (it != variableMap.map(globalNamespace).end()) {
                     tok->varId(it->second);
                     setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
@@ -4941,10 +4941,10 @@ static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
 
 static Token * matchMemberName(const std::list<std::string> &scope, const Token *nsToken, Token *memberToken, const std::list<ScopeInfo2> &scopeInfo)
 {
-    std::list<ScopeInfo2>::const_iterator scopeIt = scopeInfo.cbegin();
+    auto scopeIt = scopeInfo.cbegin();
 
     // Current scope..
-    for (std::list<std::string>::const_iterator it = scope.cbegin(); it != scope.cend(); ++it) {
+    for (auto it = scope.cbegin(); it != scope.cend(); ++it) {
         if (scopeIt == scopeInfo.cend() || scopeIt->name != *it)
             return nullptr;
         ++scopeIt;
@@ -5068,7 +5068,7 @@ void Tokenizer::setVarIdPass2()
             }
 
             if (tok->str() == "}") {
-                const std::map<const Token *, std::string>::const_iterator it = endOfScope.find(tok);
+                const auto it = utils::as_const(endOfScope).find(tok);
                 if (it != endOfScope.cend())
                     scope.remove(it->second);
             }
@@ -5268,7 +5268,7 @@ void Tokenizer::setVarIdPass2()
                     break;
 
                 // set varid
-                const std::map<std::string, nonneg int>::const_iterator varpos = thisClassVars.find(tok3->str());
+                const auto varpos = utils::as_const(thisClassVars).find(tok3->str());
                 if (varpos != thisClassVars.end())
                     tok3->varId(varpos->second);
 
@@ -7621,7 +7621,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         if (!tok->isName())
             continue;
 
-        const std::unordered_map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        const auto cOpIt = utils::as_const(cAlternativeTokens).find(tok->str());
         if (cOpIt != cAlternativeTokens.end()) {
             alt.push_back(tok);
 
@@ -7663,7 +7663,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
         return false;
 
     for (Token *tok: alt) {
-        const std::unordered_map<std::string, std::string>::const_iterator cOpIt = cAlternativeTokens.find(tok->str());
+        const auto cOpIt = utils::as_const(cAlternativeTokens).find(tok->str());
         if (cOpIt != cAlternativeTokens.end())
             tok->str(cOpIt->second);
         else if (tok->str() == "not")
@@ -10113,7 +10113,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
         if (tok->strAt(1) != "(")
             continue;
 
-        const std::map<std::string, triplet>::const_iterator match = apis.find(tok->str());
+        const auto match = utils::as_const(apis).find(tok->str());
         if (match!=apis.end()) {
             tok->str(ansi ? match->second.mbcs : match->second.unicode);
             tok->originalName(match->first);

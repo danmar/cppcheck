@@ -141,7 +141,7 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     std::ostringstream ostr;
     if (gccStyle)
         ostr << '\"';
-    for (std::string::const_iterator i = str.cbegin(); i != str.cend(); ++i) {
+    for (auto i = str.cbegin(); i != str.cend(); ++i) {
         if (*i == '\n') {
             ostr << "\\n";
             if ((i+1) != str.end() && !gccStyle)

@@ -300,7 +300,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
     if (tok->isName() || tok->str() == ".") {
         while (tok && tok->str() == ".")
             tok = tok->astOperand2();
-        const std::map<nonneg int, VariableValue>::const_iterator it = variableValue.find(tok ? tok->varId() : ~0U);
+        const auto it = utils::as_const(variableValue).find(tok ? tok->varId() : ~0U);
         if (it != variableValue.end()) {
             *alwaysTrue = (it->second != 0LL);
             *alwaysFalse = (it->second == 0LL);
@@ -326,7 +326,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
         while (vartok && vartok->str() == ".")
             vartok = vartok->astOperand2();
 
-        const std::map<nonneg int, VariableValue>::const_iterator it = variableValue.find(vartok ? vartok->varId() : ~0U);
+        const auto it = utils::as_const(variableValue).find(vartok ? vartok->varId() : ~0U);
         if (it == variableValue.end())
             return;
 
@@ -472,7 +472,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (alwaysFalse)
                 ;
             else if (astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
-                const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
+                const auto it = utils::as_const(variableValue).find(condVarTok->varId());
                 if (it != variableValue.cend() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
 
@@ -487,7 +487,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
-                    const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
+                    const auto it = utils::as_const(variableValue).find(vartok->varId());
                     if (it != variableValue.cend() && it->second != numtok->getKnownIntValue())
                         return true;   // this scope is not fully analysed => return true
                     condVarId = vartok->varId();

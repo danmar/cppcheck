@@ -229,7 +229,7 @@ private:
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
+        for (auto i = f.cbegin(); i != f.cend(); ++i) {
             filelist.emplace_back(i->first, i->second.size());
             if (useFS) {
                 fileSettings.emplace_back(i->first, i->second.size());
@@ -250,7 +250,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
+        for (auto i = f.cbegin(); i != f.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, i->second));
 
         // clear files list so only fileSettings are used
@@ -293,7 +293,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (auto i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
@@ -337,7 +337,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (auto i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used

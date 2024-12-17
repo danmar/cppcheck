@@ -49,7 +49,7 @@ unsigned int SingleExecutor::check()
     std::size_t processedsize = 0;
     unsigned int c = 0;
 
-    for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+    for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
         result += mCppcheck.check(*i);
         processedsize += i->size();
         ++c;

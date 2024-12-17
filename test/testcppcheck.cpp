@@ -70,7 +70,7 @@ private:
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
-        for (std::list<std::string>::const_iterator it = errorLogger.ids.cbegin();
+        for (auto it = errorLogger.ids.cbegin();
              it != errorLogger.ids.cend();
              ++it) {
             if (std::find(errorLogger.ids.cbegin(), it, *it) != it) {
