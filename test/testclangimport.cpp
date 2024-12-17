@@ -281,7 +281,7 @@ private:
     }
 
     void conditionalExpr() {
-        const char clang[] = "`-VarDecl 0x257cc88 <line:4:1, col:13> col:5 x 'int' cinit\n"
+        const char clang[] = "`-VarDecl 0x257cc88 <a.cpp:4:1, col:13> col:5 x 'int' cinit\n"
                              "  `-ConditionalOperator 0x257cda8 <col:9, col:13> 'int'\n"
                              "    |-ImplicitCastExpr 0x257cd60 <col:9> 'int' <LValueToRValue>\n"
                              "    | `-DeclRefExpr 0x257cce8 <col:9> 'int' lvalue Var 0x257cae0 'a' 'int'\n"
@@ -325,7 +325,7 @@ private:
     }
 
     void cxxConstructorDecl1() {
-        const char clang[] = "|-CXXConstructorDecl 0x428e890 <col:11, col:24> col:11 C 'void ()'\n"
+        const char clang[] = "|-CXXConstructorDecl 0x428e890 <a.cpp:11:1, col:24> col:11 C 'void ()'\n"
                              "| `-CompoundStmt 0x428ea58 <col:15, col:24>\n"
                              "|   `-BinaryOperator 0x428ea30 <col:17, col:21> 'int' lvalue '='\n"
                              "|     |-MemberExpr 0x428e9d8 <col:17> 'int' lvalue ->x 0x428e958\n"
@@ -336,13 +336,13 @@ private:
     }
 
     void cxxConstructorDecl2() {
-        const char clang[] = "`-CXXConstructorDecl 0x1c208c0 <col:11> col:11 implicit constexpr basic_string 'void (std::basic_string<char> &&)' inline default trivial noexcept-unevaluated 0x1c208c0\n"
+        const char clang[] = "`-CXXConstructorDecl 0x1c208c0 <a.cpp:1:11> col:11 implicit constexpr basic_string 'void (std::basic_string<char> &&)' inline default trivial noexcept-unevaluated 0x1c208c0\n"
                              "  `-ParmVarDecl 0x1c209f0 <col:11> col:11 'std::basic_string<char> &&'";
         ASSERT_EQUALS("basic_string ( std::basic_string<char> && ) = default ;", parse(clang));
     }
 
     void cxxConstructExpr1() {
-        const char clang[] = "`-FunctionDecl 0x2dd7940 <line:2:1, col:30> col:5 f 'Foo (Foo)'\n"
+        const char clang[] = "`-FunctionDecl 0x2dd7940 <a.cpp:2:1, col:30> col:5 f 'Foo (Foo)'\n"
                              "  |-ParmVarDecl 0x2dd7880 <col:7, col:11> col:11 used foo 'Foo'\n"
                              "  `-CompoundStmt 0x2dd80c0 <col:16, col:30>\n"
                              "    `-ReturnStmt 0x2dd80a8 <col:18, col:25>\n"
@@ -394,7 +394,7 @@ private:
     }
 
     void cxxForRangeStmt1() {
-        const char clang[] = "`-FunctionDecl 0x4280820 <line:4:1, line:8:1> line:4:6 foo 'void ()'\n"
+        const char clang[] = "`-FunctionDecl 0x4280820 <a.cpp:4:1, line:8:1> line:4:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x42810f0 <col:12, line:8:1>\n"
                              "    `-CXXForRangeStmt 0x4281090 <line:5:3, line:7:3>\n"
                              "      |-DeclStmt 0x4280c30 <line:5:17>\n"
@@ -430,7 +430,7 @@ private:
 
     void cxxForRangeStmt2() {
         // clang 9
-        const char clang[] = "`-FunctionDecl 0xc15d98 <line:3:1, col:36> col:6 foo 'void ()'\n"
+        const char clang[] = "`-FunctionDecl 0xc15d98 <a.cpp:3:1, col:36> col:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0xc16668 <col:12, col:36>\n"
                              "    `-CXXForRangeStmt 0xc165f8 <col:14, col:34>\n"
                              "      |-<<<NULL>>>\n"
@@ -466,7 +466,7 @@ private:
     }
 
     void cxxFunctionalCastExpr() {
-        const char clang[] = "`-FunctionDecl 0x156fe98 <line:1:1, line:3:1> line:1:5 main 'int (int, char **)'\n"
+        const char clang[] = "`-FunctionDecl 0x156fe98 <a.cpp:1:1, line:3:1> line:1:5 main 'int (int, char **)'\n"
                              "  |-ParmVarDecl 0x156fd00 <col:10, col:14> col:14 argc 'int'\n"
                              "  |-ParmVarDecl 0x156fdb8 <col:20, col:27> col:27 argv 'char **'\n"
                              "  `-CompoundStmt 0x1596410 <line:2:1, line:2:1>\n"
@@ -483,7 +483,7 @@ private:
     }
 
     void cxxMemberCall() {
-        const char clang[] = "`-FunctionDecl 0x320dc80 <line:2:1, col:33> col:6 bar 'void ()'\n"
+        const char clang[] = "`-FunctionDecl 0x320dc80 <a.cpp:2:1, col:33> col:6 bar 'void ()'\n"
                              "  `-CompoundStmt 0x323bb08 <col:12, col:33>\n"
                              "    |-DeclStmt 0x323ba40 <col:14, col:22>\n"
                              "    | `-VarDecl 0x320df28 <col:14, col:21> col:21 used c 'C<int>':'C<int>' callinit\n"
@@ -495,7 +495,7 @@ private:
     }
 
     void cxxMethodDecl1() {
-        const char clang[] = "|-CXXMethodDecl 0x55c786f5ad60 <line:56:5, col:179> col:10 analyzeFile '_Bool (const std::string &, const std::string &, const std::string &, unsigned long long, std::list<ErrorLogger::ErrorMessage> *)'\n"
+        const char clang[] = "|-CXXMethodDecl 0x55c786f5ad60 <a.cpp:56:5, col:179> col:10 analyzeFile '_Bool (const std::string &, const std::string &, const std::string &, unsigned long long, std::list<ErrorLogger::ErrorMessage> *)'\n"
                              "| |-ParmVarDecl 0x55c786f5a4c8 <col:22, col:41> col:41 buildDir 'const std::string &'\n"
                              "| |-ParmVarDecl 0x55c786f5a580 <col:51, col:70> col:70 sourcefile 'const std::string &'\n"
                              "| |-ParmVarDecl 0x55c786f5a638 <col:82, col:101> col:101 cfg 'const std::string &'\n"
@@ -506,7 +506,7 @@ private:
     }
 
     void cxxMethodDecl2() { // "unexpanded" template method
-        const char clang[] = "`-CXXMethodDecl 0x220ecb0 parent 0x21e4c28 prev 0x21e5338 <line:11:1, line:18:1> line:14:1 find 'const typename char_traits<_CharT>::char_type *(const char_traits::char_type *, int, const char_traits::char_type &)'\n"
+        const char clang[] = "`-CXXMethodDecl 0x220ecb0 parent 0x21e4c28 prev 0x21e5338 <a.cpp:11:1, line:18:1> line:14:1 find 'const typename char_traits<_CharT>::char_type *(const char_traits::char_type *, int, const char_traits::char_type &)'\n"
                              "  `-CompoundStmt 0x220ede0 <line:15:1, line:18:1>\n"
                              "    `-ReturnStmt 0x220edd0 <line:17:5, col:12>\n"
                              "      `-IntegerLiteral 0x220edb0 <col:12> 'int' 0";
@@ -530,7 +530,7 @@ private:
     }
 
     void cxxMethodDecl4() {
-        const char clang[] = "|-ClassTemplateSpecializationDecl 0x15d82f8 <line:7:3, line:18:3> line:8:12 struct char_traits definition\n"
+        const char clang[] = "|-ClassTemplateSpecializationDecl 0x15d82f8 <a.cpp:7:3, line:18:3> line:8:12 struct char_traits definition\n"
                              "| |-TemplateArgument type 'char'\n"
                              "| | `-BuiltinType 0x15984c0 'char'\n"
                              "| |-CXXRecordDecl 0x15d8520 <col:5, col:12> col:12 implicit struct char_traits\n"
@@ -553,7 +553,7 @@ private:
     }
 
     void cxxNewExpr2() {
-        const char clang[] = "|-FunctionDecl 0x59a188 <line:7:1, line:9:1> line:7:11 f 'struct S *()'\n"
+        const char clang[] = "|-FunctionDecl 0x59a188 <a.cpp:7:1, line:9:1> line:7:11 f 'struct S *()'\n"
                              "| `-CompoundStmt 0x5c4318 <col:15, line:9:1>\n"
                              "|   `-ReturnStmt 0x5c4308 <line:8:3, col:14>\n"
                              "|     `-CXXNewExpr 0x5c42c8 <col:10, col:14> 'S *' Function 0x59a378 'operator new' 'void *(unsigned long)'\n"
@@ -570,7 +570,7 @@ private:
     }
 
     void cxxOperatorCallExpr() {
-        const char clang[] = "`-FunctionDecl 0x3c099f0 <line:2:1, col:24> col:6 foo 'void ()'\n"
+        const char clang[] = "`-FunctionDecl 0x3c099f0 <a.cpp:2:1, col:24> col:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x3c37308 <col:12, col:24>\n"
                              "    |-DeclStmt 0x3c0a060 <col:14, col:17>\n"
                              "    | `-VarDecl 0x3c09ae0 <col:14, col:16> col:16 used c 'C' callinit\n"
@@ -626,7 +626,7 @@ private:
     }
 
     void cxxStaticCastExpr3() {
-        const char clang[] = "`-ClassTemplateSpecializationDecl 0xd842d8 <line:4:3, line:7:3> line:4:21 struct char_traits definition\n"
+        const char clang[] = "`-ClassTemplateSpecializationDecl 0xd842d8 <a.cpp:4:3, line:7:3> line:4:21 struct char_traits definition\n"
                              "  |-TemplateArgument type 'char'\n"
                              "  | `-BuiltinType 0xd444c0 'char'\n"
                              "  |-CXXRecordDecl 0xd84500 <col:14, col:21> col:21 implicit struct char_traits\n"
@@ -680,7 +680,7 @@ private:
     }
 
     void doStmt() {
-        const char clang[] = "`-FunctionDecl 0x27fbbc8 <line:2:1, col:34> col:6 foo 'void ()'\n"
+        const char clang[] = "`-FunctionDecl 0x27fbbc8 <a.cpp:2:1, col:34> col:6 foo 'void ()'\n"
                              "  `-CompoundStmt 0x27fbd08 <col:12, col:34>\n"
                              "    `-DoStmt 0x27fbce8 <col:14, col:31>\n"
                              "      |-CompoundStmt 0x27fbcb0 <col:17, col:22>\n"
@@ -691,7 +691,7 @@ private:
     }
 
     void enumDecl1() {
-        const char clang[] = "`-EnumDecl 0x2660660 <line:3:1, col:16> col:6 referenced abc\n"
+        const char clang[] = "`-EnumDecl 0x2660660 <a.cpp:3:1, col:16> col:6 referenced abc\n"
                              "  |-EnumConstantDecl 0x2660720 <col:11> col:11 referenced a 'abc'\n"
                              "  |-EnumConstantDecl 0x2660768 <col:13> col:13 b 'abc'\n"
                              "  `-EnumConstantDecl 0x26607b0 <col:15> col:15 c 'abc'";
@@ -762,14 +762,14 @@ private:
     }
 
     void funcdecl3() {
-        const char clang[] = "|-FunctionDecl 0x27cb6b8 <line:865:1, col:35> col:12 __overflow 'int (FILE *, int)' extern\n"
+        const char clang[] = "|-FunctionDecl 0x27cb6b8 <a.cpp:865:1, col:35> col:12 __overflow 'int (FILE *, int)' extern\n"
                              "| |-ParmVarDecl 0x27cb528 <col:24, col:29> col:30 'FILE *'\n"
                              "| `-ParmVarDecl 0x27cb5a0 <col:32> col:35 'int'";
         ASSERT_EQUALS("int __overflow ( FILE * , int ) ;", parse(clang));
     }
 
     void funcdecl4() {
-        const char clang[] = "|-FunctionDecl 0x272bb60 <line:658:15> col:15 implicit fwrite 'unsigned long (const void *, unsigned long, unsigned long, FILE *)' extern\n"
+        const char clang[] = "|-FunctionDecl 0x272bb60 <a.cpp:658:15> col:15 implicit fwrite 'unsigned long (const void *, unsigned long, unsigned long, FILE *)' extern\n"
                              "| |-ParmVarDecl 0x272cc40 <<invalid sloc>> <invalid sloc> 'const void *'\n"
                              "| |-ParmVarDecl 0x272cca0 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
                              "| |-ParmVarDecl 0x272cd00 <<invalid sloc>> <invalid sloc> 'unsigned long'\n"
@@ -955,7 +955,7 @@ private:
     }
 
     void unaryExprOrTypeTraitExpr2() {
-        const char clang[] = "`-VarDecl 0x27c6c00 <line:3:5, col:23> col:9 x 'int' cinit\n"
+        const char clang[] = "`-VarDecl 0x27c6c00 <a.cpp:3:5, col:23> col:9 x 'int' cinit\n"
                              "  `-ImplicitCastExpr 0x27c6cc8 <col:13, col:23> 'int' <IntegralCast>\n"
                              "    `-UnaryExprOrTypeTraitExpr 0x27c6ca8 <col:13, col:23> 'unsigned long' sizeof\n"
                              "      `-ParenExpr 0x27c6c88 <col:19, col:23> 'char [10]' lvalue\n"
@@ -1009,12 +1009,12 @@ private:
     }
 
     void vardecl4() {
-        const char clang[] = "|-VarDecl 0x23d6c78 <line:137:1, col:14> col:14 stdin 'FILE *' extern";
+        const char clang[] = "|-VarDecl 0x23d6c78 <a.cpp:137:1, col:14> col:14 stdin 'FILE *' extern";
         ASSERT_EQUALS("FILE * stdin@1 ;", parse(clang));
     }
 
     void vardecl5() {
-        const char clang[] = "|-VarDecl 0x2e31fc0 <line:27:1, col:38> col:26 sys_errlist 'const char *const []' extern";
+        const char clang[] = "|-VarDecl 0x2e31fc0 <a.cpp:27:1, col:38> col:26 sys_errlist 'const char *const []' extern";
         ASSERT_EQUALS("const char * const [] sys_errlist@1 ;", parse(clang));
     }
 
@@ -1215,7 +1215,7 @@ private:
     }
 
     void symbolDatabaseNodeType1() {
-        const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
+        const char clang[] = "`-FunctionDecl 0x32438c0 <a.cpp:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
                              "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
                              "  `-CompoundStmt 0x3243a60 <col:18, line:7:1>\n"
                              "    `-ReturnStmt 0x3243a48 <line:6:3, col:12>\n"
@@ -1291,7 +1291,7 @@ private:
     }
 
     void valueType1() {
-        const char clang[] = "`-FunctionDecl 0x32438c0 <line:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
+        const char clang[] = "`-FunctionDecl 0x32438c0 <a.cpp:5:1, line:7:1> line:5:6 foo 'a::b (a::b)'\n"
                              "  |-ParmVarDecl 0x32437b0 <col:10, col:15> col:15 used i 'a::b':'long'\n"
                              "  `-CompoundStmt 0x3243a60 <col:18, line:7:1>\n"
                              "    `-ReturnStmt 0x3243a48 <line:6:3, col:12>\n"
