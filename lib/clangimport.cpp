@@ -336,9 +336,6 @@ namespace clangimport {
                 return;
             if (!tokenList.back()) {
                 setLocations(tokenList, 0, 1, 1);
-                // FIXME: treat as C++ if no filename (i.e. no lang) is specified for now
-                if (tokenList.getSourceFilePath().empty())
-                    tokenList.setLang(Standards::Language::CPP);
             }
             else
                 setLocations(tokenList, tokenList.back()->fileIndex(), tokenList.back()->linenr(), 1);
