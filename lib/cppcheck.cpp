@@ -330,7 +330,7 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename)
+static std::string getDumpFileName(const Settings& settings, const FileWithDetails& file)
 {
     std::string extension;
     if (settings.dump || !settings.buildDir.empty())
@@ -339,8 +339,8 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
         extension = "." + std::to_string(settings.pid) + ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + extension;
-    return filename + extension;
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, file.spath(), emptyString, file.mIndex) + extension;
+    return file.spath() + extension;
 }
 
 static std::string getCtuInfoFileName(const std::string &dumpFile)
@@ -355,7 +355,7 @@ static void createDumpFile(const Settings& settings,
 {
     if (!settings.dump && settings.addons.empty())
         return;
-    dumpFile = getDumpFileName(settings, file.spath());
+    dumpFile = getDumpFileName(settings, file);
 
     fdump.open(dumpFile);
     if (!fdump.is_open())
@@ -1770,12 +1770,12 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
+        const std::string &dumpFileName = getDumpFileName(mSettings, f);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
     for (const auto &f: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename());
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.file);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
