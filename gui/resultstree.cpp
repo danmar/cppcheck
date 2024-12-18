@@ -20,6 +20,7 @@
 
 #include "application.h"
 #include "applicationlist.h"
+#include "checkers.h"
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
@@ -98,25 +99,11 @@ static constexpr int COLUMN_TAGS                  = 11;
 static constexpr int COLUMN_CWE                   = 12;
 
 static QString getGuideline(ReportType reportType, const QMap<QString,QString>& guidelines, const QString& errorId, Severity severity) {
-    if (reportType == ReportType::autosar) {
-        if (errorId.startsWith("premium-autosar-"))
-            return errorId.mid(16);
-        if (errorId.startsWith("premium-misra-cpp-2008-"))
-            return "M" + errorId.mid(23);
-    }
-    if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
-        if (errorId.startsWith("premium-cert-"))
-            return errorId.mid(13).toUpper();
-    }
-    if (errorId.startsWith("premium-"))
-        return getGuideline(reportType, guidelines, errorId.mid(8), severity);
-    if (reportType == ReportType::misraC && (errorId.startsWith("misra-c20") || errorId.startsWith("misra-c-20")))
-        return errorId.mid(errorId.lastIndexOf("-") + 1);
-    if (reportType == ReportType::misraCpp2008 && errorId.startsWith("misra-cpp-2008-"))
-        return errorId.mid(15);
-    if (reportType == ReportType::misraCpp2023 && errorId.startsWith("misra-cpp-2023-"))
-        return errorId.mid(15);
-    const QString& guideline = guidelines.value(errorId);
+    auto guideline = QString::fromStdString(checkers::getGuideline(errorId.toStdString(), reportType));
+    if (!guideline.isEmpty())
+        return guideline;
+
+    guideline = guidelines.value(errorId);
     if (!guideline.isEmpty())
         return guideline;
     if (severity == Severity::error || severity == Severity::warning)
@@ -125,82 +112,7 @@ static QString getGuideline(ReportType reportType, const QMap<QString,QString>& 
 }
 
 static QString getClassification(ReportType reportType, const QString& guideline) {
-    if (guideline.isEmpty())
-        return QString();
-    auto getFromInfo = [](const std::vector<checkers::Info>& info, const QString& guideline) -> QString {
-        for (const checkers::Info& i: info) {
-            // cppcheck-suppress useStlAlgorithm
-            if (guideline.compare(i.guideline, Qt::CaseInsensitive) == 0)
-                return i.classification;
-        }
-        return QString();
-    };
-    if (reportType == ReportType::autosar)
-        return getFromInfo(checkers::autosarInfo, guideline);
-    if (reportType == ReportType::certC || reportType == ReportType::certCpp) {
-        if (guideline.endsWith("-CPP"))
-            return getFromInfo(checkers::certCppInfo, guideline);
-        if (guideline.endsWith("-C"))
-            return getFromInfo(checkers::certCInfo, guideline);
-    }
-    else if (reportType == ReportType::misraC) {
-        QStringList list = guideline.split(".");
-        if (list.size() == 2) {
-            bool ok = true;
-            const int a = list[0].toInt(&ok);
-            if (!ok)
-                return QString();
-            const int b = list[1].toInt(&ok);
-            if (!ok)
-                return QString();
-            for (const auto& info: checkers::misraC2012Rules) {
-                // cppcheck-suppress useStlAlgorithm
-                if (info.a == a && info.b == b)
-                    return info.str;
-            }
-        }
-    }
-    else if (reportType == ReportType::misraCpp2008) {
-        QStringList list = guideline.split("-");
-        if (list.size() == 3) {
-            bool ok = true;
-            const int a = list[0].toInt(&ok);
-            if (!ok)
-                return QString();
-            const int b = list[1].toInt(&ok);
-            if (!ok)
-                return QString();
-            const int c = list[2].toInt(&ok);
-            if (!ok)
-                return QString();
-            for (const auto& info: checkers::misraCpp2008Rules) {
-                // cppcheck-suppress useStlAlgorithm
-                if (info.a == a && info.b == b && info.c == c)
-                    return info.classification;
-            }
-        }
-    }
-    else if (reportType == ReportType::misraCpp2023) {
-        QStringList list = guideline.split(".");
-        if (list.size() == 3) {
-            bool ok = true;
-            const int a = list[0].toInt(&ok);
-            if (!ok)
-                return QString();
-            const int b = list[1].toInt(&ok);
-            if (!ok)
-                return QString();
-            const int c = list[2].toInt(&ok);
-            if (!ok)
-                return QString();
-            for (const auto& info: checkers::misraCpp2023Rules) {
-                // cppcheck-suppress useStlAlgorithm
-                if (info.a == a && info.b == b && info.c == c)
-                    return info.classification;
-            }
-        }
-    }
-    return QString();
+    return QString::fromStdString(checkers::getClassification(guideline.toStdString(), reportType));
 }
 
 static Severity getSeverityFromClassification(const QString &c) {
