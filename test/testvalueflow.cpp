@@ -7119,6 +7119,12 @@ private:
                "    return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 2));
+
+        code = "auto f() {\n" // #13450
+               "    auto v = std::vector<std::vector<S*>>(3, std::vector<S*>());\n"
+               "    return v[2];\n"
+               "}";
+        ASSERT(isKnownContainerSizeValue(tokenValues(code, "v ["), 3).empty());
     }
 
     void valueFlowContainerElement()

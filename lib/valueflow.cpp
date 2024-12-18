@@ -6421,9 +6421,9 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
     std::vector<const Token*> args = getArguments(tok);
     if (args.empty())
         return {makeContainerSizeValue(std::size_t{0}, known)};
-    bool initList = true;
+    bool initList = tok->str() == "{";
     // Try to disambiguate init list from constructor
-    if (args.size() < 4) {
+    if (initList && args.size() < 4) {
         initList = !isIteratorPair(args);
         const Token* containerTypeToken = valueType->containerTypeToken;
         if (valueType->container->stdStringLike) {
