@@ -628,7 +628,8 @@ void StdLogger::reportErr(const ErrorMessage &msg)
         return;
 
     ErrorMessage msgCopy = msg;
-    msgCopy.guideline = checkers::getGuideline(msgCopy.id, mSettings.reportType);
+    msgCopy.guideline = checkers::getGuideline(msgCopy.id, mSettings.reportType,
+                                               mSettings.guidelineMapping, msgCopy.severity);
     msgCopy.classification = checkers::getClassification(msgCopy.guideline, mSettings.reportType);
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)
