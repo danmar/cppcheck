@@ -23,6 +23,7 @@
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
+#include "checkers.h"
 #include "checkersreport.h"
 #include "cmdlinelogger.h"
 #include "cmdlineparser.h"
@@ -626,12 +627,16 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (!mSettings.emitDuplicates && !mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
 
+    ErrorMessage msgCopy = msg;
+    msgCopy.guideline = checkers::getGuideline(msgCopy.id, mSettings.reportType);
+    msgCopy.classification = checkers::getClassification(msgCopy.guideline, mSettings.reportType);
+
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)
-        mSarifReport.addFinding(msg);
+        mSarifReport.addFinding(msgCopy);
     else if (mSettings.xml)
-        reportErr(msg.toXML());
+        reportErr(msgCopy.toXML());
     else
-        reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
+        reportErr(msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
 }
 
 /**
