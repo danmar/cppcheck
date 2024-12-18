@@ -540,7 +540,7 @@ private:
 
     ReportType mReportType = ReportType::normal;
 
-    QMap<QString,QString> mGuideline;
+    std::map<std::string, std::string> mGuideline;
 };
 /// @}
 #endif // RESULTSTREE_H
