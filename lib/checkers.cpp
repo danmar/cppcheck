@@ -2173,38 +2173,107 @@ namespace checkers {
         }
     }
 
-    std::string getGuideline(const std::string &errId, ReportType reportType)
+    std::string getGuideline(const std::string &errId, ReportType reportType,
+                             const std::map<std::string, std::string> &guidelineMapping,
+                             Severity severity)
     {
+        std::string guideline;
+
         switch (reportType) {
         case ReportType::autosar:
-            if (errId.rfind("premium-autosar-", 0) == 0)
-                return errId.substr(16);
+            if (errId.rfind("premium-autosar-", 0) == 0) {
+                guideline = errId.substr(16);
+                break;
+            }
             if (errId.rfind("premium-misra-cpp-2008-", 0) == 0)
-                return "M" + errId.substr(23);
-            return "";
+                guideline = "M" + errId.substr(23);
+            break;
         case ReportType::certC:
         case ReportType::certCpp:
             if (errId.rfind("premium-cert-", 0) == 0) {
-                std::string guideline = errId.substr(13);
+                guideline = errId.substr(13);
                 std::transform(guideline.begin(), guideline.end(),
                                guideline.begin(), static_cast<int (*)(int)>(std::toupper));
-                return guideline;
             }
-            return "";
+            break;
         case ReportType::misraC:
             if (errId.rfind("misra-c20", 0) == 0)
-                return errId.substr(errId.rfind('-') + 1);
-            return "";
+                guideline = errId.substr(errId.rfind('-') + 1);
+            break;
         case ReportType::misraCpp2008:
             if (errId.rfind("misra-cpp-2008-", 0) == 0)
-                return errId.substr(15);
-            return "";
+                guideline = errId.substr(15);
+            break;
         case ReportType::misraCpp2023:
             if (errId.rfind("misra-cpp-2023-", 0) == 0)
-                return errId.substr(15);
-            return "";
+                guideline = errId.substr(15);
+            break;
         default:
-            return "";
+            break;
         }
+
+        if (!guideline.empty())
+            return guideline;
+
+        auto it = guidelineMapping.find(errId);
+
+        if (it != guidelineMapping.cend())
+            return it->second;
+
+        if (severity != Severity::error && severity != Severity::warning)
+            return "";
+
+        it = guidelineMapping.find(errId);
+
+        if (it != guidelineMapping.cend())
+            return it->second;
+
+        return "";
+    }
+
+    std::map<std::string, std::string> createGuidelineMapping(ReportType reportType) {
+        std::map<std::string, std::string> guidelineMapping;
+        const std::vector<IdMapping> *idMapping1 = nullptr;
+        const std::vector<IdMapping> *idMapping2 = nullptr;
+        std::string ext1, ext2;
+
+        switch (reportType) {
+        case ReportType::autosar:
+            idMapping1 = &idMappingAutosar;
+            break;
+        case ReportType::certCpp:
+            idMapping2 = &idMappingCertCpp;
+            ext2 = "-CPP";
+        // fallthrough
+        case ReportType::certC:
+            idMapping1 = &idMappingCertC;
+            ext1 = "-C";
+            break;
+        case ReportType::misraC:
+            idMapping1 = &idMappingMisraC;
+            break;
+        case ReportType::misraCpp2008:
+            idMapping1 = &idMappingMisraCpp2008;
+            break;
+        case ReportType::misraCpp2023:
+            idMapping1 = &idMappingMisraCpp2023;
+            break;
+        default:
+            break;
+        }
+
+        if (idMapping1) {
+            for (const auto &i : *idMapping1)
+                for (const std::string &cppcheckId : splitStringVector(i.cppcheckId, ','))
+                    guidelineMapping[cppcheckId] = i.guideline + ext1;
+        }
+
+        if (idMapping2) {
+            for (const auto &i : *idMapping2)
+                for (const std::string &cppcheckId : splitStringVector(i.cppcheckId, ','))
+                    guidelineMapping[cppcheckId] = i.guideline + ext2;
+        }
+
+        return guidelineMapping;
     }
 }

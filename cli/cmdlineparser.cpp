@@ -20,6 +20,7 @@
 
 #include "addoninfo.h"
 #include "check.h"
+#include "checkers.h"
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
@@ -1247,6 +1248,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("Unknown report type \'" + typeStr + "\'");
                     return Result::Fail;
                 }
+                mSettings.guidelineMapping = checkers::createGuidelineMapping(mSettings.reportType);
             }
 
             // Rule given at command line

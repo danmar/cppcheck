@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "config.h"
+#include "errortypes.h"
 
 namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;
@@ -85,7 +86,10 @@ namespace checkers {
     extern std::vector<Info> certCppInfo;
 
     extern CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
-    extern CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType);
+    extern CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
+                                                const std::map<std::string, std::string> &guidelineMapping,
+                                                Severity severity);
+    extern CPPCHECKLIB std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 }
 
 #endif

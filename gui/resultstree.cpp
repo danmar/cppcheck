@@ -98,17 +98,11 @@ static constexpr int COLUMN_SINCE_DATE            = 10;
 static constexpr int COLUMN_TAGS                  = 11;
 static constexpr int COLUMN_CWE                   = 12;
 
-static QString getGuideline(ReportType reportType, const QMap<QString,QString>& guidelines, const QString& errorId, Severity severity) {
-    auto guideline = QString::fromStdString(checkers::getGuideline(errorId.toStdString(), reportType));
-    if (!guideline.isEmpty())
-        return guideline;
-
-    guideline = guidelines.value(errorId);
-    if (!guideline.isEmpty())
-        return guideline;
-    if (severity == Severity::error || severity == Severity::warning)
-        return guidelines.value("error");
-    return QString();
+static QString getGuideline(ReportType reportType, const std::map<std::string, std::string> &guidelineMapping,
+                            const QString& errorId, Severity severity) {
+    return QString::fromStdString(checkers::getGuideline(errorId.toStdString(),
+                                                         reportType, guidelineMapping,
+                                                         severity));
 }
 
 static QString getClassification(ReportType reportType, const QString& guideline) {
@@ -173,26 +167,7 @@ void ResultsTree::keyPressEvent(QKeyEvent *event)
 void ResultsTree::setReportType(ReportType reportType) {
     mReportType = reportType;
 
-    auto readIdMapping = [this](const std::vector<checkers::IdMapping>& idMapping, const char* ext = "") {
-        for (const auto& i: idMapping)
-            for (const QString& cppcheckId: QString(i.cppcheckId).split(","))
-                mGuideline[cppcheckId] = QString(i.guideline) + ext;
-    };
-
-    if (reportType == ReportType::autosar)
-        readIdMapping(checkers::idMappingAutosar);
-    else if (reportType == ReportType::certC)
-        readIdMapping(checkers::idMappingCertC, "-C");
-    else if (reportType == ReportType::certCpp) {
-        readIdMapping(checkers::idMappingCertC, "-C");
-        readIdMapping(checkers::idMappingCertCpp, "-CPP");
-    }
-    else if (reportType == ReportType::misraC)
-        readIdMapping(checkers::idMappingMisraC);
-    else if (reportType == ReportType::misraCpp2008)
-        readIdMapping(checkers::idMappingMisraCpp2008);
-    else if (reportType == ReportType::misraCpp2023)
-        readIdMapping(checkers::idMappingMisraCpp2023);
+    mGuideline = checkers::createGuidelineMapping(reportType);
 
     for (int i = 0; i < mModel.rowCount(); ++i) {
         const QStandardItem *fileItem = mModel.item(i, COLUMN_FILE);
