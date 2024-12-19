@@ -1682,8 +1682,14 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
         if (isCtuInfo && addonInfo.name != "misra" && !addonInfo.ctu)
             continue;
 
-        const std::vector<picojson::value> results =
-            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
+        std::vector<picojson::value> results;
+        try {
+            results = executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
+        } catch (const InternalError& e) {
+            const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, file0, "Bailing out from analysis: Addon '" + addonInfo.name + "' failed");
+            mErrorLogger.reportErr(errmsg);
+            continue;
+        }
 
         const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
 
