@@ -45,7 +45,7 @@ static std::string getFilename(const std::string &fullpath)
     return fullpath.substr(pos1,pos2);
 }
 
-void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, std::list<FileSettings> &fileSettings)
+void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings)
 {
     std::map<std::string, unsigned int> fileCount;
 
@@ -58,12 +58,9 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
             fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(f) << '\n';
     }
 
-    for (FileSettings &fs : fileSettings) {
+    for (const FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename());
-        std::size_t count{(++fileCount[afile])};
-        if (count > 1)
-            fs.file.mIndex = count - 1;
-        fout << afile << ".a" << count << ":" << fs.cfg << ":" << Path::simplifyPath(fs.filename()) << std::endl;
+        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(fs.filename()) << std::endl;
     }
 }
 
@@ -99,28 +96,25 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
     return true;
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, std::size_t index)
+std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg)
 {
     std::string line;
     const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
-    std::size_t currentLine{0};
     while (std::getline(filesTxt,line)) {
         if (line.size() <= end.size() + 2U)
             continue;
         if (!endsWith(line, end.c_str(), end.size()))
             continue;
-        if (currentLine == index)
-            return line.substr(0,line.find(':'));
-        ++currentLine;
+        return line.substr(0,line.find(':'));
     }
     return "";
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t index)
+std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
 {
     std::ifstream fin(Path::join(buildDir, "files.txt"));
     if (fin.is_open()) {
-        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg, index);
+        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg);
         if (!ret.empty())
             return Path::join(buildDir, ret);
     }

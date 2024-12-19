@@ -195,12 +195,14 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
 
     if (!fileSettingsRef.empty()) {
-        // TODO: de-duplicate
-
-        std::list<FileSettings> fileSettings;
+        // TODO make it better
+        // de-duplication
+        auto comparator = [](const FileSettings &lhs, const FileSettings &rhs) {return lhs.file.hash() < rhs.file.hash();};
+        std::set<FileSettings, decltype(comparator)> fileSettings(comparator);
+        
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
-            std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
+            std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::inserter(fileSettings, fileSettings.begin()), [&](const FileSettings &fs) {
                 return matchglobs(mSettings.fileFilters, fs.filename());
             });
             if (fileSettings.empty()) {
@@ -209,7 +211,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             }
         }
         else {
-            fileSettings = fileSettingsRef;
+            std::copy(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::inserter(fileSettings, fileSettings.begin()));
         }
 
         mFileSettings.clear();
