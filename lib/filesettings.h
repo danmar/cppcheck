@@ -40,6 +40,7 @@ public:
         : mPath(std::move(path))
         , mPathSimplified(Path::simplifyPath(mPath))
         , mSize(size)
+        , mHash(std::hash<std::string>{}(mPath)) // TODO use another data for a hash ?
     {
         if (mPath.empty())
             throw std::runtime_error("empty path specified");
@@ -59,10 +60,17 @@ public:
     {
         return mSize;
     }
+
+    std::size_t hash() const
+    {
+        return mHash;
+    }
+
 private:
     std::string mPath;
     std::string mPathSimplified;
     std::size_t mSize;
+    std::size_t mHash; // TODO create a better way to determine if the file is 'unique'
 };
 
 /** File settings. Multiple configurations for a file is allowed. */
