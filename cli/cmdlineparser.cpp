@@ -197,9 +197,11 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     if (!fileSettingsRef.empty()) {
         // TODO make it better
         // de-duplication
-        auto comparator = [](const FileSettings &lhs, const FileSettings &rhs) {return lhs.file.hash() < rhs.file.hash();};
+        auto comparator = [](const FileSettings &lhs, const FileSettings &rhs) {
+            return lhs.file.hash() < rhs.file.hash();
+        };
         std::set<FileSettings, decltype(comparator)> fileSettings(comparator);
-        
+
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::inserter(fileSettings, fileSettings.begin()), [&](const FileSettings &fs) {
