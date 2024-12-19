@@ -89,7 +89,7 @@ protected:
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check_internal(const Settings& settings) const;
+    int check_internal(const Settings& settings);
 
     /**
      * Filename associated with size of file

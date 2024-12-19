@@ -59,6 +59,9 @@ public:
     {
         return mSize;
     }
+
+    std::size_t mIndex; // Only used for files with the same name
+
 private:
     std::string mPath;
     std::string mPathSimplified;
