@@ -9848,7 +9848,7 @@ void Tokenizer::simplifyAt()
     std::set<std::string> var;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%name%|] @ %num%|%name%|%str%|(")) {
+        if (Token::Match(tok, "%name%|]|) @ %num%|%name%|%str%|(")) {
             const Token *end = tok->tokAt(2);
             if (end->isLiteral())
                 end = end->next();
