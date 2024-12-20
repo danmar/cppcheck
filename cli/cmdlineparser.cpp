@@ -915,6 +915,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.maxCtuDepth = temp;
             }
 
+            else if (std::strncmp(argv[i], "--max-template-recursion=", 25) == 0) {
+                int temp = 0;
+                if (!parseNumberArg(argv[i], 25, temp))
+                    return Result::Fail;
+                mSettings.maxTemplateRecursion = temp;
+            }
+
             // undocumented option for usage in Python tests to indicate that no build dir should be injected
             else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {
                 mSettings.buildDir.clear();

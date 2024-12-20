@@ -419,6 +419,8 @@ private:
         TEST_CASE(debugLookupConfig);
         TEST_CASE(debugLookupLibrary);
         TEST_CASE(debugLookupPlatform);
+        TEST_CASE(maxTemplateRecursion);
+        TEST_CASE(maxTemplateRecursionMissingCount);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2879,6 +2881,20 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-lookup=platform", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debuglookupPlatform);
+    }
+
+    void maxTemplateRecursion() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--max-template-recursion=12", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings->maxTemplateRecursion);
+    }
+
+    void maxTemplateRecursionMissingCount() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--max-template-recursion=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-template-recursion=' is not valid - not an integer.\n", logger->str());
     }
 
     void ignorepaths1() {
