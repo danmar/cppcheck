@@ -182,14 +182,21 @@ static const std::unordered_set<std::string> stdTypes = { "bool"
                                                           , "size_t"
                                                           , "void"
                                                           , "wchar_t"
+                                                          , "signed"
+                                                          , "unsigned"
 };
+
+bool Token::isStandardType(const std::string& str)
+{
+    return stdTypes.find(str) != stdTypes.end();
+}
 
 void Token::update_property_isStandardType()
 {
     if (mStr.size() < 3 || mStr.size() > 7)
         return;
 
-    if (stdTypes.find(mStr)!=stdTypes.end()) {
+    if (isStandardType(mStr)) {
         isStandardType(true);
         tokType(eType);
     }

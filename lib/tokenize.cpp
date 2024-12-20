@@ -6,7 +6,7 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ *!(classLevel > 1 && tok2
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -82,7 +82,7 @@ static bool isEnumStart(const Token* tok)
     if (!Token::simpleMatch(tok, "{"))
         return false;
     tok = tok->previous();
-    while (tok && !tok->isKeyword() && Token::Match(tok, "%name%|::|:"))
+    while (tok && (!tok->isKeyword() || Token::isStandardType(tok->str())) && Token::Match(tok, "%name%|::|:"))
         tok = tok->previous();
     if (Token::simpleMatch(tok, "class"))
         tok = tok->previous();
