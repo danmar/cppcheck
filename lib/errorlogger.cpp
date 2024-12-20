@@ -496,7 +496,7 @@ std::string ErrorMessage::toXML() const
     if (!remark.empty())
         printer.PushAttribute("remark", fixInvalidChars(remark).c_str());
 
-    for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
+    for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
         printer.PushAttribute("file", it->getfile().c_str());
         printer.PushAttribute("line", std::max(it->line,0));

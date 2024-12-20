@@ -2052,7 +2052,7 @@ void Tokenizer::simplifyTypedefCpp()
                     if (idx != std::string::npos)
                         removed1.resize(idx);
                     if (removed1 == classPath && !removed1.empty()) {
-                        for (std::vector<Space>::const_reverse_iterator it = spaceInfo.crbegin(); it != spaceInfo.crend(); ++it) {
+                        for (auto it = spaceInfo.crbegin(); it != spaceInfo.crend(); ++it) {
                             if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
                                 std::string::size_type spaceIdx = 0;
                                 std::string::size_type startIdx = 0;
@@ -3382,7 +3382,7 @@ bool Tokenizer::simplifyUsing()
     }
 
     // delete all used type alias definitions
-    for (std::list<Using>::reverse_iterator it = usingList.rbegin(); it != usingList.rend(); ++it) {
+    for (auto it = usingList.rbegin(); it != usingList.rend(); ++it) {
         Token *usingStart = it->startTok;
         Token *usingEnd = it->endTok;
         if (usingStart->previous()) {

@@ -3888,7 +3888,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
         std::set<std::string> expandedtemplates;
 
-        for (std::list<TokenAndName>::const_reverse_iterator iter1 = mTemplateDeclarations.crbegin(); iter1 != mTemplateDeclarations.crend(); ++iter1) {
+        for (auto iter1 = mTemplateDeclarations.crbegin(); iter1 != mTemplateDeclarations.crend(); ++iter1) {
             if (iter1->isAlias() || iter1->isFriend())
                 continue;
 

@@ -4641,8 +4641,8 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         const Scope *parent = derivedFromType->classScope;
 
         // check if function defined in base class
-        auto range = parent->functionMap.equal_range(tokenDef->str());
-        for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+        auto range = utils::as_const(parent->functionMap).equal_range(tokenDef->str());
+        for (auto it = range.first; it != range.second; ++it) {
             const Function * func = it->second;
             if (func->isImplicitlyVirtual()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
@@ -5549,8 +5549,8 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
                 if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
 
-                auto range = base->classScope->functionMap.equal_range(name);
-                for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+                auto range = utils::as_const(base->classScope->functionMap).equal_range(name);
+                for (auto it = range.first; it != range.second; ++it) {
                     const Function *func = it->second;
                     if ((func->isVariadic() && args >= (func->argCount() - 1)) ||
                         (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount()))) {
@@ -5709,8 +5709,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     const std::size_t args = arguments.size();
 
     auto addMatchingFunctions = [&](const Scope *scope) {
-        auto range = scope->functionMap.equal_range(tok->str());
-        for (std::multimap<std::string, const Function *>::const_iterator it = range.first; it != range.second; ++it) {
+        auto range = utils::as_const(scope->functionMap).equal_range(tok->str());
+        for (auto it = range.first; it != range.second; ++it) {
             const Function *func = it->second;
             if (ref == Reference::LValue && func->hasRvalRefQualifier())
                 continue;
@@ -6479,8 +6479,8 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     const Function * function = nullptr;
     const bool destructor = func->strAt(-1) == "~";
 
-    auto range = ns->functionMap.equal_range(func->str());
-    for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+    auto range = utils::as_const(ns->functionMap).equal_range(func->str());
+    for (auto it = range.first; it != range.second; ++it) {
         if (it->second->argsMatch(ns, it->second->argDef, func->next(), path, path_length) &&
             it->second->isDestructor() == destructor) {
             function = it->second;
