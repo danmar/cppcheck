@@ -413,7 +413,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     if (settings.reportProgress >= 0)
         stdLogger.resetLatestProgressOutputTime();
 
-    if (settings.xml) {
+    if (settings.outputFormat == Settings::OutputFormat::xml) {
         stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName, settings.xml_version));
     }
 
@@ -465,7 +465,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     stdLogger.writeCheckersReport();
 
-    if (settings.xml) {
+    if (settings.outputFormat == Settings::OutputFormat::xml) {
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
@@ -480,7 +480,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 void StdLogger::writeCheckersReport()
 {
     const bool summary = mSettings.safety || mSettings.severity.isEnabled(Severity::information);
-    const bool xmlReport = mSettings.xml && mSettings.xml_version == 3;
+    const bool xmlReport = mSettings.outputFormat == Settings::OutputFormat::xml && mSettings.xml_version == 3;
     const bool textReport = !mSettings.checkersReportFilename.empty();
 
     if (!summary && !xmlReport && !textReport)
@@ -554,7 +554,7 @@ void StdLogger::reportErr(const std::string &errmsg)
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, !mSettings.xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, mSettings.outputFormat != Settings::OutputFormat::xml) << std::endl;
     }
 }
 
@@ -623,7 +623,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)
         mSarifReport.addFinding(msg);
-    else if (mSettings.xml)
+    else if (mSettings.outputFormat == Settings::OutputFormat::xml)
         reportErr(msg.toXML());
     else
         reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));

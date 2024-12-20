@@ -115,7 +115,7 @@ ErrorPath Check::getErrorPath(const Token* errtok, const ValueFlow::Value* value
     ErrorPath errorPath;
     if (!value) {
         errorPath.emplace_back(errtok, std::move(bug));
-    } else if (mSettings->verbose || mSettings->xml || !mSettings->templateLocation.empty()) {
+    } else if (mSettings->verbose || mSettings->outputFormat == Settings::OutputFormat::xml || !mSettings->templateLocation.empty()) {
         errorPath = value->errorPath;
         errorPath.emplace_back(errtok, std::move(bug));
     } else {

@@ -537,9 +537,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("no path has been specified for --cppcheck-build-dir");
                     return Result::Fail;
                 }
+                if (endsWith(path, '/'))
+                    path.pop_back();
                 mSettings.buildDir = std::move(path);
-                if (endsWith(mSettings.buildDir, '/'))
-                    mSettings.buildDir.pop_back();
             }
 
             else if (std::strcmp(argv[i], "--cpp-header-probe") == 0) {
@@ -915,6 +915,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.maxCtuDepth = temp;
             }
 
+            else if (std::strncmp(argv[i], "--max-template-recursion=", 25) == 0) {
+                if (!parseNumberArg(argv[i], 25, mSettings.maxTemplateRecursion))
+                    return Result::Fail;
+            }
+
             // undocumented option for usage in Python tests to indicate that no build dir should be injected
             else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {
                 mSettings.buildDir.clear();
@@ -930,6 +935,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
                 const std::string format = argv[i] + 16;
+                // TODO: text and plist is missing
                 if (format == "sarif")
                     mSettings.outputFormat = Settings::OutputFormat::sarif;
                 else if (format == "xml")
@@ -938,7 +944,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("argument to '--output-format=' must be 'sarif' or 'xml'.");
                     return Result::Fail;
                 }
-                mSettings.xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
             }
 
 
@@ -981,12 +986,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in results.plist
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
-                mSettings.outputFormat = Settings::OutputFormat::plist;
-                mSettings.plistOutput = Path::simplifyPath(argv[i] + 15);
-                if (mSettings.plistOutput.empty())
-                    mSettings.plistOutput = ".";
+                std::string path = Path::simplifyPath(argv[i] + 15);
+                if (path.empty())
+                    path = ".";
 
-                const std::string plistOutput = Path::toNativeSeparators(mSettings.plistOutput);
+                const std::string plistOutput = Path::toNativeSeparators(path);
                 if (!Path::isDirectory(plistOutput)) {
                     std::string message("plist folder does not exist: '");
                     message += plistOutput;
@@ -995,8 +999,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     return Result::Fail;
                 }
 
-                if (!endsWith(mSettings.plistOutput,'/'))
-                    mSettings.plistOutput += '/';
+                if (!endsWith(path,'/'))
+                    path += '/';
+
+                mSettings.outputFormat = Settings::OutputFormat::plist;
+                mSettings.plistOutput = std::move(path);
             }
 
             // Special Cppcheck Premium options
@@ -1143,10 +1150,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             else if (std::strncmp(argv[i], "--report-progress=", 18) == 0) {
-                int tmp;
-                if (!parseNumberArg(argv[i], 18, tmp, true))
+                if (!parseNumberArg(argv[i], 18, mSettings.reportProgress, true))
                     return Result::Fail;
-                mSettings.reportProgress = tmp;
             }
 
             // Rule given at command line
@@ -1396,7 +1401,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             // Write results in results.xml
             else if (std::strcmp(argv[i], "--xml") == 0) {
-                mSettings.xml = true;
                 mSettings.outputFormat = Settings::OutputFormat::xml;
             }
 
@@ -1413,7 +1417,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                 mSettings.xml_version = tmp;
                 // Enable also XML if version is set
-                mSettings.xml = true;
                 mSettings.outputFormat = Settings::OutputFormat::xml;
             }
 
