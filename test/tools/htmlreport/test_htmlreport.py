@@ -80,9 +80,23 @@ class TestHTMLReport(unittest.TestCase):
 
             output_directory.cleanup()
 
+    def testAddCheckersReport(self):
+        with runCheck(
+            xml_filename=os.path.join(TEST_TOOLS_DIR, 'example.xml'),
+            checkers_filename=os.path.join(TEST_TOOLS_DIR, 'example-checkers.txt')
+        ) as (report, output_directory):
+            self.assertIn('<html', report)
+
+            self.assertIn('<a href="checkers.html"', report)
+
+            self.assertTrue(
+                os.path.exists(os.path.join(output_directory.name, 'checkers.html')))
+
+            output_directory.cleanup()
+
 
 @contextlib.contextmanager
-def runCheck(source_filename=None, xml_version='1', xml_filename=None):
+def runCheck(source_filename=None, xml_version='1', xml_filename=None, checkers_filename=None):
     """Run cppcheck and cppcheck-htmlreport.
 
     Yield a tuple containing the resulting HTML report index and the directory
@@ -102,10 +116,14 @@ def runCheck(source_filename=None, xml_version='1', xml_filename=None):
 
     assert os.path.exists(xml_filename)
 
-    subprocess.check_call(
-        [*HTML_REPORT_BIN,
+    args = [*HTML_REPORT_BIN,
          '--file=' + os.path.realpath(xml_filename),
-         '--report-dir=' + os.path.realpath(output_directory.name)],
+         '--report-dir=' + os.path.realpath(output_directory.name)]
+    if checkers_filename:
+        args.append('--checkers-report-file=' + os.path.realpath(checkers_filename))
+
+    subprocess.check_call(
+        args,
         cwd=TEST_TOOLS_DIR)
 
     with open(os.path.join(output_directory.name, 'index.html')) as index_file:
