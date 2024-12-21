@@ -74,102 +74,32 @@ T* findToken(T* start, const Token* end, const std::function<bool(const Token*)>
     return result;
 }
 
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+template<class T>
 bool findTokensSkipDeadCodeImpl(const Library& library,
                                 T* start,
                                 const Token* end,
                                 const std::function<bool(const Token*)>& pred,
                                 std::function<bool(T*)> found,
                                 const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                bool skipUnevaluated)
-{
-    for (T* tok = start; precedes(tok, end); tok = tok->next()) {
-        if (pred(tok)) {
-            if (found(tok))
-                return true;
-        }
-        if (Token::Match(tok, "if|for|while (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
-            const Token* condTok = getCondTok(tok);
-            if (!condTok)
-                continue;
-            auto result = evaluate(condTok);
-            if (result.empty())
-                continue;
-            if (findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, std::move(found), evaluate, skipUnevaluated))
-                return true;
-            T* thenStart = tok->linkAt(1)->next();
-            T* elseStart = nullptr;
-            if (Token::simpleMatch(thenStart->link(), "} else {"))
-                elseStart = thenStart->link()->tokAt(2);
+                                bool skipUnevaluated) = delete;
 
-            auto r = result.front();
-            if (r == 0) {
-                if (elseStart) {
-                    if (findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, std::move(found), evaluate, skipUnevaluated))
-                        return true;
-                    if (isReturnScope(elseStart->link(), library))
-                        return true;
-                    tok = elseStart->link();
-                } else {
-                    tok = thenStart->link();
-                }
-            } else {
-                if (findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, std::move(found), evaluate, skipUnevaluated))
-                    return true;
-                if (isReturnScope(thenStart->link(), library))
-                    return true;
-                tok = thenStart->link();
-            }
-        } else if (Token::Match(tok->astParent(), "&&|?|%oror%") && astIsLHS(tok)) {
-            auto result = evaluate(tok);
-            if (result.empty())
-                continue;
-            const bool cond = result.front() != 0;
-            T* next = nullptr;
-            if ((cond && Token::simpleMatch(tok->astParent(), "||")) ||
-                (!cond && Token::simpleMatch(tok->astParent(), "&&"))) {
-                next = nextAfterAstRightmostLeaf(tok->astParent());
-            } else if (Token::simpleMatch(tok->astParent(), "?")) {
-                T* colon = tok->astParent()->astOperand2();
-                if (!cond) {
-                    next = colon;
-                } else {
-                    if (findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, std::move(found), evaluate, skipUnevaluated))
-                        return true;
-                    next = nextAfterAstRightmostLeaf(colon);
-                }
-            }
-            if (next)
-                tok = next;
-        } else if (Token::simpleMatch(tok, "} else {")) {
-            const Token* condTok = getCondTokFromEnd(tok);
-            if (!condTok)
-                continue;
-            auto result = evaluate(condTok);
-            if (result.empty())
-                continue;
-            if (isReturnScope(tok->link(), library))
-                return true;
-            auto r = result.front();
-            if (r != 0) {
-                tok = tok->linkAt(2);
-            }
-        } else if (Token::simpleMatch(tok, "[") && Token::Match(tok->link(), "] (|{")) {
-            T* afterCapture = tok->link()->next();
-            if (Token::simpleMatch(afterCapture, "(") && afterCapture->link())
-                tok = afterCapture->link()->next();
-            else
-                tok = afterCapture;
-        }
-        if (skipUnevaluated && isUnevaluated(tok)) {
-            T *next = tok->linkAt(1);
-            if (!next)
-                continue;
-            tok = next;
-        }
-    }
-    return false;
-}
+template<>
+bool findTokensSkipDeadCodeImpl(const Library& library,
+                                Token* start,
+                                const Token* end,
+                                const std::function<bool(const Token*)>& pred,
+                                std::function<bool(Token*)> found,
+                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
+                                bool skipUnevaluated);
+
+template<>
+bool findTokensSkipDeadCodeImpl(const Library& library,
+                                const Token* start,
+                                const Token* end,
+                                const std::function<bool(const Token*)>& pred,
+                                std::function<bool(const Token*)> found,
+                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
+                                bool skipUnevaluated);
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 std::vector<T*> findTokensSkipDeadCode(const Library& library,
