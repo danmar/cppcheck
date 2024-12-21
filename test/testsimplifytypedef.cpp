@@ -222,6 +222,7 @@ private:
         TEST_CASE(simplifyTypedef154);
         TEST_CASE(simplifyTypedef155);
         TEST_CASE(simplifyTypedef156);
+        TEST_CASE(simplifyTypedef157);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3756,6 +3757,20 @@ private:
                             "return A :: i ; "
                             "}";
         ASSERT_EQUALS(exp4, tok(code4));
+    }
+
+    void simplifyTypedef157() {
+        const char code[] = "namespace NS1 {\n" // #13451
+                            "    typedef NS2::Bar Bar;\n"
+                            "    using NS2::MyType;\n"
+                            "}\n"
+                            "enum E : unsigned int {\n"
+                            "    zero = 0,\n"
+                            "    MyType = 1\n"
+                            "};\n"
+                            "namespace NS1 {}\n";
+        const char exp[] = "enum E : int { zero = 0 , MyType = 1 } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyTypedefFunction1() {

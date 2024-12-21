@@ -82,7 +82,7 @@ static bool isEnumStart(const Token* tok)
     if (!Token::simpleMatch(tok, "{"))
         return false;
     tok = tok->previous();
-    while (tok && !tok->isKeyword() && Token::Match(tok, "%name%|::|:"))
+    while (tok && (!tok->isKeyword() || Token::isStandardType(tok->str())) && Token::Match(tok, "%name%|::|:"))
         tok = tok->previous();
     if (Token::simpleMatch(tok, "class"))
         tok = tok->previous();
