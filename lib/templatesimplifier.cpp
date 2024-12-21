@@ -2061,7 +2061,14 @@ void TemplateSimplifier::expandTemplate(
         const std::string lastName = (templateInstantiation.name().find(' ') != std::string::npos) ? templateInstantiation.name().substr(templateInstantiation.name().rfind(' ')+1) : templateInstantiation.name();
 
         std::stack<const Token *> templates;
+        int scopeCount = 0;
         for (; tok3; tok3 = tok3->next()) {
+            if (tok3->str() == "{")
+                ++scopeCount;
+            else if (tok3->str() == "}")
+                --scopeCount;
+            if (scopeCount < 0)
+                break;
             if (tok3->isName() && !Token::Match(tok3, "class|typename|struct") && !tok3->isStandardType()) {
                 // search for this token in the type vector
                 unsigned int itype = 0;

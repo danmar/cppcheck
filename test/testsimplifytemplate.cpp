@@ -239,6 +239,7 @@ private:
         TEST_CASE(template_namespace_9);
         TEST_CASE(template_namespace_10);
         TEST_CASE(template_namespace_11); // #7145
+        TEST_CASE(template_namespace_12);
         TEST_CASE(template_pointer_type);
         TEST_CASE(template_array_type);
 
@@ -5262,6 +5263,27 @@ private:
                       "int TemplatedMethod<int> ( int ) ; "
                       "} ; "
                       "} int MyNamespace :: TestClass :: TemplatedMethod<int> ( int t ) { return t ; }", tok(code));
+    }
+
+    void template_namespace_12() {
+        const char code[] = "struct S {};\n" // #13444
+                            "namespace N {\n"
+                            "    template<>\n"
+                            "    struct hash<S> {};\n"
+                            "}\n"
+                            "struct T {\n"
+                            "    T(int i) : hash(i) {}\n"
+                            "    int hash;\n"
+                            "};\n";
+        ASSERT_EQUALS("struct S { } ; "
+                      "namespace N { "
+                      "struct hash<S> { } ; "
+                      "} "
+                      "struct T { "
+                      "T ( int i ) : hash ( i ) { } "
+                      "int hash ; "
+                      "} ;",
+                      tok(code));
     }
 
     void template_pointer_type() {
