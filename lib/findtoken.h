@@ -76,14 +76,13 @@ T* findToken(T* start, const Token* end, const std::function<bool(const Token*)>
 
 template<class T,
          class Found,
-         class Evaluate,
          REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 bool findTokensSkipDeadCodeImpl(const Library& library,
                                 T* start,
                                 const Token* end,
                                 const std::function<bool(const Token*)>& pred,
                                 Found found,
-                                const Evaluate& evaluate,
+                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
                                 bool skipUnevaluated)
 {
     for (T* tok = start; precedes(tok, end); tok = tok->next()) {
@@ -174,12 +173,12 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
     return false;
 }
 
-template<class T, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 std::vector<T*> findTokensSkipDeadCode(const Library& library,
                                        T* start,
                                        const Token* end,
                                        const std::function<bool(const Token*)>& pred,
-                                       const Evaluate& evaluate)
+                                       const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
     std::vector<T*> result;
     (void)findTokensSkipDeadCodeImpl(
@@ -202,12 +201,12 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library, T* start, const T
     return findTokensSkipDeadCode(library, start, end, pred, &evaluateKnownValues);
 }
 
-template<class T, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library,
                                                      T* start,
                                                      const Token* end,
                                                      const std::function<bool(const Token*)>& pred,
-                                                     const Evaluate& evaluate)
+                                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
     std::vector<T*> result;
     (void)findTokensSkipDeadCodeImpl(
@@ -231,8 +230,8 @@ std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library, T* 
 }
 
 
-template<class T, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, const std::function<bool(const Token*)>& pred, const Evaluate& evaluate)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, const std::function<bool(const Token*)>& pred, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
     T* result = nullptr;
     (void)findTokensSkipDeadCodeImpl(
