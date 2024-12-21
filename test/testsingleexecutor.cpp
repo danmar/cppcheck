@@ -77,19 +77,18 @@ private:
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
-                filelist.emplace_back(f_s, data.size());
+                filelist.emplace_back(f_s, Standards::Language::CPP, data.size());
                 if (useFS) {
-                    fileSettings.emplace_back(std::move(f_s), data.size());
+                    fileSettings.emplace_back(std::move(f_s), Standards::Language::CPP, data.size());
                 }
             }
         }
         else {
             for (const auto& f : opt.filesList)
             {
-                filelist.emplace_back(f, data.size());
+                filelist.emplace_back(f, Standards::Language::CPP, data.size());
                 if (useFS) {
-
-                    fileSettings.emplace_back(f, data.size());
+                    fileSettings.emplace_back(f, Standards::Language::CPP, data.size());
                 }
             }
         }
