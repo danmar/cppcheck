@@ -346,3 +346,63 @@ def test_unused_function_unmatched_build_dir(tmpdir):
 @pytest.mark.xfail(strict=True)
 def test_unused_function_unmatched_build_dir_j(tmpdir):
     __test_unused_function_unmatched_build_dir(tmpdir, ['-j2'])
+
+
+@pytest.mark.xfail(strict=True)  # no error as inline suppressions are currently not being propagated back
+def test_duplicate():
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=all',
+        '--inline-suppr',
+        'proj-inline-suppress/duplicate.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == []
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'unreadVariable' already exists"
+    ]
+    assert ret == 0, stdout
+
+
+@pytest.mark.xfail(strict=True)  # no error as inline suppressions are currently not being propagated back
+def test_duplicate_cmd():
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=all',
+        '--inline-suppr',
+        '--suppress=unreadVariable',
+        'proj-inline-suppress/4.c'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == []
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'unreadVariable' already exists"
+    ]
+    assert ret == 0, stdout
+
+
+@pytest.mark.xfail(strict=True)  # no error as inline suppressions are currently not being propagated back
+def test_duplicate_file(tmp_path):
+    suppr_file = tmp_path / 'suppressions'
+    with open(suppr_file, 'wt') as f:
+        f.write('unreadVariable')
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=all',
+        '--inline-suppr',
+        '--suppressions-list={}'.format(suppr_file),
+        'proj-inline-suppress/4.c'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == []
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'unreadVariable' already exists"
+    ]
+    assert ret == 0, stdout

@@ -1097,7 +1097,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
         }
 
         for (const SuppressionList::Suppression &suppression : mProjectFile->getCheckingSuppressions()) {
-            result.supprs.nomsg.addSuppression(suppression);
+            result.supprs.nomsg.addSuppression(suppression); // TODO: check result
         }
 
         // Only check the given -D configuration
