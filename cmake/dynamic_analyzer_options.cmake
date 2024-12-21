@@ -31,3 +31,9 @@ if(ANALYZE_UNDEFINED)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=nullability")
     endif()
 endif()
+
+if(ANALYZE_TYPE)
+    add_compile_options(-fsanitize=type)
+
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=type")
+endif()
