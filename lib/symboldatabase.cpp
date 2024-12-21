@@ -3392,6 +3392,8 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
             auto range = scope1->functionMap.equal_range(tok->str());
             for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
                 auto * func = const_cast<Function *>(it->second);
+                if (destructor && func->type != Function::Type::eDestructor)
+                    continue;
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, tok->next(), path, path_length)) {
                         const Token *closeParen = tok->linkAt(1);

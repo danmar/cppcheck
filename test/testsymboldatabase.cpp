@@ -425,6 +425,7 @@ private:
         TEST_CASE(symboldatabase105);
         TEST_CASE(symboldatabase106);
         TEST_CASE(symboldatabase107);
+        TEST_CASE(symboldatabase108);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5670,6 +5671,42 @@ private:
             ASSERT_EQUALS(3, db->scopeList.size());
             ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
             ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+        }
+    }
+
+    void symboldatabase108() {
+        {
+            GET_SYMBOL_DB("struct S {\n" // #13442
+                          "    S() = delete;\n"
+                          "    S(int a) : i(a) {}\n"
+                          "    ~S();\n"
+                          "    int i;\n"
+                          "};\n"
+                          "S::~S() = default;\n");
+            ASSERT_EQUALS(db->scopeList.size(), 3);
+            auto scope = db->scopeList.begin();
+            ++scope;
+            ASSERT_EQUALS(scope->className, "S");
+            const auto& flist = scope->functionList;
+            ASSERT_EQUALS(flist.size(), 3);
+            auto it = flist.begin();
+            ASSERT_EQUALS(it->name(), "S");
+            ASSERT_EQUALS(it->tokenDef->linenr(), 2);
+            ASSERT(it->isDelete());
+            ASSERT(!it->isDefault());
+            ASSERT_EQUALS(it->type, Function::Type::eConstructor);
+            ++it;
+            ASSERT_EQUALS(it->name(), "S");
+            ASSERT_EQUALS(it->tokenDef->linenr(), 3);
+            ASSERT(!it->isDelete());
+            ASSERT(!it->isDefault());
+            ASSERT_EQUALS(it->type, Function::Type::eConstructor);
+            ++it;
+            ASSERT_EQUALS(it->name(), "S");
+            ASSERT_EQUALS(it->tokenDef->linenr(), 4);
+            ASSERT(!it->isDelete());
+            ASSERT(it->isDefault());
+            ASSERT_EQUALS(it->type, Function::Type::eDestructor);
         }
     }
 
