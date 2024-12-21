@@ -286,13 +286,12 @@ static void parseCompareEachInt(
         return;
     if (tok->isComparisonOp()) {
         std::vector<ValueFlow::Value> value1 = evaluate(tok->astOperand1());
-        std::vector<ValueFlow::Value> value2 = evaluate(tok->astOperand2());
-        if (!value1.empty() && !value2.empty()) {
-            if (tok->astOperand1()->hasKnownIntValue())
-                value2.clear();
-            if (tok->astOperand2()->hasKnownIntValue())
-                value1.clear();
+        std::vector<ValueFlow::Value> value2;
+        if (value1.empty() || !tok->astOperand1()->hasKnownIntValue()) {
+            value2 = evaluate(tok->astOperand2());
         }
+        if (!value2.empty() && tok->astOperand2()->hasKnownIntValue())
+            value1.clear();
         for (const ValueFlow::Value& v1 : value1) {
             if (isSaturated(v1.intvalue) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
                 continue;
@@ -987,7 +986,7 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     if (!tok)
         return result;
     if (depth < 0)
-        return result;
+        return result; // TODO: add bailout message
     if (tok->hasKnownIntValue()) {
         result = {tok->values().front().intvalue};
     } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
@@ -1071,7 +1070,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                     ValueFlow::Value symValue{};
                     symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
                     symValue.tokvalue = tok2;
-                    values.push_back(symValue);
+                    values.push_back(std::move(symValue));
                     std::copy_if(tok2->values().cbegin(),
                                  tok2->values().cend(),
                                  std::back_inserter(values),
@@ -1490,7 +1489,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
     if (pred(tok))
         return {{tok, std::move(errorPath)}};
     if (depth < 0)
-        return {{tok, std::move(errorPath)}};
+        return {{tok, std::move(errorPath)}}; // TODO: add bailout message
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
             const Token * const varDeclEndToken = var->declEndToken();
@@ -2282,7 +2281,7 @@ private:
 static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args, int depth = 10)
 {
     if (depth < 0)
-        return true;
+        return true; // TODO: add bailout message
     return std::any_of(vars.cbegin(), vars.cend(), [&](const Variable& var) {
         if (const ValueType* vt = var.valueType()) {
             if (vt->pointer > 0 &&
@@ -2937,10 +2936,10 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
         else if (tok->isUnaryOp("&")) {
             if (Token::simpleMatch(tok->astParent(), "*"))
                 continue;
-            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1(), settings)) {
+            for (ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1(), settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
-                ErrorPath errorPath = lt.errorPath;
+                ErrorPath& errorPath = lt.errorPath;
                 errorPath.emplace_back(tok, "Address of variable taken here.");
 
                 ValueFlow::Value value;
@@ -3540,7 +3539,7 @@ static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase& 
 static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 10)
 {
     if (depth < 0)
-        return nullptr;
+        return nullptr; // TODO: add bailout message
     if (!tok)
         return nullptr;
     if (!expr)
@@ -3583,7 +3582,7 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     continue;
 
                 ValueFlow::Value v = makeSymbolic(arg);
-                v.errorPath = c.errorPath;
+                v.errorPath = std::move(c.errorPath);
                 v.errorPath.emplace_back(tok, "Passed to " + tok->str());
                 if (c.intvalue == 0)
                     v.setImpossible();
@@ -3660,10 +3659,10 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
 }
 
 struct SymbolicInferModel : InferModel {
-    const Token* expr;
     explicit SymbolicInferModel(const Token* tok) : expr(tok) {
         assert(expr->exprId() != 0);
     }
+private:
     bool match(const ValueFlow::Value& value) const override
     {
         return value.isSymbolicValue() && value.tokvalue && value.tokvalue->exprId() == expr->exprId();
@@ -3676,6 +3675,7 @@ struct SymbolicInferModel : InferModel {
         result.setKnown();
         return result;
     }
+    const Token* expr;
 };
 
 static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings& settings)
@@ -5754,10 +5754,10 @@ static void valueFlowFunctionReturn(TokenList& tokenlist, ErrorLogger& errorLogg
         if (programMemory.empty() && !arguments.empty())
             continue;
         std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
-        for (const ValueFlow::Value& v : values) {
+        for (ValueFlow::Value& v : values) {
             if (v.isUninitValue())
                 continue;
-            setFunctionReturnValue(function, tok, v, settings);
+            setFunctionReturnValue(function, tok, std::move(v), settings);
         }
     }
 }
@@ -6009,6 +6009,7 @@ static bool isContainerSizeChangedByFunction(const Token* tok,
                 // Argument not used
                 if (!arg->nameToken())
                     return false;
+                // TODO: add bailout message
                 if (depth > 0)
                     return isContainerSizeChanged(arg->nameToken(),
                                                   scope->bodyStart,
@@ -6563,8 +6564,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
             continue;
         }
 
-        for (const ValueFlow::Value& value : values) {
-            valueFlowForward(nameToken->next(), var->nameToken(), value, tokenlist, errorLogger, settings);
+        for (ValueFlow::Value& value : values) {
+            valueFlowForward(nameToken->next(), var->nameToken(), std::move(value), tokenlist, errorLogger, settings);
         }
     }
 
@@ -6605,13 +6606,13 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     value.valueType = ValueFlow::Value::ValueType::TOK;
                     value.tokvalue = tok;
                     value.setKnown();
-                    values.push_back(value);
+                    values.push_back(std::move(value));
                 } else if (Token::simpleMatch(tok, "(")) {
                     const Token* constructorArgs = tok;
                     values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);
                 }
-                for (const ValueFlow::Value& value : values)
-                    setTokenValue(tok, value, settings);
+                for (ValueFlow::Value& value : values)
+                    setTokenValue(tok, std::move(value), settings);
             } else if (Token::Match(tok, ";|{|} %var% =") && Token::Match(tok->tokAt(2)->astOperand2(), "[({]") &&
                        // init list
                        ((tok->tokAt(2) == tok->tokAt(2)->astOperand2()->astParent() && !tok->tokAt(2)->astOperand2()->astOperand2() && tok->tokAt(2)->astOperand2()->str() == "{") ||
