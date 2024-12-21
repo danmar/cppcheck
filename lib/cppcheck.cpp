@@ -32,6 +32,7 @@
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h"
+#include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
@@ -41,6 +42,7 @@
 #include "utils.h"
 #include "valueflow.h"
 #include "version.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <cassert>
