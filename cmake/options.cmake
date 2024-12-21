@@ -16,7 +16,7 @@ option(ANALYZE_MEMORY       "Clang dynamic analyzer: detector of uninitialized r
 option(ANALYZE_ADDRESS      "Clang dynamic analyzer: fast memory error detector. "          OFF)
 option(ANALYZE_THREAD       "Clang dynamic analyzer: tool that detects data races. "        OFF)
 option(ANALYZE_UNDEFINED    "Clang dynamic analyzer: undefined behavior checker. "          OFF)
-option(ANALYZE_DATAFLOW     "Clang dynamic analyzer: general dynamic dataflow analysis."    OFF)
+option(ANALYZE_TYPE     "Clang dynamic analyzer: type sanitizer."    OFF)
 
 option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                                      OFF)
 option(EXTERNALS_AS_SYSTEM  "Treat externals as system includes"                            OFF)
