@@ -31,9 +31,3 @@ if(ANALYZE_UNDEFINED)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=nullability")
     endif()
 endif()
-
-if(ANALYZE_DATAFLOW)
-    add_compile_options(-fsanitize=dataflow)
-
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=dataflow")
-endif()
