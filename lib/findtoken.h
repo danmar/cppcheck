@@ -98,7 +98,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
             auto result = evaluate(condTok);
             if (result.empty())
                 continue;
-            if (findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found, evaluate, skipUnevaluated))
+            if (findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, std::move(found), evaluate, skipUnevaluated))
                 return true;
             T* thenStart = tok->linkAt(1)->next();
             T* elseStart = nullptr;
@@ -108,7 +108,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
             auto r = result.front();
             if (r == 0) {
                 if (elseStart) {
-                    if (findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found, evaluate, skipUnevaluated))
+                    if (findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, std::move(found), evaluate, skipUnevaluated))
                         return true;
                     if (isReturnScope(elseStart->link(), library))
                         return true;
@@ -117,7 +117,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
                     tok = thenStart->link();
                 }
             } else {
-                if (findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found, evaluate, skipUnevaluated))
+                if (findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, std::move(found), evaluate, skipUnevaluated))
                     return true;
                 if (isReturnScope(thenStart->link(), library))
                     return true;
@@ -137,7 +137,7 @@ bool findTokensSkipDeadCodeImpl(const Library& library,
                 if (!cond) {
                     next = colon;
                 } else {
-                    if (findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found, evaluate, skipUnevaluated))
+                    if (findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, std::move(found), evaluate, skipUnevaluated))
                         return true;
                     next = nextAfterAstRightmostLeaf(colon);
                 }
