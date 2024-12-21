@@ -41,7 +41,6 @@
 #include <vector>
 
 class Platform;
-class ErrorLogger;
 class Function;
 class Scope;
 class Settings;
@@ -775,7 +774,7 @@ public:
     nonneg int initializedArgCount() const {
         return initArgCount;
     }
-    void addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope);
+    void addArguments(const Scope *scope);
 
     /** @brief check if this function is virtual in the base classes */
     bool isImplicitlyVirtual(bool defaultVal = false, bool* pFoundAllBaseClasses = nullptr) const;
@@ -1030,10 +1029,10 @@ public:
 
     enum ScopeType : std::uint8_t { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
-    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
-    Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
+    Scope(const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_);
+    Scope(const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
-    const SymbolDatabase* check{};
+    const SymbolDatabase& symdb;
     std::string className;
     const Token* classDef{};   ///< class/struct/union/namespace token
     const Token* bodyStart{};  ///< '{' token
@@ -1150,10 +1149,10 @@ public:
 
     void addVariable(const Token *token_, const Token *start_,
                      const Token *end_, AccessControl access_, const Type *type_,
-                     const Scope *scope_, const Settings& settings);
+                     const Scope *scope_);
 
     /** @brief initialize varlist */
-    void getVariableList(const Settings& settings);
+    void getVariableList();
 
     const Function *getDestructor() const;
 
@@ -1171,10 +1170,9 @@ public:
      * @brief check if statement is variable declaration and add it if it is
      * @param tok pointer to start of statement
      * @param varaccess access control of statement
-     * @param settings Settings
      * @return pointer to last token
      */
-    const Token *checkVariable(const Token *tok, AccessControl varaccess, const Settings& settings);
+    const Token *checkVariable(const Token *tok, AccessControl varaccess);
 
     /**
      * @brief get variable from name
@@ -1202,7 +1200,7 @@ private:
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 
     /** @brief initialize varlist */
-    void getVariableList(const Settings& settings, const Token *start, const Token *end);
+    void getVariableList(const Token *start, const Token *end);
 };
 
 /** Value type */
@@ -1320,7 +1318,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger& errorLogger);
+    explicit SymbolDatabase(Tokenizer& tokenizer);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1470,8 +1468,6 @@ private:
     void validateVariables() const;
 
     Tokenizer& mTokenizer;
-    const Settings &mSettings;
-    ErrorLogger &mErrorLogger;
 
     /** variable symbol table */
     std::vector<const Variable *> mVariableList;

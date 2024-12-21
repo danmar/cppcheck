@@ -617,6 +617,10 @@ public:
         return mSettings;
     }
 
+    ErrorLogger &getErrorLogger() {
+        return mErrorLogger;
+    }
+
     void calculateScopes();
 
     /** Disable copy constructor */
