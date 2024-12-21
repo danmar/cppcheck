@@ -30,6 +30,7 @@ namespace checkers {
         {"CheckBool::checkComparisonOfBoolWithBool","style,c++"},
         {"CheckBool::checkAssignBoolToPointer",""},
         {"CheckBool::checkComparisonOfBoolExpressionWithInt","warning"},
+        {"CheckBool::checkAssignedLiteralToBoolean","style"},
         {"CheckBool::pointerArithBool",""},
         {"CheckBool::checkAssignBoolToFloat","style,c++"},
         {"CheckBool::returnValueOfFunctionReturningBool","style"},
