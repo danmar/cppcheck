@@ -2682,7 +2682,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
 
         if (validTokenEnd(bounded, tok, backToken, 3) &&
             Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(std::to_string(MathLib::toBigNumber(tok->str())));
+            tok->str(MathLib::toString(MathLib::toBigNumber(tok->str())));
         }
 
         if (validTokenEnd(bounded, tok, backToken, 5) &&

@@ -1773,12 +1773,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED) {
                         outs += "intvalue=\"";
-                        outs += std::to_string(static_cast<MathLib::biguint>(value.intvalue));
+                        outs += MathLib::toString(static_cast<MathLib::biguint>(value.intvalue));
                         outs += '\"';
                     }
                     else {
                         outs += "intvalue=\"";
-                        outs += std::to_string(value.intvalue);
+                        outs += MathLib::toString(value.intvalue);
                         outs += '\"';
                     }
                     break;
@@ -1802,22 +1802,22 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::BUFFER_SIZE:
                     outs += "buffer-size=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += "\"";
                     break;
                 case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     outs += "container-size=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_START:
                     outs +=  "iterator-start=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_END:
                     outs +=  "iterator-end=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
@@ -1836,7 +1836,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     outs += id_string(value.tokvalue);
                     outs += '\"';
                     outs += " symbolic-delta=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 }
@@ -1858,7 +1858,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     outs += " inconclusive=\"true\"";
 
                 outs += " path=\"";
-                outs += std::to_string(value.path);
+                outs += MathLib::toString(value.path);
                 outs += "\"";
 
                 outs += "/>\n";

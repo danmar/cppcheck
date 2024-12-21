@@ -230,10 +230,10 @@ const Token *findNextTokenFromBreak(const Token *breakToken);
 bool extractForLoopValues(const Token *forToken,
                           nonneg int &varid,
                           bool &knownInitValue,
-                          long long &initValue,
+                          MathLib::bigint &initValue,
                           bool &partialCond,
-                          long long &stepValue,
-                          long long &lastValue);
+                          MathLib::bigint &stepValue,
+                          MathLib::bigint &lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
 bool succeeds(const Token* tok1, const Token* tok2);
