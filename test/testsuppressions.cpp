@@ -1530,7 +1530,7 @@ private:
         }
     }
 
-    void addSuppressionDuplicate() {
+    void addSuppressionDuplicate() const {
         SuppressionList supprs;
 
         SuppressionList::Suppression s;
@@ -1540,7 +1540,7 @@ private:
         ASSERT_EQUALS("suppression 'uninitvar' already exists", supprs.addSuppression(s));
     }
 
-    void updateSuppressionState() {
+    void updateSuppressionState() const {
         {
             SuppressionList supprs;
 
@@ -1623,7 +1623,7 @@ private:
         ASSERT_EQUALS(22, it->lineNumber);
     }
 
-    void toString()
+    void toString() const
     {
         {
             SuppressionList::Suppression s;
