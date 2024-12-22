@@ -2095,10 +2095,10 @@ void CheckClass::thisSubtractionError(const Token *tok)
 void CheckClass::checkConst()
 {
     const bool premium = mSettings->isPremiumEnabled("functionConst") ||
-        mSettings->isPremiumEnabled("functionStatic");
+                         mSettings->isPremiumEnabled("functionStatic");
     // This is an inconclusive check. False positives: #3322.
     const bool check = mSettings->certainty.isEnabled(Certainty::inconclusive) &&
-        mSettings->severity.isEnabled(Severity::style);
+                       mSettings->severity.isEnabled(Severity::style);
 
     if (!premium && !check)
         return;
