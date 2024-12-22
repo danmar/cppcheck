@@ -209,7 +209,7 @@ public:
      * @param filePath path to the file, or -1 if the file cannot be accessed
      * @return size of file
      */
-    static ssize_t fileSize(const std::string &filePath);
+    static long long fileSize(const std::string &filePath);
 };
 
 /// @}

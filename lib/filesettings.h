@@ -83,7 +83,7 @@ public:
 
     std::string updateSize()
     {
-        ssize_t ssize = Path::fileSize(mPath);
+        long long ssize = Path::fileSize(mPath);
         if (ssize < 0)
             return "could not stat file '" + mPath + "': (errno: " + std::to_string(errno) + ")";
         mSize = ssize;

@@ -444,7 +444,7 @@ std::string Path::join(const std::string& path1, const std::string& path2) {
 
 # ifdef _WIN64
 
-ssize_t Path::fileSize(const std::string &filePath) {
+long long Path::fileSize(const std::string &filePath) {
     struct _stati64 buf;
     if (_stati64(filePath.c_str(), &buf) < 0) {
         return -1;
@@ -454,7 +454,7 @@ ssize_t Path::fileSize(const std::string &filePath) {
 
 # else
 
-ssize_t Path::fileSize(const std::string &filePath) {
+long long Path::fileSize(const std::string &filePath) {
     struct _stat buf;
     if (_stat(filePath.c_str(), &buf) < 0) {
         return -1;
@@ -466,7 +466,7 @@ ssize_t Path::fileSize(const std::string &filePath) {
 
 #else
 
-ssize_t Path::fileSize(const std::string &filePath) {
+long long Path::fileSize(const std::string &filePath) {
     struct stat buf;
     if (stat(filePath.c_str(), &buf) < 0) {
         return -1;
