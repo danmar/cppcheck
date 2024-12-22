@@ -651,7 +651,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 {
     // TODO: clear exitcode
 
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
+    if (!mUnusedFunctionsCheck && (mSettings.checks.isEnabled(Checks::unusedFunction) || mSettings.isPremiumEnabled("unusedFunction")))
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
     if (!mSettings.quiet)
