@@ -44,6 +44,8 @@ unsigned int SingleExecutor::check()
 
     const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& f) {
         return v + f.size();
+    }) + std::accumulate(mFileSettings.cbegin(), mFileSettings.cend(), std::size_t(0), [](std::size_t v, const FileSettings& fs) {
+        return v + fs.filesize();
     });
 
     std::size_t processedsize = 0;
@@ -62,9 +64,10 @@ unsigned int SingleExecutor::check()
     // check all files of the project
     for (const FileSettings &fs : mFileSettings) {
         result += mCppcheck.check(fs);
+        processedsize += fs.filesize();
         ++c;
         if (!mSettings.quiet)
-            reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
+            reportStatus(c, mFileSettings.size(), processedsize, totalfilesize);
         if (mSettings.clangTidy)
             mCppcheck.analyseClangTidy(fs);
     }
