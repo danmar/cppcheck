@@ -22,13 +22,13 @@
 #include "token.h"
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static bool findTokensSkipDeadCodeImpl2(const Library& library,
-                                        T* start,
-                                        const Token* end,
-                                        const std::function<bool(const Token*)>& pred,
-                                        const std::function<bool(T*)>& found,
-                                        const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                        bool skipUnevaluated)
+static bool findTokensSkipDeadCodeImpl(const Library& library,
+                                       T* start,
+                                       const Token* end,
+                                       const std::function<bool(const Token*)>& pred,
+                                       const std::function<bool(T*)>& found,
+                                       const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
+                                       bool skipUnevaluated)
 {
     for (T* tok = start; precedes(tok, end); tok = tok->next()) {
         if (pred(tok)) {
@@ -42,7 +42,7 @@ static bool findTokensSkipDeadCodeImpl2(const Library& library,
             auto result = evaluate(condTok);
             if (result.empty())
                 continue;
-            if (findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found, evaluate, skipUnevaluated))
+            if (internal::findTokensSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found, evaluate, skipUnevaluated))
                 return true;
             T* thenStart = tok->linkAt(1)->next();
             T* elseStart = nullptr;
@@ -52,7 +52,7 @@ static bool findTokensSkipDeadCodeImpl2(const Library& library,
             auto r = result.front();
             if (r == 0) {
                 if (elseStart) {
-                    if (findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found, evaluate, skipUnevaluated))
+                    if (internal::findTokensSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found, evaluate, skipUnevaluated))
                         return true;
                     if (isReturnScope(elseStart->link(), library))
                         return true;
@@ -61,7 +61,7 @@ static bool findTokensSkipDeadCodeImpl2(const Library& library,
                     tok = thenStart->link();
                 }
             } else {
-                if (findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found, evaluate, skipUnevaluated))
+                if (internal::findTokensSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found, evaluate, skipUnevaluated))
                     return true;
                 if (isReturnScope(thenStart->link(), library))
                     return true;
@@ -81,7 +81,7 @@ static bool findTokensSkipDeadCodeImpl2(const Library& library,
                 if (!cond) {
                     next = colon;
                 } else {
-                    if (findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found, evaluate, skipUnevaluated))
+                    if (internal::findTokensSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found, evaluate, skipUnevaluated))
                         return true;
                     next = nextAfterAstRightmostLeaf(colon);
                 }
@@ -118,26 +118,28 @@ static bool findTokensSkipDeadCodeImpl2(const Library& library,
     return false;
 }
 
-template<>
-bool findTokensSkipDeadCodeImpl(const Library& library,
-                                Token* start,
-                                const Token* end,
-                                const std::function<bool(const Token*)>& pred,
-                                std::function<bool(Token*)> found,
-                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                bool skipUnevaluated)
-{
-    return findTokensSkipDeadCodeImpl2(library, start, end, pred, found, evaluate, skipUnevaluated);
-}
+namespace internal {
+    template<>
+    bool findTokensSkipDeadCodeImpl(const Library& library,
+                                    Token* start,
+                                    const Token* end,
+                                    const std::function<bool(const Token*)>& pred,
+                                    std::function<bool(Token*)> found,
+                                    const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
+                                    bool skipUnevaluated)
+    {
+        return ::findTokensSkipDeadCodeImpl(library, start, end, pred, found, evaluate, skipUnevaluated);
+    }
 
-template<>
-bool findTokensSkipDeadCodeImpl(const Library& library,
-                                const Token* start,
-                                const Token* end,
-                                const std::function<bool(const Token*)>& pred,
-                                std::function<bool(const Token*)> found,
-                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                bool skipUnevaluated)
-{
-    return findTokensSkipDeadCodeImpl2(library, start, end, pred, found, evaluate, skipUnevaluated);
+    template<>
+    bool findTokensSkipDeadCodeImpl(const Library& library,
+                                    const Token* start,
+                                    const Token* end,
+                                    const std::function<bool(const Token*)>& pred,
+                                    std::function<bool(const Token*)> found,
+                                    const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
+                                    bool skipUnevaluated)
+    {
+        return ::findTokensSkipDeadCodeImpl(library, start, end, pred, found, evaluate, skipUnevaluated);
+    }
 }
