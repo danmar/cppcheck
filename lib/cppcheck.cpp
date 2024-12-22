@@ -88,6 +88,10 @@ static TimerResults s_timerResults;
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
+static bool isCheckUnusedFunctionsEnabled(const Settings& settings) {
+    return settings.checks.isEnabled(Checks::unusedFunction) || settings.isPremiumEnabled("unusedFunction");
+}
+
 class CppCheck::CppCheckLogger : public ErrorLogger
 {
 public:
@@ -651,7 +655,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 {
     // TODO: clear exitcode
 
-    if (!mUnusedFunctionsCheck && (mSettings.checks.isEnabled(Checks::unusedFunction) || mSettings.isPremiumEnabled("unusedFunction")))
+    if (!mUnusedFunctionsCheck && isCheckUnusedFunctionsEnabled(mSettings))
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
     if (!mSettings.quiet)
@@ -785,7 +789,7 @@ unsigned int CppCheck::check(const FileWithDetails &file, const std::string &con
 unsigned int CppCheck::check(const FileSettings &fs)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
+    if (!mUnusedFunctionsCheck && isCheckUnusedFunctionsEnabled(mSettings))
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
     // need to pass the externally provided ErrorLogger instead of our internal wrapper
@@ -853,7 +857,7 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
 unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
+    if (!mUnusedFunctionsCheck && isCheckUnusedFunctionsEnabled(mSettings))
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
     mLogger->resetExitCode();
