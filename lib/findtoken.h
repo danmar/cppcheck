@@ -74,32 +74,34 @@ T* findToken(T* start, const Token* end, const Predicate& pred)
     return result;
 }
 
-template<class T>
-bool findTokensSkipDeadCodeImpl(const Library& library,
-                                T* start,
-                                const Token* end,
-                                const std::function<bool(const Token*)>& pred,
-                                std::function<bool(T*)> found,
-                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                bool skipUnevaluated) = delete;
+namespace internal {
+    template<class T>
+    bool findTokensSkipDeadCodeImpl(const Library &library,
+                                    T *start,
+                                    const Token *end,
+                                    const std::function<bool(const Token *)> &pred,
+                                    std::function<bool(T *)> found,
+                                    const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
+                                    bool skipUnevaluated) = delete;
 
-template<>
-bool findTokensSkipDeadCodeImpl(const Library& library,
-                                Token* start,
-                                const Token* end,
-                                const std::function<bool(const Token*)>& pred,
-                                std::function<bool(Token*)> found,
-                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                bool skipUnevaluated);
+    template<>
+    bool findTokensSkipDeadCodeImpl(const Library &library,
+                                    Token *start,
+                                    const Token *end,
+                                    const std::function<bool(const Token *)> &pred,
+                                    std::function<bool(Token *)> found,
+                                    const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
+                                    bool skipUnevaluated);
 
-template<>
-bool findTokensSkipDeadCodeImpl(const Library& library,
-                                const Token* start,
-                                const Token* end,
-                                const std::function<bool(const Token*)>& pred,
-                                std::function<bool(const Token*)> found,
-                                const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
-                                bool skipUnevaluated);
+    template<>
+    bool findTokensSkipDeadCodeImpl(const Library &library,
+                                    const Token *start,
+                                    const Token *end,
+                                    const std::function<bool(const Token *)> &pred,
+                                    std::function<bool(const Token *)> found,
+                                    const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
+                                    bool skipUnevaluated);
+}
 
 template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 std::vector<T*> findTokensSkipDeadCode(const Library& library,
@@ -115,7 +117,7 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library,
         return false;
     };
 
-    (void)findTokensSkipDeadCodeImpl(
+    (void)internal::findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
@@ -146,7 +148,7 @@ std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library,
         return false;
     };
 
-    (void)findTokensSkipDeadCodeImpl(
+    (void)internal::findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
@@ -175,7 +177,7 @@ T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, con
         return true;
     };
 
-    (void)findTokensSkipDeadCodeImpl(
+    (void)internal::findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
