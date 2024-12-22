@@ -194,13 +194,11 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     if (endsWith(filename, ".json")) {
         if (importCompileCommands(fin)) {
             setRelativePaths(filename);
-            setFileSizes();
             return ImportProject::Type::COMPILE_DB;
         }
     } else if (endsWith(filename, ".sln")) {
         if (importSln(fin, mPath, fileFilters)) {
             setRelativePaths(filename);
-            setFileSizes();
             return ImportProject::Type::VS_SLN;
         }
     } else if (endsWith(filename, ".vcxproj")) {
@@ -208,19 +206,16 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
         std::vector<SharedItemsProject> sharedItemsProjects;
         if (importVcxproj(filename, variables, emptyString, fileFilters, sharedItemsProjects)) {
             setRelativePaths(filename);
-            setFileSizes();
             return ImportProject::Type::VS_VCXPROJ;
         }
     } else if (endsWith(filename, ".bpr")) {
         if (importBcb6Prj(filename)) {
             setRelativePaths(filename);
-            setFileSizes();
             return ImportProject::Type::BORLAND;
         }
     } else if (settings && endsWith(filename, ".cppcheck")) {
         if (importCppcheckGuiProject(fin, settings)) {
             setRelativePaths(filename);
-            setFileSizes();
             return ImportProject::Type::CPPCHECK_GUI;
         }
     } else {
@@ -1499,11 +1494,4 @@ void ImportProject::printError(const std::string &message)
 bool ImportProject::sourceFileExists(const std::string &file)
 {
     return Path::isFile(file);
-}
-
-void ImportProject::setFileSizes()
-{
-    for (auto &fs : fileSettings) {
-        fs.updateFileSize();
-    }
 }
