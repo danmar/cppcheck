@@ -124,7 +124,7 @@ namespace internal {
                                     Token* start,
                                     const Token* end,
                                     const std::function<bool(const Token*)>& pred,
-                                    std::function<bool(Token*)> found,
+                                    const std::function<bool(Token*)>& found,
                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
                                     bool skipUnevaluated)
     {
@@ -136,7 +136,7 @@ namespace internal {
                                     const Token* start,
                                     const Token* end,
                                     const std::function<bool(const Token*)>& pred,
-                                    std::function<bool(const Token*)> found,
+                                    const std::function<bool(const Token*)>& found,
                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate,
                                     bool skipUnevaluated)
     {

@@ -80,7 +80,7 @@ namespace internal {
                                     T *start,
                                     const Token *end,
                                     const std::function<bool(const Token *)> &pred,
-                                    std::function<bool(T *)> found,
+                                    const std::function<bool(T *)>& found,
                                     const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
                                     bool skipUnevaluated) = delete;
 
@@ -89,7 +89,7 @@ namespace internal {
                                     Token *start,
                                     const Token *end,
                                     const std::function<bool(const Token *)> &pred,
-                                    std::function<bool(Token *)> found,
+                                    const std::function<bool(Token *)>& found,
                                     const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
                                     bool skipUnevaluated);
 
@@ -98,7 +98,7 @@ namespace internal {
                                     const Token *start,
                                     const Token *end,
                                     const std::function<bool(const Token *)> &pred,
-                                    std::function<bool(const Token *)> found,
+                                    const std::function<bool(const Token *)>& found,
                                     const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
                                     bool skipUnevaluated);
 }
@@ -122,7 +122,7 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library,
         start,
         end,
         pred,
-        std::move(f),
+        f,
         evaluate,
         false);
     return result;
@@ -153,7 +153,7 @@ std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library,
         start,
         end,
         pred,
-        std::move(f),
+        f,
         evaluate,
         true);
     return result;
@@ -182,7 +182,7 @@ T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, con
         start,
         end,
         pred,
-        std::move(f),
+        f,
         evaluate,
         false);
     return result;
