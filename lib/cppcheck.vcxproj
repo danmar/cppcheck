@@ -66,7 +66,6 @@
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
     <ClCompile Include="errortypes.cpp" />
-    <ClCompile Include="filesettings.cpp" />
     <ClCompile Include="forwardanalyzer.cpp" />
     <ClCompile Include="fwdanalysis.cpp" />
     <ClCompile Include="importproject.cpp" />
@@ -139,7 +138,6 @@
     <ClInclude Include="ctu.h" />
     <ClInclude Include="errorlogger.h" />
     <ClInclude Include="errortypes.h" />
-    <ClInclude Include="filesettings.h" />
     <ClInclude Include="filesettings.h" />
     <ClInclude Include="findtoken.h" />
     <ClInclude Include="forwardanalyzer.h" />
