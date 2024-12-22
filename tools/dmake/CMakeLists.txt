@@ -13,7 +13,6 @@ endforeach()
 add_executable(dmake EXCLUDE_FROM_ALL
         dmake.cpp
         ${CMAKE_SOURCE_DIR}/cli/filelister.cpp
-        ${CMAKE_SOURCE_DIR}/lib/filesettings.cpp
         ${srcs_tools}
         $<TARGET_OBJECTS:simplecpp_objs>
 )

@@ -360,7 +360,7 @@ check:	all
 checkcfg:	cppcheck validateCFG
 	./test/cfg/runtests.sh
 
-dmake:	tools/dmake/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o $(libcppdir)/filesettings.o
+dmake:	tools/dmake/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path.o $(libcppdir)/utils.o externals/simplecpp/simplecpp.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 run-dmake: dmake
