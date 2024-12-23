@@ -170,7 +170,7 @@ private:
     void assignmentInCondition(const Token *eq);
 
     void checkCompareValueOutOfTypeRange();
-    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result);
+    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, MathLib::bigint value, bool result);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckCondition c(nullptr, settings, errorLogger);

@@ -111,10 +111,10 @@ namespace {
                 return std::make_pair(false, false);
             std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
             // TODO: We should convert to bool
-            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x != 0;
             });
-            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x == 0;
             });
             return std::make_pair(checkThen, checkElse);
