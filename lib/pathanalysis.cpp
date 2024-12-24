@@ -50,7 +50,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
 {
     if (tok->hasKnownIntValue()) {
         known = true;
-        return std::make_pair(tok->values().front().intvalue, !tok->values().front().intvalue);
+        return std::make_pair(!!tok->values().front().intvalue, !tok->values().front().intvalue);
     }
     auto it = std::find_if(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
         return v.isIntValue();
@@ -62,7 +62,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
         return true;
     })) {
         known = false;
-        return std::make_pair(it->intvalue, !it->intvalue);
+        return std::make_pair(!!it->intvalue, !it->intvalue);
     }
     return std::make_pair(true, true);
 }

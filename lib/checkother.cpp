@@ -4047,7 +4047,7 @@ void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Valu
         reportError(tok, Severity::style, "knownPointerToBool", "Pointer expression 'p' converted to bool is always true.");
         return;
     }
-    std::string cond = bool_to_string(value->intvalue);
+    std::string cond = bool_to_string(!!value->intvalue);
     const std::string& expr = tok->expressionString();
     std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);

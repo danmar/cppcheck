@@ -470,7 +470,7 @@ private:
             return T{};
         }
         if (assign == "=")
-            return y;
+            return static_cast<T>(y);
         return calculate<T, T>(removeAssign(assign), x, y, error);
     }
 

@@ -759,14 +759,14 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
                         result.intvalue = 0;
                         setTokenValue(tok, std::move(result), settings);
                     } else if (index >= 0 && index < s.size()) {
-                        result.intvalue = s[index];
+                        result.intvalue = s[static_cast<std::size_t>(index)];
                         setTokenValue(tok, std::move(result), settings);
                     }
                 } else if (Token::simpleMatch(arrayValue.tokvalue, "{")) {
                     std::vector<const Token*> args = getArguments(arrayValue.tokvalue);
                     if (index < 0 || index >= args.size())
                         continue;
-                    const Token* arg = args[index];
+                    const Token* arg = args[static_cast<std::size_t>(index)];
                     if (!arg->hasKnownIntValue())
                         continue;
                     const ValueFlow::Value& v = arg->values().front();
@@ -3982,7 +3982,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
         if (value.isImpossible())
             continue;
         if (value.isFloatValue()) {
-            value.intvalue = value.floatValue;
+            value.intvalue = static_cast<MathLib::bigint>(value.floatValue);
             value.valueType = ValueFlow::Value::ValueType::INT;
         }
 
@@ -4505,7 +4505,7 @@ struct ConditionHandler {
             if (Token::Match(tok->astParent(), "==|!=")) {
                 const Token* sibling = tok->astSibling();
                 if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
-                    const bool value = sibling->values().front().intvalue;
+                    const bool value = !!sibling->values().front().intvalue;
                     if (inverted)
                         *inverted ^= value == Token::simpleMatch(tok->astParent(), "!=");
                     continue;
@@ -6916,12 +6916,12 @@ static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatab
                     std::list<ValueFlow::Value> argValues;
                     argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
-                    argValues.back().floatValue = isLow ? low : -1E25;
+                    argValues.back().floatValue = isLow ? static_cast<double>(low) : -1E25;
                     argValues.back().errorPath.emplace_back(arg.nameToken(), "Safe checks: Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
                     argValues.back().safe = true;
                     argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
-                    argValues.back().floatValue = isHigh ? high : 1E25;
+                    argValues.back().floatValue = isHigh ? static_cast<double>(high) : 1E25;
                     argValues.back().errorPath.emplace_back(arg.nameToken(), "Safe checks: Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
                     argValues.back().safe = true;
                     valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()),

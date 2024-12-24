@@ -335,7 +335,7 @@ namespace ValueFlow
         if (value.isFloatValue()) {
             value.valueType = Value::ValueType::INT;
             if (value.floatValue >= std::numeric_limits<int>::min() && value.floatValue <= std::numeric_limits<int>::max()) {
-                value.intvalue = value.floatValue;
+                value.intvalue = static_cast<MathLib::bigint>(value.floatValue);
             } else { // don't perform UB
                 value.intvalue = 0;
             }
