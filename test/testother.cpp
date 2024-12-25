@@ -5644,6 +5644,11 @@ private:
               "    } while (i < 10);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout_str());
+
+        check("int f() {\n" // #13475
+              "    { return 0; };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 

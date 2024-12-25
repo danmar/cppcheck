@@ -903,6 +903,8 @@ void CheckOther::checkUnreachableCode()
             }
             while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
                 secondBreak = secondBreak->next();
+            if (Token::simpleMatch(secondBreak, ";"))
+                continue;
 
             // Statements follow directly, no line between them. (#3383)
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
