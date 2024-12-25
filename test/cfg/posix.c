@@ -1496,3 +1496,13 @@ void ctime_r_test(const time_t * timep, char * bufSizeUnknown)
     // cppcheck-suppress ctime_rCalled
     ctime_r(timep, bufSizeUnknown);
 }
+
+void invalidFunctionArg_nice(int inc)
+{
+    // cppcheck-suppress invalidFunctionArg
+    nice(-21);
+    nice(-20);
+    nice(19);
+    // cppcheck-suppress invalidFunctionArg
+    nice(+20);
+}
