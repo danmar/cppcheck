@@ -3972,45 +3972,43 @@ static void valueFlowForwardConst(Token* start,
             for (const ValueFlow::Value& value : values)
                 setTokenValue(tok, value, settings);
         } else {
-            [&] {
-                // Follow references
-                auto refs = followAllReferences(tok);
-                auto it = std::find_if(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
-                    return ref.token->varId() == var->declarationId();
-                });
-                if (it != refs.end()) {
-                    for (ValueFlow::Value value : values) {
-                        if (refs.size() > 1)
-                            value.setInconclusive();
-                        value.errorPath.insert(value.errorPath.end(), it->errors.cbegin(), it->errors.cend());
-                        setTokenValue(tok, std::move(value), settings);
-                    }
-                    return;
+            // Follow references
+            auto refs = followAllReferences(tok);
+            auto it = std::find_if(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
+                return ref.token->varId() == var->declarationId();
+            });
+            if (it != refs.end()) {
+                for (ValueFlow::Value value : values) {
+                    if (refs.size() > 1)
+                        value.setInconclusive();
+                    value.errorPath.insert(value.errorPath.end(), it->errors.cbegin(), it->errors.cend());
+                    setTokenValue(tok, std::move(value), settings);
                 }
-                // Follow symbolic values
-                for (const ValueFlow::Value& v : tok->values()) {
-                    if (!v.isSymbolicValue())
+                return;
+            }
+            // Follow symbolic values
+            for (const ValueFlow::Value& v : tok->values()) {
+                if (!v.isSymbolicValue())
+                    continue;
+                if (!v.tokvalue)
+                    continue;
+                if (v.tokvalue->varId() != var->declarationId())
+                    continue;
+                for (ValueFlow::Value value : values) {
+                    if (!v.isKnown() && value.isImpossible())
                         continue;
-                    if (!v.tokvalue)
-                        continue;
-                    if (v.tokvalue->varId() != var->declarationId())
-                        continue;
-                    for (ValueFlow::Value value : values) {
-                        if (!v.isKnown() && value.isImpossible())
+                    if (v.intvalue != 0) {
+                        if (!value.isIntValue())
                             continue;
-                        if (v.intvalue != 0) {
-                            if (!value.isIntValue())
-                                continue;
-                            value.intvalue += v.intvalue;
-                        }
-                        if (!value.isImpossible())
-                            value.valueKind = v.valueKind;
-                        value.bound = v.bound;
-                        value.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
-                        setTokenValue(tok, std::move(value), settings);
+                        value.intvalue += v.intvalue;
                     }
+                    if (!value.isImpossible())
+                        value.valueKind = v.valueKind;
+                    value.bound = v.bound;
+                    value.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
+                    setTokenValue(tok, std::move(value), settings);
                 }
-            }();
+            }
         }
     }
 }
