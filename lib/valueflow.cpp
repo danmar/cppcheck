@@ -4968,7 +4968,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
                 for (const ValuePtr<InferModel>& model : iteratorModels) {
                     std::vector<ValueFlow::Value> result =
                         infer(model, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
-                    for (ValueFlow::Value value : result) {
+                    for (ValueFlow::Value& value : result) {
                         value.valueType = ValueFlow::Value::ValueType::INT;
                         setTokenValue(tok, std::move(value), settings);
                     }
@@ -4986,8 +4986,7 @@ static void valueFlowInferCondition(TokenList& tokenlist, const Settings& settin
             std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(), "!=", tok->values(), 0);
             if (result.size() != 1)
                 continue;
-            ValueFlow::Value value = result.front();
-            setTokenValue(tok, std::move(value), settings);
+            setTokenValue(tok, std::move(result.front()), settings);
         }
     }
 }
