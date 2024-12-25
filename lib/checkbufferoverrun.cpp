@@ -558,7 +558,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
             return *value;
     }
 
-    if (!var)
+    if (!var || var->isPointer())
         return ValueFlow::Value(-1);
 
     const MathLib::bigint dim = std::accumulate(var->dimensions().cbegin(), var->dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
@@ -571,8 +571,6 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 
     if (var->isPointerArray())
         v.intvalue = dim * mSettings->platform.sizeof_pointer;
-    else if (var->isPointer())
-        return ValueFlow::Value(-1);
     else {
         const MathLib::bigint typeSize = bufTok->valueType()->typeSize(mSettings->platform);
         v.intvalue = dim * typeSize;
