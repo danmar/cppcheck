@@ -887,8 +887,6 @@ void CheckOther::checkUnreachableCode()
                         tok2 = tok2->link();
                     if (tok2->str() == ";") {
                         secondBreak = tok2->next();
-                        while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
-                            secondBreak = secondBreak->next();
                         break;
                     }
                 }
