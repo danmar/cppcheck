@@ -5615,6 +5615,15 @@ private:
               "    std::cout << \"y\";\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Statements following 'return' will never be executed.\n", errout_str());
+
+        check("void f() {\n"
+              "    {\n"
+              "        std::cout << \"x\";\n"
+              "        exit(1);\n"
+              "    }\n"
+              "    std::cout << \"y\";\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Statements following noreturn function 'exit()' will never be executed.\n", errout_str());
     }
 
     void redundantContinue() {
