@@ -3901,16 +3901,15 @@ template<class ContainerOfValue>
 static void valueFlowForwardConst(Token* start,
                                   const Token* end,
                                   const Variable* var,
-                                  const ContainerOfValue& values,
-                                  const Settings& settings,
-                                  int /*unused*/ = 0)
+                                  ContainerOfValue values,
+                                  const Settings& settings)
 {
     if (!precedes(start, end))
         throw InternalError(var->nameToken(), "valueFlowForwardConst: start token does not precede the end token.");
     for (Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == var->declarationId()) {
-            for (const ValueFlow::Value& value : values)
-                setTokenValue(tok, value, settings);
+            for (ValueFlow::Value& value : values)
+                setTokenValue(tok, std::move(value), settings);
         } else {
             [&] {
                 // Follow references
@@ -3919,7 +3918,7 @@ static void valueFlowForwardConst(Token* start,
                     return ref.token->varId() == var->declarationId();
                 });
                 if (it != refs.end()) {
-                    for (ValueFlow::Value value : values) {
+                    for (ValueFlow::Value& value : values) {
                         if (refs.size() > 1)
                             value.setInconclusive();
                         value.errorPath.insert(value.errorPath.end(), it->errors.cbegin(), it->errors.cend());
@@ -3935,7 +3934,7 @@ static void valueFlowForwardConst(Token* start,
                         continue;
                     if (v.tokvalue->varId() != var->declarationId())
                         continue;
-                    for (ValueFlow::Value value : values) {
+                    for (ValueFlow::Value& value : values) {
                         if (!v.isKnown() && value.isImpossible())
                             continue;
                         if (v.intvalue != 0) {
@@ -3953,15 +3952,6 @@ static void valueFlowForwardConst(Token* start,
             }();
         }
     }
-}
-
-static void valueFlowForwardConst(Token* start,
-                                  const Token* end,
-                                  const Variable* var,
-                                  const std::initializer_list<ValueFlow::Value>& values,
-                                  const Settings& settings)
-{
-    valueFlowForwardConst(start, end, var, values, settings, 0);
 }
 
 static ValueFlow::Value::Bound findVarBound(const Variable* var,
@@ -4091,7 +4081,7 @@ static void valueFlowForwardAssign(Token* const tok,
         });
         std::list<ValueFlow::Value> constValues;
         constValues.splice(constValues.end(), values, it, values.end());
-        valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), constValues, settings);
+        valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), std::move(constValues), settings);
     }
     if (isInitialVarAssign(expr)) {
         // Check if variable is only incremented or decremented
@@ -4107,7 +4097,7 @@ static void valueFlowForwardAssign(Token* const tok,
                 value.bound = b;
                 value.invertRange();
                 value.setImpossible();
-                valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), {std::move(value)}, settings);
+                valueFlowForwardConst(nextExpression, endOfVarScope, expr->variable(), std::list<ValueFlow::Value>{std::move(value)}, settings);
             }
         }
     }
@@ -6675,7 +6665,7 @@ static void valueFlowContainerSetTokValue(const TokenList& tokenlist, ErrorLogge
     value.setKnown();
     Token* start = initList->link() ? initList->link() : initList->next();
     if (tok->variable() && tok->variable()->isConst()) {
-        valueFlowForwardConst(start, tok->variable()->scope()->bodyEnd, tok->variable(), {std::move(value)}, settings);
+        valueFlowForwardConst(start, tok->variable()->scope()->bodyEnd, tok->variable(), std::list<ValueFlow::Value>{std::move(value)}, settings);
     } else {
         valueFlowForward(start, tok, std::move(value), tokenlist, errorLogger, settings);
     }
