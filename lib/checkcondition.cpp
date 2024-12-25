@@ -1273,8 +1273,8 @@ void CheckCondition::checkIncorrectLogicOperator()
             const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toBigNumber(value1);
             const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toBigNumber(value2);
             const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1) || (std::numeric_limits<MathLib::bigint>::max()==i2);
-            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toBigNumber(value1) : 0;
-            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toBigNumber(value2) : 0;
+            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toBigUNumber(value1) : 0;
+            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toBigUNumber(value2) : 0;
             // evaluate if expression is always true/false
             bool alwaysTrue = true, alwaysFalse = true;
             bool firstTrue = true, secondTrue = true;
@@ -2037,7 +2037,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     }
 }
 
-void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, MathLib::bigint value, bool result)
 {
     reportError(
         comparison,

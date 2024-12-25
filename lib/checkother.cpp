@@ -887,6 +887,8 @@ void CheckOther::checkUnreachableCode()
                         tok2 = tok2->link();
                     if (tok2->str() == ";") {
                         secondBreak = tok2->next();
+                        while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+                            secondBreak = secondBreak->next();
                         break;
                     }
                 }
@@ -2576,6 +2578,22 @@ namespace {
     }
 }
 
+static bool
+isStaticAssert(const Settings &settings, const Token *tok)
+{
+    if (tok->isCpp() && settings.standards.cpp >= Standards::CPP11 &&
+        Token::simpleMatch(tok, "static_assert")) {
+        return true;
+    }
+
+    if (tok->isC() && settings.standards.c >= Standards::C11 &&
+        Token::simpleMatch(tok, "_Static_assert")) {
+        return true;
+    }
+
+    return false;
+}
+
 void CheckOther::checkDuplicateExpression()
 {
     {
@@ -2697,12 +2715,12 @@ void CheckOther::checkDuplicateExpression()
                             if (assignment)
                                 selfAssignmentError(tok, tok->astOperand1()->expressionString());
                             else if (!isEnum) {
-                                if (tok->isCpp() && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
+                                if (tok->str() == "==") {
                                     const Token* parent = tok->astParent();
                                     while (parent && parent->astParent()) {
                                         parent = parent->astParent();
                                     }
-                                    if (parent && parent->previous() && parent->strAt(-1) == "static_assert") {
+                                    if (parent && parent->previous() && isStaticAssert(*mSettings, parent->previous())) {
                                         continue;
                                     }
                                 }

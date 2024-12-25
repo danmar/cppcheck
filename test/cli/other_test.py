@@ -2466,3 +2466,26 @@ void f()
     assert stderr.splitlines() == [
         '{}:7:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
+
+
+def test_dump_check_config(tmp_path):  # #13432
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--dump',
+        '--check-config',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr == ''
+
+    # no dump file should have been generated
+    assert not os.path.exists(str(test_file) + '.dump')

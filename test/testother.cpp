@@ -6937,6 +6937,12 @@ private:
 
         check("void f() {\n"
               "    enum { Four = 4 };\n"
+              "    _Static_assert(Four == 4, \"\");\n"
+              "}", false);
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n"
+              "    enum { Four = 4 };\n"
               "    static_assert(4 == Four, \"\");\n"
               "}");
         ASSERT_EQUALS("", errout_str());
