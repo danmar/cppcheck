@@ -887,8 +887,6 @@ void CheckOther::checkUnreachableCode()
                         tok2 = tok2->link();
                     if (tok2->str() == ";") {
                         secondBreak = tok2->next();
-                        while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
-                            secondBreak = secondBreak->next();
                         break;
                     }
                 }
@@ -903,6 +901,8 @@ void CheckOther::checkUnreachableCode()
                     continue;
                 }
             }
+            while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+                secondBreak = secondBreak->next();
 
             // Statements follow directly, no line between them. (#3383)
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
