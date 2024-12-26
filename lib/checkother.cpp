@@ -903,7 +903,14 @@ void CheckOther::checkUnreachableCode()
             }
             while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
                 secondBreak = secondBreak->next();
-            if (Token::simpleMatch(secondBreak, ";"))
+            if (secondBreak && secondBreak->scope()->nestedIn && secondBreak->scope()->nestedIn->type == Scope::ScopeType::eSwitch &&
+                tok->str() == "break") {
+                while (Token::simpleMatch(secondBreak, "{") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+                    secondBreak = secondBreak->next();
+                if (Token::Match(secondBreak, "%name% :"))
+                    continue;
+            }
+            if (Token::simpleMatch(secondBreak, "; }"))
                 continue;
 
             // Statements follow directly, no line between them. (#3383)
