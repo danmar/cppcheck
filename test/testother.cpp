@@ -5649,6 +5649,16 @@ private:
               "    { return 0; };\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(int i) {\n" // #13478
+              "    int x = 0;\n"
+              "    switch (i) {\n"
+              "        { case 0: x = 5; break; }\n"
+              "        { case 1: x = 7; break; }\n"
+              "    }\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 
