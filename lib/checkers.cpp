@@ -2244,7 +2244,7 @@ namespace checkers {
         case ReportType::certCpp:
             idMapping2 = &idMappingCertCpp;
             ext2 = "-CPP";
-        // fallthrough
+            FALLTHROUGH;
         case ReportType::certC:
             idMapping1 = &idMappingCertC;
             ext1 = "-C";
