@@ -2047,3 +2047,48 @@ void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, co
         CWE398,
         Certainty::normal);
 }
+
+void CheckCondition::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckCondition checkCondition(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkCondition.multiCondition();
+    checkCondition.clarifyCondition();   // not simplified because ifAssign
+    checkCondition.multiCondition2();
+    checkCondition.checkIncorrectLogicOperator();
+    checkCondition.checkInvalidTestForOverflow();
+    checkCondition.duplicateCondition();
+    checkCondition.checkPointerAdditionResultNotNull();
+    checkCondition.checkDuplicateConditionalAssign();
+    checkCondition.assignIf();
+    checkCondition.checkBadBitmaskCheck();
+    checkCondition.comparison();
+    checkCondition.checkModuloAlwaysTrueFalse();
+    checkCondition.checkAssignmentInCondition();
+    checkCondition.checkCompareValueOutOfTypeRange();
+    checkCondition.alwaysTrueFalse();
+}
+
+void CheckCondition::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckCondition c(nullptr, settings, errorLogger);
+
+    c.assignIfError(nullptr, nullptr, emptyString, false);
+    c.badBitmaskCheckError(nullptr);
+    c.comparisonError(nullptr, "&", 6, "==", 1, false);
+    c.duplicateConditionError(nullptr, nullptr, ErrorPath{});
+    c.overlappingElseIfConditionError(nullptr, 1);
+    c.mismatchingBitAndError(nullptr, 0xf0, nullptr, 1);
+    c.oppositeInnerConditionError(nullptr, nullptr, ErrorPath{});
+    c.identicalInnerConditionError(nullptr, nullptr, ErrorPath{});
+    c.identicalConditionAfterEarlyExitError(nullptr, nullptr, ErrorPath{});
+    c.incorrectLogicOperatorError(nullptr, "foo > 3 && foo < 4", true, false, ErrorPath{});
+    c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
+    c.moduloAlwaysTrueFalseError(nullptr, "1");
+    c.clarifyConditionError(nullptr, true, false);
+    c.alwaysTrueFalseError(nullptr, nullptr, nullptr);
+    c.invalidTestForOverflow(nullptr, nullptr, "false");
+    c.pointerAdditionResultNotNullError(nullptr, nullptr);
+    c.duplicateConditionalAssignError(nullptr, nullptr);
+    c.assignmentInCondition(nullptr);
+    c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256, true);
+}

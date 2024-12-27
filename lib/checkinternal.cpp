@@ -21,6 +21,8 @@
 #include "checkinternal.h"
 
 #include "astutils.h"
+#include "errortypes.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
@@ -386,6 +388,36 @@ void CheckInternal::extraWhitespaceError(const Token* tok, const std::string& pa
     reportError(tok, Severity::warning, "extraWhitespaceError",
                 "Found extra whitespace inside Token::" + funcname + "() call: \"" + pattern + "\""
                 );
+}
+
+void CheckInternal::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (!tokenizer.getSettings().checks.isEnabled(Checks::internalCheck))
+        return;
+
+    CheckInternal checkInternal(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    checkInternal.checkTokenMatchPatterns();
+    checkInternal.checkTokenSimpleMatchPatterns();
+    checkInternal.checkMissingPercentCharacter();
+    checkInternal.checkUnknownPattern();
+    checkInternal.checkRedundantNextPrevious();
+    checkInternal.checkExtraWhitespace();
+    checkInternal.checkRedundantTokCheck();
+}
+
+void CheckInternal::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckInternal c(nullptr, settings, errorLogger);
+    c.multiComparePatternError(nullptr, ";|%type%", "Match");
+    c.simplePatternError(nullptr, "class {", "Match");
+    c.complexPatternError(nullptr, "%type% ( )", "Match");
+    c.missingPercentCharacterError(nullptr, "%num", "Match");
+    c.unknownPatternError(nullptr, "%typ");
+    c.redundantNextPreviousError(nullptr, "previous", "next");
+    c.orInComplexPattern(nullptr, "||", "Match");
+    c.extraWhitespaceError(nullptr, "%str% ", "Match");
+    c.checkRedundantTokCheckError(nullptr);
 }
 
 #endif // #ifdef CHECK_INTERNAL

@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "library.h"
-#include "tokenize.h"
 
 #include <cstdint>
 #include <map>
@@ -36,7 +35,7 @@
 class ErrorLogger;
 class Settings;
 class Token;
-
+class Tokenizer;
 
 class CPPCHECKLIB VarInfo {
 public:
@@ -115,10 +114,7 @@ private:
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckLeakAutoVar checkLeakAutoVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkLeakAutoVar.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** check for leaks in all scopes */
     void check();
@@ -160,12 +156,7 @@ private:
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::pair<const Token*, VarInfo::Usage>& functionUsage);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckLeakAutoVar c(nullptr, settings, errorLogger);
-        c.deallocReturnError(nullptr, nullptr, "p");
-        c.configurationInfo(nullptr, { nullptr, VarInfo::USED });  // user configuration is needed to complete analysis
-        c.doubleFreeError(nullptr, nullptr, "varname", 0);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Leaks (auto variables)";

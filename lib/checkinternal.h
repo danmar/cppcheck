@@ -24,14 +24,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
-#include "settings.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Token;
+class Tokenizer;
+class Settings;
 
 /// @addtogroup Checks
 /// @{
@@ -48,20 +47,7 @@ private:
     CheckInternal(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (!tokenizer.getSettings().checks.isEnabled(Checks::internalCheck))
-            return;
-
-        CheckInternal checkInternal(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        checkInternal.checkTokenMatchPatterns();
-        checkInternal.checkTokenSimpleMatchPatterns();
-        checkInternal.checkMissingPercentCharacter();
-        checkInternal.checkUnknownPattern();
-        checkInternal.checkRedundantNextPrevious();
-        checkInternal.checkExtraWhitespace();
-        checkInternal.checkRedundantTokCheck();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check if a simple pattern is used inside Token::Match or Token::findmatch */
     void checkTokenMatchPatterns();
@@ -94,18 +80,7 @@ private:
     void extraWhitespaceError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void checkRedundantTokCheckError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckInternal c(nullptr, settings, errorLogger);
-        c.multiComparePatternError(nullptr, ";|%type%", "Match");
-        c.simplePatternError(nullptr, "class {", "Match");
-        c.complexPatternError(nullptr, "%type% ( )", "Match");
-        c.missingPercentCharacterError(nullptr, "%num", "Match");
-        c.unknownPatternError(nullptr, "%typ");
-        c.redundantNextPreviousError(nullptr, "previous", "next");
-        c.orInComplexPattern(nullptr, "||", "Match");
-        c.extraWhitespaceError(nullptr, "%str% ", "Match");
-        c.checkRedundantTokCheckError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "cppcheck internal API usage";

@@ -1241,3 +1241,17 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
     for (const int varId : toRemove)
         varInfo.erase(varId);
 }
+
+void CheckLeakAutoVar::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckLeakAutoVar checkLeakAutoVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkLeakAutoVar.check();
+}
+
+void CheckLeakAutoVar::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckLeakAutoVar c(nullptr, settings, errorLogger);
+    c.deallocReturnError(nullptr, nullptr, "p");
+    c.configurationInfo(nullptr, { nullptr, VarInfo::USED });  // user configuration is needed to complete analysis
+    c.doubleFreeError(nullptr, nullptr, "varname", 0);
+}

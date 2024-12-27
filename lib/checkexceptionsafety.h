@@ -23,14 +23,13 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class Settings;
 class ErrorLogger;
 class Token;
-
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -54,19 +53,7 @@ private:
     CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (tokenizer.isC())
-            return;
-
-        CheckExceptionSafety checkExceptionSafety(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkExceptionSafety.destructors();
-        checkExceptionSafety.deallocThrow();
-        checkExceptionSafety.checkRethrowCopy();
-        checkExceptionSafety.checkCatchExceptionByValue();
-        checkExceptionSafety.nothrowThrows();
-        checkExceptionSafety.unhandledExceptionSpecification();
-        checkExceptionSafety.rethrowNoCurrentException();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** Don't throw exceptions in destructors */
     void destructors();
@@ -101,16 +88,7 @@ private:
     void rethrowNoCurrentExceptionError(const Token *tok);
 
     /** Generate all possible errors (for --errorlist) */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckExceptionSafety c(nullptr, settings, errorLogger);
-        c.destructorsError(nullptr, "Class");
-        c.deallocThrowError(nullptr, "p");
-        c.rethrowCopyError(nullptr, "varname");
-        c.catchExceptionByValueError(nullptr);
-        c.noexceptThrowError(nullptr);
-        c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
-        c.rethrowNoCurrentExceptionError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     /** Short description of class (for --doc) */
     static std::string myName() {
