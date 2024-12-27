@@ -170,6 +170,9 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     const char *attr = errmsg->Attribute("id");
     id = attr ? attr : unknown;
 
+    attr = errmsg->Attribute("file0");
+    file0 = attr ? attr : "";
+
     attr = errmsg->Attribute("severity");
     severity = attr ? severityFromString(attr) : Severity::none;
 
