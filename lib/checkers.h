@@ -30,7 +30,7 @@ namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;
     extern CPPCHECKLIB const std::map<std::string, std::string> premiumCheckers;
 
-    enum class ReportType {
+    enum class ReportType : std::uint8_t {
         normal,
         autosar,
         certC,
