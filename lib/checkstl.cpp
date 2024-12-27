@@ -799,8 +799,12 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
             return false;
     }
     const Token* iter1 = getIteratorExpression(tok1);
+    if (!iter1)
+        return false;
     const Token* iter2 = getIteratorExpression(tok2);
-    if (iter1 && iter2 && !isSameIteratorContainerExpression(iter1, iter2, *mSettings)) {
+    if (!iter2)
+        return false;
+    if (!isSameIteratorContainerExpression(iter1, iter2, *mSettings)) {
         mismatchingContainerExpressionError(iter1, iter2);
         return true;
     }
