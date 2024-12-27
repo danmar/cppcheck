@@ -5649,6 +5649,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str());
+
+        check("int main(int argc, char *argv[]) {\n" // #11
+              "    switch (argc) {\n"
+              "        case 0: {\n"
+              "            return 1;\n"
+              "        }\n"
+              "        break;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void redundantContinue() {
