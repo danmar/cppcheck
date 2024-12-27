@@ -907,8 +907,6 @@ void CheckOther::checkUnreachableCode()
                 tok->str() == "break") {
                 while (Token::simpleMatch(secondBreak, "{") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
                     secondBreak = secondBreak->next();
-                if (Token::Match(secondBreak, "%name% :"))
-                    continue;
             }
             if (Token::simpleMatch(secondBreak, "; }"))
                 continue;
