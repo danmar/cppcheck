@@ -4072,12 +4072,16 @@ void CheckOther::checkComparePointers()
             if (!Token::Match(tok, "<|>|<=|>=|-"))
                 continue;
             const Token *tok1 = tok->astOperand1();
+            if (!astIsPointer(tok1))
+                continue;
             const Token *tok2 = tok->astOperand2();
-            if (!astIsPointer(tok1) || !astIsPointer(tok2))
+            if (!astIsPointer(tok2))
                 continue;
             ValueFlow::Value v1 = ValueFlow::getLifetimeObjValue(tok1);
+            if (!v1.isLocalLifetimeValue())
+                continue;
             ValueFlow::Value v2 = ValueFlow::getLifetimeObjValue(tok2);
-            if (!v1.isLocalLifetimeValue() || !v2.isLocalLifetimeValue())
+            if (!v2.isLocalLifetimeValue())
                 continue;
             const Variable *var1 = v1.tokvalue->variable();
             const Variable *var2 = v2.tokvalue->variable();
