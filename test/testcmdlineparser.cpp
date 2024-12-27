@@ -458,6 +458,7 @@ private:
         TEST_CASE(reportTypeMisraCpp2008);
         TEST_CASE(reportTypeMisraCpp2023);
         TEST_CASE(invalidReportType);
+        TEST_CASE(defaultReportType);
     }
 
     void nooptions() {
@@ -3135,6 +3136,13 @@ private:
         const char *const argv[] = { "cppcheck", "--report-type=invalid", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: Unknown report type 'invalid'\n", logger->str());
+    }
+
+    void defaultReportType() {
+        REDIRECT;
+        const char *const argv[] = { "cppcheck", "file.cpp" };
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS_ENUM(checkers::ReportType::normal, settings->reportType);
     }
 };
 
