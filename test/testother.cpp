@@ -5649,6 +5649,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int main(int argc, char *argv[]) {\n" // #11
+              "    switch (argc) {\n"
+              "        case 0: {\n"
+              "            return 1;\n"
+              "        }\n"
+              "        break;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
+                      "[test.cpp:1]: (style) Parameter 'argv' can be declared as const array\n",
+                      errout_str());
     }
 
     void redundantContinue() {
