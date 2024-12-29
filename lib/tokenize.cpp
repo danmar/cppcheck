@@ -3386,12 +3386,7 @@ bool Tokenizer::simplifyUsing()
         Token *usingStart = it->startTok;
         Token *usingEnd = it->endTok;
         if (usingStart->previous()) {
-            if (usingEnd->next())
-                Token::eraseTokens(usingStart->previous(), usingEnd->next());
-            else {
-                Token::eraseTokens(usingStart->previous(), usingEnd);
-                usingEnd->deleteThis();
-            }
+            Token::eraseTokens(usingStart->previous(), usingEnd->next());
         } else {
             if (usingEnd->next()) {
                 Token::eraseTokens(usingStart, usingEnd->next());
