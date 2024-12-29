@@ -212,7 +212,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         new_path.erase(path.length() + 1);
         new_path += dir_result->d_name;
 
-#if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
+#if defined(_DIRENT_HAVE_D_TYPE)
         const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && Path::isDirectory(new_path)));
 #else
         const bool path_is_directory = Path::isDirectory(new_path);
