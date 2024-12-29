@@ -149,13 +149,19 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 {
     for (const std::string &file : files) {
         const bool external(startsWith(file,"externals/") || startsWith(file,"../externals/"));
+        const bool tinyxml2(startsWith(file,"externals/tinyxml2/") || startsWith(file,"../externals/tinyxml2/"));
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
         std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o $@ " << builddir(file) << "\n\n";
+        std::string additional;
+        if (external)
+            additional += " -w"; // do not show any warnings for external
+        if (tinyxml2)
+            additional += " -D_LARGEFILE_SOURCE"; // required for fseeko() and ftello() (on Cygwin)
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << additional << " -c -o $@ " << builddir(file) << "\n\n";
     }
 }
 
