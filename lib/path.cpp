@@ -20,6 +20,7 @@
 
 #if defined(__CYGWIN__)
 #define _POSIX_C_SOURCE 200112L // required to have readlink()
+#define _BSD_SOURCE // required to have realpath()
 #endif
 
 #include "path.h"
