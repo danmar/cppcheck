@@ -142,7 +142,7 @@ simplecpp.o: ../externals/simplecpp/simplecpp.cpp ../externals/simplecpp/simplec
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ ../externals/simplecpp/simplecpp.cpp
 
 tinyxml2.o: ../externals/tinyxml2/tinyxml2.cpp ../externals/tinyxml2/tinyxml2.h
-	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ ../externals/tinyxml2/tinyxml2.cpp
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -w -D_LARGEFILE_SOURCE -c -o $@ ../externals/tinyxml2/tinyxml2.cpp
 
 $(libcppdir)/valueflow.o: ../lib/valueflow.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/calculate.h ../lib/check.h ../lib/checkuninitvar.h ../lib/color.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/findtoken.h ../lib/forwardanalyzer.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/programmemory.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vf_analyzers.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/valueflow.cpp

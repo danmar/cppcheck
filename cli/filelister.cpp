@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have DT_DIR and DT_UNKNOWN
+#endif
+
 #include "filelister.h"
 
 #include "filesettings.h"
@@ -169,10 +173,6 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__CYGWIN__)
-#undef __STRICT_ANSI__
-#endif
-
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cerrno>
@@ -216,7 +216,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         new_path.erase(path.length() + 1);
         new_path += dir_result->d_name;
 
-#if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
+#if defined(_DIRENT_HAVE_D_TYPE)
         const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && Path::isDirectory(new_path)));
 #else
         const bool path_is_directory = Path::isDirectory(new_path);

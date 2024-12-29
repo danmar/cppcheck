@@ -120,10 +120,6 @@ ifdef CYGWIN
         $(info CYGWIN found)
     endif
 
-    # Set the flag to address compile time warnings
-    # with tinyxml2 and Cygwin.
-    CPPFLAGS+=-U__STRICT_ANSI__
-    
     # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
     CXXFLAGS+=-Wl,--stack,8388608
 endif # CYGWIN
@@ -140,15 +136,9 @@ ifndef CXXFLAGS
 endif
 
 ifeq (g++, $(findstring g++,$(CXX)))
-    override CXXFLAGS += -std=gnu++0x -pipe
-else ifeq (clang++, $(findstring clang++,$(CXX)))
-    override CXXFLAGS += -std=c++0x
-else ifeq ($(CXX), c++)
-    ifeq ($(shell uname -s), Darwin)
-        override CXXFLAGS += -std=c++0x
-    endif
+    override CXXFLAGS += -pipe
 endif
-
+override CXXFLAGS += -std=c++11
 ifeq ($(HAVE_RULES),yes)
     PCRE_CONFIG = $(shell which pcre-config)
     ifeq ($(PCRE_CONFIG),)
@@ -918,7 +908,7 @@ externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp externals/sim
 	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ externals/simplecpp/simplecpp.cpp
 
 externals/tinyxml2/tinyxml2.o: externals/tinyxml2/tinyxml2.cpp externals/tinyxml2/tinyxml2.h
-	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ externals/tinyxml2/tinyxml2.cpp
+	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -w -D_LARGEFILE_SOURCE -c -o $@ externals/tinyxml2/tinyxml2.cpp
 
 tools/dmake/dmake.o: tools/dmake/dmake.cpp cli/filelister.h lib/config.h lib/filesettings.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ tools/dmake/dmake.cpp

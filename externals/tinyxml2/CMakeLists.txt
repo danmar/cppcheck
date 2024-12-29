@@ -19,4 +19,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(tinyxml2_objs -Wno-inconsistent-missing-destructor-override)
     target_compile_options_safe(tinyxml2_objs -Wno-format)
 endif()
+if(CYGWIN)
+    target_compile_definitions(-D_LARGEFILE_SOURCE)  # required for fseeko() and ftello()
+endif()
 

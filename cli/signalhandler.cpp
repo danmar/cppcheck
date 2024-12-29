@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have siginfo_t, SIGSTKSZ, kill(), sigaction and others
+#endif
+
 #include "signalhandler.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
