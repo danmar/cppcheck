@@ -207,6 +207,17 @@ jobs:
         env:
           TEST_CPPCHECK_INJECT_BUILDDIR: injected
 
+      # TODO: test with Release configuration?
+      - name: Test SEH wrapper
+        if: matrix.config == 'release'
+        run: |
+          cmake -S . -B build.cmake.seh -DBUILD_TESTS=On || exit /b !errorlevel!
+          cmake --build build.cmake.seh --target test-sehwrapper || exit /b !errorlevel!
+          :: TODO: how to run this without copying the file?
+          copy build.cmake.seh\bin\Debug\test-sehwrapper.exe . || exit /b !errorlevel!
+          python3 -m pytest -Werror --strict-markers -vv test/seh/test-sehwrapper.py || exit /b !errorlevel!
+          del test-sehwrapper.exe || exit /b !errorlevel!
+
       - name: Test addons
         if: matrix.config == 'release'
         run: |
