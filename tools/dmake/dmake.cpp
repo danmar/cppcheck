@@ -742,8 +742,15 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(EXTOBJ) $(LIBOBJ) $(CLIOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    // TODO: generate from clifiles
-    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) cli/executor.o cli/processexecutor.o cli/singleexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/sehwrapper.o cli/signalhandler.o cli/stacktrace.o cli/filelister.o\n";
+    std::string testrunner_clifiles_o;
+    for (const std::string &clifile: clifiles) {
+        if (clifile == "cli/main.cpp")
+            continue;
+        testrunner_clifiles_o += ' ';
+        const std::string o = clifile.substr(0, clifile.length()-3) + 'o';
+        testrunner_clifiles_o += o;
+    }
+    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ)" << testrunner_clifiles_o << "\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
