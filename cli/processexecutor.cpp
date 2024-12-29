@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have getloadavg()
+#endif
+
 #include "processexecutor.h"
 
 #if !defined(WIN32) && !defined(__MINGW32__)
