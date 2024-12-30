@@ -539,8 +539,8 @@ jobs:
             exit $ec
           fi
           
-          # self check simplecpp
-          ./cppcheck $selfcheck_options externals/simplecpp || ec=1
+          # self check externals
+          ./cppcheck $selfcheck_options externals || ec=1
           # self check lib/cli
           mkdir b1
           ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli || ec=1
