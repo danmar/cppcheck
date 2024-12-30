@@ -184,38 +184,3 @@ std::string replaceEscapeSequences(const std::string &source) {
     }
     return result;
 }
-
-
-std::vector<std::string> splitString(const std::string& str, char sep)
-{
-    std::vector<std::string> l;
-
-    std::string::size_type pos1 = 0;
-    std::string::size_type pos2;
-    while (true) {
-        pos2 = str.find(sep, pos1);
-        l.push_back(str.substr(pos1, pos2 - pos1));
-        if (pos2 == std::string::npos)
-            break;
-        pos1 = pos2 + 1;
-    }
-    return l;
-}
-
-std::vector<std::string> splitStringVector(const std::string& str, char sep)
-{
-    if (std::strchr(str.c_str(), sep) == nullptr)
-        return {str};
-
-    std::vector<std::string> l;
-    std::string p(str);
-    for (;;) {
-        const std::string::size_type pos = p.find(sep);
-        if (pos == std::string::npos)
-            break;
-        l.push_back(p.substr(0,pos));
-        p = p.substr(pos+1);
-    }
-    l.push_back(std::move(p));
-    return l;
-}

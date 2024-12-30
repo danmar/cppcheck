@@ -34,6 +34,8 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <cstring>
+#include <list>
 
 struct SelectMapKeys {
     template<class Pair>
@@ -397,20 +399,30 @@ static inline T* empty_if_null(T* p)
 }
 
 /**
- * Split string by given sperator.
+ * Split string by given separator.
  * @param str The string to split
- * @param sep The seperator
- * @return The list of seperate strings (including empty ones). The whole input string if no seperator found.
+ * @param sep The separator
+ * @return The list of separate strings (including empty ones). The whole input string if no separator found.
  */
-CPPCHECKLIB std::vector<std::string> splitString(const std::string& str, char sep);
+template<template<class ...> class T = std::list>
+T<std::string> splitString(const std::string& str, char sep)
+{
+    if (std::strchr(str.c_str(), sep) == nullptr)
+        return {str};
 
-/**
- * Split string by given sperator.
- * @param str The string to split
- * @param sep The seperator
- * @return The vector of seperate strings (including empty ones). The whole input string if no seperator found.
- */
-CPPCHECKLIB std::vector<std::string> splitStringVector(const std::string& str, char sep);
+    T<std::string> ret;
+    std::string::size_type end = 0, begin = 0;
+    for (;;) {
+        begin = end;
+        end = str.find(sep, begin);
+        if (end == std::string::npos)
+            break;
+        ret.push_back(str.substr(begin, end - begin));
+        end++;
+    }
+    ret.push_back(str.substr(begin));
+    return ret;
+}
 
 namespace utils {
     template<class T>
