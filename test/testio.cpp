@@ -17,7 +17,6 @@
  */
 
 #include "checkio.h"
-#include "config.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"

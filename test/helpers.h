@@ -19,7 +19,6 @@
 #ifndef helpersH
 #define helpersH
 
-#include "config.h"
 #include "library.h"
 #include "preprocessor.h"
 #include "settings.h"

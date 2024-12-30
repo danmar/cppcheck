@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 #include "platform.h"
 #include "settings.h"

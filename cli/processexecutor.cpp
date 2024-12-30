@@ -24,7 +24,6 @@
 
 #if !defined(WIN32) && !defined(__MINGW32__)
 
-#include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "errortypes.h"
