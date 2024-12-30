@@ -2121,7 +2121,7 @@ namespace checkers {
             return getClassification(checkers::certCppInfo, guideline);
         case ReportType::misraC:
         {
-            std::vector<std::string> components = splitStringVector(guideline, '.');
+            auto components = splitString<std::vector>(guideline, '.');
             if (components.size() != 2)
                 return "";
 
@@ -2151,7 +2151,7 @@ namespace checkers {
                 info = &checkers::misraCpp2023Rules;
             }
 
-            std::vector<std::string> components = splitStringVector(guideline, delim);
+            auto components = splitString<std::vector>(guideline, delim);
             if (components.size() != 3)
                 return "";
 
@@ -2264,13 +2264,13 @@ namespace checkers {
 
         if (idMapping1) {
             for (const auto &i : *idMapping1)
-                for (const std::string &cppcheckId : splitStringVector(i.cppcheckId, ','))
+                for (const std::string &cppcheckId : splitString<std::vector>(i.cppcheckId, ','))
                     guidelineMapping[cppcheckId] = i.guideline + ext1;
         }
 
         if (idMapping2) {
             for (const auto &i : *idMapping2)
-                for (const std::string &cppcheckId : splitStringVector(i.cppcheckId, ','))
+                for (const std::string &cppcheckId : splitString<std::vector>(i.cppcheckId, ','))
                     guidelineMapping[cppcheckId] = i.guideline + ext2;
         }
 
