@@ -31,13 +31,13 @@ namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> premiumCheckers;
 
     enum class ReportType : std::uint8_t {
-        normal,
-        autosar,
-        certC,
-        certCpp,
-        misraC,
-        misraCpp2008,
-        misraCpp2023,
+        normal = 0,
+        autosar = 1,
+        certC = 2,
+        certCpp = 3,
+        misraC = 4,
+        misraCpp2008 = 5,
+        misraCpp2023 = 6,
     };
 
     struct CPPCHECKLIB MisraInfo {
