@@ -216,6 +216,7 @@ private:
         TEST_CASE(template176); // #11146
         TEST_CASE(template177);
         TEST_CASE(template178);
+        TEST_CASE(template179);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -4545,6 +4546,26 @@ private:
         const char exp2[] = "struct S<char> ; void f ( ) { S<char> s { } ; s . g<int> ( ) ; } struct S<char> { char c ; void g<int> ( ) ; } ; "
                             "void S<char> :: g<int> ( ) { for ( int i = 0 ; i < int { 3 } ; ++ i ) { } }";
         ASSERT_EQUALS(exp2, tok(code2));
+    }
+
+    void template179() {
+        const char code[] = "template <typename T, typename C>\n" // #13498
+                            "struct B {\n"
+                            "    int a;\n"
+                            "    int b;\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "struct B<T, void> {\n"
+                            "    int a;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    B<int, int>{ 0, {} };\n"
+                            "}\n";
+        const char exp[] = "struct B<int,int> ; "
+                           "template < typename T > struct B < T , void > { int a ; } ; "
+                           "void f ( ) { B<int,int> { 0 , { } } ; } "
+                           "struct B<int,int> { int a ; int b ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
