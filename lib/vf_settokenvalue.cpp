@@ -558,10 +558,11 @@ namespace ValueFlow
                                 break;
                         }
                         bool error = false;
-                        if (isFloat) {
-                            result.floatValue = calculate(parent->str(), floatValue1, floatValue2, &error);
+                        auto val = calculate(parent->str(), floatValue1, floatValue2, &error);
+                        if (result.isFloatValue()) {
+                            result.floatValue = val;
                         } else {
-                            result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
+                            result.intvalue = val;
                         }
                         if (error)
                             continue;
