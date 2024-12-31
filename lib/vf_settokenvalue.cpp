@@ -559,9 +559,19 @@ namespace ValueFlow
                         }
                         bool error = false;
                         if (isFloat) {
-                            result.floatValue = calculate(parent->str(), floatValue1, floatValue2, &error);
+                            auto val = calculate(parent->str(), floatValue1, floatValue2, &error);
+                            if (result.isFloatValue()) {
+                                result.floatValue = val;
+                            } else {
+                                result.intvalue = static_cast<MathLib::bigint>(val);
+                            }
                         } else {
-                            result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
+                            auto val = calculate(parent->str(), intValue1(), intValue2(), &error);
+                            if (result.isFloatValue()) {
+                                result.floatValue = static_cast<double>(val);
+                            } else {
+                                result.intvalue = val;
+                            }
                         }
                         if (error)
                             continue;

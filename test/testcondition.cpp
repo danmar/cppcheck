@@ -4465,11 +4465,9 @@ private:
               "    float f = 9.9f;\n"
               "    if(f < 10) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:3]: (style) Condition 'i>9.9' is always true\n"
             "[test.cpp:5]: (style) Condition 'f<10' is always true\n",
-            "[test.cpp:3]: (style) Condition 'i>9.9' is always false\n"
-            "[test.cpp:5]: (style) Condition 'f<10' is always false\n",
             errout_str());
         check("constexpr int f() {\n" // #11238
               "    return 1;\n"
@@ -6284,10 +6282,8 @@ private:
               "    if (f > 9.9) {}\n"
               "    if (f < 9.9) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:3]: (style) Condition 'f>9.9' is always true\n"
-            "[test.cpp:4]: (style) Condition 'f<9.9' is always false\n",
-            "[test.cpp:3]: (style) Condition 'f>9.9' is always false\n"
             "[test.cpp:4]: (style) Condition 'f<9.9' is always false\n",
             errout_str());
 
