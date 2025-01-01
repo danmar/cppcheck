@@ -3199,15 +3199,15 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 startToken = startToken->tokAt(-2);
         }
 
-		if (Token::Match(startToken->previous(), ";|{|}|=|const")) {
-			const char* patternAfter = isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%";
-			if (!isfunc && !isVar)
-				if (const Token* end = startToken->next()->findClosingBracket())
-					if (Token::Match(end, "> (|{"))
-						patternAfter = "(|{";
-			if (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), patternAfter))
-				continue;
-		}
+        if (Token::Match(startToken->previous(), ";|{|}|=|const")) {
+            const char* patternAfter = isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%";
+            if (!isfunc && !isVar)
+                if (const Token* end = startToken->next()->findClosingBracket())
+                    if (Token::Match(end, "> (|{"))
+                        patternAfter = "(|{";
+            if (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), patternAfter))
+                continue;
+        }
 
         // New type..
         mTypesUsedInTemplateInstantiation.clear();
