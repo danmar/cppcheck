@@ -1055,7 +1055,7 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
     if (!ac || ac->valid.empty())
         return true;
     if (ac->valid.find('.') != std::string::npos)
-        return isFloatArgValid(ftok, argnr, argvalue);
+        return isFloatArgValid(ftok, argnr, static_cast<double>(argvalue));
     TokenList tokenList(nullptr);
     gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
