@@ -1878,7 +1878,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     // TODO: add functions to get remaining error messages
 
     // call all "getErrorMessages" in all registered Check classes
-    for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
+    for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
         (*it)->getErrorMessages(&errorlogger, &s);
 
     CheckUnusedFunctions::getErrorMessages(errorlogger);

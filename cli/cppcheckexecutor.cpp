@@ -393,12 +393,12 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
         // the two inputs may only be used exclusively
         assert(!(!files.empty() && !fileSettings.empty()));
 
-        for (std::list<FileWithDetails>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
+        for (auto i = files.cbegin(); i != files.cend(); ++i) {
             err |= SuppressionList::reportUnmatchedSuppressions(
                 suppressions.getUnmatchedLocalSuppressions(*i, unusedFunctionCheckEnabled), errorLogger);
         }
 
-        for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
+        for (auto i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
             err |= SuppressionList::reportUnmatchedSuppressions(
                 suppressions.getUnmatchedLocalSuppressions(i->file, unusedFunctionCheckEnabled), errorLogger);
         }
@@ -423,7 +423,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
-        for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+        for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->path());
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
     }

@@ -228,8 +228,7 @@ void CheckInternal::checkMissingPercentCharacter()
 
             const std::string pattern = patternTok->strValue();
 
-            std::set<std::string>::const_iterator knownPattern, knownPatternsEnd = knownPatterns.cend();
-            for (knownPattern = knownPatterns.cbegin(); knownPattern != knownPatternsEnd; ++knownPattern) {
+            for (auto knownPattern = knownPatterns.cbegin(); knownPattern != knownPatterns.cend(); ++knownPattern) {
                 const std::string brokenPattern = knownPattern->substr(0, knownPattern->size() - 1);
 
                 std::string::size_type pos = 0;

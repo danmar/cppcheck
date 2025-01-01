@@ -599,7 +599,7 @@ static void valueFlowArray(TokenList& tokenlist, const Settings& settings)
     for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
         if (tok->varId() > 0) {
             // array
-            const std::map<nonneg int, const Token*>::const_iterator it = constantArrays.find(tok->varId());
+            const auto it = utils::as_const(constantArrays).find(tok->varId());
             if (it != constantArrays.end()) {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::TOK;
@@ -672,7 +672,7 @@ static void valueFlowArrayBool(TokenList& tokenlist, const Settings& settings)
             continue;
         const Variable* var = nullptr;
         bool known = false;
-        const std::list<ValueFlow::Value>::const_iterator val =
+        const auto val =
             std::find_if(tok->values().cbegin(), tok->values().cend(), std::mem_fn(&ValueFlow::Value::isTokValue));
         if (val == tok->values().end()) {
             var = tok->variable();
@@ -1185,7 +1185,7 @@ static void valueFlowGlobalConstVar(TokenList& tokenList, const Settings& settin
     for (Token* tok = tokenList.front(); tok; tok = tok->next()) {
         if (!tok->variable())
             continue;
-        const std::map<const Variable*, ValueFlow::Value>::const_iterator var = vars.find(tok->variable());
+        const auto var = utils::as_const(vars).find(tok->variable());
         if (var == vars.end())
             continue;
         setTokenValue(tok, var->second, settings);
@@ -1227,7 +1227,7 @@ static void valueFlowGlobalStaticVar(TokenList& tokenList, const Settings& setti
     for (Token* tok = tokenList.front(); tok; tok = tok->next()) {
         if (!tok->variable())
             continue;
-        const std::map<const Variable*, ValueFlow::Value>::const_iterator var = vars.find(tok->variable());
+        const auto var = utils::as_const(vars).find(tok->variable());
         if (var == vars.end())
             continue;
         setTokenValue(tok, var->second, settings);

@@ -49,7 +49,7 @@ bool PathMatch::match(const std::string &path) const
     const bool is_absolute = Path::isAbsolute(path);
 
     // TODO: align the match logic with ImportProject::ignorePaths()
-    for (std::vector<std::string>::const_iterator i = mPaths.cbegin(); i != mPaths.cend(); ++i) {
+    for (auto i = mPaths.cbegin(); i != mPaths.cend(); ++i) {
         const std::string pathToMatch((!is_absolute && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 
         // Filtering directory name

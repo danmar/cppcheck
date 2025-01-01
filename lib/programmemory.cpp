@@ -77,7 +77,7 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const ProgramMemory::Map::const_iterator it = mValues->find(exprid);
+    const auto it = utils::as_const(*mValues).find(exprid);
     const bool found = it != mValues->cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;

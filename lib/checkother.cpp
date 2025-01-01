@@ -736,7 +736,7 @@ void CheckOther::redundantBitwiseOperationInSwitchError()
                      (tok2->strAt(1) == "|=" || tok2->strAt(1) == "&=") &&
                      Token::Match(tok2->next()->astOperand2(), "%num%")) {
                 const std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
-                const std::map<int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const auto i2 = utils::as_const(varsWithBitsSet).find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -761,7 +761,7 @@ void CheckOther::redundantBitwiseOperationInSwitchError()
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
                 const std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
-                const std::map<int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const auto i2 = utils::as_const(varsWithBitsSet).find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -2516,8 +2516,8 @@ void CheckOther::checkInvalidFree()
                                      tok->strAt(3) == "(" ? 4 : 1;
                 const int var1 = tok->tokAt(varIndex)->varId();
                 const int var2 = tok->tokAt(varIndex + 2)->varId();
-                const std::map<int, bool>::const_iterator alloc1 = inconclusive.find(var1);
-                const std::map<int, bool>::const_iterator alloc2 = inconclusive.find(var2);
+                const auto alloc1 = utils::as_const(inconclusive).find(var1);
+                const auto alloc2 = utils::as_const(inconclusive).find(var2);
                 if (alloc1 != inconclusive.end()) {
                     invalidFreeError(tok, allocation[var1], alloc1->second);
                 } else if (alloc2 != inconclusive.end()) {
@@ -2573,7 +2573,7 @@ namespace {
                 functionsByName[func.tokenDef->str()].push_back(&func);
             }
             for (std::pair<const std::string, std::list<const Function*>>& it : functionsByName) {
-                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
+                const auto nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
                 if (nc == it.second.cend()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it.second);

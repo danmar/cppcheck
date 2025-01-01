@@ -1916,7 +1916,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     if (!mImpl->mValues)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isImpossible())
             continue;
         if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue)) ||
@@ -1942,7 +1942,7 @@ const Token *Token::getValueTokenMinStrSize(const Settings &settings, MathLib::b
         return nullptr;
     const Token *ret = nullptr;
     int minsize = INT_MAX;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
@@ -1962,7 +1962,7 @@ const Token *Token::getValueTokenMaxStrLength() const
         return nullptr;
     const Token *ret = nullptr;
     int maxlength = 0;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->cbegin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -2205,8 +2205,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             return false;
 
         // if value already exists, don't add it again
-        std::list<ValueFlow::Value>::iterator it;
-        for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        auto it = mImpl->mValues->begin();
+        for (; it != mImpl->mValues->end(); ++it) {
             // different types => continue
             if (it->valueType != value.valueType)
                 continue;

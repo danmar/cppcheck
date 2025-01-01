@@ -98,7 +98,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         const bool scan = library.formatstr_scan(&tok);
 
         bool percent = false;
-        for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
+        for (auto i = formatString.cbegin(); i != formatString.cend(); ++i) {
             if (*i == '%') {
                 percent = !percent;
             } else if (percent) {
