@@ -73,6 +73,25 @@ void unreachableCode_std_unexpected(int &x)
 }
 #endif
 
+#ifdef __cpp_lib_clamp
+int ignoredReturnValue_std_clamp(const int x)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::clamp(x, 1, -1);
+    return std::clamp(x, 1, -1);
+}
+void knownConditionTrueFalse_std_clamp(const int x)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if(std::clamp(-2, -1, 1) == -1){}
+    // cppcheck-suppress knownConditionTrueFalse
+    if(std::clamp(2, -1, 1) == 1){}
+    // cppcheck-suppress knownConditionTrueFalse
+    if(std::clamp(0, -1, 1) == 0){}
+    if(std::clamp(x, 0, 2)){}
+}
+#endif // __cpp_lib_clamp
+
 void unreachableCode_std_terminate(int &x)
 {
     std::terminate();
