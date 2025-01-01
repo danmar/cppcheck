@@ -21,6 +21,7 @@
 #ifdef USE_WINDOWS_SEH
 
 #include "cppcheckexecutor.h"
+#include "settings.h"
 #include "utils.h"
 
 #include <windows.h>
