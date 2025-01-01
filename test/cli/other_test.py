@@ -197,7 +197,7 @@ def test_progress_j(tmpdir):
     assert stderr == ""
 
 
-def test_execute_addon_failure(tmpdir):
+def test_execute_addon_failure_py_auto(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         f.write("""
@@ -212,19 +212,70 @@ def test_execute_addon_failure(tmpdir):
     assert stderr == '{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to auto detect python [internalError]\n\n^\n'.format(test_file)
 
 
-def test_execute_addon_failure_2(tmpdir):
+def test_execute_addon_failure_py_notexist(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         f.write("""
                 void f();
                 """)
 
-    # specify non-existent python executbale so execution of addon fails
+    # specify non-existent python executable so execution of addon fails
     args = ['--addon=naming', '--addon-python=python5.x', test_file]
 
     _, _, stderr = cppcheck(args)
     ec = 1 if os.name == 'nt' else 127
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
+
+
+def test_execute_addon_failure_json_notexist(tmpdir):
+    # specify non-existent python executable so execution of addon fails
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({'executable': 'notexist'}))
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                void f();
+                """)
+
+    args = [
+        '--addon={}'.format(addon_json),
+        test_file
+    ]
+
+    _, _, stderr = cppcheck(args)
+    ec = 1 if os.name == 'nt' else 127
+    assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
+
+
+def test_execute_addon_failure_json_ctu_notexist(tmpdir):
+    # specify non-existent python executable so execution of addon fails
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({
+            'executable': 'notexist',
+            'ctu': True
+        }))
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                void f(); """)
+
+    args = [
+        '--template=simple',
+        '--addon={}'.format(addon_json),
+        test_file
+    ]
+
+    _, _, stderr = cppcheck(args)
+    ec = 1 if os.name == 'nt' else 127
+    print(stderr)
+    assert stderr.splitlines() == [
+        "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]".format(test_file, ec),
+        ":0:0: error: Bailing out from analysis: Whole program analysis failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]".format(ec)
+    ]
 
 
 def test_execute_addon_file0(tmpdir):
