@@ -205,14 +205,14 @@ void CheckStl::outOfBounds()
 static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = emptyString)
 {
     if (indexValue.isIteratorStartValue())
-        return "at position " + std::to_string(indexValue.intvalue) + " from the beginning";
+        return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
     if (indexValue.isIteratorEndValue())
-        return "at position " + std::to_string(-indexValue.intvalue) + " from the end";
-    std::string indexString = std::to_string(indexValue.intvalue);
+        return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
+    std::string indexString = MathLib::toString(indexValue.intvalue);
     if (indexValue.isSymbolicValue()) {
         indexString = containerName + ".size()";
         if (indexValue.intvalue != 0)
-            indexString += "+" + std::to_string(indexValue.intvalue);
+            indexString += "+" + MathLib::toString(indexValue.intvalue);
     }
     if (indexValue.bound == ValueFlow::Value::Bound::Lower)
         return "greater or equal to " + indexString;
@@ -244,11 +244,11 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
     } else if (indexValue) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or size of '$symbol' can be " + std::to_string(containerSize->intvalue) + ". Expression '" + expression + "' causes access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or size of '$symbol' can be " + MathLib::toString(containerSize->intvalue) + ". Expression '" + expression + "' causes access out of bounds.";
         else if (indexValue->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' causes access out of bounds.";
         else
-            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + std::to_string(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
+            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
     } else {
         // should not happen
         return;

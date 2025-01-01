@@ -3857,7 +3857,7 @@ void Tokenizer::arraySize()
             }
 
             if (sz != 0)
-                tok->insertToken(std::to_string(sz));
+                tok->insertToken(MathLib::toString(sz));
 
             tok = end->next() ? end->next() : end;
         }
@@ -3885,7 +3885,7 @@ void Tokenizer::arraySizeAfterValueFlow()
         if (maxIndex >= 0) {
             // insert array size
             auto* tok = const_cast<Token*>(var->nameToken()->next());
-            tok->insertToken(std::to_string(maxIndex + 1));
+            tok->insertToken(MathLib::toString(maxIndex + 1));
             // ast
             tok->astOperand2(tok->next());
             // Token::scope
@@ -4028,7 +4028,7 @@ void Tokenizer::simplifyCaseRange()
                 tok->insertToken("case");
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
-                    tok->insertToken(std::to_string(i));
+                    tok->insertToken(MathLib::toString(i));
                     tok->insertToken("case");
                 }
             }

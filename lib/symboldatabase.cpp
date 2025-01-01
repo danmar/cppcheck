@@ -1809,7 +1809,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                         tokenList.addtoken(tok->str(), 0, 0, 0, false);
 
                     else if (tok->hasKnownIntValue())
-                        tokenList.addtoken(std::to_string(tok->getKnownIntValue()), 0, 0, 0, false);
+                        tokenList.addtoken(MathLib::toString(tok->getKnownIntValue()), 0, 0, 0, false);
 
                     else {
                         fail = true;

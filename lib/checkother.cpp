@@ -4007,7 +4007,7 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
         ftype = "init list ";
 
     const char *id;
-    std::string errmsg = "Argument '" + expr + "' to " + ftype + fun + " is always " + std::to_string(intvalue) + ". ";
+    std::string errmsg = "Argument '" + expr + "' to " + ftype + fun + " is always " + MathLib::toString(intvalue) + ". ";
     if (!isVariableExpressionHidden) {
         id = "knownArgument";
         errmsg += "It does not matter what value '" + varexpr + "' has.";

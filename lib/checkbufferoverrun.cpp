@@ -122,7 +122,7 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
                 i_d_x_f_found = true;
                 parameterLength = 1;
                 if (inputArgNr < parameters.size() && parameters[inputArgNr]->hasKnownIntValue())
-                    parameterLength = std::to_string(parameters[inputArgNr]->getKnownIntValue()).length();
+                    parameterLength = MathLib::toString(parameters[inputArgNr]->getKnownIntValue()).length();
 
                 handleNextParameter = true;
                 break;
@@ -365,7 +365,7 @@ void CheckBufferOverrun::arrayIndex()
 static std::string stringifyIndexes(const std::string& array, const std::vector<ValueFlow::Value>& indexValues)
 {
     if (indexValues.size() == 1)
-        return std::to_string(indexValues[0].intvalue);
+        return MathLib::toString(indexValues[0].intvalue);
 
     std::ostringstream ret;
     ret << array;
@@ -386,7 +386,7 @@ static std::string arrayIndexMessage(const Token* tok,
                                      const Token* condition)
 {
     auto add_dim = [](const std::string &s, const Dimension &dim) {
-        return s + "[" + std::to_string(dim.num) + "]";
+        return s + "[" + MathLib::toString(dim.num) + "]";
     };
     const std::string array = std::accumulate(dimensions.cbegin(), dimensions.cend(), tok->astOperand1()->expressionString(), std::move(add_dim));
 
@@ -533,7 +533,7 @@ void CheckBufferOverrun::pointerArithmeticError(const Token *tok, const Token *i
 
     std::string errmsg;
     if (indexValue->condition)
-        errmsg = "Undefined behaviour, when '" + indexToken->expressionString() + "' is " + std::to_string(indexValue->intvalue) + " the pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
+        errmsg = "Undefined behaviour, when '" + indexToken->expressionString() + "' is " + MathLib::toString(indexValue->intvalue) + " the pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
     else
         errmsg = "Undefined behaviour, pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
 
@@ -1027,13 +1027,13 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
     if (type == 1) {
         errorId = "ctuArrayIndex";
         if (unsafeUsage.value > 0)
-            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + std::to_string(functionCall->callArgValue) + " and it is accessed at offset " + std::to_string(unsafeUsage.value) + ".";
+            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
         else
-            errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + std::to_string(unsafeUsage.value) + ".";
+            errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
         cwe = (unsafeUsage.value > 0) ? CWE_BUFFER_OVERRUN : CWE_BUFFER_UNDERRUN;
     } else {
         errorId = "ctuPointerArith";
-        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + std::to_string(functionCall->callArgValue);
+        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue);
         cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
     }
 
