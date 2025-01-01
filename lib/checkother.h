@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "tokenize.h"
 
 #include <set>
 #include <string>
@@ -40,6 +39,7 @@ class Token;
 class Function;
 class Variable;
 class ErrorLogger;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -69,53 +69,7 @@ private:
 
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckOther checkOther(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // Checks
-        checkOther.warningOldStylePointerCast();
-        checkOther.suspiciousFloatingPointCast();
-        checkOther.invalidPointerCast();
-        checkOther.checkCharVariable();
-        checkOther.redundantBitwiseOperationInSwitchError();
-        checkOther.checkSuspiciousCaseInSwitch();
-        checkOther.checkDuplicateBranch();
-        checkOther.checkDuplicateExpression();
-        checkOther.checkRedundantAssignment();
-        checkOther.checkUnreachableCode();
-        checkOther.checkSuspiciousSemicolon();
-        checkOther.checkVariableScope();
-        checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
-        checkOther.checkIncompleteArrayFill();
-        checkOther.checkVarFuncNullUB();
-        checkOther.checkNanInArithmeticExpression();
-        checkOther.checkCommaSeparatedReturn();
-        checkOther.checkRedundantPointerOp();
-        checkOther.checkZeroDivision();
-        checkOther.checkNegativeBitwiseShift();
-        checkOther.checkInterlockedDecrement();
-        checkOther.checkUnusedLabel();
-        checkOther.checkEvaluationOrder();
-        checkOther.checkFuncArgNamesDifferent();
-        checkOther.checkShadowVariables();
-        checkOther.checkKnownArgument();
-        checkOther.checkKnownPointerToBool();
-        checkOther.checkComparePointers();
-        checkOther.checkIncompleteStatement();
-        checkOther.checkRedundantCopy();
-        checkOther.clarifyCalculation();
-        checkOther.checkPassByReference();
-        checkOther.checkConstVariable();
-        checkOther.checkConstPointer();
-        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
-        checkOther.checkInvalidFree();
-        checkOther.clarifyStatement();
-        checkOther.checkCastIntToCharAndBack();
-        checkOther.checkMisusedScopedObject();
-        checkOther.checkAccessOfMovedVariable();
-        checkOther.checkModuloOfOne();
-        checkOther.checkOverlappingWrite();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
@@ -296,80 +250,7 @@ private:
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckOther c(nullptr, settings, errorLogger);
-
-        // error
-        c.zerodivError(nullptr, nullptr);
-        c.misusedScopeObjectError(nullptr, "varname");
-        c.invalidPointerCastError(nullptr,  "float *", "double *", false, false);
-        c.negativeBitwiseShiftError(nullptr, 1);
-        c.negativeBitwiseShiftError(nullptr, 2);
-        c.raceAfterInterlockedDecrementError(nullptr);
-        c.invalidFreeError(nullptr, "malloc", false);
-        c.overlappingWriteUnion(nullptr);
-        c.overlappingWriteFunction(nullptr);
-
-        //performance
-        c.redundantCopyError(nullptr,  "varname");
-        c.redundantCopyError(nullptr, nullptr, "var");
-
-        // style/warning
-        c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
-        c.checkCastIntToCharAndBackError(nullptr, "func_name");
-        c.cstyleCastError(nullptr);
-        c.suspiciousFloatingPointCastError(nullptr);
-        c.passedByValueError(nullptr, false);
-        c.constVariableError(nullptr, nullptr);
-        c.constStatementError(nullptr, "type", false);
-        c.signedCharArrayIndexError(nullptr);
-        c.unknownSignCharArrayIndexError(nullptr);
-        c.charBitOpError(nullptr);
-        c.variableScopeError(nullptr,  "varname");
-        c.redundantAssignmentInSwitchError(nullptr, nullptr, "var");
-        c.suspiciousCaseInSwitchError(nullptr,  "||");
-        c.selfAssignmentError(nullptr,  "varname");
-        c.clarifyCalculationError(nullptr,  "+");
-        c.clarifyStatementError(nullptr);
-        c.duplicateBranchError(nullptr, nullptr, ErrorPath{});
-        c.duplicateAssignExpressionError(nullptr, nullptr, true);
-        c.oppositeExpressionError(nullptr, ErrorPath{});
-        c.duplicateExpressionError(nullptr, nullptr, nullptr, ErrorPath{});
-        c.duplicateValueTernaryError(nullptr);
-        c.duplicateExpressionTernaryError(nullptr, ErrorPath{});
-        c.duplicateBreakError(nullptr,  false);
-        c.unreachableCodeError(nullptr, nullptr,  false);
-        c.unsignedLessThanZeroError(nullptr, nullptr, "varname");
-        c.unsignedPositiveError(nullptr, nullptr, "varname");
-        c.pointerLessThanZeroError(nullptr, nullptr);
-        c.pointerPositiveError(nullptr, nullptr);
-        c.suspiciousSemicolonError(nullptr);
-        c.incompleteArrayFillError(nullptr,  "buffer", "memset", false);
-        c.varFuncNullUBError(nullptr);
-        c.nanInArithmeticExpressionError(nullptr);
-        c.commaSeparatedReturnError(nullptr);
-        c.redundantPointerOpError(nullptr,  "varname", false, /*addressOfDeref*/ true);
-        c.unusedLabelError(nullptr, false, false);
-        c.unusedLabelError(nullptr, false, true);
-        c.unusedLabelError(nullptr, true, false);
-        c.unusedLabelError(nullptr, true, true);
-        c.unknownEvaluationOrder(nullptr);
-        c.accessMovedError(nullptr, "v", nullptr, false);
-        c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
-        c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
-        c.shadowError(nullptr, nullptr, "variable");
-        c.shadowError(nullptr, nullptr, "function");
-        c.shadowError(nullptr, nullptr, "argument");
-        c.knownArgumentError(nullptr, nullptr, nullptr, "x", false);
-        c.knownPointerToBoolError(nullptr, nullptr);
-        c.comparePointersError(nullptr, nullptr, nullptr);
-        c.redundantAssignmentError(nullptr, nullptr, "var", false);
-        c.redundantInitializationError(nullptr, nullptr, "var", false);
-
-        const std::vector<const Token *> nullvec;
-        c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
-        c.checkModuloOfOneError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Other";

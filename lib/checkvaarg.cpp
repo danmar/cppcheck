@@ -180,3 +180,20 @@ void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::stri
     reportError(tok, Severity::error,
                 "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, Certainty::normal);
 }
+
+void CheckVaarg::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckVaarg check(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    check.va_start_argument();
+    check.va_list_usage();
+}
+
+void CheckVaarg::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckVaarg c(nullptr, settings, errorLogger);
+    c.wrongParameterTo_va_start_error(nullptr, "arg1", "arg2");
+    c.referenceAs_va_start_error(nullptr, "arg1");
+    c.va_end_missingError(nullptr, "vl");
+    c.va_list_usedBeforeStartedError(nullptr, "vl");
+    c.va_start_subsequentCallsError(nullptr, "vl");
+}

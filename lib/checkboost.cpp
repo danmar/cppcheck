@@ -21,6 +21,7 @@
 #include "errortypes.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenize.h"
 
 #include <vector>
 
@@ -63,4 +64,19 @@ void CheckBoost::boostForeachError(const Token *tok)
     reportError(tok, Severity::error, "boostForeachError",
                 "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.", CWE664, Certainty::normal
                 );
+}
+
+void CheckBoost::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (!tokenizer.isCPP())
+        return;
+
+    CheckBoost checkBoost(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkBoost.checkBoostForeachModification();
+}
+
+void CheckBoost::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckBoost c(nullptr, settings, errorLogger);
+    c.boostForeachError(nullptr);
 }

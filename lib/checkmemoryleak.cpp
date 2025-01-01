@@ -497,6 +497,22 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
 }
 //---------------------------------------------------------------------------
 
+void CheckMemoryLeakInFunction::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkMemoryLeak.checkReallocUsage();
+}
+
+void CheckMemoryLeakInFunction::getErrorMessages(ErrorLogger *e, const Settings *settings) const
+{
+    CheckMemoryLeakInFunction c(nullptr, settings, e);
+    c.memleakError(nullptr, "varname");
+    c.resourceLeakError(nullptr, "varname");
+    c.deallocuseError(nullptr, "varname");
+    const std::list<const Token *> callstack;
+    c.mismatchAllocDealloc(callstack, "varname");
+    c.memleakUponReallocFailureError(nullptr, "realloc", "varname");
+}
 
 //---------------------------------------------------------------------------
 // Checks for memory leaks in classes..
@@ -681,6 +697,22 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
 void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning, "publicAllocationError", "$symbol:" + varname + "\nPossible leak in public function. The pointer '$symbol' is not deallocated before it is allocated.", CWE398, Certainty::normal);
+}
+
+void CheckMemoryLeakInClass::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (!tokenizer.isCPP())
+        return;
+
+    CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkMemoryLeak.check();
+}
+
+void CheckMemoryLeakInClass::getErrorMessages(ErrorLogger *e, const Settings *settings) const
+{
+    CheckMemoryLeakInClass c(nullptr, settings, e);
+    c.publicAllocationError(nullptr, "varname");
+    c.unsafeClassError(nullptr, "class", "class::varname");
 }
 
 
@@ -930,6 +962,14 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
     }
 }
 
+void CheckMemoryLeakStructMember::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckMemoryLeakStructMember checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkMemoryLeak.check();
+}
+
+void CheckMemoryLeakStructMember::getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
+{}
 
 
 void CheckMemoryLeakNoVar::check()
@@ -1161,4 +1201,18 @@ void CheckMemoryLeakNoVar::unsafeArgAllocError(const Token *tok, const std::stri
                 "Unsafe allocation. If $symbol() throws, memory could be leaked. Use " + factoryFunc + "<" + objType + ">() instead.",
                 CWE401,
                 Certainty::inconclusive); // Inconclusive because funcName may never throw
+}
+
+void CheckMemoryLeakNoVar::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckMemoryLeakNoVar checkMemoryLeak(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkMemoryLeak.check();
+}
+
+void CheckMemoryLeakNoVar::getErrorMessages(ErrorLogger *e, const Settings *settings) const
+{
+    CheckMemoryLeakNoVar c(nullptr, settings, e);
+    c.functionCallLeak(nullptr, "funcName", "funcName");
+    c.returnValueNotUsedError(nullptr, "funcName");
+    c.unsafeArgAllocError(nullptr, "funcName", "shared_ptr", "int");
 }

@@ -24,6 +24,7 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -1204,4 +1205,31 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok, con
     const bool inconclusive = value != nullptr && !value->isKnown();
     reportError(errorPath, inconclusive ? Severity::warning : Severity::error, "negativeMemoryAllocationSize",
                 msg, CWE131, inconclusive ? Certainty::inconclusive : Certainty::normal);
+}
+
+void CheckBufferOverrun::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckBufferOverrun checkBufferOverrun(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkBufferOverrun.arrayIndex();
+    checkBufferOverrun.pointerArithmetic();
+    checkBufferOverrun.bufferOverflow();
+    checkBufferOverrun.arrayIndexThenCheck();
+    checkBufferOverrun.stringNotZeroTerminated();
+    checkBufferOverrun.objectIndex();
+    checkBufferOverrun.argumentSize();
+    checkBufferOverrun.negativeArraySize();
+}
+
+void CheckBufferOverrun::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckBufferOverrun c(nullptr, settings, errorLogger);
+    c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
+    c.pointerArithmeticError(nullptr, nullptr, nullptr);
+    c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
+    c.arrayIndexThenCheckError(nullptr, "i");
+    c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
+    c.objectIndexError(nullptr, nullptr, true);
+    c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
+    c.negativeMemoryAllocationSizeError(nullptr, nullptr);
+    c.negativeArraySizeError(nullptr);
 }

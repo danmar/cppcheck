@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <list>
 #include <map>
@@ -37,6 +36,7 @@ class Type;
 class Variables;
 class Variable;
 class Function;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -57,13 +57,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckUnusedVar checkUnusedVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // Coding style checks
-        checkUnusedVar.checkStructMemberUsage();
-        checkUnusedVar.checkFunctionVariableUsage();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check for unused function variables */
     void checkFunctionVariableUsage_iterateScopes(const Scope* scope, Variables& variables);
@@ -85,14 +79,7 @@ private:
     void unreadVariableError(const Token *tok, const std::string &varname, bool modified);
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckUnusedVar c(nullptr, settings, errorLogger);
-        c.unusedVariableError(nullptr, "varname");
-        c.allocatedButUnusedVariableError(nullptr, "varname");
-        c.unreadVariableError(nullptr, "varname", false);
-        c.unassignedVariableError(nullptr, "varname");
-        c.unusedStructMemberError(nullptr, "structname", "variable");
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "UnusedVar";

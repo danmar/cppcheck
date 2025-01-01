@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "tokenize.h"
 
 #include <string>
 #include <set>
@@ -34,6 +33,7 @@ class Settings;
 class Token;
 class ErrorLogger;
 class Variable;
+class Tokenizer;
 
 namespace ValueFlow {
     class Value;
@@ -55,12 +55,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckAutoVariables checkAutoVariables(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkAutoVariables.assignFunctionArg();
-        checkAutoVariables.checkVarLifetime();
-        checkAutoVariables.autoVariables();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** assign function argument */
     void assignFunctionArg();
@@ -90,21 +85,7 @@ private:
     void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckAutoVariables c(nullptr,settings,errorLogger);
-        c.errorAutoVariableAssignment(nullptr, false);
-        c.errorReturnReference(nullptr, ErrorPath{}, false);
-        c.errorDanglingReference(nullptr, nullptr, ErrorPath{});
-        c.errorReturnTempReference(nullptr, ErrorPath{}, false);
-        c.errorDanglingTempReference(nullptr, ErrorPath{}, false);
-        c.errorInvalidDeallocation(nullptr, nullptr);
-        c.errorUselessAssignmentArg(nullptr);
-        c.errorUselessAssignmentPtrArg(nullptr);
-        c.errorReturnDanglingLifetime(nullptr, nullptr);
-        c.errorInvalidLifetime(nullptr, nullptr);
-        c.errorDanglngLifetime(nullptr, nullptr);
-        c.errorDanglingTemporaryLifetime(nullptr, nullptr, nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Auto Variables";

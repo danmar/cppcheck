@@ -23,8 +23,11 @@
 #include "checkfunctions.h"
 
 #include "astutils.h"
+#include "errortypes.h"
+#include "library.h"
 #include "mathlib.h"
 #include "platform.h"
+#include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -34,6 +37,7 @@
 
 #include <iomanip>
 #include <list>
+#include <map>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -828,4 +832,45 @@ void CheckFunctions::useStandardLibraryError(const Token *tok, const std::string
     reportError(tok, Severity::style,
                 "useStandardLibrary",
                 "Consider using " + expected + " instead of loop.");
+}
+
+void CheckFunctions::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckFunctions checkFunctions(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    checkFunctions.checkIgnoredReturnValue();
+    checkFunctions.checkMissingReturn();  // Missing "return" in exit path
+
+    // --check-library : functions with nonmatching configuration
+    checkFunctions.checkLibraryMatchFunctions();
+
+    checkFunctions.checkProhibitedFunctions();
+    checkFunctions.invalidFunctionUsage();
+    checkFunctions.checkMathFunctions();
+    checkFunctions.memsetZeroBytes();
+    checkFunctions.memsetInvalid2ndParam();
+    checkFunctions.returnLocalStdMove();
+    checkFunctions.useStandardLibrary();
+}
+
+void CheckFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckFunctions c(nullptr, settings, errorLogger);
+
+    for (auto i = settings->library.functionwarn().cbegin(); i != settings->library.functionwarn().cend(); ++i) {
+        c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
+    }
+
+    c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
+    c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
+    c.invalidFunctionArgStrError(nullptr, "func_name", 1);
+    c.ignoredReturnValueError(nullptr, "malloc");
+    c.mathfunctionCallWarning(nullptr);
+    c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");
+    c.memsetZeroBytesError(nullptr);
+    c.memsetFloatError(nullptr,  "varname");
+    c.memsetValueOutOfRangeError(nullptr,  "varname");
+    c.missingReturnError(nullptr);
+    c.copyElisionError(nullptr);
+    c.useStandardLibraryError(nullptr, "memcpy");
 }

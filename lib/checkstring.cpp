@@ -474,3 +474,33 @@ void CheckString::sprintfOverlappingDataError(const Token *funcTok, const Token 
                 "\"If copying takes place between objects that overlap as a result of a call "
                 "to sprintf() or snprintf(), the results are undefined.\"", CWE628, Certainty::normal);
 }
+
+void CheckString::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckString checkString(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    // Checks
+    checkString.strPlusChar();
+    checkString.checkSuspiciousStringCompare();
+    checkString.stringLiteralWrite();
+    checkString.overlappingStrcmp();
+    checkString.checkIncorrectStringCompare();
+    checkString.sprintfOverlappingData();
+    checkString.checkAlwaysTrueOrFalseStringCompare();
+}
+
+void CheckString::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckString c(nullptr, settings, errorLogger);
+    c.stringLiteralWriteError(nullptr, nullptr);
+    c.sprintfOverlappingDataError(nullptr, nullptr, "varname");
+    c.strPlusCharError(nullptr);
+    c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
+    c.suspiciousStringCompareError(nullptr, "foo", false);
+    c.suspiciousStringCompareError_char(nullptr, "foo");
+    c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
+    c.incorrectStringBooleanError(nullptr, "\'x\'");
+    c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
+    c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
+    c.overlappingStrcmpError(nullptr, nullptr);
+}

@@ -29,6 +29,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "vfvalue.h"
 
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 
@@ -1780,4 +1781,22 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
         }
     }
     return foundErrors;
+}
+
+void CheckUninitVar::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckUninitVar checkUninitVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkUninitVar.valueFlowUninit();
+    checkUninitVar.check();
+}
+
+void CheckUninitVar::getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const
+{
+    CheckUninitVar c(nullptr, settings, errorLogger);
+
+    ValueFlow::Value v{};
+
+    c.uninitvarError(nullptr, v);
+    c.uninitdataError(nullptr, "varname");
+    c.uninitStructMemberError(nullptr, "a.b");
 }

@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 #include "symboldatabase.h"
 
 #include <cstdint>
@@ -35,6 +34,7 @@
 
 class ErrorLogger;
 class Settings;
+class Tokenizer;
 class Token;
 
 /// @addtogroup Checks
@@ -59,35 +59,7 @@ private:
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (tokenizer.isC())
-            return;
-
-        CheckClass checkClass(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // can't be a simplified check .. the 'sizeof' is used.
-        checkClass.checkMemset();
-        checkClass.constructors();
-        checkClass.privateFunctions();
-        checkClass.operatorEqRetRefThis();
-        checkClass.thisSubtraction();
-        checkClass.operatorEqToSelf();
-        checkClass.initializerListOrder();
-        checkClass.initializationListUsage();
-        checkClass.checkSelfInitialization();
-        checkClass.virtualDestructor();
-        checkClass.checkConst();
-        checkClass.copyconstructors();
-        checkClass.checkVirtualFunctionCallInConstructor();
-        checkClass.checkDuplInheritedMembers();
-        checkClass.checkExplicitConstructors();
-        checkClass.checkCopyCtorAndEqOperator();
-        checkClass.checkOverride();
-        checkClass.checkUselessOverride();
-        checkClass.checkReturnByReference();
-        checkClass.checkThisUseAfterFree();
-        checkClass.checkUnsafeClassRefMember();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check that all class constructors are ok */
     void constructors();
@@ -210,48 +182,7 @@ private:
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
     void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckClass c(nullptr, settings, errorLogger);
-        c.noConstructorError(nullptr, "classname", false);
-        c.noExplicitConstructorError(nullptr, "classname", false);
-        //c.copyConstructorMallocError(nullptr, 0, "var");
-        c.copyConstructorShallowCopyError(nullptr, "var");
-        c.noCopyConstructorError(nullptr, false, nullptr, false);
-        c.noOperatorEqError(nullptr, false, nullptr, false);
-        c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
-        c.missingMemberCopyError(nullptr, Function::eConstructor, "classname", "varnamepriv");
-        c.operatorEqVarError(nullptr, "classname", emptyString, false);
-        c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
-        c.memsetError(nullptr, "memfunc", "classname", "class");
-        c.memsetErrorReference(nullptr, "memfunc", "class");
-        c.memsetErrorFloat(nullptr, "class");
-        c.mallocOnClassWarning(nullptr, "malloc", nullptr);
-        c.mallocOnClassError(nullptr, "malloc", nullptr, "std::string");
-        c.virtualDestructorError(nullptr, "Base", "Derived", false);
-        c.thisSubtractionError(nullptr);
-        c.operatorEqRetRefThisError(nullptr);
-        c.operatorEqMissingReturnStatementError(nullptr, true);
-        c.operatorEqShouldBeLeftUnimplementedError(nullptr);
-        c.operatorEqToSelfError(nullptr);
-        c.checkConstError(nullptr, "class", "function", false);
-        c.checkConstError(nullptr, "class", "function", true);
-        c.initializerListError(nullptr, nullptr, "class", "variable");
-        c.suggestInitializationList(nullptr, "variable");
-        c.selfInitializationError(nullptr, "var");
-        c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
-        c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
-        c.overrideError(nullptr, nullptr);
-        c.uselessOverrideError(nullptr, nullptr);
-        c.returnByReferenceError(nullptr, nullptr);
-        c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
-        c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
-        c.thisUseAfterFree(nullptr, nullptr, nullptr);
-        c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Class";
