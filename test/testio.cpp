@@ -77,6 +77,8 @@ private:
         TEST_CASE(testPrintfParenthesis); // #8489
         TEST_CASE(testStdDistance); // #10304
         TEST_CASE(testParameterPack); // #11289
+
+        TEST_CASE(testDefaultSignInt); // #13363
     }
 
     struct CheckOptions
@@ -85,6 +87,7 @@ private:
         bool inconclusive = false;
         bool portability = false;
         Platform::Type platform = Platform::Type::Unspecified;
+        char defaultSign = '\0';
         bool onlyFormatStr = false;
         bool cpp = true;
     };
@@ -96,6 +99,7 @@ private:
         settings1.severity.setEnabled(Severity::portability, options.portability);
         settings1.certainty.setEnabled(Certainty::inconclusive, options.inconclusive);
         PLATFORM(settings1.platform, options.platform);
+        settings1.platform.defaultSign = options.defaultSign;
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
@@ -4931,6 +4935,22 @@ private:
               "void g() {\n"
               "    f(\"%d%d\", 1, 2);\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    // TODO: we need to run big tests with a platform that has unsigned chars
+    void testDefaultSignInt() { // #13363
+        // Platform::defaultSign should only affect char
+        const char code[] =
+            "void f() {\n"
+            "    double d = 1\n;"
+            "    printf(\"%i\", int(d));\n"
+            "}\n";
+        check(code);
+        ASSERT_EQUALS("", errout_str());
+        check(code, dinit(CheckOptions, $.defaultSign = 's'));
+        ASSERT_EQUALS("", errout_str());
+        check(code, dinit(CheckOptions, $.defaultSign = 'u'));
         ASSERT_EQUALS("", errout_str());
     }
 };
