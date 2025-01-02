@@ -192,7 +192,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
     builddir_tmp = None
 
-    if 'TEST_CPPCHECK_INJECT_BUILDDIR' in os.environ:
+    if not has_exclusive and ('TEST_CPPCHECK_INJECT_BUILDDIR' in os.environ):
         found_builddir = False
         for arg in args:
             if arg.startswith('--cppcheck-build-dir=') or arg == '--no-cppcheck-build-dir':
