@@ -3178,8 +3178,11 @@ void CheckOther::checkIncompleteArrayFill()
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "memset|memcpy|memmove (") && Token::Match(tok->linkAt(1)->tokAt(-2), ", %num% )")) {
-                const Token* tok2 = tok->tokAt(2);
+            if (Token::Match(tok, "memset|memcpy|memmove (")) {
+                std::vector<const Token*> args = getArguments(tok);
+                if (args.size() != 3)
+                    continue;
+                const Token* tok2 = args[0];
                 if (tok2->str() == "::")
                     tok2 = tok2->next();
                 while (Token::Match(tok2, "%name% ::|."))
@@ -3191,19 +3194,22 @@ void CheckOther::checkIncompleteArrayFill()
                 if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
                     continue;
 
-                if (MathLib::toBigNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
-                    int size = mTokenizer->sizeOfType(var->typeStartToken());
-                    if (size == 0 && var->valueType()->pointer)
-                        size = mSettings->platform.sizeof_pointer;
-                    else if (size == 0 && var->valueType())
-                        size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
-                    const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
-                    if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
-                        if (printWarning)
-                            incompleteArrayFillError(tok, tok3->expressionString(), tok->str(), false);
-                    } else if (var->valueType()->type == ValueType::Type::BOOL && printPortability) // sizeof(bool) is not 1 on all platforms
-                        incompleteArrayFillError(tok, tok3->expressionString(), tok->str(), true);
-                }
+                
+                if (!args[2]->hasKnownIntValue())
+                    continue;
+                if (args[2]->getKnownIntValue() != var->dimension(0))
+                    continue;
+                int size = mTokenizer->sizeOfType(var->typeStartToken());
+                if (size == 0 && var->valueType()->pointer)
+                    size = mSettings->platform.sizeof_pointer;
+                else if (size == 0 && var->valueType())
+                    size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
+                const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
+                if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
+                    if (printWarning)
+                        incompleteArrayFillError(tok, tok3->expressionString(), tok->str(), false);
+                } else if (var->valueType()->type == ValueType::Type::BOOL && printPortability) // sizeof(bool) is not 1 on all platforms
+                    incompleteArrayFillError(tok, tok3->expressionString(), tok->str(), true);
             }
         }
     }
