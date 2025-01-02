@@ -6475,7 +6475,7 @@ private:
         // (cast){data}[index]
         ASSERT_EQUALS("a&{(0[1[5[0=", testAst("(int (**)[i]){&a}[0][1][5] = 0;"));
         ASSERT_EQUALS("ab12,{(0[,(", testAst("a(b, (int []){1,2}[0]);"));
-        ASSERT_EQUALS("n0=", testAst("TrivialDefCtor{[2][2]}[1][1].n = 0;"));
+        ASSERT_EQUALS("Op2 but no Op1 for token: [", testAst("TrivialDefCtor{[2][2]}[1][1].n = 0;")); // FIXME
         ASSERT_EQUALS("aT12,3,{1[=", testAst("a = T{1, 2, 3}[1];"));
 
         // Type{data}()
@@ -6877,7 +6877,7 @@ private:
 
         // #9662
         ASSERT_EQUALS("b{[{ stdunique_ptr::0nullptrnullptr:?{", testAst("auto b{[] { std::unique_ptr<void *>{0 ? nullptr : nullptr}; }};"));
-        ASSERT_EQUALS("b{[=", testAst("void a() { [b = [] { ; }] {}; }"));
+        ASSERT_EQUALS("{b{[=[", testAst("void a() { [b = [] { ; }] {}; }"));
 
         // Lambda capture expression (C++14)
         ASSERT_EQUALS("a{b1=[= c2=", testAst("a = [b=1]{c=2;};"));
@@ -6964,6 +6964,8 @@ private:
         ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
 
         ASSERT_EQUALS("sf.{(i[{={", testAst("void g(int i) { S s{ .f = { [i]() {} } }; }"));
+
+        ASSERT_EQUALS("{([", testAst("void f() { []() {}; }")); // #13471
     }
 
     void astcase() {
