@@ -284,6 +284,7 @@ std::string ErrorMessage::serialize() const
 
     serializeString(oss, saneShortMessage);
     serializeString(oss, saneVerboseMessage);
+    serializeString(oss, mSymbolNames);
     oss += std::to_string(callStack.size());
     oss += " ";
 
@@ -311,9 +312,9 @@ void ErrorMessage::deserialize(const std::string &data)
     callStack.clear();
 
     std::istringstream iss(data);
-    std::array<std::string, 9> results;
+    std::array<std::string, 10> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 9) {
+    while (iss.good() && elem < 10) {
         unsigned int len = 0;
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length");
@@ -339,7 +340,7 @@ void ErrorMessage::deserialize(const std::string &data)
     if (!iss.good())
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-    if (elem != 9)
+    if (elem != 10)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = std::move(results[0]);
@@ -362,6 +363,7 @@ void ErrorMessage::deserialize(const std::string &data)
         certainty = Certainty::inconclusive;
     mShortMessage = std::move(results[7]);
     mVerboseMessage = std::move(results[8]);
+    mSymbolNames = std::move(results[9]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
