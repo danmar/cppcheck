@@ -139,7 +139,7 @@ void CheckThread::run()
         qDebug() << "Whole program analysis";
         std::list<FileWithDetails> files2;
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
-            return FileWithDetails{file.toStdString(), 0};
+            return FileWithDetails{file.toStdString(), Path::identify(file.toStdString(), cppcheck.settings().cppHeaderProbe), 0};
         });
         cppcheck.analyseWholeProgram(cppcheck.settings().buildDir, files2, {}, ctuInfo);
         mFiles.clear();

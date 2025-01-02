@@ -139,10 +139,10 @@ def test_warning(tmpdir):  # #12424
     assert stderr == ''
 
 
-def __test_cmd(tmp_path, file_name, extra_args, stdout_exp_1):
+def __test_cmd(tmp_path, file_name, extra_args, stdout_exp_1, content=''):
     test_file = tmp_path / file_name
     with open(test_file, 'wt') as f:
-        f.write('')
+        f.write(content)
 
     args = [
         '--enable=information',
@@ -171,6 +171,21 @@ def test_cmd_c(tmp_path):
 
 def test_cmd_cpp(tmp_path):
     __test_cmd(tmp_path, 'test.cpp', [], '-x c++')
+
+
+# files with unknown extensions are treated as C++
+@pytest.mark.xfail(strict=True)
+def test_cmd_unk(tmp_path):
+    __test_cmd(tmp_path, 'test.cplusplus', [], '-x c++')
+
+
+# headers are treated as C by default
+def test_cmd_hdr(tmp_path):
+    __test_cmd(tmp_path, 'test.h', [], '-x c')
+
+
+def test_cmd_hdr_probe(tmp_path):
+    __test_cmd(tmp_path, 'test.h', ['--cpp-header-probe'], '-x c++', '// -*- C++ -*-')
 
 
 def test_cmd_inc(tmp_path):

@@ -235,9 +235,9 @@ private:
 
         std::list<FileWithDetails> filelist;
         for (auto i = f.cbegin(); i != f.cend(); ++i) {
-            filelist.emplace_back(i->first, i->second.size());
+            filelist.emplace_back(i->first, Standards::Language::CPP, i->second.size());
             if (useFS) {
-                fileSettings.emplace_back(i->first, i->second.size());
+                fileSettings.emplace_back(i->first, Standards::Language::CPP, i->second.size());
             }
         }
 
@@ -282,9 +282,9 @@ private:
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        filelist.emplace_back("test.cpp", strlen(code));
+        filelist.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         if (useFS) {
-            fileSettings.emplace_back("test.cpp", strlen(code));
+            fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -326,9 +326,9 @@ private:
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        filelist.emplace_back("test.cpp", strlen(code));
+        filelist.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         if (useFS) {
-            fileSettings.emplace_back("test.cpp", strlen(code));
+            fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,

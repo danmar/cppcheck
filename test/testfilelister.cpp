@@ -39,6 +39,7 @@ private:
         TEST_CASE(recursiveAddFilesEmptyPath);
         TEST_CASE(excludeFile1);
         TEST_CASE(excludeFile2);
+        TEST_CASE(addFiles);
     }
 
     // TODO: generate file list instead
@@ -81,11 +82,25 @@ private:
         };
 
         // Make sure source files are added..
-        ASSERT(find_file(dirprefix + "cli/main.cpp") != files.end());
-        ASSERT(find_file(dirprefix + "lib/token.cpp") != files.end());
-        ASSERT(find_file(dirprefix + "lib/tokenize.cpp") != files.end());
-        ASSERT(find_file(dirprefix + "gui/main.cpp") != files.end());
-        ASSERT(find_file(dirprefix + "test/testfilelister.cpp") != files.end());
+        auto it = find_file(dirprefix + "cli/main.cpp");
+        ASSERT(it != files.end());
+        ASSERT_EQUALS_ENUM(Standards::Language::CPP, it->lang());
+
+        it = find_file(dirprefix + "lib/token.cpp");
+        ASSERT(it != files.end());
+        ASSERT_EQUALS_ENUM(Standards::Language::CPP, it->lang());
+
+        it = find_file(dirprefix + "lib/tokenize.cpp");
+        ASSERT(it != files.end());
+        ASSERT_EQUALS_ENUM(Standards::Language::CPP, it->lang());
+
+        it = find_file(dirprefix + "gui/main.cpp");
+        ASSERT(it != files.end());
+        ASSERT_EQUALS_ENUM(Standards::Language::CPP, it->lang());
+
+        it = find_file(dirprefix + "test/testfilelister.cpp");
+        ASSERT(it != files.end());
+        ASSERT_EQUALS_ENUM(Standards::Language::CPP, it->lang());
 
         // Make sure headers are not added..
         ASSERT(find_file(dirprefix + "lib/tokenize.h") == files.end());
@@ -120,7 +135,65 @@ private:
         ASSERT_EQUALS(basedir + "lib/token.cpp", files.begin()->path());
     }
 
+    void addFiles() const {
+        const std::string adddir = findBaseDir() + ".";
+
+        // TODO: on Windows the prefix is different from when a recursive a folder (see recursiveAddFiles test)
+        const std::string dirprefix = adddir + "/";
+#ifdef _WIN32
+        const std::string dirprefix_nat = Path::toNativeSeparators(dirprefix);
+#endif
+
+        std::list<FileWithDetails> files;
+
+        {
+            const std::string addfile = Path::join(Path::join(adddir, "cli"), "main.cpp");
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            ASSERT_EQUALS("", err);
+        }
+        {
+            const std::string addfile = Path::join(Path::join(adddir, "lib"), "token.cpp");
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            ASSERT_EQUALS("", err);
+        }
+        {
+            const std::string addfile = Path::join(Path::join(adddir, "cli"), "token.cpp"); // does not exist
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            ASSERT_EQUALS("", err);
+        }
+        {
+            const std::string addfile = Path::join(Path::join(adddir, "lib2"), "token.cpp"); // does not exist
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+#ifdef _WIN32
+            // TODO: get rid of this error - caused by missing intermediate folder
+            ASSERT_EQUALS("finding files failed. Search pattern: '" + dirprefix_nat + "lib2\\token.cpp'. (error: 3)", err);
+#else
+            ASSERT_EQUALS("", err);
+#endif
+        }
+        {
+            const std::string addfile = Path::join(Path::join(adddir, "lib"), "matchcompiler.h");
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            ASSERT_EQUALS("", err);
+        }
+
+        ASSERT_EQUALS(3, files.size());
+        auto it = files.cbegin();
+        ASSERT_EQUALS(dirprefix + "cli/main.cpp", it->path());
+        ASSERT_EQUALS(Path::simplifyPath(dirprefix + "cli/main.cpp"), it->spath());
+        ASSERT_EQUALS_ENUM(Standards::Language::None, it->lang());
+        it++;
+        ASSERT_EQUALS(dirprefix + "lib/token.cpp", it->path());
+        ASSERT_EQUALS(Path::simplifyPath(dirprefix + "lib/token.cpp"), it->spath());
+        ASSERT_EQUALS_ENUM(Standards::Language::None, it->lang());
+        it++;
+        ASSERT_EQUALS(dirprefix + "lib/matchcompiler.h", it->path());
+        ASSERT_EQUALS(Path::simplifyPath(dirprefix + "lib/matchcompiler.h"), it->spath());
+        ASSERT_EQUALS_ENUM(Standards::Language::None, it->lang());
+    }
+
     // TODO: test errors
+    // TODO: test wildcards
 };
 
 REGISTER_TEST(TestFileLister)

@@ -76,6 +76,16 @@ private:
         ASSERT(Path::acceptFile("index")==false);
         ASSERT(Path::acceptFile("")==false);
         ASSERT(Path::acceptFile("C")==false);
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.c", &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::C, lang);
+        }
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.cpp", &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, lang);
+        }
 
         // don't accept any headers
         ASSERT_EQUALS(false, Path::acceptFile("index.h"));
@@ -88,6 +98,21 @@ private:
         ASSERT(Path::acceptFile("index.header", extra));
         ASSERT(Path::acceptFile("index.h", extra)==false);
         ASSERT(Path::acceptFile("index.hpp", extra)==false);
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.c", extra, &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::C, lang);
+        }
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.cpp", extra, &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, lang);
+        }
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.extra", extra, &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::None, lang);
+        }
     }
 
     void getCurrentPath() const {

@@ -430,6 +430,8 @@ private:
         TEST_CASE(ignorefilepaths2);
         TEST_CASE(ignorefilepaths3);
 
+        TEST_CASE(nonexistentpath);
+
         TEST_CASE(checkconfig);
         TEST_CASE(unknownParam);
 
@@ -2953,6 +2955,13 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
         ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
+    }
+
+    void nonexistentpath() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "file.cpp"};
+        ASSERT(!parser->fillSettingsFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\n", logger->str());
     }
 
     void checkconfig() {
