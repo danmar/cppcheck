@@ -16,9 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have siginfo_t, SIGSTKSZ, kill(), sigaction and others
+#endif
+
 #include "signalhandler.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
+
+#include "utils.h"
 
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
 #include "stacktrace.h"
@@ -119,7 +125,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     killid = getpid();
 #endif
 
-    const Signalmap_t::const_iterator it=listofsignals.find(signo);
+    const auto it = utils::as_const(listofsignals).find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
     bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
@@ -320,7 +326,7 @@ void register_signal_handler(FILE * const output)
     memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO|SA_ONSTACK;
     act.sa_sigaction=CppcheckSignalHandler;
-    for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
+    for (auto sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
 }

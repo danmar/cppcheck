@@ -182,14 +182,21 @@ static const std::unordered_set<std::string> stdTypes = { "bool"
                                                           , "size_t"
                                                           , "void"
                                                           , "wchar_t"
+                                                          , "signed"
+                                                          , "unsigned"
 };
+
+bool Token::isStandardType(const std::string& str)
+{
+    return stdTypes.find(str) != stdTypes.end();
+}
 
 void Token::update_property_isStandardType()
 {
     if (mStr.size() < 3 || mStr.size() > 7)
         return;
 
-    if (stdTypes.find(mStr)!=stdTypes.end()) {
+    if (isStandardType(mStr)) {
         isStandardType(true);
         tokType(eType);
     }
@@ -1766,12 +1773,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED) {
                         outs += "intvalue=\"";
-                        outs += std::to_string(static_cast<MathLib::biguint>(value.intvalue));
+                        outs += MathLib::toString(static_cast<MathLib::biguint>(value.intvalue));
                         outs += '\"';
                     }
                     else {
                         outs += "intvalue=\"";
-                        outs += std::to_string(value.intvalue);
+                        outs += MathLib::toString(value.intvalue);
                         outs += '\"';
                     }
                     break;
@@ -1795,22 +1802,22 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::BUFFER_SIZE:
                     outs += "buffer-size=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += "\"";
                     break;
                 case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     outs += "container-size=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_START:
                     outs +=  "iterator-start=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_END:
                     outs +=  "iterator-end=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
@@ -1829,7 +1836,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     outs += id_string(value.tokvalue);
                     outs += '\"';
                     outs += " symbolic-delta=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 }
@@ -1851,7 +1858,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     outs += " inconclusive=\"true\"";
 
                 outs += " path=\"";
-                outs += std::to_string(value.path);
+                outs += MathLib::toString(value.path);
                 outs += "\"";
 
                 outs += "/>\n";
@@ -1909,7 +1916,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     if (!mImpl->mValues)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isImpossible())
             continue;
         if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue)) ||
@@ -1935,7 +1942,7 @@ const Token *Token::getValueTokenMinStrSize(const Settings &settings, MathLib::b
         return nullptr;
     const Token *ret = nullptr;
     int minsize = INT_MAX;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
@@ -1955,7 +1962,7 @@ const Token *Token::getValueTokenMaxStrLength() const
         return nullptr;
     const Token *ret = nullptr;
     int maxlength = 0;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->cbegin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -2198,8 +2205,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             return false;
 
         // if value already exists, don't add it again
-        std::list<ValueFlow::Value>::iterator it;
-        for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        auto it = mImpl->mValues->begin();
+        for (; it != mImpl->mValues->end(); ++it) {
             // different types => continue
             if (it->valueType != value.valueType)
                 continue;

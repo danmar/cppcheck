@@ -152,6 +152,8 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
     if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
         return;
 
+    if (!assignTok->astOperand1())
+        return;
     const Variable* var = assignTok->astOperand1()->variable();
     if (!var)
         return;
@@ -179,4 +181,17 @@ bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)
 {
     // TODO: even if a return is in the same scope, the assignment might not affect it.
     return returnTok->scope() == assignTok->scope();
+}
+
+void CheckAssert::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckAssert checkAssert(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkAssert.assertWithSideEffects();
+}
+
+void CheckAssert::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckAssert c(nullptr, settings, errorLogger);
+    c.sideEffectInAssertError(nullptr, "function");
+    c.assignmentInAssertError(nullptr, "var");
 }

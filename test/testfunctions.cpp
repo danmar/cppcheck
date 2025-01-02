@@ -55,6 +55,9 @@ private:
         TEST_CASE(invalidFunctionUsage1);
         TEST_CASE(invalidFunctionUsageStrings);
 
+        // Invalid function argument
+        TEST_CASE(invalidFunctionArg1);
+
         // Math function usage
         TEST_CASE(mathfunctionCall_fmod);
         TEST_CASE(mathfunctionCall_sqrt);
@@ -753,6 +756,21 @@ private:
 
         check("void f() { char a[10] = \"1234567890\"; puts(a); }", false); // #1770
         ASSERT_EQUALS("[test.c:1]: (error) Invalid puts() argument nr 1. A nul-terminated string is required.\n", errout_str());
+    }
+
+    void invalidFunctionArg1() {
+        const Settings settingsUnix32 = settingsBuilder(settings).platform(Platform::Unix32).build();
+        check("int main() {\n"
+              "    char tgt[7];\n"
+              "    char src[7+1] = \"7777777\";\n"
+              "    if (sizeof tgt <= sizeof src) {\n"
+              "        memmove(&tgt, &src, sizeof tgt);\n"
+              "    } else {\n"
+              "        memmove(&tgt, &src, sizeof src);\n"
+              "        memset(&tgt + sizeof src, ' ', sizeof tgt - sizeof src);\n"
+              "    }\n"
+              "}\n", false, &settingsUnix32);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void mathfunctionCall_sqrt() {

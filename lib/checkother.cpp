@@ -736,7 +736,7 @@ void CheckOther::redundantBitwiseOperationInSwitchError()
                      (tok2->strAt(1) == "|=" || tok2->strAt(1) == "&=") &&
                      Token::Match(tok2->next()->astOperand2(), "%num%")) {
                 const std::string bitOp = tok2->strAt(1)[0] + tok2->strAt(2);
-                const std::map<int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const auto i2 = utils::as_const(varsWithBitsSet).find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -761,7 +761,7 @@ void CheckOther::redundantBitwiseOperationInSwitchError()
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
                 const std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
-                const std::map<int, const Token*>::const_iterator i2 = varsWithBitsSet.find(tok2->varId());
+                const auto i2 = utils::as_const(varsWithBitsSet).find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
@@ -901,6 +901,15 @@ void CheckOther::checkUnreachableCode()
                     continue;
                 }
             }
+            while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+                secondBreak = secondBreak->next();
+            if (secondBreak && secondBreak->scope()->nestedIn && secondBreak->scope()->nestedIn->type == Scope::ScopeType::eSwitch &&
+                tok->str() == "break") {
+                while (Token::simpleMatch(secondBreak, "{") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+                    secondBreak = secondBreak->next();
+            }
+            while (Token::simpleMatch(secondBreak, ";"))
+                secondBreak = secondBreak->next();
 
             // Statements follow directly, no line between them. (#3383)
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
@@ -2472,8 +2481,8 @@ void CheckOther::checkInvalidFree()
             // Keep track of which variables were assigned addresses to newly-allocated memory
             if ((tok->isCpp() && Token::Match(tok, "%var% = new")) ||
                 (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
-                allocation.insert(std::make_pair(tok->varId(), tok->strAt(2)));
-                inconclusive.insert(std::make_pair(tok->varId(), false));
+                allocation.emplace(tok->varId(), tok->strAt(2));
+                inconclusive.emplace(tok->varId(), false);
             }
 
             // If a previously-allocated pointer is incremented or decremented, any subsequent
@@ -2507,8 +2516,8 @@ void CheckOther::checkInvalidFree()
                                      tok->strAt(3) == "(" ? 4 : 1;
                 const int var1 = tok->tokAt(varIndex)->varId();
                 const int var2 = tok->tokAt(varIndex + 2)->varId();
-                const std::map<int, bool>::const_iterator alloc1 = inconclusive.find(var1);
-                const std::map<int, bool>::const_iterator alloc2 = inconclusive.find(var2);
+                const auto alloc1 = utils::as_const(inconclusive).find(var1);
+                const auto alloc2 = utils::as_const(inconclusive).find(var2);
                 if (alloc1 != inconclusive.end()) {
                     invalidFreeError(tok, allocation[var1], alloc1->second);
                 } else if (alloc2 != inconclusive.end()) {
@@ -2564,7 +2573,7 @@ namespace {
                 functionsByName[func.tokenDef->str()].push_back(&func);
             }
             for (std::pair<const std::string, std::list<const Function*>>& it : functionsByName) {
-                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
+                const auto nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
                 if (nc == it.second.cend()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it.second);
@@ -2572,6 +2581,22 @@ namespace {
             }
         }
     }
+}
+
+static bool
+isStaticAssert(const Settings &settings, const Token *tok)
+{
+    if (tok->isCpp() && settings.standards.cpp >= Standards::CPP11 &&
+        Token::simpleMatch(tok, "static_assert")) {
+        return true;
+    }
+
+    if (tok->isC() && settings.standards.c >= Standards::C11 &&
+        Token::simpleMatch(tok, "_Static_assert")) {
+        return true;
+    }
+
+    return false;
 }
 
 void CheckOther::checkDuplicateExpression()
@@ -2695,12 +2720,12 @@ void CheckOther::checkDuplicateExpression()
                             if (assignment)
                                 selfAssignmentError(tok, tok->astOperand1()->expressionString());
                             else if (!isEnum) {
-                                if (tok->isCpp() && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
+                                if (tok->str() == "==") {
                                     const Token* parent = tok->astParent();
                                     while (parent && parent->astParent()) {
                                         parent = parent->astParent();
                                     }
-                                    if (parent && parent->previous() && parent->strAt(-1) == "static_assert") {
+                                    if (parent && parent->previous() && isStaticAssert(*mSettings, parent->previous())) {
                                         continue;
                                     }
                                 }
@@ -3985,7 +4010,7 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
         ftype = "init list ";
 
     const char *id;
-    std::string errmsg = "Argument '" + expr + "' to " + ftype + fun + " is always " + std::to_string(intvalue) + ". ";
+    std::string errmsg = "Argument '" + expr + "' to " + ftype + fun + " is always " + MathLib::toString(intvalue) + ". ";
     if (!isVariableExpressionHidden) {
         id = "knownArgument";
         errmsg += "It does not matter what value '" + varexpr + "' has.";
@@ -4034,7 +4059,7 @@ void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Valu
         reportError(tok, Severity::style, "knownPointerToBool", "Pointer expression 'p' converted to bool is always true.");
         return;
     }
-    std::string cond = bool_to_string(value->intvalue);
+    std::string cond = bool_to_string(!!value->intvalue);
     const std::string& expr = tok->expressionString();
     std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
@@ -4050,12 +4075,16 @@ void CheckOther::checkComparePointers()
             if (!Token::Match(tok, "<|>|<=|>=|-"))
                 continue;
             const Token *tok1 = tok->astOperand1();
+            if (!astIsPointer(tok1))
+                continue;
             const Token *tok2 = tok->astOperand2();
-            if (!astIsPointer(tok1) || !astIsPointer(tok2))
+            if (!astIsPointer(tok2))
                 continue;
             ValueFlow::Value v1 = ValueFlow::getLifetimeObjValue(tok1);
+            if (!v1.isLocalLifetimeValue())
+                continue;
             ValueFlow::Value v2 = ValueFlow::getLifetimeObjValue(tok2);
-            if (!v1.isLocalLifetimeValue() || !v2.isLocalLifetimeValue())
+            if (!v2.isLocalLifetimeValue())
                 continue;
             const Variable *var1 = v1.tokvalue->variable();
             const Variable *var2 = v2.tokvalue->variable();
@@ -4293,4 +4322,129 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
 {
     const std::string &funcname = tok ? tok->str() : emptyString;
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
+}
+
+void CheckOther::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckOther checkOther(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    // Checks
+    checkOther.warningOldStylePointerCast();
+    checkOther.suspiciousFloatingPointCast();
+    checkOther.invalidPointerCast();
+    checkOther.checkCharVariable();
+    checkOther.redundantBitwiseOperationInSwitchError();
+    checkOther.checkSuspiciousCaseInSwitch();
+    checkOther.checkDuplicateBranch();
+    checkOther.checkDuplicateExpression();
+    checkOther.checkRedundantAssignment();
+    checkOther.checkUnreachableCode();
+    checkOther.checkSuspiciousSemicolon();
+    checkOther.checkVariableScope();
+    checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
+    checkOther.checkIncompleteArrayFill();
+    checkOther.checkVarFuncNullUB();
+    checkOther.checkNanInArithmeticExpression();
+    checkOther.checkCommaSeparatedReturn();
+    checkOther.checkRedundantPointerOp();
+    checkOther.checkZeroDivision();
+    checkOther.checkNegativeBitwiseShift();
+    checkOther.checkInterlockedDecrement();
+    checkOther.checkUnusedLabel();
+    checkOther.checkEvaluationOrder();
+    checkOther.checkFuncArgNamesDifferent();
+    checkOther.checkShadowVariables();
+    checkOther.checkKnownArgument();
+    checkOther.checkKnownPointerToBool();
+    checkOther.checkComparePointers();
+    checkOther.checkIncompleteStatement();
+    checkOther.checkRedundantCopy();
+    checkOther.clarifyCalculation();
+    checkOther.checkPassByReference();
+    checkOther.checkConstVariable();
+    checkOther.checkConstPointer();
+    checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
+    checkOther.checkInvalidFree();
+    checkOther.clarifyStatement();
+    checkOther.checkCastIntToCharAndBack();
+    checkOther.checkMisusedScopedObject();
+    checkOther.checkAccessOfMovedVariable();
+    checkOther.checkModuloOfOne();
+    checkOther.checkOverlappingWrite();
+}
+
+void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckOther c(nullptr, settings, errorLogger);
+
+    // error
+    c.zerodivError(nullptr, nullptr);
+    c.misusedScopeObjectError(nullptr, "varname");
+    c.invalidPointerCastError(nullptr,  "float *", "double *", false, false);
+    c.negativeBitwiseShiftError(nullptr, 1);
+    c.negativeBitwiseShiftError(nullptr, 2);
+    c.raceAfterInterlockedDecrementError(nullptr);
+    c.invalidFreeError(nullptr, "malloc", false);
+    c.overlappingWriteUnion(nullptr);
+    c.overlappingWriteFunction(nullptr);
+
+    //performance
+    c.redundantCopyError(nullptr,  "varname");
+    c.redundantCopyError(nullptr, nullptr, "var");
+
+    // style/warning
+    c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
+    c.checkCastIntToCharAndBackError(nullptr, "func_name");
+    c.cstyleCastError(nullptr);
+    c.suspiciousFloatingPointCastError(nullptr);
+    c.passedByValueError(nullptr, false);
+    c.constVariableError(nullptr, nullptr);
+    c.constStatementError(nullptr, "type", false);
+    c.signedCharArrayIndexError(nullptr);
+    c.unknownSignCharArrayIndexError(nullptr);
+    c.charBitOpError(nullptr);
+    c.variableScopeError(nullptr,  "varname");
+    c.redundantAssignmentInSwitchError(nullptr, nullptr, "var");
+    c.suspiciousCaseInSwitchError(nullptr,  "||");
+    c.selfAssignmentError(nullptr,  "varname");
+    c.clarifyCalculationError(nullptr,  "+");
+    c.clarifyStatementError(nullptr);
+    c.duplicateBranchError(nullptr, nullptr, ErrorPath{});
+    c.duplicateAssignExpressionError(nullptr, nullptr, true);
+    c.oppositeExpressionError(nullptr, ErrorPath{});
+    c.duplicateExpressionError(nullptr, nullptr, nullptr, ErrorPath{});
+    c.duplicateValueTernaryError(nullptr);
+    c.duplicateExpressionTernaryError(nullptr, ErrorPath{});
+    c.duplicateBreakError(nullptr,  false);
+    c.unreachableCodeError(nullptr, nullptr,  false);
+    c.unsignedLessThanZeroError(nullptr, nullptr, "varname");
+    c.unsignedPositiveError(nullptr, nullptr, "varname");
+    c.pointerLessThanZeroError(nullptr, nullptr);
+    c.pointerPositiveError(nullptr, nullptr);
+    c.suspiciousSemicolonError(nullptr);
+    c.incompleteArrayFillError(nullptr,  "buffer", "memset", false);
+    c.varFuncNullUBError(nullptr);
+    c.nanInArithmeticExpressionError(nullptr);
+    c.commaSeparatedReturnError(nullptr);
+    c.redundantPointerOpError(nullptr,  "varname", false, /*addressOfDeref*/ true);
+    c.unusedLabelError(nullptr, false, false);
+    c.unusedLabelError(nullptr, false, true);
+    c.unusedLabelError(nullptr, true, false);
+    c.unusedLabelError(nullptr, true, true);
+    c.unknownEvaluationOrder(nullptr);
+    c.accessMovedError(nullptr, "v", nullptr, false);
+    c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
+    c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
+    c.shadowError(nullptr, nullptr, "variable");
+    c.shadowError(nullptr, nullptr, "function");
+    c.shadowError(nullptr, nullptr, "argument");
+    c.knownArgumentError(nullptr, nullptr, nullptr, "x", false);
+    c.knownPointerToBoolError(nullptr, nullptr);
+    c.comparePointersError(nullptr, nullptr, nullptr);
+    c.redundantAssignmentError(nullptr, nullptr, "var", false);
+    c.redundantInitializationError(nullptr, nullptr, "var", false);
+
+    const std::vector<const Token *> nullvec;
+    c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
+    c.checkModuloOfOneError(nullptr);
 }

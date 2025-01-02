@@ -91,9 +91,9 @@ stage
 /.run
 
 # clang tooling temporary files
-.clangd/
-.cache/
-compile_commands.json
+/.clangd/
+/.cache/
+/compile_commands.json
 
 #vs code
 /.vscode
@@ -113,3 +113,16 @@ compile_commands.json
 
 # GDB configuration
 .gdbinit
+
+# pyinstaller output
+/addons/dist
+/addons/misra.spec
+/htmlreport/cppcheck-htmlreport.spec
+/htmlreport/dist
+
+# ccache folder in CI
+/.ccache
+
+# PCRE Windows files
+/externals/pcre.h
+/externals/pcre64.lib

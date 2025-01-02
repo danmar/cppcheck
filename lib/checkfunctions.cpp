@@ -23,8 +23,11 @@
 #include "checkfunctions.h"
 
 #include "astutils.h"
+#include "errortypes.h"
+#include "library.h"
 #include "mathlib.h"
 #include "platform.h"
+#include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -34,6 +37,7 @@
 
 #include <iomanip>
 #include <list>
+#include <map>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -107,6 +111,7 @@ void CheckFunctions::invalidFunctionUsage()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            tok = skipUnreachableBranch(tok);
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
@@ -150,7 +155,7 @@ void CheckFunctions::invalidFunctionUsage()
                         && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
                         && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, *mSettings)) {
                         const Token* varTok = variable->declEndToken();
-                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        MathLib::bigint count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
                         {
                             const Token* const countTok = varTok->astOperand1()->astOperand2();
@@ -577,7 +582,7 @@ void CheckFunctions::memsetInvalid2ndParam()
             }
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
-                const long long int value = MathLib::toBigNumber(secondParamTok->str());
+                const MathLib::bigint value = MathLib::toBigNumber(secondParamTok);
                 const long long sCharMin = mSettings->platform.signedCharMin();
                 const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
@@ -827,4 +832,45 @@ void CheckFunctions::useStandardLibraryError(const Token *tok, const std::string
     reportError(tok, Severity::style,
                 "useStandardLibrary",
                 "Consider using " + expected + " instead of loop.");
+}
+
+void CheckFunctions::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckFunctions checkFunctions(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    checkFunctions.checkIgnoredReturnValue();
+    checkFunctions.checkMissingReturn();  // Missing "return" in exit path
+
+    // --check-library : functions with nonmatching configuration
+    checkFunctions.checkLibraryMatchFunctions();
+
+    checkFunctions.checkProhibitedFunctions();
+    checkFunctions.invalidFunctionUsage();
+    checkFunctions.checkMathFunctions();
+    checkFunctions.memsetZeroBytes();
+    checkFunctions.memsetInvalid2ndParam();
+    checkFunctions.returnLocalStdMove();
+    checkFunctions.useStandardLibrary();
+}
+
+void CheckFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckFunctions c(nullptr, settings, errorLogger);
+
+    for (auto i = settings->library.functionwarn().cbegin(); i != settings->library.functionwarn().cend(); ++i) {
+        c.reportError(nullptr, Severity::style, i->first+"Called", i->second.message);
+    }
+
+    c.invalidFunctionArgError(nullptr, "func_name", 1, nullptr,"1:4");
+    c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
+    c.invalidFunctionArgStrError(nullptr, "func_name", 1);
+    c.ignoredReturnValueError(nullptr, "malloc");
+    c.mathfunctionCallWarning(nullptr);
+    c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");
+    c.memsetZeroBytesError(nullptr);
+    c.memsetFloatError(nullptr,  "varname");
+    c.memsetValueOutOfRangeError(nullptr,  "varname");
+    c.missingReturnError(nullptr);
+    c.copyElisionError(nullptr);
+    c.useStandardLibraryError(nullptr, "memcpy");
 }

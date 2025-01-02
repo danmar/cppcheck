@@ -36,7 +36,7 @@ namespace ValueFlow
 {
     bool getMinMaxValues(const ValueType* vt, const Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
-    long long truncateIntValue(long long value, size_t value_size, const ValueType::Sign dst_sign);
+    MathLib::bigint truncateIntValue(MathLib::bigint value, size_t value_size, const ValueType::Sign dst_sign);
 
     Token * valueFlowSetConstantValue(Token *tok, const Settings &settings);
 

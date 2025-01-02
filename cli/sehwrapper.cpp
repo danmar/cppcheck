@@ -16,16 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cppcheckexecutorseh.h"
+#include "sehwrapper.h"
 
 #ifdef USE_WINDOWS_SEH
 
-#include "cppcheckexecutor.h"
 #include "utils.h"
 
 #include <windows.h>
 #include <dbghelp.h>
 #include <tchar.h>
+
+static FILE* sehOutput = stdout;
+
+void set_seh_output(FILE* f)
+{
+    sehOutput = f;
+}
 
 namespace {
     const ULONG maxnamelength = 512;
@@ -247,25 +253,17 @@ namespace {
         }
         fputc('\n', outputFile);
         printCallstack(outputFile, ex);
+        fputs("Please report this to the cppcheck developers!\n", outputFile);
         fflush(outputFile);
         return EXCEPTION_EXECUTE_HANDLER;
     }
 }
 
-/**
- * Signal/SEH handling
- * Has to be clean for using with SEH on windows, i.e. no construction of C++ object instances is allowed!
- * TODO Check for multi-threading issues!
- *
- */
-int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(const Settings&) const, const Settings& settings)
+namespace internal
 {
-    FILE * const outputFile = settings.exceptionOutput;
-    __try {
-        return (&executor->*f)(settings);
-    } __except (filterException(outputFile, GetExceptionCode(), GetExceptionInformation())) {
-        fputs("Please report this to the cppcheck developers!\n", outputFile);
-        return -1;
+    int filter_seh_exeception(int code, void* ex)
+    {
+        return filterException(sehOutput, code, static_cast<PEXCEPTION_POINTERS>(ex));
     }
 }
 

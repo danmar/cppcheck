@@ -136,6 +136,8 @@ public:
                    thisAndNextLine == other.thisAndNextLine;
         }
 
+        std::string toString() const;
+
         std::string errorId;
         std::string fileName;
         int lineNumber = NO_LINE;
@@ -195,6 +197,13 @@ public:
      * @return error message. empty upon success
      */
     std::string addSuppressions(std::list<Suppression> suppressions);
+
+    /**
+     * @brief Updates the state of the given suppression.
+     * @param suppression the suppression to update
+     * @return true if suppression to update was found
+     */
+    bool updateSuppressionState(const SuppressionList::Suppression& suppression);
 
     /**
      * @brief Returns true if this message should not be shown to the user.

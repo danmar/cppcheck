@@ -294,7 +294,7 @@ void CheckString::checkIncorrectStringCompare()
                 tok = tok->linkAt(1);
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
-                const MathLib::biguint clen = MathLib::toBigUNumber(tok->linkAt(2)->strAt(-1));
+                const MathLib::biguint clen = MathLib::toBigUNumber(tok->linkAt(2)->tokAt(-1));
                 const Token* begin = tok->previous();
                 for (;;) { // Find start of statement
                     while (begin->link() && Token::Match(begin, "]|)|>"))
@@ -473,4 +473,34 @@ void CheckString::sprintfOverlappingDataError(const Token *funcTok, const Token 
                 "documentation (http://www.gnu.org/software/libc/manual/html_mono/libc.html#Formatted-Output-Functions): "
                 "\"If copying takes place between objects that overlap as a result of a call "
                 "to sprintf() or snprintf(), the results are undefined.\"", CWE628, Certainty::normal);
+}
+
+void CheckString::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckString checkString(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    // Checks
+    checkString.strPlusChar();
+    checkString.checkSuspiciousStringCompare();
+    checkString.stringLiteralWrite();
+    checkString.overlappingStrcmp();
+    checkString.checkIncorrectStringCompare();
+    checkString.sprintfOverlappingData();
+    checkString.checkAlwaysTrueOrFalseStringCompare();
+}
+
+void CheckString::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckString c(nullptr, settings, errorLogger);
+    c.stringLiteralWriteError(nullptr, nullptr);
+    c.sprintfOverlappingDataError(nullptr, nullptr, "varname");
+    c.strPlusCharError(nullptr);
+    c.incorrectStringCompareError(nullptr, "substr", "\"Hello World\"");
+    c.suspiciousStringCompareError(nullptr, "foo", false);
+    c.suspiciousStringCompareError_char(nullptr, "foo");
+    c.incorrectStringBooleanError(nullptr, "\"Hello World\"");
+    c.incorrectStringBooleanError(nullptr, "\'x\'");
+    c.alwaysTrueFalseStringCompareError(nullptr, "str1", "str2");
+    c.alwaysTrueStringVariableCompareError(nullptr, "varname1", "varname2");
+    c.overlappingStrcmpError(nullptr, nullptr);
 }

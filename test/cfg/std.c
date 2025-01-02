@@ -247,8 +247,10 @@ void bufferAccessOutOfBounds(void)
     fread(a,1,6,stdout);
 
     char * pAlloc1 = aligned_alloc(8, 16);
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 16);
     // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 17);
     free(pAlloc1);
 }
@@ -340,14 +342,18 @@ void internalError_libraryDirectionConfiguration(char* str) { // #12824
 void arrayIndexOutOfBounds()
 {
     char * pAlloc1 = aligned_alloc(8, 16);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc1[15] = '\0';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc1[16] = '1';
     free(pAlloc1);
 
     char * pAlloc2 = malloc(9);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc2[8] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc2[9] = 'a';
 
     // #1379
@@ -364,8 +370,10 @@ void arrayIndexOutOfBounds()
     free(pAlloc2);
 
     char * pAlloc3 = calloc(2,3);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc3[5] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc3[6] = 1;
     free(pAlloc3);
 }
@@ -416,6 +424,7 @@ void nullpointer(int value)
     puts(0);
     // cppcheck-suppress nullPointer
     fp=fopen(0,0);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
     fp = 0;
     // No FP
@@ -683,9 +692,11 @@ void uninitvar_fopen(void)
     FILE *fp;
     // cppcheck-suppress uninitvar
     fp = fopen(filename, "rt");
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
     // cppcheck-suppress uninitvar
     fp = fopen("filename.txt", mode);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -735,7 +746,9 @@ void uninitvar_fgetpos(void)
 
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress nullPointerOutOfResources
     fgetpos(fp,ppos);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -749,7 +762,9 @@ void uninitvar_fsetpos(void)
 
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress nullPointerOutOfResources
     fsetpos(fp,ppos);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -3119,6 +3134,7 @@ void uninitvar_vprintf(const char *Format, va_list Arg)
 void memleak_strdup (const char *s) // #9328
 {
     const char *s1 = strdup(s);
+    // cppcheck-suppress nullPointerOutOfMemory
     printf("%s",s1);
     free(s);     // s1 is not freed
     // cppcheck-suppress memleak

@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have popen() and pclose()
+#endif
+
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
@@ -61,7 +65,7 @@
 #endif
 
 #ifdef USE_WINDOWS_SEH
-#include "cppcheckexecutorseh.h"
+#include "sehwrapper.h"
 #endif
 
 #ifdef _WIN32
@@ -368,8 +372,9 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 int CppCheckExecutor::check_wrapper(const Settings& settings)
 {
 #ifdef USE_WINDOWS_SEH
-    if (settings.exceptionHandling)
-        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
+    if (settings.exceptionHandling) {
+        CALL_WITH_SEH_WRAPPER(check_internal(settings));
+    }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     if (settings.exceptionHandling)
         register_signal_handler(settings.exceptionOutput);
@@ -389,12 +394,12 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
         // the two inputs may only be used exclusively
         assert(!(!files.empty() && !fileSettings.empty()));
 
-        for (std::list<FileWithDetails>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
+        for (auto i = files.cbegin(); i != files.cend(); ++i) {
             err |= SuppressionList::reportUnmatchedSuppressions(
                 suppressions.getUnmatchedLocalSuppressions(*i, unusedFunctionCheckEnabled), errorLogger);
         }
 
-        for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
+        for (auto i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
             err |= SuppressionList::reportUnmatchedSuppressions(
                 suppressions.getUnmatchedLocalSuppressions(i->file, unusedFunctionCheckEnabled), errorLogger);
         }
@@ -419,7 +424,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
 
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
-        for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+        for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->path());
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
     }

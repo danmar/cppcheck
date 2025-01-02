@@ -234,26 +234,26 @@ namespace clangimport {
 
         void enumDecl(const std::string &addr, Token *nameToken, Enumerator *enumerator) {
             Decl decl(nameToken, enumerator);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
             nameToken->enumerator(enumerator);
             notFound(addr);
         }
 
         void funcDecl(const std::string &addr, Token *nameToken, Function *function) {
             Decl decl(nameToken, function);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
             nameToken->function(function);
             notFound(addr);
         }
 
         void scopeDecl(const std::string &addr, Scope *scope) {
             Decl decl(scope);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
         }
 
         void varDecl(const std::string &addr, Token *def, Variable *var) {
             Decl decl(def, var);
-            mDeclMap.insert(std::pair<std::string, Decl>(addr, decl));
+            mDeclMap.emplace(addr, decl);
             def->varId(++mVarId);
             def->variable(var);
             if (def->valueType())
@@ -326,16 +326,16 @@ namespace clangimport {
         std::string nodeType;
         std::vector<AstNodePtr> children;
 
+        bool isPrologueTypedefDecl() const;
         void setLocations(TokenList &tokenList, int file, int line, int col);
 
         void dumpAst(int num = 0, int indent = 0) const;
         void createTokens1(TokenList &tokenList) {
             //dumpAst(); // TODO: reactivate or remove
+            if (isPrologueTypedefDecl())
+                return;
             if (!tokenList.back()) {
                 setLocations(tokenList, 0, 1, 1);
-                // FIXME: treat as C++ if no filename (i.e. no lang) is specified for now
-                if (tokenList.getSourceFilePath().empty())
-                    tokenList.setLang(Standards::Language::CPP);
             }
             else
                 setLocations(tokenList, tokenList.back()->fileIndex(), tokenList.back()->linenr(), 1);
@@ -502,9 +502,43 @@ void clangimport::AstNode::dumpAst(int num, int indent) const
     }
 }
 
+bool clangimport::AstNode::isPrologueTypedefDecl() const
+{
+    // these TypedefDecl are included in *any* AST dump and we should ignore them as they should not be of interest to us
+    // see https://github.com/llvm/llvm-project/issues/120228#issuecomment-2549212109 for an explanation
+    if (nodeType != TypedefDecl)
+        return false;
+
+    // TODO: use different values to indicate "<invalid sloc>"?
+    if (mFile != 0 || mLine != 1 || mCol != 1)
+        return false;
+
+    // TODO: match without using children
+    if (children.empty())
+        return false;
+
+    if (children[0].get()->mExtTokens.size() < 2)
+        return false;
+
+    const auto& type = children[0].get()->mExtTokens[1];
+    if (type == "'__int128'" ||
+        type == "'unsigned __int128'" ||
+        type == "'struct __NSConstantString_tag'" ||
+        type == "'char *'" ||
+        type == "'struct __va_list_tag[1]'")
+    {
+        // NOLINTNEXTLINE(readability-simplify-boolean-expr)
+        return true;
+    }
+
+    return false;
+}
+
 void clangimport::AstNode::setLocations(TokenList &tokenList, int file, int line, int col)
 {
-    for (const std::string &ext: mExtTokens) {
+    if (mExtTokens.size() >= 2)
+    {
+        const std::string &ext = mExtTokens[1];
         if (startsWith(ext, "<col:"))
             col = strToInt<int>(ext.substr(5, ext.find_first_of(",>", 5) - 5));
         else if (startsWith(ext, "<line:")) {
@@ -520,6 +554,12 @@ void clangimport::AstNode::setLocations(TokenList &tokenList, int file, int line
                 const std::string::size_type sep2 = ext.find(':', sep1 + 1);
                 file = tokenList.appendFileIfNew(ext.substr(1, sep1 - 1));
                 line = strToInt<int>(ext.substr(sep1 + 1, sep2 - sep1 - 1));
+            }
+            else {
+                // "<invalid sloc>" are encountered in every AST dump by some built-in TypedefDecl
+                // an completely empty location block was encountered with a CompoundStmt
+                if (ext != "<<invalid sloc>" && ext != "<>")
+                    throw InternalError(nullptr, "invalid AST location: " + ext, InternalError::AST);
             }
         }
     }
@@ -682,7 +722,7 @@ Scope *clangimport::AstNode::createScope(TokenList &tokenList, Scope::ScopeType 
                 const_cast<Token *>(vartok)->variable(replaceVar[vartok->variable()]);
         }
         std::list<Variable> &varlist = const_cast<Scope *>(def->scope())->varlist;
-        for (std::list<Variable>::const_iterator var = varlist.cbegin(); var != varlist.cend();) {
+        for (auto var = varlist.cbegin(); var != varlist.cend();) {
             if (replaceVar.find(&(*var)) != replaceVar.end())
                 var = varlist.erase(var);
             else
@@ -1539,7 +1579,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
         if (!scope.definedType)
             continue;
 
-        int typeSize = 0;
+        MathLib::bigint typeSize = 0;
         for (const Variable &var: scope.varlist) {
             const int mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& dim) {
                 return v * dim.num;
@@ -1553,7 +1593,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
     for (auto *tok = const_cast<Token*>(tokenizer.tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
-            const int sz = vt.typeSize(settings.platform, true);
+            const MathLib::bigint sz = vt.typeSize(settings.platform, true);
             if (sz <= 0)
                 continue;
             long long mul = 1;

@@ -17,8 +17,10 @@
  */
 
 #include "config.h"
-#include "mathlib.h"
 #include "fixture.h"
+#include "mathlib.h"
+#include "token.h"
+#include "tokenlist.h"
 
 #include <limits>
 #include <string>
@@ -405,6 +407,17 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1invalid");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1 invalid");
 
+        {
+            TokenList list{&settingsDefault};
+            list.appendFileIfNew("test.c");
+            TokensFrontBack tokensFrontBack(list);
+            auto *tok = new Token(tokensFrontBack);
+            tok->str("invalid");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber(tok), INTERNAL, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("invalid", tok), INTERNAL, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
+            TokenList::deleteTokens(tok);
+        }
+
         // TODO: test binary
         // TODO: test floating point
 
@@ -570,6 +583,17 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1invalid");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1 invalid");
 
+        {
+            TokenList list{&settingsDefault};
+            list.appendFileIfNew("test.c");
+            TokensFrontBack tokensFrontBack(list);
+            auto *tok = new Token(tokensFrontBack);
+            tok->str("invalid");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber(tok), INTERNAL, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("invalid", tok), INTERNAL, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");
+            TokenList::deleteTokens(tok);
+        }
+
         // TODO: test binary
         // TODO: test floating point
 
@@ -688,6 +712,17 @@ private:
         //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0LL"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
         //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0ll"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ll");
         //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0LL"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
+
+        {
+            TokenList list{&settingsDefault};
+            list.appendFileIfNew("test.c");
+            TokensFrontBack tokensFrontBack(list);
+            auto *tok = new Token(tokensFrontBack);
+            tok->str("invalid");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber(tok), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
+            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("invalid", tok), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
+            TokenList::deleteTokens(tok);
+        }
 
         // verify: string --> double --> string conversion
         // TODO: add L, min/max

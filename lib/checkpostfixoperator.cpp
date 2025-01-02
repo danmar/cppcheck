@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenize.h"
 
 #include <vector>
 
@@ -86,4 +87,19 @@ void CheckPostfixOperator::postfixOperatorError(const Token *tok)
                 "post-increment/decrement. Post-increment/decrement usually "
                 "involves keeping a copy of the previous value around and "
                 "adds a little extra code.", CWE398, Certainty::normal);
+}
+
+void CheckPostfixOperator::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (tokenizer.isC())
+        return;
+
+    CheckPostfixOperator checkPostfixOperator(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkPostfixOperator.postfixOperator();
+}
+
+void CheckPostfixOperator::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckPostfixOperator c(nullptr, settings, errorLogger);
+    c.postfixOperatorError(nullptr);
 }

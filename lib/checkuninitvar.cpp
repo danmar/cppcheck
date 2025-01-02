@@ -29,6 +29,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "vfvalue.h"
 
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 
@@ -300,7 +301,7 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
     if (tok->isName() || tok->str() == ".") {
         while (tok && tok->str() == ".")
             tok = tok->astOperand2();
-        const std::map<nonneg int, VariableValue>::const_iterator it = variableValue.find(tok ? tok->varId() : ~0U);
+        const auto it = utils::as_const(variableValue).find(tok ? tok->varId() : ~0U);
         if (it != variableValue.end()) {
             *alwaysTrue = (it->second != 0LL);
             *alwaysFalse = (it->second == 0LL);
@@ -326,14 +327,14 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
         while (vartok && vartok->str() == ".")
             vartok = vartok->astOperand2();
 
-        const std::map<nonneg int, VariableValue>::const_iterator it = variableValue.find(vartok ? vartok->varId() : ~0U);
+        const auto it = utils::as_const(variableValue).find(vartok ? vartok->varId() : ~0U);
         if (it == variableValue.end())
             return;
 
         if (tok->str() == "==")
-            *alwaysTrue  = (it->second == MathLib::toBigNumber(numtok->str()));
+            *alwaysTrue  = (it->second == MathLib::toBigNumber(numtok));
         else if (tok->str() == "!=")
-            *alwaysTrue  = (it->second != MathLib::toBigNumber(numtok->str()));
+            *alwaysTrue  = (it->second != MathLib::toBigNumber(numtok));
         else
             return;
         *alwaysFalse = !(*alwaysTrue);
@@ -472,7 +473,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             if (alwaysFalse)
                 ;
             else if (astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
-                const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
+                const auto it = utils::as_const(variableValue).find(condVarTok->varId());
                 if (it != variableValue.cend() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
 
@@ -487,7 +488,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 while (Token::simpleMatch(vartok, "."))
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
-                    const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
+                    const auto it = utils::as_const(variableValue).find(vartok->varId());
                     if (it != variableValue.cend() && it->second != numtok->getKnownIntValue())
                         return true;   // this scope is not fully analysed => return true
                     condVarId = vartok->varId();
@@ -1780,4 +1781,22 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
         }
     }
     return foundErrors;
+}
+
+void CheckUninitVar::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckUninitVar checkUninitVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkUninitVar.valueFlowUninit();
+    checkUninitVar.check();
+}
+
+void CheckUninitVar::getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const
+{
+    CheckUninitVar c(nullptr, settings, errorLogger);
+
+    ValueFlow::Value v{};
+
+    c.uninitvarError(nullptr, v);
+    c.uninitdataError(nullptr, "varname");
+    c.uninitStructMemberError(nullptr, "a.b");
 }

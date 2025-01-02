@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
-#undef __STRICT_ANSI__
-#endif
-
 //#define LOG_EMACS_MARKER
+
+#if defined(__CYGWIN__)
+#define _POSIX_C_SOURCE 200112L // required to have readlink()
+#define _BSD_SOURCE // required to have realpath()
+#endif
 
 #include "path.h"
 #include "utils.h"
@@ -215,10 +216,13 @@ static const std::unordered_set<std::string> header_exts = {
     ".h", ".hpp", ".h++", ".hxx", ".hh"
 };
 
-bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
+bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra, Standards::Language* lang)
 {
     bool header = false;
-    return (identify(path, false, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
+    Standards::Language l = identify(path, false, &header);
+    if (lang)
+        *lang = l;
+    return (l != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
 }
 
 static bool hasEmacsCppMarker(const char* path)

@@ -143,7 +143,7 @@ namespace ValueFlow
             Value floatValue = value;
             floatValue.valueType = Value::ValueType::FLOAT;
             if (value.isIntValue())
-                floatValue.floatValue = value.intvalue;
+                floatValue.floatValue = static_cast<double>(value.intvalue);
             setTokenValue(parent, std::move(floatValue), settings);
         } else if (value.isIntValue()) {
             const long long charMax = settings.platform.signedCharMax();
@@ -494,8 +494,8 @@ namespace ValueFlow
                             continue;
                         result.valueType = Value::ValueType::FLOAT;
                     }
-                    const double floatValue1 = value1.isFloatValue() ? value1.floatValue : value1.intvalue;
-                    const double floatValue2 = value2.isFloatValue() ? value2.floatValue : value2.intvalue;
+                    const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
+                    const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
                     const auto intValue1 = [&]() -> MathLib::bigint {
                         return value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
                     };
@@ -641,7 +641,7 @@ namespace ValueFlow
                         const ValueType *dst = tok->valueType();
                         if (dst) {
                             const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-                            long long newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
+                            MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue < v.intvalue) {
                                     v.invertBound();
@@ -671,7 +671,7 @@ namespace ValueFlow
                         const ValueType *dst = tok->valueType();
                         if (dst) {
                             const size_t sz = ValueFlow::getSizeOf(*dst, settings);
-                            long long newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
+                            MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue > v.intvalue) {
                                     v.invertBound();

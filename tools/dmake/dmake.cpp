@@ -149,13 +149,19 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 {
     for (const std::string &file : files) {
         const bool external(startsWith(file,"externals/") || startsWith(file,"../externals/"));
+        const bool tinyxml2(startsWith(file,"externals/tinyxml2/") || startsWith(file,"../externals/tinyxml2/"));
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);
         std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o $@ " << builddir(file) << "\n\n";
+        std::string additional;
+        if (external)
+            additional += " -w"; // do not show any warnings for external
+        if (tinyxml2)
+            additional += " -D_LARGEFILE_SOURCE"; // required for fseeko() and ftello() (on Cygwin)
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << additional << " -c -o $@ " << builddir(file) << "\n\n";
     }
 }
 
@@ -654,16 +660,11 @@ int main(int argc, char **argv)
          << "endif # WINNT\n"
          << "\n";
 
-    // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
     fout << "ifdef CYGWIN\n"
          << "    ifeq ($(VERBOSE),1)\n"
          << "        $(info CYGWIN found)\n"
          << "    endif\n"
          << "\n"
-         << "    # Set the flag to address compile time warnings\n"
-         << "    # with tinyxml2 and Cygwin.\n"
-         << "    CPPFLAGS+=-U__STRICT_ANSI__\n"
-         << "    \n"
          << "    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
          << "    CXXFLAGS+=-Wl,--stack,8388608\n"
          << "endif # CYGWIN\n"
@@ -677,7 +678,7 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     if (release) {
-        makeConditionalVariable(fout, "CXXFLAGS", "-std=c++0x -O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
+        makeConditionalVariable(fout, "CXXFLAGS", "-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-multichar");
     } else {
         makeConditionalVariable(fout, "CXXFLAGS",
                                 "-pedantic "
@@ -699,14 +700,9 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=gnu++0x -pipe\n"
-         << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=c++0x\n"
-         << "else ifeq ($(CXX), c++)\n"
-         << "    ifeq ($(shell uname -s), Darwin)\n"
-         << "        override CXXFLAGS += -std=c++0x\n"
-         << "    endif\n"
+         << "    override CXXFLAGS += -pipe\n"
          << "endif\n"
+         << "override CXXFLAGS += -std=c++11"
          << "\n";
 
     fout << "ifeq ($(HAVE_RULES),yes)\n"
@@ -746,8 +742,15 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(EXTOBJ) $(LIBOBJ) $(CLIOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    // TODO: generate from clifiles
-    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) cli/executor.o cli/processexecutor.o cli/singleexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/signalhandler.o cli/stacktrace.o cli/filelister.o\n";
+    std::string testrunner_clifiles_o;
+    for (const std::string &clifile: clifiles) {
+        if (clifile == "cli/main.cpp")
+            continue;
+        testrunner_clifiles_o += ' ';
+        const std::string o = clifile.substr(0, clifile.length()-3) + 'o';
+        testrunner_clifiles_o += o;
+    }
+    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ)" << testrunner_clifiles_o << "\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
@@ -773,6 +776,7 @@ int main(int argc, char **argv)
     fout << "ifdef FILESDIR\n";
     fout << "\tinstall -d ${DESTDIR}${FILESDIR}\n";
     fout << "\tinstall -d ${DESTDIR}${FILESDIR}/addons\n";
+    fout << "\tinstall -m 644 addons/*.json ${DESTDIR}${FILESDIR}/addons\n";
     fout << "\tinstall -m 644 addons/*.py ${DESTDIR}${FILESDIR}/addons\n";
     fout << "\tinstall -d ${DESTDIR}${FILESDIR}/cfg\n";
     fout << "\tinstall -m 644 cfg/*.cfg ${DESTDIR}${FILESDIR}/cfg\n";

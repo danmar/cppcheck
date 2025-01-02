@@ -1177,6 +1177,8 @@ public:
 
     static std::string typeStr(const Token* tok);
 
+    static bool isStandardType(const std::string& str);
+
     /**
      * @return a pointer to the Enumerator associated with this token.
      */

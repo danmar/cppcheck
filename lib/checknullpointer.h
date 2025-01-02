@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <list>
@@ -34,6 +33,7 @@ class ErrorLogger;
 class Library;
 class Settings;
 class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -77,12 +77,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckNullPointer checkNullPointer(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkNullPointer.nullPointer();
-        checkNullPointer.arithmetic();
-        checkNullPointer.nullConstantDereference();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief possible null pointer dereference */
     void nullPointer();
@@ -106,12 +101,7 @@ private:
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     /** Get error messages. Used by --errorlist */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckNullPointer c(nullptr, settings, errorLogger);
-        c.nullPointerError(nullptr, "pointer", nullptr, false);
-        c.pointerArithmeticError(nullptr, nullptr, false);
-        c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     /** Name of check */
     static std::string myName() {

@@ -517,3 +517,36 @@ void CheckBool::returnValueBoolError(const Token *tok)
 {
     reportError(tok, Severity::style, "returnNonBoolInBooleanFunction", "Non-boolean value returned from function returning bool");
 }
+
+void CheckBool::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckBool checkBool(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    // Checks
+    checkBool.checkComparisonOfBoolExpressionWithInt();
+    checkBool.checkComparisonOfBoolWithInt();
+    checkBool.checkAssignBoolToFloat();
+    checkBool.pointerArithBool();
+    checkBool.returnValueOfFunctionReturningBool();
+    checkBool.checkComparisonOfFuncReturningBool();
+    checkBool.checkComparisonOfBoolWithBool();
+    checkBool.checkIncrementBoolean();
+    checkBool.checkAssignBoolToPointer();
+    checkBool.checkBitwiseOnBoolean();
+}
+
+void CheckBool::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckBool c(nullptr, settings, errorLogger);
+    c.assignBoolToPointerError(nullptr);
+    c.assignBoolToFloatError(nullptr);
+    c.comparisonOfFuncReturningBoolError(nullptr, "func_name");
+    c.comparisonOfTwoFuncsReturningBoolError(nullptr, "func_name1", "func_name2");
+    c.comparisonOfBoolWithBoolError(nullptr, "var_name");
+    c.incrementBooleanError(nullptr);
+    c.bitwiseOnBooleanError(nullptr, "expression", "&&");
+    c.comparisonOfBoolExpressionWithIntError(nullptr, true);
+    c.pointerArithBoolError(nullptr);
+    c.comparisonOfBoolWithInvalidComparator(nullptr, "expression");
+    c.returnValueBoolError(nullptr);
+}

@@ -60,6 +60,7 @@ private:
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
+        TEST_CASE(getClangFlagsIncludeFile);
     }
 
     void getErrorMessages() const {
@@ -69,7 +70,7 @@ private:
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
-        for (std::list<std::string>::const_iterator it = errorLogger.ids.cbegin();
+        for (auto it = errorLogger.ids.cbegin();
              it != errorLogger.ids.cend();
              ++it) {
             if (std::find(errorLogger.ids.cbegin(), it, *it) != it) {
@@ -241,6 +242,13 @@ private:
         cppcheck.settings().libraries.emplace_back("posix.cfg");
         const std::string expected2 = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
         ASSERT_EQUALS(expected2, cppcheck.getLibraryDumpData());
+    }
+
+    void getClangFlagsIncludeFile() const {
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        cppcheck.settings().userIncludes.emplace_back("1.h");
+        ASSERT_EQUALS("-x c --include 1.h ", cppcheck.getClangFlags(Standards::Language::C));
     }
 
     // TODO: test suppressions

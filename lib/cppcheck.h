@@ -22,22 +22,15 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
-#include "color.h"
 #include "config.h"
-#include "errorlogger.h"
 #include "settings.h"
 
-#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <functional>
 #include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
 class TokenList;
@@ -46,8 +39,8 @@ struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
 class FileWithDetails;
-class RemarkComment;
 class AnalyzerInformation;
+class ErrorLogger;
 
 namespace simplecpp { class TokenList; }
 
@@ -60,7 +53,7 @@ namespace simplecpp { class TokenList; }
  * errors or places that could be improved.
  * Usage: See check() for more info.
  */
-class CPPCHECKLIB CppCheck : ErrorLogger {
+class CPPCHECKLIB CppCheck {
 public:
     using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
 
@@ -74,7 +67,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~CppCheck() override;
+    ~CppCheck();
 
     /**
      * @brief This starts the actual checking. Note that you must call
@@ -160,6 +153,13 @@ public:
 
     std::string getLibraryDumpData() const;
 
+    /**
+     * @brief Get the clang command line flags using the Settings
+     * @param fileLang language guessed from filename
+     * @return Clang command line flags
+     */
+    std::string getClangFlags(Standards::Language fileLang) const;
+
 private:
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
@@ -181,8 +181,9 @@ private:
     /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
+     * @param analyzerInformation the analyzer infomation
      */
-    void checkNormalTokens(const Tokenizer &tokenizer);
+    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation);
 
     /**
      * Execute addons
@@ -206,37 +207,17 @@ private:
 
     unsigned int checkClang(const FileWithDetails &file);
 
-    /**
-     * @brief Errors and warnings are directed here.
-     *
-     * @param msg Errors messages are normally in format
-     * "[filepath:line number] Message", e.g.
-     * "[main.cpp:4] Uninitialized member variable"
-     */
-    void reportErr(const ErrorMessage &msg) override;
-
-    /**
-     * @brief Information about progress is directed here.
-     *
-     * @param outmsg Message to show, e.g. "Checking main.cpp..."
-     */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
-
-    // TODO: store hashes instead of the full messages
-    std::unordered_set<std::string> mErrorList;
     Settings mSettings;
 
-    void reportProgress(const std::string &filename, const char stage[], std::size_t value) override;
-
-    ErrorLogger &mErrorLogger;
+    class CppCheckLogger;
+    std::unique_ptr<CppCheckLogger> mLogger;
+    /** the internal ErrorLogger */
+    ErrorLogger& mErrorLogger;
+    /** the ErrorLogger provided to this instance */
+    ErrorLogger& mErrorLoggerDirect;
 
     /** @brief Current preprocessor configuration */
     std::string mCurrentConfig;
-
-    using Location = std::pair<std::string, int>;
-    std::map<Location, std::set<std::string>> mLocationMacros; // What macros are used on a location?
-
-    unsigned int mExitCode{};
 
     bool mUseGlobalSuppressions;
 
@@ -246,16 +227,10 @@ private:
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
 
-    std::unique_ptr<AnalyzerInformation> mAnalyzerInformation;
-
     /** Callback for executing a shell command (exe, args, output) */
     ExecuteCmdFn mExecuteCommand;
 
-    std::ofstream mPlistFile;
-
     std::unique_ptr<CheckUnusedFunctions> mUnusedFunctionsCheck;
-
-    std::vector<RemarkComment> mRemarkComments;
 };
 
 /// @}

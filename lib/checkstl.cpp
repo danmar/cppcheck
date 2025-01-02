@@ -30,6 +30,7 @@
 #include "tokenize.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include "checknullpointer.h"
 
@@ -204,14 +205,14 @@ void CheckStl::outOfBounds()
 static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = emptyString)
 {
     if (indexValue.isIteratorStartValue())
-        return "at position " + std::to_string(indexValue.intvalue) + " from the beginning";
+        return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
     if (indexValue.isIteratorEndValue())
-        return "at position " + std::to_string(-indexValue.intvalue) + " from the end";
-    std::string indexString = std::to_string(indexValue.intvalue);
+        return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
+    std::string indexString = MathLib::toString(indexValue.intvalue);
     if (indexValue.isSymbolicValue()) {
         indexString = containerName + ".size()";
         if (indexValue.intvalue != 0)
-            indexString += "+" + std::to_string(indexValue.intvalue);
+            indexString += "+" + MathLib::toString(indexValue.intvalue);
     }
     if (indexValue.bound == ValueFlow::Value::Bound::Lower)
         return "greater or equal to " + indexString;
@@ -243,11 +244,11 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
     } else if (indexValue) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or size of '$symbol' can be " + std::to_string(containerSize->intvalue) + ". Expression '" + expression + "' causes access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or size of '$symbol' can be " + MathLib::toString(containerSize->intvalue) + ". Expression '" + expression + "' causes access out of bounds.";
         else if (indexValue->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' causes access out of bounds.";
         else
-            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + std::to_string(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
+            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
     } else {
         // should not happen
         return;
@@ -725,6 +726,28 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     return false;
 }
 
+// First it groups the lifetimes together using std::partition with the lifetimes that refer to the same token or token of a subexpression.
+// Then it finds the lifetime in that group that refers to the "highest" parent using std::min_element and adds that to the vector.
+static std::vector<ValueFlow::Value> pruneLifetimes(std::vector<ValueFlow::Value> lifetimes)
+{
+    std::vector<ValueFlow::Value> result;
+    auto start = lifetimes.begin();
+    while (start != lifetimes.end())
+    {
+        const Token* tok1 = start->tokvalue;
+        auto it = std::partition(start, lifetimes.end(), [&](const ValueFlow::Value& v) {
+            const Token* tok2 = v.tokvalue;
+            return start->lifetimeKind == v.lifetimeKind && (astHasToken(tok1, tok2) || astHasToken(tok2, tok1));
+        });
+        auto root = std::min_element(start, it, [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+            return x.tokvalue != y.tokvalue && astHasToken(x.tokvalue, y.tokvalue);
+        });
+        result.push_back(*root);
+        start = it;
+    }
+    return result;
+}
+
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
     auto findIterVal = [](const std::vector<ValueFlow::Value>& values, const std::vector<ValueFlow::Value>::const_iterator beg) {
@@ -732,7 +755,7 @@ static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigi
             return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
         });
     };
-    std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, false, path);
+    std::vector<ValueFlow::Value> values = pruneLifetimes(ValueFlow::getLifetimeObjValues(tok, false, path));
     auto it = findIterVal(values, values.begin());
     if (it != values.end()) {
         auto it2 = findIterVal(values, it + 1);
@@ -777,8 +800,12 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
             return false;
     }
     const Token* iter1 = getIteratorExpression(tok1);
+    if (!iter1)
+        return false;
     const Token* iter2 = getIteratorExpression(tok2);
-    if (iter1 && iter2 && !isSameIteratorContainerExpression(iter1, iter2, *mSettings)) {
+    if (!iter2)
+        return false;
+    if (!isSameIteratorContainerExpression(iter1, iter2, *mSettings)) {
         mismatchingContainerExpressionError(iter1, iter2);
         return true;
     }
@@ -962,7 +989,7 @@ namespace {
             void add(const Reference& r) {
                 if (!r.tok)
                     return;
-                expressions.insert(std::make_pair(r.tok->exprId(), r));
+                expressions.emplace(r.tok->exprId(), r);
             }
 
             std::vector<Reference> invalidTokens() const {
@@ -1072,10 +1099,13 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
             if (val.isInconclusive())
                 return nullptr;
             if (val.capturetok)
-                return getInnerLifetime(val.capturetok, id, errorPath, depth - 1);
+                if (const ValueFlow::Value* v = getInnerLifetime(val.capturetok, id, errorPath, depth - 1))
+                    return v;
             if (errorPath)
                 errorPath->insert(errorPath->end(), val.errorPath.cbegin(), val.errorPath.cend());
-            return getInnerLifetime(val.tokvalue, id, errorPath, depth - 1);
+            if (const ValueFlow::Value* v = getInnerLifetime(val.tokvalue, id, errorPath, depth - 1))
+                return v;
+            continue;
         }
         if (!val.tokvalue->variable())
             continue;
@@ -3274,3 +3304,80 @@ void CheckStl::checkMutexes()
     }
 }
 
+void CheckStl::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (!tokenizer.isCPP()) {
+        return;
+    }
+
+    CheckStl checkStl(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkStl.erase();
+    checkStl.if_find();
+    checkStl.checkFindInsert();
+    checkStl.iterators();
+    checkStl.missingComparison();
+    checkStl.outOfBounds();
+    checkStl.outOfBoundsIndexExpression();
+    checkStl.redundantCondition();
+    checkStl.string_c_str();
+    checkStl.uselessCalls();
+    checkStl.useStlAlgorithm();
+
+    checkStl.stlOutOfBounds();
+    checkStl.negativeIndex();
+
+    checkStl.invalidContainer();
+    checkStl.mismatchingContainers();
+    checkStl.mismatchingContainerIterator();
+    checkStl.knownEmptyContainer();
+    checkStl.eraseIteratorOutOfBounds();
+
+    checkStl.stlBoundaries();
+    checkStl.checkDereferenceInvalidIterator();
+    checkStl.checkDereferenceInvalidIterator2();
+    checkStl.checkMutexes();
+
+    // Style check
+    checkStl.size();
+}
+
+void CheckStl::getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const
+{
+    CheckStl c(nullptr, settings, errorLogger);
+    c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
+    c.invalidIteratorError(nullptr, "iterator");
+    c.iteratorsError(nullptr, "container1", "container2");
+    c.iteratorsError(nullptr, nullptr, "container0", "container1");
+    c.iteratorsError(nullptr, nullptr, "container");
+    c.invalidContainerLoopError(nullptr, nullptr, ErrorPath{});
+    c.invalidContainerError(nullptr, nullptr, nullptr, ErrorPath{});
+    c.mismatchingContainerIteratorError(nullptr, nullptr, nullptr);
+    c.mismatchingContainersError(nullptr, nullptr);
+    c.mismatchingContainerExpressionError(nullptr, nullptr);
+    c.sameIteratorExpressionError(nullptr);
+    c.dereferenceErasedError(nullptr, nullptr, "iter", false);
+    c.stlOutOfBoundsError(nullptr, "i", "foo", false);
+    c.negativeIndexError(nullptr, ValueFlow::Value(-1));
+    c.stlBoundariesError(nullptr);
+    c.if_findError(nullptr, false);
+    c.if_findError(nullptr, true);
+    c.checkFindInsertError(nullptr);
+    c.string_c_strError(nullptr);
+    c.string_c_strReturn(nullptr);
+    c.string_c_strParam(nullptr, 0);
+    c.string_c_strThrowError(nullptr);
+    c.sizeError(nullptr);
+    c.missingComparisonError(nullptr, nullptr);
+    c.redundantIfRemoveError(nullptr);
+    c.uselessCallsReturnValueError(nullptr, "str", "find");
+    c.uselessCallsSwapError(nullptr, "str");
+    c.uselessCallsSubstrError(nullptr, SubstrErrorType::COPY);
+    c.uselessCallsEmptyError(nullptr);
+    c.uselessCallsRemoveError(nullptr, "remove");
+    c.dereferenceInvalidIteratorError(nullptr, "i");
+    c.eraseIteratorOutOfBoundsError(nullptr, nullptr);
+    c.useStlAlgorithmError(nullptr, emptyString);
+    c.knownEmptyContainerError(nullptr, emptyString);
+    c.globalLockGuardError(nullptr);
+    c.localMutexError(nullptr);
+}

@@ -256,7 +256,7 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                             suppr.lineNumber = supprBegin->lineNumber;
                             suppr.type = SuppressionList::Type::block;
                             inlineSuppressionsBlockBegin.erase(supprBegin);
-                            suppressions.addSuppression(std::move(suppr));
+                            suppressions.addSuppression(std::move(suppr)); // TODO: check result
                             throwError = false;
                             break;
                         }
@@ -281,10 +281,10 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                 suppr.thisAndNextLine = thisAndNextLine;
                 suppr.lineNumber = tok->location.line;
                 suppr.macroName = macroName;
-                suppressions.addSuppression(std::move(suppr));
+                suppressions.addSuppression(std::move(suppr)); // TODO: check result
             } else if (SuppressionList::Type::file == suppr.type) {
                 if (onlyComments)
-                    suppressions.addSuppression(std::move(suppr));
+                    suppressions.addSuppression(std::move(suppr)); // TODO: check result
                 else
                     bad.emplace_back(suppr.fileName, suppr.lineNumber, "File suppression should be at the top of the file");
             }
@@ -302,7 +302,7 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
         return;
     std::list<BadInlineSuppression> err;
     ::addInlineSuppressions(tokens, mSettings, suppressions, err);
-    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
+    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
             ::addInlineSuppressions(*it->second, mSettings, suppressions, err);
     }
@@ -315,7 +315,7 @@ std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::Toke
 {
     std::vector<RemarkComment> ret;
     addRemarkComments(tokens, ret);
-    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
+    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
             addRemarkComments(*it->second, ret);
     }
@@ -330,7 +330,7 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + mTokenLists.size());
     list.push_back(&tokens);
-    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
+    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         list.push_back(it->second);
     }
 
@@ -487,7 +487,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
     return std::any_of(configs_if.cbegin(), configs_if.cend(),
-                       [=](const std::string &cfg) {
+                       [&](const std::string &cfg) {
         return hasDefine(userDefines, cfg);
     });
 }
@@ -662,7 +662,7 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 
     ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
-    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
+    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (!mSettings.configurationExcluded(it->first))
             ::getConfigs(*(it->second), defined, mSettings.userDefines, mSettings.userUndefs, ret);
     }
@@ -975,7 +975,7 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
             hashData += static_cast<char>(tok->location.col);
         }
     }
-    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
+    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
             if (!tok->comment) {
                 hashData += tok->str();

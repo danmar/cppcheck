@@ -223,10 +223,10 @@
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
-    <ClInclude Include="cppcheckexecutorseh.h" />
     <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
+    <ClInclude Include="sehwrapper.h" />
     <ClInclude Include="signalhandler.h" />
     <ClInclude Include="singleexecutor.h" />
     <ClInclude Include="stacktrace.h" />
@@ -240,7 +240,6 @@
   <ItemGroup Label="SourceFiles">
     <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
-    <ClCompile Include="cppcheckexecutorseh.cpp" />
     <ClCompile Include="executor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -250,6 +249,7 @@
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processexecutor.cpp" />
+    <ClCompile Include="sehwrapper.cpp" />
     <ClCompile Include="signalhandler.cpp" />
     <ClCompile Include="singleexecutor.cpp" />
     <ClCompile Include="stacktrace.cpp" />

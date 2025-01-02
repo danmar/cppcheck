@@ -1,5 +1,6 @@
 if (BUILD_TESTS)
     add_subdirectory(signal)
+    add_subdirectory(seh)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")

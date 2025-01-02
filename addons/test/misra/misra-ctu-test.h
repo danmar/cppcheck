@@ -21,3 +21,4 @@ void misra_8_7_external(void);
 // #12362
 extern void misra_8_7_compliant( void );
 
+#define MISRA_2_5_OK_3 This

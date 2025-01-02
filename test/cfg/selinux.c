@@ -80,8 +80,10 @@ void selabel_fail2(void)
     struct selabel_handle *hnd = selabel_open(SELABEL_CTX_FILE, NULL, 0);
 
     char *ctx;
+    // cppcheck-suppress nullPointerOutOfResources
     selabel_lookup(hnd, &ctx, "/", 0);
 
+    // cppcheck-suppress nullPointerOutOfResources
     selabel_close(hnd);
 
     // cppcheck-suppress memleak
@@ -92,14 +94,18 @@ void selabel_success(void)
     struct selabel_handle *hnd = selabel_open(SELABEL_CTX_FILE, NULL, 0);
 
     char *ctx;
+    // cppcheck-suppress nullPointerOutOfResources
     selabel_lookup(hnd, &ctx, "/", 0);
 
     freecon(ctx);
 
+    // cppcheck-suppress nullPointerOutOfResources
     (void)selabel_cmp(hnd, hnd);
 
+    // cppcheck-suppress nullPointerOutOfResources
     selabel_stats(hnd);
 
+    // cppcheck-suppress nullPointerOutOfResources
     selabel_close(hnd);
 }
 
