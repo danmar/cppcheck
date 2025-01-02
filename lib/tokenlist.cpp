@@ -1750,7 +1750,8 @@ static Token * createAstAtToken(Token *tok)
         (cpp && Token::Match(tok, "%name% {") && iscpp11init(tok->next())) ||
         Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") ||
         Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%") ||
-        Token::Match(tok->previous(), "[;{}] delete new")) {
+        Token::Match(tok->previous(), "[;{}] delete new") ||
+        cpp & Token::Match(tok->previous(), "[;{}] [")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();
 
