@@ -205,8 +205,8 @@ private:
         TEST_CASE(disableAll);
         TEST_CASE(disableMultiple);
         TEST_CASE(disableStylePartial);
-        TEST_CASE(disableInformationPartial);
-        TEST_CASE(disableInformationPartial2);
+        TEST_CASE(disabledMissingIncludeWithInformation2);
+        TEST_CASE(disabledInformationWithMissingInclude);
         TEST_CASE(disableInvalid);
         TEST_CASE(disableError);
         TEST_CASE(disableEmpty);
@@ -493,6 +493,11 @@ private:
         TEST_CASE(safetyOverride);
         TEST_CASE(noSafety);
         TEST_CASE(noSafetyOverride);
+        TEST_CASE(disabledUnmatchedSuppressionWithInformation);
+        TEST_CASE(enabledUnmatchedSuppressionWithInformation);
+        TEST_CASE(enabledUnmatchedSuppressionWithInformationReverseOrder);
+        TEST_CASE(disabledUnmatchedSuppressionWithInformation2);
+        TEST_CASE(disabledInformationWithUnmatchedSuppression);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -1031,6 +1036,7 @@ private:
         ASSERT(settings->severity.isEnabled(Severity::error));
         ASSERT(settings->severity.isEnabled(Severity::information));
         ASSERT(!settings->checks.isEnabled(Checks::missingInclude));
+        ASSERT(settings->checks.isEnabled(Checks::unmatchedSuppression));
     }
 
     void enabledUnusedFunction() {
@@ -1170,7 +1176,7 @@ private:
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::internalCheck));
     }
 
-    void disableInformationPartial() {
+    void disabledMissingIncludeWithInformation2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=information", "--disable=missingInclude", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
@@ -1179,7 +1185,7 @@ private:
         ASSERT_EQUALS("", logger->str());
     }
 
-    void disableInformationPartial2() {
+    void disabledInformationWithMissingInclude() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--disable=information", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
@@ -3419,6 +3425,53 @@ private:
         const char * const argv[] = {"cppcheck", "--safety", "--no-safety", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(false, settings->safety);
+    }
+
+    void disabledUnmatchedSuppressionWithInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=unmatchedSuppression", "--enable=information", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT(settings->severity.isEnabled(Severity::error));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(!settings->checks.isEnabled(Checks::unmatchedSuppression));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void enabledUnmatchedSuppressionWithInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "--enable=unmatchedSuppression", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT(settings->severity.isEnabled(Severity::error));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::unmatchedSuppression));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void enabledUnmatchedSuppressionWithInformationReverseOrder() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=unmatchedSuppression", "--enable=information", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT(settings->severity.isEnabled(Severity::error));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::unmatchedSuppression));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void disabledUnmatchedSuppressionWithInformation2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "--disable=unmatchedSuppression", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT(settings->severity.isEnabled(Severity::information));
+        ASSERT(!settings->checks.isEnabled(Checks::unmatchedSuppression));
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void disabledInformationWithUnmatchedSuppression() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=unmatchedSuppression", "--disable=information", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT(!settings->severity.isEnabled(Severity::information));
+        ASSERT(settings->checks.isEnabled(Checks::unmatchedSuppression));
     }
 
     void ignorepaths1() {
