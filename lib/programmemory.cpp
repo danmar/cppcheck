@@ -578,6 +578,11 @@ static double asFloat(const ValueFlow::Value& value)
     return value.isFloatValue() ? value.floatValue : static_cast<double>(value.intvalue);
 }
 
+static MathLib::bigint asInt(const ValueFlow::Value& value)
+{
+    return value.isFloatValue() ? static_cast<MathLib::bigint>(value.floatValue) : value.intvalue;
+}
+
 static std::string removeAssign(const std::string& assign) {
     return std::string{assign.cbegin(), assign.cend() - 1};
 }
@@ -587,7 +592,7 @@ namespace {
         template<class T, class U>
         void operator()(T& x, const U& y) const
         {
-            x = y;
+            x = static_cast<T>(y);
         }
     };
 }
@@ -896,7 +901,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::scalbln(asFloat(args[0]), asFloat(args[1]));
+        v.floatValue = std::scalbln(asFloat(args[0]), asInt(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -907,7 +912,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::ldexp(asFloat(args[0]), asFloat(args[1]));
+        v.floatValue = std::ldexp(asFloat(args[0]), asInt(args[1]));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
