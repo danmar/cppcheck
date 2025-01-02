@@ -194,8 +194,6 @@ public:
             return "unix64";
         case Type::File:
             return "platformFile";
-        default:
-            throw std::runtime_error("unknown platform");
         }
     }
 

@@ -59,7 +59,6 @@ void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
         ::addItem(mInformation, lower);
         break;
     case ShowTypes::ShowNone:
-    default:
         qDebug() << "Unknown error type - not added to statistics.";
         break;
     }
@@ -99,7 +98,6 @@ unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type
     case ShowTypes::ShowInformation:
         return mInformation.value(lower,0);
     case ShowTypes::ShowNone:
-    default:
         qDebug() << "Unknown error type - returning zero statistics.";
         return 0;
     }
