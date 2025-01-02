@@ -9470,7 +9470,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability, inconclusive) Array 'a' might be filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*a)'?\n", errout_str());
 
         check("void f() {\n"
-              "    int n = 5;"
+              "    const int n = 5;"
               "    int a[n];\n"
               "    memset(a, 0, n);\n"
               "}");

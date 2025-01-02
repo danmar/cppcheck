@@ -3194,7 +3194,6 @@ void CheckOther::checkIncompleteArrayFill()
                 if (!var || !var->isArray() || var->dimensions().empty() || !var->dimension(0))
                     continue;
 
-                
                 if (!args[2]->hasKnownIntValue())
                     continue;
                 if (args[2]->getKnownIntValue() != var->dimension(0))
