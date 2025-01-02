@@ -107,7 +107,7 @@ void CheckCondition::assignIf()
 
             if (Token::Match(tok->next(), "%num% [&|]")) {
                 bitop = tok->strAt(2).at(0);
-                num = MathLib::toBigNumber(tok->strAt(1));
+                num = MathLib::toBigNumber(tok->tokAt(1));
             } else {
                 const Token *endToken = Token::findsimplematch(tok, ";");
 
@@ -117,7 +117,7 @@ void CheckCondition::assignIf()
 
                 if (endToken && Token::Match(endToken->tokAt(-2), "[&|] %num% ;")) {
                     bitop = endToken->strAt(-2).at(0);
-                    num = MathLib::toBigNumber(endToken->strAt(-1));
+                    num = MathLib::toBigNumber(endToken->tokAt(-1));
                 }
             }
 
@@ -170,7 +170,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
 
     for (const Token *tok2 = startTok; tok2; tok2 = tok2->next()) {
         if ((bitop == '&') && Token::Match(tok2->tokAt(2), "%varid% %cop% %num% ;", varid) && tok2->strAt(3) == std::string(1U, bitop)) {
-            const MathLib::bigint num2 = MathLib::toBigNumber(tok2->strAt(4));
+            const MathLib::bigint num2 = MathLib::toBigNumber(tok2->tokAt(4));
             if (0 == (num & num2))
                 mismatchingBitAndError(assignTok, num, tok2, num2);
         }
@@ -178,7 +178,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
             return true;
         }
         if (bitop == '&' && Token::Match(tok2, "%varid% &= %num% ;", varid)) {
-            const MathLib::bigint num2 = MathLib::toBigNumber(tok2->strAt(2));
+            const MathLib::bigint num2 = MathLib::toBigNumber(tok2->tokAt(2));
             if (0 == (num & num2))
                 mismatchingBitAndError(assignTok, num, tok2, num2);
         }
@@ -213,7 +213,7 @@ bool CheckCondition::assignIfParseScope(const Token * const assignTok,
                 }
                 if (Token::Match(tok2,"&&|%oror%|( %varid% ==|!= %num% &&|%oror%|)", varid)) {
                     const Token *vartok = tok2->next();
-                    const MathLib::bigint num2 = MathLib::toBigNumber(vartok->strAt(2));
+                    const MathLib::bigint num2 = MathLib::toBigNumber(vartok->tokAt(2));
                     if ((num & num2) != ((bitop=='&') ? num2 : num)) {
                         const std::string& op(vartok->strAt(1));
                         const bool alwaysTrue = op == "!=";
@@ -267,11 +267,11 @@ void CheckCondition::mismatchingBitAndError(const Token *tok1, const MathLib::bi
 static void getnumchildren(const Token *tok, std::list<MathLib::bigint> &numchildren)
 {
     if (tok->astOperand1() && tok->astOperand1()->isNumber())
-        numchildren.push_back(MathLib::toBigNumber(tok->astOperand1()->str()));
+        numchildren.push_back(MathLib::toBigNumber(tok->astOperand1()));
     else if (tok->astOperand1() && tok->str() == tok->astOperand1()->str())
         getnumchildren(tok->astOperand1(), numchildren);
     if (tok->astOperand2() && tok->astOperand2()->isNumber())
-        numchildren.push_back(MathLib::toBigNumber(tok->astOperand2()->str()));
+        numchildren.push_back(MathLib::toBigNumber(tok->astOperand2()));
     else if (tok->astOperand2() && tok->str() == tok->astOperand2()->str())
         getnumchildren(tok->astOperand2(), numchildren);
 }
@@ -464,8 +464,8 @@ bool CheckCondition::isOverlappingCond(const Token * const cond1, const Token * 
         if (!isSameExpression(true, expr1, expr2, *mSettings, pure, false))
             return false;
 
-        const MathLib::bigint value1 = MathLib::toBigNumber(num1->str());
-        const MathLib::bigint value2 = MathLib::toBigNumber(num2->str());
+        const MathLib::bigint value1 = MathLib::toBigNumber(num1);
+        const MathLib::bigint value2 = MathLib::toBigNumber(num2);
         if (cond2->str() == "&")
             return ((value1 & value2) == value2);
         return ((value1 & value2) > 0);
@@ -1267,14 +1267,14 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (isfloat && (op1 == "==" || op1 == "!=" || op2 == "==" || op2 == "!="))
                 continue;
 
-
+            // the expr are not the token of the value but they provide better context
             const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
             const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
-            const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toBigNumber(value1);
-            const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toBigNumber(value2);
+            const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toBigNumber(value1, expr1);
+            const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toBigNumber(value2, expr2);
             const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1) || (std::numeric_limits<MathLib::bigint>::max()==i2);
-            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toBigUNumber(value1) : 0;
-            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toBigUNumber(value2) : 0;
+            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toBigUNumber(value1, expr1) : 0;
+            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toBigUNumber(value2, expr2) : 0;
             // evaluate if expression is always true/false
             bool alwaysTrue = true, alwaysFalse = true;
             bool firstTrue = true, secondTrue = true;

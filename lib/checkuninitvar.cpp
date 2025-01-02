@@ -332,9 +332,9 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
             return;
 
         if (tok->str() == "==")
-            *alwaysTrue  = (it->second == MathLib::toBigNumber(numtok->str()));
+            *alwaysTrue  = (it->second == MathLib::toBigNumber(numtok));
         else if (tok->str() == "!=")
-            *alwaysTrue  = (it->second != MathLib::toBigNumber(numtok->str()));
+            *alwaysTrue  = (it->second != MathLib::toBigNumber(numtok));
         else
             return;
         *alwaysFalse = !(*alwaysTrue);

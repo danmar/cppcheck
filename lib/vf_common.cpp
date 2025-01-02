@@ -120,7 +120,7 @@ namespace ValueFlow
     {
         if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
             try {
-                MathLib::bigint signedValue = MathLib::toBigNumber(tok->str());
+                MathLib::bigint signedValue = MathLib::toBigNumber(tok);
                 const ValueType* vt = tok->valueType();
                 if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0 && getSizeOf(*vt, settings) < sizeof(MathLib::bigint)) {
                     MathLib::bigint minValue{}, maxValue{};
@@ -137,7 +137,7 @@ namespace ValueFlow
         } else if (tok->isNumber() && MathLib::isFloat(tok->str())) {
             Value value;
             value.valueType = Value::ValueType::FLOAT;
-            value.floatValue = MathLib::toDoubleNumber(tok->str());
+            value.floatValue = MathLib::toDoubleNumber(tok);
             if (!tok->isTemplateArg())
                 value.setKnown();
             setTokenValue(tok, std::move(value), settings);
@@ -291,7 +291,7 @@ namespace ValueFlow
                     const Token* num = brac->astOperand2();
                     if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
                         try {
-                            const MathLib::biguint dim = MathLib::toBigUNumber(num->str());
+                            const MathLib::biguint dim = MathLib::toBigUNumber(num);
                             sz *= dim;
                             brac = brac->astParent();
                             continue;

@@ -824,9 +824,9 @@ static void valueFlowBitAnd(TokenList& tokenlist, const Settings& settings)
 
         MathLib::bigint number;
         if (MathLib::isInt(tok->astOperand1()->str()))
-            number = MathLib::toBigNumber(tok->astOperand1()->str());
+            number = MathLib::toBigNumber(tok->astOperand1());
         else if (MathLib::isInt(tok->astOperand2()->str()))
-            number = MathLib::toBigNumber(tok->astOperand2()->str());
+            number = MathLib::toBigNumber(tok->astOperand2());
         else
             continue;
 
@@ -5467,7 +5467,7 @@ static void valueFlowSwitchVariable(const TokenList& tokenlist,
             }
             if (Token::Match(tok, "case %num% :")) {
                 std::list<ValueFlow::Value> values;
-                values.emplace_back(MathLib::toBigNumber(tok->strAt(1)));
+                values.emplace_back(MathLib::toBigNumber(tok->tokAt(1)));
                 values.back().condition = tok;
                 values.back().errorPath.emplace_back(tok,
                                                      "case " + tok->strAt(1) + ": " + vartok->str() + " is " +
@@ -5481,7 +5481,7 @@ static void valueFlowSwitchVariable(const TokenList& tokenlist,
                     tok = tok->tokAt(3);
                     if (!tok->isName())
                         tok = tok->next();
-                    values.emplace_back(MathLib::toBigNumber(tok->strAt(1)));
+                    values.emplace_back(MathLib::toBigNumber(tok->tokAt(1)));
                     values.back().condition = tok;
                     values.back().errorPath.emplace_back(tok,
                                                          "case " + tok->strAt(1) + ": " + vartok->str() + " is " +

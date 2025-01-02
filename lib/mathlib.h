@@ -30,6 +30,8 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #endif
 
+class Token;
+
 /// @addtogroup Core
 /// @{
 
@@ -81,13 +83,19 @@ public:
     static const int bigint_bits;
 
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
-    static bigint toBigNumber(const std::string & str);
+    static bigint toBigNumber(const Token * tok);
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
-    static biguint toBigUNumber(const std::string & str);
+    static bigint toBigNumber(const std::string & str, const Token *tok = nullptr);
+    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
+    static biguint toBigUNumber(const Token * tok);
+    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
+    static biguint toBigUNumber(const std::string & str, const Token *tok = nullptr);
 
     template<class T> static std::string toString(T value) = delete;
     /** @brief for conversion of numeric literals */
-    static double toDoubleNumber(const std::string & str);
+    static double toDoubleNumber(const Token * tok);
+    /** @brief for conversion of numeric literals */
+    static double toDoubleNumber(const std::string & str, const Token * tok = nullptr);
 
     static bool isInt(const std::string & str);
     static bool isFloat(const std::string &str);

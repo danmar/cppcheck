@@ -2719,3 +2719,26 @@ void f(const void* p)
     assert exitcode_1 == exitcode_2, stdout_2
     assert stdout_1 == stdout_2
     assert stderr_1 == stderr_2
+
+
+def test_internal_error_loc_int(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+void f() {
+    int i = 0x10000000000000000;
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Internal Error. MathLib::toBigUNumber: out_of_range: 0x10000000000000000 [internalError]'.format(test_file)
+    ]
