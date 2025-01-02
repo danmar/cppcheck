@@ -1386,7 +1386,7 @@ private:
               "    std::vector<int>::const_iterator it;\n"
               "    it = a.begin();\n"
               "    while (it!=a.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "    it = t.begin();\n"
               "    while (it!=t.end())\n"
               "        ++it;\n"
@@ -1402,9 +1402,9 @@ private:
               "    else\n"
               "        it = t.begin();\n"
               "    while (z && it!=a.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "    while (!z && it!=t.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "}");
         ASSERT_EQUALS("", errout_str());
     }

@@ -5111,7 +5111,7 @@ private:
               "    {\n"
               "    case 2:\n"
               "        y |= z;\n"
-              "        z++\n"
+              "        z++;\n"
               "    default:\n"
               "        y |= z;\n"
               "        break;\n"

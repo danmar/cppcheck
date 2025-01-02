@@ -8765,6 +8765,8 @@ void Tokenizer::findGarbageCode() const
         }
         if (Token::Match(tok, "[{,] . %name%") && !Token::Match(tok->tokAt(3), "[.=[{]"))
             syntaxError(tok->next());
+        if (Token::Match(tok, "%name% %op% %name%") && !tok->isKeyword() && tok->next()->isIncDecOp())
+            syntaxError(tok->next());
         if (Token::Match(tok, "[!|+-/%^~] )|]"))
             syntaxError(tok);
         if (Token::Match(tok, "==|!=|<=|>= %comp%") && tok->strAt(-1) != "operator")
