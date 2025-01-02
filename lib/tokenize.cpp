@@ -8736,7 +8736,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "; %assign%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%assign% %name%") && tok->next()->isOperatorKeyword())
+        if (Token::Match(tok, "%assign% %name%") && tok->next()->isControlFlowKeyword())
             syntaxError(tok);
         if (Token::Match(tok, "%cop%|=|,|[ %or%|%oror%|/|%"))
             syntaxError(tok);
