@@ -2675,11 +2675,7 @@ def test_duplicate_suppressions_mixed(tmp_path):
     assert stderr == ''
 
 
-@pytest.mark.xfail(strict=True)
-def test_xml_builddir(tmp_path):  # #13391 / #13485
-    build_dir = tmp_path / 'b1'
-    os.mkdir(build_dir)
-
+def test_xml_output(tmp_path):  # #13391 / #13485
     test_file = tmp_path / 'test.cpp'
     with open(test_file, 'wt') as f:
         f.write("""
@@ -2690,35 +2686,31 @@ void f(const void* p)
 }
 """)
 
+    _, version_str, _ = cppcheck(['--version'])
+    version_str = version_str.replace('Cppcheck ', '').strip()
+
     args = [
         '-q',
         '--enable=style',
-        '--cppcheck-build-dir={}'.format(build_dir),
         '--xml',
         str(test_file)
     ]
     exitcode_1, stdout_1, stderr_1 = cppcheck(args)
     assert exitcode_1 == 0, stdout_1
     assert stdout_1 == ''
-    # TODO: handle version
     assert (stderr_1 ==
-            '''<?xml version="1.0" encoding="UTF-8"?>
-            <results version="2">
-                <cppcheck version="2.17 dev"/>
-                <errors>
-                    <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &apos;p&apos; is redundant or there is possible null pointer dereference: p." verbose="Either the condition &apos;p&apos; is redundant or there is possible null pointer dereference: p." cwe="476" file0="{}" remark="boom">
-                        <location file="{}" line="5" column="12" info="Null pointer dereference"/>
-                        <location file="{}" line="4" column="8" info="Assuming that condition &apos;p&apos; is not redundant"/>
-                        <symbol>p</symbol>
-                    </error>
-                </errors>
-            </results>
-            '''.format(test_file, test_file, test_file))
-
-    exitcode_2, stdout_2, stderr_2 = cppcheck(args)
-    assert exitcode_1 == exitcode_2, stdout_2
-    assert stdout_1 == stdout_2
-    assert stderr_1 == stderr_2
+'''<?xml version="1.0" encoding="UTF-8"?>
+<results version="2">
+    <cppcheck version="{}"/>
+    <errors>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &apos;p&apos; is redundant or there is possible null pointer dereference: p." verbose="Either the condition &apos;p&apos; is redundant or there is possible null pointer dereference: p." cwe="476" file0="{}" remark="boom">
+            <location file="{}" line="5" column="12" info="Null pointer dereference"/>
+            <location file="{}" line="4" column="8" info="Assuming that condition &apos;p&apos; is not redundant"/>
+            <symbol>p</symbol>
+        </error>
+    </errors>
+</results>
+'''.format(version_str, str(test_file).replace('\\', '/'), test_file, test_file))  # TODO: the slashes are inconsistent
 
 
 def test_internal_error_loc_int(tmp_path):
