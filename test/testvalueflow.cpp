@@ -745,8 +745,7 @@ private:
         }
 
         {
-            const char code[] = "void g(struct S*);\n" // #13076
-                                "void f() {\n"
+            const char code[] = "void f() {\n" // #13076
                                 "    char a[10];\n"
                                 "    struct S s = { sizeof(a), 0 };\n"
                                 "    s.p = a;\n"
