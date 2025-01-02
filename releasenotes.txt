@@ -1,8 +1,7 @@
 Release Notes for Cppcheck 2.17
 
 New checks:
-- nullPointerOutOfMemory: Check null pointer return from memory allocation functions.
-- nullPointerOutOfResources: Check null pointer return from resource allocation functions.
+- nullPointerOutOfMemory, nullPointerArithmeticOutOfMemory, nullPointerOutOfResources: Check null pointer return from memory/resource allocation functions.
 
 Improved checking:
 -
