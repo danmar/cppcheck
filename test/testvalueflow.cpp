@@ -743,6 +743,18 @@ private:
             lifetimes = lifetimeValues(code, "return"); // don't crash
             ASSERT_EQUALS(true, lifetimes.empty());
         }
+        
+        {
+          const char code[] = "void g(struct S*);\n" // #13076
+                                "void f() {\n"
+                                "    char a[10];\n"
+                                "    struct S s = { sizeof(a), 0 };\n"
+                                "    s.p = a;\n"
+                                "}\n";
+            lifetimes = lifetimeValues(code, "= a");
+            ASSERT_EQUALS(true, lifetimes.size() == 1);
+            ASSERT_EQUALS(true, lifetimes.front() == "a");
+        }
     }
 
     void valueFlowArrayElement() {
