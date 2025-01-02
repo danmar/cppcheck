@@ -2785,6 +2785,8 @@ static bool isDecayedPointer(const Token *tok)
         return false;
     if (!tok->astParent())
         return false;
+    if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
+        return true;
     if (astIsPointer(tok->astParent()) && !Token::simpleMatch(tok->astParent(), "return"))
         return true;
     if (tok->astParent()->isConstOp())
