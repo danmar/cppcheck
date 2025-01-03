@@ -324,7 +324,7 @@ private:
         TEST_CASE(exceptionhandlingNotSupported2);
 #endif
         TEST_CASE(clang);
-        TEST_CASE(clang2);
+        TEST_CASE(clangCustom);
         TEST_CASE(clangInvalid);
         TEST_CASE(valueFlowMaxIterations);
         TEST_CASE(valueFlowMaxIterations2);
@@ -446,6 +446,8 @@ private:
         TEST_CASE(checkUnusedTemplates);
         TEST_CASE(noCheckUnusedTemplates);
         TEST_CASE(noCheckUnusedTemplates);
+        TEST_CASE(clangTidy);
+        TEST_CASE(clangTidyCustom);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2103,7 +2105,7 @@ private:
         ASSERT_EQUALS("clang", settings->clangExecutable);
     }
 
-    void clang2() {
+    void clangCustom() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--clang=clang-14", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
@@ -3020,6 +3022,22 @@ private:
         const char * const argv[] = {"cppcheck", "--check-unused-templates", "--no-check-unused-templates", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(false, settings->checkUnusedTemplates);
+    }
+
+    void clangTidy() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--clang-tidy", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->clangTidy);
+        ASSERT_EQUALS("clang-tidy", settings->clangTidyExecutable);
+    }
+
+    void clangTidyCustom() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--clang-tidy=clang-tidy-14", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT(settings->clangTidy);
+        ASSERT_EQUALS("clang-tidy-14", settings->clangTidyExecutable);
     }
 
     void ignorepaths1() {
