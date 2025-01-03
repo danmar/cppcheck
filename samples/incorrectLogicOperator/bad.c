@@ -1,5 +1,5 @@
 
-void foo(int x) {
+static void foo(int x) {
     if (x >= 0 || x <= 10) {}
 }
 
