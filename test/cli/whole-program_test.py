@@ -371,7 +371,7 @@ def __test_nullpointer_file0(extra_args):
     args += extra_args
 
     ret, _, stderr = cppcheck(args, cwd=__script_dir)
-    results = ET.fromstring(stdout)
+    results = ET.fromstring(stderr)
     file0 = ''
     for e in results.findall('errors/error'):
         if (e.attrib['id'] == 'ctunullpointer'):
