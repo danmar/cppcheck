@@ -829,7 +829,7 @@ private:
 
     void tokenize40() { // #13181
         const char code[] = "struct A { double eps(double); };\n"
-                            "A operator " "_a(long double);\n"
+                            "A operator \"\"_a(long double);\n"
                             "void f() {\n"
                             "    double d = 1.23;\n"
                             "    if (d == 1.2_a .eps(.1)) {}\n"
