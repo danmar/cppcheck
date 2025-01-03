@@ -2042,6 +2042,8 @@ static bool isConstStatement(const Token *tok, bool isNestedBracket = false)
         }
         return isConstStatement(tok->astOperand2(), /*isNestedBracket*/ !isChained);
     }
+    if (!tok->astParent() && findLambdaEndToken(tok))
+        return true;
     return false;
 }
 
@@ -2184,6 +2186,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Redundant code: Found unused member access.";
     else if (tok->str() == "[" && tok->tokType() == Token::Type::eExtendedOp)
         msg = "Redundant code: Found unused array access.";
+    else if (tok->str() == "[" && !tok->astParent())
+        msg = "Redundant code: Found unused lambda.";
     else if (mSettings->debugwarnings) {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;
