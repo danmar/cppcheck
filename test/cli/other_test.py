@@ -3164,3 +3164,36 @@ def test_dir_ignore(tmp_path):
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=str(tmp_path))
+
+
+
+def test_check_headers(tmp_path):
+    test_file_h = tmp_path / 'test.h'
+    with open(test_file_h, 'wt') as f:
+        f.write(
+            """
+            inline void hdr()
+            {
+                (void)(*((int*)0));
+            }
+            """)
+
+    test_file_c = tmp_path / 'test.c'
+    with open(test_file_c, 'wt') as f:
+        f.write(
+            """
+            #include "test.h"
+            
+            void f() {}
+            """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--no-check-headers',
+        str(test_file_c)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []  # no error since the header is not checked

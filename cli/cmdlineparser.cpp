@@ -536,6 +536,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings.checkConfiguration = true;
 
+            else if (std::strcmp(argv[i], "--check-headers") == 0)
+                mSettings.checkHeaders = true;
+
             // Check level
             else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
                 Settings::CheckLevel level = Settings::CheckLevel::normal;
@@ -990,6 +993,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (!parseNumberArg(argv[i], 25, mSettings.maxTemplateRecursion))
                     return Result::Fail;
             }
+
+            else if (std::strcmp(argv[i], "--no-check-headers") == 0)
+                mSettings.checkHeaders = false;
 
             // undocumented option for usage in Python tests to indicate that no build dir should be injected
             else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {
