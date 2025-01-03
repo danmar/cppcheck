@@ -7350,6 +7350,11 @@ private:
                "    int j;\n"
                "};\n";
         (void)valueOfTok(code, "B");
+
+        code = "void f(int& r) {\n" // #13515
+               "    [0].p = &r;\n"
+               "}\n";
+        (void)valueOfTok(code, "=");
     }
 
     void valueFlowCrash() {
