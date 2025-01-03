@@ -378,6 +378,7 @@ def __test_nullpointer_file0(extra_args):
             file0 = e.attrib['file0']
     assert file0 == 'whole-program/nullpointer1.cpp'
     assert stdout == ''
+    assert stderr == ''
     assert ret == 1, stdout
 
 
