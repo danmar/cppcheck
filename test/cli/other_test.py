@@ -5,6 +5,7 @@ import os
 import sys
 import pytest
 import json
+import subprocess
 
 from testutils import cppcheck, assert_cppcheck, cppcheck_ex
 from xml.etree import ElementTree
@@ -3370,3 +3371,51 @@ void f() {}
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
     assert stderr.splitlines() == []  # no error since the unused templates are not being checked
+
+try:
+    # TODO: handle exitcode?
+    subprocess.call(['clang-tidy', '--version'])
+    has_clang_tidy = True
+except OSError:
+    has_clang_tidy = False
+
+def __test_clang_tidy(tmpdir, use_compdb):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write(
+"""static void foo() // NOLINT(misc-use-anonymous-namespace)
+{
+    (void)(*((int*)nullptr));
+}""")
+
+    project_file = __write_compdb(tmpdir, test_file) if use_compdb else None
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--clang-tidy'
+    ]
+    if project_file:
+        args += ['--project={}'.format(project_file)]
+    else:
+        args += [str(test_file)]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+    ]
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file),
+        '1 warning generated.',  # TODO: get rid of this
+        '{}:3:14: style:  C-style casts are discouraged; use static_cast/const_cast/reinterpret_cast  [clang-tidy-google-readability-casting]'.format(test_file)  # TODO: get rid of extra whitespaces
+    ]
+
+
+@pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
+@pytest.mark.xfail(strict=True)  # TODO: clang-tidy is only invoked with FileSettings - see #12053
+def test_clang_tidy(tmpdir):
+    __test_clang_tidy(tmpdir, False)
+
+
+@pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
+def test_clang_tidy_project(tmpdir):
+    __test_clang_tidy(tmpdir, True)
