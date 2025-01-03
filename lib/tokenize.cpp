@@ -1126,8 +1126,7 @@ void Tokenizer::simplifyTypedef()
             if (!ts.fail() && numberOfTypedefs[ts.name()] == 1 &&
                 (numberOfTypedefs.find(ts.getTypedefToken()->strAt(1)) == numberOfTypedefs.end() || ts.getTypedefToken()->strAt(2) == "(")) {
                 if (mSettings.severity.isEnabled(Severity::portability) && ts.isInvalidConstFunctionType(typedefs))
-                    reportError(tok->next(), Severity::portability, "invalidConstFunctionType",
-                                "It is unspecified behavior to const qualify a function type.");
+                    invalidConstFunctionTypeError(tok->next());
                 typedefs.emplace(ts.name(), ts);
                 if (!ts.isStructEtc())
                     tok = ts.endToken();
@@ -8134,6 +8133,14 @@ void Tokenizer::macroWithSemicolonError(const Token *tok, const std::string &mac
                 "Ensure that '" + macroName + "' is defined either using -I, --include or -D.");
 }
 
+void Tokenizer::invalidConstFunctionTypeError(const Token *tok) const
+{
+    reportError(tok,
+                Severity::portability,
+                "invalidConstFunctionType",
+                "It is unspecified behavior to const qualify a function type.");
+}
+
 void Tokenizer::cppcheckError(const Token *tok) const
 {
     printDebugOutput(0, std::cout);
@@ -10899,4 +10906,14 @@ bool Tokenizer::isPacked(const Token * bodyStart) const
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return d.linenr < bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == list.getFiles().front();
     });
+}
+
+void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& settings)
+{
+    Tokenizer tokenizer(settings, errorLogger);
+    tokenizer.invalidConstFunctionTypeError(nullptr);
+    // checkLibraryNoReturn
+    tokenizer.unhandled_macro_class_x_y(nullptr);
+    tokenizer.macroWithSemicolonError(nullptr, emptyString);
+    tokenizer.unhandledCharLiteral(nullptr, emptyString);
 }
