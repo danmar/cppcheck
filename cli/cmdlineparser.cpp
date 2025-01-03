@@ -245,6 +245,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             if (mSettings.library.markupFile(fs.filename())) {
                 fs.file.setLang(Standards::Language::C);
             }
+            std::string error = fs.updateFileSize();
+            if (!error.empty())
+                mLogger.printError(error);
         }
 
         // sort the markup last
@@ -350,6 +353,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             if (mSettings.library.markupFile(f.path())) {
                 f.setLang(Standards::Language::C);
             }
+            std::string error = f.updateSize();
+            if (!error.empty())
+                mLogger.printError(error);
         }
 
         // sort the markup last
