@@ -1819,7 +1819,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT(settings->xml);
+        ASSERT_EQUALS_ENUM(Settings::OutputFormat::xml, settings->outputFormat);
         ASSERT_EQUALS(2, settings->xml_version);
     }
 
@@ -1827,7 +1827,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--xml-version=2", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT(settings->xml);
+        ASSERT_EQUALS_ENUM(Settings::OutputFormat::xml, settings->outputFormat);
         ASSERT_EQUALS(2, settings->xml_version);
     }
 
@@ -1835,7 +1835,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=2", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
-        ASSERT(settings->xml);
+        ASSERT_EQUALS_ENUM(Settings::OutputFormat::xml, settings->outputFormat);
         ASSERT_EQUALS(2, settings->xml_version);
     }
 
@@ -1843,7 +1843,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--xml-version=2", "--xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
-        ASSERT(settings->xml);
+        ASSERT_EQUALS_ENUM(Settings::OutputFormat::xml, settings->outputFormat);
         ASSERT_EQUALS(2, settings->xml_version);
     }
 
