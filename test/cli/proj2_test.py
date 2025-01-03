@@ -85,24 +85,28 @@ def test_absolute_path(tmp_path):
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
-def test_progress_json():
-    size1 = os.path.getsize(os.path.join(__proj_dir, 'a', 'a.c'))
-    size2 = os.path.getsize(os.path.join(__proj_dir, 'b', 'b.c'))
+def test_progress_json(tmp_path):
+    proj_dir = tmp_path / 'proj2'
+    shutil.copytree(__proj_dir, proj_dir)
+    size1 = os.path.getsize(os.path.join(proj_dir, 'a', 'a.c'))
+    size2 = os.path.getsize(os.path.join(proj_dir, 'b', 'b.c'))
     perc1 = 100 * size1 // (size1 + size2)
     perc2 = 100 * size2 // (size1 + size2)
-    __create_compile_commands()
-    ret, stdout, _ = cppcheck(['--project=' + os.path.join(__proj_dir, __COMPILE_COMMANDS_JSON)], cwd=__script_dir)
+    __create_compile_commands(proj_dir)
+    ret, stdout, _ = cppcheck(['--project=' + os.path.join(proj_dir, __COMPILE_COMMANDS_JSON)], cwd=tmp_path)
     assert ret == 0, stdout
     assert stdout.find('1/2 files checked %d%% done' % perc1) >= 0 or stdout.find('1/2 files checked %d%% done' % perc2) >= 0
     assert stdout.find('2/2 files checked 100% done') >= 0
 
-def test_progress_cppcheck():
-    size1 = os.path.getsize(os.path.join(__proj_dir, 'a', 'a.c'))
-    size2 = os.path.getsize(os.path.join(__proj_dir, 'b', 'b.c'))
+def test_progress_cppcheck(tmp_path):
+    proj_dir = tmp_path / 'proj2'
+    shutil.copytree(__proj_dir, proj_dir)
+    size1 = os.path.getsize(os.path.join(proj_dir, 'a', 'a.c'))
+    size2 = os.path.getsize(os.path.join(proj_dir, 'b', 'b.c'))
     perc1 = 100 * size1 // (size1 + size2)
     perc2 = 100 * size2 // (size1 + size2)
-    __create_compile_commands()
-    ret, stdout, _ = cppcheck(['--project=proj2/proj2.cppcheck'], cwd=__script_dir)
+    __create_compile_commands(proj_dir)
+    ret, stdout, _ = cppcheck(['--project=proj2/proj2.cppcheck'], cwd=tmp_path)
     assert ret == 0, stdout
     assert stdout.find('1/2 files checked %d%% done' % perc1) >= 0 or stdout.find('1/2 files checked %d%% done' % perc2) >= 0
     assert stdout.find('2/2 files checked 100% done') >= 0
