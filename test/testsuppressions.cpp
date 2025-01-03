@@ -246,7 +246,7 @@ private:
         settings.jobs = 1;
         settings.quiet = true;
         settings.inlineSuppressions = true;
-        settings.severity.enable(Severity::information);
+        settings.checks.enable(Checks::unmatchedSuppression);
         if (suppression == "unusedFunction")
             settings.checks.setEnabled(Checks::unusedFunction, true);
         if (!suppression.empty()) {
@@ -291,7 +291,7 @@ private:
                                         $.jobs = 2,
                                             $.quiet = true,
                                             $.inlineSuppressions = true);
-        settings.severity.enable(Severity::information);
+        settings.checks.enable(Checks::unmatchedSuppression);
         if (!suppression.empty()) {
             ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
         }
@@ -335,7 +335,7 @@ private:
                                         $.jobs = 2,
                                             $.quiet = true,
                                             $.inlineSuppressions = true);
-        settings.severity.enable(Severity::information);
+        settings.checks.enable(Checks::unmatchedSuppression);
         if (!suppression.empty()) {
             ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
         }

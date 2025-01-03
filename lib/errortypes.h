@@ -57,7 +57,7 @@ enum class Certainty : std::uint8_t {
 };
 
 enum class Checks : std::uint8_t {
-    unusedFunction, missingInclude, internalCheck
+    unusedFunction, missingInclude, internalCheck, unmatchedSuppression
 };
 
 /** @brief enum class for severity. Used when reporting errors. */

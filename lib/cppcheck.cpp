@@ -1272,7 +1272,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
-    if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
+    if (!mSettings.useSingleJob() && (mSettings.checks.isEnabled(Checks::unmatchedSuppression) || mSettings.checkConfiguration)) {
         SuppressionList::reportUnmatchedSuppressions(mSettings.supprs.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
     }
 
