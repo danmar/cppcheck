@@ -75,6 +75,10 @@ private:
         TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
 
+        TEST_CASE(structMemberDefaultEq1); // #12177: false positive: unusedStructMember with default equality
+        TEST_CASE(structMemberDefaultEq2);
+        TEST_CASE(structMemberDefaultEq3);
+
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
         TEST_CASE(localvar3);
@@ -2023,6 +2027,42 @@ private:
                                "class D : public C {};\n");
         ASSERT_EQUALS("", errout_str());
     }
+
+    void structMemberDefaultEq1() { // #12177
+        checkStructMemberUsage("struct S {\n"
+                               "    bool operator==(const S&) const = default;\n"
+                               "    int i{0};\n"
+                               "};\n"
+                               "bool f(S s1, S s2) {\n"
+                               "    return s1 == s2;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structMemberDefaultEq2() {
+        checkStructMemberUsage("struct S {\n"
+                               "    int i{0};\n"
+                               "};\n"
+                               "bool f(S s1, S s2) {\n"
+                               "    return s1 == s2;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structMemberDefaultEq3() {
+        checkStructMemberUsage("struct S {\n"
+                               "    bool operator==(const S&s) const {\n"
+                               "        return this->i == s.i;\n"
+                               "    }\n"
+                               "    int i{0};\n"
+                               "    int j{0};\n"
+                               "};\n"
+                               "bool f(S s1, S s2) {\n"
+                               "    return s1 == s2;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) struct member 'S::j' is never used.\n", errout_str());
+    }
+
 
     void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {
         // Tokenize..
