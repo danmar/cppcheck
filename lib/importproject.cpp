@@ -1322,8 +1322,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             const auto& addons = readXmlStringList(node, emptyString, CppcheckXml::AddonElementName, nullptr);
             temp.addons.insert(addons.cbegin(), addons.cend());
         }
-        else if (strcmp(name, CppcheckXml::TagsElementName) == 0)
-            node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
+        else if (strcmp(name, CppcheckXml::TagsElementName) == 0) {
+            // TODO
+            //node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
+        }
         else if (strcmp(name, CppcheckXml::ToolsElementName) == 0) {
             const std::list<std::string> toolList = readXmlStringList(node, emptyString, CppcheckXml::ToolElementName, nullptr);
             for (const std::string &toolName : toolList) {
