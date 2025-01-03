@@ -78,6 +78,7 @@ private:
         TEST_CASE(tokenize37);  // #8550
         TEST_CASE(tokenize38);  // #9569
         TEST_CASE(tokenize39);  // #9771
+        TEST_CASE(tokenize40);  // #13181
 
         TEST_CASE(validate);
 
@@ -824,6 +825,17 @@ private:
                             "template < typename T > bool operator!= ( const Foo < T > & , const Foo < T > & ) ; "
                             "template < typename T > class Foo { friend bool operator!= < > ( const Foo < T > & , const Foo < T > & ) ; } ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void tokenize40() { // #13181
+        const char code[] = "struct A { double eps(double); };\n"
+                            "A operator " "_a(long double);\n"
+                            "void f() {\n"
+                            "    double d = 1.23;\n"
+                            "    if (d == 1.2_a .eps(.1)) {}\n"
+                            "}\n";
+        (void) tokenizeAndStringify(code);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void validate() {
