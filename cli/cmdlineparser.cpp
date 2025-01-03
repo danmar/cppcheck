@@ -20,6 +20,7 @@
 
 #include "addoninfo.h"
 #include "check.h"
+#include "checkers.h"
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
@@ -1224,6 +1225,29 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.reportProgress = tmp;
             }
 
+            else if (std::strncmp(argv[i], "--report-type=", 14) == 0) {
+                const std::string typeStr = argv[i] + 14;
+                if (typeStr == "normal") {
+                    mSettings.reportType = checkers::ReportType::normal;
+                } else if (typeStr == "autosar") {
+                    mSettings.reportType = checkers::ReportType::autosar;
+                } else if (typeStr == "certC") {
+                    mSettings.reportType = checkers::ReportType::certC;
+                } else if (typeStr == "certCpp") {
+                    mSettings.reportType = checkers::ReportType::certCpp;
+                } else if (typeStr == "misraC") {
+                    mSettings.reportType = checkers::ReportType::misraC;
+                } else if (typeStr == "misraCpp2008") {
+                    mSettings.reportType = checkers::ReportType::misraCpp2008;
+                } else if (typeStr == "misraCpp2023") {
+                    mSettings.reportType = checkers::ReportType::misraCpp2023;
+                } else {
+                    mLogger.printError("Unknown report type \'" + typeStr + "\'");
+                    return Result::Fail;
+                }
+                mSettings.guidelineMapping = checkers::createGuidelineMapping(mSettings.reportType);
+            }
+
             // Rule given at command line
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
 #ifdef HAVE_RULES
@@ -1821,6 +1845,15 @@ void CmdLineParser::printHelp() const
         "                         currently only possible to apply the base paths to\n"
         "                         files that are on a lower level in the directory tree.\n"
         "    --report-progress    Report progress messages while checking a file (single job only).\n"
+        "    --report-type=<type> Add guideline and classification fields for specified coding standard.\n"
+        "                         The available report types are:\n"
+        "                          * normal           Default, only show cppcheck error ID and severity)\n"
+        "                          * autosar          Autosar\n"
+        "                          * certC            Cert C\n"
+        "                          * certCpp          Cert Cpp\n"
+        "                          * misraC           Misra C\n"
+        "                          * misraCpp2008     Misra C++ 2008\n"
+        "                          * misraCpp2023     Misra C++ 2023\n"
         "    --rule=<rule>        Match regular expression.\n"
         "    --rule-file=<file>   Use given rule file. For more information, see:\n"
         "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"

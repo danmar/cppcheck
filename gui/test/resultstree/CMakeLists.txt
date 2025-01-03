@@ -18,6 +18,7 @@ add_executable(test-resultstree
         ${CMAKE_SOURCE_DIR}/gui/xmlreportv2.cpp
         ${CMAKE_SOURCE_DIR}/lib/checkers.cpp
         ${CMAKE_SOURCE_DIR}/lib/checkersidmapping.cpp
+        ${CMAKE_SOURCE_DIR}/lib/utils.cpp
         )
 target_include_directories(test-resultstree PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib)
 target_compile_definitions(test-resultstree PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}")

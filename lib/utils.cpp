@@ -185,21 +185,3 @@ std::string replaceEscapeSequences(const std::string &source) {
     return result;
 }
 
-
-std::list<std::string> splitString(const std::string& str, char sep)
-{
-    if (std::strchr(str.c_str(), sep) == nullptr)
-        return {str};
-
-    std::list<std::string> l;
-    std::string p(str);
-    for (;;) {
-        const std::string::size_type pos = p.find(sep);
-        if (pos == std::string::npos)
-            break;
-        l.push_back(p.substr(0,pos));
-        p = p.substr(pos+1);
-    }
-    l.push_back(std::move(p));
-    return l;
-}
