@@ -562,6 +562,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.checkLibrary = true;
             }
 
+            else if (std::strcmp(argv[i], "--check-unused-templates") == 0)
+                mSettings.checkUnusedTemplates = true;
+
             else if (std::strncmp(argv[i], "--check-version=", 16) == 0) {
                 if (!loadCppcheckCfg())
                     return Result::Fail;
@@ -1001,6 +1004,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strcmp(argv[i], "--no-check-headers") == 0)
                 mSettings.checkHeaders = false;
+
+            else if (std::strcmp(argv[i], "--no-check-unused-templates") == 0)
+                mSettings.checkUnusedTemplates = false;
 
             // undocumented option for usage in Python tests to indicate that no build dir should be injected
             else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {

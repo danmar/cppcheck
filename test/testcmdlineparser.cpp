@@ -429,6 +429,9 @@ private:
         TEST_CASE(checkHeaders);
         TEST_CASE(noCheckHeaders);
         TEST_CASE(noCheckHeaders2);
+        TEST_CASE(checkUnusedTemplates);
+        TEST_CASE(noCheckUnusedTemplates);
+        TEST_CASE(noCheckUnusedTemplates);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2964,6 +2967,27 @@ private:
         const char * const argv[] = {"cppcheck", "--check-headers", "--no-check-headers", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
         ASSERT_EQUALS(false, settings->checkHeaders);
+    }
+
+    void checkUnusedTemplates() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-unused-templates", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->checkUnusedTemplates);
+    }
+
+    void noCheckUnusedTemplates() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-check-unused-templates", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, settings->checkUnusedTemplates);
+    }
+
+    void noCheckUnusedTemplates2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-unused-templates", "--no-check-unused-templates", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(false, settings->checkUnusedTemplates);
     }
 
     void ignorepaths1() {
