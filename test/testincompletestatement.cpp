@@ -718,6 +718,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found unused array access.\n",
                       errout_str());
+
+        check("void f() {\n" // #13153
+              "    []() {} ();\n"
+              "    []() {};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found unused lambda.\n",
+                      errout_str());
     }
 
     void vardecl() {
