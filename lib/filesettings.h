@@ -51,6 +51,7 @@ public:
         : mPath(std::move(path))
         , mPathSimplified(Path::simplifyPath(mPath))
         , mLang(lang)
+        , mSize(0)
     {
         if (mPath.empty())
             throw std::runtime_error("empty path specified");
