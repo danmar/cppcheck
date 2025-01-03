@@ -373,7 +373,7 @@ def __test_nullpointer_file0(extra_args):
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     results = ET.fromstring(stdout)
     file0 = ''
-    for e in root.findall('errors/error'):
+    for e in results.findall('errors/error'):
         if (e.attrib['id'] == 'ctunullpointer'):
             file0 = e.attrib['file0']
     assert file0 == 'whole-program/nullpointer1.cpp'
@@ -382,4 +382,4 @@ def __test_nullpointer_file0(extra_args):
 
 
 def test_nullpointer_file0():
-    __test_checkclass(['-j1'])
+    __test_nullpointer_file0(['-j1'])
