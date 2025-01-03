@@ -102,7 +102,7 @@ public:
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
     public:
-        explicit FileInfo(const std::string& f0 = {}) : file0(f0) {}
+        explicit FileInfo(std::string f0 = {}) : file0(std::move(f0)) {}
         virtual ~FileInfo() = default;
         virtual std::string toString() const {
             return std::string();

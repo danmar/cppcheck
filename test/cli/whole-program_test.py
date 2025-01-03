@@ -370,7 +370,7 @@ def __test_nullpointer_file0(extra_args):
 
     args += extra_args
 
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    ret, _, stderr = cppcheck(args, cwd=__script_dir)
     results = ET.fromstring(stdout)
     file0 = ''
     for e in results.findall('errors/error'):
