@@ -126,7 +126,7 @@ void Token::update_property_info()
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
         } else if (simplecpp::Token::isNumberLike(mStr)) {
-            if (MathLib::isInt(mStr) || MathLib::isFloat(mStr))
+            if ((MathLib::isInt(mStr) || MathLib::isFloat(mStr)) && mStr.find('_') == std::string::npos)
                 tokType(eNumber);
             else
                 tokType(eName); // assume it is a user defined literal
