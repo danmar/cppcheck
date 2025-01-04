@@ -82,6 +82,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
                 continue;
 
+            if (func->isAttributeUnused() || func->isAttributeMaybeUnused())
+                continue;
+
             if (func->isExtern())
                 continue;
 
