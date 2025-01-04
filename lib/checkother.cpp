@@ -1416,7 +1416,7 @@ void CheckOther::checkPassByReference()
         if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
             continue;
 
-        if (var->isArray() && var->getTypeName() != "std::array")
+        if (var->isArray() && (!var->isStlType() || Token::simpleMatch(var->nameToken()->next(), "[")))
             continue;
 
         const bool isConst = var->isConst();
