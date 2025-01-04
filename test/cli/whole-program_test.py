@@ -384,3 +384,6 @@ def __test_nullpointer_file0(extra_args):
 
 def test_nullpointer_file0():
     __test_nullpointer_file0(['-j1'])
+
+def test_nullpointer_file0_j():
+    __test_nullpointer_file0(['-j2'])
