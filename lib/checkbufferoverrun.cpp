@@ -999,14 +999,15 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeArrayIndex)
-            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 1, errorLogger, settings.maxCtuDepth);
+            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 1, errorLogger, settings.maxCtuDepth, fi->file0);
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafePointerArith)
-            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 2, errorLogger, settings.maxCtuDepth);
+            foundErrors |= analyseWholeProgram1(callsMap, unsafeUsage, 2, errorLogger, settings.maxCtuDepth, fi->file0);
     }
     return foundErrors;
 }
 
-bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger, int maxCtuDepth)
+bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage,
+                                              int type, ErrorLogger &errorLogger, int maxCtuDepth, const std::string& file0)
 {
     const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
@@ -1039,7 +1040,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
     }
 
     const ErrorMessage errorMessage(locationList,
-                                    emptyString,
+                                    file0,
                                     Severity::error,
                                     errmsg,
                                     errorId,

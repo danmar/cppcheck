@@ -3663,7 +3663,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Setti
     if (classDefinitions.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo(tokenizer.list.getFiles()[0]);
     fileInfo->classDefinitions.swap(classDefinitions);
     return fileInfo;
 }
