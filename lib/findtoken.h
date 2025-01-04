@@ -75,16 +75,6 @@ T* findToken(T* start, const Token* end, const Predicate& pred)
 }
 
 namespace internal {
-    template<class T>
-    bool findTokensSkipDeadCodeImpl(const Library &library,
-                                    T *start,
-                                    const Token *end,
-                                    const std::function<bool(const Token *)> &pred,
-                                    const std::function<bool(T *)>& found,
-                                    const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
-                                    bool skipUnevaluated) = delete;
-
-    template<>
     bool findTokensSkipDeadCodeImpl(const Library &library,
                                     Token *start,
                                     const Token *end,
@@ -93,7 +83,6 @@ namespace internal {
                                     const std::function<std::vector<MathLib::bigint>(const Token *)> &evaluate,
                                     bool skipUnevaluated);
 
-    template<>
     bool findTokensSkipDeadCodeImpl(const Library &library,
                                     const Token *start,
                                     const Token *end,

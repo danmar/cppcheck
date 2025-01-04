@@ -119,7 +119,6 @@ static bool findTokensSkipDeadCodeImpl(const Library& library,
 }
 
 namespace internal {
-    template<>
     bool findTokensSkipDeadCodeImpl(const Library& library,
                                     Token* start,
                                     const Token* end,
@@ -131,7 +130,6 @@ namespace internal {
         return ::findTokensSkipDeadCodeImpl(library, start, end, pred, found, evaluate, skipUnevaluated);
     }
 
-    template<>
     bool findTokensSkipDeadCodeImpl(const Library& library,
                                     const Token* start,
                                     const Token* end,
