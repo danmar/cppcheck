@@ -3115,7 +3115,7 @@ namespace {
         template<class F>
         const Token* operator()(const Token* start, const Token* end, F f) const
         {
-            return findTokenSkipDeadCode(library, start, end, f, *evaluate);
+            return findTokenSkipDeadCode(library, start, end, std::move(f), *evaluate);
         }
     };
 }
