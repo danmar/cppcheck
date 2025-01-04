@@ -74,6 +74,7 @@ private:
         TEST_CASE(structmember27); // #13367
         TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
+        TEST_CASE(structmemberStructuredBinding); // #13107
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -2022,6 +2023,26 @@ private:
                                "};\n"
                                "class D : public C {};\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void structmemberStructuredBinding() { // #13107
+        checkStructMemberUsage("struct S { int a, b; };\n"
+                               "S f() {\n"
+                               "    S s{};\n"
+                               "    auto& [x, y] = s;\n"
+                               "    x = y = 1;\n"
+                               "    return s;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        checkStructMemberUsage("struct S { int a, b; };\n"
+                               "S f() {\n"
+                               "    S s{};\n"
+                               "    auto& [x] = s;\n"
+                               "    x = 1;\n"
+                               "    return s;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::b' is never used.\n", errout_str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {
