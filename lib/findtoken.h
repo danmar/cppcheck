@@ -100,18 +100,15 @@ std::vector<T*> findTokensSkipDeadCode(const Library& library,
                                        const Evaluate& evaluate)
 {
     std::vector<T*> result;
-
-    std::function<bool(T*)> f = [&](T* tok) {
-        result.push_back(tok);
-        return false;
-    };
-
     (void)internal::findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
         pred,
-        f,
+        [&](T* tok) {
+        result.push_back(tok);
+        return false;
+    },
         evaluate,
         false);
     return result;
@@ -131,18 +128,15 @@ std::vector<T*> findTokensSkipDeadAndUnevaluatedCode(const Library& library,
                                                      const Evaluate& evaluate)
 {
     std::vector<T*> result;
-
-    std::function<bool(T*)> f = [&](T* tok) {
-        result.push_back(tok);
-        return false;
-    };
-
     (void)internal::findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
         pred,
-        f,
+        [&](T* tok) {
+        result.push_back(tok);
+        return false;
+    },
         evaluate,
         true);
     return result;
@@ -159,19 +153,15 @@ template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token c
 T* findTokenSkipDeadCode(const Library& library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
 {
     T* result = nullptr;
-
-    std::function<bool(T*)> f = [&](T* tok)
-    {
-        result = tok;
-        return true;
-    };
-
     (void)internal::findTokensSkipDeadCodeImpl(
         library,
         start,
         end,
         pred,
-        f,
+        [&](T* tok) {
+        result = tok;
+        return true;
+    },
         evaluate,
         false);
     return result;
