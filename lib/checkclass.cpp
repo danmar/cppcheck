@@ -3728,15 +3728,14 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
             locationList.emplace_back(nameLoc.fileName, nameLoc.lineNumber, nameLoc.column);
             locationList.emplace_back(it->second.fileName, it->second.lineNumber, it->second.column);
 
-            ErrorMessage errmsg(std::move(locationList),
-                                emptyString,
-                                Severity::error,
-                                "$symbol:" + nameLoc.className +
-                                "\nThe one definition rule is violated, different classes/structs have the same name '$symbol'",
-                                "ctuOneDefinitionRuleViolation",
-                                CWE_ONE_DEFINITION_RULE,
-                                Certainty::normal);
-            errmsg.file0 = fi->file0;
+            const ErrorMessage errmsg(std::move(locationList),
+                                      fi->file0,
+                                      Severity::error,
+                                      "$symbol:" + nameLoc.className +
+                                      "\nThe one definition rule is violated, different classes/structs have the same name '$symbol'",
+                                      "ctuOneDefinitionRuleViolation",
+                                      CWE_ONE_DEFINITION_RULE,
+                                      Certainty::normal);
             errorLogger.reportErr(errmsg);
 
             foundErrors = true;

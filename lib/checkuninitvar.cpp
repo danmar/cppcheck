@@ -1769,14 +1769,13 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
             if (locationList.empty())
                 continue;
 
-            ErrorMessage errmsg(locationList,
-                                emptyString,
-                                Severity::error,
-                                "Using argument " + unsafeUsage.myArgumentName + " that points at uninitialized variable " + functionCall->callArgumentExpression,
-                                "ctuuninitvar",
-                                CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                                Certainty::normal);
-            errmsg.file0 = fi->file0;
+            const ErrorMessage errmsg(locationList,
+                                      fi->file0,
+                                      Severity::error,
+                                      "Using argument " + unsafeUsage.myArgumentName + " that points at uninitialized variable " + functionCall->callArgumentExpression,
+                                      "ctuuninitvar",
+                                      CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                                      Certainty::normal);
             errorLogger.reportErr(errmsg);
 
             foundErrors = true;
