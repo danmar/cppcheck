@@ -3566,6 +3566,7 @@ namespace
     /* multifile checking; one definition rule violations */
     class MyFileInfo : public Check::FileInfo {
     public:
+        using Check::FileInfo::FileInfo;
         struct NameLoc {
             std::string className;
             std::string fileName;
@@ -3727,14 +3728,15 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
             locationList.emplace_back(nameLoc.fileName, nameLoc.lineNumber, nameLoc.column);
             locationList.emplace_back(it->second.fileName, it->second.lineNumber, it->second.column);
 
-            const ErrorMessage errmsg(std::move(locationList),
-                                      emptyString,
-                                      Severity::error,
-                                      "$symbol:" + nameLoc.className +
-                                      "\nThe one definition rule is violated, different classes/structs have the same name '$symbol'",
-                                      "ctuOneDefinitionRuleViolation",
-                                      CWE_ONE_DEFINITION_RULE,
-                                      Certainty::normal);
+            ErrorMessage errmsg(std::move(locationList),
+                                emptyString,
+                                Severity::error,
+                                "$symbol:" + nameLoc.className +
+                                "\nThe one definition rule is violated, different classes/structs have the same name '$symbol'",
+                                "ctuOneDefinitionRuleViolation",
+                                CWE_ONE_DEFINITION_RULE,
+                                Certainty::normal);
+            errmsg.file0 = fi->file0;
             errorLogger.reportErr(errmsg);
 
             foundErrors = true;

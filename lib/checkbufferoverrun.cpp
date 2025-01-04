@@ -893,6 +893,7 @@ namespace
     /** data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
+        using Check::FileInfo::FileInfo;
         /** unsafe array index usage */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
 
@@ -951,7 +952,7 @@ Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer &tokenizer, con
     if (unsafeArrayIndex.empty() && unsafePointerArith.empty()) {
         return nullptr;
     }
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo(tokenizer.list.getFiles()[0]);
     fileInfo->unsafeArrayIndex = unsafeArrayIndex;
     fileInfo->unsafePointerArith = unsafePointerArith;
     return fileInfo;
