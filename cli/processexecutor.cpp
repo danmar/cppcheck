@@ -78,7 +78,7 @@ ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const 
 namespace {
     class PipeWriter : public ErrorLogger {
     public:
-        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
+        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2',REPORT_SUPPR_INLINE='3',CHILD_END='5'};
 
         explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
@@ -88,6 +88,19 @@ namespace {
 
         void reportErr(const ErrorMessage &msg) override {
             writeToPipe(REPORT_ERROR, msg.serialize());
+        }
+
+        void writeSuppr(const SuppressionList &supprs) const {
+            for (const auto& suppr : supprs.getSuppressions())
+            {
+                if (!suppr.isInline)
+                    continue;
+
+                // TODO: add the matched and checked states
+
+                writeToPipe(REPORT_SUPPR_INLINE, suppr.toString());
+            }
+            // TODO: update suppression states?
         }
 
         void writeEnd(const std::string& str) const {
@@ -124,7 +137,7 @@ namespace {
                 writeToPipeInternal(type, &len, l_size);
             }
 
-            if (len > 0)
+            if (len > 0) // TODO: unexpected - write a warning?
                 writeToPipeInternal(type, data.c_str(), len);
         }
 
@@ -155,7 +168,10 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         std::exit(EXIT_FAILURE);
     }
 
-    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::CHILD_END) {
+    if (type != PipeWriter::REPORT_OUT &&
+        type != PipeWriter::REPORT_ERROR &&
+        type != PipeWriter::REPORT_SUPPR_INLINE &&
+        type != PipeWriter::CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") invalid type " << int(type) << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -174,7 +190,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     }
 
     std::string buf(len, '\0');
-    if (len > 0) {
+    if (len > 0) { // TODO: unexpected - write a warning?
         char *data_start = &buf[0];
         bytes_to_read = len;
         do {
@@ -206,6 +222,15 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
         if (hasToLog(msg))
             mErrorLogger.reportErr(msg);
+    } else if (type == PipeWriter::REPORT_SUPPR_INLINE) {
+        if (!buf.empty()) {
+            const std::string err = mSuppressions.addSuppressionLine(buf);
+            if (!err.empty()) {
+                // TODO: make this non-fatal
+                std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        }
     } else if (type == PipeWriter::CHILD_END) {
         result += std::stoi(buf);
         res = false;
@@ -297,8 +322,7 @@ unsigned int ProcessExecutor::check()
                     // TODO: call analyseClangTidy()?
                 }
 
-                // TODO: need to transfer inline unusedFunction suppressions
-                // TODO: need to update suppressions states
+                pipewriter.writeSuppr(fileChecker.settings().supprs.nomsg);
 
                 pipewriter.writeEnd(std::to_string(resultOfCheck));
                 std::exit(EXIT_SUCCESS);
