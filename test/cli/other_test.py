@@ -2583,7 +2583,6 @@ def test_inline_suppr_builddir(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
 
 
-@pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_cached(tmp_path):
     build_dir = tmp_path / 'b1'
     os.mkdir(build_dir)
@@ -2768,7 +2767,6 @@ def test_addon_suppr_inline(tmp_path):
 
 
 # TODO: remove override when all issues are fixed
-@pytest.mark.xfail(strict=True)  # TODO: inline suppression does not work
 def test_addon_suppr_inline_j(tmp_path):
     __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
 
