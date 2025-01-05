@@ -345,8 +345,7 @@ void CheckType::checkLongCast()
             continue;
 
         if (tok->astOperand2()->hasKnownIntValue()) {
-            const ValueFlow::Value &v = tok->astOperand2()->values().front();
-            if (mSettings->platform.isIntValue(v.intvalue))
+            if (mSettings->platform.isIntValue(tok->astOperand2()->getKnownIntValue()))
                 continue;
         }
 

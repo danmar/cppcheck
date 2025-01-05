@@ -318,7 +318,7 @@ static void parseCompareEachInt(
 {
     parseCompareEachInt(tok, each, [](const Token* t) -> std::vector<ValueFlow::Value> {
         if (t->hasKnownIntValue())
-            return {t->values().front()};
+            return {*t->getKnownValue(ValueFlow::Value::ValueType::INT)};
         std::vector<ValueFlow::Value> result;
         std::copy_if(t->values().cbegin(), t->values().cend(), std::back_inserter(result), [&](const ValueFlow::Value& v) {
             if (v.path < 1)
@@ -362,7 +362,7 @@ const Token *ValueFlow::parseCompareInt(const Token *tok, ValueFlow::Value &true
 {
     return parseCompareInt(tok, true_value, false_value, [](const Token* t) -> std::vector<MathLib::bigint> {
         if (t->hasKnownIntValue())
-            return {t->values().front().intvalue};
+            return {t->getKnownIntValue()};
         return std::vector<MathLib::bigint>{};
     });
 }
@@ -649,7 +649,7 @@ static void valueFlowArray(TokenList& tokenlist, const Settings& settings)
 
 static bool isNonZero(const Token* tok)
 {
-    return tok && (!tok->hasKnownIntValue() || tok->values().front().intvalue != 0);
+    return tok && (!tok->hasKnownIntValue() || tok->getKnownIntValue() != 0);
 }
 
 static const Token* getOtherOperand(const Token* tok)
@@ -769,9 +769,9 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
                     const Token* arg = args[static_cast<std::size_t>(index)];
                     if (!arg->hasKnownIntValue())
                         continue;
-                    const ValueFlow::Value& v = arg->values().front();
-                    result.intvalue = v.intvalue;
-                    result.errorPath.insert(result.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
+                    const ValueFlow::Value* v = arg->getKnownValue(ValueFlow::Value::ValueType::INT);
+                    result.intvalue = v->intvalue;
+                    result.errorPath.insert(result.errorPath.end(), v->errorPath.cbegin(), v->errorPath.cend());
                     setTokenValue(tok, std::move(result), settings);
                 }
             }
@@ -880,9 +880,9 @@ static bool getExpressionRange(const Token* expr, MathLib::bigint* minvalue, Mat
 {
     if (expr->hasKnownIntValue()) {
         if (minvalue)
-            *minvalue = expr->values().front().intvalue;
+            *minvalue = expr->getKnownIntValue();
         if (maxvalue)
-            *maxvalue = expr->values().front().intvalue;
+            *maxvalue = expr->getKnownIntValue();
         return true;
     }
 
@@ -944,7 +944,7 @@ static void valueFlowRightShift(TokenList& tokenList, const Settings& settings)
         if (!tok->astOperand2()->hasKnownValue())
             continue;
 
-        const MathLib::bigint rhsvalue = tok->astOperand2()->values().front().intvalue;
+        const MathLib::bigint rhsvalue = tok->astOperand2()->getKnownValue()->intvalue;
         if (rhsvalue < 0)
             continue;
 
@@ -989,7 +989,7 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     if (depth < 0)
         return result;
     if (tok->hasKnownIntValue()) {
-        result = {tok->values().front().intvalue};
+        result = {tok->getKnownIntValue()};
     } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
         if (!op1.empty()) {
@@ -1022,7 +1022,7 @@ static bool isSameToken(const Token* tok1, const Token* tok2)
     if (tok1->exprId() != 0 && tok1->exprId() == tok2->exprId())
         return true;
     if (tok1->hasKnownIntValue() && tok2->hasKnownIntValue())
-        return tok1->values().front().intvalue == tok2->values().front().intvalue;
+        return tok1->getKnownIntValue() == tok2->getKnownIntValue();
     return false;
 }
 
@@ -1066,7 +1066,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
             std::vector<ValueFlow::Value> values;
             for (const Token* tok2 : tokens) {
                 if (tok2->hasKnownIntValue()) {
-                    values.emplace_back(tok2->values().front());
+                    values.emplace_back(*tok2->getKnownValue(ValueFlow::Value::ValueType::INT));
                 } else {
                     ValueFlow::Value symValue{};
                     symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
@@ -1096,7 +1096,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
             }
 
         } else if (Token::simpleMatch(tok, "%") && tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
-            ValueFlow::Value value{tok->astOperand2()->values().front()};
+            ValueFlow::Value value{tok->astOperand2()->getKnownIntValue()};
             value.bound = ValueFlow::Value::Bound::Lower;
             value.setImpossible();
             setTokenValue(tok, std::move(value), settings);
@@ -1151,7 +1151,7 @@ static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings &
                 auto* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
                 ValueFlow::valueFlowConstantFoldAST(rhs, settings);
                 if (rhs && rhs->hasKnownIntValue()) {
-                    enumerator.value = rhs->values().front().intvalue;
+                    enumerator.value = rhs->getKnownIntValue();
                     enumerator.value_known = true;
                     value = enumerator.value + 1;
                     prev_enum_is_known = true;
@@ -1177,7 +1177,7 @@ static void valueFlowGlobalConstVar(TokenList& tokenList, const Settings& settin
             tok->variable()->isConst() && tok->valueType() && tok->valueType()->isIntegral() &&
             tok->valueType()->pointer == 0 && tok->valueType()->constness == 1 && Token::Match(tok, "%name% =") &&
             tok->next()->astOperand2() && tok->next()->astOperand2()->hasKnownIntValue()) {
-            vars[tok->variable()] = tok->next()->astOperand2()->values().front();
+            vars[tok->variable()] = *tok->next()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
         }
     }
 
@@ -1204,7 +1204,7 @@ static void valueFlowGlobalStaticVar(TokenList& tokenList, const Settings& setti
             tok->valueType() && tok->valueType()->isIntegral() && tok->valueType()->pointer == 0 &&
             tok->valueType()->constness == 0 && Token::Match(tok, "%name% =") && tok->next()->astOperand2() &&
             tok->next()->astOperand2()->hasKnownIntValue()) {
-            vars[tok->variable()] = tok->next()->astOperand2()->values().front();
+            vars[tok->variable()] = *tok->next()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
         } else {
             // If variable is written anywhere in TU then remove it from vars
             if (!tok->astParent())
@@ -3607,11 +3607,11 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                 const ValueFlow::Value* constant = nullptr;
                 const Token* vartok = nullptr;
                 if (tok->astOperand1()->hasKnownIntValue()) {
-                    constant = &tok->astOperand1()->values().front();
+                    constant = tok->astOperand1()->getKnownValue(ValueFlow::Value::ValueType::INT);
                     vartok = tok->astOperand2();
                 }
                 if (tok->astOperand2()->hasKnownIntValue()) {
-                    constant = &tok->astOperand2()->values().front();
+                    constant = tok->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
                     vartok = tok->astOperand1();
                 }
                 if (!constant)
@@ -4512,7 +4512,7 @@ struct ConditionHandler {
             if (Token::Match(tok->astParent(), "==|!=")) {
                 const Token* sibling = tok->astSibling();
                 if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
-                    const bool value = !!sibling->values().front().intvalue;
+                    const bool value = !!sibling->getKnownIntValue();
                     if (inverted)
                         *inverted ^= value == Token::simpleMatch(tok->astParent(), "!=");
                     continue;
@@ -6367,7 +6367,7 @@ static ValueFlow::Value makeContainerSizeValue(MathLib::bigint s, bool known = t
 static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bool known = true)
 {
     if (tok->hasKnownIntValue())
-        return {makeContainerSizeValue(tok->values().front().intvalue, known)};
+        return {makeContainerSizeValue(tok->getKnownIntValue(), known)};
     return {};
 }
 
@@ -6531,7 +6531,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 if (dim.known) {
                     size = dim.num;
                 } else if (dim.tok && dim.tok->hasKnownIntValue() && dim.tok->strAt(1) == ">") {
-                    size = dim.tok->values().front().intvalue;
+                    size = dim.tok->getKnownIntValue();
                 }
             }
             if (size < 0)
@@ -6649,7 +6649,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     valueFlowForward(tok->next(), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 } else if (action == Library::Container::Action::RESIZE && tok->tokAt(2)->astOperand2() &&
                            tok->tokAt(2)->astOperand2()->hasKnownIntValue()) {
-                    ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
+                    ValueFlow::Value value(*tok->tokAt(2)->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
                     valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);

@@ -65,7 +65,7 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
         expr,
         [&](const Token* tok) -> std::vector<MathLib::bigint> {
         if (tok->hasKnownIntValue())
-            return {tok->values().front().intvalue};
+            return {tok->getKnownIntValue()};
         MathLib::bigint result = 0;
         if (getIntValue(tok->exprId(), result))
             return {result};
@@ -306,7 +306,7 @@ static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, con
         if (!t)
             return std::vector<MathLib::bigint>{};
         if (t->hasKnownIntValue())
-            return {t->values().front().intvalue};
+            return {t->getKnownIntValue()};
         MathLib::bigint result = 0;
         bool error = false;
         execute(t, pm, &result, &error, settings);
@@ -1372,7 +1372,7 @@ namespace {
             if (!expr)
                 return unknown();
             if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
-                return expr->values().front();
+                return *expr->getKnownValue(ValueFlow::Value::ValueType::INT);
             if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
                 (value = expr->getKnownValue(ValueFlow::Value::ValueType::TOK)) ||
                 (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||

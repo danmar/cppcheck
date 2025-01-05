@@ -392,7 +392,7 @@ void CheckNullPointer::nullConstantDereference()
                     const Token *argtok = args[argnr];
                     if (!argtok->hasKnownIntValue())
                         continue;
-                    if (argtok->values().front().intvalue != 0)
+                    if (argtok->getKnownIntValue() != 0)
                         continue;
                     if (mSettings->library.isnullargbad(tok, argnr+1))
                         nullPointerError(argtok);

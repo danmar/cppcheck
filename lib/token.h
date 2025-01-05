@@ -1307,8 +1307,13 @@ public:
     bool hasKnownValue(ValueFlow::Value::ValueType t) const;
     bool hasKnownSymbolicValue(const Token* tok) const;
 
+    const ValueFlow::Value* getKnownValue() const;
     const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
+        // TODO: need to perform lookup
+        assert(!mImpl->mValues->empty());
+        assert(mImpl->mValues->front().isKnown());
+        assert(mImpl->mValues->front().valueType == ValueFlow::Value::ValueType::INT);
         return mImpl->mValues->front().intvalue;
     }
 
