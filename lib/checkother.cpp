@@ -347,7 +347,7 @@ void CheckOther::warningOldStylePointerCast()
                 tok = tok->next();
 
             const Token *p = tok->tokAt(4);
-            if (p->hasKnownIntValue() && p->values().front().intvalue==0) // Casting nullpointers is safe
+            if (p->hasKnownIntValue() && p->getKnownIntValue()==0) // Casting nullpointers is safe
                 continue;
 
             if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
