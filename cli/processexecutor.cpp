@@ -125,7 +125,8 @@ namespace {
                 writeToPipeInternal(type, &len, l_size);
             }
 
-            writeToPipeInternal(type, data.c_str(), len);
+            if (len > 0)
+                writeToPipeInternal(type, data.c_str(), len);
         }
 
         const int mWpipe;
@@ -174,18 +175,20 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     }
 
     std::string buf(len, '\0');
-    char *data_start = &buf[0];
-    bytes_to_read = len;
-    do {
-        bytes_read = read(rpipe, data_start, bytes_to_read);
-        if (bytes_read <= 0) {
-            const int err = errno;
-            std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        bytes_to_read -= bytes_read;
-        data_start += bytes_read;
-    } while (bytes_to_read != 0);
+    if (len > 0) {
+        char *data_start = &buf[0];
+        bytes_to_read = len;
+        do {
+            bytes_read = read(rpipe, data_start, bytes_to_read);
+            if (bytes_read <= 0) {
+                const int err = errno;
+                std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+            bytes_to_read -= bytes_read;
+            data_start += bytes_read;
+        } while (bytes_to_read != 0);
+    }
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
