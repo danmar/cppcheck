@@ -9382,6 +9382,8 @@ void Tokenizer::simplifyCPPAttribute()
     // According to cppreference alignas is a c21 feature however the macro is often available when compiling c11
     const bool hasAlignas = ((isCPP() && mSettings.standards.cpp >= Standards::CPP11) || (isC() && mSettings.standards.c >= Standards::C11));
     const bool hasCppAttribute = ((isCPP() && mSettings.standards.cpp >= Standards::CPP11) || (isC() && mSettings.standards.c >= Standards::C23));
+    const bool hasMaybeUnused =((isCPP() && mSettings.standards.cpp >= Standards::CPP17) || (isC() && mSettings.standards.c >= Standards::C23));
+    const bool hasMaybeUnusedUnderscores = (isC() && mSettings.standards.c >= Standards::C23);
 
     if (!hasAlignas && !hasCppAttribute)
         return;
@@ -9414,10 +9416,8 @@ void Tokenizer::simplifyCPPAttribute()
                 if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
                     head->previous()->isAttributeNodiscard(true);
                 }
-            } else if ((Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link())
-                        && (mSettings.standards.c >= Standards::C23 || mSettings.standards.cpp >= Standards::CPP17))
-                       || (Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link())
-                           && mSettings.standards.c >= Standards::C23)) {
+            } else if ((Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link()) && hasMaybeUnused)
+                       || (Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()) && hasMaybeUnusedUnderscores)) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head)->next();

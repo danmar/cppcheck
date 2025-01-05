@@ -92,12 +92,12 @@ private:
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr) {
+    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr, bool cpp = true) {
         const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions;
@@ -811,7 +811,10 @@ private:
 
     void attributeMaybeUnused()
     {
-        check("[[__maybe_unused__]] void f() {}\n");
+        check("[[__maybe_unused__]] void f() {}\n", Platform::Type::Native, nullptr, false);
+        ASSERT_EQUALS("", errout_str());
+
+        check("[[maybe_unused]] void f() {}\n", Platform::Type::Native, nullptr, false);
         ASSERT_EQUALS("", errout_str());
 
         check("[[maybe_unused]] void f() {}\n");
