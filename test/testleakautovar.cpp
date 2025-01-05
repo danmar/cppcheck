@@ -3223,8 +3223,8 @@ private:
     }
 };
 
-#if !defined(__MINGW32__)
-// TODO: this crashes with a stack overflow for MinGW in the CI
+#if !defined(__MINGW32__) && !defined(__CYGWIN__)
+// TODO: this crashes with a stack overflow for MinGW and error 2816 for Cygwinin the CI
 REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
 #endif
 
