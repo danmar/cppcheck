@@ -951,15 +951,35 @@ private:
         ASSERT_EQUALS(10, valueOfTok("x = static_cast<int>(10);", "( 10 )").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x = sizeof (struct {int a;}) * 0;", "*").intvalue);
 
-        // Don't calculate if there is UB
+        // Don't calculate or crash if there is UB or invalid operations
         ASSERT(tokenValues(";-1<<10;","<<").empty());
         ASSERT(tokenValues(";10<<-1;","<<").empty());
         ASSERT(tokenValues(";10<<64;","<<").empty());
         ASSERT(tokenValues(";-1>>10;",">>").empty());
         ASSERT(tokenValues(";10>>-1;",">>").empty());
         ASSERT(tokenValues(";10>>64;",">>").empty());
+        ASSERT_EQUALS(tokenValues(";1%-1;","%").size(), 1);
+        ASSERT_EQUALS(tokenValues(";1%-10;","%").size(), 1);
+        ASSERT_EQUALS(tokenValues(";1.5%-1;","%").size(), 1);
+        ASSERT_EQUALS(tokenValues(";1.5%-10;","%").size(), 1);
+        ASSERT(tokenValues(";1%-1.5;","%").empty());
+        ASSERT(tokenValues(";1%-10.5;","%").empty());
+        ASSERT(tokenValues(";1.5%-1.5;","%").empty());
+        ASSERT(tokenValues(";1.5%-10.5;","%").empty());
+        ASSERT(tokenValues(";1/-1;","/").empty());
+        ASSERT(tokenValues(";1/-10;","/").empty());
+        ASSERT(tokenValues(";1.5/-1;","/").empty());
+        ASSERT(tokenValues(";1.5/-10;","/").empty());
+        ASSERT(tokenValues(";1/-1.5;","/").empty());
+        ASSERT(tokenValues(";1/-10.5;","/").empty());
+        ASSERT(tokenValues(";1.5/-1.5;","/").empty());
+        ASSERT(tokenValues(";1.5/-10.5;","/").empty());
+        ASSERT(tokenValues(";1/0;","/").empty());
+        ASSERT(tokenValues(";1/0;","/").empty());
+        ASSERT(tokenValues(";1.5/0;","/").empty());
+        ASSERT(tokenValues(";1.5/0;","/").empty());
         ASSERT(tokenValues(";((-1) * 9223372036854775807LL - 1) / (-1);", "/").empty()); // #12109
-        ASSERT_EQUALS(tokenValues(";((-1) * 9223372036854775807LL - 1) % (-1);", "%").size(), 1);
+        ASSERT_EQUALS(tokenValues(";((-1) * 9223372036854775807LL - 1) % (-1);", "%").size(), 1); // #12109
 
         code = "float f(const uint16_t& value) {\n"
                "    const uint16_t uVal = value; \n"
