@@ -84,7 +84,6 @@ def test_unused_functions_builddir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)  # TODO: inline suppressions are not being transferred with ProcessExecutor
 def test_unused_functions_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -145,7 +144,6 @@ def test_unused_functions_project_builddir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)  # TODO: inline suppressions are not being transferred with ProcessExecutor
 def test_unused_functions_project_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -200,7 +198,6 @@ def test_unused_functions_compdb_buildir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)  # TODO: inline suppressions are not being transferred with ProcessExecutor
 def test_unused_functions_compdb_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
