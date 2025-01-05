@@ -2036,13 +2036,14 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         checkStructMemberUsage("struct S { int a, b; };\n"
-                               "S f() {\n"
-                               "    S s{};\n"
-                               "    auto& [x] = s;\n"
-                               "    x = 1;\n"
-                               "    return s;\n"
+                               "struct T { S s; };\n"
+                               "T f() {\n"
+                               "    T t{};\n"
+                               "    auto& [x, y] = t.s;\n"
+                               "    x = y = 1;\n"
+                               "    return t;\n"
                                "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::b' is never used.\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {

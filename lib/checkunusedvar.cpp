@@ -1534,43 +1534,35 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
-        // Structured binding assigned to variable
-        std::vector<nonneg int> structBindUsage;
-        for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-            if (!Token::Match(tok, "] %assign% %var%"))
+        // Bailout if struct is used in structured binding
+        for (const Variable *var : symbolDatabase->variableList()) {
+            if (!var || !Token::simpleMatch(var->typeStartToken(), "auto"))
                 continue;
 
-            const Variable *const var = tok->tokAt(2)->variable();
-            if (!var || var->type()->classScope != &scope)
+            const Token *tok = var->nameToken()->previous();
+            if (!Token::simpleMatch(tok, "["))
                 continue;
 
-            const Token *const startBracket = tok->link();
-            if (!startBracket ||
-                (!Token::Match(startBracket->tokAt(-2), "auto &|&&") &&
-                 !Token::simpleMatch(startBracket->previous(), "auto")))
+            tok = tok->link();
+            if (!Token::Match(tok, "] %assign%"))
                 continue;
 
-            std::size_t bindCount = 1;
-            const Token *comma = startBracket->astOperand2();
-            while (Token::simpleMatch(comma, ",")) {
-                ++bindCount;
-                comma = comma->astOperand1();
+            tok = tok->next()->astOperand2();
+            const ValueType *valueType = tok->valueType();
+
+            if (valueType && valueType->typeScope == &scope) {
+                bailout = true;
+                break;
             }
-
-            auto end = scope.varlist.cbegin();
-            std::advance(end, bindCount);
-            for (auto it = scope.varlist.cbegin(); it != end; ++it)
-                structBindUsage.push_back(it->index());
         }
+        if (bailout)
+            continue;
 
         for (const Variable &var : scope.varlist) {
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
             if (isInherited && !var.isPrivate())
-                continue;
-
-            if (std::find(structBindUsage.cbegin(), structBindUsage.cend(), var.index()) != structBindUsage.cend())
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
