@@ -267,7 +267,7 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
                                                    : std::vector<ValueFlow::Value>{};
         if (values.empty()) {
             if (indexTokens[i]->hasKnownIntValue())
-                indexValues.push_back(indexTokens[i]->values().front());
+                indexValues.push_back(*indexTokens[i]->getKnownValue(ValueFlow::Value::ValueType::INT));
             else
                 indexValues.push_back(ValueFlow::Value::unknown());
             continue;

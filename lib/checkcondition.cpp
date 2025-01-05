@@ -321,8 +321,8 @@ void CheckCondition::checkBadBitmaskCheck()
                                    (parent->str() == "(" && Token::Match(parent->astOperand1(), "if|while")) ||
                                    (parent->str() == "return" && parent->astOperand1() == tok && inBooleanFunction(tok));
 
-            const bool isTrue = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue != 0) ||
-                                (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue != 0);
+            const bool isTrue = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->getKnownIntValue() != 0) ||
+                                (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->getKnownIntValue() != 0);
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
@@ -332,8 +332,8 @@ void CheckCondition::checkBadBitmaskCheck()
             if (mTokenizer->hasIfdef(startStop.first, startStop.second))
                 continue;
 
-            const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
-            const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
+            const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->getKnownIntValue() == 0);
+            const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->getKnownIntValue() == 0);
             if (!isZero1 && !isZero2)
                 continue;
 

@@ -303,7 +303,7 @@ bool CheckStl::isContainerSizeGE(const Token * containerToken, const Token *expr
             mul = expr->astOperand1();
         else
             return false;
-        return mul && (!mul->hasKnownIntValue() || mul->values().front().intvalue != 0);
+        return mul && (!mul->hasKnownIntValue() || mul->getKnownIntValue() != 0);
     }
     if (expr->str() == "+") {
         const Token *op;
@@ -2491,7 +2491,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
             if (cValue && cValue->intvalue == 0) {
                 if (Token::Match(tok->astParent(), "+|-") && astIsIntegral(tok->astSibling(), false)) {
                     if (tok->astSibling() && tok->astSibling()->hasKnownIntValue()) {
-                        if (tok->astSibling()->values().front().intvalue == 0)
+                        if (tok->astSibling()->getKnownIntValue() == 0)
                             continue;
                     } else {
                         advanceIndex = tok->astSibling();
@@ -2840,8 +2840,8 @@ namespace {
                         alwaysFalse = false;
                         return;
                     }
-                    (returnTok->values().front().intvalue ? alwaysTrue : alwaysFalse) &= true;
-                    (returnTok->values().front().intvalue ? alwaysFalse : alwaysTrue) &= false;
+                    (returnTok->getKnownIntValue() ? alwaysTrue : alwaysFalse) &= true;
+                    (returnTok->getKnownIntValue() ? alwaysFalse : alwaysTrue) &= false;
                 });
                 if (alwaysTrue == alwaysFalse)
                     return "";
