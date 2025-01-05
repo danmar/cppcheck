@@ -9416,14 +9416,13 @@ void Tokenizer::simplifyCPPAttribute()
                 if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
                     head->previous()->isAttributeNodiscard(true);
                 }
-            } else if ((Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link()) && hasMaybeUnused)
-                       || (Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()) && hasMaybeUnusedUnderscores)) {
+            } else if ((hasMaybeUnusedUnderscores && Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()))
+                       || (hasMaybeUnused && Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link()))) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head)->next();
                 head->isAttributeMaybeUnused(true);
-            } else if (Token::findsimplematch(tok->tokAt(2), "gnu :: unused", tok->link()) ||
-                       Token::findsimplematch(tok->tokAt(2), "unused", tok->link())) {
+            } else if (Token::findsimplematch(tok->tokAt(2), "unused", tok->link())) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head)->next();
