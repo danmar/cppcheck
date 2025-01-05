@@ -1536,14 +1536,10 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         // Bailout if struct is used in structured binding
         for (const Variable *var : symbolDatabase->variableList()) {
-            if (!var || !Token::simpleMatch(var->typeStartToken(), "auto"))
+            if (!var || !Token::Match(var->typeStartToken(), "auto &|&&| [ %varid%", var->declarationId()))
                 continue;
 
-            const Token *tok = var->nameToken()->previous();
-            if (!Token::simpleMatch(tok, "["))
-                continue;
-
-            tok = tok->link();
+            const Token *tok = var->nameToken()->linkAt(-1);
             if (!Token::Match(tok, "] %assign%"))
                 continue;
 
