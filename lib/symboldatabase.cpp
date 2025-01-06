@@ -5758,7 +5758,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
         return matches.empty() ? nullptr : matches[0];
     }
 
-    std::vector<const Function*> fallback1Func, fallback2Func;
+    // store function and number of matching arguments
+    std::vector<std::pair<const Function*, size_t>> fallback1Func, fallback2Func;
 
     // check each function against the arguments in the function call for a match
     for (std::size_t i = 0; i < matches.size();) {
@@ -5931,16 +5932,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
         // check if all arguments matched
         if (same == hasToBe) {
             if (constFallback || (!requireConst && func->isConst()))
-                fallback1Func.emplace_back(func);
+                fallback1Func.emplace_back(func, same);
             else
                 return func;
         }
 
         else {
             if (same + fallback1 == hasToBe)
-                fallback1Func.emplace_back(func);
+                fallback1Func.emplace_back(func, same);
             else if (same + fallback2 + fallback1 == hasToBe)
-                fallback2Func.emplace_back(func);
+                fallback2Func.emplace_back(func, same);
         }
 
         if (!erased)
@@ -5948,14 +5949,24 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     }
 
     // Fallback cases
+    auto fb_pred = [](const std::pair<const Function*, size_t>& a, const std::pair<const Function*, size_t>& b) {
+        return a.second > b.second;
+    };
+    // sort according to matching arguments
+    std::sort(fallback1Func.begin(), fallback1Func.end(), fb_pred);
+    std::sort(fallback2Func.begin(), fallback2Func.end(), fb_pred);
     for (const auto& fb : { fallback1Func, fallback2Func }) {
         if (fb.size() == 1)
-            return fb.front();
+            return fb[0].first;
+        if (fb.size() >= 2) {
+            if (fb[0].second > fb[1].second)
+                return fb[0].first;
+        }
         if (fb.size() == 2) {
-            if (fb[0]->isConst() && !fb[1]->isConst())
-                return fb[1];
-            if (fb[1]->isConst() && !fb[0]->isConst())
-                return fb[0];
+            if (fb[0].first->isConst() && !fb[1].first->isConst())
+                return fb[1].first;
+            if (fb[1].first->isConst() && !fb[0].first->isConst())
+                return fb[0].first;
         }
     }
 
@@ -5976,11 +5987,11 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     for (const auto& fb : { fallback1Func, fallback2Func }) {
         const Function* ret = nullptr;
         for (std::size_t i = 0; i < fb.size(); ++i) {
-            if (std::find(matches.cbegin(), matches.cend(), fb[i]) == matches.cend())
+            if (std::find(matches.cbegin(), matches.cend(), fb[i].first) == matches.cend())
                 continue;
-            if (this == fb[i]->nestedIn) {
+            if (this == fb[i].first->nestedIn) {
                 if (!ret)
-                    ret = fb[i];
+                    ret = fb[i].first;
                 else {
                     ret = nullptr;
                     break;
