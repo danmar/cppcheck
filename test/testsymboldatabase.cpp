@@ -522,6 +522,7 @@ private:
         TEST_CASE(findFunction56);
         TEST_CASE(findFunction57);
         TEST_CASE(findFunction58); // #13310
+        TEST_CASE(findFunction59);
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
@@ -8440,6 +8441,17 @@ private:
         ASSERT(a1 && !a1->function());
         const Token *a2 = Token::findsimplematch(tokenizer.tokens(), "a (");
         ASSERT(a2 && a2->function());
+    }
+
+    void findFunction59() { // #13464
+        GET_SYMBOL_DB("void foo(const char[], const std::string&);\n"
+                      "void foo(const std::string&, const std::string&);\n"
+                      "void f() {\n"
+                      "    foo(\"\", \"\");\n"
+                      "}\n");
+        const Token* foo = Token::findsimplematch(tokenizer.tokens(), "foo ( \"\"");
+        ASSERT(foo && foo->function());
+        ASSERT_EQUALS(foo->function()->tokenDef->linenr(), 1);
     }
 
     void findFunctionRef1() {
