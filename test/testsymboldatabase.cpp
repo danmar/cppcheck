@@ -6640,7 +6640,7 @@ private:
             const Token* J = Token::findsimplematch(I, "J");
             ASSERT(J && J->valueType() && J->valueType()->isEnum());
             ASSERT_EQUALS(J->valueType()->type, ValueType::CHAR);
-            const Token* K = Token::findsimplematch(I, "K");
+            const Token* K = Token::findsimplematch(J, "K");
             ASSERT(K && K->valueType() && K->valueType()->isEnum());
             ASSERT_EQUALS(K->valueType()->type, ValueType::CHAR);
         }
