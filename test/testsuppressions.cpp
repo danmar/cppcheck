@@ -1578,7 +1578,7 @@ private:
         }
     }
 
-    void addSuppressionLineMultiple() {
+    void addSuppressionLineMultiple() const {
         SuppressionList supprlist;
 
         ASSERT_EQUALS("", supprlist.addSuppressionLine("syntaxError"));
