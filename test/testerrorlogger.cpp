@@ -64,7 +64,7 @@ private:
         TEST_CASE(DeserializeInvalidInput);
         TEST_CASE(SerializeSanitize);
         TEST_CASE(SerializeFileLocation);
-        TEST_CASE(SerializeAndDeserializeRemark);
+        TEST_CASE(SerializeAndDeserialize);
 
         TEST_CASE(substituteTemplateFormatStatic);
         TEST_CASE(substituteTemplateLocationStatic);
@@ -353,6 +353,7 @@ private:
                       "1 1"
                       "17 Programming error"
                       "17 Programming error"
+                      "0 "
                       "0 ", msg_str);
 
         ErrorMessage msg2;
@@ -397,6 +398,7 @@ private:
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
+                               "0 "
                                "0 ";
             ErrorMessage msg;
             ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer");
@@ -412,6 +414,7 @@ private:
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
+                               "0 "
                                "0 ";
             ErrorMessage msg;
             ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid hash - not an integer");
@@ -427,6 +430,7 @@ private:
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
+                               "0 "
                                "0 ";
             ErrorMessage msg;
             ASSERT_THROW_INTERNAL_EQUALS(msg.deserialize(str), INTERNAL, "Internal Error: Deserialization of error message failed - invalid CWE ID - out of range (limits)");
@@ -448,6 +452,7 @@ private:
                       "1 0"
                       "33 Illegal character in \"foo\\001bar\""
                       "33 Illegal character in \"foo\\001bar\""
+                      "0 "
                       "0 ", msg_str);
 
         ErrorMessage msg2;
@@ -475,6 +480,7 @@ private:
                       "1 1"
                       "17 Programming error"
                       "17 Programming error"
+                      "0 "
                       "1 "
                       "27 654\t33\t[]:;,()\t:/,;\tabcd:/,", msg_str);
 
@@ -487,12 +493,24 @@ private:
         ASSERT_EQUALS("abcd:/,", msg2.callStack.front().getinfo());
     }
 
-    void SerializeAndDeserializeRemark() const {
-        ErrorMessage msg({}, emptyString, Severity::warning, emptyString, "id", Certainty::normal);
+    void SerializeAndDeserialize() const {
+        ErrorMessage msg({}, emptyString, Severity::warning, "$symbol:var\nmessage $symbol", "id", Certainty::normal);
         msg.remark = "some remark";
+
         ErrorMessage msg2;
         ASSERT_NO_THROW(msg2.deserialize(msg.serialize()));
-        ASSERT_EQUALS("some remark", msg2.remark);
+
+        ASSERT_EQUALS(msg.callStack.size(), msg2.callStack.size());
+        ASSERT_EQUALS(msg.file0, msg2.file0);
+        ASSERT_EQUALS_ENUM(msg.severity, msg2.severity);
+        ASSERT_EQUALS(msg.shortMessage(), msg2.shortMessage());
+        ASSERT_EQUALS(msg.verboseMessage(), msg2.verboseMessage());
+        ASSERT_EQUALS(msg.id, msg2.id);
+        ASSERT_EQUALS_ENUM(msg.certainty, msg2.certainty);
+        ASSERT_EQUALS(msg.cwe.id, msg2.cwe.id);
+        ASSERT_EQUALS(msg.hash, msg2.hash);
+        ASSERT_EQUALS(msg.remark, msg2.remark);
+        ASSERT_EQUALS(msg.symbolNames(), msg2.symbolNames());
     }
 
     void substituteTemplateFormatStatic() const

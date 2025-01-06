@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have getloadavg()
+#endif
+
 #include "processexecutor.h"
 
 #if !defined(WIN32) && !defined(__MINGW32__)
@@ -28,6 +32,7 @@
 #include "settings.h"
 #include "suppressions.h"
 #include "timer.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <numeric>
@@ -120,7 +125,8 @@ namespace {
                 writeToPipeInternal(type, &len, l_size);
             }
 
-            writeToPipeInternal(type, data.c_str(), len);
+            if (len > 0)
+                writeToPipeInternal(type, data.c_str(), len);
         }
 
         const int mWpipe;
@@ -169,18 +175,20 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     }
 
     std::string buf(len, '\0');
-    char *data_start = &buf[0];
-    bytes_to_read = len;
-    do {
-        bytes_read = read(rpipe, data_start, bytes_to_read);
-        if (bytes_read <= 0) {
-            const int err = errno;
-            std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
-            std::exit(EXIT_FAILURE);
-        }
-        bytes_to_read -= bytes_read;
-        data_start += bytes_read;
-    } while (bytes_to_read != 0);
+    if (len > 0) {
+        char *data_start = &buf[0];
+        bytes_to_read = len;
+        do {
+            bytes_read = read(rpipe, data_start, bytes_to_read);
+            if (bytes_read <= 0) {
+                const int err = errno;
+                std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+            bytes_to_read -= bytes_read;
+            data_start += bytes_read;
+        } while (bytes_to_read != 0);
+    }
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
@@ -242,8 +250,8 @@ unsigned int ProcessExecutor::check()
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::list<FileWithDetails>::const_iterator iFile = mFiles.cbegin();
-    std::list<FileSettings>::const_iterator iFileSettings = mFileSettings.cbegin();
+    auto iFile = mFiles.cbegin();
+    auto iFileSettings = mFileSettings.cbegin();
     for (;;) {
         // Start a new child
         const size_t nchildren = childFile.size();
@@ -310,7 +318,7 @@ unsigned int ProcessExecutor::check()
         if (!rpipes.empty()) {
             fd_set rfds;
             FD_ZERO(&rfds);
-            for (std::list<int>::const_iterator rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
+            for (auto rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
                 FD_SET(*rp, &rfds);
             timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
@@ -318,11 +326,11 @@ unsigned int ProcessExecutor::check()
             const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);
 
             if (r > 0) {
-                std::list<int>::const_iterator rp = rpipes.cbegin();
+                auto rp = rpipes.cbegin();
                 while (rp != rpipes.cend()) {
                     if (FD_ISSET(*rp, &rfds)) {
                         std::string name;
-                        const std::map<int, std::string>::const_iterator p = pipeFile.find(*rp);
+                        const auto p = utils::as_const(pipeFile).find(*rp);
                         if (p != pipeFile.cend()) {
                             name = p->second;
                         }
@@ -358,7 +366,7 @@ unsigned int ProcessExecutor::check()
             const pid_t child = waitpid(0, &stat, WNOHANG);
             if (child > 0) {
                 std::string childname;
-                const std::map<pid_t, std::string>::const_iterator c = childFile.find(child);
+                const auto c = utils::as_const(childFile).find(child);
                 if (c != childFile.cend()) {
                     childname = c->second;
                     childFile.erase(c);

@@ -98,7 +98,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         const bool scan = library.formatstr_scan(&tok);
 
         bool percent = false;
-        for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
+        for (auto i = formatString.cbegin(); i != formatString.cend(); ++i) {
             if (*i == '%') {
                 percent = !percent;
             } else if (percent) {
@@ -442,6 +442,8 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+        reportError(tok, Severity::warning, "nullPointerOutOfMemory", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+        reportError(tok, Severity::warning, "nullPointerOutOfResources", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         return;
     }
 
@@ -461,12 +463,23 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
+
+        std::string id = "nullPointer";
+        if (value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+            errmsg = "If memory allocation fails, then there is a " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
+            id += "OutOfMemory";
+        }
+        else if (value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+            errmsg = "If resource allocation fails, then there is a " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
+            id += "OutOfResources";
+        }
+
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
         reportError(errorPath,
                     value->isKnown() ? Severity::error : Severity::warning,
-                    "nullPointer",
+                    id.c_str(),
                     errmsg,
                     CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     }
@@ -529,10 +542,21 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
     } else {
         errmsg = "Pointer " + arithmetic + " with NULL pointer.";
     }
+
+    std::string id = "nullPointerArithmetic";
+    if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+        errmsg = "If memory allocation fail: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
+        id += "OutOfMemory";
+    }
+    else if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+        errmsg = "If resource allocation fail: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
+        id += "OutOfResources";
+    }
+
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
     reportError(errorPath,
                 Severity::error,
-                "nullPointerArithmetic",
+                id.c_str(),
                 errmsg,
                 CWE_INCORRECT_CALCULATION,
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
@@ -657,4 +681,20 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     }
 
     return foundErrors;
+}
+
+void CheckNullPointer::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckNullPointer checkNullPointer(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkNullPointer.nullPointer();
+    checkNullPointer.arithmetic();
+    checkNullPointer.nullConstantDereference();
+}
+
+void CheckNullPointer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckNullPointer c(nullptr, settings, errorLogger);
+    c.nullPointerError(nullptr, "pointer", nullptr, false);
+    c.pointerArithmeticError(nullptr, nullptr, false);
+    c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
 }

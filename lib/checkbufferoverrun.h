@@ -25,12 +25,10 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "errortypes.h"
 #include "mathlib.h"
-#include "symboldatabase.h"
-#include "tokenize.h"
 #include "vfvalue.h"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -39,6 +37,10 @@
 class ErrorLogger;
 class Settings;
 class Token;
+class Tokenizer;
+class Variable;
+struct Dimension;
+enum class Certainty : std::uint8_t;
 
 /// @addtogroup Checks
 /// @{
@@ -62,30 +64,9 @@ private:
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkBufferOverrun.arrayIndex();
-        checkBufferOverrun.pointerArithmetic();
-        checkBufferOverrun.bufferOverflow();
-        checkBufferOverrun.arrayIndexThenCheck();
-        checkBufferOverrun.stringNotZeroTerminated();
-        checkBufferOverrun.objectIndex();
-        checkBufferOverrun.argumentSize();
-        checkBufferOverrun.negativeArraySize();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
-        c.pointerArithmeticError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
-        c.arrayIndexThenCheckError(nullptr, "i");
-        c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
-        c.objectIndexError(nullptr, nullptr, true);
-        c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
-        c.negativeMemoryAllocationSizeError(nullptr, nullptr);
-        c.negativeArraySizeError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;

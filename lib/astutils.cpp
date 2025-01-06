@@ -360,7 +360,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (!tok->varId() && tok->hasKnownIntValue() && std::to_string(tok->values().front().intvalue) == rhs)
+    if (!tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -675,6 +675,8 @@ const Token* getParentLifetime(const Token* tok, const Library& library)
     // If any of the submembers are borrowed types then stop
     if (std::any_of(it.base() - 1, members.cend() - 1, [&](const Token* tok2) {
         const Token* obj = getParentLifetimeObject(tok2);
+        if (!obj)
+            return false;
         const Variable* var = obj->variable();
         // Check for arrays first since astIsPointer will return true, but an array is not a borrowed type
         if (var && var->isArray())
@@ -2680,8 +2682,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
             return false;
 
         const Token *ftok = tok2->astParent()->astOperand2();
-        if (astIsContainer(tok2->astParent()->astOperand1()) && vt && vt->container) {
-            const Library::Container* c = vt->container;
+        const Token* const ctok = tok2->str() == "." ? tok2->astOperand2() : tok2;
+        if (astIsContainer(ctok) && ctok->valueType() && ctok->valueType()->container) {
+            const Library::Container* c = ctok->valueType()->container;
             const Library::Container::Action action = c->getAction(ftok->str());
             if (contains({Library::Container::Action::INSERT,
                           Library::Container::Action::ERASE,
@@ -3112,7 +3115,7 @@ namespace {
         template<class F>
         const Token* operator()(const Token* start, const Token* end, F f) const
         {
-            return findTokenSkipDeadCode(library, start, end, f, *evaluate);
+            return findTokenSkipDeadCode(library, start, end, std::move(f), *evaluate);
         }
     };
 }

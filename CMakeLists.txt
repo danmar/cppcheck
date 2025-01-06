@@ -9,6 +9,7 @@ include(cmake/options.cmake)
 include(cmake/cxx11.cmake)
 use_cxx11()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -26,7 +27,8 @@ endif()
 include(cmake/printInfo.cmake)
 
 
-file(GLOB addons "addons/*.py")
+file(GLOB addons_py "addons/*.py")
+file(GLOB addons_json "addons/*.json")
 file(GLOB cfgs "cfg/*.cfg")
 file(GLOB platforms "platforms/*.xml")
 
@@ -85,6 +87,7 @@ add_custom_target(copy_cfg ALL
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cfg"
     COMMENT "Copying cfg files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
+# TODO: copy *.py and *.json only
 add_custom_target(copy_addons ALL
     ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/addons"
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/addons"

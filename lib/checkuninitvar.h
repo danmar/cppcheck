@@ -26,8 +26,6 @@
 #include "config.h"
 #include "mathlib.h"
 #include "errortypes.h"
-#include "tokenize.h"
-#include "vfvalue.h"
 
 #include <cstdint>
 #include <map>
@@ -40,6 +38,11 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
+class Tokenizer;
+namespace ValueFlow
+{
+    class Value;
+}
 
 struct VariableValue {
     explicit VariableValue(MathLib::bigint val = 0) : value(val) {}
@@ -71,11 +74,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckUninitVar checkUninitVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkUninitVar.valueFlowUninit();
-        checkUninitVar.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     bool diag(const Token* tok);
     /** Check for uninitialized variables */
@@ -120,16 +119,7 @@ private:
 
     std::set<const Token*> mUninitDiags;
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
-    {
-        CheckUninitVar c(nullptr, settings, errorLogger);
-
-        ValueFlow::Value v{};
-
-        c.uninitvarError(nullptr, v);
-        c.uninitdataError(nullptr, "varname");
-        c.uninitStructMemberError(nullptr, "a.b");
-    }
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override;
 
     static std::string myName() {
         return "Uninitialized variables";

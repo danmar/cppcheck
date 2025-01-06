@@ -92,7 +92,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
-    for (std::list<const Token *>::const_iterator it = callstack.cbegin(); it != callstack.cend(); ++it) {
+    for (auto it = callstack.cbegin(); it != callstack.cend(); ++it) {
         // --errorlist can provide null values here
         if (!(*it))
             continue;
@@ -169,6 +169,9 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
 
     const char *attr = errmsg->Attribute("id");
     id = attr ? attr : unknown;
+
+    attr = errmsg->Attribute("file0");
+    file0 = attr ? attr : "";
 
     attr = errmsg->Attribute("severity");
     severity = attr ? severityFromString(attr) : Severity::none;
@@ -284,10 +287,11 @@ std::string ErrorMessage::serialize() const
 
     serializeString(oss, saneShortMessage);
     serializeString(oss, saneVerboseMessage);
+    serializeString(oss, mSymbolNames);
     oss += std::to_string(callStack.size());
     oss += " ";
 
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
+    for (auto loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
         std::string frame;
         frame += std::to_string(loc->line);
         frame += '\t';
@@ -311,9 +315,9 @@ void ErrorMessage::deserialize(const std::string &data)
     callStack.clear();
 
     std::istringstream iss(data);
-    std::array<std::string, 9> results;
+    std::array<std::string, 10> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 9) {
+    while (iss.good() && elem < 10) {
         unsigned int len = 0;
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length");
@@ -339,7 +343,7 @@ void ErrorMessage::deserialize(const std::string &data)
     if (!iss.good())
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-    if (elem != 9)
+    if (elem != 10)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = std::move(results[0]);
@@ -362,6 +366,7 @@ void ErrorMessage::deserialize(const std::string &data)
         certainty = Certainty::inconclusive;
     mShortMessage = std::move(results[7]);
     mVerboseMessage = std::move(results[8]);
+    mSymbolNames = std::move(results[9]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -459,7 +464,7 @@ std::string ErrorMessage::fixInvalidChars(const std::string& raw)
 {
     std::string result;
     result.reserve(raw.length());
-    std::string::const_iterator from=raw.cbegin();
+    auto from=raw.cbegin();
     while (from!=raw.cend()) {
         if (std::isprint(static_cast<unsigned char>(*from))) {
             result.push_back(*from);
@@ -496,7 +501,7 @@ std::string ErrorMessage::toXML() const
     if (!remark.empty())
         printer.PushAttribute("remark", fixInvalidChars(remark).c_str());
 
-    for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
+    for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
         printer.PushAttribute("file", it->getfile().c_str());
         printer.PushAttribute("line", std::max(it->line,0));
@@ -700,7 +705,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
 std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
 {
     std::string str;
-    for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
+    for (auto tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
         str += (tok == callStack.cbegin() ? "" : " -> ");
         str += tok->stringify();
     }
@@ -819,9 +824,9 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
           << "   <key>path</key>\r\n"
           << "   <array>\r\n";
 
-    std::list<ErrorMessage::FileLocation>::const_iterator prev = msg.callStack.cbegin();
+    auto prev = msg.callStack.cbegin();
 
-    for (std::list<ErrorMessage::FileLocation>::const_iterator it = msg.callStack.cbegin(); it != msg.callStack.cend(); ++it) {
+    for (auto it = msg.callStack.cbegin(); it != msg.callStack.cend(); ++it) {
         if (prev != it) {
             plist << "    <dict>\r\n"
                   << "     <key>kind</key><string>control</string>\r\n"
@@ -844,7 +849,7 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
             prev = it;
         }
 
-        std::list<ErrorMessage::FileLocation>::const_iterator next = it;
+        auto next = it;
         ++next;
         const std::string message = (it->getinfo().empty() && next == msg.callStack.cend() ? msg.shortMessage() : it->getinfo());
 

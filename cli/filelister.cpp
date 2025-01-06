@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have DT_DIR and DT_UNKNOWN
+#endif
+
 #include "filelister.h"
 
 #include "filesettings.h"
@@ -100,7 +104,8 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
 
             if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
                 // File
-                if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.match(fname)) {
+                Standards::Language lang = Standards::Language::None;
+                if ((!checkAllFilesInDir || Path::acceptFile(fname, extra, &lang)) && !ignored.match(fname)) {
                     std::string nativename = Path::fromNativeSeparators(fname);
 
                     // Limitation: file sizes are assumed to fit in a 'size_t'
@@ -110,7 +115,7 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
                     const std::size_t filesize = ffd.nFileSizeLow;
 
 #endif
-                    files.emplace_back(std::move(nativename), filesize);
+                    files.emplace_back(std::move(nativename), lang, filesize);
                 }
             } else {
                 // Directory
@@ -169,10 +174,6 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__CYGWIN__)
-#undef __STRICT_ANSI__
-#endif
-
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cerrno>
@@ -192,7 +193,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         return ""; // TODO: return error?
     if ((file_stat.st_mode & S_IFMT) != S_IFDIR)
     {
-        files.emplace_back(path, file_stat.st_size);
+        files.emplace_back(path, Standards::Language::None, file_stat.st_size);
         return "";
     }
 
@@ -216,7 +217,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         new_path.erase(path.length() + 1);
         new_path += dir_result->d_name;
 
-#if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
+#if defined(_DIRENT_HAVE_D_TYPE)
         const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && Path::isDirectory(new_path)));
 #else
         const bool path_is_directory = Path::isDirectory(new_path);
@@ -229,12 +230,13 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
                 }
             }
         } else {
-            if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
+            Standards::Language lang = Standards::Language::None;
+            if (Path::acceptFile(new_path, extra, &lang) && !ignored.match(new_path)) {
                 if (stat(new_path.c_str(), &file_stat) == -1) {
                     const int err = errno;
                     return "could not stat file '" + new_path + "' (errno: " + std::to_string(err) + ")";
                 }
-                files.emplace_back(new_path, file_stat.st_size);
+                files.emplace_back(new_path, lang, file_stat.st_size);
             }
         }
     }

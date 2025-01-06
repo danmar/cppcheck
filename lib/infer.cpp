@@ -349,7 +349,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         std::vector<const ValueFlow::Value*> refs;
         std::vector<bool> r = Interval::compare(op, lhs, rhs, &refs);
         if (!r.empty()) {
-            ValueFlow::Value value(r.front());
+            ValueFlow::Value value(static_cast<int>(r.front()));
             addToErrorPath(value, refs);
             setValueKind(value, refs);
             result.push_back(std::move(value));

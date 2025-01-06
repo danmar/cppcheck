@@ -79,6 +79,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
+      # TODO: package PDBs
       - name: Deploy app
         run: |
           windeployqt build\bin\Release || exit /b !errorlevel!
@@ -103,24 +104,48 @@ jobs:
           name: bin
           path: bin
 
-      - name: Compile misra.py executable
+      - name: Install missing Python packages
         run: |
           pip install -U pyinstaller || exit /b !errorlevel!
+
+      # TODO: include in installer?
+      - name: Compile misra.py executable
+        run: |
           cd addons || exit /b !errorlevel!
           pyinstaller --hidden-import xml --hidden-import xml.etree --hidden-import xml.etree.ElementTree misra.py || exit /b !errorlevel!
           del *.spec || exit /b !errorlevel!
+
+      # TODO: include in installer?
+      - name: Compile cppcheck-htmlreport executable
+        run: |
+          cd htmlreport || exit /b !errorlevel!
+          pyinstaller cppcheck-htmlreport || exit /b !errorlevel!
+          del *.spec || exit /b !errorlevel!
+
+      # TODO: test the compiled Python files
 
       - name: Collect files
         run: |
           @echo on
           move build\bin\Release win_installer\files || exit /b !errorlevel!
+          copy AUTHORS win_installer\files\authors.txt || exit /b !errorlevel!
+          copy readme.txt win_installer\files\ || exit /b !errorlevel!
+          copy win_installer\GPLv3.txt win_installer\files\ || exit /b !errorlevel!
+          copy externals\picojson\LICENSE win_installer\files\picojson-license.txt || exit /b !errorlevel!
+          copy externals\simplecpp\LICENSE win_installer\files\simplecpp-license.txt || exit /b !errorlevel!
+          copy externals\tinyxml2\LICENSE win_installer\files\tinyxml2-license.txt || exit /b !errorlevel!
           copy addons\dist\misra\*.* win_installer\files\addons || exit /b !errorlevel!
           copy bin\cppcheck.exe win_installer\files || exit /b !errorlevel!
           copy bin\cppcheck-core.dll win_installer\files || exit /b !errorlevel!
           :: mkdir win_installer\files\help || exit /b !errorlevel!
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
+          copy gui\help\online-help.qhc win_installer\files\ || exit /b !errorlevel!
+          copy gui\help\online-help.qch win_installer\files\ || exit /b !errorlevel!
+          del win_installer\files\cfg\*.rng || exit /b !errorlevel!
+          del win_installer\files\platforms\*.rng || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move build\gui\*.qm win_installer\files\translations || exit /b !errorlevel!
+          copy htmlreport\dist\cppcheck-htmlreport\*.* win_installer\files || exit /b !errorlevel!
           :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
           copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
@@ -148,16 +173,25 @@ jobs:
         run: |
           @echo on
           :: del win_installer\files\addons\*.dll || exit /b !errorlevel!
+          del win_installer\files\addons\*.doxyfile || exit /b !errorlevel!
+          del win_installer\files\addons\*.md || exit /b !errorlevel!
           :: del win_installer\files\addons\*.pyd || exit /b !errorlevel!
           :: del win_installer\files\addons\base_library.zip || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\addons\test || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\addons\doc || exit /b !errorlevel!
           :: rmdir /s /q win_installer\files\bearer || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\generic || exit /b !errorlevel!
           rmdir /s /q win_installer\files\help || exit /b !errorlevel!
           rmdir /s /q win_installer\files\iconengines || exit /b !errorlevel!
           rmdir /s /q win_installer\files\imageformats || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\networkinformation || exit /b !errorlevel!
           :: rmdir /s /q win_installer\files\printsupport || exit /b !errorlevel!
           rmdir /s /q win_installer\files\sqldrivers || exit /b !errorlevel!      
+          rmdir /s /q win_installer\files\tls || exit /b !errorlevel!
           ren win_installer\files\translations lang || exit /b !errorlevel!
           del win_installer\files\d3dcompiler_47.dll || exit /b !errorlevel!
+          del win_installer\files\dxcompiler.dll || exit /b !errorlevel!
+          del win_installer\files\dxil.dll || exit /b !errorlevel!
           del win_installer\files\dmake.exe || exit /b !errorlevel!
           del win_installer\files\dmake.pdb || exit /b !errorlevel!
           :: del win_installer\files\libEGL.dll || exit /b !errorlevel!

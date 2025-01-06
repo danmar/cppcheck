@@ -197,6 +197,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
+        check("int f(void) {\n" // #13527
+              "    const wchar_t* str1 = L\"Hello\";\n"
+              "    return wcsicmp(str1, str1);\n" // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Comparison of identical string variables.\n", errout_str());
+
         check("int main()\n"
               "{\n"
               "  if (strcmp(\"00FF00\", \"00FF00\") == 0)"

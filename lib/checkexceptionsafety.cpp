@@ -19,12 +19,13 @@
 //---------------------------------------------------------------------------
 #include "checkexceptionsafety.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "astutils.h"
+#include "tokenize.h"
 
 #include <list>
 #include <set>
@@ -407,4 +408,31 @@ void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok)
                 " If there is no current exception this calls std::terminate()."
                 " More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object",
                 CWE480, Certainty::normal);
+}
+
+void CheckExceptionSafety::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (tokenizer.isC())
+        return;
+
+    CheckExceptionSafety checkExceptionSafety(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkExceptionSafety.destructors();
+    checkExceptionSafety.deallocThrow();
+    checkExceptionSafety.checkRethrowCopy();
+    checkExceptionSafety.checkCatchExceptionByValue();
+    checkExceptionSafety.nothrowThrows();
+    checkExceptionSafety.unhandledExceptionSpecification();
+    checkExceptionSafety.rethrowNoCurrentException();
+}
+
+void CheckExceptionSafety::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckExceptionSafety c(nullptr, settings, errorLogger);
+    c.destructorsError(nullptr, "Class");
+    c.deallocThrowError(nullptr, "p");
+    c.rethrowCopyError(nullptr, "varname");
+    c.catchExceptionByValueError(nullptr);
+    c.noexceptThrowError(nullptr);
+    c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
+    c.rethrowNoCurrentExceptionError(nullptr);
 }

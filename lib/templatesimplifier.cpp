@@ -716,9 +716,9 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
     TokenAndName instantiation(token, scope);
 
     // check if instantiation already exists before adding it
-    const std::list<TokenAndName>::const_iterator it = std::find(mTemplateInstantiations.cbegin(),
-                                                                 mTemplateInstantiations.cend(),
-                                                                 instantiation);
+    const auto it = std::find(mTemplateInstantiations.cbegin(),
+                              mTemplateInstantiations.cend(),
+                              instantiation);
 
     if (it == mTemplateInstantiations.cend())
         mTemplateInstantiations.emplace_back(std::move(instantiation));
@@ -780,12 +780,12 @@ void TemplateSimplifier::getTemplateInstantiations()
 
     for (const auto & decl : mTemplateDeclarations) {
         if (decl.isFunction())
-            functionNameMap.insert(std::make_pair(decl.name(), &decl));
+            functionNameMap.emplace(decl.name(), &decl);
     }
 
     for (const auto & decl : mTemplateForwardDeclarations) {
         if (decl.isFunction())
-            functionNameMap.insert(std::make_pair(decl.name(), &decl));
+            functionNameMap.emplace(decl.name(), &decl);
     }
 
     const Token *skip = nullptr;
@@ -984,7 +984,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                 while (true) {
                     const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") +
                                                  qualification + (qualification.empty()?"":" :: ") + tok->str();
-                    const std::list<TokenAndName>::const_iterator it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(fullName));
+                    const auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(fullName));
                     if (it != mTemplateDeclarations.end()) {
                         // full name matches
                         addInstantiation(tok, it->scope());
@@ -996,7 +996,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                         std::string fullNameSpace = scopeName + (scopeName.empty()?"":" :: ") +
                                                     nameSpace + (qualification.empty()?"":" :: ") + qualification;
                         std::string newFullName = fullNameSpace + " :: " + tok->str();
-                        const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(std::move(newFullName)));
+                        const auto it1 = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(std::move(newFullName)));
                         if (it1 != mTemplateDeclarations.end()) {
                             // insert using namespace into token stream
                             std::string::size_type offset = 0;
@@ -1165,7 +1165,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
         if (tok && tok->str() == ">") {
             tok = tok->previous();
-            std::list<Default>::const_iterator it = eq.cbegin();
+            auto it = eq.cbegin();
             for (std::size_t i = (templatepar - eq.size()); it != eq.cend() && i < usedpar; ++i)
                 ++it;
             int count = 0;
@@ -1236,9 +1236,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             if (Token::Match(tok2, "(|{|["))
                 tok2 = tok2->link();
             else if (Token::Match(tok2, "%type% <") && (tok2->strAt(2) == ">" || templateParameters(tok2->next()))) {
-                const std::list<TokenAndName>::const_iterator ti = std::find_if(mTemplateInstantiations.cbegin(),
-                                                                                mTemplateInstantiations.cend(),
-                                                                                FindToken(tok2));
+                const auto ti = std::find_if(mTemplateInstantiations.cbegin(),
+                                             mTemplateInstantiations.cend(),
+                                             FindToken(tok2));
                 if (ti != mTemplateInstantiations.end())
                     mTemplateInstantiations.erase(ti);
                 ++indentlevel;
@@ -1255,9 +1255,9 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             continue;
 
         // don't strip args from uninstantiated templates
-        const std::list<TokenAndName>::const_iterator ti2 = std::find_if(mTemplateInstantiations.cbegin(),
-                                                                         mTemplateInstantiations.cend(),
-                                                                         FindName(declaration.name()));
+        const auto ti2 = std::find_if(mTemplateInstantiations.cbegin(),
+                                      mTemplateInstantiations.cend(),
+                                      FindName(declaration.name()));
 
         if (ti2 == mTemplateInstantiations.end())
             continue;
@@ -1272,7 +1272,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 
 void TemplateSimplifier::simplifyTemplateAliases()
 {
-    for (std::list<TokenAndName>::const_iterator it1 = mTemplateDeclarations.cbegin(); it1 != mTemplateDeclarations.cend();) {
+    for (auto it1 = mTemplateDeclarations.cbegin(); it1 != mTemplateDeclarations.cend();) {
         const TokenAndName &aliasDeclaration = *it1;
 
         if (!aliasDeclaration.isAlias()) {
@@ -1289,7 +1289,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
 
         // Look for alias usages..
         bool found = false;
-        for (std::list<TokenAndName>::const_iterator it2 = mTemplateInstantiations.cbegin(); it2 != mTemplateInstantiations.cend();) {
+        for (auto it2 = mTemplateInstantiations.cbegin(); it2 != mTemplateInstantiations.cend();) {
             const TokenAndName &aliasUsage = *it2;
             if (!aliasUsage.token() || aliasUsage.fullName() != aliasDeclaration.fullName()) {
                 ++it2;
@@ -1361,9 +1361,9 @@ void TemplateSimplifier::simplifyTemplateAliases()
                 if (aliasParameterNames.find(tok2->str()) == aliasParameterNames.end()) {
                     // Create template instance..
                     if (Token::Match(tok1, "%name% <")) {
-                        const std::list<TokenAndName>::const_iterator it = std::find_if(mTemplateInstantiations.cbegin(),
-                                                                                        mTemplateInstantiations.cend(),
-                                                                                        FindToken(tok1));
+                        const auto it = std::find_if(mTemplateInstantiations.cbegin(),
+                                                     mTemplateInstantiations.cend(),
+                                                     FindToken(tok1));
                         if (it != mTemplateInstantiations.cend())
                             addInstantiation(tok2, it->scope());
                     }
@@ -1660,9 +1660,9 @@ void TemplateSimplifier::expandTemplate(
             end = temp2->linkAt(1)->next();
         } else {
             if (it != mTemplateForwardDeclarationsMap.end()) {
-                const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateForwardDeclarations.cbegin(),
-                                                                                 mTemplateForwardDeclarations.cend(),
-                                                                                 FindToken(it->second));
+                const auto it1 = std::find_if(mTemplateForwardDeclarations.cbegin(),
+                                              mTemplateForwardDeclarations.cend(),
+                                              FindToken(it->second));
                 if (it1 != mTemplateForwardDeclarations.cend())
                     mMemberFunctionsToDelete.push_back(*it1);
             }
@@ -1849,7 +1849,7 @@ void TemplateSimplifier::expandTemplate(
                     if (Token::Match(start, "[|{|(")) {
                         links[start->link()] = dst->previous();
                     } else if (Token::Match(start, "]|}|)")) {
-                        std::map<const Token *, Token *>::const_iterator link = links.find(start);
+                        const auto link = utils::as_const(links).find(start);
                         // make sure link is valid
                         if (link != links.cend()) {
                             Token::createMutualLinks(link->second, dst->previous());
@@ -2044,9 +2044,9 @@ void TemplateSimplifier::expandTemplate(
             while (tok3 && tok3->str() != "::")
                 tok3 = tok3->next();
 
-            const std::list<TokenAndName>::const_iterator it = std::find_if(mTemplateDeclarations.cbegin(),
-                                                                            mTemplateDeclarations.cend(),
-                                                                            FindToken(startOfTemplateDeclaration));
+            const auto it = std::find_if(mTemplateDeclarations.cbegin(),
+                                         mTemplateDeclarations.cend(),
+                                         FindToken(startOfTemplateDeclaration));
             if (it != mTemplateDeclarations.cend())
                 mMemberFunctionsToDelete.push_back(*it);
         }
@@ -2061,7 +2061,14 @@ void TemplateSimplifier::expandTemplate(
         const std::string lastName = (templateInstantiation.name().find(' ') != std::string::npos) ? templateInstantiation.name().substr(templateInstantiation.name().rfind(' ')+1) : templateInstantiation.name();
 
         std::stack<const Token *> templates;
+        int scopeCount = 0;
         for (; tok3; tok3 = tok3->next()) {
+            if (tok3->str() == "{")
+                ++scopeCount;
+            else if (tok3->str() == "}")
+                --scopeCount;
+            if (scopeCount < 0)
+                break;
             if (tok3->isName() && !Token::Match(tok3, "class|typename|struct") && !tok3->isStandardType()) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
@@ -2509,9 +2516,9 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                        MathLib::isInt(tok->strAt(2))) {
                 if ((Token::Match(tok->previous(), "(|&&|%oror%|,") || tok == start) &&
                     (Token::Match(tok->tokAt(3), ")|&&|%oror%|?") || tok->tokAt(3) == end)) {
-                    const MathLib::bigint op1(MathLib::toBigNumber(tok->str()));
+                    const MathLib::bigint op1(MathLib::toBigNumber(tok));
                     const std::string &cmp(tok->strAt(1));
-                    const MathLib::bigint op2(MathLib::toBigNumber(tok->strAt(2)));
+                    const MathLib::bigint op2(MathLib::toBigNumber(tok->tokAt(2)));
 
                     std::string result;
 
@@ -2682,7 +2689,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
 
         if (validTokenEnd(bounded, tok, backToken, 3) &&
             Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(std::to_string(MathLib::toBigNumber(tok->str())));
+            tok->str(MathLib::toString(MathLib::toBigNumber(tok)));
         }
 
         if (validTokenEnd(bounded, tok, backToken, 5) &&
@@ -2878,9 +2885,9 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                 if (validTokenStart(bounded, tok, frontToken, -1) &&
                     Token::Match(tok->previous(), "(|&&|%oror%") &&
                     Token::Match(tok->tokAt(3), ")|&&|%oror%|?")) {
-                    const MathLib::bigint op1(MathLib::toBigNumber(tok->str()));
+                    const MathLib::bigint op1(MathLib::toBigNumber(tok));
                     const std::string &cmp(tok->strAt(1));
-                    const MathLib::bigint op2(MathLib::toBigNumber(tok->strAt(2)));
+                    const MathLib::bigint op2(MathLib::toBigNumber(tok->tokAt(2)));
 
                     std::string result;
 
@@ -2948,7 +2955,7 @@ bool TemplateSimplifier::matchSpecialization(
     const std::list<const Token *> & specializations)
 {
     // Is there a matching specialization?
-    for (std::list<const Token *>::const_iterator it = specializations.cbegin(); it != specializations.cend(); ++it) {
+    for (auto it = specializations.cbegin(); it != specializations.cend(); ++it) {
         if (!Token::Match(*it, "%name% <"))
             continue;
         const Token *startToken = (*it);
@@ -3192,9 +3199,15 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 startToken = startToken->tokAt(-2);
         }
 
-        if (Token::Match(startToken->previous(), ";|{|}|=|const") &&
-            (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%")))
-            continue;
+        if (Token::Match(startToken->previous(), ";|{|}|=|const")) {
+            const char* patternAfter = isfunc ? "(" : isVar ? ";|%op%|(" : "*|&|::| %name%";
+            if (!isfunc && !isVar)
+                if (const Token* end = startToken->next()->findClosingBracket())
+                    if (Token::Match(end, "> (|{"))
+                        patternAfter = "(|{";
+            if (!specialized && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), patternAfter))
+                continue;
+        }
 
         // New type..
         mTypesUsedInTemplateInstantiation.clear();
@@ -3308,11 +3321,11 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
 static bool matchTemplateParameters(const Token *nameTok, const std::list<std::string> &strings)
 {
-    std::list<std::string>::const_iterator it = strings.cbegin();
     const Token *tok = nameTok->tokAt(2);
     const Token *end = nameTok->next()->findClosingBracket();
     if (!end)
         return false;
+    auto it = strings.cbegin();
     while (tok && tok != end && it != strings.cend()) {
         if (tok->isUnsigned()) {
             if (*it != "unsigned")
@@ -3389,10 +3402,9 @@ void TemplateSimplifier::replaceTemplateUsage(
         // Foo < int >  =>  Foo<int>
         for (const Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
             if (tok->isName() && tok->templateSimplifierPointers() && !tok->templateSimplifierPointers()->empty()) {
-                std::list<TokenAndName>::const_iterator ti;
-                for (ti = mTemplateInstantiations.cbegin(); ti != mTemplateInstantiations.cend();) {
+                for (auto ti = mTemplateInstantiations.cbegin(); ti != mTemplateInstantiations.cend();) {
                     if (ti->token() == tok) {
-                        ti = mTemplateInstantiations.erase(ti);
+                        mTemplateInstantiations.erase(ti);
                         break;
                     }
                     ++ti;
@@ -3889,13 +3901,13 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
         std::set<std::string> expandedtemplates;
 
-        for (std::list<TokenAndName>::const_reverse_iterator iter1 = mTemplateDeclarations.crbegin(); iter1 != mTemplateDeclarations.crend(); ++iter1) {
+        for (auto iter1 = mTemplateDeclarations.crbegin(); iter1 != mTemplateDeclarations.crend(); ++iter1) {
             if (iter1->isAlias() || iter1->isFriend())
                 continue;
 
             // get specializations..
             std::list<const Token *> specializations;
-            for (std::list<TokenAndName>::const_iterator iter2 = mTemplateDeclarations.cbegin(); iter2 != mTemplateDeclarations.cend(); ++iter2) {
+            for (auto iter2 = mTemplateDeclarations.cbegin(); iter2 != mTemplateDeclarations.cend(); ++iter2) {
                 if (iter2->isAlias() || iter2->isFriend())
                     continue;
 
@@ -3914,7 +3926,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             }
         }
 
-        for (std::list<TokenAndName>::const_iterator it = mInstantiatedTemplates.cbegin(); it != mInstantiatedTemplates.cend(); ++it) {
+        for (auto it = mInstantiatedTemplates.cbegin(); it != mInstantiatedTemplates.cend(); ++it) {
             auto decl = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&it](const TokenAndName& decl) {
                 return decl.token() == it->token();
             });
@@ -3937,17 +3949,17 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
         // remove out of line member functions
         while (!mMemberFunctionsToDelete.empty()) {
-            const std::list<TokenAndName>::iterator it = std::find_if(mTemplateDeclarations.begin(),
-                                                                      mTemplateDeclarations.end(),
-                                                                      FindToken(mMemberFunctionsToDelete.cbegin()->token()));
+            const auto it = std::find_if(mTemplateDeclarations.begin(),
+                                         mTemplateDeclarations.end(),
+                                         FindToken(mMemberFunctionsToDelete.cbegin()->token()));
             // multiple functions can share the same declaration so make sure it hasn't already been deleted
             if (it != mTemplateDeclarations.end()) {
                 removeTemplate(it->token());
                 mTemplateDeclarations.erase(it);
             } else {
-                const std::list<TokenAndName>::iterator it1 = std::find_if(mTemplateForwardDeclarations.begin(),
-                                                                           mTemplateForwardDeclarations.end(),
-                                                                           FindToken(mMemberFunctionsToDelete.cbegin()->token()));
+                const auto it1 = std::find_if(mTemplateForwardDeclarations.begin(),
+                                              mTemplateForwardDeclarations.end(),
+                                              FindToken(mMemberFunctionsToDelete.cbegin()->token()));
                 // multiple functions can share the same declaration so make sure it hasn't already been deleted
                 if (it1 != mTemplateForwardDeclarations.end()) {
                     removeTemplate(it1->token());

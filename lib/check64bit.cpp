@@ -161,3 +161,18 @@ void Check64BitPortability::returnIntegerError(const Token *tok)
                 "and Linux they are of different width. In worst case you end up casting 64-bit integer down to 32-bit pointer. "
                 "The safe way is to always return a pointer.", CWE758, Certainty::normal);
 }
+
+void Check64BitPortability::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    Check64BitPortability check64BitPortability(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    check64BitPortability.pointerassignment();
+}
+
+void Check64BitPortability::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    Check64BitPortability c(nullptr, settings, errorLogger);
+    c.assignmentAddressToIntegerError(nullptr);
+    c.assignmentIntegerToAddressError(nullptr);
+    c.returnIntegerError(nullptr);
+    c.returnPointerError(nullptr);
+}

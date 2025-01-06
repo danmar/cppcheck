@@ -278,9 +278,6 @@ private slots:
      */
     void checkAllVSConfigs();
 
-    /** @brief Browse for Cppcheck Premium license file */
-    void browseLicenseFile();
-
 protected:
 
     /**

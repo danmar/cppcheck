@@ -133,7 +133,7 @@ static bool isAutoVarArray(const Token *tok)
 
     // ValueFlow
     if (var->isPointer() && !var->isArgument()) {
-        for (std::list<ValueFlow::Value>::const_iterator it = tok->values().cbegin(); it != tok->values().cend(); ++it) {
+        for (auto it = tok->values().cbegin(); it != tok->values().cend(); ++it) {
             const ValueFlow::Value &val = *it;
             if (val.isTokValue() && isAutoVarArray(val.tokvalue))
                 return true;
@@ -786,4 +786,29 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueF
                 "Deallocation of " + type + " results in undefined behaviour.\n"
                 "The deallocation of " + type + " results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.", CWE590, Certainty::normal);
+}
+
+void CheckAutoVariables::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckAutoVariables checkAutoVariables(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkAutoVariables.assignFunctionArg();
+    checkAutoVariables.checkVarLifetime();
+    checkAutoVariables.autoVariables();
+}
+
+void CheckAutoVariables::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckAutoVariables c(nullptr,settings,errorLogger);
+    c.errorAutoVariableAssignment(nullptr, false);
+    c.errorReturnReference(nullptr, ErrorPath{}, false);
+    c.errorDanglingReference(nullptr, nullptr, ErrorPath{});
+    c.errorReturnTempReference(nullptr, ErrorPath{}, false);
+    c.errorDanglingTempReference(nullptr, ErrorPath{}, false);
+    c.errorInvalidDeallocation(nullptr, nullptr);
+    c.errorUselessAssignmentArg(nullptr);
+    c.errorUselessAssignmentPtrArg(nullptr);
+    c.errorReturnDanglingLifetime(nullptr, nullptr);
+    c.errorInvalidLifetime(nullptr, nullptr);
+    c.errorDanglngLifetime(nullptr, nullptr);
+    c.errorDanglingTemporaryLifetime(nullptr, nullptr, nullptr);
 }

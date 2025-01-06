@@ -162,7 +162,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
     // Check that all include paths exist
     {
-        for (std::list<std::string>::const_iterator iter = mSettings.includePaths.cbegin();
+        for (auto iter = mSettings.includePaths.cbegin();
              iter != mSettings.includePaths.cend();
              ) {
             const std::string path(Path::toNativeSeparators(*iter));
@@ -213,6 +213,39 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         }
 
         mFileSettings.clear();
+
+        if (mSettings.enforcedLang != Standards::Language::None)
+        {
+            // apply enforced language
+            for (auto& fs : fileSettings)
+            {
+                if (mSettings.library.markupFile(fs.filename()))
+                    continue;
+                fs.file.setLang(mSettings.enforcedLang);
+            }
+        }
+        else
+        {
+            // identify files
+            for (auto& fs : fileSettings)
+            {
+                if (mSettings.library.markupFile(fs.filename()))
+                    continue;
+                bool header = false;
+                fs.file.setLang(Path::identify(fs.filename(), mSettings.cppHeaderProbe, &header));
+                // unknown extensions default to C++
+                if (!header && fs.file.lang() == Standards::Language::None)
+                    fs.file.setLang(Standards::Language::CPP);
+            }
+        }
+
+        // enforce the language since markup files are special and do not adhere to the enforced language
+        for (auto& fs : fileSettings)
+        {
+            if (mSettings.library.markupFile(fs.filename())) {
+                fs.file.setLang(Standards::Language::C);
+            }
+        }
 
         // sort the markup last
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
@@ -282,6 +315,41 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         }
         else {
             files = std::move(filesResolved);
+        }
+
+        if (mSettings.enforcedLang != Standards::Language::None)
+        {
+            // apply enforced language
+            for (auto& f : files)
+            {
+                if (mSettings.library.markupFile(f.path()))
+                    continue;
+                f.setLang(mSettings.enforcedLang);
+            }
+        }
+        else
+        {
+            // identify remaining files
+            for (auto& f : files)
+            {
+                if (f.lang() != Standards::Language::None)
+                    continue;
+                if (mSettings.library.markupFile(f.path()))
+                    continue;
+                bool header = false;
+                f.setLang(Path::identify(f.path(), mSettings.cppHeaderProbe, &header));
+                // unknown extensions default to C++
+                if (!header && f.lang() == Standards::Language::None)
+                    f.setLang(Standards::Language::CPP);
+            }
+        }
+
+        // enforce the language since markup files are special and do not adhere to the enforced language
+        for (auto& f : files)
+        {
+            if (mSettings.library.markupFile(f.path())) {
+                f.setLang(Standards::Language::C);
+            }
         }
 
         // sort the markup last
@@ -913,6 +981,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     temp = 10;
                 }
                 mSettings.maxCtuDepth = temp;
+            }
+
+            else if (std::strncmp(argv[i], "--max-template-recursion=", 25) == 0) {
+                int temp = 0;
+                if (!parseNumberArg(argv[i], 25, temp))
+                    return Result::Fail;
+                mSettings.maxTemplateRecursion = temp;
             }
 
             // undocumented option for usage in Python tests to indicate that no build dir should be injected

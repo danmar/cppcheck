@@ -74,6 +74,7 @@ private:
         TEST_CASE(simplifyUsing32);
         TEST_CASE(simplifyUsing33);
         TEST_CASE(simplifyUsing34);
+        TEST_CASE(simplifyUsing35);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -851,6 +852,14 @@ private:
                                 "g ( { A :: a } ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyUsing35() { // #13492
+        const char code[] = "using a = b;\n"
+                            "using c = d;\n";
+        const char expected[] = ";";
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 

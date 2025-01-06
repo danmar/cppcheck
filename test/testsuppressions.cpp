@@ -96,8 +96,13 @@ private:
         TEST_CASE(suppressLocal);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+        TEST_CASE(addSuppressionDuplicate);
+        TEST_CASE(updateSuppressionState);
+        TEST_CASE(addSuppressionLineMultiple);
 
         TEST_CASE(suppressionsParseXmlFile);
+
+        TEST_CASE(toString);
     }
 
     void suppressionsBadId1() const {
@@ -229,10 +234,10 @@ private:
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
-            filelist.emplace_back(i->first, i->second.size());
+        for (auto i = f.cbegin(); i != f.cend(); ++i) {
+            filelist.emplace_back(i->first, Standards::Language::CPP, i->second.size());
             if (useFS) {
-                fileSettings.emplace_back(i->first, i->second.size());
+                fileSettings.emplace_back(i->first, Standards::Language::CPP, i->second.size());
             }
         }
 
@@ -250,7 +255,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
+        for (auto i = f.cbegin(); i != f.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, i->second));
 
         // clear files list so only fileSettings are used
@@ -277,9 +282,9 @@ private:
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        filelist.emplace_back("test.cpp", strlen(code));
+        filelist.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         if (useFS) {
-            fileSettings.emplace_back("test.cpp", strlen(code));
+            fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -293,7 +298,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (auto i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
@@ -321,9 +326,9 @@ private:
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        filelist.emplace_back("test.cpp", strlen(code));
+        filelist.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         if (useFS) {
-            fileSettings.emplace_back("test.cpp", strlen(code));
+            fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -337,7 +342,7 @@ private:
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (auto i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
@@ -1522,6 +1527,127 @@ private:
 
             SuppressionList supprList;
             ASSERT_EQUALS("unknown element 'eid' in suppressions XML 'suppressparsexml.xml', expected id/fileName/lineNumber/symbolName/hash.", supprList.parseXmlFile(file.path().c_str()));
+        }
+    }
+
+    void addSuppressionDuplicate() const {
+        SuppressionList supprs;
+
+        SuppressionList::Suppression s;
+        s.errorId = "uninitvar";
+
+        ASSERT_EQUALS("", supprs.addSuppression(s));
+        ASSERT_EQUALS("suppression 'uninitvar' already exists", supprs.addSuppression(s));
+    }
+
+    void updateSuppressionState() const {
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+            ASSERT_EQUALS(false, supprs.updateSuppressionState(s));
+        }
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+
+            ASSERT_EQUALS("", supprs.addSuppression(s));
+
+            ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
+
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions(false);
+            ASSERT_EQUALS(1, l.size());
+        }
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+            s.matched = false;
+
+            ASSERT_EQUALS("", supprs.addSuppression(s));
+
+            s.matched = true;
+            ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
+
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions(false);
+            ASSERT_EQUALS(0, l.size());
+        }
+    }
+
+    void addSuppressionLineMultiple() {
+        SuppressionList supprlist;
+
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("syntaxError"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("uninitvar:1.c"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("memleak:1.c"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("uninitvar:2.c"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("memleak:3.c:12 # first"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("memleak:3.c:22 // second"));
+
+        const auto& supprs = supprlist.getSuppressions();
+        ASSERT_EQUALS(6, supprs.size());
+
+        auto it = supprs.cbegin();
+
+        ASSERT_EQUALS("syntaxError", it->errorId);
+        ASSERT_EQUALS("", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("uninitvar", it->errorId);
+        ASSERT_EQUALS("1.c", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("memleak", it->errorId);
+        ASSERT_EQUALS("1.c", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("uninitvar", it->errorId);
+        ASSERT_EQUALS("2.c", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("memleak", it->errorId);
+        ASSERT_EQUALS("3.c", it->fileName);
+        ASSERT_EQUALS(12, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("memleak", it->errorId);
+        ASSERT_EQUALS("3.c", it->fileName);
+        ASSERT_EQUALS(22, it->lineNumber);
+    }
+
+    void toString() const
+    {
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            ASSERT_EQUALS("unitvar", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.fileName = "test.cpp";
+            ASSERT_EQUALS("unitvar:test.cpp", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.fileName = "test.cpp";
+            s.lineNumber = 12;
+            ASSERT_EQUALS("unitvar:test.cpp:12", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.symbolName = "sym";
+            ASSERT_EQUALS("unitvar:sym", s.toString());
         }
     }
 };

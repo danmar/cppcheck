@@ -163,6 +163,7 @@ private:
         TEST_CASE(nullpointerStdString);
         TEST_CASE(nullpointerStdStream);
         TEST_CASE(nullpointerSmartPointer);
+        TEST_CASE(nullpointerOutOfMemory);
         TEST_CASE(functioncall);
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
@@ -2631,6 +2632,7 @@ private:
               "}\n"
               "void f() {\n"
               "    struct S* s = malloc(sizeof(struct S));\n"
+              "    if (!s) return;\n"
               "    s->ppc = NULL;\n"
               "    if (alloc(s))\n"
               "        s->ppc[0] = \"\";\n"
@@ -2767,7 +2769,7 @@ private:
               "    (*kep)->next = 0;\n"
               "    (*kep)->len = slen;\n"
               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:6]: (warning) If memory allocation fails, then there is a possible null pointer dereference: *kep\n", errout_str());
     }
 
     void nullpointer95() // #11142
@@ -4077,6 +4079,22 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: f()\n", errout_str());
+    }
+
+    void nullpointerOutOfMemory() {
+        check("void f() {\n"
+              "    int *p = malloc(10);\n"
+              "    *p = 0;\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) If memory allocation fails, then there is a possible null pointer dereference: p\n", errout_str());
+
+        check("void f() {\n"
+              "    int *p = malloc(10);\n"
+              "    *(p+2) = 0;\n"
+              "    free(p);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) If memory allocation fail: pointer addition with NULL pointer.\n", errout_str());
     }
 
     void functioncall() {    // #3443 - function calls

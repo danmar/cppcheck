@@ -182,6 +182,9 @@ static const std::string emptyString;
 #define SUPPRESS_WARNING_GCC_POP
 #define SUPPRESS_WARNING_CLANG_PUSH(warning) SUPPRESS_WARNING_PUSH(warning)
 #define SUPPRESS_WARNING_CLANG_POP SUPPRESS_WARNING_POP
+#define FORCE_WARNING_PUSH(warn) _Pragma("clang diagnostic push") _Pragma(STRINGISIZE(clang diagnostic warning warn))
+#define FORCE_WARNING_CLANG_PUSH(warning) FORCE_WARNING_PUSH(warning)
+#define FORCE_WARNING_CLANG_POP SUPPRESS_WARNING_POP
 #elif defined(__GNUC__)
 #define SUPPRESS_WARNING_PUSH(warning) _Pragma("GCC diagnostic push") _Pragma(STRINGISIZE(GCC diagnostic ignored warning))
 #define SUPPRESS_WARNING_POP _Pragma("GCC diagnostic pop")
@@ -189,6 +192,9 @@ static const std::string emptyString;
 #define SUPPRESS_WARNING_GCC_POP SUPPRESS_WARNING_POP
 #define SUPPRESS_WARNING_CLANG_PUSH(warning)
 #define SUPPRESS_WARNING_CLANG_POP
+#define FORCE_WARNING_PUSH(warning)
+#define FORCE_WARNING_CLANG_PUSH(warning)
+#define FORCE_WARNING_CLANG_POP
 #else
 #define SUPPRESS_WARNING_PUSH(warning)
 #define SUPPRESS_WARNING_POP
@@ -196,6 +202,9 @@ static const std::string emptyString;
 #define SUPPRESS_WARNING_GCC_POP
 #define SUPPRESS_WARNING_CLANG_PUSH(warning)
 #define SUPPRESS_WARNING_CLANG_POP
+#define FORCE_WARNING_PUSH(warning)
+#define FORCE_WARNING_CLANG_PUSH(warning)
+#define FORCE_WARNING_CLANG_POP
 #endif
 
 #if !defined(NO_WINDOWS_SEH) && defined(_WIN32) && defined(_MSC_VER)

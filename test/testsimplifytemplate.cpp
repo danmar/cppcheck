@@ -216,6 +216,7 @@ private:
         TEST_CASE(template176); // #11146
         TEST_CASE(template177);
         TEST_CASE(template178);
+        TEST_CASE(template179);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -239,6 +240,7 @@ private:
         TEST_CASE(template_namespace_9);
         TEST_CASE(template_namespace_10);
         TEST_CASE(template_namespace_11); // #7145
+        TEST_CASE(template_namespace_12);
         TEST_CASE(template_pointer_type);
         TEST_CASE(template_array_type);
 
@@ -4546,6 +4548,26 @@ private:
         ASSERT_EQUALS(exp2, tok(code2));
     }
 
+    void template179() {
+        const char code[] = "template <typename T, typename C>\n" // #13498
+                            "struct B {\n"
+                            "    int a;\n"
+                            "    int b;\n"
+                            "};\n"
+                            "template <typename T>\n"
+                            "struct B<T, void> {\n"
+                            "    int a;\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    B<int, int>{ 0, {} };\n"
+                            "}\n";
+        const char exp[] = "struct B<int,int> ; "
+                           "template < typename T > struct B < T , void > { int a ; } ; "
+                           "void f ( ) { B<int,int> { 0 , { } } ; } "
+                           "struct B<int,int> { int a ; int b ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5262,6 +5284,27 @@ private:
                       "int TemplatedMethod<int> ( int ) ; "
                       "} ; "
                       "} int MyNamespace :: TestClass :: TemplatedMethod<int> ( int t ) { return t ; }", tok(code));
+    }
+
+    void template_namespace_12() {
+        const char code[] = "struct S {};\n" // #13444
+                            "namespace N {\n"
+                            "    template<>\n"
+                            "    struct hash<S> {};\n"
+                            "}\n"
+                            "struct T {\n"
+                            "    T(int i) : hash(i) {}\n"
+                            "    int hash;\n"
+                            "};\n";
+        ASSERT_EQUALS("struct S { } ; "
+                      "namespace N { "
+                      "struct hash<S> { } ; "
+                      "} "
+                      "struct T { "
+                      "T ( int i ) : hash ( i ) { } "
+                      "int hash ; "
+                      "} ;",
+                      tok(code));
     }
 
     void template_pointer_type() {

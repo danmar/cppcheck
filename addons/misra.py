@@ -1588,16 +1588,28 @@ class MisraChecker:
 
     def misra_2_5(self, dumpfile, cfg):
         used_macros = []
+        unused_macro = {}
         for m in cfg.macro_usage:
             used_macros.append(m.name)
-        summary = []
         for directive in cfg.directives:
-            res = re.match(r'#define[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
-            if res:
-                macro_name = res.group(1)
-                summary.append({'name': macro_name, 'used': (macro_name in used_macros), 'file': directive.file, 'line': directive.linenr, 'column': directive.column})
-        if len(summary) > 0:
-            cppcheckdata.reportSummary(dumpfile, 'MisraMacro', summary)
+            res_define = re.match(r'#define[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
+            res_undef = re.match(r'#undef[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
+            if res_define:
+                macro_name = res_define.group(1)
+                unused_macro[macro_name] = {'name': macro_name, 'used': (macro_name in used_macros),
+                                            'file': directive.file, 'line': directive.linenr, 'column': directive.column}
+            elif res_undef:
+                macro_name = res_undef.group(1)
+                # assuming that if we have #undef, we also have #define somewhere
+                if macro_name in unused_macro:
+                    unused_macro[macro_name]['used'] = True
+                else:
+                    unused_macro[macro_name] = {'name': macro_name, 'used': True, 'file': directive.file,
+                                                'line': directive.linenr, 'column': directive.column}
+                    used_macros.append(macro_name)
+
+        if unused_macro:
+            cppcheckdata.reportSummary(dumpfile, 'MisraMacro', list(unused_macro.values()))
 
     def misra_2_7(self, data):
         for func in data.functions:

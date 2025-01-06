@@ -70,6 +70,7 @@ private:
         TEST_CASE(iterator28); // #10450
         TEST_CASE(iterator29);
         TEST_CASE(iterator30);
+        TEST_CASE(iterator31);
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -1385,7 +1386,7 @@ private:
               "    std::vector<int>::const_iterator it;\n"
               "    it = a.begin();\n"
               "    while (it!=a.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "    it = t.begin();\n"
               "    while (it!=t.end())\n"
               "        ++it;\n"
@@ -1401,9 +1402,9 @@ private:
               "    else\n"
               "        it = t.begin();\n"
               "    while (z && it!=a.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "    while (!z && it!=t.end())\n"
-              "        v++it;\n"
+              "        ++it;\n"
               "}");
         ASSERT_EQUALS("", errout_str());
     }
@@ -1900,6 +1901,27 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void iterator31()
+    {
+        check("struct S {\n" // #13327
+              "    std::string a;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s;\n"
+              "};\n"
+              "bool f(const S& s) {\n"
+              "    std::string b;\n"
+              "    return s.a.c_str() == b.c_str();\n"
+              "}\n"
+              "bool g(const T& t) {\n"
+              "    std::string b;\n"
+              "    return t.s.a.c_str() == b.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Iterators of different containers 's.a' and 'b' are used together.\n"
+                      "[test.cpp:13]: (error) Iterators of different containers 't.s.a' and 'b' are used together.\n",
+                      errout_str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -2239,6 +2261,14 @@ private:
         check("void f(void* p) {\n" // #12445
               "    std::vector<int>&v = *(std::vector<int>*)(p);\n"
               "    v.erase(v.begin(), v.end());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        // #13408
+        check("void f(const std::vector<int>& v) {\n"
+              "    for (const auto& i : v) {\n"
+              "        if (std::distance(&*v.cbegin(), &i)) {}\n"
+              "    }   \n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
@@ -6335,6 +6365,17 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout_str());
+
+        // #13410
+        check("int f(std::vector<int>& v) {\n"
+              "    const int* i = &*v.cbegin();\n"
+              "    v.push_back(1);\n"
+              "    return *i;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n",
+            errout_str());
     }
 
     void invalidContainerLoop() {

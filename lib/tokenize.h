@@ -311,7 +311,7 @@ private:
 
     void simplifyExternC();
 
-    void simplifyRoundCurlyParentheses();
+    void simplifyCompoundStatements();
 
     void simplifyTypeIntrinsics();
 

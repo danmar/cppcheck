@@ -207,7 +207,6 @@ public:
 
     /** @brief Is --dump given? */
     bool dump{};
-    std::string dumpFile;
 
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language enforcedLang{};
