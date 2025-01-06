@@ -6586,10 +6586,12 @@ void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, cons
         valuetype.setDebugPath(tok, loc);
     valuetype.typeScope = enumerator.scope;
     const Token * type = enumerator.scope->enumType;
+    if (type && type->astParent())
+        type = type->astParent();
     if (type) {
         valuetype.type = ValueType::typeFromString(type->str(), type->isLong());
-        if (valuetype.type == ValueType::Type::UNKNOWN_TYPE && type->isStandardType())
-            valuetype.fromLibraryType(type->str(), mSettings);
+        if (valuetype.type == ValueType::Type::UNKNOWN_TYPE)
+            valuetype.fromLibraryType(type->expressionString(), mSettings);
 
         if (valuetype.isIntegral()) {
             if (type->isSigned())

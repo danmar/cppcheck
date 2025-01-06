@@ -456,6 +456,7 @@ private:
         TEST_CASE(enum16);
         TEST_CASE(enum17);
         TEST_CASE(enum18);
+        TEST_CASE(enum19);
 
         TEST_CASE(sizeOfType);
 
@@ -6625,6 +6626,23 @@ private:
             const Token* const e2 = Token::findsimplematch(tokenizer.tokens(), "V2 )");
             ASSERT(e2 && e2->enumerator());
             ASSERT_EQUALS(V2, e2->enumerator());
+        }
+    }
+
+    void enum19() {
+        {
+            GET_SYMBOL_DB("enum : std::int8_t { I = -1 };\n" // #13528
+                          "enum : int8_t { J = -1 };\n"
+                          "enum : char { K = -1 };\n");
+            const Token* I = Token::findsimplematch(tokenizer.tokens(), "I");
+            ASSERT(I && I->valueType() && I->valueType()->isEnum());
+            ASSERT_EQUALS(I->valueType()->type, ValueType::CHAR);
+            const Token* J = Token::findsimplematch(I, "J");
+            ASSERT(J && J->valueType() && J->valueType()->isEnum());
+            ASSERT_EQUALS(J->valueType()->type, ValueType::CHAR);
+            const Token* K = Token::findsimplematch(I, "K");
+            ASSERT(K && K->valueType() && K->valueType()->isEnum());
+            ASSERT_EQUALS(K->valueType()->type, ValueType::CHAR);
         }
     }
 
