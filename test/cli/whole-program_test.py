@@ -376,7 +376,7 @@ def __test_nullpointer_file0(extra_args):
     for e in results.findall('errors/error[@id="ctunullpointer"]'):
         file0 = e.attrib['file0']
 
-    assert ret == 1, , stdout if stdout else stderr
+    assert ret == 1, stdout if stdout else stderr
     assert stdout == ''
     assert file0 == 'whole-program/nullpointer1.cpp', stderr
 
