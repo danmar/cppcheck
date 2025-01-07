@@ -59,6 +59,7 @@ private:
         TEST_CASE(zeroDiv18);
         TEST_CASE(zeroDiv19);
         TEST_CASE(zeroDiv20); // #11175
+        TEST_CASE(zeroDiv21);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -677,6 +678,17 @@ private:
               "    return 42/(++x);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout_str());
+    }
+
+    void zeroDiv21()
+    {
+        check("int f(int n) {\n"
+              "    return 1 / ((1 / n) - 1);\n"
+              "}\n"
+              "int g() {\n"
+              "    return f(1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout_str());
     }
 
     void zeroDivCond() {

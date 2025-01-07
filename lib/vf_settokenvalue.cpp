@@ -479,7 +479,7 @@ namespace ValueFlow
                 if (!isComputableValue(parent, value1))
                     continue;
                 for (const Value &value2 : parent->astOperand2()->values()) {
-                    if (value1.path != value2.path)
+                    if (value1.path != value2.path && value1.path != 0 && value2.path != 0)
                         continue;
                     if (!isComputableValue(parent, value2))
                         continue;
