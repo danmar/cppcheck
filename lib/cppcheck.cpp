@@ -2041,8 +2041,11 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
             }
             // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
-                if (checkClassAttr == check->name())
-                    fileInfoList.push_back(check->loadFileInfoFromXml(e));
+                if (checkClassAttr == check->name()) {
+                    Check::FileInfo* fi = check->loadFileInfoFromXml(e);
+                    fi->file0 = filesTxtLine.substr(firstColon + 2);
+                    fileInfoList.push_back(fi);
+                }
             }
         }
     }
