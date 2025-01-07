@@ -381,7 +381,7 @@ def __test_nullpointer_file0(extra_args):
     assert file0 == 'whole-program/nullpointer1.cpp', stderr
 
 def test_nullpointer_file0():
-    __test_nullpointer_file0(['-j1', '--no-cppcheck-build-dir'])
+    __test_nullpointer_file0(['-j1'])
 
 #@pytest.mark.xfail(strict=True) # no CTU without builddir
 def test_nullpointer_file0_j():
