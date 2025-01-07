@@ -494,16 +494,14 @@ namespace ValueFlow
                             continue;
                         result.valueType = Value::ValueType::FLOAT;
                     }
-                    const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
-                    const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
+                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
+                        continue;
                     const auto intValue1 = [&]() -> MathLib::bigint {
                         return value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
                     };
                     const auto intValue2 = [&]() -> MathLib::bigint {
                         return value2.isFloatValue() ? static_cast<MathLib::bigint>(value2.floatValue) : value2.intvalue;
                     };
-                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
-                        continue;
                     if (Token::Match(parent, "==|!=")) {
                         if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
                             if (parent->str() == "==")
@@ -558,6 +556,8 @@ namespace ValueFlow
                         }
                         bool error = false;
                         if (result.isFloatValue()) {
+                            const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
+                            const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
                             result.floatValue = calculate(parent->str(), floatValue1, floatValue2, &error);
                         } else {
                             result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
