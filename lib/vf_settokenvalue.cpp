@@ -486,17 +486,14 @@ namespace ValueFlow
                             continue;
                         result.valueType = Value::ValueType::FLOAT;
                     }
-                    const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
-                    const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
-                    const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
+                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
+                        continue;
                     const auto intValue1 = [&]() -> MathLib::bigint {
                         return value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
                     };
                     const auto intValue2 = [&]() -> MathLib::bigint {
                         return value2.isFloatValue() ? static_cast<MathLib::bigint>(value2.floatValue) : value2.intvalue;
                     };
-                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
-                        continue;
                     if (Token::Match(parent, "==|!=")) {
                         if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
                             if (parent->str() == "==")
@@ -542,6 +539,7 @@ namespace ValueFlow
                         }
                         setTokenValue(parent, std::move(result), settings);
                     } else if (Token::Match(parent, "%op%")) {
+                        const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
                         if (Token::Match(parent, "%comp%")) {
                             if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
                                 continue;
@@ -551,6 +549,8 @@ namespace ValueFlow
                         }
                         bool error = false;
                         if (isFloat) {
+                            const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
+                            const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
                             auto val = calculate(parent->str(), floatValue1, floatValue2, &error);
                             if (result.isFloatValue()) {
                                 result.floatValue = val;
