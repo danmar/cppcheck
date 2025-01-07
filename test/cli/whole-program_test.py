@@ -375,15 +375,15 @@ def __test_nullpointer_file0(extra_args):
     file0 = ''
     for e in results.findall('errors/error[@id="ctunullpointer"]'):
         file0 = e.attrib['file0']
-    assert file0 == 'whole-program/nullpointer1.cpp'
-    assert stdout == ''
-    assert ret == 1, stdout
 
+    assert ret == 1, , stdout if stdout else stderr
+    assert stdout == ''
+    assert file0 == 'whole-program/nullpointer1.cpp', stderr
 
 def test_nullpointer_file0():
     __test_nullpointer_file0(['-j1'])
 
-@pytest.mark.skip(reason="flaky!?")
+@pytest.mark.xfail(strict=True) # no CTU without builddir
 def test_nullpointer_file0_j():
     __test_nullpointer_file0(['-j2'])
 
