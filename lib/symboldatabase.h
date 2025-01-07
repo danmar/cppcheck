@@ -819,6 +819,12 @@ public:
     bool isAttributeNodiscard() const {
         return tokenDef->isAttributeNodiscard();
     }
+    bool isAttributeUnused() const {
+        return tokenDef->isAttributeUnused();
+    }
+    bool isAttributeMaybeUnused() const {
+        return tokenDef->isAttributeMaybeUnused();
+    }
 
     bool hasBody() const {
         return getFlag(fHasBody);
