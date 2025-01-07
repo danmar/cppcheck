@@ -37,10 +37,10 @@ private:
 
 #define createSummaries(...) createSummaries_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string createSummaries_(const char* file, int line, const char (&code)[size], bool cpp = true) {
+    std::string createSummaries_(const char* file, int line, const char (&code)[size]) {
         // tokenize..
         SimpleTokenizer tokenizer(settingsDefault, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         return Summaries::create(tokenizer, "");
     }
 

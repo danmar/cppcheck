@@ -86,9 +86,15 @@ private:
         TEST_CASE(trailingReturn);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        Platform::Type platform = Platform::Type::Native;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], Platform::Type platform = Platform::Type::Native) {
-        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
+    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).platform(options.platform).build();
 
         std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings1, *this);
@@ -603,7 +609,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};", Platform::Type::Win32A);
+              "};", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -616,7 +622,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};", Platform::Type::Win32A);
+              "};", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
         ASSERT_EQUALS("", errout_str());
     }
 

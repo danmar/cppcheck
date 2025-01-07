@@ -39,9 +39,9 @@ private:
         TEST_CASE(open);
     }
 
-#define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
+#define functionReturnType(...) functionReturnType_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    CheckMemoryLeak::AllocType functionReturnType_(const char (&code)[size], const char* file, int line) {
+    CheckMemoryLeak::AllocType functionReturnType_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

@@ -126,10 +126,19 @@ private:
         TEST_CASE(knownConditionIncDecOperator);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        const Settings* s = nullptr;
+        const char* filename = "test.cpp";
+        bool inconclusive = false;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const Settings &settings, const char* filename = "test.cpp") {
-        std::vector<std::string> files(1, filename);
+    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+        const Settings settings = settingsBuilder(options.s ? *options.s : settings0).certainty(Certainty::inconclusive, options.inconclusive).build();
         Tokenizer tokenizer(settings, *this);
+        std::vector<std::string> files(1, options.filename);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
@@ -139,17 +148,12 @@ private:
         runChecks<CheckCondition>(tokenizer, this);
     }
 
-    void check_(const char* file, int line, const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
-        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
-        check_(file, line, code, settings, filename);
-    }
-
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], const char* filename = "test.cpp")
+    void checkP_(const char* file, int line, const char code[])
     {
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
-        std::vector<std::string> files(1, filename);
+        std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -1307,27 +1311,27 @@ private:
     void incorrectLogicOperator6() { // char literals
         check("void f(char x) {\n"
               "  if (x == '1' || x == '2') {}\n"
-              "}", "test.cpp", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(char x) {\n"
               "  if (x == '1' && x == '2') {}\n"
-              "}", "test.cpp", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'.\n", errout_str());
 
         check("int f(char c) {\n"
               "  return (c >= 'a' && c <= 'z');\n"
-              "}", "test.cpp", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}", "test.cpp", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Logical conjunction always evaluates to false: c <= 'a' && c >= 'z'.\n", errout_str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}", "test.cpp", false);
+              "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 'c>='z'' is always false\n", errout_str());
     }
 
@@ -3140,10 +3144,10 @@ private:
         check("void f() { A<x &> a; }");
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { a(x<y|z,0); }", "test.c");  // filename is c => there are never templates
+        check("void f() { a(x<y|z,0); }", dinit(CheckOptions, $.filename = "test.c"));  // filename is c => there are never templates
         ASSERT_EQUALS("[test.c:1]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout_str());
 
-        check("class A<B&,C>;", "test.cpp");
+        check("class A<B&,C>;");
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -6050,65 +6054,65 @@ private:
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout_str());
 
         check("void f(unsigned char* b, int i) {\n" // #6372
               "  if (b[i] == 256) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout_str());
 
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         // #10372
         check("void f(signed char x) {\n"
               "  if (x == 0xff) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always false.\n", errout_str());
 
         check("void f(short x) {\n"
               "  if (x == 0xffff) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always false.\n", errout_str());
 
         check("void f(int x) {\n"
               "  if (x == 0xffffffff) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(long x) {\n"
               "  if (x == ~0L) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(long long x) {\n"
               "  if (x == ~0LL) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("int f(int x) {\n"
               "    const int i = 0xFFFFFFFF;\n"
               "    if (x == i) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  char c;\n"
               "  if ((c = foo()) != -1) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(int x) {\n"
               "  if (x < 3000000000) {}\n"
-              "}", settingsUnix64);
+              "}", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true.\n", errout_str());
 
         check("void f(const signed char i) {\n" // #8545
@@ -6118,7 +6122,7 @@ private:
               "    if (i <  +128) {}\n" // warn
               "    if (i <= +127) {}\n" // warn
               "    if (i <= +126) {}\n"
-              "}\n", settingsUnix64);
+              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'const signed char' against value -129. Condition is always true.\n"
                       "[test.cpp:3]: (style) Comparing expression of type 'const signed char' against value -128. Condition is always true.\n"
                       "[test.cpp:5]: (style) Comparing expression of type 'const signed char' against value 128. Condition is always true.\n"
@@ -6142,7 +6146,7 @@ private:
               "    if (255 >  u) {}\n"
               "    if (255 <= u) {}\n"
               "    if (255 >= u) {}\n" // warn
-              "}\n", settingsUnix64);
+              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false.\n"
                       "[test.cpp:4]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true.\n"
                       "[test.cpp:6]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"

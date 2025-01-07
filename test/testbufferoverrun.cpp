@@ -39,23 +39,21 @@ public:
 private:
     /*const*/ Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        const Settings* s = nullptr;
+        bool cpp = true;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], bool cpp = true) {
-        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings settings = options.s ? *options.s : settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
-
-        // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(tokenizer, this);
-    }
-
-    template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], const Settings &settings, bool cpp = true) {
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);
@@ -2506,7 +2504,7 @@ private:
               "            c++;\n"
               "     }\n"
               "    return c;\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2725,7 +2723,7 @@ private:
               "    char str[6] = \"\\0\";\n"
               "    unsigned short port = 65535;\n"
               "    snprintf(str, sizeof(str), \"%hu\", port);\n"
-              "}", settings0, false);
+              "}", dinit(CheckOptions, $.s = &settings0, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int f(int x) {\n" // #11020
@@ -3691,26 +3689,26 @@ private:
         check("void f() {\n"
               "  u8 str[256];\n"
               "  mystrcpy(str, \"abcd\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  u8 str[2];\n"
               "  mystrcpy(str, \"abcd\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         // The same for structs, where the message comes from a different check
         check("void f() {\n"
               "    struct { u8 str[256]; } ms;\n"
               "    mystrcpy(ms.str, \"abcd\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    struct { u8 str[2]; } ms;\n"
               "    mystrcpy(ms.str, \"abcd\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: ms.str\n", errout_str());
     }
 
@@ -3755,7 +3753,7 @@ private:
         check("void f() {\n" // #6350 - fp when there is cast of buffer
               "  wchar_t buf[64];\n"
               "  p = (unsigned char *) buf + sizeof (buf);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int f() {\n"
@@ -4249,13 +4247,13 @@ private:
         check("void f() {\n"
               "    char c[10];\n"
               "    mymemset(c, 0, 10);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char c[10];\n"
               "    mymemset(c, 0, 11);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout_str());
 
         check("struct S {\n"
@@ -4264,13 +4262,13 @@ private:
               "void f() {\n"
               "    S s;\n"
               "    mymemset(s.a, 0, 10);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: s.a\n", errout_str());
 
         check("void foo() {\n"
               "    char s[10];\n"
               "    mymemset(s, 0, '*');\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (warning) The size argument is given as a char constant.\n"
                            "[test.cpp:3]: (error) Buffer is accessed out of bounds: s\n", "[test.cpp:3]: (error) Buffer is accessed out of bounds: s\n", errout_str());
 
@@ -4278,65 +4276,65 @@ private:
         check("void f(void) {\n"
               "  char a[10];\n"
               "  mymemset(a+5, 0, 10);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", "", errout_str());
 
         // Ticket #909
         check("void f(void) {\n"
               "    char str[] = \"abcd\";\n"
               "    mymemset(str, 0, 6);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         check("void f(void) {\n"
               "    char str[] = \"abcd\";\n"
               "    mymemset(str, 0, 5);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(void) {\n"
               "    wchar_t str[] = L\"abcd\";\n"
               "    mymemset(str, 0, 21);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         check("void f(void) {\n"
               "    wchar_t str[] = L\"abcd\";\n"
               "    mymemset(str, 0, 20);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         // ticket #1659 - overflowing variable when using memcpy
         check("void f(void) {\n"
               "  char c;\n"
               "  mymemset(&c, 0, 4);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", "", errout_str());
 
         // ticket #2121 - buffer access out of bounds when using uint32_t
         check("void f(void) {\n"
               "    unknown_type_t buf[4];\n"
               "    mymemset(buf, 0, 100);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         // #3124 - multidimensional array
         check("int main() {\n"
               "    char b[5][6];\n"
               "    mymemset(b, 0, 5 * 6);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("int main() {\n"
               "    char b[5][6];\n"
               "    mymemset(b, 0, 6 * 6);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: b\n", errout_str());
 
         check("int main() {\n"
               "    char b[5][6];\n"
               "    mymemset(b, 0, 31);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: b\n", errout_str());
 
         // #4968 - not standard function
@@ -4345,26 +4343,26 @@ private:
               "    foo.mymemset(str, 0, 100);\n"
               "    foo::mymemset(str, 0, 100);\n"
               "    std::mymemset(str, 0, 100);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", "", errout_str());
 
         // #5257 - check strings
         check("void f() {\n"
               "  mymemset(\"abc\", 0, 20);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n",
                            "",
                            errout_str());
 
         check("void f() {\n"
               "  mymemset(temp, \"abc\", 4);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #6816 - fp when array has known string value
               "    char c[10] = \"c\";\n"
               "    mymemset(c, 0, 10);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4386,43 +4384,43 @@ private:
         check("void f() {\n"
               "    char c[7];\n"
               "    mystrncpy(c, \"hello\", 7);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               " char c[6];\n"
               " mystrncpy(c,\"hello\",6);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               " char c[5];\n"
               " mystrncpy(c,\"hello\",6);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout_str());
 
         check("void f() {\n"
               "    char c[6];\n"
               "    mystrncpy(c,\"hello!\",7);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout_str());
 
         check("void f(unsigned int addr) {\n"
               "    memset((void *)addr, 0, 1000);\n"
-              "}", settings0);
+              "}", dinit(CheckOptions, $.s = &settings0));
         ASSERT_EQUALS("", errout_str());
 
         check("struct AB { char a[10]; };\n"
               "void foo(AB *ab) {\n"
               "    mystrncpy(x, ab->a, 100);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void a(char *p) { mystrncpy(p,\"hello world!\",10); }\n" // #3168
               "void b() {\n"
               "    char buf[5];\n"
               "    a(buf);"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n",
                            "",
                            errout_str());
@@ -4448,13 +4446,13 @@ private:
         check("void f() {\n"
               "    char str[3];\n"
               "    mysprintf(str, \"test\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         check("void f() {\n"
               "    char str[5];\n"
               "    mysprintf(str, \"%s\", \"abcde\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         check("int getnumber();\n"
@@ -4462,51 +4460,51 @@ private:
               "{\n"
               "    char str[5];\n"
               "    mysprintf(str, \"%d: %s\", getnumber(), \"abcde\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         check("void f() {\n"
               "    char str[5];\n"
               "    mysprintf(str, \"test%s\", \"\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char *str = new char[5];\n"
               "    mysprintf(str, \"abcde\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: str\n", errout_str());
 
         check("void f(int condition) {\n"
               "    char str[5];\n"
               "    mysprintf(str, \"test%s\", condition ? \"12\" : \"34\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(int condition) {\n"
               "    char str[5];\n"
               "    mysprintf(str, \"test%s\", condition ? \"12\" : \"345\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("error", "", errout_str());
 
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo x;\n"
               "  mysprintf(x.a, \"aa\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: x.a\n", errout_str());
 
         // ticket #900
         check("void f() {\n"
               "  char *a = new char(30);\n"
               "  mysprintf(a, \"a\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout_str());
 
         check("void f(char value) {\n"
               "  char *a = new char(value);\n"
               "  mysprintf(a, \"a\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: a\n", errout_str());
 
         // This is out of bounds if 'sizeof(ABC)' is 1 (No padding)
@@ -4514,21 +4512,21 @@ private:
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo));\n"
               "  mysprintf(x->a, \"aa\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Buffer is accessed out of bounds: x.a\n", "", errout_str());
 
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo *x = malloc(sizeof(Foo) + 10);\n"
               "  mysprintf(x->a, \"aa\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("struct Foo { char a[1]; };\n"
               "void f() {\n"
               "  struct Foo x;\n"
               "  mysprintf(x.a, \"aa\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: x.a\n", errout_str());
 
         check("struct Foo {\n" // #6668 - unknown size
@@ -4537,7 +4535,7 @@ private:
               "};"
               "void Foo::f() {\n"
               "  mysprintf(a, \"abcd\");\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -4558,13 +4556,13 @@ private:
         check("void f() {\n"
               "    char c[5];\n"
               "    myfread(c, 1, 5, stdin);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    char c[5];\n"
               "    myfread(c, 1, 6, stdin);\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: c\n", errout_str());
     }
 
@@ -5585,7 +5583,7 @@ private:
               "        (*str)[applen] = '\\0';\n"
               "    }\n"
               "    free(*str);\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("template <typename T, unsigned N>\n"
@@ -5676,7 +5674,7 @@ private:
               "if (pipe(pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: pipefd\n", errout_str());
 
         check("void f(){\n"
@@ -5684,7 +5682,7 @@ private:
               "if (pipe(pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(){\n"
@@ -5692,7 +5690,7 @@ private:
               "if (pipe((int*)pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: (int*)pipefd\n", errout_str());
 
         check("void f(){\n"
@@ -5700,7 +5698,7 @@ private:
               "if (pipe((int*)pipefd) == -1) {\n"
               "    return;\n"
               "  }\n"
-              "}", settings);
+              "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
     }
 };
