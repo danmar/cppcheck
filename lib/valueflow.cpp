@@ -3266,7 +3266,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
             }
 
             for (const Token* tok2 : toks) {
-                for (const ReferenceToken& rt : followAllReferences(tok2, false)) {
+                for (const ReferenceToken& rt : tok2->refs(false)) {
                     ValueFlow::Value value = master;
                     value.tokvalue = rt.token;
                     value.errorPath.insert(value.errorPath.begin(), rt.errors.cbegin(), rt.errors.cend());
@@ -3978,7 +3978,7 @@ static void valueFlowForwardConst(Token* start,
         } else {
             [&] {
                 // Follow references
-                auto refs = followAllReferences(tok);
+                const auto& refs = tok->refs();
                 auto it = std::find_if(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
                     return ref.token->varId() == var->declarationId();
                 });
