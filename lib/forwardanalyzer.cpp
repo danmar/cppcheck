@@ -47,6 +47,7 @@
 namespace {
     struct ForwardTraversal {
         enum class Progress : std::uint8_t { Continue, Break, Skip };
+        // TODO: analyzer is copied
         ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings)
             : analyzer(analyzer), tokenList(tokenList), errorLogger(errorLogger), settings(settings)
         {}
