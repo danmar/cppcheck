@@ -851,6 +851,30 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
                 "Using an operator like '" + operatorString + "' in a case label is suspicious. Did you intend to use a bitwise operator, multiple case labels or if/else instead?", CWE398, Certainty::inconclusive);
 }
 
+static bool isNestedInSwitch(const Scope* scope)
+{
+    while (scope) {
+        if (scope->type == Scope::ScopeType::eSwitch)
+            return true;
+        if (scope->type == Scope::ScopeType::eUnconditional) {
+            scope = scope->nestedIn;
+            continue;
+        }
+        break;
+    }
+    return false;
+}
+
+static bool isVardeclInSwitch(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!isNestedInSwitch(tok->scope()))
+        return false;
+    const Token* end = Token::findsimplematch(tok, ";");
+    return end && end->previous()->variable() && end->previous()->variable()->nameToken() == end->previous();
+}
+
 //---------------------------------------------------------------------------
 //    Find consecutive return, break, continue, goto or throw statements. e.g.:
 //        break; break;
@@ -910,6 +934,9 @@ void CheckOther::checkUnreachableCode()
             }
             while (Token::simpleMatch(secondBreak, ";"))
                 secondBreak = secondBreak->next();
+
+            if (isVardeclInSwitch(secondBreak))
+                continue;
 
             // Statements follow directly, no line between them. (#3383)
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
