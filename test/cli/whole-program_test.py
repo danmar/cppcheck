@@ -4,6 +4,7 @@ import pytest
 import json
 import shutil
 from testutils import cppcheck
+import xml.etree.ElementTree as ET
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -358,3 +359,35 @@ def test_checkclass_project_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
+
+def __test_nullpointer_file0(extra_args):
+    args = [
+        '-q',
+        '--xml',
+        '--error-exitcode=1',
+        'whole-program/nullpointer1.cpp'
+    ]
+
+    args += extra_args
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    results = ET.fromstring(stderr)
+    file0 = ''
+    for e in results.findall('errors/error[@id="ctunullpointer"]'):
+        file0 = e.attrib['file0']
+
+    assert ret == 1, stdout if stdout else stderr
+    assert stdout == ''
+    assert file0 == 'whole-program/nullpointer1.cpp', stderr
+
+def test_nullpointer_file0():
+    __test_nullpointer_file0(['-j1'])
+
+@pytest.mark.xfail(strict=True) # no CTU without builddir
+def test_nullpointer_file0_j():
+    __test_nullpointer_file0(['-j2', '--no-cppcheck-build-dir'])
+
+def test_nullpointer_file0_builddir_j(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_nullpointer_file0(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])

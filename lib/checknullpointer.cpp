@@ -600,6 +600,7 @@ namespace
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
+        using Check::FileInfo::FileInfo;
         /** function arguments that are dereferenced without checking if they are null */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
@@ -617,7 +618,7 @@ Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer &tokenizer, const
     if (unsafeUsage.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo(tokenizer.list.getFiles()[0]);
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -667,7 +668,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                     continue;
 
                 const ErrorMessage errmsg(locationList,
-                                          emptyString,
+                                          fi->file0,
                                           warning ? Severity::warning : Severity::error,
                                           "Null pointer dereference: " + unsafeUsage.myArgumentName,
                                           "ctunullpointer",

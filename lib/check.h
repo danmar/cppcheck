@@ -102,11 +102,12 @@ public:
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
     public:
-        FileInfo() = default;
+        explicit FileInfo(std::string f0 = {}) : file0(std::move(f0)) {}
         virtual ~FileInfo() = default;
         virtual std::string toString() const {
             return std::string();
         }
+        std::string file0;
     };
 
     virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/) const {
