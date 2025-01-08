@@ -461,7 +461,7 @@ int main(int argc, char **argv)
     }
 
     // TODO: add files without source via parsing
-    std::vector<std::string> libfiles_h;
+    std::set<std::string> libfiles_h;
     for (const std::string &libfile : libfiles) {
         std::string fname(libfile.substr(4));
         fname.erase(fname.find(".cpp"));
