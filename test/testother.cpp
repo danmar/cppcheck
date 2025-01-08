@@ -5678,7 +5678,7 @@ private:
                       "[test.cpp:1]: (style) Parameter 'argv' can be declared as const array\n",
                       errout_str());
 
-      check("int f(int i) {\n" // #13491
+       check("int f(int i) {\n" // #13491
               "    switch (i) {\n"
               "    case 0:\n"
               "        return 0;\n"
