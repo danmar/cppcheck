@@ -935,9 +935,6 @@ void CheckOther::checkUnreachableCode()
             while (Token::simpleMatch(secondBreak, ";"))
                 secondBreak = secondBreak->next();
 
-            if (isVardeclInSwitch(secondBreak))
-                continue;
-
             // Statements follow directly, no line between them. (#3383)
             // TODO: Try to find a better way to avoid false positives due to preprocessor configurations.
             const bool inconclusive = secondBreak && (secondBreak->linenr() - 1 > secondBreak->previous()->linenr());
@@ -985,7 +982,7 @@ void CheckOther::checkUnreachableCode()
                     if (silencedWarning)
                         secondBreak = silencedWarning;
 
-                    if (!labelInFollowingLoop && !silencedCompilerWarningOnly)
+                    if (!labelInFollowingLoop && !silencedCompilerWarningOnly && !isVardeclInSwitch(secondBreak))
                         unreachableCodeError(secondBreak, tok, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
                 } else if (secondBreak->scope() && secondBreak->scope()->isLoopScope() && secondBreak->str() == "}" && tok->str() == "continue") {
