@@ -461,28 +461,27 @@ int main(int argc, char **argv)
     }
 
     // TODO: add files without source via parsing
-    std::vector<std::string> libfiles_h;
+    std::set<std::string> libfiles_h;
     for (const std::string &libfile : libfiles) {
         std::string fname(libfile.substr(4));
         fname.erase(fname.find(".cpp"));
-        libfiles_h.emplace_back(fname + ".h");
+        libfiles_h.emplace(fname + ".h");
     }
-    libfiles_h.emplace_back("analyzer.h");
-    libfiles_h.emplace_back("calculate.h");
-    libfiles_h.emplace_back("config.h");
-    libfiles_h.emplace_back("filesettings.h");
-    libfiles_h.emplace_back("findtoken.h");
-    libfiles_h.emplace_back("json.h");
-    libfiles_h.emplace_back("matchcompiler.h");
-    libfiles_h.emplace_back("precompiled.h");
-    libfiles_h.emplace_back("smallvector.h");
-    libfiles_h.emplace_back("sourcelocation.h");
-    libfiles_h.emplace_back("tokenrange.h");
-    libfiles_h.emplace_back("valueptr.h");
-    libfiles_h.emplace_back("version.h");
-    libfiles_h.emplace_back("vf_analyze.h");
-    libfiles_h.emplace_back("xml.h");
-    std::sort(libfiles_h.begin(), libfiles_h.end());
+    libfiles_h.emplace("analyzer.h");
+    libfiles_h.emplace("calculate.h");
+    libfiles_h.emplace("config.h");
+    libfiles_h.emplace("filesettings.h");
+    libfiles_h.emplace("findtoken.h");
+    libfiles_h.emplace("json.h");
+    libfiles_h.emplace("matchcompiler.h");
+    libfiles_h.emplace("precompiled.h");
+    libfiles_h.emplace("smallvector.h");
+    libfiles_h.emplace("sourcelocation.h");
+    libfiles_h.emplace("tokenrange.h");
+    libfiles_h.emplace("valueptr.h");
+    libfiles_h.emplace("version.h");
+    libfiles_h.emplace("vf_analyze.h");
+    libfiles_h.emplace("xml.h");
 
     std::vector<std::string> clifiles_h;
     for (const std::string &clifile : clifiles) {
@@ -493,13 +492,12 @@ int main(int argc, char **argv)
         clifiles_h.emplace_back(fname + ".h");
     }
 
-    std::vector<std::string> testfiles_h;
-    testfiles_h.emplace_back("fixture.h");
-    testfiles_h.emplace_back("helpers.h");
-    testfiles_h.emplace_back("options.h");
-    testfiles_h.emplace_back("precompiled.h");
-    testfiles_h.emplace_back("redirect.h");
-    std::sort(testfiles_h.begin(), testfiles_h.end());
+    std::set<std::string> testfiles_h;
+    testfiles_h.emplace("fixture.h");
+    testfiles_h.emplace("helpers.h");
+    testfiles_h.emplace("options.h");
+    testfiles_h.emplace("precompiled.h");
+    testfiles_h.emplace("redirect.h");
 
     // TODO: write filter files
     // Visual Studio projects
