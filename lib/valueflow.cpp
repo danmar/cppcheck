@@ -5489,7 +5489,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
                                      const Settings& settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
-                                     const std::list<ValueFlow::Value>& argvalues)
+                                     std::list<ValueFlow::Value> argvalues)
 {
     // Is argument passed by value or const reference, and is it a known non-class type?
     if (arg->isReference() && !arg->isConst() && !arg->isClass())
@@ -5503,7 +5503,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
     valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()),
                      functionScope->bodyEnd,
                      arg->nameToken(),
-                     argvalues,
+                     std::move(argvalues),
                      tokenlist,
                      errorLogger,
                      settings);
@@ -5730,7 +5730,7 @@ static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const 
                     argvalues.push_back(std::move(v));
                 }
                 if (!argvalues.empty())
-                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, argvalues);
+                    valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, std::move(argvalues));
             }
         }
     }
