@@ -2042,6 +2042,14 @@ private:
                                "    x = y;\n"
                                "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkStructMemberUsage("struct S { int a, b; };\n"
+                               "void f() {\n"
+                               "    std::vector<S> s = { { 1, 2 } };\n"
+                               "    for (auto& [x, y] : s)\n"
+                               "        x = y;\n"
+                               "    }\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {
