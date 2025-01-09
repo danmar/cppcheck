@@ -149,8 +149,10 @@ void test_BOOST_FOREACH_4()
 }
 
 // Container returned as result of a function -> Be quiet
+std::vector<int> get_data();
 void test_BOOST_FOREACH_5()
 {
+    std::set<int> data;
     BOOST_FOREACH(const int& i, get_data())
         data.insert(i);
 }
