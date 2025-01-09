@@ -1540,15 +1540,29 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             const Token *tok = var->nameToken()->linkAt(-1);
-            if (!Token::Match(tok, "] %assign%"))
-                continue;
+            if (Token::Match(tok, "] %assign%"))
+            {
+                tok = tok->next()->astOperand2();
+                const ValueType *valueType = tok->valueType();
 
-            tok = tok->next()->astOperand2();
-            const ValueType *valueType = tok->valueType();
+                if (valueType && valueType->typeScope == &scope) {
+                    bailout = true;
+                    break;
+                }
+            }
 
-            if (valueType && valueType->typeScope == &scope) {
-                bailout = true;
-                break;
+            if (Token::Match(tok, "] :")) {
+                tok = tok->next()->astOperand2();
+                const ValueType *valueType = tok->valueType();
+
+                if (!valueType->containerTypeToken)
+                    continue;
+
+                const Type *type = valueType->containerTypeToken->type();
+                if (type && type->classScope == &scope) {
+                    bailout = true;
+                    break;
+                }
             }
         }
         if (bailout)
