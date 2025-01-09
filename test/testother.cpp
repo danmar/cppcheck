@@ -5733,7 +5733,7 @@ private:
               "    }\n"
               "    var = 42;\n"
               "    return ret();\n"
-              "}\n");
+              "}\n", /*cpp*/ false);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #13516
