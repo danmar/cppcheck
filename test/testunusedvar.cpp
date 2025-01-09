@@ -2027,21 +2027,19 @@ private:
 
     void structmemberStructuredBinding() { // #13107
         checkStructMemberUsage("struct S { int a, b; };\n"
-                               "S f() {\n"
+                               "void f() {\n"
                                "    S s{};\n"
                                "    auto& [x, y] = s;\n"
-                               "    x = y = 1;\n"
-                               "    return s;\n"
+                               "    x = y;\n"
                                "}\n");
         ASSERT_EQUALS("", errout_str());
 
         checkStructMemberUsage("struct S { int a, b; };\n"
                                "struct T { S s; };\n"
-                               "T f() {\n"
+                               "void f() {\n"
                                "    T t{};\n"
                                "    auto& [x, y] = t.s;\n"
-                               "    x = y = 1;\n"
-                               "    return t;\n"
+                               "    x = y;\n"
                                "}\n");
         ASSERT_EQUALS("", errout_str());
     }
