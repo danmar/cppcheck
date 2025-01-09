@@ -666,6 +666,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--dump") == 0)
                 mSettings.dump = true;
 
+            else if (std::strcmp(argv[i], "--emit-duplicates") == 0)
+                mSettings.emitDuplicates = true;
+
             else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
                 const std::string enable_arg = argv[i] + 9;
                 const std::string errmsg = mSettings.addEnabled(enable_arg);
