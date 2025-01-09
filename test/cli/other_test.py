@@ -2826,7 +2826,6 @@ f(p);
     ]
 
     exitcode_1, stdout_1, stderr_1 = cppcheck(args)
-    print(stderr_1)
     assert exitcode_1 == 0, stdout_1
     assert stdout_1 == ''
     assert stderr_1.splitlines() == stderr_exp
@@ -2835,3 +2834,38 @@ f(p);
     assert exitcode_2 == 0, stdout_2
     assert stdout_2 == ''
     assert stderr_2.splitlines() == stderr_exp
+
+
+@pytest.mark.xfail(strict=True)
+def test_ctu_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '-j1',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    # the CTU was run and then evaluated again from the builddir leading to duplicated findings
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file)
+    ]
