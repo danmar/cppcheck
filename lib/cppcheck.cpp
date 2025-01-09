@@ -1990,7 +1990,7 @@ bool CppCheck::analyseWholeProgram()
 
     // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
-        errors |= check->analyseWholeProgram(&ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
+        errors |= check->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
 
     if (mUnusedFunctionsCheck)
         errors |= mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
@@ -2053,7 +2053,7 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     // Analyse the tokens
     // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
-        check->analyseWholeProgram(&ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
+        check->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
 
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->check(mSettings, mErrorLogger);

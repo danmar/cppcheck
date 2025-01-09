@@ -634,18 +634,20 @@ Check::FileInfo * CheckNullPointer::loadFileInfoFromXml(const tinyxml2::XMLEleme
     return fileInfo;
 }
 
-bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
-    if (!ctu)
-        return false;
-    bool foundErrors = false;
-    (void)settings; // This argument is unused
+    (void)settings;
 
     CheckNullPointer dummy(nullptr, &settings, &errorLogger);
     dummy.
     logChecker("CheckNullPointer::analyseWholeProgram"); // unusedfunctions
 
-    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
+    if (fileInfo.empty())
+        return false;
+
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu.getCallsMap();
+
+    bool foundErrors = false;
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);

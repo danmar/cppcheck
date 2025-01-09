@@ -4566,7 +4566,7 @@ private:
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckNullPointer>();
         fileInfo.push_back(c.getFileInfo(tokenizer, settings));
-        c.analyseWholeProgram(ctu, fileInfo, settings, *this); // TODO: check result
+        c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();
