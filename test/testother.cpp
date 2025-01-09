@@ -10999,7 +10999,7 @@ private:
               "    struct S {\n"
               "    T a[N];\n"
               "};\n"
-              "void f(S<int, 3> s) {}\n");
+              "void f(S<char, 3> s) {}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
