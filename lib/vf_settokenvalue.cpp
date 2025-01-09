@@ -125,32 +125,31 @@ namespace ValueFlow
         return value.isIntValue() || value.isFloatValue();
     }
 
-    static void setTokenValueCast(Token *parent, const ValueType &valueType, const Value &value, const Settings &settings)
+    static void setTokenValueCast(Token *parent, const ValueType &valueType, Value value, const Settings &settings)
     {
         if (valueType.pointer || value.isImpossible())
-            setTokenValue(parent,value,settings);
+            setTokenValue(parent,std::move(value),settings);
         else if (valueType.type == ValueType::Type::CHAR)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.char_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.char_bit), settings);
         else if (valueType.type == ValueType::Type::SHORT)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.short_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.short_bit), settings);
         else if (valueType.type == ValueType::Type::INT)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.int_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.int_bit), settings);
         else if (valueType.type == ValueType::Type::LONG)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.long_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.long_bit), settings);
         else if (valueType.type == ValueType::Type::LONGLONG)
-            setTokenValue(parent, castValue(value, valueType.sign, settings.platform.long_long_bit), settings);
+            setTokenValue(parent, castValue(std::move(value), valueType.sign, settings.platform.long_long_bit), settings);
         else if (valueType.isFloat() && isNumeric(value)) {
-            Value floatValue = value;
-            floatValue.valueType = Value::ValueType::FLOAT;
             if (value.isIntValue())
-                floatValue.floatValue = static_cast<double>(value.intvalue);
-            setTokenValue(parent, std::move(floatValue), settings);
+                value.floatValue = static_cast<double>(value.intvalue);
+            value.valueType = Value::ValueType::FLOAT;
+            setTokenValue(parent, std::move(value), settings);
         } else if (value.isIntValue()) {
             const long long charMax = settings.platform.signedCharMax();
             const long long charMin = settings.platform.signedCharMin();
             if (charMin <= value.intvalue && value.intvalue <= charMax) {
                 // unknown type, but value is small so there should be no truncation etc
-                setTokenValue(parent,value,settings);
+                setTokenValue(parent,std::move(value),settings);
             }
         }
     }
@@ -257,8 +256,9 @@ namespace ValueFlow
         }
 
         if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
-            setTokenValue(parent, value, settings);
-            if (!value.isUninitValue())
+            const bool isUninit = value.isUninitValue();
+            setTokenValue(parent, std::move(value), settings);
+            if (!isUninit)
                 return;
         }
 
@@ -302,26 +302,26 @@ namespace ValueFlow
             Token* next = nullptr;
             const Library::Container::Yield yields = getContainerYield(parent, settings, next);
             if (yields == Library::Container::Yield::SIZE) {
-                Value v(value);
-                v.valueType = Value::ValueType::INT;
-                setTokenValue(next, std::move(v), settings);
+                value.valueType = Value::ValueType::INT;
+                setTokenValue(next, std::move(value), settings);
             } else if (yields == Library::Container::Yield::EMPTY) {
-                Value v(value);
-                v.valueType = Value::ValueType::INT;
-                v.bound = Value::Bound::Point;
+                const Value::Bound bound = value.bound;
+                const long long intvalue = value.intvalue;
+                value.valueType = Value::ValueType::INT;
+                value.bound = Value::Bound::Point;
                 if (value.isImpossible()) {
-                    if (value.intvalue == 0)
-                        v.setKnown();
-                    else if ((value.bound == Value::Bound::Upper && value.intvalue > 0) ||
-                             (value.bound == Value::Bound::Lower && value.intvalue < 0)) {
-                        v.intvalue = 0;
-                        v.setKnown();
+                    if (intvalue == 0)
+                        value.setKnown();
+                    else if ((bound == Value::Bound::Upper && intvalue > 0) ||
+                             (bound == Value::Bound::Lower && intvalue < 0)) {
+                        value.intvalue = 0;
+                        value.setKnown();
                     } else
-                        v.setPossible();
+                        value.setPossible();
                 } else {
-                    v.intvalue = !v.intvalue;
+                    value.intvalue = !value.intvalue;
                 }
-                setTokenValue(next, std::move(v), settings);
+                setTokenValue(next, std::move(value), settings);
             }
             return;
         }
@@ -380,7 +380,7 @@ namespace ValueFlow
                 valueType.sign == ValueType::SIGNED && tok->valueType() &&
                 getSizeOf(*tok->valueType(), settings) >= getSizeOf(valueType, settings))
                 return;
-            setTokenValueCast(parent, valueType, value, settings);
+            setTokenValueCast(parent, valueType, std::move(value), settings);
         }
 
         else if (parent->str() == ":") {
@@ -420,11 +420,10 @@ namespace ValueFlow
                 if (ret)
                     return;
 
-                Value v(std::move(value));
-                v.conditional = true;
-                v.changeKnownToPossible();
+                value.conditional = true;
+                value.changeKnownToPossible();
 
-                setTokenValue(parent, std::move(v), settings);
+                setTokenValue(parent, std::move(value), settings);
             }
         }
 
@@ -494,16 +493,14 @@ namespace ValueFlow
                             continue;
                         result.valueType = Value::ValueType::FLOAT;
                     }
-                    const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
-                    const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
+                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
+                        continue;
                     const auto intValue1 = [&]() -> MathLib::bigint {
                         return value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
                     };
                     const auto intValue2 = [&]() -> MathLib::bigint {
                         return value2.isFloatValue() ? static_cast<MathLib::bigint>(value2.floatValue) : value2.intvalue;
                     };
-                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
-                        continue;
                     if (Token::Match(parent, "==|!=")) {
                         if ((value1.isIntValue() && value2.isTokValue()) || (value1.isTokValue() && value2.isIntValue())) {
                             if (parent->str() == "==")
@@ -558,6 +555,8 @@ namespace ValueFlow
                         }
                         bool error = false;
                         if (result.isFloatValue()) {
+                            const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
+                            const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
                             result.floatValue = calculate(parent->str(), floatValue1, floatValue2, &error);
                         } else {
                             result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
@@ -710,15 +709,13 @@ namespace ValueFlow
             std::vector<const Token*> args = getArguments(value.tokvalue);
             if (const Library::Function* f = settings.library.getFunction(parent->previous())) {
                 if (f->containerYield == Library::Container::Yield::SIZE) {
-                    Value v(std::move(value));
-                    v.valueType = Value::ValueType::INT;
-                    v.intvalue = args.size();
-                    setTokenValue(parent, std::move(v), settings);
+                    value.valueType = Value::ValueType::INT;
+                    value.intvalue = args.size();
+                    setTokenValue(parent, std::move(value), settings);
                 } else if (f->containerYield == Library::Container::Yield::EMPTY) {
-                    Value v(std::move(value));
-                    v.intvalue = args.empty();
-                    v.valueType = Value::ValueType::INT;
-                    setTokenValue(parent, std::move(v), settings);
+                    value.intvalue = args.empty();
+                    value.valueType = Value::ValueType::INT;
+                    setTokenValue(parent, std::move(value), settings);
                 }
             }
         }
