@@ -2027,8 +2027,7 @@ private:
 
     void structmemberStructuredBinding() { // #13107
         checkStructMemberUsage("struct S { int a, b; };\n"
-                               "void f() {\n"
-                               "    S s{};\n"
+                               "void f(S &s) {\n"
                                "    auto& [x, y] = s;\n"
                                "    x = y;\n"
                                "}\n");
@@ -2036,19 +2035,17 @@ private:
 
         checkStructMemberUsage("struct S { int a, b; };\n"
                                "struct T { S s; };\n"
-                               "void f() {\n"
-                               "    T t{};\n"
+                               "void f(T &t) {\n"
                                "    auto& [x, y] = t.s;\n"
                                "    x = y;\n"
                                "}\n");
         ASSERT_EQUALS("", errout_str());
 
         checkStructMemberUsage("struct S { int a, b; };\n"
-                               "void f() {\n"
-                               "    std::vector<S> s = { { 1, 2 } };\n"
-                               "    for (auto& [x, y] : s)\n"
+                               "void f(std::vector<S> &sv) {\n"
+                               "    for (auto& [x, y] : sv)\n"
                                "        x = y;\n"
-                               "    }\n");
+                               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
