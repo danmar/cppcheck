@@ -5724,6 +5724,27 @@ private:
               "    return 3;\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Statements following 'return' will never be executed.\n", "", errout_str());
+
+        check("int f() {\n" // #13472
+              "    int var;\n"
+              "    auto int ret();\n"
+              "    int ret() {\n"
+              "        return var;\n"
+              "    }\n"
+              "    var = 42;\n"
+              "    return ret();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f() {\n" // #13516
+              "    io_uring_for_each_cqe(&ring, head, cqe) {\n"
+              "        if (cqe->res == -EOPNOTSUPP)\n"
+              "            printf(\"error\");\n"
+              "        goto ok;\n"
+              "    }\n"
+              "    usleep(10000);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void redundantContinue() {
