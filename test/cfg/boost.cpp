@@ -19,6 +19,10 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/core/scoped_enum.hpp>
+#include <boost/foreach.hpp>
+
+#include <set>
+#include <vector>
 
 BOOST_FORCEINLINE void boost_forceinline_test()
 {}
