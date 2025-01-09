@@ -2087,7 +2087,8 @@ static bool isConstTop(const Token *tok)
 
 void CheckOther::checkIncompleteStatement()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning) &&
+        !mSettings->isPremiumEnabled("constStatement"))
         return;
 
     logChecker("CheckOther::checkIncompleteStatement"); // warning
@@ -2139,7 +2140,7 @@ void CheckOther::checkIncompleteStatement()
         if (tok->isCpp() && tok->str() == "&" && !(tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
-        const bool inconclusive = tok->isConstOp();
+        const bool inconclusive = tok->isConstOp() && !mSettings->isPremiumEnabled("constStatement");
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
