@@ -5520,7 +5520,7 @@ static bool hasEmptyCaptureList(const Token* tok) {
     return Token::simpleMatch(listTok, "[ ]");
 }
 
-bool Scope::hasInlineOrLambdaFunction(const Token** tokStart) const
+bool Scope::hasInlineOrLambdaFunction(const Token** tokStart, bool onlyInline) const
 {
     return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
         // Inline function
@@ -5530,12 +5530,12 @@ bool Scope::hasInlineOrLambdaFunction(const Token** tokStart) const
             return true;
         }
         // Lambda function
-        if (s->type == Scope::eLambda && !hasEmptyCaptureList(s->bodyStart)) {
+        if (!onlyInline && s->type == Scope::eLambda && !hasEmptyCaptureList(s->bodyStart)) {
             if (tokStart)
                 *tokStart = s->bodyStart;
             return true;
         }
-        if (s->hasInlineOrLambdaFunction(tokStart))
+        if (s->hasInlineOrLambdaFunction(tokStart, onlyInline))
             return true;
         return false;
     });
