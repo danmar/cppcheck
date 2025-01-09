@@ -1551,7 +1551,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                 }
             }
 
-            if (Token::Match(tok, "] :")) {
+            if (Token::simpleMatch(tok, "] :")) {
                 tok = tok->next()->astOperand2();
                 const ValueType *valueType = tok->valueType();
 
