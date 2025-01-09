@@ -794,17 +794,6 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 mTokenizer.syntaxError(tok);
         }
     }
-
-    // validate
-    for (const Scope& uscope : scopeList) {
-        if (uscope.type != Scope::ScopeType::eUnconditional)
-            continue;
-        if (!uscope.bodyStart || !Token::simpleMatch(uscope.bodyStart->previous(), ")"))
-            continue;
-        const Token* ftok = uscope.bodyStart->linkAt(-1)->tokAt(-1);
-        if (Token::Match(ftok, "%name%"))
-            mTokenizer.syntaxError(ftok, "Unknown macro or local function definition");
-    }
 }
 
 void SymbolDatabase::createSymbolDatabaseClassInfo()
