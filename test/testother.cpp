@@ -5677,6 +5677,53 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n"
                       "[test.cpp:1]: (style) Parameter 'argv' can be declared as const array\n",
                       errout_str());
+
+        check("int f(int i) {\n" // #13491
+              "    switch (i) {\n"
+              "    case 0:\n"
+              "        return 0;\n"
+              "        int j;\n"
+              "    case 1:\n"
+              "    case 2:\n"
+              "        j = 5;\n"
+              "        return j + i;\n"
+              "    }\n"
+              "    return 3;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f(int i) {\n"
+              "    switch (i) {\n"
+              "    {\n"
+              "    case 0:\n"
+              "        return 0;\n"
+              "    }\n"
+              "    {\n"
+              "        int j;\n"
+              "    case 1:\n"
+              "    case 2:\n"
+              "        j = 5;\n"
+              "        return j + i;\n"
+              "    }\n"
+              "    }\n"
+              "    return 3;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f(int i) {\n"
+              "    switch (i) {\n"
+              "    case 0:\n"
+              "        return 0;\n"
+              "        int j;\n"
+              "        dostuff();\n"
+              "    case 1:\n"
+              "    case 2:\n"
+              "        j = 5;\n"
+              "        return j + i;\n"
+              "    }\n"
+              "    return 3;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Statements following 'return' will never be executed.\n", "", errout_str());
     }
 
     void redundantContinue() {
