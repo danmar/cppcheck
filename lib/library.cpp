@@ -157,6 +157,9 @@ Library::Library(const Library& other)
 
 Library& Library::operator=(const Library& other) &
 {
+    if (this == &other)
+        return *this;
+
     mData.reset(new LibraryData(*other.mData));
     return *this;
 }
