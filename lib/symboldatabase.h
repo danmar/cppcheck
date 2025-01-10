@@ -1132,7 +1132,7 @@ public:
     }
 
     // Is there lambda/inline function(s) in this scope?
-    bool hasInlineOrLambdaFunction(const Token** tokStart = nullptr) const;
+    bool hasInlineOrLambdaFunction(const Token** tokStart = nullptr, bool onlyInline = false) const;
 
     /**
      * @brief find a function

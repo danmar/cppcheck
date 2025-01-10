@@ -895,6 +895,8 @@ void CheckOther::checkUnreachableCode()
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
+        if (scope->hasInlineOrLambdaFunction(nullptr, /*onlyInline*/ true))
+            continue;
         for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
             const Token* secondBreak = nullptr;
             const Token* labelName = nullptr;
