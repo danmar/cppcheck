@@ -225,12 +225,24 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
                 const std::string cfgfolder(cfgfolders.back());
                 cfgfolders.pop_back();
                 const char *sep = (!cfgfolder.empty() && endsWith(cfgfolder,'/') ? "" : "/");
-                const std::string filename(cfgfolder + sep + fullfilename);
+                std::string filename(cfgfolder + sep + path);
                 if (debug)
                     std::cout << "looking for library '" + std::string(filename) + "'" << std::endl;
                 error = xml_LoadFile(doc, filename.c_str());
-                if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+                if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
                     absolute_path = Path::getAbsoluteFilePath(filename);
+                    break;
+                }
+                if (fullfilename != path) {
+                    filename = cfgfolder + sep + fullfilename;
+                    if (debug)
+                        std::cout << "looking for library '" + std::string(filename) + "'" << std::endl;
+                    error = xml_LoadFile(doc, filename.c_str());
+                    if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
+                        absolute_path = Path::getAbsoluteFilePath(filename);
+                        break;
+                    }
+                }
             }
         }
     } else
