@@ -1,7 +1,8 @@
 Release Notes for Cppcheck 2.17
 
 New checks:
--
+- staticFunction: detect functions that should have internal linkage since they
+  are not used outside of their translation unit.
 
 Improved checking:
 -
