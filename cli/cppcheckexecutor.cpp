@@ -623,7 +623,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     // TODO: we generate a different message here then we log below
     // TODO: there should be no need for verbose and default messages here
     // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
+    if (!mSettings.emitDuplicates && !mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)

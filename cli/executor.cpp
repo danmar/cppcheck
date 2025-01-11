@@ -50,6 +50,9 @@ bool Executor::hasToLog(const ErrorMessage &msg)
         if (errmsg.empty())
             return false;
 
+        if (mSettings.emitDuplicates)
+            return true;
+
         std::lock_guard<std::mutex> lg(mErrorListSync);
         if (mErrorList.emplace(std::move(errmsg)).second) {
             return true;

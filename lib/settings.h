@@ -208,6 +208,9 @@ public:
     /** @brief Is --dump given? */
     bool dump{};
 
+    /** @brief Do not filter duplicated errors. */
+    bool emitDuplicates{};
+
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language enforcedLang{};
 
