@@ -1534,7 +1534,45 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
+        // check if class/struct has default equality operator
+        bool hasDefaultEq = true;
+        for (const Function &f : scope.functionList) {
+            if (f.isOperator() && f.name() == "operator==") {
+                if (f.isDefault()) {
+                    hasDefaultEq = true;
+                    break;
+                }
+                hasDefaultEq = false;
+                break;
+            }
+        }
+
+        // check if default equality is used
+        bool defaultEqUsed = false;
+        if (hasDefaultEq) {
+            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (Token::simpleMatch(tok, "==")) {
+                    const Token *lhs = tok->astOperand1();
+                    const Token *rhs = tok->astOperand2();
+                    if (!lhs || !rhs)
+                        continue;
+                    const ValueType *lValueType = lhs->valueType();
+                    const ValueType *rValueType = rhs->valueType();
+                    if (!lValueType || !rValueType)
+                        continue;
+                    if (lValueType->typeScope == &scope && rValueType->typeScope == &scope) {
+                        defaultEqUsed = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         for (const Variable &var : scope.varlist) {
+            if (!var.isStatic() && defaultEqUsed) {
+                continue;
+            }
+
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
