@@ -43,9 +43,6 @@ bool Executor::hasToLog(const ErrorMessage &msg)
     if (msg.severity == Severity::internal)
         return true;
 
-    if (!mSettings.library.reportErrors(msg.file0))
-        return false;
-
     if (!mSuppressions.isSuppressed(msg, {}))
     {
         // TODO: there should be no need for verbose and default messages here
