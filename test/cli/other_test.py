@@ -1693,7 +1693,9 @@ def test_lib_lookup(tmpdir):
     assert lines == [
         "looking for library 'gnu'",
         "looking for library 'gnu.cfg'",
+        "looking for library '{}/gnu'".format(exepath),
         "looking for library '{}/gnu.cfg'".format(exepath),
+        "looking for library '{}/cfg/gnu'".format(exepath),
         "looking for library '{}/cfg/gnu.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
@@ -1715,9 +1717,9 @@ def test_lib_lookup_notfound(tmpdir):
         # TODO: specify which folder is actually used for lookup here
         "looking for library 'none'",  # TODO: this could conflict with the platform lookup
         "looking for library 'none.cfg'",
-        # TODO: lookup of '{exepath}/none' missing - could conflict with the platform lookup though
+        "looking for library '{}/none'".format(exepath), # TODO: this could conflict with the platform lookup
         "looking for library '{}/none.cfg'".format(exepath),
-        # TODO: lookup of '{exepath}/cfg/none' missing
+        "looking for library '{}/cfg/none'".format(exepath),
         "looking for library '{}/cfg/none.cfg'".format(exepath),
         "library not found: 'none'",
         "cppcheck: Failed to load library configuration file 'none'. File not found"
@@ -1789,7 +1791,9 @@ def test_lib_lookup_nofile(tmpdir):
     assert lines == [
         "looking for library 'gtk'",
         "looking for library 'gtk.cfg'",
+        "looking for library '{}/gtk'".format(exepath),
         "looking for library '{}/gtk.cfg'".format(exepath),
+        "looking for library '{}/cfg/gtk'".format(exepath),
         "looking for library '{}/cfg/gtk.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
@@ -1809,11 +1813,15 @@ def test_lib_lookup_multi(tmpdir):
     assert lines == [
         "looking for library 'posix'",
         "looking for library 'posix.cfg'",
+        "looking for library '{}/posix'".format(exepath),
         "looking for library '{}/posix.cfg'".format(exepath),
+        "looking for library '{}/cfg/posix'".format(exepath),
         "looking for library '{}/cfg/posix.cfg'".format(exepath),
         "looking for library 'gnu'",
         "looking for library 'gnu.cfg'",
+        "looking for library '{}/gnu'".format(exepath),
         "looking for library '{}/gnu.cfg'".format(exepath),
+        "looking for library '{}/cfg/gnu'".format(exepath),
         "looking for library '{}/cfg/gnu.cfg'".format(exepath),
         'Checking {} ...'.format(test_file)
     ]
