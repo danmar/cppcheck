@@ -3696,17 +3696,21 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
     return fileInfo;
 }
 
-bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
-    bool foundErrors = false;
-    (void)ctu; // This argument is unused
-    (void)settings; // This argument is unused
-
-    std::unordered_map<std::string, MyFileInfo::NameLoc> all;
+    (void)ctu;
+    (void)settings;
 
     CheckClass dummy(nullptr, &settings, &errorLogger);
     dummy.
     logChecker("CheckClass::analyseWholeProgram");
+
+    if (fileInfo.empty())
+        return false;
+
+    bool foundErrors = false;
+
+    std::unordered_map<std::string, MyFileInfo::NameLoc> all;
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);

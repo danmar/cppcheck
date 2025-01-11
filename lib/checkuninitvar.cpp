@@ -1742,14 +1742,18 @@ Check::FileInfo * CheckUninitVar::loadFileInfoFromXml(const tinyxml2::XMLElement
     return fileInfo;
 }
 
-bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
-    if (!ctu)
-        return false;
-    bool foundErrors = false;
-    (void)settings; // This argument is unused
+    (void)settings;
 
-    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
+    // TODO: logChecker
+
+    if (fileInfo.empty())
+        return false;
+
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu.getCallsMap();
+
+    bool foundErrors = false;
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);

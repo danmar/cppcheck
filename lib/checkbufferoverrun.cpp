@@ -982,17 +982,18 @@ Check::FileInfo * CheckBufferOverrun::loadFileInfoFromXml(const tinyxml2::XMLEle
 }
 
 /** @brief Analyse all file infos for all TU */
-bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
-    if (!ctu)
-        return false;
-    bool foundErrors = false;
-
     CheckBufferOverrun dummy(nullptr, &settings, &errorLogger);
     dummy.
     logChecker("CheckBufferOverrun::analyseWholeProgram");
 
-    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
+    if (fileInfo.empty())
+        return false;
+
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu.getCallsMap();
+
+    bool foundErrors = false;
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);

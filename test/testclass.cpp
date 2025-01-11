@@ -18,6 +18,7 @@
 
 #include "check.h"
 #include "checkclass.h"
+#include "ctu.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
@@ -9030,7 +9031,8 @@ private:
         }
 
         // Check code..
-        check.analyseWholeProgram(nullptr, fileInfo, settingsDefault, *this); // TODO: check result
+        const CTU::FileInfo ctu;
+        check.analyseWholeProgram(ctu, fileInfo, settingsDefault, *this); // TODO: check result
 
         while (!fileInfo.empty()) {
             delete fileInfo.back();
