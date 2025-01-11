@@ -1126,8 +1126,7 @@ void Tokenizer::simplifyTypedef()
             if (!ts.fail() && numberOfTypedefs[ts.name()] == 1 &&
                 (numberOfTypedefs.find(ts.getTypedefToken()->strAt(1)) == numberOfTypedefs.end() || ts.getTypedefToken()->strAt(2) == "(")) {
                 if (mSettings.severity.isEnabled(Severity::portability) && ts.isInvalidConstFunctionType(typedefs))
-                    reportError(tok->next(), Severity::portability, "invalidConstFunctionType",
-                                "It is unspecified behavior to const qualify a function type.");
+                    invalidConstFunctionTypeError(tok->next());
                 typedefs.emplace(ts.name(), ts);
                 if (!ts.isStructEtc())
                     tok = ts.endToken();
@@ -5743,7 +5742,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (isCPP() && mSettings.severity.isEnabled(Severity::information)) {
         for (const Token *tok = list.front(); tok; tok = tok->next()) {
             if (Token::Match(tok, "class %type% %type% [:{]")) {
-                unhandled_macro_class_x_y(tok);
+                unhandled_macro_class_x_y(tok, tok->str(), tok->strAt(1), tok->strAt(2), tok->strAt(3));
             }
         }
     }
@@ -8114,16 +8113,16 @@ void Tokenizer::unknownMacroError(const Token *tok1) const
     throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::UNKNOWN_MACRO);
 }
 
-void Tokenizer::unhandled_macro_class_x_y(const Token *tok) const
+void Tokenizer::unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const
 {
     reportError(tok,
                 Severity::information,
                 "class_X_Y",
                 "The code '" +
-                tok->str() + " " +
-                tok->strAt(1) + " " +
-                tok->strAt(2) + " " +
-                tok->strAt(3) + "' is not handled. You can use -I or --include to add handling of this code.");
+                type + " " +
+                x + " " +
+                y + " " +
+                bracket + "' is not handled. You can use -I or --include to add handling of this code.");
 }
 
 void Tokenizer::macroWithSemicolonError(const Token *tok, const std::string &macroName) const
@@ -8132,6 +8131,14 @@ void Tokenizer::macroWithSemicolonError(const Token *tok, const std::string &mac
                 Severity::information,
                 "macroWithSemicolon",
                 "Ensure that '" + macroName + "' is defined either using -I, --include or -D.");
+}
+
+void Tokenizer::invalidConstFunctionTypeError(const Token *tok) const
+{
+    reportError(tok,
+                Severity::portability,
+                "invalidConstFunctionType",
+                "It is unspecified behavior to const qualify a function type.");
 }
 
 void Tokenizer::cppcheckError(const Token *tok) const
@@ -10907,4 +10914,14 @@ bool Tokenizer::isPacked(const Token * bodyStart) const
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return d.linenr < bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == list.getFiles().front();
     });
+}
+
+void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& settings)
+{
+    Tokenizer tokenizer(settings, errorLogger);
+    tokenizer.invalidConstFunctionTypeError(nullptr);
+    // checkLibraryNoReturn
+    tokenizer.unhandled_macro_class_x_y(nullptr, emptyString, emptyString, emptyString, emptyString);
+    tokenizer.macroWithSemicolonError(nullptr, emptyString);
+    tokenizer.unhandledCharLiteral(nullptr, emptyString);
 }
