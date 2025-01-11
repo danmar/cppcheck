@@ -1746,7 +1746,9 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo &ctu, const std::li
 {
     (void)settings;
 
-    // TODO: logChecker
+    CheckUninitVar dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckUninitVar::analyseWholeProgram");
 
     if (fileInfo.empty())
         return false;
