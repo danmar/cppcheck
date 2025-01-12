@@ -11062,6 +11062,13 @@ private:
               "    C(A<T> x_, B<T> y_) : x(x_), y(y_) {}\n"
               "};\n");
         ASSERT_EQUALS("", errout_str()); // don't crash
+
+        check("template <typename T, int N>\n" // #13537
+              "    struct S {\n"
+              "    T a[N];\n"
+              "};\n"
+              "void f(S<char, 3> s) {}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {

@@ -3731,7 +3731,8 @@ bool Variable::arrayDimensions(const Settings& settings, bool& isContainer)
             // TODO: only perform when ValueFlow is enabled
             // TODO: collect timing information for this call?
             ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
-            if (dimension_.tok && dimension_.tok->hasKnownIntValue()) {
+            if (dimension_.tok && (dimension_.tok->hasKnownIntValue() ||
+                                   (dimension_.tok->isTemplateArg() && !dimension_.tok->values().empty()))) {
                 dimension_.num = dimension_.tok->getKnownIntValue();
                 dimension_.known = true;
             }
