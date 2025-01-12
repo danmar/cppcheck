@@ -52,7 +52,7 @@ The minimum required Python version is 3.6.
 
 ### CMake
 
-The minimum required version is CMake 3.5.
+The minimum required version is CMake 3.13.
 
 Example, compiling Cppcheck with cmake:
 
