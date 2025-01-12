@@ -154,9 +154,8 @@ void test_BOOST_FOREACH_5()
 }
 
 // Break after modification (#4788)
-void test_BOOST_FOREACH_6()
+void test_BOOST_FOREACH_6(std::vector<int> data)
 {
-    std::vector<int> data;
     BOOST_FOREACH(int i, data) {
         data.push_back(123);
         break;
