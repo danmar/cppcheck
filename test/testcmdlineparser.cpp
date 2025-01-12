@@ -3093,42 +3093,42 @@ private:
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=autosar", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::autosar, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::autosar, settings->reportType);
     }
 
     void reportTypeCertCpp() {
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=certCpp", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::certCpp, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::certCpp, settings->reportType);
     }
 
     void reportTypeCertC() {
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=certC", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::certC, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::certC, settings->reportType);
     }
 
     void reportTypeMisraC() {
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=misraC", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::misraC, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::misraC, settings->reportType);
     }
 
     void reportTypeMisraCpp2008() {
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=misraCpp2008", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::misraCpp2008, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::misraCpp2008, settings->reportType);
     }
 
     void reportTypeMisraCpp2023() {
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=misraCpp2023", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::misraCpp2023, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::misraCpp2023, settings->reportType);
     }
 
     void invalidReportType() {
@@ -3142,7 +3142,7 @@ private:
         REDIRECT;
         const char *const argv[] = { "cppcheck", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS_ENUM(checkers::ReportType::normal, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::normal, settings->reportType);
     }
 };
 

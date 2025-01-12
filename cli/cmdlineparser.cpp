@@ -1231,24 +1231,24 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strncmp(argv[i], "--report-type=", 14) == 0) {
                 const std::string typeStr = argv[i] + 14;
                 if (typeStr == "normal") {
-                    mSettings.reportType = checkers::ReportType::normal;
+                    mSettings.reportType = ReportType::normal;
                 } else if (typeStr == "autosar") {
-                    mSettings.reportType = checkers::ReportType::autosar;
+                    mSettings.reportType = ReportType::autosar;
                 } else if (typeStr == "certC") {
-                    mSettings.reportType = checkers::ReportType::certC;
+                    mSettings.reportType = ReportType::certC;
                 } else if (typeStr == "certCpp") {
-                    mSettings.reportType = checkers::ReportType::certCpp;
+                    mSettings.reportType = ReportType::certCpp;
                 } else if (typeStr == "misraC") {
-                    mSettings.reportType = checkers::ReportType::misraC;
+                    mSettings.reportType = ReportType::misraC;
                 } else if (typeStr == "misraCpp2008") {
-                    mSettings.reportType = checkers::ReportType::misraCpp2008;
+                    mSettings.reportType = ReportType::misraCpp2008;
                 } else if (typeStr == "misraCpp2023") {
-                    mSettings.reportType = checkers::ReportType::misraCpp2023;
+                    mSettings.reportType = ReportType::misraCpp2023;
                 } else {
                     mLogger.printError("Unknown report type \'" + typeStr + "\'");
                     return Result::Fail;
                 }
-                mSettings.guidelineMapping = checkers::createGuidelineMapping(mSettings.reportType);
+                mSettings.guidelineMapping = createGuidelineMapping(mSettings.reportType);
             }
 
             // Rule given at command line

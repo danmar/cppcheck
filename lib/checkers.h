@@ -30,16 +30,6 @@ namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;
     extern CPPCHECKLIB const std::map<std::string, std::string> premiumCheckers;
 
-    enum class ReportType : std::uint8_t {
-        normal = 0,
-        autosar = 1,
-        certC = 2,
-        certCpp = 3,
-        misraC = 4,
-        misraCpp2008 = 5,
-        misraCpp2023 = 6,
-    };
-
     struct CPPCHECKLIB MisraInfo {
         int a;
         int b;
@@ -84,12 +74,6 @@ namespace checkers {
     extern std::vector<Info> autosarInfo;
     extern std::vector<Info> certCInfo;
     extern std::vector<Info> certCppInfo;
-
-    extern CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
-    extern CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
-                                                const std::map<std::string, std::string> &guidelineMapping,
-                                                Severity severity);
-    extern CPPCHECKLIB std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 }
 
 #endif

@@ -8,7 +8,6 @@ add_executable(test-filelist
         ${CMAKE_SOURCE_DIR}/lib/pathmatch.cpp
         ${CMAKE_SOURCE_DIR}/lib/path.cpp
         ${CMAKE_SOURCE_DIR}/lib/utils.cpp
-        ${CMAKE_SOURCE_DIR}/lib/checkersidmapping.cpp
         $<TARGET_OBJECTS:simplecpp_objs>
         )
 target_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib)

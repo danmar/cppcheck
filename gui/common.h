@@ -24,7 +24,7 @@
 #include <QMap>
 #include <QString>
 
-#include "checkers.h"
+#include "errorlogger.h"
 
 /// @addtogroup GUI
 /// @{
@@ -54,7 +54,6 @@
 
 // Report type
 #define SETTINGS_REPORT_TYPE            "Report type"
-using ReportType = checkers::ReportType;
 
 // Show * states
 #define SETTINGS_SHOW_STYLE             "Show style"

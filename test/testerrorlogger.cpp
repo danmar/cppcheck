@@ -199,12 +199,12 @@ private:
 
     void ErrorMessageReportTypeMisraC() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
-        const auto reportType = checkers::ReportType::misraC;
-        const auto mapping = checkers::createGuidelineMapping(reportType);
+        const auto reportType = ReportType::misraC;
+        const auto mapping = createGuidelineMapping(reportType);
         const std::string format = "{severity} {id}";
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "unusedVariable", Certainty::normal);
-        msg.guideline = checkers::getGuideline(msg.id, reportType, mapping, msg.severity);
-        msg.classification = checkers::getClassification(msg.guideline, reportType);
+        msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+        msg.classification = getClassification(msg.guideline, reportType);
         ASSERT_EQUALS("Advisory", msg.classification);
         ASSERT_EQUALS("2.8", msg.guideline);
         ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format));
@@ -212,12 +212,12 @@ private:
 
     void ErrorMessageReportTypeCertC() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
-        const auto reportType = checkers::ReportType::certC;
-        const auto mapping = checkers::createGuidelineMapping(reportType);
+        const auto reportType = ReportType::certC;
+        const auto mapping = createGuidelineMapping(reportType);
         const std::string format = "{severity} {id}";
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "resourceLeak", Certainty::normal);
-        msg.guideline = checkers::getGuideline(msg.id, reportType, mapping, msg.severity);
-        msg.classification = checkers::getClassification(msg.guideline, reportType);
+        msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+        msg.classification = getClassification(msg.guideline, reportType);
         ASSERT_EQUALS("L3", msg.classification);
         ASSERT_EQUALS("FIO42-C", msg.guideline);
         ASSERT_EQUALS("L3 FIO42-C", msg.toString(true, format));

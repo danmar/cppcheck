@@ -31,6 +31,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 class Token;
 class TokenList;
@@ -279,6 +280,16 @@ private:
     static const std::set<std::string> mCriticalErrorIds;
 };
 
+enum class ReportType : std::uint8_t {
+    normal = 0,
+    autosar = 1,
+    certC = 2,
+    certCpp = 3,
+    misraC = 4,
+    misraCpp2008 = 5,
+    misraCpp2023 = 6,
+};
+
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */
 std::string replaceStr(std::string s, const std::string &from, const std::string &to);
 
@@ -287,6 +298,17 @@ CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
 
 /** replaces the static parts of the location template **/
 CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
+
+/** Get a classification string from the given guideline and reporttype */
+std::string getClassification(const std::string &guideline, ReportType reportType);
+
+/** Get a guidline string froM the given error id, reporttype, mapping and severity */
+std::string getGuideline(const std::string &errId, ReportType reportType,
+                         const std::map<std::string, std::string> &guidelineMapping,
+                         Severity severity);
+
+/** Get a map from cppcheck error ids to guidlines matching the given report type */
+std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 
 /// @}
 //---------------------------------------------------------------------------

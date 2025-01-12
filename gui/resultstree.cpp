@@ -100,13 +100,13 @@ static constexpr int COLUMN_CWE                   = 12;
 
 static QString getGuideline(ReportType reportType, const std::map<std::string, std::string> &guidelineMapping,
                             const QString& errorId, Severity severity) {
-    return QString::fromStdString(checkers::getGuideline(errorId.toStdString(),
-                                                         reportType, guidelineMapping,
-                                                         severity));
+    return QString::fromStdString(getGuideline(errorId.toStdString(),
+                                               reportType, guidelineMapping,
+                                               severity));
 }
 
 static QString getClassification(ReportType reportType, const QString& guideline) {
-    return QString::fromStdString(checkers::getClassification(guideline.toStdString(), reportType));
+    return QString::fromStdString(getClassification(guideline.toStdString(), reportType));
 }
 
 static Severity getSeverityFromClassification(const QString &c) {
@@ -167,7 +167,7 @@ void ResultsTree::keyPressEvent(QKeyEvent *event)
 void ResultsTree::setReportType(ReportType reportType) {
     mReportType = reportType;
 
-    mGuideline = checkers::createGuidelineMapping(reportType);
+    mGuideline = createGuidelineMapping(reportType);
 
     for (int i = 0; i < mModel.rowCount(); ++i) {
         const QStandardItem *fileItem = mModel.item(i, COLUMN_FILE);

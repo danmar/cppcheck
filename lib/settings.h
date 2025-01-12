@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "checkers.h"
+#include "errorlogger.h"
 
 #include <algorithm>
 #include <atomic>
@@ -112,7 +112,7 @@ public:
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 
     /** @brief Report type */
-    checkers::ReportType reportType = checkers::ReportType::normal;
+    ReportType reportType = ReportType::normal;
 
     /** @brief Maps cppcheck error ids to guidelines */
     std::map<std::string, std::string> guidelineMapping;
