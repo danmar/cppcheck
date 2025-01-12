@@ -89,9 +89,6 @@
     <ClCompile Include="token.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="checkboost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="checkinternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -380,9 +377,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkautovariables.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="checkboost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkio.h">
