@@ -112,37 +112,33 @@ void lock_guard_finiteLifetime(boost::mutex& m)
     boost::lock_guard<boost::mutex>{ m };
 }
 
-void test_BOOST_FOREACH_1()
+void test_BOOST_FOREACH_1(std::vector<int> data)
 {
-    std::vector<int> data;
     BOOST_FOREACH(int i, data) {
         // cppcheck-suppress invalidContainerLoop
         data.push_back(123);
     }
 }
 
-void test_BOOST_FOREACH_2()
+void test_BOOST_FOREACH_2(std::set<int> data)
 {
-    std::set<int> data;
     BOOST_FOREACH(int i, data) {
-        // cppcheck-suppress invalidContainerLoop
+        // don't warn for std::set
         data.insert(123);
     }
 }
 
-void test_BOOST_FOREACH_3()
+void test_BOOST_FOREACH_3(std::vector<int> data)
 {
-    std::set<int> data;
     BOOST_FOREACH(const int& i, data) {
         // cppcheck-suppress invalidContainerLoop
-        data.erase(123);
+        data.erase(data.begin());
     }
 }
 
 // Check single line usage
-void test_BOOST_FOREACH_4()
+void test_BOOST_FOREACH_4(std::vector<int> data)
 {
-    std::set<int> data;
     BOOST_FOREACH(const int& i, data)
         // cppcheck-suppress invalidContainerLoop
         data.clear();
