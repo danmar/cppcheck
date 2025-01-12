@@ -44,7 +44,6 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checkassert.o \
               $(libcppdir)/checkautovariables.o \
               $(libcppdir)/checkbool.o \
-              $(libcppdir)/checkboost.o \
               $(libcppdir)/checkbufferoverrun.o \
               $(libcppdir)/checkclass.o \
               $(libcppdir)/checkcondition.o \
@@ -177,9 +176,6 @@ $(libcppdir)/checkautovariables.o: ../lib/checkautovariables.cpp ../lib/addoninf
 
 $(libcppdir)/checkbool.o: ../lib/checkbool.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkbool.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkbool.cpp
-
-$(libcppdir)/checkboost.o: ../lib/checkboost.cpp ../lib/check.h ../lib/checkboost.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
-	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkboost.cpp
 
 $(libcppdir)/checkbufferoverrun.o: ../lib/checkbufferoverrun.cpp ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkbufferoverrun.h ../lib/color.h ../lib/config.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkbufferoverrun.cpp
