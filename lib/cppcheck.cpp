@@ -659,9 +659,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 
     // TODO: get language from FileWithDetails object
     const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "");
-    const std::string clangcmd = analyzerInfo + ".clang-cmd" + "." + std::to_string(mSettings.pid);
     const std::string clangStderr = analyzerInfo + ".clang-stderr" + "." + std::to_string(mSettings.pid);
-    const std::string clangAst = analyzerInfo + ".clang-ast" + "." + std::to_string(mSettings.pid);
     std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
     // append .exe if it is not a path
@@ -674,10 +672,6 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
                               getClangFlags(Path::identify(file.spath(), mSettings.cppHeaderProbe)) +
                               file.spath();
     const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
-    if (!mSettings.buildDir.empty()) {
-        std::ofstream fout(clangcmd);
-        fout << exe << " " << args2 << " " << redirect2 << std::endl;
-    }
     if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2);
     }
@@ -712,11 +706,6 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         };
         if (reportClangErrors(istr, reportError, compilerWarnings))
             return 0; // TODO: report as failure?
-    }
-
-    if (!mSettings.buildDir.empty()) {
-        std::ofstream fout(clangAst);
-        fout << output2 << std::endl;
     }
 
     try {
