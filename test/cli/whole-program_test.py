@@ -53,9 +53,6 @@ def test_addon_suppress_inline():
     __test_addon_suppress_inline(['-j1'])
 
 
-# TODO: inline suppressions currently do not work with whole program analysis and addons - see #12835
-# whole program analysis requires a build dir with -j
-@pytest.mark.xfail(strict=True)
 def test_addon_suppress_inline_j():
     __test_addon_suppress_inline(['-j2'])
 
@@ -66,8 +63,6 @@ def test_addon_suppress_inline_builddir(tmpdir):
     __test_addon_suppress_inline(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-# TODO: inline suppressions currently do not work with whole program analysis and addons - see #12835
-@pytest.mark.xfail(strict=True)
 def test_addon_suppress_inline_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -101,9 +96,6 @@ def test_addon_suppress_inline_project(tmpdir):
     __test_addon_suppress_inline_project(tmpdir, ['-j1'])
 
 
-# TODO: inline suppressions currently do not work with whole program analysis and addons - see #12835
-# whole program analysis requires a build dir with -j
-@pytest.mark.xfail(strict=True)
 def test_addon_suppress_inline_project_j(tmpdir):
     __test_addon_suppress_inline_project(tmpdir, ['-j2'])
 
@@ -114,8 +106,6 @@ def test_addon_suppress_inline_project_builddir(tmpdir):
     __test_addon_suppress_inline_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-# TODO: inline suppressions currently do not work with whole program analysis and addons - see #12835
-@pytest.mark.xfail(strict=True)
 def test_addon_suppress_inline_project_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -146,9 +136,6 @@ def test_suppress_inline():
     __test_suppress_inline(['-j1'])
 
 
-# TODO: inline suppressions do not work with whole program analysis and -j
-# whole program analysis requires a build dir with -j
-@pytest.mark.xfail(strict=True)
 def test_suppress_inline_j():
     __test_suppress_inline(['-j2'])
 
@@ -159,8 +146,6 @@ def test_suppress_inline_builddir(tmpdir):
     __test_suppress_inline(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-# TODO: inline suppressions do not work with whole program analysis and -j
-@pytest.mark.xfail(strict=True)
 def test_suppress_inline_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -195,8 +180,6 @@ def test_suppress_inline_project(tmpdir):
     __test_suppress_inline_project(tmpdir, ['-j1'])
 
 
-# whole program analysis requires a build dir with -j
-@pytest.mark.xfail(strict=True)
 def test_suppress_inline_project_j(tmpdir):
     __test_suppress_inline_project(tmpdir, ['-j2'])
 
@@ -206,8 +189,6 @@ def test_suppress_inline_project_builddir(tmpdir):
     os.mkdir(build_dir)
     __test_suppress_inline_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
-# TODO: inline suppressions do not work with whole program analysis and -j
-@pytest.mark.xfail(strict=True)
 def test_suppress_inline_project_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
