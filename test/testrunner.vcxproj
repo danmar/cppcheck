@@ -49,7 +49,6 @@
     <ClCompile Include="testastutils.cpp" />
     <ClCompile Include="testautovariables.cpp" />
     <ClCompile Include="testbool.cpp" />
-    <ClCompile Include="testboost.cpp" />
     <ClCompile Include="testbufferoverrun.cpp" />
     <ClCompile Include="testcharvar.cpp" />
     <ClCompile Include="testcheck.cpp" />

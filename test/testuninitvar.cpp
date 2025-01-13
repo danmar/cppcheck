@@ -2145,7 +2145,7 @@ private:
                        "    static const struct ab {\n"
                        "        int a,b;\n"
                        "        int get_a() { return a; }"
-                       "    } = { 0, 0 };\n"
+                       "    } x = { 0, 0 };\n"
                        "}", true, false);
         ASSERT_EQUALS("", errout_str());
 

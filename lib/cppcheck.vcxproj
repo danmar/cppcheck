@@ -36,7 +36,6 @@
     <ClCompile Include="checkassert.cpp" />
     <ClCompile Include="checkautovariables.cpp" />
     <ClCompile Include="checkbool.cpp" />
-    <ClCompile Include="checkboost.cpp" />
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
@@ -108,7 +107,6 @@
     <ClInclude Include="checkassert.h" />
     <ClInclude Include="checkautovariables.h" />
     <ClInclude Include="checkbool.h" />
-    <ClInclude Include="checkboost.h" />
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
