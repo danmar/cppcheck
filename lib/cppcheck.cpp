@@ -684,6 +684,10 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         return 0; // TODO: report as failure?
     }
 
+    if (mSettings.debugClangAst) {
+        std::cout << output2 << std::endl;
+    }
+
     if (output2.find("TranslationUnitDecl") == std::string::npos) {
         // TODO: report as proper error
         std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no TranslationUnitDecl in output)" << std::endl;

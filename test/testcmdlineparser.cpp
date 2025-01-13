@@ -422,6 +422,7 @@ private:
         TEST_CASE(maxTemplateRecursion);
         TEST_CASE(maxTemplateRecursionMissingCount);
         TEST_CASE(emitDuplicates);
+        TEST_CASE(debugClangAst);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2905,6 +2906,13 @@ private:
         const char * const argv[] = {"cppcheck", "--emit-duplicates", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->emitDuplicates);
+    }
+
+    void debugClangAst() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-clang-ast", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debugClangAst);
     }
 
     void ignorepaths1() {
