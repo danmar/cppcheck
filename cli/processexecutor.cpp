@@ -96,9 +96,7 @@ namespace {
                 if (!suppr.isInline)
                     continue;
 
-                // TODO: add the matched and checked states
-
-                writeToPipe(REPORT_SUPPR_INLINE, suppr.toString());
+                writeToPipe(REPORT_SUPPR_INLINE, suppressionToString(suppr));
             }
             // TODO: update suppression states?
         }
@@ -108,6 +106,16 @@ namespace {
         }
 
     private:
+        static std::string suppressionToString(const SuppressionList::Suppression &suppr)
+        {
+            std::string suppr_str = suppr.toString();
+            suppr_str += ";";
+            suppr_str += suppr.checked ? "1" : "0";
+            suppr_str += ";";
+            suppr_str += suppr.matched ? "1" : "0";
+            return suppr_str;
+        }
+
         // TODO: how to log file name in error?
         void writeToPipeInternal(PipeSignal type, const void* data, std::size_t to_write) const
         {
@@ -224,7 +232,15 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             mErrorLogger.reportErr(msg);
     } else if (type == PipeWriter::REPORT_SUPPR_INLINE) {
         if (!buf.empty()) {
-            const std::string err = mSuppressions.addSuppressionLine(buf);
+            // TODO: avoid string splitting
+            auto parts = splitString(buf, ';');
+            if (parts.size() != 3)
+            {
+                // TODO: make this non-fatal
+                std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - insufficient data" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+            const std::string err = mSuppressions.addSuppressionLine(parts[0], parts[1] == "1", parts[2] == "1");
             if (!err.empty()) {
                 // TODO: make this non-fatal
                 std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
