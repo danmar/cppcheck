@@ -1262,13 +1262,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
     // TODO: this is done too early causing the whole program analysis suppressions to be reported as unmatched
     if (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration) {
-        if (mSettings.inlineSuppressions)
-        {
-            // TODO: check result?
-            // defer reporting of unusedFunction to later
-            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedInlineSuppressions(SuppressionList::UnusedFunction::Exclude), mErrorLogger);
-        }
-
         // In jointSuppressionReport mode, unmatched suppressions are
         // collected after all files are processed
         if (!mSettings.useSingleJob()) {

@@ -250,16 +250,11 @@ public:
      */
     std::list<Suppression> getUnmatchedGlobalSuppressions(bool includeUnusedFunction) const;
 
-    enum UnusedFunction : std::uint8_t {
-        Exclude,
-        Only
-    };
-
     /**
      * @brief Returns list of unmatched inline suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedInlineSuppressions(const UnusedFunction unusedFunction) const;
+    std::list<Suppression> getUnmatchedInlineSuppressions() const;
 
     /**
      * @brief Returns list of all suppressions.
