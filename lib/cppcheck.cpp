@@ -680,14 +680,14 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 
     std::string output2;
     const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
+    if (mSettings.debugClangOutput) {
+        std::cout << output2 << std::endl;
+    }
+    // TODO: this might also fail if compiler errors are encountered - we should report them properly
     if (exitcode != EXIT_SUCCESS) {
         // TODO: report as proper error
         std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (exitcode: " << exitcode << " / output: " << output2 << ")" << std::endl;
         return 0; // TODO: report as failure?
-    }
-
-    if (mSettings.debugClangAst) {
-        std::cout << output2 << std::endl;
     }
 
     if (output2.find("TranslationUnitDecl") == std::string::npos) {
