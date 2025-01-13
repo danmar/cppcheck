@@ -30,7 +30,7 @@ def __create_compile_commands(dir, entries):
     return compile_commands
 
 
-def __test_addon_suppress_inline(extra_args):
+def test_addon_suppress_inline():
     args = [
         '-q',
         '--addon=misra',
@@ -41,7 +41,6 @@ def __test_addon_suppress_inline(extra_args):
         'whole-program/whole1.c',
         'whole-program/whole2.c'
     ]
-    args += extra_args
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
@@ -49,27 +48,7 @@ def __test_addon_suppress_inline(extra_args):
     assert ret == 0, stdout
 
 
-def test_addon_suppress_inline():
-    __test_addon_suppress_inline(['-j1'])
-
-
-def test_addon_suppress_inline_j():
-    __test_addon_suppress_inline(['-j2'])
-
-
-def test_addon_suppress_inline_builddir(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_addon_suppress_inline(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
-
-
-def test_addon_suppress_inline_builddir_j(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_addon_suppress_inline(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
-
-
-def __test_addon_suppress_inline_project(tmpdir, extra_args):
+def test_addon_suppress_inline_project(tmpdir):
     compile_db = __create_compile_commands(tmpdir, [
         os.path.join(__script_dir, 'whole-program', 'whole1.c'),
         os.path.join(__script_dir, 'whole-program', 'whole2.c')
@@ -84,7 +63,6 @@ def __test_addon_suppress_inline_project(tmpdir, extra_args):
         '--error-exitcode=1',
         '--project={}'.format(compile_db)
     ]
-    args += extra_args
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
@@ -92,27 +70,7 @@ def __test_addon_suppress_inline_project(tmpdir, extra_args):
     assert ret == 0, stdout
 
 
-def test_addon_suppress_inline_project(tmpdir):
-    __test_addon_suppress_inline_project(tmpdir, ['-j1'])
-
-
-def test_addon_suppress_inline_project_j(tmpdir):
-    __test_addon_suppress_inline_project(tmpdir, ['-j2'])
-
-
-def test_addon_suppress_inline_project_builddir(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_addon_suppress_inline_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
-
-
-def test_addon_suppress_inline_project_builddir_j(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_addon_suppress_inline_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
-
-
-def __test_suppress_inline(extra_args):
+def test_suppress_inline():
     args = [
         '-q',
         '--template=simple',
@@ -123,8 +81,6 @@ def __test_suppress_inline(extra_args):
         'whole-program/odr2.cpp'
     ]
 
-    args += extra_args
-
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
@@ -132,27 +88,7 @@ def __test_suppress_inline(extra_args):
     assert ret == 0, stdout
 
 
-def test_suppress_inline():
-    __test_suppress_inline(['-j1'])
-
-
-def test_suppress_inline_j():
-    __test_suppress_inline(['-j2'])
-
-
-def test_suppress_inline_builddir(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_suppress_inline(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
-
-
-def test_suppress_inline_builddir_j(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_suppress_inline(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
-
-
-def __test_suppress_inline_project(tmpdir, extra_args):
+def test_suppress_inline_project(tmpdir):
     compile_db = __create_compile_commands(tmpdir, [
         os.path.join(__script_dir, 'whole-program', 'odr1.cpp'),
         os.path.join(__script_dir, 'whole-program', 'odr2.cpp')
@@ -167,32 +103,12 @@ def __test_suppress_inline_project(tmpdir, extra_args):
         '--project={}'.format(compile_db)
     ]
 
-    args += extra_args
-
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
 
-
-def test_suppress_inline_project(tmpdir):
-    __test_suppress_inline_project(tmpdir, ['-j1'])
-
-
-def test_suppress_inline_project_j(tmpdir):
-    __test_suppress_inline_project(tmpdir, ['-j2'])
-
-
-def test_suppress_inline_project_builddir(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_suppress_inline_project(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
-
-def test_suppress_inline_project_builddir_j(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_suppress_inline_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
 @pytest.mark.parametrize("builddir", (False,True))
 def test_addon_rerun(tmp_path, builddir):
@@ -228,6 +144,7 @@ def test_addon_builddir_use_ctuinfo(tmp_path):
         pass
     _, _, stderr = cppcheck(args, cwd=__script_dir)
     assert 'misra-c2012-5.8' not in stderr
+
 
 @pytest.mark.parametrize("builddir", (False,True))
 def test_addon_no_artifacts(tmp_path, builddir):
@@ -294,6 +211,7 @@ def test_checkclass_builddir_j(tmpdir):
     os.mkdir(build_dir)
     __test_checkclass(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
+
 def __test_checkclass_project(tmpdir, extra_args):
     odr_file_1 = os.path.join(__script_dir, 'whole-program', 'odr1.cpp')
 
@@ -341,6 +259,7 @@ def test_checkclass_project_builddir_j(tmpdir):
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
+
 def __test_nullpointer_file0(extra_args):
     args = [
         '-q',
@@ -361,12 +280,15 @@ def __test_nullpointer_file0(extra_args):
     assert stdout == ''
     assert file0 == 'whole-program/nullpointer1.cpp', stderr
 
+
 def test_nullpointer_file0():
     __test_nullpointer_file0(['-j1'])
+
 
 @pytest.mark.xfail(strict=True) # no CTU without builddir
 def test_nullpointer_file0_j():
     __test_nullpointer_file0(['-j2', '--no-cppcheck-build-dir'])
+
 
 def test_nullpointer_file0_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
