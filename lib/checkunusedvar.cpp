@@ -1534,6 +1534,40 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
+        // Bailout if struct is used in structured binding
+        for (const Variable *var : symbolDatabase->variableList()) {
+            if (!var || !Token::Match(var->typeStartToken(), "auto &|&&| [ %varid%", var->declarationId()))
+                continue;
+
+            const Token *tok = var->nameToken()->linkAt(-1);
+            if (Token::Match(tok, "] %assign%"))
+            {
+                tok = tok->next()->astOperand2();
+                const ValueType *valueType = tok->valueType();
+
+                if (valueType && valueType->typeScope == &scope) {
+                    bailout = true;
+                    break;
+                }
+            }
+
+            if (Token::simpleMatch(tok, "] :")) {
+                tok = tok->next()->astOperand2();
+                const ValueType *valueType = tok->valueType();
+
+                if (!valueType->containerTypeToken)
+                    continue;
+
+                const Type *type = valueType->containerTypeToken->type();
+                if (type && type->classScope == &scope) {
+                    bailout = true;
+                    break;
+                }
+            }
+        }
+        if (bailout)
+            continue;
+
         for (const Variable &var : scope.varlist) {
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
