@@ -239,3 +239,25 @@ def test_cmd_std_c_enforce_alias_2(tmp_path):  # #13128/#13129/#13130
 
 def test_cmd_std_cpp_enforce_alias(tmp_path):  # #13128/#13129/#13130
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c++ -std=gnu++11')
+
+
+def test_debug_ast(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--clang',
+        '--debug-clang-ast',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr if not stdout else stdout
+    assert stderr == ''
+    assert stdout.startswith('TranslationUnitDecl'), stdout
+    assert stdout.find(str(test_file)) != -1, stdout
