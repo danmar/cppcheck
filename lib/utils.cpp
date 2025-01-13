@@ -186,9 +186,9 @@ std::string replaceEscapeSequences(const std::string &source) {
 }
 
 
-std::list<std::string> splitString(const std::string& str, char sep)
+std::vector<std::string> splitString(const std::string& str, char sep)
 {
-    std::list<std::string> l;
+    std::vector<std::string> l;
 
     std::string::size_type pos1 = 0;
     std::string::size_type pos2;
