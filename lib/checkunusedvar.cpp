@@ -1555,7 +1555,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                 tok = tok->next()->astOperand2();
                 const ValueType *valueType = tok->valueType();
 
-                if (!valueType->containerTypeToken)
+                if (!valueType || !valueType->containerTypeToken)
                     continue;
 
                 const Type *type = valueType->containerTypeToken->type();
