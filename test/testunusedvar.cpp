@@ -2047,6 +2047,15 @@ private:
                                "        x = y;\n"
                                "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        // #13551 - don't crash
+        checkStructMemberUsage("struct S {};\n"
+                               "void f(vector<std::pair<int, int>> p) {\n"
+                               "    for (auto [a, _] : p) {\n"
+                               "        if (a == 0) {}\n"
+                               "    }\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {
