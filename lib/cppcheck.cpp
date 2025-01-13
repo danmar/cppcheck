@@ -817,11 +817,9 @@ unsigned int CppCheck::check(const FileSettings &fs)
     const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
     for (const auto& suppr : temp.mSettings.supprs.nomsg.getSuppressions())
     {
-        // skip inline suppressions - are handled in checkFile()
         if (suppr.isInline) {
-            // need to transfer unusedFunction suppressions because these are handled later on
-            if (suppr.errorId == "unusedFunction")
-                mSettings.supprs.nomsg.addSuppression(suppr); // TODO: check result
+            // need to transfer all inline suppressions because these are used later on
+            mSettings.supprs.nomsg.addSuppression(suppr); // TODO: check result
             continue;
         }
 
