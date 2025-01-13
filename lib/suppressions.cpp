@@ -204,7 +204,7 @@ std::vector<SuppressionList::Suppression> SuppressionList::parseMultiSuppressCom
     return suppressions;
 }
 
-std::string SuppressionList::addSuppressionLine(const std::string &line, bool checked, bool matched)
+std::string SuppressionList::addSuppressionLine(const std::string &line, bool isInline, bool checked, bool matched)
 {
     std::istringstream lineStream;
     SuppressionList::Suppression suppression;
@@ -248,6 +248,7 @@ std::string SuppressionList::addSuppressionLine(const std::string &line, bool ch
     }
 
     suppression.fileName = Path::simplifyPath(suppression.fileName);
+    suppression.isInline = isInline;
     suppression.checked = checked;
     suppression.matched = matched;
 

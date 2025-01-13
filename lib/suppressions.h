@@ -181,11 +181,12 @@ public:
     /**
      * @brief Don't show the given error.
      * @param line Description of error to suppress (in id:file:line format).
+     * @param isInline Indicates if it is an inline suppression.
      * @param checked The initial checked state.
      * @param matched The initial matched state.
      * @return error message. empty upon success
      */
-    std::string addSuppressionLine(const std::string &line, bool checked = false, bool matched = false);
+    std::string addSuppressionLine(const std::string &line, bool isInline = false, bool checked = false, bool matched = false);
 
     /**
      * @brief Don't show this error. File and/or line are optional. In which case

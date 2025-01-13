@@ -240,7 +240,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
                 std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - insufficient data" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
-            const std::string err = mSuppressions.addSuppressionLine(parts[0], parts[1] == "1", parts[2] == "1");
+            const std::string err = mSuppressions.addSuppressionLine(parts[0], true, parts[1] == "1", parts[2] == "1");
             if (!err.empty()) {
                 // TODO: make this non-fatal
                 std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
