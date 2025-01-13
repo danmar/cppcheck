@@ -178,8 +178,8 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca{};
 
-    /** @brief Is --debug-clang-ast given? */
-    bool debugClangAst{};
+    /** @brief Is --debug-clang-output given? */
+    bool debugClangOutput{};
 
     /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
