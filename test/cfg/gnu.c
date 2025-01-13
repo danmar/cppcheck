@@ -16,8 +16,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <netdb.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <sys/mman.h>
@@ -37,6 +35,10 @@
 #if !defined(__APPLE__)
 #include <byteswap.h>
 #endif
+#include <features.h>
+#include <sys/socket.h>
+#include <time.h>
+#include <stddef.h>
 
 #ifdef __gnu_linux__
 void unreachableCode_error(void) // #11197
