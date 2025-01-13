@@ -416,7 +416,6 @@ def test_unused_function_unmatched_builddir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)  # TODO: unusedFunction in line 5 not reported as unmatched - requires the matched and checked states to be transferred
 def test_unused_function_unmatched_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
