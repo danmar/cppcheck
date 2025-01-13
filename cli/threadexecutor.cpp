@@ -126,8 +126,8 @@ public:
             // TODO: call analyseClangTidy()?
         }
         for (const auto& suppr : fileChecker.settings().supprs.nomsg.getSuppressions()) {
-            // need to transfer unusedFunction suppressions because these are handled later on
-            if (suppr.isInline && suppr.errorId == "unusedFunction") {
+            // need to transfer all inline suppressions because these are used later on
+            if (suppr.isInline) {
                 mSuppressions.addSuppression(suppr); // TODO: check result
                 continue;
             }
