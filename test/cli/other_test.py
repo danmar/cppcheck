@@ -2222,89 +2222,66 @@ def __write_compdb(tmpdir, test_file):
     return compile_commands
 
 
-# TODO: -i appears to be ignored
-@pytest.mark.xfail(strict=True)
-def test_ignore_project_2(tmpdir):
+def __test_ignore_project_2(tmpdir, extra_args, append=False, inject_path=False):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
     with open(test_file, 'wt'):
         pass
 
     lines_exp = [
-        'cppcheck: error: could not find or open any of the paths given.',
-        'cppcheck: Maybe all paths were ignored?'
+        'cppcheck: error: no C or C++ source files found.',
+        'cppcheck: all paths were ignored'
     ]
-
     project_file = __write_compdb(tmpdir, test_file)
     args = [
-        '-itest.cpp',
+        '-q',
         '--project={}'.format(project_file)
     ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
+    if inject_path:
+        extra_args = [ extra_args[0].replace('$path', str(test_file)) ]
+    if append:
+        args += extra_args
+    else:
+        args = extra_args + args
+    print(args)
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout if stdout else stderr
     assert stdout.splitlines() == lines_exp
 
+
+@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
+def test_ignore_project_2_file(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-itest.cpp'])
+
+
+@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
+def test_ignore_project_2_file_append(tmpdir):
     # make sure it also matches when specified after project
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '--project={}'.format(project_file),
-        '-itest.cpp'
-    ]
+    __test_ignore_project_2(tmpdir, ['-itest.cpp'], append=True)
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc/test.cpp',
-        '--project={}'.format(project_file)
-    ]
+@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
+def test_ignore_project_2_file_relative(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc/test.cpp'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc\\test.cpp',
-        '--project={}'.format(project_file)
-    ]
+@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
+def test_ignore_project_2_file_relative_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc\\test.cpp'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc/',
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_path_relative(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc/'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc\\',
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_path_relative_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc\\'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-i{}'.format(test_file),
-        '--project={}'.format(project_file)
-    ]
-
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_2_abspath(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-i$path'], inject_path=True)
 
 
 def test_dumpfile_platform(tmpdir):
