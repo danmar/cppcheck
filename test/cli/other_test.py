@@ -2033,6 +2033,7 @@ def test_ignore(tmpdir):
     with open(test_file, 'wt'):
         pass
 
+    # TODO: this should say that all paths are ignored
     lines_exp = [
         'cppcheck: error: could not find or open any of the paths given.',
         'cppcheck: Maybe all paths were ignored?'
