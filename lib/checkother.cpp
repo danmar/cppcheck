@@ -871,8 +871,14 @@ static bool isVardeclInSwitch(const Token* tok)
         return false;
     if (!isNestedInSwitch(tok->scope()))
         return false;
-    const Token* end = Token::findsimplematch(tok, ";");
-    return end && end->previous()->variable() && end->previous()->variable()->nameToken() == end->previous();
+    if (const Token* end = Token::findsimplematch(tok, ";")) {
+        for (const Token* tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+            if (tok2->str() == "case")
+                return false;
+            if (tok2->variable() && tok2->variable()->nameToken() == tok2)
+                return true;
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
