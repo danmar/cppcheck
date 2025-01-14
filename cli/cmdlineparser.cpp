@@ -631,6 +631,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         else if (std::strcmp(argv[i], "--debug-ignore") == 0)
             mSettings.debugignore = true;
 
+        else if (std::strcmp(argv[i], "--debug-ipc") == 0)
+            mSettings.debugipc = true;
+
         // Show --debug output after the first simplifications
         else if (std::strcmp(argv[i], "--debug") == 0 ||
                  std::strcmp(argv[i], "--debug-normal") == 0)

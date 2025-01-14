@@ -80,7 +80,7 @@ namespace {
     public:
         enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2',REPORT_SUPPR_INLINE='3',REPORT_SUPPR='4',CHILD_END='5',REPORT_METRIC='6',REPORT_TIMER='7'};
 
-        explicit PipeWriter(int pipe) : mWpipe(pipe) {}
+        explicit PipeWriter(int pipe, bool debug) : mWpipe(pipe), mDebug(debug) {}
 
         void reportOut(const std::string &outmsg, Color c) override {
             writeToPipe(REPORT_OUT, static_cast<char>(c) + outmsg);
@@ -153,6 +153,9 @@ namespace {
 
         void writeToPipe(PipeSignal type, const std::string &data) const
         {
+            if (mDebug)
+                std::cout << "writeToPipe - " << type << " - " << data << std::endl;
+
             {
                 const auto t = static_cast<char>(type);
                 writeToPipeInternal(type, &t, 1);
@@ -169,6 +172,7 @@ namespace {
         }
 
         const int mWpipe;
+        const bool mDebug;
     };
 }
 
@@ -234,6 +238,9 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             data_start += bytes_read;
         } while (bytes_to_read != 0);
     }
+
+    if (mSettings.debugipc)
+        std::cout << "handleRead - " << type << " - " << buf << std::endl;
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
@@ -378,7 +385,7 @@ unsigned int ProcessExecutor::check()
                     mTimerResults->reset();
                 // TODO: how to "reset" mSuppressions?
 
-                PipeWriter pipewriter(pipes[1]);
+                PipeWriter pipewriter(pipes[1], mSettings.debugipc);
                 CppCheck fileChecker(mSettings, mSuppressions, pipewriter, mTimerResults, false, mExecuteCommand);
                 unsigned int resultOfCheck = 0;
 

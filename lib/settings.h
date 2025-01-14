@@ -202,6 +202,9 @@ public:
     /** @brief Is --debug-ignore given? */
     bool debugignore{};
 
+    /** @brief Is --debug-ipc given? */
+    bool debugipc{};
+
     /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
 

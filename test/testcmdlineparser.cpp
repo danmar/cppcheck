@@ -498,6 +498,7 @@ private:
         TEST_CASE(noSafety);
         TEST_CASE(noSafetyOverride);
         TEST_CASE(debugAnalyzerinfo);
+        TEST_CASE(debugIpc);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3477,6 +3478,13 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-analyzerinfo", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugainfo);
+    }
+
+    void debugIpc() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-ipc", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugipc);
     }
 
     void ignorepaths1() {

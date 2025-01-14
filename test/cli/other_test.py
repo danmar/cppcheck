@@ -4634,3 +4634,27 @@ def test_dui_include_absolute_missing(tmp_path):  # #14675
     assert stderr.splitlines() == [
         f"{test_file}:0:0: error: Can not open include file '/share/include/missing.h' that is explicitly included. [missingIncludeExplicit]"
     ]
+
+
+@pytest.mark.xfail(strict=True)  # TODO: should not report logChecker when not required
+@pytest.mark.skipif(sys.platform == 'win32', reason="requires ProcessExecutor")
+def test_ipc_log_checker(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write('void f() {}')
+
+    args = [
+        '-q',
+        '--debug-ipc',
+        '-j2',
+        '--executor=process',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'writeToPipe - 5 - 0',
+        'handleRead - 5 - 0'
+    ]
+    assert stderr.splitlines() == []

@@ -130,6 +130,7 @@ ErrorPath Check::getErrorPath(const Token* errtok, const ValueFlow::Value* value
 
 void Check::logChecker(const char id[])
 {
+    // TODO: only issue when we would actually use it later on
     reportError(nullptr, Severity::internal, "logChecker", id);
 }
 
