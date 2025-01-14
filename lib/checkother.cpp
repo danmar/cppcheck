@@ -879,6 +879,7 @@ static bool isVardeclInSwitch(const Token* tok)
                 return true;
         }
     }
+    return false;
 }
 
 //---------------------------------------------------------------------------
