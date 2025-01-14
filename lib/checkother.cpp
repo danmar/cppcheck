@@ -873,10 +873,16 @@ static bool isVardeclInSwitch(const Token* tok)
         return false;
     if (const Token* end = Token::findsimplematch(tok, ";")) {
         for (const Token* tok2 = tok; tok2 != end; tok2 = tok2->next()) {
-            if (tok2->str() == "case")
+            if (tok2->isKeyword() && tok2->str() == "case")
                 return false;
-            if (tok2->variable() && tok2->variable()->nameToken() == tok2)
-                return true;
+            if (tok2->variable() && tok2->variable()->nameToken() == tok2) {
+                end = tok2->scope()->bodyEnd;
+                for (const Token* tok3 = tok; tok3 != end; tok3 = tok3->next()) {
+                    if (tok3->isKeyword() && tok3->str() == "case")
+                        return true;
+                }
+                return false;
+            }
         }
     }
     return false;
