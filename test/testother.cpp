@@ -5714,6 +5714,20 @@ private:
               "    switch (i) {\n"
               "    case 0:\n"
               "        return 0;\n"
+              "        int a[1];\n"
+              "    case 1:\n"
+              "    case 2:\n"
+              "        a[0] = 5;\n"
+              "        return a[0] + i;\n"
+              "    }\n"
+              "    return 3;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f(int i) {\n"
+              "    switch (i) {\n"
+              "    case 0:\n"
+              "        return 0;\n"
               "        int j;\n"
               "        dostuff();\n"
               "    case 1:\n"
