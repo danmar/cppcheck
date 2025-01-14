@@ -877,11 +877,11 @@ static bool isVardeclInSwitch(const Token* tok)
                 return false;
             if (tok2->variable() && tok2->variable()->nameToken() == tok2) {
                 end = tok2->scope()->bodyEnd;
-                for (const Token* tok3 = tok; tok3 != end; tok3 = tok3->next()) {
+                for (const Token* tok3 = tok2; tok3 != end; tok3 = tok3->next()) {
                     if (tok3->isKeyword())
                         return tok3->str() == "case";
                 }
-                break;
+                return false;
             }
         }
     }
