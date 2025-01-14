@@ -39,13 +39,14 @@ jobs:
           sudo apt-get install clang-14
           sudo apt-get install libboost-container-dev
           sudo apt-get install valgrind
-          sudo apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
+          sudo apt-get install -y libgl-dev  # fixes missing dependency for Qt in CMake
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          install-deps: false
           cache: true
 
       # TODO: cache this - perform same build as for the other self check
