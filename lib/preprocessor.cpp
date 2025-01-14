@@ -135,6 +135,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<SuppressionList::Suppression> suppressions = SuppressionList::parseMultiSuppressComment(comment, &errmsg);
 
         for (SuppressionList::Suppression &s : suppressions) {
+            s.isInline = true;
             s.type = errorType;
             s.lineNumber = tok->location.line;
         }
@@ -152,6 +153,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!s.parseComment(comment, &errmsg))
             return false;
 
+        s.isInline = true;
         s.type = errorType;
         s.lineNumber = tok->location.line;
 
@@ -232,7 +234,6 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         // Add the suppressions.
         for (SuppressionList::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
-            suppr.isInline = true; // TODO: set earlier
 
             if (SuppressionList::Type::blockBegin == suppr.type)
             {
