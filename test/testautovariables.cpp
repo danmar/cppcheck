@@ -3445,6 +3445,14 @@ private:
               "    *p = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2] -> [test.cpp:7]: (error) Static variable 'p' will use pointer to local variable 'a'.\n", errout_str());
+
+        // #10902
+        check("void f() {\n"
+              "    static int* x;\n"
+              "    int y;\n"
+              "    x = &y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Static variable 'x' will use pointer to local variable 'y'.\n", errout_str());
     }
 
     void danglingLifetimeFunction() {
