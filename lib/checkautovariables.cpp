@@ -648,6 +648,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     if (var && !var->isLocal() && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
                         !isVariableChanged(nextTok,
                                            tok->scope()->bodyEnd,
+                                           var->valueType() ? var->valueType()->pointer : 0,
                                            var->declarationId(),
                                            var->isGlobal(),
                                            *mSettings)) {
