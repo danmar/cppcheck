@@ -530,6 +530,9 @@ static bool iscast(const Token *tok, bool cpp, const Library &library)
         if (cpp && !type && tok2->str() == "new")
             return false;
 
+        if (!library.isNotLibraryFunction(tok2))
+            return false;
+
         while (tok2->link() && Token::Match(tok2, "(|[|<"))
             tok2 = tok2->link()->next();
 
