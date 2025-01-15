@@ -990,6 +990,21 @@ private:
               "  int *ptr;\n"
               "};");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct R {\n" // #11393
+              "    void pop() { p = nullptr; };\n"
+              "    int* p;\n"
+              "};\n"
+              "struct T {\n"
+              "    void f();\n"
+              "    R* r;\n"
+              "};\n"
+              "void T::f() {\n"
+              "    int i = 0;\n"
+              "    r->p = &i;\n"
+              "    r->pop();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void returnLocalVariable1() {
