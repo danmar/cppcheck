@@ -496,6 +496,7 @@ namespace ValueFlow
                     }
                     const double floatValue1 = value1.isFloatValue() ? value1.floatValue : static_cast<double>(value1.intvalue);
                     const double floatValue2 = value2.isFloatValue() ? value2.floatValue : static_cast<double>(value2.intvalue);
+                    const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
                     const auto intValue1 = [&]() -> MathLib::bigint {
                         return value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
                     };
@@ -550,17 +551,27 @@ namespace ValueFlow
                         setTokenValue(parent, std::move(result), settings);
                     } else if (Token::Match(parent, "%op%")) {
                         if (Token::Match(parent, "%comp%")) {
-                            if (!result.isFloatValue() && !value1.isIntValue() && !value2.isIntValue())
+                            if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
                                 continue;
                         } else {
                             if (value1.isTokValue() || value2.isTokValue())
                                 break;
                         }
                         bool error = false;
-                        if (result.isFloatValue()) {
-                            result.floatValue = calculate(parent->str(), floatValue1, floatValue2, &error);
+                        if (isFloat) {
+                            auto val = calculate(parent->str(), floatValue1, floatValue2, &error);
+                            if (result.isFloatValue()) {
+                                result.floatValue = val;
+                            } else {
+                                result.intvalue = static_cast<MathLib::bigint>(val);
+                            }
                         } else {
-                            result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
+                            auto val = calculate(parent->str(), intValue1(), intValue2(), &error);
+                            if (result.isFloatValue()) {
+                                result.floatValue = static_cast<double>(val);
+                            } else {
+                                result.intvalue = val;
+                            }
                         }
                         if (error)
                             continue;

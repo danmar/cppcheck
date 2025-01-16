@@ -301,6 +301,8 @@ private:
 
         TEST_CASE(knownPointerToBool);
         TEST_CASE(iterateByValue);
+
+        TEST_CASE(alwaysTrueFloating);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -12884,6 +12886,103 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Range variable 's' should be declared as const reference.\n",
                       errout_str());
+    }
+
+    void alwaysTrueFloating()
+    {
+        check("void foo() {\n" // #11200
+              "    float f = 1.0;\n"
+              "    if (f > 1.0) {}\n"
+              "    if (f > -1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1.0' is always false.\n"
+            "[test.cpp:2] -> [test.cpp:4]: (style) The comparison 'f > -1.0' is always false.\n",
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1.0' is always false.\n",
+            errout_str());
+
+        check("void foo() {\n" // #13506
+              "    float f = 1.0;\n"
+              "    if (f > +1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > +1.0' is always false.\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n" // #11200
+              "    float pf = +1.0;\n"
+              "    if (pf > 1.0) {}\n"
+              "    if (pf > -1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'pf > 1.0' is always false.\n"
+            "[test.cpp:2] -> [test.cpp:4]: (style) The comparison 'pf > -1.0' is always false.\n",
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'pf > 1.0' is always false.\n",
+            errout_str());
+
+        check("void foo() {\n" // #13506
+              "    float pf = +1.0;\n"
+              "    if (pf > +1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'pf > +1.0' is always false.\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n" // #11200
+              "    float nf = -1.0;\n"
+              "    if (nf > 1.0) {}\n"
+              "    if (nf > -1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'nf > 1.0' is always false.\n"
+            "[test.cpp:2] -> [test.cpp:4]: (style) The comparison 'nf > -1.0' is always false.\n",
+            "[test.cpp:2] -> [test.cpp:4]: (style) The comparison 'nf > -1.0' is always false.\n",
+            errout_str());
+
+        check("void foo() {\n" // #13506
+              "    float nf = -1.0;\n"
+              "    if (nf > +1.0) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'nf > +1.0' is always false.\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    float f = 1.0f;\n"
+              "    if (f > 1.00f) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1.00f' is always false.\n",
+            errout_str());
+
+        check("void foo() {\n" // #13508
+              "    float f = 1.0f;\n"
+              "    if (f > 1) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1' is always false.\n",
+            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    float f = 1.0;\n"
+              "    if (f > 1.00) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1.00' is always false.\n",
+            errout_str());
+
+        check("void foo() {\n" // #13508
+              "    float f = 1.0;\n"
+              "    if (f > 1) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1' is always false.\n",
+            "",
+            errout_str());
     }
 };
 
