@@ -3090,6 +3090,14 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'a' that will be invalid when returning.\n",
             errout_str());
+
+        check("std::string_view f() {\n" // #10995
+              "    char a[10]{};\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'a' that will be invalid when returning.\n",
+            errout_str());
     }
 
     void danglingLifetimeUniquePtr()
