@@ -203,7 +203,7 @@ void CheckStl::outOfBounds()
     }
 }
 
-static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = emptyString)
+static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = "")
 {
     if (indexValue.isIteratorStartValue())
         return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
