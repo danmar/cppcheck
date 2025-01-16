@@ -1792,11 +1792,12 @@ static bool isDifferentType(const Token* src, const Token* dst)
     } else {
         std::pair<const Token*, const Token*> decl = Token::typeDecl(src);
         std::pair<const Token*, const Token*> parentdecl = Token::typeDecl(dst);
-        if (isNotEqual(decl, parentdecl))
+        const bool isCpp = (src && src->isCpp()) || (dst && dst->isCpp());
+        if (isNotEqual(decl, parentdecl) && !(isCpp && (Token::simpleMatch(decl.first, "auto") || Token::simpleMatch(parentdecl.first, "auto"))))
             return true;
-        if (isNotEqual(decl, dst->valueType(), dst->isCpp()))
+        if (isNotEqual(decl, dst->valueType(), isCpp))
             return true;
-        if (isNotEqual(parentdecl, src->valueType(), src->isCpp()))
+        if (isNotEqual(parentdecl, src->valueType(), isCpp))
             return true;
     }
     return false;
