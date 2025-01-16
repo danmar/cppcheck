@@ -650,7 +650,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     // Assert that the tokens are '} while ('
                     if (!Token::simpleMatch(tok, "} while (")) {
                         if (printDebug)
-                            reportError(tok,Severity::debug,emptyString,"assertion failed '} while ('");
+                            reportError(tok,Severity::debug,"","assertion failed '} while ('");
                         break;
                     }
 
