@@ -202,7 +202,7 @@ private:
         const auto reportType = ReportType::misraC;
         const auto mapping = createGuidelineMapping(reportType);
         const std::string format = "{severity} {id}";
-        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "unusedVariable", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "", "unusedVariable", Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
         msg.classification = getClassification(msg.guideline, reportType);
         ASSERT_EQUALS("Advisory", msg.classification);
@@ -215,7 +215,7 @@ private:
         const auto reportType = ReportType::certC;
         const auto mapping = createGuidelineMapping(reportType);
         const std::string format = "{severity} {id}";
-        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "resourceLeak", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "", "resourceLeak", Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
         msg.classification = getClassification(msg.guideline, reportType);
         ASSERT_EQUALS("L3", msg.classification);

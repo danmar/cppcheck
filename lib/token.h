@@ -772,12 +772,12 @@ public:
     }
 
     bool isCChar() const {
-        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', emptyString)) ||
-                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && (replaceEscapeSequences(getCharLiteral(mStr)).size() == 1)));
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && (replaceEscapeSequences(getCharLiteral(mStr)).size() == 1)));
     }
 
     bool isCMultiChar() const {
-        return (mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && (replaceEscapeSequences(getCharLiteral(mStr)).size() > 1);
+        return (mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && (replaceEscapeSequences(getCharLiteral(mStr)).size() > 1);
     }
 
     /**
@@ -933,9 +933,9 @@ public:
      * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString, bool prepend = false);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = "", const std::string& macroNameStr = "", bool prepend = false);
 
-    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = "", const std::string& macroNameStr = "")
     {
         return insertToken(tokenStr, originalNameStr, macroNameStr, true);
     }
