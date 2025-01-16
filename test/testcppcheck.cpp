@@ -61,6 +61,8 @@ private:
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
         TEST_CASE(getClangFlagsIncludeFile);
+        TEST_CASE(invalidSyntaxUnknownMacro1); // #13378
+        TEST_CASE(invalidSyntaxUnknownMacro2); // #13378
     }
 
     void getErrorMessages() const {
@@ -249,6 +251,46 @@ private:
         CppCheck cppcheck(errorLogger, false, {});
         cppcheck.settings().userIncludes.emplace_back("1.h");
         ASSERT_EQUALS("-x c --include 1.h ", cppcheck.getClangFlags(Standards::Language::C));
+    }
+
+    void invalidSyntaxUnknownMacro1() { // #13378
+        ScopedFile file("test.c",
+                        "void foo(void) {\n"
+                        "#ifdef START\n"
+                        "    START();\n"
+                        "#endif\n"
+                        "}\n");
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& errmsg) {
+            return errmsg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        ASSERT_EQUALS(1, errorLogger.errmsgs.size());
+        ASSERT_EQUALS("literal used as function. Macro 'START' expands to '1'. Use -DSTART=... to specify a value, or -USTART to undefine it.",
+                      errorLogger.errmsgs.cbegin()->shortMessage());
+        ASSERT_EQUALS("unknownMacro", errorLogger.errmsgs.cbegin()->id);
+    }
+
+    void invalidSyntaxUnknownMacro2() { // #13378
+        ScopedFile file("test.c",
+                        "void foo(void) {\n"
+                        "#ifdef START\n"
+                        "    START();\n"
+                        "#endif\n"
+                        "}\n");
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(errorLogger, false, {});
+        cppcheck.settings().userDefines = "START=1"; // cppcheck -DSTART ...
+
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& errmsg) {
+            return errmsg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        ASSERT_EQUALS(1, errorLogger.errmsgs.size());
+        ASSERT_EQUALS("syntax error", errorLogger.errmsgs.cbegin()->shortMessage());
+        ASSERT_EQUALS("syntaxError", errorLogger.errmsgs.cbegin()->id);
     }
 
     // TODO: test suppressions
