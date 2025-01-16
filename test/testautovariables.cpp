@@ -2864,6 +2864,13 @@ private:
               "    std::cerr << str;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("auto f() {\n" // #11420
+              "    std::vector<int> x;\n"
+              "    std::vector<int>::iterator it = x.begin();\n"
+              "    return it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout_str());
     }
 
     void danglingLifetimeContainerView()
@@ -3078,6 +3085,14 @@ private:
 
         check("std::span<const int> f() {\n" // #12966
               "    int a[10]{};\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning pointer to local variable 'a' that will be invalid when returning.\n",
+            errout_str());
+
+        check("std::string_view f() {\n" // #10995
+              "    char a[10]{};\n"
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS(
