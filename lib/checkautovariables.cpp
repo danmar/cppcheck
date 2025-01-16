@@ -645,14 +645,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
                     if (!nextTok)
                         nextTok = tok->next();
-                    if (var && !var->isLocal() && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
+                    if (var && (!var->isLocal() || var->isStatic()) && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
                         !isVariableChanged(nextTok,
                                            tok->scope()->bodyEnd,
                                            var->valueType() ? var->valueType()->pointer : 0,
                                            var->declarationId(),
                                            var->isGlobal(),
                                            *mSettings)) {
-                        errorDanglngLifetime(tok2, &val);
+                        errorDanglngLifetime(tok2, &val, var->isLocal());
                         break;
                     }
                 }
@@ -722,12 +722,13 @@ void CheckAutoVariables::errorDanglingTemporaryLifetime(const Token* tok, const 
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val)
+void CheckAutoVariables::errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val, bool isStatic)
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     ErrorPath errorPath = val ? val->errorPath : ErrorPath();
     std::string tokName = tok ? tok->expressionString() : "x";
-    std::string msg = "Non-local variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
+    std::string msg = isStatic ? "Static" : "Non-local";
+    msg += " variable '" + tokName + "' will use " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "danglingLifetime", msg + ".", CWE562, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }

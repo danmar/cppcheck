@@ -75,7 +75,7 @@ private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
-    void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
+    void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val, bool isStatic = false);
     void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val, const Token* tempTok);
     void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
