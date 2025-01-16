@@ -2647,6 +2647,8 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 if (it == scope->varlist.cend())
                     return;
                 const Variable& var = *it;
+                if (var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike)
+                    return;
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
                 } else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
