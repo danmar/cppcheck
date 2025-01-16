@@ -424,6 +424,7 @@ private:
         TEST_CASE(symboldatabase106);
         TEST_CASE(symboldatabase107);
         TEST_CASE(symboldatabase108);
+        TEST_CASE(symboldatabase109); // #13553
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5708,6 +5709,18 @@ private:
             ASSERT(it->isDefault());
             ASSERT_EQUALS(it->type, Function::Type::eDestructor);
         }
+    }
+
+    void symboldatabase109() { // #13553
+        GET_SYMBOL_DB("extern \"C\" {\n"
+                      "class Base {\n"
+                      "public:\n"
+                      "    virtual void show(void) = 0;\n"
+                      "};\n"
+                      "}\n");
+        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "show") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
