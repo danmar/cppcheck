@@ -56,6 +56,7 @@ namespace {
 }
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
+const std::string Token::mEmptyString;
 
 Token::Token(TokensFrontBack &tokensFrontBack)
     : mTokensFrontBack(tokensFrontBack)

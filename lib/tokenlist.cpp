@@ -77,7 +77,8 @@ TokenList::~TokenList()
 const std::string& TokenList::getSourceFilePath() const
 {
     if (getFiles().empty()) {
-        return emptyString;
+        static const std::string s_empty_string;
+        return s_empty_string;
     }
     return getFiles()[0];
 }

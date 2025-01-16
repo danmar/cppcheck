@@ -125,7 +125,8 @@ public:
     std::string name() const;
 
     const std::string& type() const {
-        return classDef ? classDef->str() : emptyString;
+        static const std::string s_empty_string;
+        return classDef ? classDef->str() : s_empty_string;
     }
 
     bool isClassType() const;
@@ -294,7 +295,8 @@ public:
         if (mNameToken)
             return mNameToken->str();
 
-        return emptyString;
+        static const std::string s_empty_string;
+        return s_empty_string;
     }
 
     /**
