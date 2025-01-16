@@ -805,12 +805,12 @@ public:
     }
 
     bool isCChar() const {
-        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', emptyString)) ||
-                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && (replaceEscapeSequences(getCharLiteral(mStr)).size() == 1)));
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
+                ((mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && (replaceEscapeSequences(getCharLiteral(mStr)).size() == 1)));
     }
 
     bool isCMultiChar() const {
-        return (mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && (replaceEscapeSequences(getCharLiteral(mStr)).size() > 1);
+        return (mTokType == eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && (replaceEscapeSequences(getCharLiteral(mStr)).size() > 1);
     }
 
     /**
