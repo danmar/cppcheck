@@ -2617,7 +2617,7 @@ namespace {
                 }
 
                 if (!added)
-                    scopeInfo = scopeInfo->addChild(ScopeInfo3::Other, emptyString, tok, tok->link());
+                    scopeInfo = scopeInfo->addChild(ScopeInfo3::Other, "", tok, tok->link());
             }
             return;
         }
@@ -3021,7 +3021,7 @@ bool Tokenizer::simplifyUsing()
             structEnd = structEnd->link();
 
             // add ';' after end of struct
-            structEnd->insertToken(";", emptyString);
+            structEnd->insertToken(";", "");
 
             // add name for anonymous struct
             if (!hasName) {
@@ -3031,8 +3031,8 @@ bool Tokenizer::simplifyUsing()
                 else
                     newName = "Unnamed" + std::to_string(mUnnamedCount++);
                 TokenList::copyTokens(structEnd->next(), tok, start);
-                structEnd->tokAt(5)->insertToken(newName, emptyString);
-                start->insertToken(newName, emptyString);
+                structEnd->tokAt(5)->insertToken(newName, "");
+                start->insertToken(newName, "");
             } else
                 TokenList::copyTokens(structEnd->next(), tok, start->next());
 
