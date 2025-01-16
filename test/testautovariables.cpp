@@ -148,7 +148,7 @@ private:
         TEST_CASE(danglingLifetime);
         TEST_CASE(danglingLifetimeFunction);
         TEST_CASE(danglingLifetimeUserConstructor);
-        TEST_CASE(danglingLifetimeAggegrateConstructor);
+        TEST_CASE(danglingLifetimeAggregateConstructor);
         TEST_CASE(danglingLifetimeInitList);
         TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(danglingTemporaryLifetime);
@@ -3796,7 +3796,7 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void danglingLifetimeAggegrateConstructor() {
+    void danglingLifetimeAggregateConstructor() {
         check("struct A {\n"
               "    const int& x;\n"
               "    int y;\n"
@@ -3891,6 +3891,17 @@ private:
               "a f() {\n"
               "    std::array<char, 1024> m {};\n"
               "    return { m.data() };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S { std::string s; };\n" // #13167
+              "std::vector<S> f() {\n"
+              "    std::vector<S> v;\n"
+              "    {\n"
+              "        std::string a{ \"abc\" };\n"
+              "        v.push_back({ a.c_str() });\n"
+              "    }\n"
+              "    return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
