@@ -3904,6 +3904,19 @@ private:
               "    return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { std::string_view sv; };\n"
+              "std::vector<S> f() {\n"
+              "    std::vector<S> v;\n"
+              "    {\n"
+              "        std::string a{ \"abc\" };\n"
+              "        v.push_back({ a.c_str() });\n"
+              "    }\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6] -> [test.cpp:6] -> [test.cpp:5] -> [test.cpp:8]: (error) Returning object that points to local variable 'a' that will be invalid when returning.\n",
+            errout_str());
     }
 
     void danglingLifetimeInitList() {
