@@ -606,6 +606,8 @@ private:
         TEST_CASE(incomplete_type); // #9255 (infinite recursion)
         TEST_CASE(exprIds);
         TEST_CASE(testValuetypeOriginalName);
+
+        TEST_CASE(dumpFriend); // Check if isFriend added to dump file
     }
 
     void array() {
@@ -11059,6 +11061,19 @@ private:
             ASSERT(tok->valueType()->pointer == 1);
             ASSERT(tok->valueType()->constness == 0);
         }
+    }
+
+    void dumpFriend() {
+        GET_SYMBOL_DB("class Foo {\n"
+                      "    Foo();\n"
+                      "    int x{};\n"
+                      "    friend bool operator==(const Foo&lhs, const Foo&rhs) {\n"
+                      "        return lhs.x == rhs.x;\n"
+                      "    }\n"
+                      "};");
+        std::ostringstream ostr;
+        db->printXml(ostr);
+        ASSERT(ostr.str().find(" isFriend=\"true\"") != std::string::npos);
     }
 };
 
