@@ -223,6 +223,7 @@ private:
         TEST_CASE(simplifyTypedef155);
         TEST_CASE(simplifyTypedef156);
         TEST_CASE(simplifyTypedef157);
+        TEST_CASE(simplifyTypedef158);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3771,6 +3772,16 @@ private:
                             "namespace NS1 {}\n";
         const char exp[] = "enum E : int { zero = 0 , MyType = 1 } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyTypedef158() {
+        const char code[] = "void f() {\n"
+                            "    typedef const char* const triple[3];\n"
+                            "    static const triple data[] = { {\"a\" , \"b\" , \"c\" } };\n"
+                            "}\n";
+        const char exp[] = "void f ( ) { static const char * const data [ ] [ 3 ] = { { \"a\" , \"b\" , \"c\" } } ; }";
+        const char cur[] = "void f ( ) { static const char * const const data [ ] [ 3 ] = { { \"a\" , \"b\" , \"c\" } } ; }";
+        TODO_ASSERT_EQUALS(exp, cur, tok(code));
     }
 
     void simplifyTypedefFunction1() {
