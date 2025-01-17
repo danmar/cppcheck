@@ -460,6 +460,8 @@ private:
         TEST_CASE(testDirectiveIncludeLocations);
         TEST_CASE(testDirectiveIncludeComments);
         TEST_CASE(testDirectiveRelativePath);
+
+        TEST_CASE(dumpFriend); // Check if isFriend added to dump file
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8333,6 +8335,25 @@ private:
         s.basePaths.emplace_back("/some/path");
         directiveDump(filedata, "/some/path/test.c", s, ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void dumpFriend() {
+        Settings settings;
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT(tokenizer.tokenize(
+            "class Foo {\n"
+            "    Foo();\n"
+            "    int x{};\n"
+            "    friend bool operator==(const Foo&lhs, const Foo&rhs) {\n"
+            "        return lhs.x == rhs.x;\n"
+            "    }\n"
+            "};",
+            true)
+        );
+        std::ostringstream ostr;
+        tokenizer.dump(ostr);
+        const std::string dump = ostr.str();
+        ASSERT(dump.find(" isFriend=\"true\"") != std::string::npos);
     }
 };
 
