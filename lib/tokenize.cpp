@@ -2016,7 +2016,7 @@ void Tokenizer::simplifyTypedefCpp()
                     const bool isPointerTypeCall = !inOperator && Token::Match(tok2, "%name% ( )") && !pointers.empty();
 
                     // start substituting at the typedef name by replacing it with the type
-                    const Token * const location = tok2;
+                    const Token* location = tok2;
                     for (Token* tok3 = typeStart; tok3 && (tok3->str() != ";"); tok3 = tok3->next())
                         tok3->isSimplifiedTypedef(true);
                     if (isPointerTypeCall) {
@@ -2081,6 +2081,7 @@ void Tokenizer::simplifyTypedefCpp()
                         if (constTok && !functionPtr) {
                             tok2 = simplifyTypedefInsertToken(tok2, "const", location);
                             constTok->deleteThis();
+                            location = constTok;
                         }
                     }
 
