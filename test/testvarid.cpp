@@ -2917,11 +2917,11 @@ private:
     }
 
     void varid_cpp11initialization() {
-        ASSERT_EQUALS("1: int i@1 { 1 } ;\n"
+        ASSERT_EQUALS("1: int i@1 ; i@1 = 1 ;\n"
                       "2: std :: vector < int > vec@2 { 1 , 2 , 3 } ;\n"
                       "3: namespace n { int z@3 ; } ;\n"
                       "4: int & j@4 { i@1 } ;\n"
-                      "5: int k@5 { 1 } ; int l@6 { 2 } ;\n",
+                      "5: int k@5 ; k@5 = 1 ; int l@6 ; l@6 = 2 ;\n",
                       tokenize("int i{1};\n"
                                "std::vector<int> vec{1, 2, 3};\n"
                                "namespace n { int z; };\n"
@@ -2940,7 +2940,7 @@ private:
         ASSERT_EQUALS("1: class A : public B , public C :: D , public E < F > :: G < H > {\n"
                       "2: int i@1 ;\n"
                       "3: A ( int i@2 ) : B { i@2 } , C :: D { i@2 } , E < F > :: G < H > { i@2 } , i@1 { i@2 } {\n"
-                      "4: int j@3 { i@2 } ;\n"
+                      "4: int j@3 ; j@3 = i@2 ;\n"
                       "5: }\n"
                       "6: } ;\n",
                       tokenize("class A: public B, public C::D, public E<F>::G<H> {\n"

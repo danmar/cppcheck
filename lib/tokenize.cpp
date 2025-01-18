@@ -7686,7 +7686,7 @@ void Tokenizer::simplifyInitVar()
         if (tok->str() == "return")
             continue;
 
-        if (Token::Match(tok, "class|struct|union| %type% *| %name% ( &| %any% ) ;")) {
+        if (Token::Match(tok, "class|struct|union| %type% *| %name% (|{ &| %any% )|} ;")) {
             tok = initVar(tok);
         } else if (Token::Match(tok, "%type% *| %name% ( %type% (")) {
             const Token* tok2 = tok->tokAt(2);
@@ -7730,12 +7730,13 @@ Token * Tokenizer::initVar(Token * tok)
     // check initializer..
     if (tok->tokAt(2)->isStandardType() || tok->strAt(2) == "void")
         return tok;
-    if (!tok->tokAt(2)->isNumber() && !Token::Match(tok->tokAt(2), "%type% (") && tok->strAt(2) != "&" && tok->tokAt(2)->varId() == 0)
+    if (!tok->tokAt(2)->isNumber() && !Token::Match(tok->tokAt(2), "%type% (|{") && tok->strAt(2) != "&" && tok->tokAt(2)->varId() == 0)
         return tok;
 
     // insert '; var ='
     tok->insertToken(";");
     tok->next()->insertToken(tok->str());
+    tok->next()->isSplittedVarDeclEq(true);
     tok->tokAt(2)->varId(tok->varId());
     tok = tok->tokAt(2);
     tok->insertToken("=");
