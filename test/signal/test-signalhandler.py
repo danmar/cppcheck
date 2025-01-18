@@ -36,10 +36,10 @@ def test_assert():
     if sys.platform == "darwin":
         assert stderr.startswith("Assertion failed: (false), function my_assert, file test-signalhandler.cpp, line "), stderr
     else:
-        assert stderr.endswith("test-signalhandler.cpp:34: void my_assert(): Assertion `false' failed.\n"), stderr
+        assert stderr.endswith("test-signalhandler.cpp:41: void my_assert(): Assertion `false' failed.\n"), stderr
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
-    # no stacktrace of MacOs
+    # no stacktrace of macOS
     if sys.platform != "darwin":
         assert lines[1] == 'Callstack:'
         assert lines[2].endswith('my_abort()'), lines[2]  # TODO: wrong function
@@ -50,7 +50,7 @@ def test_abort():
     _, stdout, _ = __call_process('abort')
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
-    # no stacktrace on MaCos
+    # no stacktrace on macOS
     if sys.platform != "darwin":
         assert lines[1] == 'Callstack:'
         assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
@@ -65,21 +65,20 @@ def test_segv():
         assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (at 0x0).'
     else:
         assert lines[0] == 'Internal error: cppcheck received signal SIGSEGV - SEGV_MAPERR (reading at 0x0).'
-    # no stacktrace on MacOS
+    # no stacktrace on macOS
     if sys.platform != "darwin":
         assert lines[1] == 'Callstack:'
         assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
         assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
 
 
-# TODO: make this work
-@pytest.mark.skip
+@pytest.mark.skipif(sys.platform == 'darwin', reason='Cannot raise FPE on macOS')
 def test_fpe():
     _, stdout, stderr = __call_process('fpe')
     assert stderr == ''
     lines = stdout.splitlines()
-    assert lines[0].startswith('Internal error: cppcheck received signal SIGFPE - FPE_FLTDIV (at 0x7f'), lines[0]
+    assert lines[0].startswith('Internal error: cppcheck received signal SIGFPE - FPE_FLTINV (at 0x'), lines[0]
     assert lines[0].endswith(').'), lines[0]
     assert lines[1] == 'Callstack:'
-    assert lines[2].endswith('my_fpe()'), lines[2]
+    assert lines[3].endswith('my_fpe()'), lines[2]
     assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
