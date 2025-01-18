@@ -264,8 +264,8 @@ private:
         CppCheck cppcheck(errorLogger, false, {});
 
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
-        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& errmsg) {
-            return errmsg.id == "logChecker";
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
         }), errorLogger.errmsgs.end());
         ASSERT_EQUALS(1, errorLogger.errmsgs.size());
         ASSERT_EQUALS("literal used as function. Macro 'START' expands to '1'. Use -DSTART=... to specify a value, or -USTART to undefine it.",
@@ -285,8 +285,8 @@ private:
         cppcheck.settings().userDefines = "START=1"; // cppcheck -DSTART ...
 
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
-        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& errmsg) {
-            return errmsg.id == "logChecker";
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
         }), errorLogger.errmsgs.end());
         ASSERT_EQUALS(1, errorLogger.errmsgs.size());
         ASSERT_EQUALS("syntax error", errorLogger.errmsgs.cbegin()->shortMessage());
