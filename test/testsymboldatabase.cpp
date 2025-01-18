@@ -599,6 +599,7 @@ private:
         TEST_CASE(auto20);
         TEST_CASE(auto21);
         TEST_CASE(auto22);
+        TEST_CASE(auto23);
 
         TEST_CASE(unionWithConstructor);
 
@@ -10675,6 +10676,24 @@ private:
         ASSERT_EQUALS(s->valueType()->type, ValueType::CONTAINER);
         ASSERT(s->valueType()->reference == Reference::LValue);
         ASSERT(s->variable() && s->variable()->isReference());
+    }
+
+    void auto23() {
+        GET_SYMBOL_DB("struct S { int* p; };\n" // #12168
+                      "void f(const S& s) {\n"
+                      "    auto q = s.p;\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout_str());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
+        ASSERT_EQUALS(a->valueType()->pointer, 1);
+        ASSERT_EQUALS(a->valueType()->constness, 0);
+        const Token* dot = Token::findsimplematch(a, ".");
+        ASSERT(dot && dot->valueType());
+        ASSERT_EQUALS(dot->valueType()->type, ValueType::INT);
+        ASSERT_EQUALS(dot->valueType()->pointer, 1);
+        ASSERT_EQUALS(dot->valueType()->constness, 2);
     }
 
     void unionWithConstructor() {

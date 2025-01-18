@@ -6568,10 +6568,18 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, const SourceL
     if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
         if (tok->str() == "." && tok->astOperand1()) {
             const ValueType * const vt = tok->astOperand1()->valueType();
-            if (vt && (vt->constness & 1) != 0)
-                valuetype.constness |= 1;
-            if (vt && (vt->volatileness & 1) != 0)
-                valuetype.volatileness |= 1;
+            if (vt && (vt->constness & 1) != 0) {
+                if (var.isArray()) // constness propagates to arrays, but not to regular pointers
+                    valuetype.constness |= 1;
+                else
+                    valuetype.constness |= (1 << valuetype.pointer);
+            }
+            if (vt && (vt->volatileness & 1) != 0) {
+                if (var.isArray())
+                    valuetype.volatileness |= 1;
+                else
+                    valuetype.volatileness |= (1 << valuetype.pointer);
+            }
         }
         setValueType(tok, valuetype);
     }
