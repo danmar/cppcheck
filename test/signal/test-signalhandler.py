@@ -32,7 +32,7 @@ def __call_process(arg):
 
 
 def test_assert():
-    _, stdout, stderr = __call_process('assert')
+    exitcode, stdout, stderr = __call_process('assert')
     if sys.platform == "darwin":
         assert stderr.startswith("Assertion failed: (false), function my_assert, file test-signalhandler.cpp, line "), stderr
     else:
@@ -44,10 +44,11 @@ def test_assert():
         assert lines[1] == 'Callstack:'
         assert lines[2].endswith('my_abort()'), lines[2]  # TODO: wrong function
         assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    assert exitcode == -6
 
 
 def test_abort():
-    _, stdout, _ = __call_process('abort')
+    exitcode, stdout, _ = __call_process('abort')
     lines = stdout.splitlines()
     assert lines[0] == 'Internal error: cppcheck received signal SIGABRT - abort or assertion'
     # no stacktrace on macOS
@@ -55,10 +56,11 @@ def test_abort():
         assert lines[1] == 'Callstack:'
         assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
         assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    assert exitcode == -6
 
 
 def test_segv():
-    _, stdout, stderr = __call_process('segv')
+    exitcode, stdout, stderr = __call_process('segv')
     assert stderr == ''
     lines = stdout.splitlines()
     if sys.platform == "darwin":
@@ -70,11 +72,12 @@ def test_segv():
         assert lines[1] == 'Callstack:'
         assert lines[2].endswith('my_segv()'), lines[2]  # TODO: wrong function
         assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    assert exitcode == -11
 
 
 @pytest.mark.skipif(sys.platform == 'darwin', reason='Cannot raise FPE on macOS')
 def test_fpe():
-    _, stdout, stderr = __call_process('fpe')
+    exitcode, stdout, stderr = __call_process('fpe')
     assert stderr == ''
     lines = stdout.splitlines()
     assert lines[0].startswith('Internal error: cppcheck received signal SIGFPE - FPE_FLTINV (at 0x'), lines[0]
@@ -82,3 +85,4 @@ def test_fpe():
     assert lines[1] == 'Callstack:'
     assert lines[3].endswith('my_fpe()'), lines[2]
     assert lines[len(lines)-1] == 'Please report this to the cppcheck developers!'
+    assert exitcode == -8
