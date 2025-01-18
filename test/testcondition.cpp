@@ -6354,6 +6354,14 @@ private:
             "[test.cpp:3]: (style) Condition 'f>1.00' is always false\n",
             "",
             errout_str());
+
+        check("void foo() {\n" // #13506
+              "    float nf = -1.0;\n"
+              "    if (nf > +1.0) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Condition 'nf>+1.0' is always false\n",
+            errout_str());
     }
 };
 

@@ -302,7 +302,8 @@ private:
         TEST_CASE(knownPointerToBool);
         TEST_CASE(iterateByValue);
 
-        TEST_CASE(alwaysTrueFloating);
+        TEST_CASE(knownConditionFloating);
+        TEST_CASE(knownConditionPrefixed);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -12888,7 +12889,7 @@ private:
                       errout_str());
     }
 
-    void alwaysTrueFloating()
+    void knownConditionFloating()
     {
         check("void foo() {\n" // #11200
               "    float f = 1.0;\n"
@@ -12905,9 +12906,16 @@ private:
               "    float f = 1.0;\n"
               "    if (f > +1.0) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > +1.0' is always false.\n",
-            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    float f = 1.0;\n"
+              "    if (f < +1.0) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f < 1.0' is always false.\n",
             errout_str());
 
         check("void foo() {\n" // #11200
@@ -12925,9 +12933,16 @@ private:
               "    float pf = +1.0;\n"
               "    if (pf > +1.0) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'pf > +1.0' is always false.\n",
-            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    float pf = +1.0;\n"
+              "    if (pf < +1.0) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'pf < 1.0' is always false.\n",
             errout_str());
 
         check("void foo() {\n" // #11200
@@ -12941,7 +12956,7 @@ private:
             "[test.cpp:2] -> [test.cpp:4]: (style) The comparison 'nf > -1.0' is always false.\n",
             errout_str());
 
-        check("void foo() {\n" // #13506
+        check("void foo() {\n" // #13508
               "    float nf = -1.0;\n"
               "    if (nf > +1.0) {}\n"
               "}\n");
@@ -12982,6 +12997,25 @@ private:
         TODO_ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'f > 1' is always false.\n",
             "",
+            errout_str());
+    }
+
+    void knownConditionPrefixed()
+    {
+        check("void foo() {\n"
+              "    int i = 1;\n"
+              "    if (i < +1) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i < 1' is always false.\n",
+            errout_str());
+
+        check("void foo() {\n" // #13506
+              "    int i = 1;\n"
+              "    if (i > +1) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i > +1' is always false.\n",
             errout_str());
     }
 };

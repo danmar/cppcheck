@@ -3626,9 +3626,11 @@ void Tokenizer::concatenateNegativeNumberAndAnyPositive()
         while (tok->str() != ">" && tok->next() && tok->strAt(1) == "+" && (!Token::Match(tok->tokAt(2), "%name% (|;") || Token::Match(tok, "%op%")))
             tok->deleteNext();
 
-        if (Token::Match(tok->next(), "- %num%")) {
+        if (Token::Match(tok->next(), "+|- %num%")) {
+            // cppcheck-suppress redundantCopyLocalConst - cannot make it a reference because it is deleted afterwards
+            std::string prefix = tok->strAt(1);
             tok->deleteNext();
-            tok->next()->str("-" + tok->strAt(1));
+            tok->next()->str(prefix + tok->strAt(1));
         }
     }
 }
