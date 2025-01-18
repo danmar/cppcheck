@@ -35,7 +35,6 @@
 #include <type_traits>
 #include <vector>
 #include <cstring>
-#include <list>
 
 struct SelectMapKeys {
     template<class Pair>
@@ -404,7 +403,7 @@ static inline T* empty_if_null(T* p)
  * @param sep The separator
  * @return The list of separate strings (including empty ones). The whole input string if no separator found.
  */
-template<template<class ...> class T = std::list>
+template<template<class ...> class T = std::vector>
 T<std::string> splitString(const std::string& str, char sep)
 {
     if (std::strchr(str.c_str(), sep) == nullptr)
