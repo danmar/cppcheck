@@ -465,7 +465,7 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     }
 
     if (!settings.checkConfiguration) {
-        cppcheck.tooManyConfigsError(emptyString,0U);
+        cppcheck.tooManyConfigsError("",0U);
     }
 
     stdLogger.writeCheckersReport();

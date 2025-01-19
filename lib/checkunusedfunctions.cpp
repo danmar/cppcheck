@@ -351,7 +351,7 @@ static void staticFunctionError(ErrorLogger& errorLogger,
         locationList.back().fileIndex = fileIndex;
     }
 
-    const ErrorMessage errmsg(std::move(locationList), emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' should have static linkage since it is not used outside of its translation unit.", "staticFunction", Certainty::normal);
+    const ErrorMessage errmsg(std::move(locationList), "", Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' should have static linkage since it is not used outside of its translation unit.", "staticFunction", Certainty::normal);
     errorLogger.reportErr(errmsg);
 }
 
@@ -412,7 +412,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
         locationList.back().fileIndex = fileIndex;
     }
 
-    const ErrorMessage errmsg(std::move(locationList), emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
+    const ErrorMessage errmsg(std::move(locationList), "", Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
     errorLogger.reportErr(errmsg);
 }
 

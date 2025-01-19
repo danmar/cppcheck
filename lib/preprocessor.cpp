@@ -340,7 +340,7 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
                 continue;
             if (tok->next && tok->next->str() == "endfile")
                 continue;
-            Directive directive(tok->location, emptyString);
+            Directive directive(tok->location, "");
             for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
                 if (tok2->comment)
                     continue;
@@ -691,7 +691,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
 
     splitcfg(mSettings.userDefines, dui.defines, "1");
     if (!cfg.empty())
-        splitcfg(cfg, dui.defines, emptyString);
+        splitcfg(cfg, dui.defines, "");
 
     for (const std::string &def : mSettings.library.defines()) {
         const std::string::size_type pos = def.find_first_of(" (");
@@ -769,7 +769,7 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
 
 bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
 {
-    const simplecpp::DUI dui = createDUI(mSettings, emptyString, files[0]);
+    const simplecpp::DUI dui = createDUI(mSettings, "", files[0]);
 
     simplecpp::OutputList outputList;
     mTokenLists = simplecpp::load(rawtokens, files, dui, &outputList);
@@ -924,9 +924,9 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
     Preprocessor preprocessor(settings, errorLogger);
-    preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
-    preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
-    preprocessor.error(emptyString, 1, "#error message");   // #error ..
+    preprocessor.missingInclude("", 1, "", UserHeader);
+    preprocessor.missingInclude("", 1, "", SystemHeader);
+    preprocessor.error("", 1, "#error message");   // #error ..
 }
 
 void Preprocessor::dump(std::ostream &out) const

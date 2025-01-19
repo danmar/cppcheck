@@ -31,8 +31,6 @@
 #include <string>
 #include <vector>
 
-#include "config.h"
-
 #include "../cli/filelister.h"
 #include "../lib/filesettings.h"
 #include "../lib/pathmatch.h"
@@ -570,7 +568,7 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "");
 
-    makeMatchcompiler(fout, emptyString, emptyString);
+    makeMatchcompiler(fout, "", "");
 
     // avoid undefined variable
     fout << "ifndef CPPFLAGS\n"
@@ -839,7 +837,7 @@ int main(int argc, char **argv)
     compilefiles(fout, libfiles_prio, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
-    compilefiles(fout, extfiles, emptyString);
+    compilefiles(fout, extfiles, "");
     compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
 
     write_ossfuzz_makefile(libfiles_prio, extfiles);

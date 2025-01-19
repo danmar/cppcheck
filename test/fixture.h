@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 #include "platform.h"
 #include "settings.h"
@@ -72,7 +71,7 @@ protected:
     void assert_(const char * filename, unsigned int linenr, bool condition) const;
 
     template<typename T>
-    void assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = emptyString) const {
+    void assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = "") const {
         if (expected != actual) {
             std::ostringstream expectedStr;
             expectedStr << expected;
@@ -84,7 +83,7 @@ protected:
     }
 
     template<typename T>
-    void assertEqualsEnum(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = emptyString) const {
+    void assertEqualsEnum(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = "") const {
         if (std::is_unsigned<T>())
             assertEquals(filename, linenr, static_cast<std::uint64_t>(expected), static_cast<std::uint64_t>(actual), msg);
         else
@@ -99,13 +98,13 @@ protected:
             todoAssertEquals(filename, linenr, static_cast<std::int64_t>(wanted), static_cast<std::int64_t>(current), static_cast<std::int64_t>(actual));
     }
 
-    void assertEquals(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEqualsWithoutLineNumbers(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = emptyString) const;
-    void assertEquals(const char * filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = emptyString) const;
-    void assertEquals(const char * filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = emptyString) const;
-    void assertEquals(const char * filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = emptyString) const;
-    void assertEquals(const char * filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = emptyString) const;
-    void assertEqualsDouble(const char * filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg = emptyString) const;
+    void assertEquals(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "") const;
+    void assertEqualsWithoutLineNumbers(const char * filename, unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg = "") const;
+    void assertEquals(const char * filename, unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg = "") const;
+    void assertEquals(const char * filename, unsigned int linenr, const char expected[], const char actual[], const std::string &msg = "") const;
+    void assertEquals(const char * filename, unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg = "") const;
+    void assertEquals(const char * filename, unsigned int linenr, long long expected, long long actual, const std::string &msg = "") const;
+    void assertEqualsDouble(const char * filename, unsigned int linenr, double expected, double actual, double tolerance, const std::string &msg = "") const;
 
     void todoAssertEquals(const char * filename, unsigned int linenr, const std::string &wanted,
                           const std::string &current, const std::string &actual) const;

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
@@ -205,32 +204,32 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "x/../a.c", 123)));
     }
 
-    unsigned int checkSuppressionFiles(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppression(code, false, suppression);
     }
 
-    unsigned int checkSuppressionFS(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFS(const char code[], const std::string &suppression = "") {
         return _checkSuppression(code, true, suppression);
     }
 
     // Check the suppression
-    unsigned int _checkSuppression(const char code[], bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppression(const char code[], bool useFS, const std::string &suppression = "") {
         std::map<std::string, std::string> files;
         files["test.cpp"] = code;
 
         return _checkSuppression(files, useFS, suppression);
     }
 
-    unsigned int checkSuppressionFiles(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFiles(std::map<std::string, std::string> &f, const std::string &suppression = "") {
         return _checkSuppression(f, false, suppression);
     }
 
-    unsigned int checkSuppressionFS(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFS(std::map<std::string, std::string> &f, const std::string &suppression = "") {
         return _checkSuppression(f, true, suppression);
     }
 
     // Check the suppression for multiple files
-    unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = "") {
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
@@ -270,15 +269,15 @@ private:
         return exitCode;
     }
 
-    unsigned int checkSuppressionThreadsFiles(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreadsFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionThreads(code, false, suppression);
     }
 
-    unsigned int checkSuppressionThreadsFS(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreadsFS(const char code[], const std::string &suppression = "") {
         return _checkSuppressionThreads(code, true, suppression);
     }
 
-    unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = "") {
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
@@ -314,15 +313,15 @@ private:
     }
 
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
-    unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionProcesses(code, false, suppression);
     }
 
-    unsigned int checkSuppressionProcessesFS(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionProcessesFS(const char code[], const std::string &suppression = "") {
         return _checkSuppressionProcesses(code, true, suppression);
     }
 
-    unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = "") {
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
