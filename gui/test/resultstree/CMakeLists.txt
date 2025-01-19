@@ -31,8 +31,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (REGISTER_GUI_TESTS)
-    # TODO: does not work in the CI
-    # add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree>)
+    # TODO: might crash - see #13223
+    #add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree> -platform offscreen)
 endif()
 
 add_dependencies(gui-tests test-resultstree)
