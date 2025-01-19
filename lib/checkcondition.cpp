@@ -1700,7 +1700,7 @@ void CheckCondition::checkInvalidTestForOverflow()
                 const Token * const other = expr->astSibling();
 
                 // x [+-] c cmp x
-                if ((other->isNumber() && other->getKnownIntValue() > 0) ||
+                if ((other->isNumber() && other->hasKnownIntValue() && other->getKnownIntValue() > 0) ||
                     (!other->isNumber() && other->valueType() && other->valueType()->isIntegral() && other->valueType()->sign == ValueType::Sign::UNSIGNED)) {
                     bool result;
                     if (lhs->str() == "+")
