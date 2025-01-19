@@ -2475,13 +2475,15 @@ std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
     return mImpl->mScopeInfo;
 }
 
+// if there is a known INT value it will always be the first entry
 bool Token::hasKnownIntValue() const
 {
     if (!mImpl->mValues)
         return false;
-    return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
-        return value.isKnown() && value.isIntValue();
-    });
+    if (mImpl->mValues->empty())
+        return false;
+    const ValueFlow::Value& value = mImpl->mValues->front();
+    return value.isIntValue() && value.isKnown();
 }
 
 bool Token::hasKnownValue() const
@@ -2506,6 +2508,14 @@ bool Token::hasKnownSymbolicValue(const Token* tok) const
         return value.isKnown() && value.isSymbolicValue() && value.tokvalue &&
         value.tokvalue->exprId() == tok->exprId();
     });
+}
+
+const ValueFlow::Value* Token::getKnownValue() const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
+    return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
 const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) const
