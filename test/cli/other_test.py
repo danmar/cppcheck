@@ -2785,3 +2785,87 @@ def test_addon_suppr_cli_file_line(tmp_path):
 def test_addon_suppr_cli_absfile_line(tmp_path):
     test_file = tmp_path / 'test.c'
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:{}:3'.format(test_file)])
+
+
+def test_ctu_path_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        str(test_file)
+    ]
+
+    # the CTU path was not properly read leading to missing location information
+    stderr_exp = [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file),
+        'void f(int *p) { *p = 3; }',
+        '                  ^',
+        "{}:4:14: note: Assignment 'p=0', assigned value is 0".format(test_file),
+        '    int *p = 0;',
+        '             ^',
+        '{}:5:2: note: Calling function f, 1st argument is null'.format(test_file),
+        'f(p);',
+        ' ^',
+        '{}:2:19: note: Dereferencing argument p that is null'.format(test_file),
+        'void f(int *p) { *p = 3; }',
+        '                  ^'
+    ]
+
+    exitcode_1, stdout_1, stderr_1 = cppcheck(args)
+    assert exitcode_1 == 0, stdout_1
+    assert stdout_1 == ''
+    assert stderr_1.splitlines() == stderr_exp
+
+    exitcode_2, stdout_2, stderr_2 = cppcheck(args)
+    assert exitcode_2 == 0, stdout_2
+    assert stdout_2 == ''
+    assert stderr_2.splitlines() == stderr_exp
+
+
+@pytest.mark.xfail(strict=True)
+def test_ctu_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '-j1',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    # the CTU was run and then evaluated again from the builddir leading to duplicated findings
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file)
+    ]
