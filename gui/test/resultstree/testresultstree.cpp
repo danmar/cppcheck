@@ -76,9 +76,6 @@ void ProjectFile::setWarningTags(std::size_t /*unused*/, const QString& /*unused
 bool ProjectFile::write(const QString & /*unused*/) {
     return true;
 }
-std::string severityToString(Severity severity) {
-    return std::to_string((int)severity);
-}
 ApplicationList::ApplicationList(QObject *parent) : QObject(parent) {}
 ApplicationList::~ApplicationList() = default;
 int ApplicationList::getApplicationCount() const {
@@ -120,24 +117,6 @@ void ThreadResult::reportOut(const std::string & /*unused*/, Color /*unused*/) {
 }
 void ThreadResult::reportErr(const ErrorMessage & /*unused*/) {
     throw 1;
-}
-
-// Mock LIB...
-bool Path::isHeader(std::string const& /*unused*/) {
-    return false;
-}
-const std::set<std::string> ErrorLogger::mCriticalErrorIds;
-std::string ErrorMessage::FileLocation::getfile(bool /*unused*/) const {
-    return std::string();
-}
-const char* CppCheck::version() {
-    return "1.0";
-}
-std::pair<std::string, std::string> Settings::getNameAndVersion(const std::string& /*unused*/) {
-    throw 1;
-}
-Severity severityFromString(const std::string& severity) {
-    return (Severity)std::stoi(severity);
 }
 
 // Test...

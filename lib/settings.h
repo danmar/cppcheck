@@ -28,6 +28,7 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
+#include "errorlogger.h"
 
 #include <algorithm>
 #include <atomic>
@@ -109,6 +110,12 @@ public:
     static std::string loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug = false);
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
+
+    /** @brief Report type */
+    ReportType reportType = ReportType::normal;
+
+    /** @brief Maps cppcheck error ids to guidelines */
+    std::map<std::string, std::string> guidelineMapping;
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
