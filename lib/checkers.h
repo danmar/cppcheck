@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "config.h"
-#include "errortypes.h"
 
 namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;

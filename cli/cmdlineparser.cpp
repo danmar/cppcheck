@@ -20,7 +20,6 @@
 
 #include "addoninfo.h"
 #include "check.h"
-#include "checkers.h"
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"

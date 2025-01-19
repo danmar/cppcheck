@@ -20,7 +20,6 @@
 // python3 tools/get_checkers.py > lib/checkers.cpp
 
 #include "checkers.h"
-#include "utils.h"
 
 namespace checkers {
     const std::map<std::string, std::string> allCheckers{
