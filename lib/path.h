@@ -203,6 +203,13 @@ public:
      * join 2 paths with '/' separators
      */
     static std::string join(const std::string& path1, const std::string& path2);
+
+    /**
+     * @brief Get the size of a file
+     * @param filePath path to the file
+     * @return size of file, or -1 if the file cannot be accessed
+     */
+    static long long fileSize(const std::string &filePath);
 };
 
 /// @}

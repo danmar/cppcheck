@@ -85,6 +85,46 @@ def test_absolute_path(tmp_path):
     assert stdout.find('Checking %s ...' % file1) >= 0
     assert stdout.find('Checking %s ...' % file2) >= 0
 
+def test_progress_json(tmp_path):
+    proj_dir = tmp_path / 'proj2'
+    shutil.copytree(__proj_dir, proj_dir)
+    size1 = os.path.getsize(os.path.join(proj_dir, 'a', 'a.c'))
+    size2 = os.path.getsize(os.path.join(proj_dir, 'b', 'b.c'))
+    perc1 = 100 * size1 // (size1 + size2)
+    perc2 = 100 * size2 // (size1 + size2)
+    __create_compile_commands(proj_dir)
+    ret, stdout, _ = cppcheck(['--project=' + os.path.join(proj_dir, __COMPILE_COMMANDS_JSON)], cwd=tmp_path)
+    assert ret == 0, stdout
+    assert stdout.find('1/2 files checked %d%% done' % perc1) >= 0 or stdout.find('1/2 files checked %d%% done' % perc2) >= 0
+    assert stdout.find('2/2 files checked 100% done') >= 0
+
+def test_progress_cppcheck(tmp_path):
+    proj_dir = tmp_path / 'proj2'
+    shutil.copytree(__proj_dir, proj_dir)
+    size1 = os.path.getsize(os.path.join(proj_dir, 'a', 'a.c'))
+    size2 = os.path.getsize(os.path.join(proj_dir, 'b', 'b.c'))
+    perc1 = 100 * size1 // (size1 + size2)
+    perc2 = 100 * size2 // (size1 + size2)
+    __create_compile_commands(proj_dir)
+    ret, stdout, _ = cppcheck(['--project=proj2/proj2.cppcheck'], cwd=tmp_path)
+    assert ret == 0, stdout
+    assert stdout.find('1/2 files checked %d%% done' % perc1) >= 0 or stdout.find('1/2 files checked %d%% done' % perc2) >= 0
+    assert stdout.find('2/2 files checked 100% done') >= 0
+
+def test_progress_cli(tmp_path):
+    proj_dir = tmp_path / 'proj2'
+    shutil.copytree(__proj_dir, proj_dir)
+    path1 = os.path.join(proj_dir, 'a', 'a.c')
+    path2 = os.path.join(proj_dir, 'b', 'b.c')
+    size1 = os.path.getsize(path1)
+    size2 = os.path.getsize(path2)
+    perc1 = 100 * size1 // (size1 + size2)
+    perc2 = 100 * size2 // (size1 + size2)
+    ret, stdout, _ = cppcheck([path1, path2], cwd=tmp_path)
+    assert ret == 0, stdout
+    assert stdout.find('1/2 files checked %d%% done' % perc1) >= 0 or stdout.find('1/2 files checked %d%% done' % perc2) >= 0
+    assert stdout.find('2/2 files checked 100% done') >= 0
+
 def test_gui_project_loads_compile_commands_1(tmp_path):
     proj_dir = tmp_path / 'proj2'
     shutil.copytree(__proj_dir, proj_dir)
