@@ -300,15 +300,15 @@ CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
 CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
 
 /** Get a classification string from the given guideline and reporttype */
-std::string getClassification(const std::string &guideline, ReportType reportType);
+CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
 
 /** Get a guidline string froM the given error id, reporttype, mapping and severity */
-std::string getGuideline(const std::string &errId, ReportType reportType,
-                         const std::map<std::string, std::string> &guidelineMapping,
-                         Severity severity);
+CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
+                                     const std::map<std::string, std::string> &guidelineMapping,
+                                     Severity severity);
 
 /** Get a map from cppcheck error ids to guidlines matching the given report type */
-std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
+CPPCHECKLIB std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 
 /// @}
 //---------------------------------------------------------------------------
