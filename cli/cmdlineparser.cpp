@@ -275,7 +275,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         // TODO: verbose log which files were ignored?
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnamesRef) {
-            const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher);
+            const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher, mSettings.debugignore);
             if (!err.empty()) {
                 // TODO: bail out?
                 mLogger.printMessage(err);
@@ -613,6 +613,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--cpp-header-probe") == 0) {
                 mSettings.cppHeaderProbe = true;
             }
+
+            // Show debug messages for ignored files
+            else if (std::strcmp(argv[i], "--debug-ignore") == 0)
+                mSettings.debugignore = true;
 
             // Show --debug output after the first simplifications
             else if (std::strcmp(argv[i], "--debug") == 0 ||
@@ -1564,7 +1568,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         mPathNames = project.guiProject.pathNames;
 
     if (!project.fileSettings.empty()) {
-        project.ignorePaths(mIgnoredPaths);
+        project.ignorePaths(mIgnoredPaths, mSettings.debugignore);
         if (project.fileSettings.empty()) {
             mLogger.printError("no C or C++ source files found.");
             mLogger.printMessage("all paths were ignored"); // TODO: log this differently?
