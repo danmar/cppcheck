@@ -91,10 +91,6 @@ else()
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS On CACHE BOOL "Disable precompiled headers")
 endif()
 
-if(BUILD_TESTS AND REGISTER_TESTS AND CMAKE_VERSION VERSION_LESS "3.9")
-    message(FATAL_ERROR "Registering tests with CTest requires at least CMake 3.9. Use REGISTER_TESTS=OFF to disable this.")
-endif()
-
 set(CMAKE_INCLUDE_DIRS_CONFIGCMAKE ${CMAKE_INSTALL_PREFIX}/include      CACHE PATH "Output directory for headers")
 set(CMAKE_LIB_DIRS_CONFIGCMAKE     ${CMAKE_INSTALL_PREFIX}/lib          CACHE PATH "Output directory for libraries")
 

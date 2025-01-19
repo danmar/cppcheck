@@ -53,16 +53,7 @@ endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if(CMAKE_VERSION VERSION_EQUAL "3.12" OR CMAKE_VERSION VERSION_GREATER "3.12")
-    find_package(Python COMPONENTS Interpreter)
-else()
-    find_package(PythonInterp 3 QUIET)
-    if(PYTHONINTERP_FOUND)
-        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
-        set(Python_VERSION ${PYTHON_VERSION_STRING})
-        set(Python_Interpreter_FOUND ${PYTHONINTERP_FOUND})
-    endif()
-endif()
+find_package(Python COMPONENTS Interpreter)
 
 if(NOT Python_Interpreter_FOUND)
     if(NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
