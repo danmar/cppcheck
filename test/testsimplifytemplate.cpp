@@ -309,10 +309,16 @@ private:
         TEST_CASE(explicitBool2);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        bool debugwarnings = false;
+    };
+
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tok_(const char* file, int line, const char (&code)[size], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
-        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
+    std::string tok_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(options.debugwarnings).build();
         SimpleTokenizer tokenizer(settings1, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -1205,7 +1211,7 @@ private:
                                 "struct TypeMath<int,Constants::fourtytwo> { "
                                 "static const int mult = sizeof ( int ) * Constants :: fourtytwo ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true));
+        ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1333,7 +1339,7 @@ private:
                                 "struct Factorial<1> { "
                                 "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true));
+        ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1393,7 +1399,7 @@ private:
                                 "} struct Foo<true> { "
                                 "std :: array < int , 1 > mfoo ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true));
+        ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5817,9 +5823,9 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-#define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
+#define instantiateMatch(...) instantiateMatch_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool instantiateMatch_(const char (&code)[size], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
+    bool instantiateMatch_(const char* file, int line, const char (&code)[size], const std::size_t numberOfArguments, const char patternAfter[]) {
         SimpleTokenizer tokenizer(settings, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

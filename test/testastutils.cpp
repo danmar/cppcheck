@@ -88,9 +88,9 @@ private:
         ASSERT_EQUALS(true, findLambdaEndToken("int i = 5 * []{ return 7; }();", "[", /*checkNext*/ false));
     }
 
-#define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
+#define findLambdaStartToken(...) findLambdaStartToken_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool findLambdaStartToken_(const char (&code)[size], const char* file, int line) {
+    bool findLambdaStartToken_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tokStart = (::findLambdaStartToken)(tokenizer.list.back());
@@ -120,9 +120,9 @@ private:
         ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * const* int { return x; }"));
     }
 
-#define isNullOperand(code) isNullOperand_(code, __FILE__, __LINE__)
+#define isNullOperand(...) isNullOperand_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool isNullOperand_(const char (&code)[size], const char* file, int line) {
+    bool isNullOperand_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         return (::isNullOperand)(tokenizer.tokens());
@@ -141,9 +141,9 @@ private:
         ASSERT_EQUALS(false, isNullOperand("(void*)1;"));
     }
 
-#define isReturnScope(code, offset) isReturnScope_(code, offset, __FILE__, __LINE__)
+#define isReturnScope(...) isReturnScope_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool isReturnScope_(const char (&code)[size], int offset, const char* file, int line) {
+    bool isReturnScope_(const char* file, int line, const char (&code)[size], int offset) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tok = (offset < 0)
@@ -219,9 +219,9 @@ private:
         isSameExpressionTestInternal(false);
     }
 
-#define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
+#define isVariableChanged(...) isVariableChanged_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool isVariableChanged_(const char (&code)[size], const char startPattern[], const char endPattern[], const char* file, int line) {
+    bool isVariableChanged_(const char* file, int line, const char (&code)[size], const char startPattern[], const char endPattern[]) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
@@ -252,9 +252,9 @@ private:
         ASSERT_EQUALS(false, isVariableChanged("const int A[] = { 1, 2, 3 };", "[", "]"));
     }
 
-#define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
+#define isVariableChangedByFunctionCall(...) isVariableChangedByFunctionCall_( __FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool isVariableChangedByFunctionCall_(const char (&code)[size], const char pattern[], bool *inconclusive, const char* file, int line) {
+    bool isVariableChangedByFunctionCall_(const char* file, int line, const char (&code)[size], const char pattern[], bool *inconclusive) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
@@ -412,15 +412,14 @@ private:
         }
     }
 
-#define isExpressionChanged(code, var, startPattern, endPattern)                                                       \
-    isExpressionChanged_(code, var, startPattern, endPattern, __FILE__, __LINE__)
+#define isExpressionChanged(...) isExpressionChanged_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool isExpressionChanged_(const char (&code)[size],
+    bool isExpressionChanged_(const char* file,
+                              int line,
+                              const char (&code)[size],
                               const char var[],
                               const char startPattern[],
-                              const char endPattern[],
-                              const char* file,
-                              int line)
+                              const char endPattern[])
     {
         const Settings settings = settingsBuilder().library("std.cfg").build();
         SimpleTokenizer tokenizer(settings, *this);
@@ -451,9 +450,9 @@ private:
                                           "}"));
     }
 
-#define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
+#define nextAfterAstRightmostLeaf(...) nextAfterAstRightmostLeaf_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool nextAfterAstRightmostLeaf_(const char (&code)[size], const char parentPattern[], const char rightPattern[], const char* file, int line) {
+    bool nextAfterAstRightmostLeaf_(const char* file, int line, const char (&code)[size], const char parentPattern[], const char rightPattern[]) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));

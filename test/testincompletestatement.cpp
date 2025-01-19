@@ -33,11 +33,18 @@ public:
 private:
     const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
-#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false, bool cpp = true) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        bool inconclusive = false;
+        bool cpp = true;
+    };
 
-        std::vector<std::string> files(1, cpp ? "test.cpp" : "test.c");
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+
+        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
         Tokenizer tokenizer(settings1, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -422,7 +429,7 @@ private:
               "    (!x);\n"
               "    (unsigned int)!x;\n"
               "    ~x;\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
@@ -433,7 +440,7 @@ private:
                       "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~', result is not used.\n",
                       errout_str());
 
-        check("void f1(int x) { x; }", true);
+        check("void f1(int x) { x; }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout_str());
 
         check("void f() { if (Type t; g(t)) {} }"); // #9776
@@ -657,17 +664,17 @@ private:
         check("void f(std::string a, std::string b) {\n" // #7529
               "    const std::string s = \" x \" + a;\n"
               "    +\" y = \" + b;\n"
-              "}\n", /*inconclusive*/ true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n", errout_str());
 
         check("void f() {\n"
               "    *new int;\n"
-              "}\n", /*inconclusive*/ true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout_str());
 
         check("void f(int x, int y) {\n" // #12525
               "    x * y;\n"
-              "}\n", /*inconclusive*/ true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout_str());
 
         check("void f() {\n" // #5475
@@ -675,14 +682,14 @@ private:
               "}\n"
               "void f(std::string& a) {\n"
               "    a.erase(3) + \"suf\";\n"
-              "}\n", /*inconclusive*/ true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
                       "[test.cpp:5]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n",
                       errout_str());
 
         check("void f(XMLElement& parent) {\n" // #11234
               "    auto** elem = &parent.firstChild;\n"
-              "}\n", /*inconclusive*/ true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #11301
@@ -729,62 +736,62 @@ private:
 
     void vardecl() {
         // #8984
-        check("void f() { a::b *c = d(); }", true);
+        check("void f() { a::b *c = d(); }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { std::vector<b> *c; }", true);
+        check("void f() { std::vector<b> *c; }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { a::b &c = d(); }", true);
+        check("void f() { a::b &c = d(); }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { std::vector<b> &c; }", true);
+        check("void f() { std::vector<b> &c; }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { a::b &&c = d(); }", true);
+        check("void f() { a::b &&c = d(); }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { std::vector<b> &&c; }", true);
+        check("void f() { std::vector<b> &&c; }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { char * const * a, * const * b; }", true);
+        check("void f() { char * const * a, * const * b; }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { char * const * a = 0, * volatile restrict * b; }", true, /*cpp*/ false);
+        check("void f() { char * const * a = 0, * volatile restrict * b; }", dinit(CheckOptions, $.inconclusive = true, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { char * const * a = 0, * volatile const * b; }", true);
+        check("void f() { char * const * a = 0, * volatile const * b; }", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
     void archive() {
         check("void f(Archive &ar) {\n"
               "  ar & x;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(int ar) {\n"
               "  ar & x;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&', result is not used.\n", errout_str());
     }
 
     void ast() {
-        check("struct c { void a() const { for (int x=0; x;); } };", true);
+        check("struct c { void a() const { for (int x=0; x;); } };", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
     void oror() {
         check("void foo() {\n"
               "    params_given (params, \"overrides\") || (overrides = \"1\");\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::ifstream& file) {\n" // #10930
               "    int a{}, b{};\n"
               "    (file >> a) || (file >> b);\n"
               "    (file >> a) && (file >> b);\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 };
