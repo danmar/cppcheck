@@ -239,3 +239,61 @@ def test_cmd_std_c_enforce_alias_2(tmp_path):  # #13128/#13129/#13130
 
 def test_cmd_std_cpp_enforce_alias(tmp_path):  # #13128/#13129/#13130
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c++ -std=gnu++11')
+
+
+def test_debug_clang_output(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--clang',
+        '--debug-clang-output',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr if not stdout else stdout
+    assert stderr == ''
+    assert stdout.startswith('TranslationUnitDecl'), stdout
+    assert stdout.find(str(test_file)) != -1, stdout
+
+
+def test_debug_clang_output_failure_exitcode(tmp_path):
+    # the given code will cause clang to fail with an exitcode
+    #
+    # Failed to execute 'clang -fsyntax-only -Xclang -ast-dump -fno-color-diagnostics -x c++ a.cpp 2>&1' - (exitcode: 1 / output: a.cpp:3:12: error: indirection requires pointer operand ('int' invalid)
+    # 3 |     (void)(*0);
+    # |            ^~
+    # 1 error generated.
+    # TranslationUnitDecl 0x6127d5d9d4e8 <<invalid sloc>> <invalid sloc>
+    # ...
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    (void)(*0);
+}
+""")
+
+    args = [
+        '-q',
+        '--clang',
+        '--debug-clang-output',
+        '--no-cppcheck-build-dir',  # TODO: test without this?
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr if not stdout else stdout
+    stderr_lines = stderr.splitlines()
+    assert len(stderr_lines) > 5, stderr_lines
+    assert (stderr_lines[0] ==
+            "Failed to execute 'clang -fsyntax-only -Xclang -ast-dump -fno-color-diagnostics -x c {} 2>&1' - (exitcode: 1 / output: {}:3:12: error: indirection requires pointer operand ('int' invalid)".format(test_file, test_file))
+    assert stdout.find('TranslationUnitDecl') != -1, stdout
+    assert stdout.find(str(test_file)) != -1, stdout
