@@ -2503,13 +2503,15 @@ std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
     return mImpl->mScopeInfo;
 }
 
+// if there is a known INT value it will always be the first entry
 bool Token::hasKnownIntValue() const
 {
     if (!mImpl->mValues)
         return false;
-    return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
-        return value.isKnown() && value.isIntValue();
-    });
+    if (mImpl->mValues->empty())
+        return false;
+    const ValueFlow::Value& value = mImpl->mValues->front();
+    return value.isIntValue() && value.isKnown();
 }
 
 bool Token::hasKnownValue() const
