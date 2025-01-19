@@ -935,16 +935,16 @@ static void valueFlowRightShift(TokenList& tokenList, const Settings& settings)
         if (tok->str() != ">>")
             continue;
 
-        if (tok->hasKnownValue())
+        if (tok->hasKnownIntValue())
             continue;
 
         if (!tok->astOperand1() || !tok->astOperand2())
             continue;
 
-        if (!tok->astOperand2()->hasKnownValue())
+        if (!tok->astOperand2()->hasKnownIntValue())
             continue;
 
-        const MathLib::bigint rhsvalue = tok->astOperand2()->getKnownValue()->intvalue;
+        const MathLib::bigint rhsvalue = tok->astOperand2()->getKnownIntValue();
         if (rhsvalue < 0)
             continue;
 
