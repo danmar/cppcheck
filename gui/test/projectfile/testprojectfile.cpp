@@ -52,14 +52,14 @@ bool ImportProject::sourceFileExists(const std::string & /*file*/) {
 void TestProjectFile::loadInexisting() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/foo.cppcheck");
-    ProjectFile pfile(filepath);
+    ProjectFile pfile(filepath, nullptr);
     QCOMPARE(pfile.read(), false);
 }
 
 void TestProjectFile::loadSimple() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple.cppcheck");
-    ProjectFile pfile(filepath);
+    ProjectFile pfile(filepath, nullptr);
     QVERIFY(pfile.read());
     QCOMPARE(pfile.getRootPath(), QString("../.."));
     QStringList includes = pfile.getIncludeDirs();
@@ -82,7 +82,7 @@ void TestProjectFile::loadSimple() const
 void TestProjectFile::loadSimpleWithIgnore() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_ignore.cppcheck");
-    ProjectFile pfile(filepath);
+    ProjectFile pfile(filepath, nullptr);
     QVERIFY(pfile.read());
     QCOMPARE(pfile.getRootPath(), QString("../.."));
     QStringList includes = pfile.getIncludeDirs();
@@ -104,7 +104,7 @@ void TestProjectFile::loadSimpleWithIgnore() const
 void TestProjectFile::loadSimpleNoroot() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_noroot.cppcheck");
-    ProjectFile pfile(filepath);
+    ProjectFile pfile(filepath, nullptr);
     QVERIFY(pfile.read());
     QCOMPARE(pfile.getRootPath(), QString());
     QStringList includes = pfile.getIncludeDirs();
@@ -161,7 +161,7 @@ void TestProjectFile::getCheckingSuppressionsRelative() const
 {
     const SuppressionList::Suppression suppression("*", "externals/*");
     const QList<SuppressionList::Suppression> suppressions{suppression};
-    ProjectFile projectFile;
+    ProjectFile projectFile(nullptr);
     projectFile.setFilename("/some/path/123.cppcheck");
     projectFile.setSuppressions(suppressions);
     QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/externals/*");
@@ -171,7 +171,7 @@ void TestProjectFile::getCheckingSuppressionsAbsolute() const
 {
     const SuppressionList::Suppression suppression("*", "/some/path/1.h");
     const QList<SuppressionList::Suppression> suppressions{suppression};
-    ProjectFile projectFile;
+    ProjectFile projectFile(nullptr);
     projectFile.setFilename("/other/123.cppcheck");
     projectFile.setSuppressions(suppressions);
     QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/1.h");
@@ -181,7 +181,7 @@ void TestProjectFile::getCheckingSuppressionsStar() const
 {
     const SuppressionList::Suppression suppression("*", "*.cpp");
     const QList<SuppressionList::Suppression> suppressions{suppression};
-    ProjectFile projectFile;
+    ProjectFile projectFile(nullptr);
     projectFile.setFilename("/some/path/123.cppcheck");
     projectFile.setSuppressions(suppressions);
     QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "*.cpp");

@@ -1766,7 +1766,7 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    auto *helpDialog = new HelpDialog;
+    auto *helpDialog = new HelpDialog(nullptr); // TODO: pass parent?
     helpDialog->showMaximized();
 }
 

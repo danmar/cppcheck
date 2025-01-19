@@ -51,7 +51,7 @@ class ErrorItem;
 class ThreadHandler : public QObject {
     Q_OBJECT
 public:
-    explicit ThreadHandler(QObject *parent = nullptr);
+    explicit ThreadHandler(QObject *parent);
     ~ThreadHandler() override;
 
     /**
