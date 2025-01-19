@@ -527,6 +527,8 @@ private:
                 continue;
             if (exact && v.intvalue != 0 && !isPoint)
                 continue;
+            if (astIsUnsigned(tok) != astIsUnsigned(v.tokvalue))
+                continue;
             std::vector<MathLib::bigint> r;
             ValueFlow::Value::Bound bound = currValue->bound;
             if (match(v.tokvalue)) {
