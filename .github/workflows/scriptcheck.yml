@@ -218,7 +218,7 @@ jobs:
 
       - name: run dmake
         run: |
-          make -j2 CXXFLAGS="-w" run-dmake
+          make -j3 CXXFLAGS="-w" run-dmake
 
       - name: check diff
         run: |
