@@ -52,6 +52,7 @@ private:
         TEST_CASE(onemasklongerpath1);
         TEST_CASE(onemasklongerpath2);
         TEST_CASE(onemasklongerpath3);
+        TEST_CASE(onemaskcwd);
         TEST_CASE(twomasklongerpath1);
         TEST_CASE(twomasklongerpath2);
         TEST_CASE(twomasklongerpath3);
@@ -60,10 +61,12 @@ private:
         TEST_CASE(filemaskdifferentcase);
         TEST_CASE(filemask2);
         TEST_CASE(filemask3);
+        TEST_CASE(filemaskcwd);
         TEST_CASE(filemaskpath1);
         TEST_CASE(filemaskpath2);
         TEST_CASE(filemaskpath3);
         TEST_CASE(filemaskpath4);
+        TEST_CASE(mixedallmatch);
     }
 
     // Test empty PathMatch
@@ -146,6 +149,10 @@ private:
         ASSERT(srcMatcher.match("project/src/module/"));
     }
 
+    void onemaskcwd() const {
+        ASSERT(!srcMatcher.match("./src"));
+    }
+
     void twomasklongerpath1() const {
         std::vector<std::string> masks = { "src/", "module/" };
         PathMatch match(std::move(masks));
@@ -189,6 +196,10 @@ private:
         ASSERT(fooCppMatcher.match("src/foo.cpp"));
     }
 
+    void filemaskcwd() const {
+        ASSERT(fooCppMatcher.match("./lib/foo.cpp"));
+    }
+
     // Test PathMatch containing "src/foo.cpp"
     void filemaskpath1() const {
         ASSERT(srcFooCppMatcher.match("src/foo.cpp"));
@@ -204,6 +215,14 @@ private:
 
     void filemaskpath4() const {
         ASSERT(!srcFooCppMatcher.match("bar/foo.cpp"));
+    }
+
+    void mixedallmatch() const { // #13570
+        // when trying to match a directory against a directory entry it erroneously modified a local variable also used for file matching
+        std::vector<std::string> masks = { "tests/", "file.c" };
+        PathMatch match(std::move(masks));
+        ASSERT(match.match("tests/"));
+        ASSERT(match.match("lib/file.c"));
     }
 };
 

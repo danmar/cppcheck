@@ -3039,3 +3039,29 @@ void f
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') != -1
     assert stderr.splitlines() == []
+
+
+def test_file_ignore_2(tmp_path):  # #13570
+    tests_path = tmp_path / 'tests'
+    os.mkdir(tests_path)
+
+    lib_path = tmp_path / 'lib'
+    os.mkdir(lib_path)
+
+    test_file_1 = lib_path / 'test_1.c'
+    with open(test_file_1, 'wt'):
+        pass
+
+    args = [
+        '-itests',
+        '-itest_1.c',
+        '.'
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+    assert stderr.splitlines() == []
