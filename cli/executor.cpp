@@ -40,8 +40,8 @@ Executor::Executor(const std::list<FileWithDetails> &files, const std::list<File
 // TODO: this logic is duplicated in CppCheck::reportErr()
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
-    if (!mSettings.library.reportErrors(msg.file0))
-        return false;
+    if (msg.severity == Severity::internal)
+        return true;
 
     if (!mSuppressions.isSuppressed(msg, {}))
     {
