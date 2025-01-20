@@ -8590,12 +8590,23 @@ void Tokenizer::findGarbageCode() const
             if (Token::Match(tok->next(), ": %num%| {"))
                 syntaxError(tok->tokAt(2), "Unexpected token '" + tok->strAt(2) + "'");
             if (const Token* start = SymbolDatabase::isEnumDefinition(tok)) {
+                int nEquals = 0;
                 for (const Token* tok2 = start->next(); tok2 && tok2 != start->link(); tok2 = tok2->next()) {
                     if (Token::simpleMatch(tok2, "sizeof (")) {
                         tok2 = tok2->linkAt(1);
                         continue;
                     }
+                    if (const Token* lam = findLambdaEndTokenWithoutAST(tok2)) {
+                        tok2 = lam;
+                        continue;
+                    }
                     if (tok2->str() == ";")
+                        syntaxError(tok2);
+                    if (tok2->str() == "=")
+                        ++nEquals;
+                    else if (tok2->str() == ",")
+                        nEquals = 0;
+                    if (nEquals > 1)
                         syntaxError(tok2);
                 }
             }
