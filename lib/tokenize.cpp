@@ -8545,26 +8545,34 @@ void Tokenizer::findGarbageCode() const
                 syntaxError(tok);
         }
 
-        if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
-            if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
-                if (Token::Match(tok->previous(), "[,(]")) {
-                    const Token *prev = tok->previous();
-                    while (prev && prev->str() != "(") {
-                        if (prev->str() == ")")
-                            prev = prev->link();
-                        prev = prev->previous();
+        if (tok->isControlFlowKeyword()) {
+            if (Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
+                if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
+                    if (Token::Match(tok->previous(), "[,(]")) {
+                        const Token *prev = tok->previous();
+                        while (prev && prev->str() != "(") {
+                            if (prev->str() == ")")
+                                prev = prev->link();
+                            prev = prev->previous();
+                        }
+                        if (prev && Token::Match(prev->previous(), "%name% ("))
+                            unknownMacroError(prev->previous());
                     }
-                    if (prev && Token::Match(prev->previous(), "%name% ("))
-                        unknownMacroError(prev->previous());
+                    if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
+                        syntaxError(tok);
                 }
-                if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if"))
+                if (!Token::Match(tok->next(), "( !!)"))
                     syntaxError(tok);
+                if (tok->str() != "for") {
+                    if (isGarbageExpr(tok->next(), tok->linkAt(1), cpp && (mSettings.standards.cpp>=Standards::cppstd_t::CPP17)))
+                        syntaxError(tok);
+                }
             }
-            if (!Token::Match(tok->next(), "( !!)"))
-                syntaxError(tok);
-            if (tok->str() != "for") {
-                if (isGarbageExpr(tok->next(), tok->linkAt(1), cpp && (mSettings.standards.cpp>=Standards::cppstd_t::CPP17)))
-                    syntaxError(tok);
+            if (Token::simpleMatch(tok, "do {")) {
+                if (!Token::simpleMatch(tok->linkAt(1), "} while ("))
+                    syntaxError(tok->linkAt(1));
+                if (!Token::simpleMatch(tok->linkAt(1)->linkAt(2), ") ;"))
+                    syntaxError(tok->linkAt(1)->linkAt(2));
             }
         }
 
