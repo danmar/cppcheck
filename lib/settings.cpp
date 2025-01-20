@@ -21,6 +21,7 @@
 #include "path.h"
 #include "summaries.h"
 #include "vfvalue.h"
+#include "errorlogger.h"
 
 #include <cctype>
 #include <fstream>
@@ -55,6 +56,7 @@ static int getPid()
 }
 
 Settings::Settings()
+    : reportType(ReportType::normal)
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);

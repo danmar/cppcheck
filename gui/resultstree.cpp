@@ -145,7 +145,7 @@ static QStringList getLabels() {
 }
 
 ResultsTree::ResultsTree(QWidget * parent) :
-    QTreeView(parent)
+    QTreeView(parent), mReportType(ReportType::normal)
 {
     setModel(&mModel);
     translate(); // Adds columns to grid
@@ -1529,4 +1529,15 @@ void ResultsTree::currentChanged(const QModelIndex &current, const QModelIndex &
 {
     QTreeView::currentChanged(current, previous);
     emit treeSelectionChanged(current);
+}
+
+bool ResultsTree::isCertReport() const {
+    return mReportType == ReportType::certC || mReportType == ReportType::certCpp;
+}
+
+bool ResultsTree::isAutosarMisraReport() const {
+    return mReportType == ReportType::autosar ||
+           mReportType == ReportType::misraC ||
+           mReportType == ReportType::misraCpp2008 ||
+           mReportType == ReportType::misraCpp2023;
 }

@@ -24,8 +24,6 @@
 #include <QMap>
 #include <QString>
 
-#include "errorlogger.h"
-
 /// @addtogroup GUI
 /// @{
 
@@ -54,6 +52,7 @@
 
 // Report type
 #define SETTINGS_REPORT_TYPE            "Report type"
+enum class ReportType : std::uint8_t;
 
 // Show * states
 #define SETTINGS_SHOW_STYLE             "Show style"
