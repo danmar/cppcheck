@@ -4241,7 +4241,7 @@ private:
                "    do {\n"
                "        if (pvd.descr_type == 0xff) {}\n"
                "        dostuff(&pvd);\n"
-               "    } while (condition)\n"
+               "    } while (condition);\n"
                "}";
         values = removeImpossible(tokenValues(code, "=="));
         ASSERT_EQUALS(1, values.size());
