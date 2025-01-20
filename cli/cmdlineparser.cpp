@@ -1849,7 +1849,7 @@ void CmdLineParser::printHelp() const
         "    --report-progress    Report progress messages while checking a file (single job only).\n"
         "    --report-type=<type> Add guideline and classification fields for specified coding standard.\n"
         "                         The available report types are:\n"
-        "                          * normal           Default, only show cppcheck error ID and severity)\n"
+        "                          * normal           Default, only show cppcheck error ID and severity\n"
         "                          * autosar          Autosar\n"
         "                          * certC            Cert C\n"
         "                          * certCpp          Cert Cpp\n"
