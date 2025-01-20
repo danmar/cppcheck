@@ -80,8 +80,6 @@ static constexpr char ExtraVersion[] = "";
 
 static constexpr char FILELIST[] = "cppcheck-addon-ctu-file-list";
 
-static TimerResults s_timerResults;
-
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
@@ -534,6 +532,7 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
 CppCheck::CppCheck(const Settings& settings,
                    Suppressions& supprs,
                    ErrorLogger &errorLogger,
+                   TimerResults *timerResults,
                    bool useGlobalSuppressions,
                    ExecuteCmdFn executeCommand)
     : mSettings(settings)
@@ -541,6 +540,7 @@ CppCheck::CppCheck(const Settings& settings,
     , mLogger(new CppCheckLogger(errorLogger, mSettings, mSuppressions, useGlobalSuppressions))
     , mErrorLogger(*mLogger)
     , mErrorLoggerDirect(errorLogger)
+    , mTimerResults(timerResults)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mExecuteCommand(std::move(executeCommand))
 {}
@@ -740,7 +740,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
                              const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
                              mErrorLogger,
                              mSettings,
-                             &s_timerResults);
+                             mTimerResults);
         tokenizer.printDebugOutput(std::cout);
         checkNormalTokens(tokenizer, nullptr, ""); // TODO: provide analyzer information
 
@@ -829,7 +829,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.clang) {
         tempSettings.includePaths.insert(tempSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         // need to pass the externally provided ErrorLogger instead of our internal wrapper
-        CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
+        CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mTimerResults, mUseGlobalSuppressions, mExecuteCommand);
         // TODO: propagate back mFileInfo
         const unsigned int returnValue = temp.check(fs.file);
         if (mUnusedFunctionsCheck)
@@ -837,7 +837,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
         return returnValue;
     }
     // need to pass the externally provided ErrorLogger instead of our internal wrapper
-    CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
+    CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mTimerResults, mUseGlobalSuppressions, mExecuteCommand);
     const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg, fs.fileIndex);
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
@@ -1039,7 +1039,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         // Get configurations..
         std::set<std::string> configurations;
         if (maxConfigs > 1) {
-            Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
+            Timer::run("Preprocessor::getConfigs", mSettings.showtime, mTimerResults, [&]() {
                 configurations = preprocessor.getConfigs();
             });
         } else {
@@ -1124,7 +1124,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
             if (mSettings.preprocessOnly) {
                 std::string codeWithoutCfg;
-                Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
+                Timer::run("Preprocessor::getcode", mSettings.showtime, mTimerResults, [&]() {
                     codeWithoutCfg = preprocessor.getcode(currentConfig, files, true);
                 });
 
@@ -1148,7 +1148,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             {
                 bool skipCfg = false;
                 // Create tokens, skip rest of iteration if failed
-                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
+                Timer::run("Tokenizer::createTokens", mSettings.showtime, mTimerResults, [&]() {
                     simplecpp::OutputList outputList_cfg;
                     simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, outputList_cfg);
                     const simplecpp::Output* o = preprocessor.handleErrors(outputList_cfg);
@@ -1175,7 +1175,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
             try {
                 if (mSettings.showtime != ShowTime::NONE)
-                    tokenizer.setTimerResults(&s_timerResults);
+                    tokenizer.setTimerResults(mTimerResults);
                 tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
                 // locations macros
@@ -1288,8 +1288,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: clear earlier?
     mLogger->clear();
 
-    if (mSettings.showtime == ShowTime::FILE || mSettings.showtime == ShowTime::TOP5_FILE)
-        printTimerResults(mSettings.showtime);
+    if (mTimerResults && (mSettings.showtime == ShowTime::FILE || mSettings.showtime == ShowTime::TOP5_FILE))
+        mTimerResults->showResults(mSettings.showtime);
 
     return mLogger->exitcode();
 }
@@ -1346,7 +1346,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
                 return;
             }
 
-            Timer::run(check->name() + "::runChecks", mSettings.showtime, &s_timerResults, [&]() {
+            Timer::run(check->name() + "::runChecks", mSettings.showtime, mTimerResults, [&]() {
                 check->runChecks(tokenizer, &mErrorLogger);
             });
         }
@@ -1481,7 +1481,7 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 {
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
-        Timer::run("CppCheck::executeAddons", mSettings.showtime, &s_timerResults, [&]() {
+        Timer::run("CppCheck::executeAddons", mSettings.showtime, mTimerResults, [&]() {
             executeAddons(f, file.spath());
         });
     }
@@ -1692,7 +1692,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     settings.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: get rid of this
     Suppressions supprs;
 
-    CppCheck cppcheck(settings, supprs, errorlogger, true, nullptr);
+    CppCheck cppcheck(settings, supprs, errorlogger, nullptr, true, nullptr);
     cppcheck.purgedConfigurationMessage("","");
     cppcheck.tooManyConfigsError("",0U);
     // TODO: add functions to get remaining error messages
@@ -1872,17 +1872,6 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
         delete fi;
 
     return mLogger->exitcode();
-}
-
-// cppcheck-suppress unusedFunction - only used in tests
-void CppCheck::resetTimerResults()
-{
-    s_timerResults.reset();
-}
-
-void CppCheck::printTimerResults(ShowTime mode)
-{
-    s_timerResults.showResults(mode);
 }
 
 bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {

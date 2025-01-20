@@ -56,7 +56,7 @@ struct TimerResultsData {
     static std::string durationToString(std::chrono::milliseconds duration);
 };
 
-class CPPCHECKLIB TimerResults : public TimerResultsIntf {
+class CPPCHECKLIB WARN_UNUSED TimerResults : public TimerResultsIntf {
 public:
     TimerResults() = default;
 

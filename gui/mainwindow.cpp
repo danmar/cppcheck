@@ -728,7 +728,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
             mUI->mResults, SLOT(debugError(ErrorItem)));
 
     // Create CppCheck instance
-    CppCheck cppcheck(checkSettings, supprs, result, true, nullptr);
+    CppCheck cppcheck(checkSettings, supprs, result, nullptr, true, nullptr);
 
     // Check
     checkLockDownUI();

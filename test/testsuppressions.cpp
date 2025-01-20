@@ -31,7 +31,6 @@
 #include "suppressions.h"
 #include "threadexecutor.h"
 
-#include <cstdint>
 #include <cstring>
 #include <list>
 #include <map>
@@ -286,8 +285,8 @@ private:
         if (useFS)
             filelist.clear();
 
-        CppCheck cppCheck(settings, supprs, *this, true, nullptr);
-        SingleExecutor executor(cppCheck, filelist, fileSettings, settings, supprs, *this);
+        CppCheck cppCheck(settings, supprs, *this, nullptr, true, nullptr);
+        SingleExecutor executor(cppCheck, filelist, fileSettings, settings, supprs, *this, nullptr);
         unsigned int exitCode = executor.check();
 
         const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
@@ -336,7 +335,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        ThreadExecutor executor(filelist, fileSettings, settings, supprs, *this, CppCheckExecutor::executeCommand);
+        ThreadExecutor executor(filelist, fileSettings, settings, supprs, *this, nullptr, CppCheckExecutor::executeCommand);
         unsigned int exitCode = executor.check();
 
         const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
@@ -386,7 +385,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        ProcessExecutor executor(filelist, fileSettings, settings, supprs, *this, CppCheckExecutor::executeCommand);
+        ProcessExecutor executor(filelist, fileSettings, settings, supprs, *this, nullptr, CppCheckExecutor::executeCommand);
         unsigned int exitCode = executor.check();
 
         const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
@@ -1310,7 +1309,7 @@ private:
         Suppressions supprs;
         ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine("uninitvar"));
 
-        CppCheck cppCheck(settings, supprs, *this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
+        CppCheck cppCheck(settings, supprs, *this, nullptr, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
 
         const char code[] = "int f() { int a; return a; }";
         ASSERT_EQUALS(0, cppCheck.checkBuffer(FileWithDetails("test.c", Standards::Language::C, 0),code, sizeof(code))); // <- no unsuppressed error is seen
@@ -1352,7 +1351,7 @@ private:
             "    // cppcheck-suppress unusedStructMember\n"
             "    int y;\n"
             "};";
-        CppCheck cppCheck(settings, supprs, *this, true, nullptr);
+        CppCheck cppCheck(settings, supprs, *this, nullptr, true, nullptr);
         ASSERT_EQUALS(0, cppCheck.checkBuffer(FileWithDetails("/somewhere/test.cpp", Standards::Language::CPP, 0), code, sizeof(code)));
         ASSERT_EQUALS("",errout_str());
     }

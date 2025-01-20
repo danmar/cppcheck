@@ -128,7 +128,7 @@ void CheckThread::run()
 {
     mState = Running;
 
-    CppCheck cppcheck(mSettings, *mSuppressions, mResult, true, executeCommand);
+    CppCheck cppcheck(mSettings, *mSuppressions, mResult, nullptr, true, executeCommand);
 
     if (!mFiles.empty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;

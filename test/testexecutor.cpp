@@ -36,7 +36,7 @@ class DummyExecutor : public Executor
 {
 public:
     DummyExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-        : Executor(files, fileSettings, settings, suppressions, errorLogger)
+        : Executor(files, fileSettings, settings, suppressions, errorLogger, nullptr)
     {}
 
     NORETURN unsigned int check() override

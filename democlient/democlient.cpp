@@ -63,7 +63,7 @@ private:
 public:
     CppcheckExecutor(const Settings& settings)
         : stoptime(std::time(nullptr)+2U)
-        , cppcheck(settings, supprs, *this, false, nullptr)
+        , cppcheck(settings, supprs, *this, nullptr, false, nullptr)
     {}
 
     void run(const char* code) {
