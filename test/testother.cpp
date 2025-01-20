@@ -10908,7 +10908,7 @@ private:
               "int i;\n"
               "do {\n"
               "  i = fgetc (pFile);\n"
-              "} while (EOF != i)"
+              "} while (EOF != i);"
               "}");
         ASSERT_EQUALS("", errout_str());
 
