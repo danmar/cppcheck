@@ -957,7 +957,7 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
         return getClassification(checkers::certCppInfo, guideline);
     case ReportType::misraC:
     {
-        auto components = splitString<std::vector>(guideline, '.');
+        auto components = splitString(guideline, '.');
         if (components.size() != 2)
             return "";
 
@@ -987,7 +987,7 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
             info = &checkers::misraCpp2023Rules;
         }
 
-        auto components = splitString<std::vector>(guideline, delim);
+        auto components = splitString(guideline, delim);
         if (components.size() != 3)
             return "";
 
@@ -1099,13 +1099,13 @@ std::map<std::string, std::string> createGuidelineMapping(ReportType reportType)
 
     if (idMapping1) {
         for (const auto &i : *idMapping1)
-            for (const std::string &cppcheckId : splitString<std::vector>(i.cppcheckId, ','))
+            for (const std::string &cppcheckId : splitString(i.cppcheckId, ','))
                 guidelineMapping[cppcheckId] = i.guideline + ext1;
     }
 
     if (idMapping2) {
         for (const auto &i : *idMapping2)
-            for (const std::string &cppcheckId : splitString<std::vector>(i.cppcheckId, ','))
+            for (const std::string &cppcheckId : splitString(i.cppcheckId, ','))
                 guidelineMapping[cppcheckId] = i.guideline + ext2;
     }
 
