@@ -7152,6 +7152,10 @@ static ValueType::Type getEnumType(const Scope* scope, const Platform& platform)
 {
     ValueType::Type type = ValueType::Type::INT;
     for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        if (const Token* lam = findLambdaEndToken(tok)) {
+            tok = lam;
+            continue;
+        }
         if (!tok->isAssignmentOp())
             continue;
         const Token* vTok = tok->astOperand2();

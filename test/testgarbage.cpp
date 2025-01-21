@@ -254,6 +254,7 @@ private:
         TEST_CASE(garbageCode225);
         TEST_CASE(garbageCode226);
         TEST_CASE(garbageCode227);
+        TEST_CASE(garbageCode228);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1760,6 +1761,9 @@ private:
     }
     void garbageCode227() { // #12615
         ASSERT_NO_THROW(checkCode("f(&S::operator=);"));
+    }
+    void garbageCode228() {
+        ASSERT_NO_THROW(checkCode("void f() { enum { A = [=]() mutable { return 0; }() }; }"));
     }
 
     void syntaxErrorFirstToken() {
