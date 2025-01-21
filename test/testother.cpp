@@ -10842,7 +10842,7 @@ private:
               "unsigned char c;\n"
               "do {\n"
               "  c = getc (pFile);\n"
-              "} while (c != EOF)"
+              "} while (c != EOF);"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing getc() return value in char variable and then comparing with EOF.\n", errout_str());
 
@@ -10850,7 +10850,7 @@ private:
               "unsigned char c;\n"
               "do {\n"
               "  c = getc (pFile);\n"
-              "} while (EOF != c)"
+              "} while (EOF != c);"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing getc() return value in char variable and then comparing with EOF.\n", errout_str());
 
@@ -10858,7 +10858,7 @@ private:
               "int i;\n"
               "do {\n"
               "  i = getc (pFile);\n"
-              "} while (i != EOF)"
+              "} while (i != EOF);"
               "}");
         ASSERT_EQUALS("", errout_str());
 
@@ -10866,7 +10866,7 @@ private:
               "int i;\n"
               "do {\n"
               "  i = getc (pFile);\n"
-              "} while (EOF != i)"
+              "} while (EOF != i);"
               "}");
         ASSERT_EQUALS("", errout_str());
 
@@ -10876,7 +10876,7 @@ private:
               "unsigned char c;\n"
               "do {\n"
               "  c = fgetc (pFile);\n"
-              "} while (c != EOF)"
+              "} while (c != EOF);"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing fgetc() return value in char variable and then comparing with EOF.\n", errout_str());
 
@@ -10884,7 +10884,7 @@ private:
               "char c;\n"
               "do {\n"
               "  c = fgetc (pFile);\n"
-              "} while (EOF != c)"
+              "} while (EOF != c);"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Storing fgetc() return value in char variable and then comparing with EOF.\n", errout_str());
 
@@ -10892,7 +10892,7 @@ private:
               "signed char c;\n"
               "do {\n"
               "  c = fgetc (pFile);\n"
-              "} while (EOF != c)"
+              "} while (EOF != c);"
               "}");
         ASSERT_EQUALS("", errout_str());
 
@@ -10900,7 +10900,7 @@ private:
               "int i;\n"
               "do {\n"
               "  i = fgetc (pFile);\n"
-              "} while (i != EOF)"
+              "} while (i != EOF);"
               "}");
         ASSERT_EQUALS("", errout_str());
 
@@ -10908,7 +10908,7 @@ private:
               "int i;\n"
               "do {\n"
               "  i = fgetc (pFile);\n"
-              "} while (EOF != i)"
+              "} while (EOF != i);"
               "}");
         ASSERT_EQUALS("", errout_str());
 
