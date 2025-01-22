@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
@@ -8390,10 +8389,10 @@ private:
         std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(fin, files, emptyString, &outputList);
+        const simplecpp::TokenList tokens1(fin, files, "", &outputList);
         const std::string filedata = tokens1.stringify();
         const Settings settings;
-        const std::string code = PreprocessorHelper::getcode(settings, *this, filedata, emptyString, emptyString);
+        const std::string code = PreprocessorHelper::getcode(settings, *this, filedata, "", "");
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
     }

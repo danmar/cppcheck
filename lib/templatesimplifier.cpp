@@ -3175,7 +3175,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             if (mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc(mTokenList.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
-                                    emptyString,
+                                    "",
                                     Severity::debug,
                                     "Template instantiation maximum time exceeded",
                                     "templateMaxTime",
@@ -3251,7 +3251,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             if (mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc(mTokenList.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
-                                    emptyString,
+                                    "",
                                     Severity::debug,
                                     "Template instantiation maximum time exceeded",
                                     "templateMaxTime",

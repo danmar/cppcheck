@@ -57,7 +57,7 @@ public:
     static void analyseWholeProgram(const Settings &settings, ErrorLogger& errorLogger, const std::string &buildDir);
 
     static void getErrorMessages(ErrorLogger &errorLogger) {
-        unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
+        unusedFunctionError(errorLogger, "", 0, 0, "funcName");
     }
 
     // Return true if an error is reported.

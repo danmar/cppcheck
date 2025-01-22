@@ -1225,7 +1225,7 @@ void Tokenizer::simplifyTypedefCpp()
             if (mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc(list.getFiles()[0], 0, 0);
                 ErrorMessage errmsg({std::move(loc)},
-                                    emptyString,
+                                    "",
                                     Severity::debug,
                                     "Typedef simplification instantiation maximum time exceeded",
                                     "typedefMaxTime",
@@ -10945,7 +10945,7 @@ void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& setti
     Tokenizer tokenizer(settings, errorLogger);
     tokenizer.invalidConstFunctionTypeError(nullptr);
     // checkLibraryNoReturn
-    tokenizer.unhandled_macro_class_x_y(nullptr, emptyString, emptyString, emptyString, emptyString);
-    tokenizer.macroWithSemicolonError(nullptr, emptyString);
-    tokenizer.unhandledCharLiteral(nullptr, emptyString);
+    tokenizer.unhandled_macro_class_x_y(nullptr, "", "", "", "");
+    tokenizer.macroWithSemicolonError(nullptr, "");
+    tokenizer.unhandledCharLiteral(nullptr, "");
 }
