@@ -2904,6 +2904,13 @@ void CheckStl::useStlAlgorithm()
             return false;
         return isConstExpression(tok->linkAt(-1)->astOperand2(), mSettings->library);
     };
+    
+    auto isAccumulation = [](const Token* tok, int varId) {
+        if (tok->str() != "=")
+            return true;
+        const Token* end = Token::findmatch(tok, "%varid%|;", varId); // TODO: lambdas?
+        return end && end->varId() != 0;
+    };
 
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
@@ -2970,8 +2977,10 @@ void CheckStl::useStlAlgorithm()
                         algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                     else if (Token::Match(assignTok, "= %var% <|<=|>=|> %var% ? %var% : %var%") && hasVarIds(assignTok->tokAt(6), loopVar->varId(), assignVarId))
                         algo = minmaxCompare(assignTok->tokAt(2), loopVar->varId(), assignVarId, assignTok->tokAt(5)->varId() == assignVarId);
-                    else
+                    else if (isAccumulation(assignTok, assignVarId))
                         algo = "std::accumulate";
+                    else
+                        continue;
                 }
                 useStlAlgorithmError(assignTok, algo);
                 continue;
