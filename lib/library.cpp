@@ -1339,17 +1339,34 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         const int offset = (withoutStd && startsWith(container.startPattern2, "std :: ")) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
-        if (detect != IteratorOnly && container.endPattern.empty()) {
-            if (!Token::Match(typeStart, container.startPattern2.c_str() + offset))
-                continue;
-
+        if (detect != IteratorOnly && container.endPattern.empty() &&
+            Token::Match(typeStart, container.startPattern2.c_str() + offset)) {
             if (isIterator)
                 *isIterator = false;
             return &container;
         }
 
-        if (!firstLinkedTok)
+        if (!firstLinkedTok) {
+            if (detect != ContainerOnly && !container.itEndPattern.empty()) {
+                const std::string pattern = container.startPattern + " " + container.itEndPattern;
+                if (Token::Match(typeStart, pattern.c_str() + offset)) {
+                    if (isIterator)
+                        *isIterator = true;
+                    return &container;
+                }
+            }
+
+            if (detect != IteratorOnly && !container.endPattern.empty()) {
+                const std::string pattern = container.startPattern + " " + container.endPattern;
+                if (Token::Match(typeStart, pattern.c_str() + offset)) {
+                    if (isIterator)
+                        *isIterator = false;
+                    return &container;
+                }
+            }
+
             continue;
+        }
 
         const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str() + offset);
         if (!matchedStartPattern)
