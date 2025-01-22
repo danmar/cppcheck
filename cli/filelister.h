@@ -39,21 +39,6 @@ public:
      * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
      * @param files output list that associates the size of each file with its name
      * @param path root path
-     * @param ignored ignored paths
-     * @return On success, an empty string is returned. On error, a error message is returned.
-     */
-    static std::string recursiveAddFiles(std::list<FileWithDetails> &files, const std::string &path, const PathMatch& ignored) {
-        const std::set<std::string> extra;
-        return recursiveAddFiles(files, path, extra, ignored);
-    }
-
-    /**
-     * @brief Recursively add source files to a map.
-     * Add source files from given directory and all subdirectries to the
-     * given map. Only files with accepted extensions
-     * (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx) are added.
-     * @param files output list that associates the size of each file with its name
-     * @param path root path
      * @param extra Extra file extensions
      * @param ignored ignored paths
      * @return On success, an empty string is returned. On error, a error message is returned.
