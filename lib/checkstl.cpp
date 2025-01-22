@@ -2904,7 +2904,7 @@ void CheckStl::useStlAlgorithm()
             return false;
         return isConstExpression(tok->linkAt(-1)->astOperand2(), mSettings->library);
     };
-    
+
     auto isAccumulation = [](const Token* tok, int varId) {
         if (tok->str() != "=")
             return true;
