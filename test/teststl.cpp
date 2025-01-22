@@ -5430,6 +5430,14 @@ private:
               "    return sum;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(const std::vector<int>& v) {\n" // #12900
+              "    int x{};\n"
+              "    for (const auto i : v)\n"
+              "        x = dostuff(i);\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoContainerInsert() {
