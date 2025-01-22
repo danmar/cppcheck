@@ -249,6 +249,7 @@ namespace {
     public:
         explicit StdLogger(const Settings& settings)
             : mSettings(settings)
+            , mGuidelineMapping(createGuidelineMapping(settings.reportType))
         {
             if (!mSettings.outputFile.empty()) {
                 mErrorOutput = new std::ofstream(settings.outputFile);
@@ -342,6 +343,11 @@ namespace {
          * SARIF report generator
          */
         SarifReport mSarifReport;
+
+        /**
+         * Coding standard guideline mapping
+         */
+        std::map<std::string, std::string> mGuidelineMapping;
     };
 }
 
@@ -628,7 +634,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
 
     ErrorMessage msgCopy = msg;
     msgCopy.guideline = getGuideline(msgCopy.id, mSettings.reportType,
-                                     mSettings.guidelineMapping, msgCopy.severity);
+                                     mGuidelineMapping, msgCopy.severity);
     msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)

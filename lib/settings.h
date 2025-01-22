@@ -114,9 +114,6 @@ public:
     /** @brief Report type */
     ReportType reportType;
 
-    /** @brief Maps cppcheck error ids to guidelines */
-    std::map<std::string, std::string> guidelineMapping;
-
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
 

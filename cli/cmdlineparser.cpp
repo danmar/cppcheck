@@ -1247,7 +1247,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("Unknown report type \'" + typeStr + "\'");
                     return Result::Fail;
                 }
-                mSettings.guidelineMapping = createGuidelineMapping(mSettings.reportType);
             }
 
             // Rule given at command line
