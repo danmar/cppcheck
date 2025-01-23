@@ -658,10 +658,10 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         mErrorLogger.reportOut(std::string("Checking ") + file.spath() + " ...", Color::FgGreen);
 
     // TODO: get language from FileWithDetails object
-    const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "");
-    const std::string clangcmd = analyzerInfo + ".clang-cmd";
-    const std::string clangStderr = analyzerInfo + ".clang-stderr";
-    const std::string clangAst = analyzerInfo + ".clang-ast";
+    std::string clangStderr;
+    if (!mSettings.buildDir.empty())
+        clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "") + ".clang-stderr";
+
     std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
     // append .exe if it is not a path
@@ -673,17 +673,17 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
                               getClangFlags(Path::identify(file.spath(), mSettings.cppHeaderProbe)) +
                               file.spath();
-    const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
-    if (!mSettings.buildDir.empty()) {
-        std::ofstream fout(clangcmd);
-        fout << exe << " " << args2 << " " << redirect2 << std::endl;
-    }
+    const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
     if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2);
     }
 
     std::string output2;
     const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
+    if (mSettings.debugClangOutput) {
+        std::cout << output2 << std::endl;
+    }
+    // TODO: this might also fail if compiler errors are encountered - we should report them properly
     if (exitcode != EXIT_SUCCESS) {
         // TODO: report as proper error
         std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (exitcode: " << exitcode << " / output: " << output2 << ")" << std::endl;
@@ -696,27 +696,20 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         return 0; // TODO: report as failure?
     }
 
+    const auto reportError = [this](const ErrorMessage& errorMessage) {
+        mErrorLogger.reportErr(errorMessage);
+    };
+
     // Ensure there are not syntax errors...
     std::vector<ErrorMessage> compilerWarnings;
-    if (!mSettings.buildDir.empty()) {
+    if (!clangStderr.empty()) {
         std::ifstream fin(clangStderr);
-        auto reportError = [this](const ErrorMessage& errorMessage) {
-            mErrorLogger.reportErr(errorMessage);
-        };
         if (reportClangErrors(fin, reportError, compilerWarnings))
             return 0; // TODO: report as failure?
     } else {
         std::istringstream istr(output2);
-        auto reportError = [this](const ErrorMessage& errorMessage) {
-            mErrorLogger.reportErr(errorMessage);
-        };
         if (reportClangErrors(istr, reportError, compilerWarnings))
             return 0; // TODO: report as failure?
-    }
-
-    if (!mSettings.buildDir.empty()) {
-        std::ofstream fout(clangAst);
-        fout << output2 << std::endl;
     }
 
     try {

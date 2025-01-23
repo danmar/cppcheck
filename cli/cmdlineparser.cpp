@@ -614,6 +614,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.cppHeaderProbe = true;
             }
 
+            // Show debug warnings for lookup for configuration files
+            else if (std::strcmp(argv[i], "--debug-clang-output") == 0)
+                mSettings.debugClangOutput = true;
+
             // Show --debug output after the first simplifications
             else if (std::strcmp(argv[i], "--debug") == 0 ||
                      std::strcmp(argv[i], "--debug-normal") == 0)
