@@ -4387,6 +4387,17 @@ private:
                         "    return f(i, 0);\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:4]: (warning) Uninitialized variable: i\n", errout_str());
+
+        valueFlowUninit("char *f (char *b) {\n" // #12612
+                        "    char* p = b;\n"
+                        "    *p = '\\0';\n"
+                        "    return b;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    char a[24];\n"
+                        "    f(a);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitStructMember() { // struct members
