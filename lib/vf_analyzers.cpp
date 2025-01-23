@@ -1050,8 +1050,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             return false;
         return values.count(tok->varId()) > 0 ||
                std::any_of(values.begin(), values.end(), [&](const std::pair<nonneg int, ValueFlow::Value>& p) {
-                    return p.second.isUninitValue() && p.second.tokvalue->varId() == tok->varId();
-               });
+            return p.second.isUninitValue() && p.second.tokvalue->varId() == tok->varId();
+        });
     }
 
     ProgramState getProgramState() const override {
