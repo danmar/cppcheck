@@ -75,12 +75,18 @@ private:
         TEST_CASE(returnNonBoolClass);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        bool cpp = true;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], bool cpp = true) {
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
 
         // Check...
         runChecks<CheckBool>(tokenizer, this);
@@ -146,7 +152,7 @@ private:
               "  const int *rmat = n < 4 ? " /* OK */
               "                       ctx->q_intra_matrix :"
               "                       ctx->q_chroma_intra_matrix;\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3]: (error) Boolean value assigned to pointer.\n", errout_str());
 
         // ticket #6588 (c++ mode)
@@ -165,7 +171,7 @@ private:
               "  char* m1 = compare(a, b) < 0\n"
               "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         // #7381

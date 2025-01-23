@@ -177,10 +177,17 @@ private:
         TEST_CASE(checkMutexes);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        bool inconclusive = false;
+        Standards::cppstd_t cppstandard = Standards::CPPLatest;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], const bool inconclusive = false, const Standards::cppstd_t cppstandard = Standards::CPPLatest) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).cpp(cppstandard).build();
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).cpp(options.cppstandard).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
@@ -403,7 +410,7 @@ private:
               "  S s = { { &ArrS } };\n"
               "  g(s);\n"
               "  return ArrS[0];\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct T {\n"
@@ -419,7 +426,7 @@ private:
               "  g(s);\n"
               "  return ArrS[0];\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct T {\n"
@@ -435,7 +442,7 @@ private:
               "  g(s);\n"
               "  return ArrS[0];\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct T {\n"
@@ -451,7 +458,7 @@ private:
               "  g(s);\n"
               "  return ArrS[0];\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct T {\n"
@@ -467,7 +474,7 @@ private:
               "  g(s);\n"
               "  return ArrS[0];\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct T {\n"
@@ -483,7 +490,7 @@ private:
               "  g(s);\n"
               "  return ArrS[0];\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         checkNormal("extern void Bar(const double, const double);\n"
@@ -716,7 +723,7 @@ private:
               "  std::string buf;\n"
               "  b(buf.begin());\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 'd+c.length()' because 'buf' is empty.\n",
                       errout_str());
 
@@ -729,13 +736,13 @@ private:
               "  std::string buf;\n"
               "  b(buf.begin());\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("int f(const std::vector<int> &v) {\n"
               "    return !v.empty() ? 42 : v.back();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "test.cpp:2:warning:Either the condition 'v.empty()' is redundant or expression 'v.back()' causes access out of bounds.\n"
             "test.cpp:2:note:condition 'v.empty()'\n"
@@ -2351,7 +2358,7 @@ private:
               "    iter = ints.begin() + 2;\n"
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:7]: (error) Using iterator to local container 'ints' that may be invalid.\n", "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:7]: (error, inconclusive) Using iterator to local container 'ints' that may be invalid.\n", errout_str());
 
         // #6554 "False positive eraseDereference - erase in while() loop"
@@ -2426,7 +2433,7 @@ private:
               "    auto iter = ints.begin() + 2;\n"
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'ints' that may be invalid.\n", "[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error, inconclusive) Using iterator to local container 'ints' that may be invalid.\n", errout_str());
 
         check("void f() {\n"
@@ -3024,7 +3031,7 @@ private:
               "    iter = ints.begin() + 2;\n"
               "    ints.erase(iter);\n"
               "    ints.erase(iter);\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6]: (error) Using iterator to local container 'ints' that may be invalid.\n", "[test.cpp:1] -> [test.cpp:4] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6]: (error, inconclusive) Using iterator to local container 'ints' that may be invalid.\n", errout_str());
     }
 
@@ -3343,7 +3350,7 @@ private:
               "    std::vector<int>::iterator iter = ints.begin();\n"
               "    ints.insert(iter, 1);\n"
               "    ints.insert(iter, 2);\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error) Using iterator to local container 'ints' that may be invalid.\n", "[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:6]: (error, inconclusive) Using iterator to local container 'ints' that may be invalid.\n", errout_str());
 
         check("void* f(const std::vector<Bar>& bars) {\n"
@@ -3526,7 +3533,7 @@ private:
               "int foo() {\n"
               "    iterator i;\n"
               "    return i.foo();;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("class iterator {\n"
@@ -3537,7 +3544,7 @@ private:
               "int foo() {\n"
               "    iterator i;\n"
               "    return i.foo();;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:8]: (error, inconclusive) Invalid iterator 'i' used.\n", errout_str());
     }
 
@@ -3548,7 +3555,7 @@ private:
               "        {\n"
               "        }\n"
               "    }\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3786,7 +3793,7 @@ private:
                                 "{\n"
                                 "    if (x.size() == 0) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:7]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3798,7 +3805,7 @@ private:
                                 "{\n"
                                 "    if (x.size() == 0) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3810,7 +3817,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() == 0) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3822,7 +3829,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (0 == x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3834,7 +3841,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() != 0) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3846,7 +3853,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (0 != x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3858,7 +3865,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() > 0) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3870,7 +3877,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (0 < x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3882,7 +3889,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() >= 1) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3894,7 +3901,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() < 1) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3906,7 +3913,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (1 <= x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3918,7 +3925,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (1 > x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3930,7 +3937,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3942,7 +3949,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (!x.size()) {}\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3961,7 +3968,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    fun(!x.size());\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3973,7 +3980,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    fun(a && x.size());\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -4010,7 +4017,7 @@ private:
                             "{\n"
                             "    if (f.x.size() == 0) {}\n"
                             "}";
-        check(code, false, Standards::CPP03);
+        check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
         ASSERT_EQUALS(
             "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n"
             "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n",   // duplicate
@@ -4033,7 +4040,7 @@ private:
                                 "int main() {\n"
                                 "    if (zzz->x.size() > 0) { }\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS(
                 "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n"
                 "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n",   // duplicate
@@ -4052,7 +4059,7 @@ private:
                                 "    Zzz * zzz;\n"
                                 "    if (zzz->x.size() > 0) { }\n"
                                 "}";
-            check(code, false, Standards::CPP03);
+            check(code, dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS(
                 "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n"
                 "[test.cpp:10]: (performance) Possible inefficient checking for 'x' emptiness.\n",   // duplicate
@@ -4488,7 +4495,7 @@ private:
               "        return (\"\" + m).c_str();\n"
               "    }\n"
               "    std::string m;\n"
-              "};\n", /*inconclusive*/ true);
+              "};\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout_str());
 
         check("struct S {\n" // #10493
@@ -5221,7 +5228,7 @@ private:
               "    iterator it;\n"
               "    it->m_place = 0;\n"
               "    return it;\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:18]: (error, inconclusive) Invalid iterator 'it' used.\n", errout_str());
     }
 
@@ -5230,35 +5237,35 @@ private:
               "    for(int& x:v)\n"
               "        x = 1;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::fill algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        x = x + 1;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo(int a, int b) {\n"
               "    for(int& x:v)\n"
               "        x = a + b;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::fill or std::generate algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        x += 1;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        x = f();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::generate algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5267,7 +5274,7 @@ private:
               "        x = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
@@ -5276,7 +5283,7 @@ private:
               "        f();\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // There should probably be a message for unconditional break
@@ -5286,14 +5293,14 @@ private:
               "        break;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        x = ++x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5303,7 +5310,7 @@ private:
               "    for(int x:v)\n"
               "        n += x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5311,7 +5318,7 @@ private:
               "    for(int x:v)\n"
               "        n = n + x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5319,7 +5326,7 @@ private:
               "    for(int x:v)\n"
               "        n += 1;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5327,7 +5334,7 @@ private:
               "    for(int x:v)\n"
               "        n = n + 1;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout_str());
 
         check("bool f(int);\n"
@@ -5336,7 +5343,7 @@ private:
               "    for(int x:v)\n"
               "        b &= f(x);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool f(int);\n"
@@ -5345,7 +5352,7 @@ private:
               "    for(int x:v)\n"
               "        b |= f(x);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool f(int);\n"
@@ -5354,7 +5361,7 @@ private:
               "    for(int x:v)\n"
               "        b = b && f(x);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool f(int);\n"
@@ -5363,7 +5370,7 @@ private:
               "    for(int x:v)\n"
               "        b = b || f(x);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
@@ -5371,7 +5378,7 @@ private:
               "    for(int& x:v)\n"
               "        n = ++x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("std::size_t f(const std::map<std::string, std::size_t>& m) {\n" // #10412
@@ -5446,7 +5453,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_back(x);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::copy algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5454,7 +5461,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_back(f(x));\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5462,7 +5469,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_back(x + 1);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5470,7 +5477,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_front(x);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::copy algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5478,7 +5485,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_front(f(x));\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5486,7 +5493,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_front(x + 1);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5494,7 +5501,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_back(v);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
@@ -5502,7 +5509,7 @@ private:
               "    for(int x:v)\n"
               "        c.push_back(0);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5512,7 +5519,7 @@ private:
               "    for(int x:v)\n"
               "        n++;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5520,21 +5527,21 @@ private:
               "    for(int x:v)\n"
               "        ++n;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::distance algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        x++;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
               "    for(int& x:v)\n"
               "        ++x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
     }
 
@@ -5547,7 +5554,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::replace_if algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5559,7 +5566,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5571,7 +5578,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::count_if algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5583,7 +5590,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::count_if algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5594,7 +5601,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::transform algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5606,7 +5613,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::copy_if algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5618,7 +5625,7 @@ private:
               "    }\n"
               "    return true;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
                       errout_str());
 
@@ -5631,7 +5638,7 @@ private:
               "    }\n"
               "    return true;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5644,7 +5651,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5657,7 +5664,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
 
         check("bool pred(int x);\n"
@@ -5671,7 +5678,7 @@ private:
               "    if(b) {}\n"
               "    return true;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool pred(int x);\n"
@@ -5684,7 +5691,7 @@ private:
               "    }\n"
               "    return true;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool pred(int x);\n"
@@ -5697,7 +5704,7 @@ private:
               "    }\n"
               "    return true;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool pred(int x);\n"
@@ -5709,7 +5716,7 @@ private:
               "        return true;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // There is no transform_if
@@ -5722,7 +5729,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool pred(int x);\n"
@@ -5734,7 +5741,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool pred(int x);\n"
@@ -5747,7 +5754,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool g(int);\n"
@@ -5823,7 +5830,7 @@ private:
               "    for(int x:v)\n"
               "        n = x > n ? x : n;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5831,7 +5838,7 @@ private:
               "    for(int x:v)\n"
               "        n = x < n ? x : n;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::min_element algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5839,7 +5846,7 @@ private:
               "    for(int x:v)\n"
               "        n = x > n ? n : x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::min_element algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo() {\n"
@@ -5847,7 +5854,7 @@ private:
               "    for(int x:v)\n"
               "        n = x < n ? n : x;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout_str());
 
         check("void foo(int m) {\n"
@@ -5855,7 +5862,7 @@ private:
               "    for(int x:v)\n"
               "        n = x > m ? x : n;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
         check("void f(const std::vector<int>& v) {\n"
@@ -5865,7 +5872,7 @@ private:
               "            maxY = y;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
                            "",
                            errout_str());
@@ -5882,7 +5889,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
                       errout_str());
 
@@ -5895,7 +5902,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
                       errout_str());
 
@@ -5908,7 +5915,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool g(std::vector<int>& v) {\n"
@@ -5920,7 +5927,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool g(const std::vector<int>& v, int& j) {\n"
@@ -5932,7 +5939,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool g(const std::vector<int>& v, int& j) {\n"
@@ -5945,7 +5952,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool g(const std::vector<int>& v, int& j) {\n"
@@ -5958,7 +5965,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("bool g(const std::vector<int>& v, int j) {\n"
@@ -5971,7 +5978,7 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
                       errout_str());
 
@@ -5989,7 +5996,7 @@ private:
               "          QDir(s);\n"
               "    }\n"
               "};\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5999,7 +6006,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << *v0 << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n", errout_str());
 
         check("std::string e();\n"
@@ -6011,7 +6018,7 @@ private:
               "    if (d != f.end()) {}\n"
               "  }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::vector<int> &v) {\n"
@@ -6019,7 +6026,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << (*v0)[0] << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n", errout_str());
 
         check("void f() {\n"
@@ -6028,7 +6035,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << v0 << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (error) Reference to v that may be invalid.\n",
             errout_str());
@@ -6039,7 +6046,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << v0 << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (error) Reference to v that may be invalid.\n",
                       errout_str());
 
@@ -6048,7 +6055,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << v0 << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:4]: (error) Reference to v that may be invalid.\n",
             errout_str());
@@ -6058,7 +6065,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << v0 << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3] -> [test.cpp:4]: (error) Reference to v that may be invalid.\n",
             errout_str());
@@ -6068,7 +6075,7 @@ private:
               "    v.push_back(123);\n"
               "    std::cout << (*v0)[0] << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("const std::vector<int> * g(int);\n"
@@ -6084,7 +6091,7 @@ private:
               "        if (m == 0) {}\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("std::vector<std::string> g();\n"
@@ -6094,7 +6101,7 @@ private:
               "    std::string z;\n"
               "    z += \"\";\n"
               "    z += y;\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::vector<char> v)\n"
@@ -6106,14 +6113,14 @@ private:
               "        cur = v.data();\n"
               "        end = cur + v.size();\n"
               "    }\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9598
         check("void f(std::vector<std::string> v) {\n"
               "    for (auto it = v.begin(); it != v.end(); it = v.erase(it))\n"
               "        *it;\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9714
@@ -6122,7 +6129,7 @@ private:
               "  std::string x;\n"
               "  v.push_back(x.insert(0, \"x\"));\n"
               "  v.push_back(\"y\");\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9783
@@ -6131,7 +6138,7 @@ private:
               "void foo() {\n"
               "    CString sAppID = GetTaskIDPerUUID(123).c_str();\n"
               "    InitializeJumpList(sAppID);\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
         // #9796
         check("struct A {};\n"
@@ -6142,7 +6149,7 @@ private:
               "    A *b = v.back();\n"
               "    v.pop_back();\n"
               "    delete b;\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {};\n"
@@ -6153,7 +6160,7 @@ private:
               "    A *b = v.back();\n"
               "    v.pop_back();\n"
               "    delete b;\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {};\n"
@@ -6164,7 +6171,7 @@ private:
               "    std::shared_ptr<A> b = v.back();\n"
               "    v.pop_back();\n"
               "    delete b;\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9780
@@ -6174,7 +6181,7 @@ private:
               "    info.vect = &vect;\n"
               "    vect.push_back(1);\n"
               "    return info.ret;\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9133
@@ -6191,7 +6198,7 @@ private:
               "void Fred::bar() {\n"
               "    v.push_back(0);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:9]: (error) Using iterator to member container 'v' that may be invalid.\n",
             errout_str());
@@ -6204,7 +6211,7 @@ private:
               "void bar(std::vector<int>& v) {\n"
               "    v.push_back(0);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:7] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n",
             errout_str());
@@ -6217,7 +6224,7 @@ private:
               "  I i = { &x };\n"
               "  x.clear();\n"
               "  Parse(i);\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -6233,7 +6240,7 @@ private:
               "  I cb[1];\n"
               "  for (long i = 0; i < 1; ++i)\n"
               "    cb[i] = b[i];\n"
-              "}\n",true);
+              "}\n",dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9836
@@ -6243,7 +6250,7 @@ private:
               "    v.clear();\n"
               "    std::cout << *p << std::endl;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout_str());
@@ -6260,7 +6267,7 @@ private:
               "    v.push_back(1);\n"
               "    return a.i->front();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {\n"
@@ -6276,7 +6283,7 @@ private:
               "    v.push_back(1);\n"
               "    g(a);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #10984
@@ -6286,7 +6293,7 @@ private:
               "    v.push_back(1);\n"
               "    g();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::vector<int> v) {\n"
@@ -6295,7 +6302,7 @@ private:
               "    v.push_back(1);\n"
               "    g();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'v' that may be invalid.\n",
             errout_str());
@@ -6306,7 +6313,7 @@ private:
               "    v.push_back(1);\n"
               "    g();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'v' that may be invalid.\n",
             errout_str());
@@ -6321,7 +6328,7 @@ private:
               "    v.push_back(1);\n"
               "    a.g();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:5] -> [test.cpp:9]: (error) Using object that points to local variable 'v' that may be invalid.\n",
             errout_str());
@@ -6336,7 +6343,7 @@ private:
               "    v.push_back(1);\n"
               "    a.g();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:6] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:5] -> [test.cpp:9]: (error) Using object that points to local variable 'v' that may be invalid.\n",
             errout_str());
@@ -6347,7 +6354,7 @@ private:
               "    c.erase(c.begin());\n"
               "    d.push_back(0);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #11147
@@ -6357,7 +6364,7 @@ private:
               "        s = s.substr(it - s.begin());\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:4]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
             errout_str());
@@ -6368,7 +6375,7 @@ private:
               "    args.push_back(\"-h\");\n"
               "    args.front();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::vector<int>& v) {\n" // #13108
@@ -6377,7 +6384,7 @@ private:
               "    v.erase(it, v.end());\n"
               "    for (const auto& i : w) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #13410
@@ -6386,7 +6393,7 @@ private:
               "    v.push_back(1);\n"
               "    return *i;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout_str());
@@ -6400,7 +6407,7 @@ private:
               "            v.push_back(i * 2);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (error) Calling 'push_back' while iterating the container is invalid.\n", errout_str());
 
         // #9713
@@ -6413,7 +6420,7 @@ private:
               "    }\n"
               "  }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout_str());
 
         check("struct A {\n"
@@ -6426,7 +6433,7 @@ private:
               "      add(i);\n"
               "  }\n"
               "};\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:7] -> [test.cpp:8]: (error) Calling 'add' while iterating the container is invalid.\n",
             errout_str());
@@ -6438,7 +6445,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f2(std::map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6448,7 +6455,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f3(std::map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6456,7 +6463,7 @@ private:
               "        m.emplace(x, 1);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f4(std::set<unsigned>& s, unsigned x) {\n"
@@ -6464,7 +6471,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f5(std::map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6474,7 +6481,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f6(std::map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6482,7 +6489,7 @@ private:
               "        m.emplace(x, 1);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f1(std::unordered_set<unsigned>& s, unsigned x) {\n"
@@ -6490,7 +6497,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f2(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6500,7 +6507,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f3(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6508,7 +6515,7 @@ private:
               "        m.emplace(x, 1);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f4(std::unordered_set<unsigned>& s, unsigned x) {\n"
@@ -6516,7 +6523,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f5(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6526,7 +6533,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void f6(std::unordered_map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6534,7 +6541,7 @@ private:
               "        m.emplace(x, 1);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
 
         check("void g1(std::map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6544,7 +6551,7 @@ private:
               "        m[x] = 2;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void g1(std::map<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6554,7 +6561,7 @@ private:
               "        m[x] = 2;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f1(QSet<unsigned>& s, unsigned x) {\n"
@@ -6562,7 +6569,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f1(std::multiset<unsigned>& s, unsigned x) {\n"
@@ -6570,7 +6577,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f2(std::multimap<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6580,7 +6587,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f3(std::multimap<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6588,7 +6595,7 @@ private:
               "        m.emplace(x, 1);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f4(std::multiset<unsigned>& s, unsigned x) {\n"
@@ -6596,7 +6603,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f5(std::multimap<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6606,7 +6613,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f1(std::unordered_multiset<unsigned>& s, unsigned x) {\n"
@@ -6614,7 +6621,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f2(std::unordered_multimap<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6624,7 +6631,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f3(std::unordered_multimap<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6632,7 +6639,7 @@ private:
               "        m.emplace(x, 1);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f4(std::unordered_multiset<unsigned>& s, unsigned x) {\n"
@@ -6640,7 +6647,7 @@ private:
               "        s.insert(x);\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f5(std::unordered_multimap<unsigned, unsigned>& m, unsigned x) {\n"
@@ -6650,7 +6657,7 @@ private:
               "        m[x] = 1;\n"
               "    }\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         // #9218 - not small type => do not warn if cpp standard is < c++17
@@ -6660,11 +6667,11 @@ private:
                                 "        s.insert(x);\n"
                                 "    }\n"
                                 "}\n";
-            check(code, true, Standards::CPP11);
+            check(code, dinit(CheckOptions, $.inconclusive = true, $.cppstandard = Standards::CPP11));
             ASSERT_EQUALS("", errout_str());
-            check(code, true, Standards::CPP14);
+            check(code, dinit(CheckOptions, $.inconclusive = true, $.cppstandard = Standards::CPP14));
             ASSERT_EQUALS("", errout_str());
-            check(code, true, Standards::CPP17);
+            check(code, dinit(CheckOptions, $.inconclusive = true, $.cppstandard = Standards::CPP17));
             ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout_str());
         }
 
@@ -6677,7 +6684,7 @@ private:
                   "      if(x.find(5) == x.end())\n"
                   "         x[5] = data;\n"
                   "   }\n"
-                  "}", false, Standards::CPP03);
+                  "}", dinit(CheckOptions, $.cppstandard = Standards::CPP03));
             ASSERT_EQUALS("", errout_str());
 
             check("void foo() {\n"
@@ -6688,7 +6695,7 @@ private:
                   "      if(x.find(5) == x.end())\n"
                   "         x[5] = data;\n"
                   "   }\n"
-                  "}", false, Standards::CPP11);
+                  "}", dinit(CheckOptions, $.cppstandard = Standards::CPP11));
             ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'.\n", errout_str());
 
             check("void foo() {\n"
@@ -6709,35 +6716,35 @@ private:
               "    std::vector<int> v;\n"
               "    for(auto x:v) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout_str());
 
         check("void f(std::vector<int> v) {\n"
               "    v.clear();\n"
               "    for(auto x:v) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout_str());
 
         check("void f(std::vector<int> v) {\n"
               "    if (!v.empty()) { return; }\n"
               "    for(auto x:v) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Iterating over container 'v' that is always empty.\n", errout_str());
 
         check("void f(std::vector<int> v) {\n"
               "    if (v.empty()) { return; }\n"
               "    for(auto x:v) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"
               "    std::sort(v.begin(), v.end());\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (style) Using sort with iterator 'v.begin()' that is always empty.\n", errout_str());
 
         check("void f() {\n" // #1201
@@ -6745,14 +6752,14 @@ private:
               "    std::vector<int> v2;\n"
               "    std::copy(v1.begin(), v1.end(), v2.begin());\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Using copy with iterator 'v2.begin()' that is always empty.\n", errout_str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"
               "    v.insert(v.end(), 1);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {\n"
@@ -6764,7 +6771,7 @@ private:
               "    for(auto&& x:v) {}\n"
               "    return a;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("static void f1(std::list<std::string>& parameters) {\n"
@@ -6778,7 +6785,7 @@ private:
               "    int res = ::f2(parameters);\n"
               "    for (auto param : parameters) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("namespace ns {\n"
@@ -6789,7 +6796,7 @@ private:
               "    const ArrayType arr;\n"
               "    for (const auto &a : arr) {}\n"
               "}",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:7]: (style) Iterating over container 'arr' that is always empty.\n", errout_str());
 
         check("struct S {\n"
@@ -6800,7 +6807,7 @@ private:
               "    bar(s);\n"
               "    std::sort(s.v.begin(), s.v.end());\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::vector<int>& v, int e) {\n"
@@ -6812,7 +6819,7 @@ private:
               " }\n"
               " for (auto i : v) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -6821,7 +6828,7 @@ private:
               "    rv.push_back(42);\n"
               "    for (auto i : v) {}\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("extern void f(std::string&&);\n"
@@ -6830,7 +6837,7 @@ private:
               "    const std::string& s_ref = s;\n"
               "    f(std::move(s));\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n" // #12757
@@ -6845,7 +6852,7 @@ private:
               "    for (const auto& i : m) {}\n"
               "    return {};\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(bool b) {\n" // #13121
@@ -6853,7 +6860,7 @@ private:
               "    for (auto c : s) {}\n"
               "    if (b)\n"
               "        s += \'a\';\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -6862,14 +6869,14 @@ private:
               "    static std::mutex m;\n"
               "    static std::lock_guard<std::mutex> g(m);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout_str());
 
         check("void f() {\n"
               "    static std::mutex m;\n"
               "    std::lock_guard<std::mutex> g(m);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -6877,7 +6884,7 @@ private:
               "    static std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
               "    static std::lock(g);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout_str());
 
         check("void f() {\n"
@@ -6885,21 +6892,21 @@ private:
               "    std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
               "    std::lock(g);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    std::mutex m;\n"
               "    std::lock_guard<std::mutex> g(m);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout_str());
 
         check("void f() {\n"
               "    std::mutex m;\n"
               "    std::unique_lock<std::mutex> g(m);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout_str());
 
         check("void f() {\n"
@@ -6907,7 +6914,7 @@ private:
               "    std::unique_lock<std::mutex> g(m, std::defer_lock);\n"
               "    std::lock(g);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout_str());
 
         check("void g();\n"
@@ -6917,7 +6924,7 @@ private:
               "    g();\n"
               "    m.unlock();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void g();\n"
@@ -6927,7 +6934,7 @@ private:
               "    g();\n"
               "    m.unlock();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout_str());
 
         check("class A {\n"
@@ -6936,7 +6943,7 @@ private:
               "        std::lock_guard<std::mutex> g(m);\n"
               "    }\n"
               "};\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("class A {\n"
@@ -6948,7 +6955,7 @@ private:
               "        m.unlock();\n"
               "    }\n"
               "};\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("class A {\n"
@@ -6957,7 +6964,7 @@ private:
               "        static std::lock_guard<std::mutex> g(m);\n"
               "    }\n"
               "};\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (warning) Lock guard is defined globally. Lock guards are intended to be local. A global lock guard could lead to a deadlock since it won't unlock until the end of the program.\n", errout_str());
 
         check("std::mutex& h();\n"
@@ -6965,7 +6972,7 @@ private:
               "    auto& m = h();\n"
               "    std::lock_guard<std::mutex> g(m);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void g();\n"
@@ -6976,7 +6983,7 @@ private:
               "    g();\n"
               "    m.unlock();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("std::mutex& h();\n"
@@ -6984,7 +6991,7 @@ private:
               "    auto m = h();\n"
               "    std::lock_guard<std::mutex> g(m);\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout_str());
 
         check("void g();\n"
@@ -6995,7 +7002,7 @@ private:
               "    g();\n"
               "    m.unlock();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:5]: (warning) The lock is ineffective because the mutex is locked at the same scope as the mutex itself.\n", errout_str());
 
         check("void foo();\n"
@@ -7011,7 +7018,7 @@ private:
               "    bar();\n"
               "    m.unlock();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo();\n"
@@ -7025,7 +7032,7 @@ private:
               "    std::unique_lock<std::mutex> g{m};\n"
               "    bar();\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() { int f = 0; auto g(f); g = g; }");

@@ -261,15 +261,38 @@ private:
         TEST_CASE(globalData);
     }
 
+    struct FunctionVariableUsageOptions
+    {
+        FunctionVariableUsageOptions() = default;
+        bool cpp = true;
+    };
+
 #define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
+    void functionVariableUsage_(const char* file, int line, const char code[], const FunctionVariableUsageOptions& options = make_default_obj()) {
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+
+        // Check for unused variables..
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
+        checkUnusedVar.checkFunctionVariableUsage();
+    }
+
+    struct CheckStructMemberUsageOptions
+    {
+        CheckStructMemberUsageOptions() = default;
+        const std::list<Directive>* directives = nullptr;
+        const Settings *s = nullptr;
+    };
+
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr, const Settings *s = nullptr) {
-        const Settings *settings1 = s ? s : &settings;
+    void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
+        const Settings *settings1 = options.s ? options.s : &settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(*settings1, *this);
-        if (directives)
-            tokenizer.setDirectives(*directives);
+        if (options.directives)
+            tokenizer.setDirectives(*options.directives);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused variables..
@@ -292,8 +315,8 @@ private:
     }
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkFunctionVariableUsageP_(const char* file, int line, const char code[], const char* filename = "test.cpp") {
-        std::vector<std::string> files(1, filename);
+    void checkFunctionVariableUsageP_(const char* file, int line, const char code[]) {
+        std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -1592,7 +1615,7 @@ private:
     void structmember15() { // #3088
         std::list<Directive> directives;
         directives.emplace_back("test.cpp", 1, "#pragma pack(1)");
-        checkStructMemberUsage("\nstruct Foo { int x; int y; };", &directives);
+        checkStructMemberUsage("\nstruct Foo { int x; int y; };", dinit(CheckStructMemberUsageOptions, $.directives = &directives));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1823,7 +1846,7 @@ private:
                                "void f() {\n"
                                "    struct B* pb = &a.b;\n"
                                "    pb->x = 1;\n"
-                               "}\n", nullptr, &s);
+                               "}\n", dinit(CheckStructMemberUsageOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
 
         checkStructMemberUsage("union U {\n"
@@ -1841,7 +1864,7 @@ private:
                                "    pb->x = 1;\n"
                                "    struct C* pc = &u.c;\n"
                                "    pc->s[0] = 1;\n"
-                               "}\n", nullptr, &s);
+                               "}\n", dinit(CheckStructMemberUsageOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2058,16 +2081,6 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void functionVariableUsage_(const char* file, int line, const char code[], bool cpp = true) {
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
-
-        // Check for unused variables..
-        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
-        checkUnusedVar.checkFunctionVariableUsage();
-    }
-
     void localvar1() {
         // extracttests.disable
         functionVariableUsage("void foo()\n"
@@ -2192,7 +2205,7 @@ private:
                               "{\n"
                               "    undefined i = 0;\n"
                               "}\n",
-                              false);
+                              dinit(FunctionVariableUsageOptions, $.cpp = false));
         ASSERT_EQUALS(
             "[test.c:3]: (style) Variable 'i' is assigned a value that is never used.\n"
             "[test.c:3]: (style) Variable 'i' is assigned a value that is never used.\n", // duplicate
@@ -2588,7 +2601,7 @@ private:
                               "    undefined i;\n"
                               "    return i;\n"
                               "}\n",
-                              false);
+                              dinit(FunctionVariableUsageOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3]: (style) Variable 'i' is not assigned a value.\n", errout_str());
 
         functionVariableUsage("undefined *foo()\n"
@@ -3355,7 +3368,7 @@ private:
         functionVariableUsage("void f(int x) {\n"
                               "    C c;\n"
                               "    if (c >>= x) {}\n"
-                              "}", false);
+                              "}", dinit(FunctionVariableUsageOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3]: (style) Variable 'c' is assigned a value that is never used.\n", errout_str());
 
         functionVariableUsage("void f() {\n"
@@ -5142,7 +5155,7 @@ private:
                               "  int x;\n"
                               "  unknown_type p = &x;\n"
                               "  *p = 9;\n"
-                              "}", false);
+                              "}", dinit(FunctionVariableUsageOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5297,7 +5310,7 @@ private:
                               "    A a;\n"
                               "    return 0;\n"
                               "}\n",
-                              false);
+                              dinit(FunctionVariableUsageOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:2]: (style) Unused variable: a\n", errout_str());
         // extracttests.enable
 
@@ -7125,7 +7138,7 @@ private:
                 "void fun(Date result) {"
                 "  result.x = 12;\n"
                 "}",
-                false
+                dinit(FunctionVariableUsageOptions, $.cpp = false)
                 );
             ASSERT_EQUALS("[test.c:1]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout_str());
 

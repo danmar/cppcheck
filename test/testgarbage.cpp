@@ -272,7 +272,7 @@ private:
         TEST_CASE(nonGarbageCode1); // #8346
     }
 
-#define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
+#define checkCodeInternal(...) checkCodeInternal_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string checkCode(const char (&code)[size], bool cpp = true) {
         // double the tests - run each example as C as well as C++
@@ -286,7 +286,7 @@ private:
     }
 
     template<size_t size>
-    std::string checkCodeInternal_(const char (&code)[size], bool cpp, const char* file, int line) {
+    std::string checkCodeInternal_(const char* file, int line, const char (&code)[size], bool cpp) {
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
@@ -299,9 +299,9 @@ private:
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
-#define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
+#define getSyntaxError(...) getSyntaxError_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string getSyntaxError_(const char (&code)[size], const char* file, int line) {
+    std::string getSyntaxError_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer tokenizer(settings, *this);
         try {
             ASSERT_LOC(tokenizer.tokenize(code), file, line);
