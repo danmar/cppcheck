@@ -7690,25 +7690,26 @@ void Tokenizer::simplifyInitVar()
             continue;
 
         if (Token::Match(tok, "%type% *|&| %name% (|{")) {
-            while(tok && !Token::Match(tok, "(|{"))
+            while (tok && !Token::Match(tok, "(|{"))
                 tok = tok->next();
-            tok->isInitBracket(true);
+            if (tok)
+                tok->isInitBracket(true);
             /* tok = initVar(tok);
-        } else if (Token::Match(tok, "%type% *| %name% ( %type% (")) {
-            const Token* tok2 = tok->tokAt(2);
-            if (!tok2->link())
+               } else if (Token::Match(tok, "%type% *| %name% ( %type% (")) {
+               const Token* tok2 = tok->tokAt(2);
+               if (!tok2->link())
                 tok2 = tok2->next();
-            if (!tok2->link() || (tok2->link()->strAt(1) == ";" && !Token::simpleMatch(tok2->linkAt(2), ") (")))
+               if (!tok2->link() || (tok2->link()->strAt(1) == ";" && !Token::simpleMatch(tok2->linkAt(2), ") (")))
                 tok = initVar(tok);
-        } else if (Token::Match(tok, "class|struct|union| %type% *| %name% ( &| %any% ) ,") && tok->str() != "new") {
-            Token *tok1 = tok->tokAt(5);
-            while (tok1->str() != ",")
+               } else if (Token::Match(tok, "class|struct|union| %type% *| %name% ( &| %any% ) ,") && tok->str() != "new") {
+               Token *tok1 = tok->tokAt(5);
+               while (tok1->str() != ",")
                 tok1 = tok1->next();
-            tok1->str(";");
+               tok1->str(";");
 
-            const int numTokens = (Token::Match(tok, "class|struct|union")) ? 2 : 1;
-            TokenList::insertTokens(tok1, tok, numTokens);
-            tok = initVar(tok); */
+               const int numTokens = (Token::Match(tok, "class|struct|union")) ? 2 : 1;
+               TokenList::insertTokens(tok1, tok, numTokens);
+               tok = initVar(tok); */
         }
     }
 }
