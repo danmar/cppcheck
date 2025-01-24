@@ -145,7 +145,7 @@ static QStringList getLabels() {
 }
 
 ResultsTree::ResultsTree(QWidget * parent) :
-    QTreeView(parent), mReportType(ReportType::normal)
+    QTreeView(parent)
 {
     setModel(&mModel);
     translate(); // Adds columns to grid

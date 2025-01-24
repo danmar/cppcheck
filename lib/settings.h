@@ -28,6 +28,7 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <atomic>
@@ -48,7 +49,6 @@
 #endif
 
 enum class SHOWTIME_MODES : std::uint8_t;
-enum class ReportType : std::uint8_t;
 namespace ValueFlow {
     class Value;
 }
@@ -112,7 +112,7 @@ public:
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 
     /** @brief Report type */
-    ReportType reportType;
+    ReportType reportType = ReportType::normal;
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;

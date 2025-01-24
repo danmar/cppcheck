@@ -24,6 +24,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "color.h"
+#include "checkers.h"
 
 #include <cstddef>
 #include <list>
@@ -278,16 +279,6 @@ public:
 
 private:
     static const std::set<std::string> mCriticalErrorIds;
-};
-
-enum class ReportType : std::uint8_t {
-    normal = 0,
-    autosar = 1,
-    certC = 2,
-    certCpp = 3,
-    misraC = 4,
-    misraCpp2008 = 5,
-    misraCpp2023 = 6,
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */

@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "showtypes.h"
+#include "checkers.h"
 
 #include <cstdint>
 
@@ -531,7 +532,7 @@ private:
     bool mShowCppcheck = true;
     bool mShowClang = true;
 
-    ReportType mReportType;
+    ReportType mReportType = ReportType::normal;
 
     std::map<std::string, std::string> mGuideline;
 };

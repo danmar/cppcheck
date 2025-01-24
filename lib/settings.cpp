@@ -56,7 +56,6 @@ static int getPid()
 }
 
 Settings::Settings()
-    : reportType(ReportType::normal)
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
