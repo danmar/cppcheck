@@ -1609,7 +1609,7 @@ namespace {
                     typeEndToken = tok->astParent()->link();
                 }
                 std::string type;
-                for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
+                for (const Token* t = typeStartToken; precedes(t, typeEndToken); t = t->next()) {
                     type += " " + t->str();
                 }
                 key.parentOp += type;

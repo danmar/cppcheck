@@ -253,6 +253,7 @@ private:
         TEST_CASE(exprid11);
         TEST_CASE(exprid12);
         TEST_CASE(exprid13);
+        TEST_CASE(exprid14);
 
         TEST_CASE(structuredBindings);
     }
@@ -4357,6 +4358,19 @@ private:
                           "5: struct U u@4 ; u@4 = { .@UNIQUE t@5 = { . s = { . s = 1 } } } ;\n"
                           "6: }\n";
         ASSERT_EQUALS(exp, tokenizeExpr(code));
+    }
+
+    void exprid14()
+    {
+        const Settings s = settingsBuilder(settings).library("std.cfg").build();
+
+        const char code[] = "int f(double a, double b, double c) {\n" // #13578
+                            "    return static_cast<int>(std::ceil((std::min)(a, (std::min)(b, c))));\n"
+                            "}\n";
+        const char* exp = "1: int f ( double a@1 , double b@2 , double c@3 ) {\n"
+                          "2: return static_cast < int > ( std :: ceil ( ( std :: min ) ( a@1 , ( std :: min ) ( b@2 , c@3 ) ) ) ) ;\n"
+                          "3: }\n";
+        ASSERT_EQUALS(exp, tokenize(code, dinit(TokenizeOptions, $.s = &s))); // don't crash
     }
 
     void structuredBindings() {
