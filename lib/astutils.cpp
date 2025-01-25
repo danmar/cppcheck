@@ -1991,8 +1991,6 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         return true;
     if (!Token::Match(ftok, "%name% ("))
         return false;
-    if (ftok->isStandardType())
-        return true;
     if (const Function* f = ftok->function()) {
         if (f->isAttributePure() || f->isAttributeConst())
             return true;
