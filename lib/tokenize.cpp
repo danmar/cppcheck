@@ -3441,6 +3441,8 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
     }
 
+    validateTypes();
+
     printDebugOutput(1, std::cout);
 
     return true;
@@ -5923,25 +5925,29 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         if (xml)
             out << "</debug>" << std::endl;
     }
+}
 
-    if (mSymbolDatabase && simplification == 2U && mSettings.debugwarnings) {
-        printUnknownTypes();
+void Tokenizer::validateTypes() const
+{
+    if (!mSymbolDatabase || !mSettings.debugwarnings)
+        return;
 
-        // the typeStartToken() should come before typeEndToken()
-        for (const Variable *var : mSymbolDatabase->variableList()) {
-            if (!var)
-                continue;
+    printUnknownTypes();
 
-            const Token * typetok = var->typeStartToken();
-            while (typetok && typetok != var->typeEndToken())
-                typetok = typetok->next();
+    // the typeStartToken() should come before typeEndToken()
+    for (const Variable *var : mSymbolDatabase->variableList()) {
+        if (!var)
+            continue;
 
-            if (typetok != var->typeEndToken()) {
-                reportError(var->typeStartToken(),
-                            Severity::debug,
-                            "debug",
-                            "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
-            }
+        const Token * typetok = var->typeStartToken();
+        while (typetok && typetok != var->typeEndToken())
+            typetok = typetok->next();
+
+        if (typetok != var->typeEndToken()) {
+            reportError(var->typeStartToken(),
+                        Severity::debug,
+                        "debug",
+                        "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
         }
     }
 }
