@@ -455,6 +455,9 @@ private:
         TEST_CASE(analyzeAllVsConfigs);
         TEST_CASE(noAnalyzeAllVsConfigs);
         TEST_CASE(noAnalyzeAllVsConfigs2);
+        TEST_CASE(debugSymdb);
+        TEST_CASE(debugAst);
+        TEST_CASE(debugValueflow);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3104,6 +3107,27 @@ private:
         const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "--no-analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
+    }
+
+    void debugSymdb() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-symdb", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugsymdb);
+    }
+
+    void debugAst() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-ast", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugast);
+    }
+
+    void debugValueflow() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-valueflow", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugvalueflow);
     }
 
     void ignorepaths1() {
