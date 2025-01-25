@@ -270,6 +270,7 @@ private:
         TEST_CASE(enumTrailingComma);
 
         TEST_CASE(nonGarbageCode1); // #8346
+        TEST_CASE(nonGarbageCode2); // #13576
     }
 
 #define checkCodeInternal(...) checkCodeInternal_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1879,6 +1880,10 @@ private:
                             "    auto fn = []() -> foo* { return new foo(); };\n"
                             "}"));
         ignore_errout(); // we do not care about the output
+    }
+
+    void nonGarbageCode2() { // #13576
+        ASSERT_NO_THROW(checkCode("enum { A = [=](void) mutable -> int { return 0; }() };"));
     }
 };
 
