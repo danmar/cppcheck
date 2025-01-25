@@ -1764,6 +1764,7 @@ private:
     }
     void garbageCode228() {
         ASSERT_NO_THROW(checkCode("void f() { enum { A = [=]() mutable { return 0; }() }; }"));
+        ASSERT_NO_THROW(checkCode("enum { A = [=](void) mutable -> int { return 0; }() };"));
     }
 
     void syntaxErrorFirstToken() {
