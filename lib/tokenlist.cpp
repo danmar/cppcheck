@@ -734,8 +734,6 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
     if (!state.op.empty()) {
         binop->astOperand1(state.op.top());
         state.op.pop();
-        if (binop->str() == "(" && binop->astOperand1()->isStandardType())
-            binop->isCast(true);
     }
     state.op.push(binop);
 }

@@ -699,19 +699,13 @@ private:
                     "    if (i <= static_cast<int>(v.size())) {\n"
                     "        if (v[i]) {}\n"
                     "    }\n"
-                    "    if (i <= int(v.size())) {\n"
-                    "        if (v[i]) {}\n"
-                    "    }\n"
                     "}\n");
         ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'i<=(int)v.size()' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds.\n"
                       "test.cpp:2:note:condition 'i<=(int)v.size()'\n"
                       "test.cpp:3:note:Access out of bounds\n"
                       "test.cpp:6:warning:Either the condition 'i<=static_cast<int>(v.size())' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds.\n"
                       "test.cpp:5:note:condition 'i<=static_cast<int>(v.size())'\n"
-                      "test.cpp:6:note:Access out of bounds\n"
-                      "test.cpp:9:warning:Either the condition 'i<=int(v.size())' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds.\n"
-                      "test.cpp:8:note:condition 'i<=int(v.size())'\n"
-                      "test.cpp:9:note:Access out of bounds\n",
+                      "test.cpp:6:note:Access out of bounds\n",
                       errout_str());
 
         check("template<class Iterator>\n"
