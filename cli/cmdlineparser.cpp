@@ -614,6 +614,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.cppHeaderProbe = true;
             }
 
+            else if (std::strcmp(argv[i], "--debug-ast") == 0)
+                mSettings.debugsymdb = true;
+
             // Show debug warnings for lookup for configuration files
             else if (std::strcmp(argv[i], "--debug-clang-output") == 0)
                 mSettings.debugClangOutput = true;
@@ -649,6 +652,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug-simplified") == 0)
                 mSettings.debugSimplified = true;
+
+            else if (std::strcmp(argv[i], "--debug-symdb") == 0)
+                mSettings.debugsymdb = true;
 
             // Show template information
             else if (std::strcmp(argv[i], "--debug-template") == 0)
