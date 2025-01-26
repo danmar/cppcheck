@@ -22,6 +22,12 @@ option(ANALYZE_THREAD       "Build with ThreadSanitizer to detect data races"   
 option(ANALYZE_UNDEFINED    "Build with UndefinedBehaviorSanitizer to detect undefined behavior" OFF)
 
 option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                                      OFF)
+if(WARNINGS_ARE_ERRORS)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+        message(WARNING "WARNINGS_ARE_ERRORS is deprecated - please use CMAKE_COMPILE_WARNING_AS_ERROR instead")
+    endif()
+    set(CMAKE_COMPILE_WARNING_AS_ERROR On)
+endif()
 option(EXTERNALS_AS_SYSTEM  "Treat externals as system includes"                            OFF)
 
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")

@@ -33,7 +33,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
         # "Release" uses -O3 by default
         add_compile_options(-O2)
     endif()
-    if(WARNINGS_ARE_ERRORS)
+    if(CMAKE_COMPILE_WARNING_AS_ERROR)
         add_compile_options(-Werror)
     endif()
     add_compile_options(-pedantic) # TODO: is this implied by -Weverything?
@@ -158,7 +158,7 @@ if(MSVC)
     # General
     add_compile_options(/W4) # Warning Level
     add_compile_options(/Zi) # Debug Information Format - Program Database
-    if(WARNINGS_ARE_ERRORS)
+    if(CMAKE_COMPILE_WARNING_AS_ERROR)
         add_compile_options(/WX) # Treat Warning As Errors
     endif()
     add_compile_options(/MP) # Multi-processor Compilation
