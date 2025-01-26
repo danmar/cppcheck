@@ -2254,67 +2254,67 @@ Options:
         <translation>设置为默认暗色</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="227"/>
+        <location filename="resultstree.cpp" line="132"/>
         <source>File</source>
         <translation type="unfinished">文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="228"/>
+        <location filename="resultstree.cpp" line="133"/>
         <source>Line</source>
         <translation type="unfinished">行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="229"/>
+        <location filename="resultstree.cpp" line="134"/>
         <source>Severity</source>
         <translation type="unfinished">严重性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="230"/>
+        <location filename="resultstree.cpp" line="135"/>
         <source>Classification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="231"/>
+        <location filename="resultstree.cpp" line="136"/>
         <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="232"/>
+        <location filename="resultstree.cpp" line="137"/>
         <source>Inconclusive</source>
         <translation type="unfinished">不确定的</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="233"/>
+        <location filename="resultstree.cpp" line="138"/>
         <source>Summary</source>
         <translation type="unfinished">概要</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="234"/>
+        <location filename="resultstree.cpp" line="139"/>
         <source>Id</source>
         <translation type="unfinished">Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="235"/>
+        <location filename="resultstree.cpp" line="140"/>
         <source>Guideline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="236"/>
+        <location filename="resultstree.cpp" line="141"/>
         <source>Rule</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="237"/>
+        <location filename="resultstree.cpp" line="142"/>
         <source>Since date</source>
         <translation type="unfinished">日期</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="238"/>
+        <location filename="resultstree.cpp" line="143"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="239"/>
+        <location filename="resultstree.cpp" line="144"/>
         <source>CWE</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2361,93 +2361,93 @@ Options:
         <translation type="vanished">概要</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="374"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>Undefined file</source>
         <translation>未定义文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="865"/>
+        <location filename="resultstree.cpp" line="751"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1058"/>
+        <location filename="resultstree.cpp" line="944"/>
         <source>Could not find file:</source>
         <translation>找不到文件：</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1062"/>
+        <location filename="resultstree.cpp" line="948"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>请选择文件夹 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1063"/>
+        <location filename="resultstree.cpp" line="949"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>选择目录 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="951"/>
         <source>Please select the directory where file is located.</source>
         <translation>请选择文件所在的目录。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="574"/>
+        <location filename="resultstree.cpp" line="460"/>
         <source>debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="500"/>
+        <location filename="resultstree.cpp" line="386"/>
         <source>note</source>
         <translation>注意</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="864"/>
+        <location filename="resultstree.cpp" line="750"/>
         <source>Recheck</source>
         <translation>重新检查</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="752"/>
         <source>Hide</source>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="753"/>
         <source>Hide all with id</source>
         <translation>隐藏全部 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="886"/>
+        <location filename="resultstree.cpp" line="772"/>
         <source>Suppress selected id(s)</source>
         <translation>抑制选择的 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="754"/>
         <source>Open containing folder</source>
         <translation>打开包含的文件夹</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="577"/>
+        <location filename="resultstree.cpp" line="463"/>
         <source>internal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="907"/>
+        <location filename="resultstree.cpp" line="793"/>
         <source>Tag</source>
         <translation>标记</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="795"/>
         <source>No tag</source>
         <translation>取消标记</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="940"/>
-        <location filename="resultstree.cpp" line="954"/>
+        <location filename="resultstree.cpp" line="826"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="941"/>
+        <location filename="resultstree.cpp" line="827"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2457,7 +2457,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="955"/>
+        <location filename="resultstree.cpp" line="841"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2466,12 +2466,12 @@ Please select the default editor application in preferences/Applications.</sourc
 请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="981"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Could not find the file!</source>
         <translation>找不到文件！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1044"/>
+        <location filename="resultstree.cpp" line="930"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2480,7 +2480,7 @@ Please check the application path and parameters are correct.</source>
 请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1066"/>
+        <location filename="resultstree.cpp" line="952"/>
         <source>Select Directory</source>
         <translation>选择目录</translation>
     </message>
@@ -2497,32 +2497,32 @@ Please check the application path and parameters are correct.</source>
         <translation type="vanished">日期</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="556"/>
+        <location filename="resultstree.cpp" line="442"/>
         <source>style</source>
         <translation>风格</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="559"/>
+        <location filename="resultstree.cpp" line="445"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="562"/>
+        <location filename="resultstree.cpp" line="448"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="565"/>
+        <location filename="resultstree.cpp" line="451"/>
         <source>performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="568"/>
+        <location filename="resultstree.cpp" line="454"/>
         <source>portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="571"/>
+        <location filename="resultstree.cpp" line="457"/>
         <source>information</source>
         <translation>信息</translation>
     </message>
