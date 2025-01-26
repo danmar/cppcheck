@@ -86,7 +86,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     #add_compile_options_safe(-Wunused-macros)
     #add_compile_options_safe(-Wpedantic)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 14)
         # TODO: verify this regression still exists in clang-15
         if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555

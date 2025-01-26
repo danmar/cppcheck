@@ -82,7 +82,7 @@ option(NO_WINDOWS_SEH       "Disable usage of Windows SEH"                      
 # TODO: disable by default like make build?
 option(FILESDIR "Hard-coded directory for files to load from"                               OFF)
 
-if(CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.16")
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
     # need to disable the prologue or it will be treated like a system header and not emit any warnings
     # see https://gitlab.kitware.com/cmake/cmake/-/issues/21219
