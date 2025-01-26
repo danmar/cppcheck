@@ -1386,15 +1386,18 @@ namespace {
                     case ValueFlow::Value::ValueType::ITERATOR_START:
                     case ValueFlow::Value::ValueType::ITERATOR_END:
                     case ValueFlow::Value::ValueType::CONTAINER_SIZE: {
+                        assert(!value);
                         value = &val;
                         break;
                     }
                     default:
                         break;
                 }
-                if (value)
-                    return *value;
+                //if (value)
+                //    return *value;
             }
+            if (value)
+                return *value;
             if (expr->isNumber()) {
                 if (MathLib::isFloat(expr->str()))
                     return unknown();
