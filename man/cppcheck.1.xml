@@ -579,11 +579,12 @@ There are false positives with this option. Each result must be carefully invest
             <glosslist>
               <glossentry><glossterm>normal</glossterm><glossdef><para>Default, only show cppcheck error ID and severity)</para></glossdef></glossentry>
               <glossentry><glossterm>autosar</glossterm><glossdef><para>Autosar</para></glossdef></glossentry>
-              <glossentry><glossterm>certC</glossterm><glossdef><para>Cert C</para></glossdef></glossentry>
-              <glossentry><glossterm>certCpp</glossterm><glossdef><para>Cert Cpp</para></glossdef></glossentry>
-              <glossentry><glossterm>misraC</glossterm><glossdef><para>Misra C</para></glossdef></glossentry>
-              <glossentry><glossterm>misraCpp2008</glossterm><glossdef><para>Misra C++ 2008</para></glossdef></glossentry>
-              <glossentry><glossterm>misraCpp2023</glossterm><glossdef><para>Misra C++ 2023</para></glossdef></glossentry>
+              <glossentry><glossterm>cert-c-2016</glossterm><glossdef><para>Cert C 2016</para></glossdef></glossentry>
+              <glossentry><glossterm>cert-cpp-2016</glossterm><glossdef><para>Cert C++ 2016</para></glossdef></glossentry>
+              <glossentry><glossterm>misra-c-2012</glossterm><glossdef><para>Misra C 2012</para></glossdef></glossentry>
+              <glossentry><glossterm>misra-c-2023</glossterm><glossdef><para>Misra C 2023</para></glossdef></glossentry>
+              <glossentry><glossterm>misra-cpp-2008</glossterm><glossdef><para>Misra C++ 2008</para></glossdef></glossentry>
+              <glossentry><glossterm>misra-cpp-2023</glossterm><glossdef><para>Misra C++ 2023</para></glossdef></glossentry>
             </glosslist>
           </para>
         </listitem>
