@@ -21,7 +21,6 @@
 #include "path.h"
 #include "summaries.h"
 #include "vfvalue.h"
-#include "errorlogger.h"
 
 #include <cctype>
 #include <fstream>

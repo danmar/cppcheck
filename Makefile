@@ -612,7 +612,7 @@ $(libcppdir)/programmemory.o: lib/programmemory.cpp lib/addoninfo.h lib/astutils
 $(libcppdir)/reverseanalyzer.o: lib/reverseanalyzer.cpp lib/addoninfo.h lib/analyzer.h lib/astutils.h lib/checkers.h lib/config.h lib/errortypes.h lib/forwardanalyzer.h lib/library.h lib/mathlib.h lib/platform.h lib/reverseanalyzer.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/valueptr.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/reverseanalyzer.cpp
 
-$(libcppdir)/settings.o: lib/settings.cpp externals/picojson/picojson.h lib/addoninfo.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/summaries.h lib/suppressions.h lib/utils.h lib/vfvalue.h
+$(libcppdir)/settings.o: lib/settings.cpp externals/picojson/picojson.h lib/addoninfo.h lib/checkers.h lib/config.h lib/errortypes.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/summaries.h lib/suppressions.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/settings.cpp
 
 $(libcppdir)/standards.o: lib/standards.cpp externals/simplecpp/simplecpp.h lib/config.h lib/standards.h lib/utils.h
