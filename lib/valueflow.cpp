@@ -3711,11 +3711,11 @@ static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const S
             std::vector<ValueFlow::Value> values;
             {
                 SymbolicInferModel leftModel{tok->astOperand1()};
-                values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+                values = infer(std::move(leftModel), tok->str(), 0, tok->astOperand2()->values());
             }
             if (values.empty()) {
                 SymbolicInferModel rightModel{tok->astOperand2()};
-                values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
+                values = infer(std::move(rightModel), tok->str(), tok->astOperand1()->values(), 0);
             }
             for (ValueFlow::Value& value : values) {
                 setTokenValue(tok, std::move(value), settings);
