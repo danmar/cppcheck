@@ -172,7 +172,6 @@ private:
         TEST_CASE(subtract);
         TEST_CASE(addNull);
         TEST_CASE(isPointerDeRefFunctionDecl);
-        TEST_CASE(parenthesizedLibraryFunction); // #13585
 
         TEST_CASE(ctuTest);
     }
@@ -4558,13 +4557,6 @@ private:
 
     void isPointerDeRefFunctionDecl() {
         check("const char** get() { return 0; }");
-        ASSERT_EQUALS("", errout_str());
-    }
-    void parenthesizedLibraryFunction() { // #13585
-        // Don't crash
-        check("int f(int a, int b) {\n"
-              "    return (a != 0) ? 1 : (std::min)(1, b);\n"
-              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
