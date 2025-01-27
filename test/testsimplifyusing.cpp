@@ -822,6 +822,14 @@ private:
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:6]: (debug) auto token with no type.\n"
                            "", errout_str());
+
+        const char code3[] = "using V = int*;\n"
+                             "auto g() -> const volatile V { return {}; }\n";
+        const char expected3[] = "auto g ( ) . const volatile int * { return { } ; }";
+        ASSERT_EQUALS(expected3, tok(code3));
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:2]: (debug) auto token with no type.\n"
+                           "", errout_str());
     }
 
     void simplifyUsing33() { // #13090
