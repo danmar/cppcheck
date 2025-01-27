@@ -5675,6 +5675,21 @@ private:
             ASSERT_EQUALS(3, db->scopeList.size());
             ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
             ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+            ASSERT_EQUALS("i", db->scopeList.back().varlist.back().name());
+        }
+        {
+            GET_SYMBOL_DB_DBG("void bar(int) {}\n" // #9960
+                              "void foo() {\n"
+                              "    std::vector<int*> a(10);\n"
+                              "    for (int i = 0; i < 10; i++)\n"
+                              "        bar(*a[4]);\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout_str());
+            ASSERT_EQUALS(4, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
+            ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+            ASSERT_EQUALS("i", db->scopeList.back().varlist.back().name());
         }
     }
 
