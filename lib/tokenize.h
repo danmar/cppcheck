@@ -317,6 +317,8 @@ private:
 
     void simplifySQL();
 
+    void simplifyParenthesizedLibraryFunctions();
+
     void checkForEnumsWithTypedef();
 
     void findComplicatedSyntaxErrorsInTemplates();

@@ -461,7 +461,9 @@ private:
         TEST_CASE(testDirectiveIncludeComments);
         TEST_CASE(testDirectiveRelativePath);
 
-        TEST_CASE(funcnameInParenthesis); // #13554
+        TEST_CASE(funcnameInParenthesis1); // #13554
+        TEST_CASE(funcnameInParenthesis2); // #13578
+        TEST_CASE(funcnameInParenthesis3); // #13585
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8347,7 +8349,7 @@ private:
         ASSERT_EQUALS(dumpdata, ostr.str());
     }
 
-    void funcnameInParenthesis() { // #13554
+    void funcnameInParenthesis1() { // #13554
         const char code[] = "void f(void) {\n"
                             "  double result = (strtod)(\"NAN\", NULL);\n"
                             "}\n";
@@ -8356,6 +8358,36 @@ private:
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "strtod");
         ASSERT(f);
         ASSERT(!f->previous()->isCast());
+    }
+
+    void funcnameInParenthesis2() { // #13578
+        const char code[] = "int f(double a, double b, double c) {\n"
+                            "    return static_cast<int>(std::ceil((std::min)(a, (std::min)(b, c))));\n"
+                            "}\n";
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, true), __FILE__, __LINE__);
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "min");
+        ASSERT(f);
+        const Token *par = f->next();
+        ASSERT(par);
+        ASSERT(Token::simpleMatch(par, "("));
+        ASSERT_EQUALS(par->astOperand1(), f->astParent() /* :: */);
+        ASSERT(Token::simpleMatch(par->astOperand2(), ","));
+    }
+
+    void funcnameInParenthesis3() { // #13585
+        const char code[] = "int f(int a, int b) {\n"
+                            "    return (a != 0) ? 1 : (std::min)(1, b);\n"
+                            "}\n";
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code, true), __FILE__, __LINE__);
+        const Token *f = Token::findsimplematch(tokenizer.tokens(), "min");
+        ASSERT(f);
+        const Token *par = f->next();
+        ASSERT(par);
+        ASSERT(Token::simpleMatch(par, "("));
+        ASSERT_EQUALS(par->astOperand1(), f->astParent() /* :: */);
+        ASSERT(Token::simpleMatch(par->astOperand2(), ","));
     }
 };
 
