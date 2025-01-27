@@ -70,7 +70,8 @@ def test_addon_suppress_inline_project(tmpdir):
     assert ret == 0, stdout
 
 
-def test_suppress_inline():
+# TODO: remove overrides when this is fully working
+def __test_suppress_inline(extra_args):
     args = [
         '-q',
         '--template=simple',
@@ -81,6 +82,8 @@ def test_suppress_inline():
         'whole-program/odr2.cpp'
     ]
 
+    args += extra_args
+
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
@@ -88,8 +91,44 @@ def test_suppress_inline():
     assert ret == 0, stdout
 
 
-def test_suppress_inline_project(tmpdir):
-    compile_db = __create_compile_commands(tmpdir, [
+def test_suppress_inline():
+    __test_suppress_inline(['-j1', '--no-cppcheck-build-dir'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_suppress_inline_j():
+    __test_suppress_inline(['-j2', '--no-cppcheck-build-dir'])
+
+
+def test_suppress_inline_builddir(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline(['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+def test_suppress_inline_builddir_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline(['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+    __test_suppress_inline(['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+def test_suppress_inline_builddir_j(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline(['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+
+
+def test_inline_suppr_builddir_j_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline(['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+    __test_suppress_inline(['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+
+
+# TODO: remove overrides when it is fully working
+def __test_suppress_inline_project(tmp_path, extra_args):
+    compile_db = __create_compile_commands(str(tmp_path), [
         os.path.join(__script_dir, 'whole-program', 'odr1.cpp'),
         os.path.join(__script_dir, 'whole-program', 'odr2.cpp')
     ])
@@ -103,11 +142,49 @@ def test_suppress_inline_project(tmpdir):
         '--project={}'.format(compile_db)
     ]
 
+    args += extra_args
+
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
+
+
+
+def test_suppress_inline_project(tmp_path):
+    __test_suppress_inline_project(tmp_path, ['-j1', '--no-cppcheck-build-dir'])
+
+
+@pytest.mark.xfail(strict=True)
+def test_suppress_inline_project_j(tmp_path):
+    __test_suppress_inline_project(tmp_path, ['-j2', '--no-cppcheck-build-dir'])
+
+
+def test_suppress_inline_project_builddir(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline_project(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+def test_suppress_inline_project_builddir_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline_project(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+    __test_suppress_inline_project(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+def test_suppress_inline_project_builddir_j(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline_project(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+
+
+def test_suppress_inline_project_builddir_j_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_suppress_inline_project(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+    __test_suppress_inline_project(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
 
 
 @pytest.mark.parametrize("builddir", (False,True))
