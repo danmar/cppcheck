@@ -14,6 +14,9 @@ Changed interface:
 -Added `reduced` check level. It can be activated with `--check-level=reduced`. You get faster analysis
 but some fewer results. The motivation is to be able to make analysis time "acceptable" for direct usage.
 
+-Added `--report-type` option. Enables printing of guidelines and classifications for several coding
+standards in place of the regular error identifiers and severities.
+
 Deprecations:
 -
 

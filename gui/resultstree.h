@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "showtypes.h"
+#include "checkers.h"
 
 #include <cstdint>
 
@@ -519,16 +520,9 @@ private:
     /** @brief Convert GUI error item into data error item */
     void readErrorItem(const QStandardItem *error, ErrorItem *item) const;
 
-    bool isCertReport() const {
-        return mReportType == ReportType::certC || mReportType == ReportType::certCpp;
-    }
+    bool isCertReport() const;
 
-    bool isAutosarMisraReport() const {
-        return mReportType == ReportType::autosar ||
-               mReportType == ReportType::misraC ||
-               mReportType == ReportType::misraCpp2008 ||
-               mReportType == ReportType::misraCpp2023;
-    }
+    bool isAutosarMisraReport() const;
 
     QStringList mHiddenMessageId;
 
@@ -540,7 +534,7 @@ private:
 
     ReportType mReportType = ReportType::normal;
 
-    QMap<QString,QString> mGuideline;
+    std::map<std::string, std::string> mGuideline;
 };
 /// @}
 #endif // RESULTSTREE_H

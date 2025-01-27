@@ -2231,67 +2231,67 @@ Options:
         <translation>ნაგულისხმევად მუქის დაყენება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="227"/>
+        <location filename="resultstree.cpp" line="132"/>
         <source>File</source>
         <translation type="unfinished">ფაილი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="228"/>
+        <location filename="resultstree.cpp" line="133"/>
         <source>Line</source>
         <translation type="unfinished">ხაზი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="229"/>
+        <location filename="resultstree.cpp" line="134"/>
         <source>Severity</source>
         <translation type="unfinished">სიმძიმე</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="230"/>
+        <location filename="resultstree.cpp" line="135"/>
         <source>Classification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="231"/>
+        <location filename="resultstree.cpp" line="136"/>
         <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="232"/>
+        <location filename="resultstree.cpp" line="137"/>
         <source>Inconclusive</source>
         <translation type="unfinished">არადამაჯერებელი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="233"/>
+        <location filename="resultstree.cpp" line="138"/>
         <source>Summary</source>
         <translation type="unfinished">შეჯამება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="234"/>
+        <location filename="resultstree.cpp" line="139"/>
         <source>Id</source>
         <translation type="unfinished">Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="235"/>
+        <location filename="resultstree.cpp" line="140"/>
         <source>Guideline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="236"/>
+        <location filename="resultstree.cpp" line="141"/>
         <source>Rule</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="237"/>
+        <location filename="resultstree.cpp" line="142"/>
         <source>Since date</source>
         <translation type="unfinished">თარიღიდან</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="238"/>
+        <location filename="resultstree.cpp" line="143"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="239"/>
+        <location filename="resultstree.cpp" line="144"/>
         <source>CWE</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2338,93 +2338,93 @@ Options:
         <translation type="vanished">შეჯამება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="374"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>Undefined file</source>
         <translation>გაურკვეველი ფაილი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="865"/>
+        <location filename="resultstree.cpp" line="751"/>
         <source>Copy</source>
         <translation>კოპირება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1058"/>
+        <location filename="resultstree.cpp" line="944"/>
         <source>Could not find file:</source>
         <translation>ვერ ვიპოვე ფაილი:</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1062"/>
+        <location filename="resultstree.cpp" line="948"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>აირჩიეთ საქაღალდე &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1063"/>
+        <location filename="resultstree.cpp" line="949"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>აირჩიეთ საქაღალდე &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="951"/>
         <source>Please select the directory where file is located.</source>
         <translation>აირჩიეთ საქაღალდე, სადაც ფაილია მოთავსებული.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="574"/>
+        <location filename="resultstree.cpp" line="460"/>
         <source>debug</source>
         <translation>შეცდომების მოძებნა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="500"/>
+        <location filename="resultstree.cpp" line="386"/>
         <source>note</source>
         <translation>ნოტა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="864"/>
+        <location filename="resultstree.cpp" line="750"/>
         <source>Recheck</source>
         <translation>თავიდან შემოწმება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="752"/>
         <source>Hide</source>
         <translation>დამალვა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="753"/>
         <source>Hide all with id</source>
         <translation>დამალვა ყველასი id-ით</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="886"/>
+        <location filename="resultstree.cpp" line="772"/>
         <source>Suppress selected id(s)</source>
         <translation>მონიშნული id(ებ)-ის ჩახშობა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="754"/>
         <source>Open containing folder</source>
         <translation>შემცველი საქაღალდის გახსნა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="577"/>
+        <location filename="resultstree.cpp" line="463"/>
         <source>internal</source>
         <translation>შიდა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="907"/>
+        <location filename="resultstree.cpp" line="793"/>
         <source>Tag</source>
         <translation>იარლიყი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="795"/>
         <source>No tag</source>
         <translation>ჭდის გარეშე</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="940"/>
-        <location filename="resultstree.cpp" line="954"/>
+        <location filename="resultstree.cpp" line="826"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="941"/>
+        <location filename="resultstree.cpp" line="827"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2434,7 +2434,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 მიუთითეთ რედაქტორის აპლიკაცია Cppcheck-სთვის მენიუში მორგება/აპლიკაციები.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="955"/>
+        <location filename="resultstree.cpp" line="841"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2443,12 +2443,12 @@ Please select the default editor application in preferences/Applications.</sourc
 აირჩიეთ ნაგულისხმევი რედაქტორის აპლიკაცია მენიუში მორგება/აპლიკაციები.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="981"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Could not find the file!</source>
         <translation>ფაილი ვერ ვიპოვე!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1044"/>
+        <location filename="resultstree.cpp" line="930"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2457,7 +2457,7 @@ Please check the application path and parameters are correct.</source>
 შეამოწმეთ, სწორია, თუ არა აპლიკაციის ბილიკი და მისი პარამეტრები.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1066"/>
+        <location filename="resultstree.cpp" line="952"/>
         <source>Select Directory</source>
         <translation>აირჩიეთ საქაღალდე</translation>
     </message>
@@ -2474,32 +2474,32 @@ Please check the application path and parameters are correct.</source>
         <translation type="vanished">თარიღიდან</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="556"/>
+        <location filename="resultstree.cpp" line="442"/>
         <source>style</source>
         <translation>სტილი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="559"/>
+        <location filename="resultstree.cpp" line="445"/>
         <source>error</source>
         <translation>შეცდომა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="562"/>
+        <location filename="resultstree.cpp" line="448"/>
         <source>warning</source>
         <translation>გაფრთხილება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="565"/>
+        <location filename="resultstree.cpp" line="451"/>
         <source>performance</source>
         <translation>წარმადობა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="568"/>
+        <location filename="resultstree.cpp" line="454"/>
         <source>portability</source>
         <translation>გადატანადობა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="571"/>
+        <location filename="resultstree.cpp" line="457"/>
         <source>information</source>
         <translation>ინფორმაცია</translation>
     </message>

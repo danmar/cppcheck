@@ -69,6 +69,9 @@ private:
         TEST_CASE(substituteTemplateLocationStatic);
 
         TEST_CASE(isCriticalErrorId);
+
+        TEST_CASE(ErrorMessageReportTypeMisraC);
+        TEST_CASE(ErrorMessageReportTypeCertC);
     }
 
     void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
@@ -191,6 +194,32 @@ private:
             ASSERT_EQUALS("[file.cpp:0]: (error) msg: message", msg.toString(false));
             ASSERT_EQUALS("[file.cpp:0]: (error) msg: message: details", msg.toString(true));
         }
+    }
+
+    void ErrorMessageReportTypeMisraC() const {
+        std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
+        const auto reportType = ReportType::misraC;
+        const auto mapping = createGuidelineMapping(reportType);
+        const std::string format = "{severity} {id}";
+        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "unusedVariable", Certainty::normal);
+        msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+        msg.classification = getClassification(msg.guideline, reportType);
+        ASSERT_EQUALS("Advisory", msg.classification);
+        ASSERT_EQUALS("2.8", msg.guideline);
+        ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format));
+    }
+
+    void ErrorMessageReportTypeCertC() const {
+        std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
+        const auto reportType = ReportType::certC;
+        const auto mapping = createGuidelineMapping(reportType);
+        const std::string format = "{severity} {id}";
+        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "resourceLeak", Certainty::normal);
+        msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+        msg.classification = getClassification(msg.guideline, reportType);
+        ASSERT_EQUALS("L3", msg.classification);
+        ASSERT_EQUALS("FIO42-C", msg.guideline);
+        ASSERT_EQUALS("L3 FIO42-C", msg.toString(true, format));
     }
 
     void CustomFormat() const {

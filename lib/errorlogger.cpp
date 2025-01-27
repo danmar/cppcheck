@@ -26,6 +26,7 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <array>
@@ -485,7 +486,11 @@ std::string ErrorMessage::toXML() const
     tinyxml2::XMLPrinter printer(nullptr, false, 2);
     printer.OpenElement("error", false);
     printer.PushAttribute("id", id.c_str());
+    if (!guideline.empty())
+        printer.PushAttribute("guideline", guideline.c_str());
     printer.PushAttribute("severity", severityToString(severity).c_str());
+    if (!classification.empty())
+        printer.PushAttribute("classification", classification.c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
     if (cwe.id)
@@ -633,7 +638,12 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
 
-    findAndReplace(result, "{id}", id);
+    // replace id with guideline if present
+    // replace severity with classification if present
+    const std::string idStr = guideline.empty() ? id : guideline;
+    const std::string severityStr = classification.empty() ? severityToString(severity) : classification;
+
+    findAndReplace(result, "{id}", idStr);
 
     std::string::size_type pos1 = result.find("{inconclusive:");
     while (pos1 != std::string::npos) {
@@ -643,7 +653,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         findAndReplace(result, replaceFrom, replaceWith);
         pos1 = result.find("{inconclusive:", pos1);
     }
-    findAndReplace(result, "{severity}", severityToString(severity));
+    findAndReplace(result, "{severity}", severityStr);
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     findAndReplace(result, "{remark}", remark);
@@ -923,4 +933,181 @@ void substituteTemplateLocationStatic(std::string& templateLocation)
 {
     replaceSpecialChars(templateLocation);
     replaceColors(templateLocation);
+}
+
+std::string getClassification(const std::string &guideline, ReportType reportType) {
+    if (guideline.empty())
+        return "";
+
+    const auto getClassification = [](const std::vector<checkers::Info> &info, const std::string &guideline) -> std::string {
+        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::Info &i) {
+            return caseInsensitiveStringCompare(i.guideline, guideline) == 0;
+        });
+        if (it == info.cend())
+            return "";
+        return it->classification;
+    };
+
+    switch (reportType) {
+    case ReportType::autosar:
+        return getClassification(checkers::autosarInfo, guideline);
+    case ReportType::certC:
+        return getClassification(checkers::certCInfo, guideline);
+    case ReportType::certCpp:
+        return getClassification(checkers::certCppInfo, guideline);
+    case ReportType::misraC:
+    {
+        auto components = splitString(guideline, '.');
+        if (components.size() != 2)
+            return "";
+
+        const int a = std::stoi(components[0]);
+        const int b = std::stoi(components[1]);
+
+        const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
+        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
+                return i.a == a && i.b == b;
+            });
+
+        if (it == info.cend())
+            return "";
+
+        return it->str;
+    }
+    case ReportType::misraCpp2008:
+    case ReportType::misraCpp2023:
+    {
+        char delim;
+        const std::vector<checkers::MisraCppInfo> *info;
+        if (reportType == ReportType::misraCpp2008) {
+            delim = '-';
+            info = &checkers::misraCpp2008Rules;
+        } else {
+            delim = '.';
+            info = &checkers::misraCpp2023Rules;
+        }
+
+        auto components = splitString(guideline, delim);
+        if (components.size() != 3)
+            return "";
+
+        const int a = std::stoi(components[0]);
+        const int b = std::stoi(components[1]);
+        const int c = std::stoi(components[2]);
+
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) {
+                return i.a == a && i.b == b && i.c == c;
+            });
+
+        if (it == info->cend())
+            return "";
+
+        return it->classification;
+    }
+    default:
+        return "";
+    }
+}
+
+std::string getGuideline(const std::string &errId, ReportType reportType,
+                         const std::map<std::string, std::string> &guidelineMapping,
+                         Severity severity)
+{
+    std::string guideline;
+
+    switch (reportType) {
+    case ReportType::autosar:
+        if (errId.rfind("premium-autosar-", 0) == 0) {
+            guideline = errId.substr(16);
+            break;
+        }
+        if (errId.rfind("premium-misra-cpp-2008-", 0) == 0)
+            guideline = "M" + errId.substr(23);
+        break;
+    case ReportType::certC:
+    case ReportType::certCpp:
+        if (errId.rfind("premium-cert-", 0) == 0) {
+            guideline = errId.substr(13);
+            std::transform(guideline.begin(), guideline.end(),
+                           guideline.begin(), static_cast<int (*)(int)>(std::toupper));
+        }
+        break;
+    case ReportType::misraC:
+        if (errId.rfind("misra-c20", 0) == 0)
+            guideline = errId.substr(errId.rfind('-') + 1);
+        break;
+    case ReportType::misraCpp2008:
+        if (errId.rfind("misra-cpp-2008-", 0) == 0)
+            guideline = errId.substr(15);
+        break;
+    case ReportType::misraCpp2023:
+        if (errId.rfind("misra-cpp-2023-", 0) == 0)
+            guideline = errId.substr(15);
+        break;
+    default:
+        break;
+    }
+
+    if (!guideline.empty())
+        return guideline;
+
+    auto it = guidelineMapping.find(errId);
+
+    if (it != guidelineMapping.cend())
+        return it->second;
+
+    if (severity == Severity::error || severity == Severity::warning) {
+        it = guidelineMapping.find("error");
+
+        if (it != guidelineMapping.cend())
+            return it->second;
+    }
+
+    return "";
+}
+
+std::map<std::string, std::string> createGuidelineMapping(ReportType reportType) {
+    std::map<std::string, std::string> guidelineMapping;
+    const std::vector<checkers::IdMapping> *idMapping1 = nullptr;
+    const std::vector<checkers::IdMapping> *idMapping2 = nullptr;
+    std::string ext1, ext2;
+
+    switch (reportType) {
+    case ReportType::autosar:
+        idMapping1 = &checkers::idMappingAutosar;
+        break;
+    case ReportType::certCpp:
+        idMapping2 = &checkers::idMappingCertCpp;
+        ext2 = "-CPP";
+        FALLTHROUGH;
+    case ReportType::certC:
+        idMapping1 = &checkers::idMappingCertC;
+        ext1 = "-C";
+        break;
+    case ReportType::misraC:
+        idMapping1 = &checkers::idMappingMisraC;
+        break;
+    case ReportType::misraCpp2008:
+        idMapping1 = &checkers::idMappingMisraCpp2008;
+        break;
+    case ReportType::misraCpp2023:
+        idMapping1 = &checkers::idMappingMisraCpp2023;
+        break;
+    default:
+        break;
+    }
+
+    if (idMapping1) {
+        for (const auto &i : *idMapping1)
+            for (const std::string &cppcheckId : splitString(i.cppcheckId, ','))
+                guidelineMapping[cppcheckId] = i.guideline + ext1;
+    }
+
+    if (idMapping2) {
+        for (const auto &i : *idMapping2)
+            for (const std::string &cppcheckId : splitString(i.cppcheckId, ','))
+                guidelineMapping[cppcheckId] = i.guideline + ext2;
+    }
+
+    return guidelineMapping;
 }

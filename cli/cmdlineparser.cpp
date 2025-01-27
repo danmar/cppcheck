@@ -1231,6 +1231,28 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.reportProgress = tmp;
             }
 
+            else if (std::strncmp(argv[i], "--report-type=", 14) == 0) {
+                const std::string typeStr = argv[i] + 14;
+                if (typeStr == "normal") {
+                    mSettings.reportType = ReportType::normal;
+                } else if (typeStr == "autosar") {
+                    mSettings.reportType = ReportType::autosar;
+                } else if (typeStr == "cert-c-2016") {
+                    mSettings.reportType = ReportType::certC;
+                } else if (typeStr == "cert-cpp-2016") {
+                    mSettings.reportType = ReportType::certCpp;
+                } else if (typeStr == "misra-c-2012" || typeStr == "misra-c-2023") {
+                    mSettings.reportType = ReportType::misraC;
+                } else if (typeStr == "misra-cpp-2008") {
+                    mSettings.reportType = ReportType::misraCpp2008;
+                } else if (typeStr == "misra-cpp-2023") {
+                    mSettings.reportType = ReportType::misraCpp2023;
+                } else {
+                    mLogger.printError("Unknown report type \'" + typeStr + "\'");
+                    return Result::Fail;
+                }
+            }
+
             // Rule given at command line
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
 #ifdef HAVE_RULES
@@ -1828,6 +1850,16 @@ void CmdLineParser::printHelp() const
         "                         currently only possible to apply the base paths to\n"
         "                         files that are on a lower level in the directory tree.\n"
         "    --report-progress    Report progress messages while checking a file (single job only).\n"
+        "    --report-type=<type> Add guideline and classification fields for specified coding standard.\n"
+        "                         The available report types are:\n"
+        "                          * normal           Default, only show cppcheck error ID and severity\n"
+        "                          * autosar          Autosar\n"
+        "                          * cert-c-2016      Cert C 2016\n"
+        "                          * cert-cpp-2016    Cert C++ 2016\n"
+        "                          * misra-c-2012     Misra C 2012\n"
+        "                          * misra-c-2023     Misra C 2023\n"
+        "                          * misra-cpp-2008   Misra C++ 2008\n"
+        "                          * misra-cpp-2023   Misra C++ 2023\n"
         "    --rule=<rule>        Match regular expression.\n"
         "    --rule-file=<file>   Use given rule file. For more information, see:\n"
         "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
