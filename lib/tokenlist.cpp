@@ -1806,6 +1806,7 @@ namespace {
     struct OnException {
         std::function<void()> f;
 
+        // NOLINTNEXTLINE(bugprone-exception-escape)
         ~OnException() {
 #ifndef _MSC_VER
             if (std::uncaught_exception())
