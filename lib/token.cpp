@@ -2550,6 +2550,15 @@ const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) cons
 {
     if (!mImpl->mValues)
         return nullptr;
+    if (mImpl->mValues->empty())
+        return nullptr;
+    // known INT values are always the first entry
+    if (t == ValueFlow::Value::ValueType::INT) {
+        const auto& v = mImpl->mValues->front();
+        if (!v.isKnown() || !v.isIntValue())
+            return nullptr;
+        return &v;
+    }
     auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
         return value.isKnown() && value.valueType == t;
     });
