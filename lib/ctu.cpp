@@ -212,7 +212,7 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
         const int line = readAttrInt(e2, ATTR_LOC_LINENR, &error);
         const int column = readAttrInt(e2, ATTR_LOC_COLUMN, &error);
         ErrorMessage::FileLocation loc(file, std::move(info), line, column);
-        (void)loc; // TODO: loc is unused
+        callValuePath.emplace_back(std::move(loc));
     }
     return !error;
 }
