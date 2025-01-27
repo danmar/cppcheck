@@ -4368,7 +4368,7 @@ private:
                             "    return static_cast<int>(std::ceil((std::min)(a, (std::min)(b, c))));\n"
                             "}\n";
         const char* exp = "1: int f ( double a@1 , double b@2 , double c@3 ) {\n"
-                          "2: return static_cast < int > ( std :: ceil ( ( std :: min ) ( a@1 , ( std :: min ) ( b@2 , c@3 ) ) ) ) ;\n"
+                          "2: return static_cast < int > ( std :: ceil ( std :: min ( a@1 , std :: min ( b@2 , c@3 ) ) ) ) ;\n"
                           "3: }\n";
         ASSERT_EQUALS(exp, tokenize(code, dinit(TokenizeOptions, $.s = &s))); // don't crash
     }
