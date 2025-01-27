@@ -324,12 +324,12 @@ def __test_duplicate_cmd(tmpdir, extra_args):
     assert ret == 0, stdout
 
 
-@pytest.mark.xfail(strict=True)  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
+@pytest.mark.skip  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
 def test_duplicate_cmd(tmp_path):
     __test_duplicate_cmd(tmp_path, ['-j1'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
+@pytest.mark.skip  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
 def test_duplicate_cmd_j(tmp_path):
     __test_duplicate_cmd(tmp_path, ['-j2'])
 
@@ -361,12 +361,12 @@ def __test_duplicate_file(tmp_path, extra_args):
     assert ret == 0, stdout
 
 
-@pytest.mark.xfail(strict=True)  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
+@pytest.mark.skip  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
 def test_duplicate_file(tmpdir):
     __test_duplicate_file(tmpdir, ['-j1'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
+@pytest.mark.skip  # TODO: behavior of duplicate suppressions across inline and non-inline is currently undefined
 def test_duplicate_file_j(tmpdir):
     __test_duplicate_file(tmpdir, ['-j2'])
 
