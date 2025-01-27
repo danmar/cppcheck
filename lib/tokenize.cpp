@@ -3712,6 +3712,22 @@ void Tokenizer::simplifySQL()
     }
 }
 
+void Tokenizer::simplifyParenthesizedLibraryFunctions()
+{
+    for (Token *tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, ") ("))
+            continue;
+        Token *rpar = tok, *lpar = tok->link();
+        if (!lpar)
+            continue;
+        const Token *ftok = rpar->previous();
+        if (mSettings.library.isNotLibraryFunction(ftok))
+            continue;
+        lpar->deleteThis();
+        rpar->deleteThis();
+    }
+}
+
 void Tokenizer::simplifyArrayAccessSyntax()
 {
     // 0[a] -> a[0]
@@ -5527,6 +5543,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifySQL();
 
     createLinks();
+
+    // replace library function calls such as (std::min)(a, b) with std::min(a, b)
+    simplifyParenthesizedLibraryFunctions();
 
     // Simplify debug intrinsics
     simplifyDebug();
