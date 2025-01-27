@@ -241,6 +241,7 @@ private:
         TEST_CASE(template_namespace_10);
         TEST_CASE(template_namespace_11); // #7145
         TEST_CASE(template_namespace_12);
+        TEST_CASE(template_namespace_13);
         TEST_CASE(template_pointer_type);
         TEST_CASE(template_array_type);
 
@@ -5304,6 +5305,22 @@ private:
                       "T ( int i ) : hash ( i ) { } "
                       "int hash ; "
                       "} ;",
+                      tok(code));
+    }
+
+    void template_namespace_13() {
+        const char code[] = "namespace N {\n" // #13593
+                            "    template<typename T>\n"
+                            "    struct S {\n"
+                            "        using U = T*;\n"
+                            "    };\n"
+                            "}\n"
+                            "::N::S<int>::U u;\n";
+        ASSERT_EQUALS("namespace N { "
+                      "struct S<int> ; "
+                      "} "
+                      "int * u ; "
+                      "struct N :: S<int> { } ;",
                       tok(code));
     }
 

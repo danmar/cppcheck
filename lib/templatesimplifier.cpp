@@ -774,6 +774,19 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
     });
 }
 
+static bool isTemplateInstantion(const Token* tok)
+{
+    if (!tok->isName())
+        return false;
+    if (Token::Match(tok->tokAt(-1), "%type% %name% ::|<"))
+        return true;
+    if (Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<"))
+        return true;
+    if (Token::Match(tok->tokAt(-1), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|("))
+        return true;
+    return Token::Match(tok->tokAt(-2), "(|{|}|;|=|<<|:|.|*|&|return|<|,|!|[ :: %name% ::|<|(");
+}
+
 void TemplateSimplifier::getTemplateInstantiations()
 {
     std::multimap<std::string, const TokenAndName *> functionNameMap;
@@ -830,9 +843,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
                 tok = tok2;
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|(") ||
-                   Token::Match(tok->previous(), "%type% %name% ::|<") ||
-                   Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
+        } else if (isTemplateInstantion(tok)) {
             if (!tok->scopeInfo())
                 syntaxError(tok);
             std::string scopeName = tok->scopeInfo()->name;
