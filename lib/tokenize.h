@@ -385,6 +385,10 @@ public:
     /** Warn about unknown macro(s), configuration is recommended */
     NORETURN void unknownMacroError(const Token *tok1) const;
 
+    /** Syntax error that may be due to an unknown macro, for example START() where START=1 */
+    NORETURN void unknownMacroSyntaxError(const Token *tok, const std::string &description,
+                                          const Token *errTok = nullptr, const std::string &code = emptyString) const;
+
     void unhandledCharLiteral(const Token *tok, const std::string& msg) const;
 
 private:
