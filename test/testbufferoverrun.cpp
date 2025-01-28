@@ -3154,10 +3154,17 @@ private:
 
         check("void f()\n" // #12489
               "{\n"
-              "   char d[3];\n"
+              "   char d[3] = {};\n"
               "   strcat(d, \"12345678\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: d\n", errout_str());
+
+        check("void f()\n"
+              "{\n"
+              "   char d[3] = \"ab\"; \n"
+              "   strcat(d, \"c\");\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: d\n", "", errout_str());
     }
 
     void buffer_overrun_7() {
