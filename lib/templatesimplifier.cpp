@@ -776,7 +776,7 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
 
 static bool isTemplateInstantion(const Token* tok)
 {
-    if (!tok->isName() || tok->isKeyword())
+    if (!tok->isName() || (tok->isKeyword() && !tok->isOperatorKeyword()))
         return false;
     if (Token::Match(tok->tokAt(-1), "%type% %name% ::|<"))
         return true;
