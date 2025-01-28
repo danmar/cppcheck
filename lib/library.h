@@ -52,6 +52,8 @@ namespace tinyxml2 {
 class CPPCHECKLIB Library {
     friend struct LibraryHelper; // for testing
 
+    static const std::string mEmptyString;
+
 public:
     Library();
     ~Library();
@@ -252,7 +254,7 @@ public:
 
         const std::string& getReturnType(const std::string& function) const {
             const auto i = utils::as_const(functions).find(function);
-            return (i != functions.end()) ? i->second.returnType : emptyString;
+            return (i != functions.end()) ? i->second.returnType : mEmptyString;
         }
 
         static Yield yieldFrom(const std::string& yieldName);
@@ -348,7 +350,7 @@ public:
 
     const std::string& validarg(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
-        return arg ? arg->valid : emptyString;
+        return arg ? arg->valid : mEmptyString;
     }
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {

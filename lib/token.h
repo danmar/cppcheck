@@ -167,6 +167,8 @@ class CPPCHECKLIB Token {
 private:
     TokensFrontBack& mTokensFrontBack;
 
+    static const std::string mEmptyString;
+
 public:
     Token(const Token &) = delete;
     Token& operator=(const Token &) = delete;
@@ -256,7 +258,7 @@ public:
     const std::string &strAt(int index) const
     {
         const Token *tok = this->tokAt(index);
-        return tok ? tok->mStr : emptyString;
+        return tok ? tok->mStr : mEmptyString;
     }
 
     /**
@@ -1272,7 +1274,7 @@ public:
      * @return the original name.
      */
     const std::string & originalName() const {
-        return mImpl->mOriginalName ? *mImpl->mOriginalName : emptyString;
+        return mImpl->mOriginalName ? *mImpl->mOriginalName : mEmptyString;
     }
 
     const std::list<ValueFlow::Value>& values() const {
