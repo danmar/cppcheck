@@ -16,6 +16,8 @@ functionStatic:*/ui_fileview.h
 valueFlowBailout
 valueFlowBailoutIncompleteVar
 autoNoType
+# ticket 11631
+templateInstantiation:test/testutils.cpp
 
 naming-varname:externals/simplecpp/simplecpp.h
 naming-privateMemberVariable:externals/simplecpp/simplecpp.h
