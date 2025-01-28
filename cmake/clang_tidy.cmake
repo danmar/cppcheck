@@ -25,8 +25,15 @@ if(RUN_CLANG_TIDY_NAMES)
         endif()
         message(STATUS "NPROC=${NPROC}")
 
+        if(USE_CSA)
+            set(CLANG_TIDY_CONFIG "-config={InheritParentConfig: true, Checks: clang-analyzer-*}")
+        endif()
+        message(STATUS "CLANG_TIDY_CONFIG=${CLANG_TIDY_CONFIG}")
+
         # disable all compiler warnings since we are just interested in the tidy ones
-        add_custom_target(run-clang-tidy ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
+        add_custom_target(run-clang-tidy
+                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet ${CLANG_TIDY_CONFIG}
+                VERBATIM)
         if(BUILD_GUI)
             add_dependencies(run-clang-tidy gui-build-deps)
             if(BUILD_TESTS)
