@@ -3446,7 +3446,7 @@ void bufferAccessOutOfBounds_strcat(char *dest, const char * const source)
     char buf4[4] = {0};
     const char * const srcstr3 = "123";
     const char * const srcstr4 = "1234";
-    // @todo #8599 cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strcat(buf4,srcstr4); // off by one issue: strcat is appends \0' at the end
 
     // no warning shall be shown for
