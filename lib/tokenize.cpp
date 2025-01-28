@@ -3718,7 +3718,7 @@ void Tokenizer::simplifyParenthesizedLibraryFunctions()
         if (!Token::simpleMatch(tok, ") ("))
             continue;
         Token *rpar = tok, *lpar = tok->link();
-        if (!lpar)
+        if (!lpar || Token::Match(lpar->previous(), "%name%"))
             continue;
         const Token *ftok = rpar->previous();
         if (mSettings.library.isNotLibraryFunction(ftok))
