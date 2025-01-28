@@ -2096,10 +2096,7 @@ private:
                               "{\n"
                               "    int i(0);\n"
                               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n"
-            "[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", // duplicate
-            errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout_str());
 
         // if a is undefined then Cppcheck can't determine if "int i(a)" is a
         // * variable declaration
@@ -2115,10 +2112,7 @@ private:
                               "    int j = 0;\n"
                               "    int i(j);\n"
                               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n"
-            "[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n", // duplicate
-            errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n", errout_str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2157,10 +2151,7 @@ private:
                               "    int * j = Data;\n"
                               "    int * i(j);\n"
                               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n"
-            "[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n", // duplicate
-            errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n", errout_str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -6863,10 +6854,7 @@ private:
         functionVariableUsage("void f(int* p) {\n"
                               "    int* q{ p };\n"
                               "}\n");
-        ASSERT_EQUALS(
-            "[test.cpp:2]: (style) Variable 'q' is assigned a value that is never used.\n"
-            "[test.cpp:2]: (style) Variable 'q' is assigned a value that is never used.\n", // duplicate
-            errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'q' is assigned a value that is never used.\n", errout_str());
     }
 
     void localvarRangeBasedFor() {

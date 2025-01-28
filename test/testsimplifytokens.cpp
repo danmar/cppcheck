@@ -1041,7 +1041,7 @@ private:
         // ticket #980
         {
             const char code[] = "void f() { int A(1),B(2),C=3,D,E(5),F=6; }";
-            const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
+            const char expected[] = "void f ( ) { int A ( 1 ) ; int B ( 2 ) ; int C ; C = 3 ; int D ; int E ( 5 ) ; int F ; F = 6 ; }";
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -2540,10 +2540,10 @@ private:
                                 "3: namespace M { const int m@2 = 0 ; }\n"
                                 "4: }\n"
                                 "5: using namespace N ;\n"
-                                "6: int i ; i = n@1 ;\n"
+                                "6: int i ( n@1 ) ;\n"
                                 "7: int j ( M :: m@2 ) ;\n"
                                 "8: using namespace N :: M ;\n"
-                                "9: int k ; k = m@2 ;\n"
+                                "9: int k ( m@2 ) ;\n"
                                 "10: int l ( N :: M :: m@2 ) ;\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }

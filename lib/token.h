@@ -725,6 +725,13 @@ public:
         setFlag(fIsInitComma, b);
     }
 
+    bool isInitBracket() const {
+        return getFlag(fIsInitBracket);
+    }
+    void isInitBracket(bool b) {
+        setFlag(fIsInitBracket, b);
+    }
+
     // cppcheck-suppress unusedFunction
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -1401,6 +1408,7 @@ private:
         fIsSimplifiedTypedef    = (1ULL << 40),
         fIsFinalType            = (1ULL << 41), // Is this a type with final specifier
         fIsInitComma            = (1ULL << 42), // Is this comma located inside some {..}. i.e: {1,2,3,4}
+        fIsInitBracket          = (1ULL << 43), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
     };
 
     enum : std::uint8_t  {
