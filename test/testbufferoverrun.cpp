@@ -3152,7 +3152,7 @@ private:
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: n\n", "", errout_str());
 
-        check("void f()\n" // 12489
+        check("void f()\n" // #12489
               "{\n"
               "   char d[3];\n"
               "   strcat(d, \"12345678\");\n"
