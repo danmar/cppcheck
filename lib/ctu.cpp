@@ -205,6 +205,7 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
     callValueType = (ValueFlow::Value::ValueType)readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error);
     callArgValue.value = readAttrInt(xmlElement, ATTR_CALL_ARGVALUE, &error);
     const auto ufr = readAttrInt(xmlElement, ATTR_CALL_UNKNOWN_FUNCTION_RETURN, &error);
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) - TODO: fix this - #13726
     callArgValue.unknownFunctionReturn = (ValueFlow::Value::UnknownFunctionReturn)(ufr>=0 && ufr <=0xff ? ufr : 0xff);
     const char *w = xmlElement->Attribute(ATTR_WARNING);
     warning = w && std::strcmp(w, "true") == 0;
