@@ -820,7 +820,7 @@ class Foo { // #13236
 };
 
 Foo::Foo() {
-    // cppcheck-suppress checkLibraryFunction checkLibraryNoReturn
+    // cppcheck-suppress [checkLibraryFunction, checkLibraryNoReturn]
     connect(a, SIGNAL(dostuff()), this, SLOT(dostuff()));
 }
 
