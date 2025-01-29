@@ -128,7 +128,11 @@ public:
         for (const auto& suppr : fileChecker.settings().supprs.nomsg.getSuppressions()) {
             // need to transfer all inline suppressions because these are used later on
             if (suppr.isInline) {
-                mSuppressions.addSuppression(suppr); // TODO: check result
+                const std::string err = mSuppressions.addSuppression(suppr);
+                if (!err.empty()) {
+                    // TODO: only update state if it doesn't exist - otherwise propagate error
+                    mSuppressions.updateSuppressionState(suppr); // TODO: check result
+                }
                 continue;
             }
 

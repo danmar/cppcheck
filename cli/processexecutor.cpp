@@ -244,11 +244,13 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             suppr.isInline = true;
             suppr.checked = parts[1] == "1";
             suppr.matched = parts[2] == "1";
-            const std::string err = mSuppressions.addSuppression(std::move(suppr));
+            const std::string err = mSuppressions.addSuppression(suppr);
             if (!err.empty()) {
+                // TODO: only update state if it doesn't exist - otherwise propagate error
+                mSuppressions.updateSuppressionState(suppr); // TODO: check result
                 // TODO: make this non-fatal
-                std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
-                std::exit(EXIT_FAILURE);
+                //std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
+                //std::exit(EXIT_FAILURE);
             }
         }
     } else if (type == PipeWriter::CHILD_END) {
