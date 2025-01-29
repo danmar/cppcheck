@@ -812,7 +812,11 @@ unsigned int CppCheck::check(const FileSettings &fs)
     {
         if (suppr.isInline) {
             // need to transfer all inline suppressions because these are used later on
-            mSettings.supprs.nomsg.addSuppression(suppr); // TODO: check result
+            const std::string err = mSettings.supprs.nomsg.addSuppression(suppr);
+            if (!err.empty()) {
+                // TODO: only update state if it doesn't exist - otherwise propagate error
+                mSettings.supprs.nomsg.updateSuppressionState(suppr); // TODO: check result
+            }
             continue;
         }
 
