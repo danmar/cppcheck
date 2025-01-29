@@ -815,10 +815,12 @@ struct DQObject_missingOverride : BQObject_missingOverride {
 
 class Foo { // #13236
     Foo();
+    // cppcheck-suppress functionStatic
     void dostuff();
 };
 
 Foo::Foo() {
+    // cppcheck-suppress checkLibraryFunction checkLibraryNoReturn
     connect(a, SIGNAL(dostuff()), this, SLOT(dostuff()));
 }
 
