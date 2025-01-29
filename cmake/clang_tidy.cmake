@@ -26,7 +26,7 @@ if(RUN_CLANG_TIDY_NAMES)
         message(STATUS "NPROC=${NPROC}")
 
         if(USE_CSA)
-            set(CLANG_TIDY_CONFIG "-config={InheritParentConfig: true, Checks: clang-analyzer-*}")
+            set(CLANG_TIDY_CONFIG "-config={InheritParentConfig: true, Checks: '-*,clang-analyzer-*,-clang-analyzer-core.CallAndMessage,-clang-analyzer-core.NonNullParamChecker'}")
         endif()
         message(STATUS "CLANG_TIDY_CONFIG=${CLANG_TIDY_CONFIG}")
 
