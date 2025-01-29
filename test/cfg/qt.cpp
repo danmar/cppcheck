@@ -813,15 +813,17 @@ struct DQObject_missingOverride : BQObject_missingOverride {
     Q_OBJECT
 };
 
-class Foo { // #13236
-    Foo();
-    // cppcheck-suppress functionStatic
-    void dostuff();
-};
+namespace {
+    class Foo { // #13236
+        Foo();
+        // cppcheck-suppress functionStatic
+        void doStuff();
+    };
 
-Foo::Foo() {
-    // cppcheck-suppress [checkLibraryFunction, checkLibraryNoReturn]
-    connect(a, SIGNAL(dostuff()), this, SLOT(dostuff()));
+    Foo::Foo() {
+        // cppcheck-suppress [checkLibraryFunction, checkLibraryNoReturn]
+        connect(a, SIGNAL(doStuff()), this, SLOT(doStuff()));
+    }
+
+    void Foo::doStuff() {} // Should not warn here with unusedFunction
 }
-
-void Foo::dostuff() {} // Should not warn here with unusedFunction
