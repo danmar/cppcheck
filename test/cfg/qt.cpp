@@ -812,3 +812,14 @@ struct BQObject_missingOverride { // #13406
 struct DQObject_missingOverride : BQObject_missingOverride {
     Q_OBJECT
 };
+
+class Foo { // #13236
+    Foo();
+    void dostuff();
+};
+
+Foo::Foo() {
+    connect(a, SIGNAL(dostuff()), this, SLOT(dostuff()));
+}
+
+void Foo::dostuff() {} // Should not warn here with unusedFunction
