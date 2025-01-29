@@ -1848,7 +1848,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             }
 
             if (dimension.tok->valueType() && dimension.tok->valueType()->pointer == 0) {
-                int bits = 0;
+                std::uint8_t bits = 0;
                 switch (dimension.tok->valueType()->type) {
                 case ValueType::Type::CHAR:
                     bits = mSettings.platform.char_bit;

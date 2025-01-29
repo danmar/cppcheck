@@ -25,6 +25,7 @@
 #include "mathlib.h"
 #include "standards.h"
 
+#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <cstdint>
@@ -44,19 +45,22 @@ namespace tinyxml2 {
  */
 class CPPCHECKLIB Platform {
 private:
-    static long long min_value(int bit) {
+    static long long min_value(std::uint8_t bit) {
+        assert(bit > 0);
         if (bit >= 64)
             return LLONG_MIN;
         return -(1LL << (bit-1));
     }
 
-    static long long max_value(int bit) {
+    static long long max_value(std::uint8_t bit) {
+        assert(bit > 0);
         if (bit >= 64)
             return (~0ULL) >> 1;
         return (1LL << (bit-1)) - 1LL;
     }
 
-    static unsigned long long max_value_unsigned(int bit) {
+    static unsigned long long max_value_unsigned(std::uint8_t bit) {
+        assert(bit > 0);
         if (bit >= 64)
             return ~0ULL;
         return (1ULL << bit) - 1ULL;
@@ -90,11 +94,11 @@ public:
         return value <= longLongMax;
     }
 
-    nonneg int char_bit;       /// bits in char
-    nonneg int short_bit;      /// bits in short
-    nonneg int int_bit;        /// bits in int
-    nonneg int long_bit;       /// bits in long
-    nonneg int long_long_bit;  /// bits in long long
+    std::uint8_t char_bit;       /// bits in char
+    std::uint8_t short_bit;      /// bits in short
+    std::uint8_t int_bit;        /// bits in int
+    std::uint8_t long_bit;       /// bits in long
+    std::uint8_t long_long_bit;  /// bits in long long
 
     /** size of standard types */
     std::size_t sizeof_bool;
