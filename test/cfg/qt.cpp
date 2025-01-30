@@ -823,7 +823,6 @@ namespace {
 
     TestUnusedFunction::TestUnusedFunction() {
         Computations comp;
-        // cppcheck-suppress [checkLibraryFunction, checkLibraryNoReturn]
         QObject::connect(&comp, SIGNAL(doStuff()), this, SLOT(doStuff()));
     }
 
