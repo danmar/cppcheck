@@ -812,3 +812,17 @@ struct BQObject_missingOverride { // #13406
 struct DQObject_missingOverride : BQObject_missingOverride {
     Q_OBJECT
 };
+
+namespace {
+    class TestUnusedFunction : public QObject { // #13236
+        TestUnusedFunction();
+        // cppcheck-suppress functionStatic
+        void doStuff();
+    };
+
+    TestUnusedFunction::TestUnusedFunction() {
+        QObject::connect(this, SIGNAL(doStuff()), SLOT(doStuff()));
+    }
+
+    void TestUnusedFunction::doStuff() {} // Should not warn here with unusedFunction
+}
