@@ -127,12 +127,12 @@ namespace {
             const ssize_t bytes_written = write(mWpipe, data, to_write);
             if (bytes_written <= 0) {
                 const int err = errno;
-                std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": " << std::strerror(err) << std::endl;
+                std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << static_cast<unsigned char>(type) << ": " << std::strerror(err) << std::endl;
                 std::exit(EXIT_FAILURE);
             }
             // TODO: write until everything is written
             if (bytes_written != to_write) {
-                std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": insufficient data written (expected: " << to_write << " / got: " << bytes_written << ")" << std::endl;
+                std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << static_cast<unsigned char>(type) << ": insufficient data written (expected: " << to_write << " / got: " << bytes_written << ")" << std::endl;
                 std::exit(EXIT_FAILURE);
             }
         }

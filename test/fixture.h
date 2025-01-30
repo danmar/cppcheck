@@ -79,8 +79,10 @@ protected:
     void assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = "") const {
         if (expected != actual) {
             std::ostringstream expectedStr;
+            // NOLINTNEXTLINE(bugprone-unintended-char-ostream-output) - chars being treated as integers is acceptable here
             expectedStr << expected;
             std::ostringstream actualStr;
+            // NOLINTNEXTLINE(bugprone-unintended-char-ostream-output) - chars being treated as integers is acceptable here
             actualStr << actual;
 
             assertFailure(filename, linenr, expectedStr.str(), actualStr.str(), msg);
