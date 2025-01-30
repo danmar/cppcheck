@@ -391,11 +391,11 @@ static void createDumpFile(const Settings& settings,
     fdump << "<dumps" << language << ">\n";
     fdump << "  <platform"
           << " name=\"" << settings.platform.toString() << '\"'
-          << " char_bit=\"" << settings.platform.char_bit << '\"'
-          << " short_bit=\"" << settings.platform.short_bit << '\"'
-          << " int_bit=\"" << settings.platform.int_bit << '\"'
-          << " long_bit=\"" << settings.platform.long_bit << '\"'
-          << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
+          << " char_bit=\"" << static_cast<unsigned>(settings.platform.char_bit) << '\"'
+          << " short_bit=\"" << static_cast<unsigned>(settings.platform.short_bit) << '\"'
+          << " int_bit=\"" << static_cast<unsigned>(settings.platform.int_bit) << '\"'
+          << " long_bit=\"" << static_cast<unsigned>(settings.platform.long_bit) << '\"'
+          << " long_long_bit=\"" << static_cast<unsigned>(settings.platform.long_long_bit) << '\"'
           << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
           << " wchar_t_bit=\"" << (settings.platform.sizeof_wchar_t * settings.platform.char_bit) << '\"'
           << " size_t_bit=\"" << (settings.platform.sizeof_size_t * settings.platform.char_bit) << '\"'
