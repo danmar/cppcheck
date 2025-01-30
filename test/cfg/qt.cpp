@@ -33,7 +33,6 @@
 #include <QPointF>
 #include <QRegion>
 #include <QTransform>
-#include <computations.h>
 
 #include <cstdio>
 
@@ -822,8 +821,7 @@ namespace {
     };
 
     TestUnusedFunction::TestUnusedFunction() {
-        Computations comp;
-        QObject::connect(&comp, SIGNAL(doStuff()), this, SLOT(doStuff()));
+        QObject::connect(this, SIGNAL(doStuff()), SLOT(doStuff()));
     }
 
     void TestUnusedFunction::doStuff() {} // Should not warn here with unusedFunction
