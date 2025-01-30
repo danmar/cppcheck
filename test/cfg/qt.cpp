@@ -814,7 +814,7 @@ struct DQObject_missingOverride : BQObject_missingOverride {
 };
 
 namespace {
-    class TestUnusedFunction { // #13236
+    class TestUnusedFunction : public QObject { // #13236
         TestUnusedFunction();
         // cppcheck-suppress functionStatic
         void doStuff();
