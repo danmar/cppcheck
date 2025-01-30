@@ -2872,7 +2872,7 @@ static bool scopesMatch(const std::string &scope1, const std::string &scope2, co
     return false;
 }
 
-static unsigned int tokDistance(const Token* tok1, const Token* tok2) {
+static unsigned int tokDistance(const Token* tok1, const Token* tok2) { // TODO: use index()
     unsigned int dist = 0;
     const Token* tok = tok1;
     while (tok != tok2) {
@@ -2880,6 +2880,12 @@ static unsigned int tokDistance(const Token* tok1, const Token* tok2) {
         tok = tok->next();
     }
     return dist;
+}
+
+static const Token* skipConstVolatileBackwards(const Token* tok) {
+    while (Token::Match(tok, "const|volatile"))
+        tok = tok->previous();
+    return tok;
 }
 
 bool Tokenizer::simplifyUsing()
@@ -3343,7 +3349,7 @@ bool Tokenizer::simplifyUsing()
                     }
 
                     // Is this a "T(...)" expression where T is a pointer type?
-                    if (Token::Match(tok1, "%name% [({]") && !pointers.empty() && !Token::simpleMatch(tok1->tokAt(-1), ".")) {
+                    if (Token::Match(tok1, "%name% [({]") && !pointers.empty() && !Token::simpleMatch(skipConstVolatileBackwards(tok1->tokAt(-1)), ".")) {
                         tok1->tokAt(1)->str("(");
                         tok1->linkAt(1)->str(")");
                         if (tok1->linkAt(1) == tok1->tokAt(2)) { // T() or T{}
