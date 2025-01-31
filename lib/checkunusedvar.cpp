@@ -1298,7 +1298,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         typeName.erase(typeName.begin(), typeName.begin() + 2);
                     switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
                     case Library::TypeCheck::def:
-                        bailoutTypeName = typeName;
+                        bailoutTypeName = std::move(typeName);
                         break;
                     case Library::TypeCheck::check:
                         break;
