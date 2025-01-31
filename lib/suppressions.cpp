@@ -139,7 +139,7 @@ std::string SuppressionList::parseXmlFile(const char *filename)
                 return std::string("unknown element '") + name + "' in suppressions XML '" + filename + "', expected id/fileName/lineNumber/symbolName/hash.";
         }
 
-        const std::string err = addSuppression(std::move(s));
+        std::string err = addSuppression(std::move(s));
         if (!err.empty())
             return err;
     }

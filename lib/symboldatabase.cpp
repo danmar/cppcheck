@@ -5982,7 +5982,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     // sort according to matching arguments
     std::sort(fallback1Func.begin(), fallback1Func.end(), fb_pred);
     std::sort(fallback2Func.begin(), fallback2Func.end(), fb_pred);
-    for (const auto& fb : { fallback1Func, fallback2Func }) {
+    const auto fallbackFuncs = { std::move(fallback1Func), std::move(fallback2Func) };
+    for (const auto& fb : fallbackFuncs) {
         if (fb.size() == 1)
             return fb[0].first;
         if (fb.size() >= 2) {
@@ -6011,7 +6012,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
         return matches[0];
 
     // Prioritize matches in derived scopes
-    for (const auto& fb : { fallback1Func, fallback2Func }) {
+    for (const auto& fb : fallbackFuncs) {
         const Function* ret = nullptr;
         for (std::size_t i = 0; i < fb.size(); ++i) {
             if (std::find(matches.cbegin(), matches.cend(), fb[i].first) == matches.cend())
