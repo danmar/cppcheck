@@ -4897,6 +4897,11 @@ void ignoredReturnValue_abs(int i)
     abs(-100);
 }
 
+int clamp(int, int, int, int); // #13599
+void ignoredReturnValue_clamp(int a, int b, int c, int d) {
+    clamp(a, b, c, d); // not a library function
+}
+
 void nullPointer_asctime(void)
 {
     const struct tm *tm = 0;
