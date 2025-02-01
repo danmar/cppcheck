@@ -3158,8 +3158,8 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     value_elem = valueflow_elem[0].findall('values/value')
     assert len(value_elem) == 3
     assert 'floatvalue' in value_elem[0].attrib
-    assert value_elem[0].attrib['floatvalue'] == '0.000000'
+    assert value_elem[0].attrib['floatvalue'] == '1e-07'
     assert 'floatvalue' in value_elem[1].attrib
-    assert value_elem[1].attrib['floatvalue'] == '0.000000'
+    assert value_elem[1].attrib['floatvalue'] == '1e-07'
     assert 'floatvalue' in value_elem[2].attrib
-    assert value_elem[2].attrib['floatvalue'] == '0.000000'
+    assert value_elem[2].attrib['floatvalue'] == '1e-07'
