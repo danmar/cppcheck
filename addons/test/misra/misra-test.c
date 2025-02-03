@@ -1809,6 +1809,10 @@ static void misra_17_3(void) {
   if (dostuff()) {}
 }
 
+static void misra_17_3_compliant(uint32_t x) {
+    if (x == UINT32_C(1)){ } // no warning for 17_3
+}
+
 static void misra_config(const char* str) {
     if (strlen(str) > 3){} //10.4
     if (sizeof(int) > 1){} //10.4

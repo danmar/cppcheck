@@ -3338,7 +3338,8 @@ class MisraChecker:
             end_token = token.next.link
             while tok != end_token:
                 if tok.isName and tok.function is None and tok.valueType is None and tok.next.str == "(" and \
-                        tok.next.valueType is None and not isKeyword(tok.str) and not isStdLibId(tok.str):
+                        tok.next.valueType is None and not isKeyword(tok.str) and not isStdLibId(tok.str) and \
+                        not re.match(r'U?INT(_MAX|)(8|16|32|64)_C', tok.str):
                     self.reportError(tok, 17, 3)
                     break
                 tok = tok.next
