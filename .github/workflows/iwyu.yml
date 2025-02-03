@@ -20,15 +20,12 @@ jobs:
           - os: ubuntu-22.04
             image: "fedora:latest"
             stdlib: libstdc++
-            use_libcxx: Off
           - os: ubuntu-22.04
             image: "fedora:latest"
             stdlib: libc++
-            use_libcxx: On
           - os: macos-13
             image: ""
             stdlib: libc++  # no libstdc++ on macOS
-            use_libcxx: On
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -113,7 +110,7 @@ jobs:
       - name: Prepare CMake
         run: |
           # TODO: why does it build dmake in the next step?
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.stdlib == 'libc++' }}
         env:
           CC: clang
           CXX: clang++
@@ -156,11 +153,6 @@ jobs:
     strategy:
       matrix:
         stdlib: [libstdc++, libc++]
-        include:
-          - stdlib: libstdc++
-            use_libcxx: Off
-          - stdlib: libc++
-            use_libcxx: On
       fail-fast: false
 
     runs-on: ubuntu-22.04
@@ -204,7 +196,7 @@ jobs:
       - name: Prepare CMake
         run: |
           # TODO: why does it build dmake in the next step?
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.stdlib == 'libc++' }}
         env:
           CC: clang-19
           CXX: clang++-19
