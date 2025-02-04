@@ -411,6 +411,21 @@ namespace utils {
         // NOLINTNEXTLINE(bugprone-return-const-ref-from-parameter) - potential false positive
         return t;
     }
+
+    // Thread-unsafe memoization
+    template<class F, class R=decltype(std::declval<F>()())>
+    static inline std::function<R()> memoize(F f)
+    {
+        bool init = false;
+        R result{};
+        return [=]() mutable -> R {
+            if (init)
+                return result;
+            result = f();
+            init = true;
+            return result;
+        };
+    }
 }
 
 #endif
