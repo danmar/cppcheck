@@ -828,6 +828,13 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
             if (Token::Match(tok, "%name% %assign%"))
                 tok = tok->next();
+            if (Token::simpleMatch(tok, "*")) {
+                Token *tok2 = tok->next();
+                while (Token::simpleMatch(tok2, "*"))
+                    tok2 = tok2->next();
+                if (Token::simpleMatch(tok2, ":"))
+                    tok = tok2;
+            }
         }
     } else if (tok->str() == "{") {
         const Token *prev = tok->previous();
