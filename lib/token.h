@@ -992,12 +992,13 @@ public:
 
     /**
      * For debugging purposes, prints token and all tokens followed by it.
+     * @param xml print in XML format
      * @param title Title for the printout or use default parameter or 0
      * for no title.
      * @param fileNames Prints out file name instead of file index.
      * File index should match the index of the string in this vector.
      */
-    void printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const;
+    void printOut(std::ostream& out, bool xml, const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
      * print out tokens - used for debugging

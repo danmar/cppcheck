@@ -1202,11 +1202,21 @@ void Token::printOut(std::ostream& out, const char *title) const
     out << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
-void Token::printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const
+void Token::printOut(std::ostream& out, bool xml, const char *title, const std::vector<std::string> &fileNames) const
 {
+    if (xml)
+    {
+        out << "<file>" << std::endl;
+        out << "<![CDATA[";
+    }
     if (title && title[0])
         out << "\n### " << title << " ###\n";
     out << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
+    if (xml)
+    {
+        out << "]]>" << std::endl;
+        out << "</file>" << std::endl;
+    }
 }
 
 // cppcheck-suppress unusedFunction - used for debugging
