@@ -1594,9 +1594,9 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
 #endif
 
         int pos = 0;
-        std::array <int, 30> ovector = {};
+        int ovector[30]= {0};
         while (pos < (int)str.size()) {
-            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector.data(), ovector.size());
+            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30);
             if (pcreExecRet < 0) {
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
