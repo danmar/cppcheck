@@ -424,6 +424,8 @@ private:
         TEST_CASE(maxTemplateRecursionMissingCount);
         TEST_CASE(emitDuplicates);
         TEST_CASE(debugClangOutput);
+        TEST_CASE(debugSymdb);
+        TEST_CASE(debugAst);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2924,6 +2926,20 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-clang-output", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugClangOutput);
+    }
+
+    void debugSymdb() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-symdb", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debugsymdb);
+    }
+
+    void debugAst() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-ast", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->debugast);
     }
 
     void ignorepaths1() {

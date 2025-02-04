@@ -3490,6 +3490,8 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
     }
 
+    validateTypes();
+
     printDebugOutput(1, std::cout);
 
     return true;
@@ -5924,13 +5926,14 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 }
 //---------------------------------------------------------------------------
 
-void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
+void Tokenizer::printDebugOutput(bool simplified, std::ostream &out) const
 {
-    const bool debug = (simplification != 1U && mSettings.debugSimplified) ||
-                       (simplification != 2U && mSettings.debugnormal);
+    const bool debug = (simplified && (mSettings.debugSimplified||mSettings.debugast||mSettings.debugsymdb)) ||
+                       (!simplified && (mSettings.debugnormal||mSettings.debugast||mSettings.debugsymdb));
 
     if (debug && list.front()) {
-        list.front()->printOut(out, nullptr, list.getFiles());
+        if (mSettings.debugSimplified || mSettings.debugnormal)
+            list.front()->printOut(out, nullptr, list.getFiles());
 
         if (mSettings.xml)
             out << "<debug>" << std::endl;
@@ -5938,38 +5941,43 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         if (mSymbolDatabase) {
             if (mSettings.xml)
                 mSymbolDatabase->printXml(out);
-            else if (mSettings.verbose) {
+            else if (mSettings.debugsymdb) {
                 mSymbolDatabase->printOut("Symbol database");
             }
         }
 
-        if (mSettings.verbose)
-            list.front()->printAst(mSettings.verbose, mSettings.xml, list.getFiles(), out);
+        if (mSettings.xml || mSettings.debugast)
+            list.front()->printAst(mSettings.verbose, mSettings.xml, list.getFiles(), out); // TODO: do not depend on --verbose
 
+        // TODO: add option
         list.front()->printValueFlow(mSettings.xml, out);
 
         if (mSettings.xml)
             out << "</debug>" << std::endl;
     }
+}
 
-    if (mSymbolDatabase && simplification == 2U && mSettings.debugwarnings) {
-        printUnknownTypes();
+void Tokenizer::validateTypes() const
+{
+    if (!mSymbolDatabase || !mSettings.debugwarnings)
+        return;
 
-        // the typeStartToken() should come before typeEndToken()
-        for (const Variable *var : mSymbolDatabase->variableList()) {
-            if (!var)
-                continue;
+    printUnknownTypes();
 
-            const Token * typetok = var->typeStartToken();
-            while (typetok && typetok != var->typeEndToken())
-                typetok = typetok->next();
+    // the typeStartToken() should come before typeEndToken()
+    for (const Variable *var : mSymbolDatabase->variableList()) {
+        if (!var)
+            continue;
 
-            if (typetok != var->typeEndToken()) {
-                reportError(var->typeStartToken(),
-                            Severity::debug,
-                            "debug",
-                            "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
-            }
+        const Token * typetok = var->typeStartToken();
+        while (typetok && typetok != var->typeEndToken())
+            typetok = typetok->next();
+
+        if (typetok != var->typeEndToken()) {
+            reportError(var->typeStartToken(),
+                        Severity::debug,
+                        "debug",
+                        "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
         }
     }
 }

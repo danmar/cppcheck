@@ -181,6 +181,9 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca{};
 
+    /** @brief Is --debug-ast given? */
+    bool debugast{};
+
     /** @brief Is --debug-clang-output given? */
     bool debugClangOutput{};
 
@@ -204,6 +207,9 @@ public:
 
     /** @brief Is --debug-simplified given? */
     bool debugSimplified{};
+
+    /** @brief Is --debug-symdb given? */
+    bool debugsymdb{};
 
     /** @brief Is --debug-template given? */
     bool debugtemplate{};

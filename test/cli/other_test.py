@@ -2869,3 +2869,118 @@ f(p);
     assert stderr.splitlines() == [
         '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file)
     ]
+
+
+# TODO: test with --xml
+
+def test_debug_normal(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+            """
+    void f
+    {
+        (void)*((int*)0);
+    }
+    """)
+
+    args = [
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stderr.splitlines() == []
+
+
+# TODO: simplification = 2
+def test_debug_simplified(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+            """
+    void f
+    {
+        (void)*((int*)0);
+    }
+    """)
+
+    args = [
+        '--debug-simplified',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_symdb(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+            """
+    void f
+    {
+        (void)*((int*)0);
+    }
+    """)
+
+    args = [
+        '--debug-simplified',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('### Symbol database ###') != -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_ast(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+            """
+    void f
+    {
+        (void)*((int*)0);
+    }
+    """)
+
+    args = [
+        '--debug-ast',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == []
+
+
+@pytest.mark.skip
+def test_debug_valueflow(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+            """
+    void f
+    {
+        (void)*((int*)0);
+    }
+    """)
+
+    args = [
+        '--debug-valueflow',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##Value flow') != -1
+    assert stderr.splitlines() == []
