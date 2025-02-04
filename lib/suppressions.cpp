@@ -294,6 +294,7 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
     return "";
 }
 
+// cppcheck-suppress unusedFunction
 bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
 {
     // Check if suppression is already in list
