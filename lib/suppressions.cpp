@@ -254,6 +254,8 @@ std::string SuppressionList::addSuppressionLine(const std::string &line)
 
 std::string SuppressionList::addSuppression(SuppressionList::Suppression suppression)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     // Check if suppression is already in list
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
@@ -297,6 +299,8 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
 // cppcheck-suppress unusedFunction
 bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     // Check if suppression is already in list
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
@@ -431,6 +435,8 @@ std::string SuppressionList::Suppression::getText() const
 
 bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, bool global)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
     bool returnValue = false;
     for (Suppression &s : mSuppressions) {
@@ -446,6 +452,8 @@ bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, 
 
 bool SuppressionList::isSuppressedExplicitly(const SuppressionList::ErrorMessage &errmsg, bool global)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     for (Suppression &s : mSuppressions) {
         if (!global && !s.isLocal())
             continue;
@@ -459,13 +467,19 @@ bool SuppressionList::isSuppressedExplicitly(const SuppressionList::ErrorMessage
 
 bool SuppressionList::isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames)
 {
-    if (mSuppressions.empty())
-        return false;
+    {
+        std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
+        if (mSuppressions.empty())
+            return false;
+    }
     return isSuppressed(SuppressionList::ErrorMessage::fromErrorMessage(errmsg, macroNames));
 }
 
 void SuppressionList::dump(std::ostream & out) const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     out << "  <suppressions>" << std::endl;
     for (const Suppression &suppression : mSuppressions) {
         out << "    <suppression";
@@ -499,6 +513,8 @@ void SuppressionList::dump(std::ostream & out) const
 
 std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
@@ -520,6 +536,8 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
 
 std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
@@ -537,12 +555,16 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     return result;
 }
 
-const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions() const
+std::list<SuppressionList::Suppression> SuppressionList::getSuppressions() const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     return mSuppressions;
 }
 
 void SuppressionList::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     int currLineNr = -1;
     int currFileIdx = -1;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {

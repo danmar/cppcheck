@@ -1134,8 +1134,9 @@ private:
                         "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(2, supprs->nofail.getSuppressions().size());
-        auto it = supprs->nofail.getSuppressions().cbegin();
+        const auto supprsNofail = supprs->nofail.getSuppressions();
+        ASSERT_EQUALS(2, supprsNofail.size());
+        auto it = supprsNofail.cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
         ASSERT_EQUALS("unusedFunction", it->errorId);
     }
@@ -1658,8 +1659,9 @@ private:
                         "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(2, supprs->nomsg.getSuppressions().size());
-        auto it = supprs->nomsg.getSuppressions().cbegin();
+        const auto supprsNomsg = supprs->nomsg.getSuppressions();
+        ASSERT_EQUALS(2, supprsNomsg.size());
+        auto it = supprsNomsg.cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
         ASSERT_EQUALS("unusedFunction", it->errorId);
     }
@@ -2671,7 +2673,7 @@ private:
                         "</suppressions>");
         const char * const argv[] = {"cppcheck", "--suppress-xml=suppress.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        const auto& supprsNomsg = supprs->nomsg.getSuppressions();
+        const auto supprsNomsg = supprs->nomsg.getSuppressions();
         ASSERT_EQUALS(1, supprsNomsg.size());
         const auto it = supprsNomsg.cbegin();
         ASSERT_EQUALS("uninitvar", it->errorId);
