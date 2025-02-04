@@ -34,7 +34,6 @@
 #include "utils.h"
 
 #include <algorithm>
-#include <array>
 #include <numeric>
 #include <cassert>
 #include <cerrno>
@@ -256,8 +255,8 @@ unsigned int ProcessExecutor::check()
         // Start a new child
         const size_t nchildren = childFile.size();
         if ((iFile != mFiles.cend() || iFileSettings != mFileSettings.cend()) && nchildren < mSettings.jobs && checkLoadAverage(nchildren)) {
-            std::array<int, 2> pipes;
-            if (pipe(pipes.data()) == -1) {
+            int pipes[2];
+            if (pipe(pipes) == -1) {
                 std::cerr << "#### ThreadExecutor::check, pipe() failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }
