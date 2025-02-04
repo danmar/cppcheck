@@ -2058,7 +2058,7 @@ static void misra_22_5(FILE *f) {
 
 static void misra_22_7(char ch)
 {
-    if (EOF == ch) {} // 22.7
+    if (EOF == ch) {} // 10.4 // TODO: 22.7 - #1289
 }
 
 static void misra_22_8(void)

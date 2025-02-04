@@ -209,6 +209,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
     std::string new_path = path;
     new_path += '/';
 
+    // cppcheck-suppress prohibitedreaddirCalled
     while (const dirent* dir_result = readdir(dir)) {
         if ((std::strcmp(dir_result->d_name, ".") == 0) ||
             (std::strcmp(dir_result->d_name, "..") == 0))
