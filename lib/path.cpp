@@ -428,10 +428,18 @@ bool Path::isDirectory(const std::string &path)
     return file_type(path) == S_IFDIR;
 }
 
-bool Path::exists(const std::string &path)
+bool Path::exists(const std::string &path, bool* isdir)
 {
     const auto type = file_type(path);
-    return type == S_IFREG || type == S_IFDIR;
+    if (type == S_IFDIR)
+    {
+        if (isdir)
+            *isdir = true;
+        return true;
+    }
+    if (isdir)
+        *isdir = false;
+    return type == S_IFREG;
 }
 
 std::string Path::join(const std::string& path1, const std::string& path2) {
