@@ -20,11 +20,12 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include "common.h"
 #include "showtypes.h"
 #include "checkers.h"
 
 #include <cstdint>
+#include <map>
+#include <string>
 
 #include <QObject>
 #include <QStandardItemModel>

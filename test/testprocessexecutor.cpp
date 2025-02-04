@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "processexecutor.h"
-#include "redirect.h"
-#include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "processexecutor.h"
+#include "redirect.h"
+#include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
 

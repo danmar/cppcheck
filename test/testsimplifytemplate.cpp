@@ -19,7 +19,6 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "platform.h"
 #include "settings.h"
 #include "templatesimplifier.h"
 #include "token.h"

@@ -23,23 +23,21 @@
 // headers that declare mocked functions/variables
 #include "applicationlist.h"
 #include "common.h"
-#include "threadhandler.h"
 #include "projectfile.h"
+#include "threadhandler.h"
+#include "threadresult.h"
 
 #include "application.h"
-#include "cppcheck.h"
+#include "checkers.h"
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "path.h"
 #include "report.h"
-#include "settings.h"
 #include "showtypes.h"
 #include "suppressions.h"
 #include "xmlreport.h"
 
 #include <cstddef>
-#include <set>
 #include <string>
 #include <utility>
 

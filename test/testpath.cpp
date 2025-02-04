@@ -26,6 +26,10 @@
 #include <string>
 #include <vector>
 
+#ifndef _WIN32
+#include <stdexcept>
+#endif
+
 class TestPath : public TestFixture {
 public:
     TestPath() : TestFixture("TestPath") {}

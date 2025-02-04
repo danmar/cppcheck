@@ -20,6 +20,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 

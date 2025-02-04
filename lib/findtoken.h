@@ -22,17 +22,14 @@
 //---------------------------------------------------------------------------
 
 #include <functional>
-#include <stack>
-#include <string>
 #include <type_traits>
 #include <vector>
 
 #include "config.h"
-#include "errortypes.h"
-#include "library.h"
-#include "smallvector.h"
-#include "symboldatabase.h"
+#include "mathlib.h"
 #include "token.h"
+
+class Library;
 
 inline std::vector<MathLib::bigint> evaluateKnownValues(const Token* tok)
 {

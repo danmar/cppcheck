@@ -26,7 +26,6 @@
 #include "timer.h"
 
 #include <cassert>
-#include <cstdint>
 #include <cstdlib>
 #include <future>
 #include <iostream>

@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstring>
 #include <iterator>
 #include <stack>
 #include <utility>

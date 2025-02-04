@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
+#include "utils.h"
 #include "vfvalue.h"
 
 #include <cctype>
