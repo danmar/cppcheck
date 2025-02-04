@@ -18,9 +18,10 @@
 
 #include "filelister.h"
 #include "filesettings.h"
+#include "fixture.h"
 #include "path.h"
 #include "pathmatch.h"
-#include "fixture.h"
+#include "standards.h"
 
 #include <algorithm>
 #include <list>

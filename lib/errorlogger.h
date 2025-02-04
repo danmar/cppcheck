@@ -24,7 +24,6 @@
 #include "config.h"
 #include "errortypes.h"
 #include "color.h"
-#include "checkers.h"
 
 #include <cstddef>
 #include <list>
@@ -36,6 +35,7 @@
 
 class Token;
 class TokenList;
+enum class ReportType : std::uint8_t;
 
 namespace tinyxml2 {
     class XMLElement;

@@ -31,6 +31,7 @@
 #include <functional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 FORCE_WARNING_CLANG_PUSH("-Wpadded")

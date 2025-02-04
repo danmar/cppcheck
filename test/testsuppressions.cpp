@@ -20,13 +20,14 @@
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "filesettings.h"
-#include "processexecutor.h"
-#include "settings.h"
-#include "suppressions.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "threadexecutor.h"
+#include "processexecutor.h"
+#include "settings.h"
 #include "singleexecutor.h"
+#include "standards.h"
+#include "suppressions.h"
+#include "threadexecutor.h"
 
 #include <cstring>
 #include <list>

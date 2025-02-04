@@ -35,7 +35,6 @@
 
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include <QAction>
 #include <QApplication>

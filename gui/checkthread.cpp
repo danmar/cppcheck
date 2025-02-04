@@ -25,6 +25,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
+#include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "threadresult.h"

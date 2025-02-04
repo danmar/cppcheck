@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "checkers.h"
 #include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "config.h"

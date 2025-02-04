@@ -42,6 +42,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #else
+#include <stdexcept>
+
 #include <direct.h>
 #include <windows.h>
 #endif

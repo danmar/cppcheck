@@ -22,6 +22,7 @@
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
+#include "checkers.h"
 #include "checkstatistics.h"
 #include "checkthread.h"
 #include "common.h"

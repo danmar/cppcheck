@@ -23,6 +23,7 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
+#include "standards.h"
 
 #include "simplecpp.h"
 

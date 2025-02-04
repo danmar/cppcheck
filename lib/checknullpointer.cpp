@@ -31,6 +31,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "valueflow.h"
 
 #include <algorithm>
