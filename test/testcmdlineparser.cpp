@@ -423,6 +423,8 @@ private:
         TEST_CASE(maxTemplateRecursionMissingCount);
         TEST_CASE(emitDuplicates);
         TEST_CASE(debugClangOutput);
+        TEST_CASE(debugXmlMultiple);
+        TEST_CASE(debugNormalXmlMultiple);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2923,6 +2925,20 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-clang-output", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->debugClangOutput);
+    }
+
+    void debugXmlMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug", "--xml", "1.cpp", "2.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(5, argv));
+        ASSERT_EQUALS("cppcheck: error: printing debug output in XML format does not support multiple input files.\n", logger->str());
+    }
+
+    void debugNormalXmlMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-normal", "--xml", "1.cpp", "2.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(5, argv));
+        ASSERT_EQUALS("cppcheck: error: printing debug output in XML format does not support multiple input files.\n", logger->str());
     }
 
     void ignorepaths1() {

@@ -1599,6 +1599,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         mFileSettings = project.fileSettings;
     }
 
+    if (mSettings.debugnormal && mSettings.outputFormat == Settings::OutputFormat::xml && (mPathNames.size() > 1 || mFileSettings.size() > 1))
+    {
+        mLogger.printError("printing debug output in XML format does not support multiple input files.");
+        return Result::Fail;
+    }
+
     // Use paths _pathnames if no base paths for relative path output are given
     if (mSettings.basePaths.empty() && mSettings.relativePaths)
         mSettings.basePaths = mPathNames;
