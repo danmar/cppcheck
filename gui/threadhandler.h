@@ -115,8 +115,9 @@ public:
      * @brief Start the threads to check the files
      *
      * @param settings Settings for checking
+     * @param supprs Suppressions for checking
      */
-    void check(const Settings &settings);
+    void check(const Settings &settings, Suppressions& supprs);
 
     /**
      * @brief Set files to check

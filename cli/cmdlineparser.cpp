@@ -1139,7 +1139,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                 mSettings.checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 std::string projectFile = argv[i]+10;
-                ImportProject::Type projType = project.import(projectFile, &mSettings);
+                ImportProject::Type projType = project.import(projectFile, &mSettings, &mSuppressions);
                 project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     for (const std::string &lib : project.guiProject.libraries)
@@ -1164,7 +1164,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     if (!projectFileGui.empty()) {
                         // read underlying project
                         projectFile = projectFileGui;
-                        projType = project.import(projectFileGui, &mSettings);
+                        projType = project.import(projectFileGui, &mSettings, &mSuppressions);
                     }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
@@ -1993,7 +1993,7 @@ std::string CmdLineParser::getVersion() const {
 
 bool CmdLineParser::isCppcheckPremium() const {
     if (mSettings.cppcheckCfgProductName.empty())
-        Settings::loadCppcheckCfg(mSettings, mSettings.supprs, mSettings.debuglookup || mSettings.debuglookupConfig);
+        Settings::loadCppcheckCfg(mSettings, mSuppressions, mSettings.debuglookup || mSettings.debuglookupConfig);
     return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 

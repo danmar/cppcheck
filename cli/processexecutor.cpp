@@ -68,7 +68,7 @@ enum class Color : std::uint8_t;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -284,7 +284,7 @@ unsigned int ProcessExecutor::check()
                 close(pipes[0]);
 
                 PipeWriter pipewriter(pipes[1]);
-                CppCheck fileChecker(pipewriter, false, mExecuteCommand);
+                CppCheck fileChecker(mSuppressions, pipewriter, false, mExecuteCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 
@@ -409,7 +409,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSuppressions.isSuppressed(errmsg, {}))
+    if (!mSuppressions.nomsg.isSuppressed(errmsg, {}))
         mErrorLogger.reportErr(errmsg);
 }
 

@@ -111,10 +111,11 @@ CheckThread::CheckThread(ThreadResult &result) :
     mResult(result)
 {}
 
-void CheckThread::setSettings(const Settings &settings)
+void CheckThread::setSettings(const Settings &settings, Suppressions& supprs)
 {
     mFiles.clear();
     mSettings = settings; // this is a copy
+    mSuppressions = &supprs;
 }
 
 void CheckThread::analyseWholeProgram(const QStringList &files, const std::string& ctuInfo)
@@ -130,7 +131,7 @@ void CheckThread::run()
 {
     mState = Running;
 
-    CppCheck cppcheck(mResult, true, executeCommand);
+    CppCheck cppcheck(*mSuppressions, mResult, true, executeCommand);
     cppcheck.settings() = std::move(mSettings);
 
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
@@ -440,7 +441,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const
 {
-    return std::any_of(mSuppressions.cbegin(), mSuppressions.cend(), [&](const SuppressionList::Suppression& s) {
+    return std::any_of(mSuppressionsUi.cbegin(), mSuppressionsUi.cend(), [&](const SuppressionList::Suppression& s) {
         return s.isSuppressed(errorMessage);
     });
 }

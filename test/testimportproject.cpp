@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "importproject.h"
-#include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
+#include "importproject.h"
 #include "redirect.h"
+#include "settings.h"
+#include "suppressions.h"
 
 #include <list>
 #include <map>
@@ -381,8 +382,9 @@ private:
                                "</project>\n";
         std::istringstream istr(xml);
         Settings s;
+        Suppressions supprs;
         TestImporter project;
-        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, &s));
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
         ASSERT_EQUALS(1, project.guiProject.pathNames.size());
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());

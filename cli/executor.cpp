@@ -30,7 +30,7 @@
 
 struct FileSettings;
 
-Executor::Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
+Executor::Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {
     // the two inputs may only be used exclusively
@@ -43,7 +43,7 @@ bool Executor::hasToLog(const ErrorMessage &msg)
     if (msg.severity == Severity::internal)
         return true;
 
-    if (!mSuppressions.isSuppressed(msg, {}))
+    if (!mSuppressions.nomsg.isSuppressed(msg, {}))
     {
         // TODO: there should be no need for verbose and default messages here
         std::string errmsg = msg.toString(mSettings.verbose);
