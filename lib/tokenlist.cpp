@@ -451,6 +451,7 @@ namespace {
         bool cpp;
         int assign{};
         bool inCase{}; // true from case to :
+        bool inGeneric{};
         bool stopAtColon{}; // help to properly parse ternary operators
         const Token* functionCallEndPar{};
         explicit AST_state(bool cpp) : cpp(cpp) {}
@@ -706,11 +707,31 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok,
     state.op.push(unaryop);
 }
 
+static void skipGenericType(Token *&tok)
+{
+    Token *skip = tok;
+    while (skip && !Token::Match(skip, ",|)")) {
+        if (Token::simpleMatch(skip, "(")) {
+            skip = skip->link()->next();
+            continue;
+        }
+        if (Token::simpleMatch(skip, ":")) {
+            tok = skip->next();
+            return;
+        }
+        skip = skip->next();
+    }
+}
+
 static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
 {
     Token *binop = tok;
     if (f) {
         tok = tok->next();
+        if (Token::simpleMatch(binop, ",") && state.inGeneric)
+            skipGenericType(tok);
+        bool inGenericSaved = state.inGeneric;
+        state.inGeneric = false;
         if (Token::Match(binop, "::|. ~"))
             tok = tok->next();
         state.depth++;
@@ -719,6 +740,7 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
         if (state.depth > AST_MAX_DEPTH)
             throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
         state.depth--;
+        state.inGeneric = inGenericSaved;
     }
 
     // TODO: Should we check if op is empty.
@@ -1048,6 +1070,9 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             continue;
         } else if (tok->str() == "(" &&
                    (!iscast(tok, state.cpp) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
+            bool inGenericSaved = state.inGeneric;
+            if (Token::simpleMatch(tok->previous(), "_Generic"))
+                state.inGeneric = true;
             Token* tok2 = tok;
             tok = tok->next();
             const bool opPrevTopSquare = !state.op.empty() && state.op.top() && state.op.top()->str() == "[";
@@ -1066,6 +1091,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 else
                     compileUnaryOp(tok, state, nullptr);
             }
+            state.inGeneric = inGenericSaved;
             tok = tok->link()->next();
             if (Token::simpleMatch(tok, "::"))
                 compileBinOp(tok, state, compileTerm);
