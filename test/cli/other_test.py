@@ -2766,12 +2766,15 @@ typedef int MISRA_5_6_VIOLATION_1;
 def test_addon_suppr_inline(tmp_path):
     __test_addon_suppr(tmp_path, ['--inline-suppr', '-j1'])
 
+# TODO: remove override when all issues are fixed
+def test_addon_suppr_inline_j_thread(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2', '--executor=thread'])
 
 # TODO: remove override when all issues are fixed
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
 @pytest.mark.xfail(strict=True)  # TODO: inline suppression does not work
-def test_addon_suppr_inline_j(tmp_path):
-    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
-
+def test_addon_suppr_inline_j_process(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2', '--executor=process'])
 
 def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
