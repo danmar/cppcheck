@@ -2869,3 +2869,170 @@ f(p);
     assert stderr.splitlines() == [
         '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file)
     ]
+
+
+def test_debug(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_xml(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 0
+
+
+def test_debug_verbose(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--verbose',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') != -1
+    assert stdout.find('##AST') != -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_verbose_xml(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--verbose',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 1
+
+
+# TODO: test with --xml
+def test_debug_template(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""template<class T> class TemplCl;
+void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',  # TODO: remove depdency on this
+        '--debug-template',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') != -1
+    assert stderr.splitlines() == []

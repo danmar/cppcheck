@@ -3836,7 +3836,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
         if (mSettings.debugtemplate && mSettings.debugnormal) {
             std::string title("Template Simplifier pass " + std::to_string(passCount + 1));
-            mTokenList.front()->printOut(std::cout, title.c_str(), mTokenList.getFiles());
+            mTokenList.front()->printOut(std::cout, false, title.c_str(), mTokenList.getFiles());
         }
 
         // Copy default argument values from forward declaration to declaration
