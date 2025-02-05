@@ -206,6 +206,8 @@ private:
 
     bool createTokensInternal(std::istream &code, const std::string& file0);
 
+    void removeGenericTypes() const;
+
     /** Token list */
     TokensFrontBack mTokensFrontBack;
 
