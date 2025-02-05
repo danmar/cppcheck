@@ -104,7 +104,6 @@ add_subdirectory(lib)   # CppCheck Library
 add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 add_subdirectory(gui)   # Graphical application
-add_subdirectory(tools/triage)   # Triage tool
 add_subdirectory(tools)
 add_subdirectory(man)
 
