@@ -1944,7 +1944,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     continue;
                 if (valueTok->valueType() && valueTok->valueType()->isTypeEqual(typeTok->valueType()))
                     continue;
-                int bits = 0;
+                std::uint8_t bits = 0;
                 switch (typeTok->valueType()->type) {
                 case ValueType::Type::BOOL:
                     bits = 1;

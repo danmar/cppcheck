@@ -44,7 +44,7 @@ namespace ValueFlow
         if (!vt || !vt->isIntegral() || vt->pointer)
             return false;
 
-        int bits;
+        std::uint8_t bits;
         switch (vt->type) {
         case ValueType::Type::BOOL:
             bits = 1;
