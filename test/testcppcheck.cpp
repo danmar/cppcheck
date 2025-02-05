@@ -155,7 +155,7 @@ private:
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(errorLogger, false, {});
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
-        const Settings s = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        const Settings s = settingsBuilder().libraryxml(xmldata).build();
         cppcheck.settings() = s;
         ASSERT_EQUALS(0, cppcheck.check(FileWithDetails(file.path())));
         // TODO: how to properly disable these warnings?

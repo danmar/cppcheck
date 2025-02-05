@@ -9416,7 +9416,7 @@ private:
                                "<returnValue type=\"" #type "\"/>\n" \
                                "</function>\n" \
                                "</def>";              \
-        const Settings sF = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build(); \
+        const Settings sF = settingsBuilder().libraryxml(xmldata).build(); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", true, &sF)); \
 } while (false)
         // *INDENT-OFF*
@@ -9446,7 +9446,7 @@ private:
                                        "  <podtype name=\"char16_t\" sign=\"u\" size=\"2\"/>\n"
                                        "  <podtype name=\"char32_t\" sign=\"u\" size=\"4\"/>\n"
                                        "</def>";
-            /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
             settings.platform.sizeof_short = 2;
             settings.platform.sizeof_int = 4;
 
@@ -9465,7 +9465,7 @@ private:
                                        "  <podtype name=\"xyz::x\" sign=\"u\" size=\"4\"/>\n"
                                        "  <podtype name=\"podtype2\" sign=\"u\" size=\"0\" stdtype=\"int\"/>\n"
                                        "</def>";
-            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", settingsWin64));
@@ -9487,7 +9487,7 @@ private:
                                        "    <platform type=\"unix32\"/>\n"
                                        "  </platformtype>\n"
                                        "</def>";
-            const Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).libraryxml(xmldata).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
@@ -9500,7 +9500,7 @@ private:
                                        "    <platform type=\"win64\"/>\n"
                                        "  </platformtype>\n"
                                        "</def>";
-            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
@@ -9511,7 +9511,7 @@ private:
                                        "<def>\n"
                                        "  <container id=\"C\" startPattern=\"C\"/>\n"
                                        "</def>";
-            const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings sC = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new",true,&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(",true,&sC));
             ASSERT_EQUALS("container(C)", typeOf("C c = C();","(",true,&sC));
@@ -9533,7 +9533,7 @@ private:
                                        "    <access indexOperator=\"array-like\"/>\n"
                                        "  </container>\n"
                                        "</def>";
-            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings set = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", true, &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", true, &set));
             ASSERT_EQUALS(
@@ -9599,7 +9599,7 @@ private:
                                        "<def>\n"
                                        "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
                                        "</def>";
-            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings set = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("smart-pointer(std::shared_ptr)",
                           typeOf("class C {}; x = std::make_shared<C>();", "(", true, &set));
         }
@@ -9611,7 +9611,7 @@ private:
                                        "<def>\n"
                                        "  <container id=\"C\" startPattern=\"C\"/>\n"
                                        "</def>";
-            const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings sC = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", true, &sC));
         }
         // Smart pointer
@@ -9620,7 +9620,7 @@ private:
                                        "<def>\n"
                                        "  <smart-pointer class-name=\"MyPtr\"/>\n"
                                        "</def>";
-            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings set = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("smart-pointer(MyPtr)",
                           typeOf("void f() { MyPtr<int> p; return p; }", "p ;", true, &set));
             ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", true, &set));

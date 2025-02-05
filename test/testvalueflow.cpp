@@ -53,7 +53,7 @@ private:
                                "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
                                "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                                "</def>";
-        settings = settingsBuilder(settings).libraryxml(cfg, sizeof(cfg)).build();
+        settings = settingsBuilder(settings).libraryxml(cfg).build();
 
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
