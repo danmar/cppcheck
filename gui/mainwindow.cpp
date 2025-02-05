@@ -1201,7 +1201,7 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     result.quiet = false;
     result.verbose = true;
     result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
-    result.xml = false;
+    result.outputFormat = Settings::OutputFormat::text;
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
     if (!mProjectFile || result.platform.type == Platform::Type::Unspecified)
