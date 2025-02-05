@@ -115,10 +115,10 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
             const auto& val = it->second;
             if (!val.is<std::string>())
                 return "Loading " + fileName + " failed. 'executable' must be a string.";
-            const std::string e = val.get<std::string>();
+            std::string e = val.get<std::string>();
             addoninfo.executable = getFullPath(e, fileName);
             if (addoninfo.executable.empty())
-                addoninfo.executable = e;
+                addoninfo.executable = std::move(e);
             return ""; // <- do not load both "executable" and "script".
         }
     }
