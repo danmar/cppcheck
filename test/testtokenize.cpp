@@ -8394,7 +8394,7 @@ private:
 
     void genericInIf() { // #13561
         const char code[] = "  if (_Generic(s, char * : 1, const float * : 2, volatile int * : 3, default : 0)) {}";
-        const char ast[] = "(( if (( _Generic (, (, (, (, s 1) 2) 3) 0)))";
+        const char ast[] = "(( if (( _Generic (, (, (, (, s (: char 1)) (: float 2)) (: int 3)) (: default 0))))";
         ASSERT_EQUALS(ast, testAst(code, AstStyle::Z3));
     }
 };

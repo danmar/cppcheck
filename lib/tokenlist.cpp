@@ -828,13 +828,6 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
             if (Token::Match(tok, "%name% %assign%"))
                 tok = tok->next();
-            if (Token::simpleMatch(tok, "*")) {
-                Token *tok2 = tok->next();
-                while (Token::simpleMatch(tok2, "*"))
-                    tok2 = tok2->next();
-                if (Token::simpleMatch(tok2, ":"))
-                    tok = tok2;
-            }
         }
     } else if (tok->str() == "{") {
         const Token *prev = tok->previous();
@@ -1804,7 +1797,6 @@ void TokenList::createAst() const
             throw InternalError(tok, "Syntax Error: Infinite loop when creating AST.", InternalError::AST);
         tok = nextTok;
     }
-    removeGenericTypes();
 }
 
 namespace {
@@ -2245,26 +2237,4 @@ void TokenList::setLang(Standards::Language lang, bool force)
     }
 
     mLang = lang;
-}
-
-void TokenList::removeGenericTypes() const
-{
-    for (Token *tok = mTokensFrontBack.front; tok != mTokensFrontBack.back; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "_Generic"))
-            continue;
-        tok = tok->next();
-        Token *link = tok->link();
-        tok = tok->astOperand2();
-
-        while (tok) {
-            if (Token::simpleMatch(tok->astOperand2(), ":")) {
-                Token *tok2 = tok->astOperand2()->astOperand2();
-                tok2->astParent(nullptr);
-                tok->astOperand2(tok2);
-            }
-            tok = tok->astOperand1();
-        }
-
-        tok = link;
-    }
 }
