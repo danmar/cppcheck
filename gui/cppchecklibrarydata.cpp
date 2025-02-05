@@ -22,6 +22,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <QObject>
 #include <QVariant>
@@ -147,7 +148,7 @@ static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReade
             continue;
         const QString elementName = xmlReader.name().toString();
         if (elementName == "suppress" || elementName == "check") {
-            QPair<QString, QString> entry(elementName, xmlReader.readElementText());
+            std::pair<QString, QString> entry(elementName, xmlReader.readElementText());
             typeChecks.append(entry);
         }
     }
@@ -756,7 +757,7 @@ static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     if (!typeChecks.isEmpty()) {
         xmlWriter.writeStartElement("unusedvar");
     }
-    for (const QPair<QString, QString> &check : typeChecks) {
+    for (const std::pair<QString, QString> &check : typeChecks) {
         xmlWriter.writeStartElement(check.first);
         xmlWriter.writeCharacters(check.second);
         xmlWriter.writeEndElement();
