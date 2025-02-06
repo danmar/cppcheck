@@ -19,6 +19,7 @@
 #include "vfvalue.h"
 
 #include "errortypes.h"
+#include "mathlib.h"
 #include "token.h"
 
 #include <sstream>
@@ -58,7 +59,7 @@ namespace ValueFlow {
             ss << this->tokvalue->str();
             break;
         case ValueType::FLOAT:
-            ss << this->floatValue;
+            ss << MathLib::toString(this->floatValue);
             break;
         case ValueType::MOVED:
             ss << toString(this->moveKind);
