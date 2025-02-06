@@ -710,8 +710,8 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok,
 static void skipGenericType(Token *&tok)
 {
     Token *skip = tok;
-    while (skip && !Token::Match(skip, ",|)")) {
-        if (Token::simpleMatch(skip, "(")) {
+    while (Token::Match(skip, "%name%|*|:|(")) {
+        if (skip->link()) {
             skip = skip->link()->next();
             continue;
         }
@@ -730,7 +730,7 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
         tok = tok->next();
         if (Token::simpleMatch(binop, ",") && state.inGeneric)
             skipGenericType(tok);
-        bool inGenericSaved = state.inGeneric;
+        const bool inGenericSaved = state.inGeneric;
         state.inGeneric = false;
         if (Token::Match(binop, "::|. ~"))
             tok = tok->next();
@@ -1070,7 +1070,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             continue;
         } else if (tok->str() == "(" &&
                    (!iscast(tok, state.cpp) || Token::Match(tok->previous(), "if|while|for|switch|catch"))) {
-            bool inGenericSaved = state.inGeneric;
+            const bool inGenericSaved = state.inGeneric;
             if (Token::simpleMatch(tok->previous(), "_Generic"))
                 state.inGeneric = true;
             Token* tok2 = tok;
