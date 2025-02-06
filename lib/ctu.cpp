@@ -522,6 +522,8 @@ static bool findPath(const std::string &callId,
         if (functionCall) {
             if (!warning && functionCall->warning)
                 continue;
+            if (!warning && functionCall->callArgValue.unknownFunctionReturn > 0)
+                continue;
             switch (invalidValue) {
             case CTU::FileInfo::InvalidValueType::null:
                 if (functionCall->callValueType != ValueFlow::Value::ValueType::INT || functionCall->callArgValue.value != 0)
@@ -569,9 +571,10 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
     if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning, maxCtuDepth))
         return {};
 
-    if (unknownFunctionReturn && path[0] && dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[0])) {
-        const auto* v = dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[0]);
-        *unknownFunctionReturn = v->callArgValue.unknownFunctionReturn;
+    if (unknownFunctionReturn && path[0]) {
+        const auto* functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[0]);
+        if (functionCall)
+            *unknownFunctionReturn = functionCall->callArgValue.unknownFunctionReturn;
     }
 
     std::list<ErrorMessage::FileLocation> locationList;

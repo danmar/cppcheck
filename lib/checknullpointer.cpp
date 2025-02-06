@@ -676,11 +676,9 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                 std::string message = "Null pointer dereference: " + unsafeUsage.myArgumentName;
                 if (unknownFunctionReturn == (std::uint8_t)ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
                     id += "OutOfMemory";
-                    warning = 1;
                     message = "If memory allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
                 } else if (unknownFunctionReturn == (std::uint8_t)ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
                     id += "OutOfResources";
-                    warning = 1;
                     message = "If resource allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
                 }
 
