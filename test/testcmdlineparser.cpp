@@ -208,11 +208,13 @@ private:
         TEST_CASE(maxConfigsMissingCount);
         TEST_CASE(maxConfigsInvalid);
         TEST_CASE(maxConfigsTooSmall);
+        TEST_CASE(outputFormatText);
         TEST_CASE(outputFormatSarif);
         TEST_CASE(outputFormatXml);
         TEST_CASE(outputFormatOther);
         TEST_CASE(outputFormatImplicitPlist);
         TEST_CASE(outputFormatImplicitXml);
+        TEST_CASE(outputFormatOverridePlist);
         TEST_CASE(premiumOptions1);
         TEST_CASE(premiumOptions2);
         TEST_CASE(premiumOptions3);
@@ -1279,6 +1281,13 @@ private:
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' must be greater than 0.\n", logger->str());
     }
 
+    void outputFormatText() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--output-format=text", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(Settings::OutputFormat::text, settings->outputFormat);
+    }
+
     void outputFormatSarif() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--output-format=sarif", "file.cpp"};
@@ -1295,9 +1304,9 @@ private:
 
     void outputFormatOther() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--output-format=text", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--output-format=plist", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--output-format=' must be 'sarif' or 'xml'.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: argument to '--output-format=' must be 'text', 'sarif' or 'xml'.\n", logger->str());
     }
 
     void outputFormatImplicitPlist() {
@@ -1305,6 +1314,7 @@ private:
         const char * const argv[] = {"cppcheck", "--plist-output=.", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS_ENUM(Settings::OutputFormat::plist, settings->outputFormat);
+        ASSERT_EQUALS("./", settings->plistOutput);
     }
 
     void outputFormatImplicitXml() {
@@ -1312,6 +1322,14 @@ private:
         const char * const argv[] = {"cppcheck", "--xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS_ENUM(Settings::OutputFormat::xml, settings->outputFormat);
+    }
+
+    void outputFormatOverridePlist() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--plist-output=.", "--output-format=text", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(Settings::OutputFormat::text, settings->outputFormat);
+        ASSERT_EQUALS("", settings->plistOutput);
     }
 
     void premiumOptions1() {

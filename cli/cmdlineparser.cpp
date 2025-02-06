@@ -1011,15 +1011,18 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
                 const std::string format = argv[i] + 16;
-                // TODO: text and plist is missing
-                if (format == "sarif")
+                // plist can not be handled here because it requires additional data
+                if (format == "text")
+                    mSettings.outputFormat = Settings::OutputFormat::text;
+                else if (format == "sarif")
                     mSettings.outputFormat = Settings::OutputFormat::sarif;
                 else if (format == "xml")
                     mSettings.outputFormat = Settings::OutputFormat::xml;
                 else {
-                    mLogger.printError("argument to '--output-format=' must be 'sarif' or 'xml'.");
+                    mLogger.printError("argument to '--output-format=' must be 'text', 'sarif' or 'xml'.");
                     return Result::Fail;
                 }
+                mSettings.plistOutput = "";
             }
 
 
@@ -1775,6 +1778,7 @@ void CmdLineParser::printHelp() const
         "    --output-file=<file> Write results to file, rather than standard error.\n"
         "    --output-format=<format>\n"
         "                        Specify the output format. The available formats are:\n"
+        "                          * text\n"
         "                          * sarif\n"
         "                          * xml\n"
         "    --platform=<type>, --platform=<file>\n"
