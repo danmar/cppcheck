@@ -3101,12 +3101,12 @@ def test_debug_valueflow(tmp_path):
         '##Value flow',
         'File {}'.format(str(test_file).replace('\\', '/')),
         'Line 3',
-        '  = always 2',
-        '  1.0 always 1',
-        '  / always 2',
+        '  = always 2.0',
+        '  1.0 always 1.0',
+        '  / always 2.0',
         '  0.5 always 0.5',
         'Line 4',
-        '  d always {symbolic=(1.0/0.5),2}'
+        '  d always {symbolic=(1.0/0.5),2.0}'
     ]
 
 
