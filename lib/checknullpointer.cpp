@@ -583,7 +583,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Settings &settings, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings &settings, const Token *vartok, CTU::FileInfo::Value *value)
 {
     (void)value;
     bool unknown = false;
@@ -659,6 +659,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                 if (warning == 1 && !settings.severity.isEnabled(Severity::warning))
                     break;
 
+                std::uint8_t unknownFunctionReturn = 0;
                 const std::list<ErrorMessage::FileLocation> &locationList =
                     CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                                 unsafeUsage,
@@ -666,15 +667,28 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                                                 "Dereferencing argument ARG that is null",
                                                 nullptr,
                                                 warning,
-                                                settings.maxCtuDepth);
+                                                settings.maxCtuDepth,
+                                                &unknownFunctionReturn);
                 if (locationList.empty())
                     continue;
+
+                std::string id = "ctunullpointer";
+                std::string message = "Null pointer dereference: " + unsafeUsage.myArgumentName;
+                if (unknownFunctionReturn == (std::uint8_t)ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+                    id += "OutOfMemory";
+                    warning = 1;
+                    message = "If memory allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
+                } else if (unknownFunctionReturn == (std::uint8_t)ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+                    id += "OutOfResources";
+                    warning = 1;
+                    message = "If resource allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
+                }
 
                 const ErrorMessage errmsg(locationList,
                                           fi->file0,
                                           warning ? Severity::warning : Severity::error,
-                                          "Null pointer dereference: " + unsafeUsage.myArgumentName,
-                                          "ctunullpointer",
+                                          message,
+                                          id,
                                           CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
                 errorLogger.reportErr(errmsg);
 

@@ -391,3 +391,35 @@ def test_nullpointer_file0_builddir_j(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_nullpointer_file0(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
+
+@pytest.mark.parametrize("single_file", (False,True))
+def test_nullpointer_out_of_memory(tmpdir, single_file):
+    """Ensure that there are not duplicate warnings related to memory/resource allocation failures
+       https://trac.cppcheck.net/ticket/13521
+    """
+    code1 = 'void f(int* p) { *p = 0; }\n'
+    code2 = 'int main() { int* p = malloc(10); f(p); return 0; }\n'
+    if single_file:
+        with open(tmpdir / 'test.c', 'wt') as f:
+            f.write(code1 + code2)
+    else:
+        with open(tmpdir / 'header.h', 'wt') as f:
+            f.write('void f(int* p);\n')
+        with open(tmpdir / 'test1.c', 'wt') as f:
+            f.write('#include "header.h"\n' + code1)
+        with open(tmpdir / 'test2.c', 'wt') as f:
+            f.write('#include "header.h"\n' + code2)
+
+    _, _, stderr = cppcheck(['--enable=style', '.'], cwd=tmpdir)
+    results = []
+    for line in stderr.splitlines():
+        if line.endswith(']'):
+            results.append(line[line.find('['):])
+
+    if single_file:
+        # the bug is found and reported using normal valueflow analysis
+        # ctu finding is not reported
+        assert results == ['[nullPointerOutOfMemory]']
+    else:
+        # the bug is found using ctu analysis
+        assert results == ['[ctunullpointerOutOfMemory]']
