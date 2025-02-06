@@ -87,7 +87,7 @@ namespace CTU {
             nonneg int myArgNr{};
             std::string myArgumentName;
             Location location;
-            MathLib::bigint value;
+            MathLib::bigint value{};
             std::string toString() const;
         };
 
