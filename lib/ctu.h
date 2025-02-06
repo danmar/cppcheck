@@ -77,7 +77,7 @@ namespace CTU {
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, Value value)
+            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, MathLib::bigint value)
                 : myId(std::move(myId))
                 , myArgNr(myArgNr)
                 , myArgumentName(std::move(myArgumentName))
@@ -87,7 +87,7 @@ namespace CTU {
             nonneg int myArgNr{};
             std::string myArgumentName;
             Location location;
-            Value value;
+            MathLib::bigint value;
             std::string toString() const;
         };
 
