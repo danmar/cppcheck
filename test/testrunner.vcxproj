@@ -111,6 +111,7 @@
     <ClCompile Include="testvaarg.cpp" />
     <ClCompile Include="testvalueflow.cpp" />
     <ClCompile Include="testvarid.cpp" />
+    <ClCompile Include="testvfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\cli\cmdlineparser.h" />

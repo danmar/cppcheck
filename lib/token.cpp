@@ -21,6 +21,7 @@
 #include "astutils.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "simplecpp.h"
 #include "symboldatabase.h"
@@ -1801,7 +1802,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::FLOAT:
                     outs += "floatvalue=\"";
-                    outs += std::to_string(value.floatValue); // TODO: should this be MathLib::toString()?
+                    outs += MathLib::toString(value.floatValue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::MOVED:
@@ -1875,7 +1876,6 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 
                 outs += "/>\n";
             }
-
             else {
                 if (&value != &values->front())
                     outs += ",";
