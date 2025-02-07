@@ -92,12 +92,14 @@ private:
 
     std::unique_ptr<CmdLineLoggerTest> logger;
     std::unique_ptr<Settings> settings;
+    std::unique_ptr<Suppressions> supprs;
     std::unique_ptr<CmdLineParser> parser;
 
     void prepareTestInternal() override {
         logger.reset(new CmdLineLoggerTest());
         settings.reset(new Settings());
-        parser.reset(new CmdLineParser(*logger, *settings, settings->supprs));
+        supprs.reset(new Suppressions());
+        parser.reset(new CmdLineParser(*logger, *settings, *supprs));
     }
 
     void teardownTestInternal() override {
@@ -1134,8 +1136,9 @@ private:
                         "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(2, settings->supprs.nofail.getSuppressions().size());
-        auto it = settings->supprs.nofail.getSuppressions().cbegin();
+        const auto supprsNofail = supprs->nofail.getSuppressions();
+        ASSERT_EQUALS(2, supprsNofail.size());
+        auto it = supprsNofail.cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
         ASSERT_EQUALS("unusedFunction", it->errorId);
     }
@@ -1674,8 +1677,9 @@ private:
                         "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(2, settings->supprs.nomsg.getSuppressions().size());
-        auto it = settings->supprs.nomsg.getSuppressions().cbegin();
+        const auto supprsNomsg = supprs->nomsg.getSuppressions();
+        ASSERT_EQUALS(2, supprsNomsg.size());
+        auto it = supprsNomsg.cbegin();
         ASSERT_EQUALS("uninitvar", (it++)->errorId);
         ASSERT_EQUALS("unusedFunction", it->errorId);
     }
@@ -1713,22 +1717,22 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1)));
+        ASSERT_EQUALS(true, supprs->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1)));
     }
 
     void suppressionSingleFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar:file.cpp", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+        ASSERT_EQUALS(true, supprs->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
     }
 
     void suppressionTwo() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar,noConstructor", "file.cpp"};
         TODO_ASSERT_EQUALS(static_cast<int>(CmdLineParser::Result::Success), static_cast<int>(CmdLineParser::Result::Fail), static_cast<int>(parser->parseFromArgs(3, argv)));
-        TODO_ASSERT_EQUALS(true, false, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
-        TODO_ASSERT_EQUALS(true, false, settings->supprs.nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
+        TODO_ASSERT_EQUALS(true, false, supprs->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+        TODO_ASSERT_EQUALS(true, false, supprs->nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
         TODO_ASSERT_EQUALS("", "cppcheck: error: Failed to add suppression. Invalid id \"uninitvar,noConstructor\"\n", logger->str());
     }
 
@@ -1736,8 +1740,8 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--suppress=uninitvar", "--suppress=noConstructor", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
-        ASSERT_EQUALS(true, settings->supprs.nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
+        ASSERT_EQUALS(true, supprs->nomsg.isSuppressed(errorMessage("uninitvar", "file.cpp", 1U)));
+        ASSERT_EQUALS(true, supprs->nomsg.isSuppressed(errorMessage("noConstructor", "file.cpp", 1U)));
     }
 
     void templates() {
@@ -2687,9 +2691,9 @@ private:
                         "</suppressions>");
         const char * const argv[] = {"cppcheck", "--suppress-xml=suppress.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
-        const auto& supprs = settings->supprs.nomsg.getSuppressions();
-        ASSERT_EQUALS(1, supprs.size());
-        const auto it = supprs.cbegin();
+        const auto supprsNomsg = supprs->nomsg.getSuppressions();
+        ASSERT_EQUALS(1, supprsNomsg.size());
+        const auto it = supprsNomsg.cbegin();
         ASSERT_EQUALS("uninitvar", it->errorId);
     }
 

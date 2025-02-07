@@ -4,6 +4,7 @@
 import os
 import json
 import pytest
+import sys
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -61,11 +62,19 @@ def test_unused_functions_builddir(tmpdir):
     __test_unused_functions(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-@pytest.mark.xfail(strict=True)
-def test_unused_functions_builddir_j(tmpdir):
+def test_unused_functions_builddir_j_thread(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    __test_unused_functions(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
+    __test_unused_functions(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=thread'])
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+@pytest.mark.xfail(strict=True)
+def test_unused_functions_builddir_j_process(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_unused_functions(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])
+
 
 def __test_unused_functions_project(extra_args):
     project_file = os.path.join(__project_dir, 'unusedFunction.cppcheck')
@@ -111,11 +120,18 @@ def test_unused_functions_project_builddir(tmpdir):
     __test_unused_functions_project(['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-@pytest.mark.xfail(strict=True)
-def test_unused_functions_project_builddir_j(tmpdir):
+def test_unused_functions_project_builddir_j_thread(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    __test_unused_functions_project(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
+    __test_unused_functions_project(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=thread'])
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+@pytest.mark.xfail(strict=True)
+def test_unused_functions_project_builddir_j_process(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_unused_functions_project(['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])
 
 
 def __test_unused_functions_compdb(tmpdir, extra_args):
@@ -163,8 +179,15 @@ def test_unused_functions_compdb_builddir(tmpdir):
     __test_unused_functions_compdb(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
-@pytest.mark.xfail(strict=True)
-def test_unused_functions_compdb_buildir_j(tmpdir):
+def test_unused_functions_compdb_buildir_j_thread(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
-    __test_unused_functions_compdb(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
+    __test_unused_functions_compdb(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=thread'])
+
+
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
+@pytest.mark.xfail(strict=True)
+def test_unused_functions_compdb_buildir_j_process(tmpdir):
+    build_dir = os.path.join(tmpdir, 'b1')
+    os.mkdir(build_dir)
+    __test_unused_functions_compdb(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])

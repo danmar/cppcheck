@@ -45,6 +45,7 @@ class ImportProject;
 class QNetworkAccessManager;
 class QNetworkReply;
 class Settings;
+struct Suppressions;
 namespace Ui {
     class MainWindow;
 }
@@ -317,10 +318,8 @@ private:
 
     /**
      * @brief Get our default cppcheck settings and read project file.
-     *
-     * @return Default cppcheck settings
      */
-    QPair<bool, Settings> getCppcheckSettings();
+    bool getCppcheckSettings(Settings& settings, Suppressions& supprs);
 
     /** @brief Load program settings */
     void loadSettings();

@@ -42,6 +42,7 @@ class Tokenizer;
 class FileWithDetails;
 class AnalyzerInformation;
 class ErrorLogger;
+struct Suppressions;
 
 namespace simplecpp { class TokenList; }
 
@@ -61,7 +62,8 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(ErrorLogger &errorLogger,
+    CppCheck(Suppressions& supprs,
+             ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
              ExecuteCmdFn executeCommand);
 
@@ -209,6 +211,7 @@ private:
     unsigned int checkClang(const FileWithDetails &file);
 
     Settings mSettings;
+    Suppressions& mSuppressions;
 
     class CppCheckLogger;
     std::unique_ptr<CppCheckLogger> mLogger;

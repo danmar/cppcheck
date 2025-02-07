@@ -126,7 +126,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     {
         Settings tempSettings;
         tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
-        Settings::loadCppcheckCfg(tempSettings, tempSettings.supprs); // TODO: how to handle error?
+        Suppressions tempSupprs;
+        Settings::loadCppcheckCfg(tempSettings, tempSupprs); // TODO: how to handle error?
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
     }
@@ -540,10 +541,10 @@ void MainWindow::saveSettings() const
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
-    QPair<bool,Settings> checkSettingsPair = getCppcheckSettings();
-    if (!checkSettingsPair.first)
+    Settings checkSettings;
+    Suppressions supprs;
+    if (!getCppcheckSettings(checkSettings, supprs))
         return;
-    Settings& checkSettings = checkSettingsPair.second;
 
     clearResults();
 
@@ -602,7 +603,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setSuppressions(mProjectFile->getSuppressions());
     }
     mThread->setProject(p);
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
 }
 
@@ -611,10 +612,10 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (files.isEmpty())
         return;
 
-    QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
-    if (!checkSettingsPair.first)
+    Settings checkSettings;
+    Suppressions supprs;
+    if (!getCppcheckSettings(checkSettings, supprs))
         return;
-    Settings& checkSettings = checkSettingsPair.second;
 
     clearResults();
 
@@ -670,16 +671,16 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     }
 
     mThread->setCheckFiles(true);
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::analyzeCode(const QString& code, const QString& filename)
 {
-    const QPair<bool, Settings>& checkSettingsPair = getCppcheckSettings();
-    if (!checkSettingsPair.first)
+    Settings checkSettings;
+    Suppressions supprs;
+    if (!getCppcheckSettings(checkSettings, supprs))
         return;
-    const Settings& checkSettings = checkSettingsPair.second;
 
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
@@ -694,7 +695,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
             mUI->mResults, SLOT(debugError(ErrorItem)));
 
     // Create CppCheck instance
-    CppCheck cppcheck(result, true, nullptr);
+    CppCheck cppcheck(supprs, result, true, nullptr);
     cppcheck.settings() = checkSettings;
 
     // Check
@@ -1030,42 +1031,41 @@ QString MainWindow::loadAddon(Settings &settings, const QString &filesDir, const
     return "";
 }
 
-QPair<bool,Settings> MainWindow::getCppcheckSettings()
+bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
 {
     saveSettings(); // Save settings
 
     Settings::terminate(true);
-    Settings result;
 
-    result.exename = QCoreApplication::applicationFilePath().toStdString();
+    settings.exename = QCoreApplication::applicationFilePath().toStdString();
 
     // default to --check-level=normal for GUI for now
-    result.setCheckLevel(Settings::CheckLevel::normal);
+    settings.setCheckLevel(Settings::CheckLevel::normal);
 
-    const bool std = tryLoadLibrary(result.library, "std.cfg");
+    const bool std = tryLoadLibrary(settings.library, "std.cfg");
     if (!std) {
         QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.\n\nAnalysis is aborted.").arg("std.cfg"));
-        return {false, {}};
+        return false;
     }
 
     const QString filesDir(getDataDir());
     const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
 
     {
-        const QString cfgErr = QString::fromStdString(Settings::loadCppcheckCfg(result, result.supprs));
+        const QString cfgErr = QString::fromStdString(Settings::loadCppcheckCfg(settings, supprs));
         if (!cfgErr.isEmpty()) {
             QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2\n\nAnalysis is aborted.").arg("cppcheck.cfg").arg(cfgErr));
-            return {false, {}};
+            return false;
         }
 
-        const auto cfgAddons = result.addons;
-        result.addons.clear();
+        const auto cfgAddons = settings.addons;
+        settings.addons.clear();
         for (const std::string& addon : cfgAddons) {
             // TODO: support addons which are a script and not a file
-            const QString addonError = loadAddon(result, filesDir, pythonCmd, QString::fromStdString(addon));
+            const QString addonError = loadAddon(settings, filesDir, pythonCmd, QString::fromStdString(addon));
             if (!addonError.isEmpty()) {
                 QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
-                return {false, {}};
+                return false;
             }
         }
     }
@@ -1073,93 +1073,93 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     // If project file loaded, read settings from it
     if (mProjectFile) {
         QStringList dirs = mProjectFile->getIncludeDirs();
-        addIncludeDirs(dirs, result);
+        addIncludeDirs(dirs, settings);
 
-        result.inlineSuppressions = mProjectFile->getInlineSuppression();
+        settings.inlineSuppressions = mProjectFile->getInlineSuppression();
 
         const QStringList defines = mProjectFile->getDefines();
         for (const QString& define : defines) {
-            if (!result.userDefines.empty())
-                result.userDefines += ";";
-            result.userDefines += define.toStdString();
+            if (!settings.userDefines.empty())
+                settings.userDefines += ";";
+            settings.userDefines += define.toStdString();
         }
 
-        result.clang = mProjectFile->clangParser;
+        settings.clang = mProjectFile->clangParser;
 
         const QStringList undefines = mProjectFile->getUndefines();
         for (const QString& undefine : undefines)
-            result.userUndefs.insert(undefine.toStdString());
+            settings.userUndefs.insert(undefine.toStdString());
 
         const QStringList libraries = mProjectFile->getLibraries();
         for (const QString& library : libraries) {
-            result.libraries.emplace_back(library.toStdString());
+            settings.libraries.emplace_back(library.toStdString());
             const QString filename = library + ".cfg";
-            tryLoadLibrary(result.library, filename);
+            tryLoadLibrary(settings.library, filename);
         }
 
         for (const SuppressionList::Suppression &suppression : mProjectFile->getCheckingSuppressions()) {
-            result.supprs.nomsg.addSuppression(suppression); // TODO: check result
+            supprs.nomsg.addSuppression(suppression); // TODO: check result
         }
 
         // Only check the given -D configuration
         if (!defines.isEmpty())
-            result.maxConfigs = 1;
+            settings.maxConfigs = 1;
 
         // If importing a project, only check the given configuration
         if (!mProjectFile->getImportProject().isEmpty())
-            result.checkAllConfigurations = false;
+            settings.checkAllConfigurations = false;
 
         const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {
-                result.buildDir = buildDir.toStdString();
+                settings.buildDir = buildDir.toStdString();
             } else {
                 QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
-                result.buildDir = (prjpath + '/' + buildDir).toStdString();
+                settings.buildDir = (prjpath + '/' + buildDir).toStdString();
             }
         }
 
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            result.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
+            settings.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
             for (int i = Platform::Type::Native; i <= Platform::Type::Unix64; i++) {
                 const auto p = (Platform::Type)i;
                 if (platform == Platform::toString(p)) {
-                    result.platform.set(p);
+                    settings.platform.set(p);
                     break;
                 }
             }
         }
 
-        result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
-        result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
+        settings.maxCtuDepth = mProjectFile->getMaxCtuDepth();
+        settings.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
         switch (mProjectFile->getCheckLevel()) {
         case ProjectFile::CheckLevel::reduced:
-            result.setCheckLevel(Settings::CheckLevel::reduced);
+            settings.setCheckLevel(Settings::CheckLevel::reduced);
             break;
         case ProjectFile::CheckLevel::normal:
-            result.setCheckLevel(Settings::CheckLevel::normal);
+            settings.setCheckLevel(Settings::CheckLevel::normal);
             break;
         case ProjectFile::CheckLevel::exhaustive:
-            result.setCheckLevel(Settings::CheckLevel::exhaustive);
+            settings.setCheckLevel(Settings::CheckLevel::exhaustive);
             break;
         };
-        result.checkHeaders = mProjectFile->getCheckHeaders();
-        result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.safeChecks.classes = mProjectFile->safeChecks.classes;
-        result.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
-        result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
-        result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
+        settings.checkHeaders = mProjectFile->getCheckHeaders();
+        settings.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
+        settings.safeChecks.classes = mProjectFile->safeChecks.classes;
+        settings.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
+        settings.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
+        settings.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
         for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
-            result.checkUnknownFunctionReturn.insert(s.toStdString());
+            settings.checkUnknownFunctionReturn.insert(s.toStdString());
 
         for (const QString& addon : mProjectFile->getAddons()) {
-            const QString addonError = loadAddon(result, filesDir, pythonCmd, addon);
+            const QString addonError = loadAddon(settings, filesDir, pythonCmd, addon);
             if (!addonError.isEmpty()) {
                 QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
-                return {false, {}};
+                return false;
             }
         }
 
@@ -1173,12 +1173,12 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
                 premiumArgs += " --" + c;
             if (!premiumArgs.contains("misra") && mProjectFile->getAddons().contains("misra"))
                 premiumArgs += " --misra-c-2012";
-            result.premiumArgs = premiumArgs.mid(1).toStdString();
-            result.setMisraRuleTexts(CheckThread::executeCommand);
+            settings.premiumArgs = premiumArgs.mid(1).toStdString();
+            settings.setMisraRuleTexts(CheckThread::executeCommand);
         }
     }
     else
-        result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
+        settings.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
 
     // Include directories (and files) are searched in listed order.
     // Global include directories must be added AFTER the per project include
@@ -1186,35 +1186,35 @@ QPair<bool,Settings> MainWindow::getCppcheckSettings()
     const QString globalIncludes = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
     if (!globalIncludes.isEmpty()) {
         QStringList includes = globalIncludes.split(";");
-        addIncludeDirs(includes, result);
+        addIncludeDirs(includes, settings);
     }
 
-    result.severity.enable(Severity::warning);
-    result.severity.enable(Severity::style);
-    result.severity.enable(Severity::performance);
-    result.severity.enable(Severity::portability);
-    result.severity.enable(Severity::information);
-    result.checks.enable(Checks::missingInclude);
-    if (!result.buildDir.empty())
-        result.checks.enable(Checks::unusedFunction);
-    result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
-    result.quiet = false;
-    result.verbose = true;
-    result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
-    result.outputFormat = Settings::OutputFormat::text;
-    result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
-    result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platform.type == Platform::Type::Unspecified)
-        result.platform.set((Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
-    result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
-    result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    result.enforcedLang = (Standards::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    settings.severity.enable(Severity::warning);
+    settings.severity.enable(Severity::style);
+    settings.severity.enable(Severity::performance);
+    settings.severity.enable(Severity::portability);
+    settings.severity.enable(Severity::information);
+    settings.checks.enable(Checks::missingInclude);
+    if (!settings.buildDir.empty())
+        settings.checks.enable(Checks::unusedFunction);
+    settings.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
+    settings.quiet = false;
+    settings.verbose = true;
+    settings.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
+    settings.outputFormat = Settings::OutputFormat::text;
+    settings.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
+    settings.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
+    if (!mProjectFile || settings.platform.type == Platform::Type::Unspecified)
+        settings.platform.set((Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    settings.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
+    settings.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
+    settings.enforcedLang = (Standards::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
-    result.jobs = std::max(result.jobs, 1u);
+    settings.jobs = std::max(settings.jobs, 1u);
 
     Settings::terminate(false);
 
-    return {true, std::move(result)};
+    return true;
 }
 
 void MainWindow::analysisDone()
@@ -1348,10 +1348,10 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
         return;
     }
 
-    const QPair<bool, Settings> checkSettingsPair = getCppcheckSettings();
-    if (!checkSettingsPair.first)
+    Settings checkSettings;
+    Suppressions supprs;
+    if (!getCppcheckSettings(checkSettings, supprs))
         return;
-    const Settings& checkSettings = checkSettingsPair.second;
 
     // Clear details, statistics and progress
     mUI->mResults->clear(false);
@@ -1372,7 +1372,7 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     // considered in "Modified Files Check"  performed after "Selected Files Check"
     // TODO: Should we store per file CheckStartTime?
     QDateTime saveCheckStartTime = mThread->getCheckStartTime();
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
     mThread->setCheckStartTime(std::move(saveCheckStartTime));
 }
@@ -1383,10 +1383,10 @@ void MainWindow::reAnalyze(bool all)
     if (files.empty())
         return;
 
-    const QPair<bool, Settings>& checkSettingsPair = getCppcheckSettings();
-    if (!checkSettingsPair.first)
+    Settings checkSettings;
+    Suppressions supprs;
+    if (!getCppcheckSettings(checkSettings, supprs))
         return;
-    const Settings& checkSettings = checkSettingsPair.second;
 
     // Clear details, statistics and progress
     mUI->mResults->clear(all);
@@ -1402,7 +1402,7 @@ void MainWindow::reAnalyze(bool all)
         qDebug() << "Rechecking project file" << mProjectFile->getFilename();
 
     mThread->setCheckFiles(all);
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
 }
 
