@@ -409,8 +409,11 @@ def test_nullpointer_out_of_memory(tmpdir, single_file):
             f.write('#include "header.h"\n' + code1)
         with open(tmpdir / 'test2.c', 'wt') as f:
             f.write('#include "header.h"\n' + code2)
-
-    _, _, stderr = cppcheck(['--enable=style', '.'], cwd=tmpdir)
+    args = [
+        '--cppcheck-build-dir=.',
+        '--enable=style',
+        '.']
+    _, _, stderr = cppcheck(args, cwd=tmpdir)
     results = []
     for line in stderr.splitlines():
         if line.endswith(']'):
