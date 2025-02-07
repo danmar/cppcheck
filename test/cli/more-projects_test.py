@@ -893,7 +893,7 @@ def test_project_file_nested(tmp_path):
 
     args = ['--project={}'.format(level1_file)]
     out_lines = [
-        'cppcheck: error: no C or C++ source files found.'
+        'cppcheck: error: nested Cppcheck GUI projects are not supported.'
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
