@@ -861,3 +861,39 @@ def test_shared_items_project():
     # Assume no errors, and that shared items code files have been checked as well
     assert '2/2 files checked ' in stdout  # only perform partial check since -j2 does not report a percentage right now
     assert stderr == ''
+
+
+def test_project_file_nested(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt'):
+        pass
+
+    level3_file = tmp_path / 'level3.cppcheck'
+    with open(level3_file, 'wt') as f:
+        f.write(
+"""<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file))
+
+    level2_file = tmp_path / 'level2.cppcheck'
+    with open(level2_file, 'wt') as f:
+        f.write(
+"""<project>
+    <importproject>level3.cppcheck</importproject>
+</project>""")
+
+    level1_file = tmp_path / 'level1.cppcheck'
+    with open(level1_file, 'wt') as f:
+        f.write(
+"""<project>
+    <importproject>level2.cppcheck</importproject>
+</project>""")
+
+    args = ['--project={}'.format(level1_file)]
+    out_lines = [
+        'cppcheck: error: no C or C++ source files found.'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
