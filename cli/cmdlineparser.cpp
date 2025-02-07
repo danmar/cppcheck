@@ -1184,31 +1184,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
-            projectType = project.import(projectFile, &mSettings, &mSuppressions);
+            projectType = project.import(projectFile, mSettings.fileFilters);
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
-                for (const std::string &lib : project.guiProject.libraries)
-                    mSettings.libraries.emplace_back(lib);
-
-                const auto& excludedPaths = project.guiProject.excludedPaths;
-                std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
-
-                std::string platform(project.guiProject.platform);
-
-                // keep existing platform from command-line intact
-                if (!platform.empty()) {
-                    std::string errstr;
-                    const std::vector<std::string> paths = {projectFile, argv[0]};
-                    if (!mSettings.platform.set(platform, errstr, paths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
-                        mLogger.printError(errstr);
-                        return Result::Fail;
-                    }
-                }
+                if (mSettings.debugnormal && !project.guiProject.args.empty()) // TODO: add separate debug option
+                                        std::cout << project.guiProject.args << std::endl;
+                                    // TODO: inject arguments
 
                 const auto& projectFileGui = project.guiProject.projectFile;
                 if (!projectFileGui.empty()) {
                     // read underlying project
                     projectFile = projectFileGui;
-                    projectType = project.import(projectFileGui, &mSettings, &mSuppressions);
+                    projectType = project.import(projectFileGui, mSettings.fileFilters);
                     if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                         mLogger.printError("nested Cppcheck GUI projects are not supported.");
                         return Result::Fail;
@@ -1639,7 +1625,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     }
 
     // Print error only if we have "real" command and expect files
-    if (mPathNames.empty() && project.guiProject.pathNames.empty() && project.fileSettings.empty()) {
+    if (mPathNames.empty() && project.fileSettings.empty()) {
         // TODO: this message differs from the one reported in fillSettingsFromArgs()
         mLogger.printError("no C or C++ source files found.");
         return Result::Fail;
@@ -1662,9 +1648,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 path += '/';
         }
     }
-
-    if (!project.guiProject.pathNames.empty())
-        mPathNames = project.guiProject.pathNames;
 
     if (!project.fileSettings.empty()) {
         project.ignorePaths(mIgnoredPaths, mSettings.debugignore);
