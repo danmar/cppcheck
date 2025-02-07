@@ -68,11 +68,11 @@ namespace CTU {
         struct Value {
             Value& operator=(const ValueFlow::Value& val) & {
                 value = val.intvalue;
-                unknownFunctionReturn = (std::uint8_t)val.unknownFunctionReturn;
+                unknownFunctionReturn = val.unknownFunctionReturn;
                 return *this;
             }
             MathLib::bigint value{};
-            std::uint8_t unknownFunctionReturn{};
+            ValueFlow::Value::UnknownFunctionReturn unknownFunctionReturn{};
         };
 
         struct UnsafeUsage {
@@ -152,7 +152,7 @@ namespace CTU {
                                                                   const FunctionCall ** functionCallPtr,
                                                                   bool warning,
                                                                   int maxCtuDepth,
-                                                                  std::uint8_t *unknownFunctionReturn = nullptr);
+                                                                  ValueFlow::Value::UnknownFunctionReturn *unknownFunctionReturn = nullptr);
     };
 
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);

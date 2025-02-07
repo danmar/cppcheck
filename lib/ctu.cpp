@@ -204,7 +204,8 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
     callArgumentExpression = readAttrString(xmlElement, ATTR_CALL_ARGEXPR, &error);
     callValueType = (ValueFlow::Value::ValueType)readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error);
     callArgValue.value = readAttrInt(xmlElement, ATTR_CALL_ARGVALUE, &error);
-    callArgValue.unknownFunctionReturn = readAttrInt(xmlElement, ATTR_CALL_UNKNOWN_FUNCTION_RETURN, &error);
+    const auto ufr = readAttrInt(xmlElement, ATTR_CALL_UNKNOWN_FUNCTION_RETURN, &error);
+    callArgValue.unknownFunctionReturn = (ValueFlow::Value::UnknownFunctionReturn)(ufr>=0 && ufr <=0xff ? ufr : 0xff);
     const char *w = xmlElement->Attribute(ATTR_WARNING);
     warning = w && std::strcmp(w, "true") == 0;
     for (const tinyxml2::XMLElement *e2 = xmlElement->FirstChildElement(); !error && e2; e2 = e2->NextSiblingElement()) {
@@ -522,7 +523,7 @@ static bool findPath(const std::string &callId,
         if (functionCall) {
             if (!warning && functionCall->warning)
                 continue;
-            if (!warning && functionCall->callArgValue.unknownFunctionReturn > 0)
+            if (!warning && functionCall->callArgValue.unknownFunctionReturn != ValueFlow::Value::UnknownFunctionReturn::no)
                 continue;
             switch (invalidValue) {
             case CTU::FileInfo::InvalidValueType::null:
@@ -564,7 +565,7 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
                                                                   const FunctionCall ** const functionCallPtr,
                                                                   bool warning,
                                                                   int maxCtuDepth,
-                                                                  std::uint8_t *unknownFunctionReturn)
+                                                                  ValueFlow::Value::UnknownFunctionReturn *unknownFunctionReturn)
 {
     const CTU::FileInfo::CallBase *path[10] = {nullptr};
 
