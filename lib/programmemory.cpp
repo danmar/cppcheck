@@ -45,7 +45,10 @@
 #include <utility>
 #include <vector>
 
-ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
+ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0)
+{
+    assert(tok);
+}
 
 nonneg int ExprIdToken::getExpressionId() const {
     return tok ? tok->exprId() : exprid;
@@ -57,6 +60,9 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 }
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
+    if (!expr)
+        return;
+
     copyOnWrite();
 
     (*mValues)[expr] = value;
