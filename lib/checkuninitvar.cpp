@@ -1722,6 +1722,10 @@ namespace
     };
 }
 
+static bool isVariableUsage(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *value) {
+    return isVariableUsage(settings, argtok, &value->value);
+}
+
 Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isVariableUsage);

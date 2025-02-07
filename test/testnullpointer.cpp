@@ -4673,6 +4673,34 @@ private:
             "    f(NULL);\n"
             "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        // ctu: memory allocation fails
+        ctu("void f(int* p) {\n"
+            "    *p = 0;\n"
+            "}\n"
+            "void g() {\n"
+            "    int* q = (int*)malloc(4);\n"
+            "    f(q);\n"
+            "}\n");
+        ASSERT_EQUALS("test.cpp:2:warning:If memory allocation fails, then there is a possible null pointer dereference: p\n"
+                      "test.cpp:5:note:Assuming allocation function fails\n"
+                      "test.cpp:5:note:Assignment 'q=(int*)malloc(4)', assigned value is 0\n"
+                      "test.cpp:6:note:Calling function f, 1st argument is null\n"
+                      "test.cpp:2:note:Dereferencing argument p that is null\n", errout_str());
+
+        // ctu: resource allocation fails
+        ctu("void foo(FILE* f) {\n"
+            "    fprintf(f, a);\n"
+            "}\n"
+            "void bar() {\n"
+            "    FILE* f = fopen(notexist,t);\n"
+            "    foo(f);\n"
+            "}\n");
+        ASSERT_EQUALS("test.cpp:2:warning:If resource allocation fails, then there is a possible null pointer dereference: f\n"
+                      "test.cpp:5:note:Assuming allocation function fails\n"
+                      "test.cpp:5:note:Assignment 'f=fopen(notexist,t)', assigned value is 0\n"
+                      "test.cpp:6:note:Calling function foo, 1st argument is null\n"
+                      "test.cpp:2:note:Dereferencing argument f that is null\n", errout_str());
     }
 };
 
