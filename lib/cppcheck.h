@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "settings.h"
 #include "standards.h"
 
 #include <cstdint>
@@ -42,6 +41,7 @@ class Tokenizer;
 class FileWithDetails;
 class AnalyzerInformation;
 class ErrorLogger;
+class Settings;
 struct Suppressions;
 
 namespace simplecpp { class TokenList; }
@@ -62,7 +62,8 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(Suppressions& supprs,
+    CppCheck(const Settings& settings,
+             Suppressions& supprs,
              ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
              ExecuteCmdFn executeCommand);
@@ -101,12 +102,6 @@ public:
      *  settings()).
      */
     unsigned int check(const FileWithDetails &file, const std::string &content);
-
-    /**
-     * @brief Get reference to current settings.
-     * @return a reference to current settings
-     */
-    Settings &settings();
 
     /**
      * @brief Returns current version number as a string.
@@ -210,7 +205,7 @@ private:
 
     unsigned int checkClang(const FileWithDetails &file);
 
-    Settings mSettings;
+    const Settings& mSettings;
     Suppressions& mSuppressions;
 
     class CppCheckLogger;

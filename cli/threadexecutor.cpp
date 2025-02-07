@@ -112,14 +112,13 @@ public:
     }
 
     unsigned int check(ErrorLogger &errorLogger, const FileWithDetails *file, const FileSettings *fs) const {
-        CppCheck fileChecker(mSuppressions, errorLogger, false, mExecuteCommand);
-        fileChecker.settings() = mSettings; // this is a copy
+        CppCheck fileChecker(mSettings, mSuppressions, errorLogger, false, mExecuteCommand);
 
         unsigned int result;
         if (fs) {
             // file settings..
             result = fileChecker.check(*fs);
-            if (fileChecker.settings().clangTidy)
+            if (mSettings.clangTidy)
                 fileChecker.analyseClangTidy(*fs);
         } else {
             // Read file from a file

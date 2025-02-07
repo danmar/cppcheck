@@ -440,8 +440,7 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
 
-    CppCheck cppcheck(supprs, stdLogger, true, executeCommand);
-    cppcheck.settings() = settings; // this is a copy
+    CppCheck cppcheck(settings, supprs, stdLogger, true, executeCommand);
 
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
