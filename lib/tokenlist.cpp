@@ -52,12 +52,6 @@
 #define ASSERT_LANG(x)
 #endif
 
-// How many compileExpression recursions are allowed?
-// For practical code this could be endless. But in some special torture test
-// there needs to be a limit.
-static constexpr int AST_MAX_DEPTH = 150;
-
-
 TokenList::TokenList(const Settings* settings)
     : mTokensFrontBack(*this)
     , mSettings(settings)
@@ -454,7 +448,8 @@ namespace {
         bool inGeneric{};
         bool stopAtColon{}; // help to properly parse ternary operators
         const Token* functionCallEndPar{};
-        explicit AST_state(bool cpp) : cpp(cpp) {}
+        int maxDepth{};
+        AST_state(bool cpp, int maxDepth) : cpp(cpp), maxDepth(maxDepth) {}
     };
 }
 
@@ -693,7 +688,7 @@ static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok,
     if (f) {
         tok = tok->next();
         state.depth++;
-        if (state.depth > AST_MAX_DEPTH)
+        if (state.depth > state.maxDepth)
             throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
         if (tok)
             f(tok, state);
@@ -735,9 +730,9 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
         if (Token::Match(binop, "::|. ~"))
             tok = tok->next();
         state.depth++;
-        if (tok && state.depth <= AST_MAX_DEPTH)
+        if (tok && state.depth <= state.maxDepth)
             f(tok, state);
-        if (state.depth > AST_MAX_DEPTH)
+        if (state.depth > state.maxDepth)
             throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
         state.depth--;
         state.inGeneric = inGenericSaved;
@@ -823,7 +818,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             std::vector<Token*> inner;
             tok = skipDecl(tok, &inner);
             for (Token* tok3 : inner) {
-                AST_state state1(state.cpp);
+                AST_state state1(state.cpp, state.maxDepth);
                 compileExpression(tok3, state1);
             }
             bool repeat = true;
@@ -1005,7 +1000,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 // Parse arguments in the capture list
                 if (tok->strAt(1) != "]") {
                     Token* tok2 = tok->next();
-                    AST_state state2(state.cpp);
+                    AST_state state2(state.cpp, state.maxDepth);
                     compileExpression(tok2, state2);
                     if (!state2.op.empty()) {
                         squareBracket->astOperand2(state2.op.top());
@@ -1159,7 +1154,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 if (Token::Match(tok->link(), ") ::| %type%")) {
                     if (Token::Match(tok, "( !!)")) {
                         Token *innerTok = tok->next();
-                        AST_state innerState(true);
+                        AST_state innerState(true, state.maxDepth);
                         compileExpression(innerTok, innerState);
                     }
                     tok = tok->link()->next();
@@ -1435,7 +1430,7 @@ static void compileComma(Token *&tok, AST_state& state)
 
 static void compileExpression(Token *&tok, AST_state& state)
 {
-    if (state.depth > AST_MAX_DEPTH)
+    if (state.depth > state.maxDepth)
         throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST); // ticket #5592
     if (tok)
         compileComma(tok, state);
@@ -1484,10 +1479,10 @@ const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
     return tok->link()->next();
 }
 
-static Token * createAstAtToken(Token *tok);
+static Token * createAstAtToken(Token *tok, int maxDepth);
 
 // Compile inner expressions inside inner ({..}) and lambda bodies
-static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
+static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp, int maxDepth)
 {
     for (Token* tok = tok1; precedes(tok, endToken); tok = tok ? tok->next() : nullptr) {
         if (tok->str() == "{" && !iscpp11init(tok)) {
@@ -1505,7 +1500,8 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
             }
             if (!hasAst) {
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                    tok = createAstAtToken(tok);
+                    tok = createAstAtToken(tok, maxDepth);
+
             }
         } else if (cpp && tok->str() == "[") {
             if (isLambdaCaptureList(tok)) {
@@ -1515,7 +1511,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 const Token * const endToken2 = tok->link();
                 tok = tok->next();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
-                    tok = createAstAtToken(tok);
+                    tok = createAstAtToken(tok, maxDepth);
             }
         }
         else if (Token::simpleMatch(tok, "( * ) [")) {
@@ -1529,9 +1525,9 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
             if (!hasAst) {
                 Token *const startTok = tok = tok->tokAt(4);
                 const Token* const endtok = startTok->linkAt(-1);
-                AST_state state(cpp);
+                AST_state state(cpp, maxDepth);
                 compileExpression(tok, state);
-                createAstAtTokenInner(startTok, endtok, cpp);
+                createAstAtTokenInner(startTok, endtok, cpp, maxDepth);
             }
         }
     }
@@ -1557,7 +1553,7 @@ static Token * findAstTop(Token *tok1, const Token *tok2)
     return nullptr;
 }
 
-static Token * createAstAtToken(Token *tok)
+static Token * createAstAtToken(Token *tok, int maxDepth)
 {
     const bool cpp = tok->isCpp();
     // skip function pointer declaration
@@ -1595,7 +1591,7 @@ static Token * createAstAtToken(Token *tok)
         if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
             Token *decl = Token::findsimplematch(tok, "[");
             if (Token::simpleMatch(decl->link(), "] :")) {
-                AST_state state1(cpp);
+                AST_state state1(cpp, maxDepth);
                 while (decl->str() != "]") {
                     if (Token::Match(decl, "%name% ,|]")) {
                         state1.op.push(decl);
@@ -1632,14 +1628,14 @@ static Token * createAstAtToken(Token *tok)
         std::vector<Token*> inner;
         Token* tok2 = skipDecl(tok->tokAt(2), &inner);
         for (Token* tok3 : inner) {
-            AST_state state1(cpp);
+            AST_state state1(cpp, maxDepth);
             compileExpression(tok3, state1);
         }
         Token *init1 = nullptr;
         Token * const endPar = tok->linkAt(1);
         if (tok2 == tok->tokAt(2) && Token::Match(tok2, "%op%|(")) {
             init1 = tok2;
-            AST_state state1(cpp);
+            AST_state state1(cpp, maxDepth);
             compileExpression(tok2, state1);
             if (Token::Match(init1, "( !!{")) {
                 for (Token *tok3 = init1; tok3 && tok3 != tok3->link(); tok3 = tok3->next()) {
@@ -1659,7 +1655,7 @@ static Token * createAstAtToken(Token *tok)
                     tok2 = tok2->link();
                 } else if (Token::Match(tok2, "%name% )| %op%|(|[|{|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                     init1 = tok2;
-                    AST_state state1(cpp);
+                    AST_state state1(cpp, maxDepth);
                     compileExpression(tok2, state1);
                     if (Token::Match(tok2, ";|)"))
                         break;
@@ -1672,7 +1668,7 @@ static Token * createAstAtToken(Token *tok)
         }
         if (!tok2 || tok2->str() != ";") {
             if (tok2 == endPar && init1) {
-                createAstAtTokenInner(init1->next(), endPar, cpp);
+                createAstAtTokenInner(init1->next(), endPar, cpp, maxDepth);
                 tok->next()->astOperand2(init1);
                 tok->next()->astOperand1(tok);
             }
@@ -1683,7 +1679,7 @@ static Token * createAstAtToken(Token *tok)
 
         Token * const semicolon1 = tok2;
         tok2 = tok2->next();
-        AST_state state2(cpp);
+        AST_state state2(cpp, maxDepth);
         compileExpression(tok2, state2);
 
         Token * const semicolon2 = tok2;
@@ -1692,7 +1688,7 @@ static Token * createAstAtToken(Token *tok)
 
         if (semicolon2->str() == ";") {
             tok2 = tok2->next();
-            AST_state state3(cpp);
+            AST_state state3(cpp, maxDepth);
             if (Token::simpleMatch(tok2, "( {")) {
                 state3.op.push(tok2->next());
                 tok2 = tok2->link()->next();
@@ -1720,7 +1716,7 @@ static Token * createAstAtToken(Token *tok)
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
 
-        createAstAtTokenInner(endPar->link(), endPar, cpp);
+        createAstAtTokenInner(endPar->link(), endPar, cpp, maxDepth);
 
         return endPar;
     }
@@ -1743,9 +1739,9 @@ static Token * createAstAtToken(Token *tok)
         }
         if (Token::Match(tok2, "%name%|> %name% {") && tok2->next()->varId() && iscpp11init(tok2->tokAt(2))) {
             Token *const tok1 = tok = tok2->next();
-            AST_state state(cpp);
+            AST_state state(cpp, maxDepth);
             compileExpression(tok, state);
-            createAstAtTokenInner(tok1->next(), tok1->linkAt(1), cpp);
+            createAstAtTokenInner(tok1->next(), tok1->linkAt(1), cpp, maxDepth);
             return tok;
         }
     }
@@ -1785,7 +1781,7 @@ static Token * createAstAtToken(Token *tok)
             tok = tok->previous();
 
         Token * const tok1 = tok;
-        AST_state state(cpp);
+        AST_state state(cpp, maxDepth);
         if (Token::Match(tok, "%name% ("))
             state.functionCallEndPar = tok->linkAt(1);
         if (Token::simpleMatch(tok->tokAt(-1), "::") && (!tok->tokAt(-2) || !tok->tokAt(-2)->isName()))
@@ -1795,20 +1791,20 @@ static Token * createAstAtToken(Token *tok)
         if (endToken == tok1 || !endToken)
             return tok1;
 
-        createAstAtTokenInner(tok1->next(), endToken, cpp);
+        createAstAtTokenInner(tok1->next(), endToken, cpp, maxDepth);
 
         return endToken->previous();
     }
 
     if (cpp && tok->str() == "{" && iscpp11init(tok)) {
         Token * const tok1 = tok;
-        AST_state state(cpp);
+        AST_state state(cpp, maxDepth);
         compileExpression(tok, state);
         Token* const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 
-        createAstAtTokenInner(tok1->next(), endToken, cpp);
+        createAstAtTokenInner(tok1->next(), endToken, cpp, maxDepth);
         return endToken->previous();
     }
 
@@ -1818,7 +1814,7 @@ static Token * createAstAtToken(Token *tok)
 void TokenList::createAst() const
 {
     for (Token *tok = mTokensFrontBack.front; tok; tok = tok ? tok->next() : nullptr) {
-        Token* const nextTok = createAstAtToken(tok);
+        Token* const nextTok = createAstAtToken(tok, mSettings->maxAstDepth);
         if (precedes(nextTok, tok))
             throw InternalError(tok, "Syntax Error: Infinite loop when creating AST.", InternalError::AST);
         tok = nextTok;

@@ -274,6 +274,9 @@ public:
     int loadAverage{};
 #endif
 
+    /** @brief maixmum compileExpression recursion */
+    int maxAstDepth = 150;
+
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
     int maxConfigs = 12;
