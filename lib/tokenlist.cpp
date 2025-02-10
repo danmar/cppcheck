@@ -684,7 +684,7 @@ static bool isQualifier(const Token* tok)
 {
     while (Token::Match(tok, "&|&&|*"))
         tok = tok->next();
-    return Token::Match(tok, "{|;");
+    return Token::Match(tok, "{|;|=|throw");
 }
 
 static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
@@ -1557,6 +1557,36 @@ static Token * findAstTop(Token *tok1, const Token *tok2)
     return nullptr;
 }
 
+static Token *skipMethodDeclEnding(Token *tok)
+{
+    if (Token::simpleMatch(tok, ")"))
+        tok = tok->next();
+    bool foundDeclToken = false;
+    for (; tok; tok = tok->next()) {
+        if (Token::Match(tok, "override|const|&|&&")) {
+            foundDeclToken = true;
+            continue;
+        }
+        if (Token::Match(tok, "= delete|default|0") || Token::Match(tok, ". %name%")) {
+            foundDeclToken = true;
+            tok = tok->next();
+            continue;
+        }
+        if (Token::simpleMatch(tok, "throw (")) {
+            foundDeclToken = true;
+            tok = tok->linkAt(1);
+            continue;
+        }
+        if (Token::Match(tok, ";|{")) {
+            if (foundDeclToken)
+                break;
+        }
+        return nullptr;
+    }
+
+    return tok;
+}
+
 static Token * createAstAtToken(Token *tok)
 {
     const bool cpp = tok->isCpp();
@@ -1568,6 +1598,15 @@ static Token * createAstAtToken(Token *tok)
             tok2 = tok2->next();
         if (Token::Match(tok2, "%var% [;,)]"))
             return tok2;
+    }
+    Token *const skipMethodDeclEndingTok = skipMethodDeclEnding(tok);
+    if (skipMethodDeclEndingTok) {
+        if (Token::simpleMatch(skipMethodDeclEndingTok, "{")) {
+            const Token *prev = skipMethodDeclEndingTok->previous();
+            if (prev)
+                prev->setCpp11init(iscpp11init_impl(prev));
+        }
+        return skipMethodDeclEndingTok;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
         bool isStandardTypeOrQualifier = false;
@@ -1768,7 +1807,7 @@ static Token * createAstAtToken(Token *tok)
             Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
-            (Token::Match(typetok->link(), ") const|;|{") || Token::Match(typetok->link(), ") const| = delete ;")))
+            (skipMethodDeclEnding(typetok->link()) || Token::Match(typetok->link(), ") ;|{")))
             return typetok;
     }
 
