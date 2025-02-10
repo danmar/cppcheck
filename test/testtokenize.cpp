@@ -391,6 +391,7 @@ private:
         TEST_CASE(astlambda);
         TEST_CASE(astcase);
         TEST_CASE(astrefqualifier);
+        TEST_CASE(astthrowdelete);
         TEST_CASE(astvardecl);
         TEST_CASE(astnewscoped);
 
@@ -6726,7 +6727,7 @@ private:
         ASSERT_EQUALS("", testAst("a::b f();"));
         ASSERT_EQUALS("", testAst("a::b f() {}"));
         ASSERT_EQUALS("", testAst("a::b f() = delete;"));
-        ASSERT_EQUALS("constdelete=", testAst("int f() const = delete;"));
+        ASSERT_EQUALS("", testAst("int f() const = delete;"));
         ASSERT_EQUALS("", testAst("extern unsigned f(const char *);"));
         ASSERT_EQUALS("charformat*...,", testAst("extern void f(const char *format, ...);"));
         ASSERT_EQUALS("int(int(void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
@@ -7005,12 +7006,18 @@ private:
     }
 
     void astrefqualifier() {
-        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&; };"));
-        ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&&; };"));
-        ASSERT_EQUALS("b(", testAst("class a { void b() &&; };"));
-        ASSERT_EQUALS("b(", testAst("class a { void b() &; };"));
-        ASSERT_EQUALS("b(", testAst("class a { void b() && {} };"));
-        ASSERT_EQUALS("b(", testAst("class a { void b() & {} };"));
+        ASSERT_EQUALS("", testAst("class a { auto b() -> int&; };"));
+        ASSERT_EQUALS("", testAst("class a { auto b() -> int&&; };"));
+        ASSERT_EQUALS("", testAst("class a { void b() &&; };"));
+        ASSERT_EQUALS("", testAst("class a { void b() &; };"));
+        ASSERT_EQUALS("", testAst("class a { void b() && = delete; };"));
+        ASSERT_EQUALS("", testAst("class a { void b() & = delete; };"));
+        ASSERT_EQUALS("", testAst("class a { void b() && {} };"));
+        ASSERT_EQUALS("", testAst("class a { void b() & {} };"));
+    }
+
+    void astthrowdelete() {
+        ASSERT_EQUALS("a(", testAst("class a { virtual ~a() throw() = delete; };"));
     }
 
     //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
