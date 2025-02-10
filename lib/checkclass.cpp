@@ -3343,7 +3343,7 @@ void CheckClass::checkUselessOverride()
                 std::vector<const Token*> callArgs = getArguments(call);
                 if (func.argumentList.size() != callArgs.size() ||
                     !std::equal(func.argumentList.begin(), func.argumentList.end(), callArgs.begin(), [](const Variable& v, const Token* t) {
-                    return v.nameToken()->str() == t->str();
+                    return v.nameToken() && v.nameToken()->str() == t->str();
                 }))
                     continue;
                 uselessOverrideError(baseFunc, &func);
