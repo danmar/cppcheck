@@ -59,7 +59,7 @@ void print_stacktrace(FILE* output, int start_idx, bool demangling, int maxdepth
             own_code = true;
             offset = i; // make sure the numbering is continous if we omit frames
         }
-        char * realnameString = nullptr;
+        const char * realnameString = nullptr;
         const char * const firstBracketName     = strchr(symbolString, '(');
         const char * const firstBracketAddress  = strchr(symbolString, '[');
         const char * const secondBracketAddress = strchr(firstBracketAddress, ']');
