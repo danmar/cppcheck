@@ -3340,11 +3340,10 @@ void CheckClass::checkUselessOverride()
                     continue;
                 if (Token::simpleMatch(call->astParent(), "."))
                     continue;
-                std::vector<const Token*> funcArgs = getArguments(func.tokenDef);
                 std::vector<const Token*> callArgs = getArguments(call);
-                if (funcArgs.size() != callArgs.size() ||
-                    !std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
-                    return t1->str() == t2->str();
+                if (func.argumentList.size() != callArgs.size() ||
+                    !std::equal(func.argumentList.begin(), func.argumentList.end(), callArgs.begin(), [](const Variable& v, const Token* t) {
+                    return v.nameToken() && v.nameToken()->str() == t->str();
                 }))
                     continue;
                 uselessOverrideError(baseFunc, &func);
