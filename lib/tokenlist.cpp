@@ -1581,16 +1581,15 @@ static Token * createAstAtToken(Token *tok)
         if (Token::Match(tok2, "%var% [;,)]"))
             return tok2;
     }
-    Token *const skipMethodDeclEndingTok = skipMethodDeclEnding(tok);
-    if (skipMethodDeclEndingTok) {
-        if (Token::simpleMatch(skipMethodDeclEndingTok, "{")) {
+    if (Token *const endTok = skipMethodDeclEnding(tok)) {
+        if (Token::simpleMatch(endTok, "{")) {
             const Token *tok2 = tok;
             do {
                 tok2 = tok2->next();
                 tok2->setCpp11init(false);
-            } while (tok2 != skipMethodDeclEndingTok);
+            } while (tok2 != endTok);
         }
-        return skipMethodDeclEndingTok;
+        return endTok;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
         bool isStandardTypeOrQualifier = false;
