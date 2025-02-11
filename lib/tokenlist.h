@@ -201,6 +201,14 @@ public:
 
     bool isKeyword(const std::string &str) const;
 
+    /**
+     * is token pointing at function head?
+     * @param tok         A '(' or ')' token in a possible function head
+     * @param endsWith    string after function head
+     * @return token matching with endsWith if syntax seems to be a function head else nullptr
+     */
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
+
 private:
     void determineCppC();
 
