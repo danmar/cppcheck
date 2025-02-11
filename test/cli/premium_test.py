@@ -53,3 +53,19 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert exitcode == 0
     assert 'id="unusedVariable"' in stderr
     assert 'id="checkersReport"' not in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<safety/>' in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--premium=safety-off', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<safety/>' not in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--inline-suppr', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<inlineSuppressions/>' in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--suppress=foo', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<suppression errorId="foo" />' in stderr
