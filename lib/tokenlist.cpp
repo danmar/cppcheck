@@ -1559,32 +1559,14 @@ static Token * findAstTop(Token *tok1, const Token *tok2)
 
 static Token *skipMethodDeclEnding(Token *tok)
 {
-    if (Token::simpleMatch(tok, ")"))
-        tok = tok->next();
-    bool foundDeclToken = false;
-    for (; tok; tok = tok->next()) {
-        if (Token::Match(tok, "override|const|&|&&")) {
-            foundDeclToken = true;
-            continue;
-        }
-        if (Token::Match(tok, "= delete|default|0") || Token::Match(tok, ". %name%")) {
-            foundDeclToken = true;
-            tok = tok->next();
-            continue;
-        }
-        if (Token::simpleMatch(tok, "throw (")) {
-            foundDeclToken = true;
-            tok = tok->linkAt(1);
-            continue;
-        }
-        if (Token::Match(tok, ";|{")) {
-            if (foundDeclToken)
-                break;
-        }
+    if (tok->str() != ")")
+        tok = tok->previous();
+    if (!tok || tok->str() != ")")
         return nullptr;
-    }
-
-    return tok;
+    Token *const tok2 = const_cast<Token*>(TokenList::isFunctionHead(tok, ";{"));
+    if (tok2 && tok->next() != tok2)
+        return tok2;
+    return nullptr;
 }
 
 static Token * createAstAtToken(Token *tok)
@@ -1602,9 +1584,11 @@ static Token * createAstAtToken(Token *tok)
     Token *const skipMethodDeclEndingTok = skipMethodDeclEnding(tok);
     if (skipMethodDeclEndingTok) {
         if (Token::simpleMatch(skipMethodDeclEndingTok, "{")) {
-            const Token *prev = skipMethodDeclEndingTok->previous();
-            if (prev)
-                prev->setCpp11init(iscpp11init_impl(prev));
+            const Token *tok2 = tok;
+            do {
+                tok2 = tok2->next();
+                tok2->setCpp11init(false);
+            } while (tok2 != skipMethodDeclEndingTok);
         }
         return skipMethodDeclEndingTok;
     }
