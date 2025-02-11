@@ -684,7 +684,7 @@ static bool isQualifier(const Token* tok)
 {
     while (Token::Match(tok, "&|&&|*"))
         tok = tok->next();
-    return Token::Match(tok, "{|;|=|throw");
+    return Token::Match(tok, "{|;");
 }
 
 static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
