@@ -656,7 +656,7 @@ private:
     std::vector<MathLib::bigint> evaluateInt(const Token* tok, F getProgramMemory) const
     {
         if (tok->hasKnownIntValue())
-            return {static_cast<int>(tok->values().front().intvalue)};
+            return {static_cast<int>(tok->getKnownIntValue())};
         std::vector<MathLib::bigint> result;
         ProgramMemory pm = getProgramMemory();
         if (Token::Match(tok, "&&|%oror%")) {
@@ -1553,7 +1553,7 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
         expr,
         [](const Token* tok) -> std::vector<MathLib::bigint> {
         if (tok->hasKnownIntValue())
-            return {tok->values().front().intvalue};
+            return {tok->getKnownIntValue()};
         return {};
     },
         value);
