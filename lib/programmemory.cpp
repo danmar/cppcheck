@@ -824,7 +824,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         ValueFlow::Value v;
         combineValueProperties(args[0], args[1], v);
-        v.floatValue = std::nexttoward(asFloat(args[0]), asFloat(args[1]));
+        v.floatValue = std::nexttoward(asFloat(args[0]), static_cast<long double>(asFloat(args[1])));
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
