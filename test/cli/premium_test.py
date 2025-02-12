@@ -64,7 +64,7 @@ def test_misra_c_builtin_style_checks(tmpdir):
 
     exitcode, _, stderr = cppcheck(['--xml-version=3', '--inline-suppr', test_file], cppcheck_exe=exe)
     assert exitcode == 0
-    assert '<inlineSuppressions/>' in stderr
+    assert '<inline-suppr/>' in stderr
 
     exitcode, _, stderr = cppcheck(['--xml-version=3', '--suppress=foo', test_file], cppcheck_exe=exe)
     assert exitcode == 0

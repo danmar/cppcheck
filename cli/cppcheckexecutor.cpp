@@ -536,7 +536,7 @@ void StdLogger::writeCheckersReport(const Suppressions& supprs)
         if (mSettings.safety)
             reportErr("    <safety/>\n");
         if (mSettings.inlineSuppressions)
-            reportErr("    <inlineSuppressions/>\n");
+            reportErr("    <inline-suppr/>\n");
         if (!suppressions.empty()) {
             std::ostringstream suppressionsXml;
             supprs.nomsg.dump(suppressionsXml);
