@@ -3438,11 +3438,11 @@ private:
     }
 
     void stlBoundaries1() {
-        const std::string stlCont[] = {
+        static const std::array<std::string, 5> stlCont = {
             "list", "set", "multiset", "map", "multimap"
         };
 
-        for (size_t i = 0; i < getArrayLength(stlCont); ++i) {
+        for (size_t i = 0; i < stlCont.size(); ++i) {
             check("void f()\n"
                   "{\n"
                   "    std::" + stlCont[i] + "<int>::iterator it;\n"
