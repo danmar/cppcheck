@@ -34,7 +34,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-//#include <features.h> // __USE_DYNAMIC_STACK_SIZE
 #include <map>
 #include <string>
 #include <sys/types.h>
@@ -54,13 +53,6 @@
 #   include <ucontext.h>
 #endif
 
-// TODO: __USE_DYNAMIC_STACK_SIZE is dependent on the features.h include and not a built-in compiler define, so it might be problematic to depend on it
-#ifdef __USE_DYNAMIC_STACK_SIZE
-static constexpr size_t MYSTACKSIZE = (16*1024)+32768; // wild guess about a reasonable buffer
-#else
-static constexpr size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
-#endif
-static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
 static FILE* signalOutput = stdout; // TODO: get rid of this
 
@@ -312,12 +304,14 @@ void register_signal_handler(FILE * const output)
 
     // set up alternative stack for signal handler
     stack_t segv_stack;
-    segv_stack.ss_sp = mytstack;
+    segv_stack.ss_sp = valloc(SIGSTKSZ);
     segv_stack.ss_flags = 0;
-    segv_stack.ss_size = MYSTACKSIZE;
-    if (sigaltstack(&segv_stack, nullptr) != 0) {
-        // TODO: log errno
-        fputs("could not set alternate signal stack context.\n", output);
+    segv_stack.ss_size = SIGSTKSZ;
+    // FIXME: https://reviews.llvm.org/D28265 indicates that this breaks backtrace() on MacOS
+    if (sigaltstack(&segv_stack, nullptr) == -1)
+    {
+        const int err = errno;
+        fprintf(output, "could not set alternate signal stack context (errno %d).", err);
         std::exit(EXIT_FAILURE);
     }
 
@@ -327,7 +321,12 @@ void register_signal_handler(FILE * const output)
     act.sa_flags=SA_SIGINFO|SA_ONSTACK;
     act.sa_sigaction=CppcheckSignalHandler;
     for (auto sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
-        sigaction(sig->first, &act, nullptr);
+        if (sigaction(sig->first, &act, nullptr) == -1)
+        {
+            const int err = errno;
+            fprintf(stdout, "registering action for signal %d failed (errno %d)", sig->first, err);
+            std::exit(EXIT_FAILURE);
+        }
     }
 }
 
