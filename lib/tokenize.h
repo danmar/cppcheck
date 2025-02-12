@@ -556,6 +556,8 @@ private:
 
     static bool operatorEnd(const Token * tok);
 
+    void validateTypes() const;
+
 public:
     const SymbolDatabase *getSymbolDatabase() const {
         return mSymbolDatabase;
