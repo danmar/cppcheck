@@ -536,6 +536,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings.checkConfiguration = true;
 
+            else if (std::strcmp(argv[i], "--check-headers") == 0)
+                mSettings.checkHeaders = true;
+
             // Check level
             else if (std::strncmp(argv[i], "--check-level=", 14) == 0) {
                 Settings::CheckLevel level = Settings::CheckLevel::normal;
@@ -558,6 +561,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings.checkLibrary = true;
             }
+
+            else if (std::strcmp(argv[i], "--check-unused-templates") == 0)
+                mSettings.checkUnusedTemplates = true;
 
             else if (std::strncmp(argv[i], "--check-version=", 16) == 0) {
                 if (!loadCppcheckCfg())
@@ -995,6 +1001,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (!parseNumberArg(argv[i], 25, mSettings.maxTemplateRecursion))
                     return Result::Fail;
             }
+
+            else if (std::strcmp(argv[i], "--no-check-headers") == 0)
+                mSettings.checkHeaders = false;
+
+            else if (std::strcmp(argv[i], "--no-check-unused-templates") == 0)
+                mSettings.checkUnusedTemplates = false;
 
             // undocumented option for usage in Python tests to indicate that no build dir should be injected
             else if (std::strcmp(argv[i], "--no-cppcheck-build-dir") == 0) {

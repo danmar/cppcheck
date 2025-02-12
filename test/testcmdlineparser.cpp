@@ -430,6 +430,12 @@ private:
         TEST_CASE(debugClangOutput);
         TEST_CASE(debugXmlMultiple);
         TEST_CASE(debugNormalXmlMultiple);
+        TEST_CASE(checkHeaders);
+        TEST_CASE(noCheckHeaders);
+        TEST_CASE(noCheckHeaders2);
+        TEST_CASE(checkUnusedTemplates);
+        TEST_CASE(noCheckUnusedTemplates);
+        TEST_CASE(noCheckUnusedTemplates);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2962,6 +2968,48 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-normal", "--xml", "1.cpp", "2.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(5, argv));
         ASSERT_EQUALS("cppcheck: error: printing debug output in XML format does not support multiple input files.\n", logger->str());
+    }
+
+    void checkHeaders() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-headers", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->checkHeaders);
+    }
+
+    void noCheckHeaders() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-check-headers", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, settings->checkHeaders);
+    }
+
+    void noCheckHeaders2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-headers", "--no-check-headers", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(false, settings->checkHeaders);
+    }
+
+    void checkUnusedTemplates() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-unused-templates", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->checkUnusedTemplates);
+    }
+
+    void noCheckUnusedTemplates() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-check-unused-templates", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, settings->checkUnusedTemplates);
+    }
+
+    void noCheckUnusedTemplates2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-unused-templates", "--no-check-unused-templates", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(false, settings->checkUnusedTemplates);
     }
 
     void ignorepaths1() {
