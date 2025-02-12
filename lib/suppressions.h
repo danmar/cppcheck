@@ -26,19 +26,20 @@
 #include <cstdint>
 #include <istream>
 #include <list>
+#include <mutex>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-/// @addtogroup Core
-/// @{
 
 class Tokenizer;
 class ErrorMessage;
 class ErrorLogger;
 enum class Certainty : std::uint8_t;
 class FileWithDetails;
+
+/// @addtogroup Core
+/// @{
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB SuppressionList {
@@ -250,7 +251,7 @@ public:
      * @brief Returns list of all suppressions.
      * @return list of suppressions
      */
-    const std::list<Suppression> &getSuppressions() const;
+    std::list<Suppression> getSuppressions() const;
 
     /**
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
@@ -265,6 +266,7 @@ public:
     static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger);
 
 private:
+    mutable std::mutex mSuppressionsSync;
     /** @brief List of error which the user doesn't want to see. */
     std::list<Suppression> mSuppressions;
 };

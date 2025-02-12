@@ -1011,15 +1011,18 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
                 const std::string format = argv[i] + 16;
-                // TODO: text and plist is missing
-                if (format == "sarif")
+                // plist can not be handled here because it requires additional data
+                if (format == "text")
+                    mSettings.outputFormat = Settings::OutputFormat::text;
+                else if (format == "sarif")
                     mSettings.outputFormat = Settings::OutputFormat::sarif;
                 else if (format == "xml")
                     mSettings.outputFormat = Settings::OutputFormat::xml;
                 else {
-                    mLogger.printError("argument to '--output-format=' must be 'sarif' or 'xml'.");
+                    mLogger.printError("argument to '--output-format=' must be 'text', 'sarif' or 'xml'.");
                     return Result::Fail;
                 }
+                mSettings.plistOutput = "";
             }
 
 
@@ -1139,7 +1142,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                 mSettings.checkAllConfigurations = false; // Can be overridden with --max-configs or --force
                 std::string projectFile = argv[i]+10;
-                ImportProject::Type projType = project.import(projectFile, &mSettings);
+                ImportProject::Type projType = project.import(projectFile, &mSettings, &mSuppressions);
                 project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
                     for (const std::string &lib : project.guiProject.libraries)
@@ -1164,7 +1167,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     if (!projectFileGui.empty()) {
                         // read underlying project
                         projectFile = projectFileGui;
-                        projType = project.import(projectFileGui, &mSettings);
+                        projType = project.import(projectFileGui, &mSettings, &mSuppressions);
                     }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
@@ -1775,6 +1778,7 @@ void CmdLineParser::printHelp() const
         "    --output-file=<file> Write results to file, rather than standard error.\n"
         "    --output-format=<format>\n"
         "                        Specify the output format. The available formats are:\n"
+        "                          * text\n"
         "                          * sarif\n"
         "                          * xml\n"
         "    --platform=<type>, --platform=<file>\n"
@@ -1993,7 +1997,7 @@ std::string CmdLineParser::getVersion() const {
 
 bool CmdLineParser::isCppcheckPremium() const {
     if (mSettings.cppcheckCfgProductName.empty())
-        Settings::loadCppcheckCfg(mSettings, mSettings.supprs, mSettings.debuglookup || mSettings.debuglookupConfig);
+        Settings::loadCppcheckCfg(mSettings, mSuppressions, mSettings.debuglookup || mSettings.debuglookupConfig);
     return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 

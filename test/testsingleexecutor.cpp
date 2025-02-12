@@ -101,11 +101,13 @@ private:
             s.plistOutput = opt.plistOutput;
         s.clangTidy = opt.clangTidy;
 
+        Suppressions supprs;
+
         bool executeCommandCalled = false;
         std::string exe;
         std::vector<std::string> args;
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        CppCheck cppcheck(*this, true, [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
+        CppCheck cppcheck(supprs, *this, true, [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
             executeCommandCalled = true;
             exe = std::move(e);
             args = std::move(a);
@@ -122,7 +124,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        SingleExecutor executor(cppcheck, filelist, fileSettings, s, s.supprs.nomsg, *this);
+        SingleExecutor executor(cppcheck, filelist, fileSettings, s, supprs, *this);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);

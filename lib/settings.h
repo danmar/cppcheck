@@ -27,7 +27,6 @@
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
-#include "suppressions.h"
 #include "checkers.h"
 
 #include <algorithm>
@@ -47,6 +46,7 @@
 #include <cstdio>
 #endif
 
+struct Suppressions;
 enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
     class Value;
@@ -393,9 +393,6 @@ public:
 
     /** Struct contains standards settings */
     Standards standards;
-
-    /** @brief suppressions */
-    Suppressions supprs;
 
     /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */

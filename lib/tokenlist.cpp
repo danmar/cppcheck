@@ -1557,6 +1557,18 @@ static Token * findAstTop(Token *tok1, const Token *tok2)
     return nullptr;
 }
 
+static Token *skipMethodDeclEnding(Token *tok)
+{
+    if (tok->str() != ")")
+        tok = tok->previous();
+    if (!tok || tok->str() != ")")
+        return nullptr;
+    Token *const tok2 = const_cast<Token*>(TokenList::isFunctionHead(tok, ";{"));
+    if (tok2 && tok->next() != tok2)
+        return tok2;
+    return nullptr;
+}
+
 static Token * createAstAtToken(Token *tok)
 {
     const bool cpp = tok->isCpp();
@@ -1568,6 +1580,16 @@ static Token * createAstAtToken(Token *tok)
             tok2 = tok2->next();
         if (Token::Match(tok2, "%var% [;,)]"))
             return tok2;
+    }
+    if (Token *const endTok = skipMethodDeclEnding(tok)) {
+        if (Token::simpleMatch(endTok, "{")) {
+            const Token *tok2 = tok;
+            do {
+                tok2 = tok2->next();
+                tok2->setCpp11init(false);
+            } while (tok2 != endTok);
+        }
+        return endTok;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
         bool isStandardTypeOrQualifier = false;
@@ -1768,7 +1790,7 @@ static Token * createAstAtToken(Token *tok)
             Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
-            (Token::Match(typetok->link(), ") const|;|{") || Token::Match(typetok->link(), ") const| = delete ;")))
+            (skipMethodDeclEnding(typetok->link()) || Token::Match(typetok->link(), ") ;|{")))
             return typetok;
     }
 
@@ -2263,4 +2285,61 @@ void TokenList::setLang(Standards::Language lang, bool force)
     }
 
     mLang = lang;
+}
+
+const Token * TokenList::isFunctionHead(const Token *tok, const std::string &endsWith)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->str() == "(")
+        tok = tok->link();
+    if (tok->str() != ")")
+        return nullptr;
+    if (!tok->isCpp() && !Token::Match(tok->link()->previous(), "%name%|(|)"))
+        return nullptr;
+    if (Token::Match(tok, ") ;|{|[")) {
+        tok = tok->next();
+        while (tok && tok->str() == "[" && tok->link()) {
+            if (endsWith.find(tok->str()) != std::string::npos)
+                return tok;
+            tok = tok->link()->next();
+        }
+        return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
+    }
+    if (tok->isCpp() && tok->str() == ")") {
+        tok = tok->next();
+        while (Token::Match(tok, "const|noexcept|override|final|volatile|mutable|&|&& !!(") ||
+               (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
+            tok = tok->next();
+        if (tok && tok->str() == ")")
+            tok = tok->next();
+        while (tok && tok->str() == "[")
+            tok = tok->link()->next();
+        if (Token::Match(tok, "throw|noexcept ("))
+            tok = tok->linkAt(1)->next();
+        if (Token::Match(tok, "%name% (") && tok->isUpperCaseName())
+            tok = tok->linkAt(1)->next();
+        if (tok && tok->originalName() == "->") { // trailing return type
+            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|override|final|}|)|]"); tok = tok->next())
+                if (tok->link() && Token::Match(tok, "<|[|("))
+                    tok = tok->link();
+        }
+        while (Token::Match(tok, "override|final !!(") ||
+               (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
+            tok = tok->next();
+        if (Token::Match(tok, "= 0|default|delete ;"))
+            tok = tok->tokAt(2);
+        if (Token::simpleMatch(tok, "requires")) {
+            for (tok = tok->next(); tok && !Token::Match(tok, ";|{|}|)|]"); tok = tok->next()) {
+                if (tok->link() && Token::Match(tok, "<|[|("))
+                    tok = tok->link();
+                if (Token::simpleMatch(tok, "bool {"))
+                    tok = tok->linkAt(1);
+            }
+        }
+        if (tok && tok->str() == ":" && !Token::Match(tok->next(), "%name%|::"))
+            return nullptr;
+        return (tok && endsWith.find(tok->str()) != std::string::npos) ? tok : nullptr;
+    }
+    return nullptr;
 }

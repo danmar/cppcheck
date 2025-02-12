@@ -2766,12 +2766,15 @@ typedef int MISRA_5_6_VIOLATION_1;
 def test_addon_suppr_inline(tmp_path):
     __test_addon_suppr(tmp_path, ['--inline-suppr', '-j1'])
 
+# TODO: remove override when all issues are fixed
+def test_addon_suppr_inline_j_thread(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2', '--executor=thread'])
 
 # TODO: remove override when all issues are fixed
+@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
 @pytest.mark.xfail(strict=True)  # TODO: inline suppression does not work
-def test_addon_suppr_inline_j(tmp_path):
-    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
-
+def test_addon_suppr_inline_j_process(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2', '--executor=process'])
 
 def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
@@ -3035,4 +3038,30 @@ void f
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') != -1
+    assert stderr.splitlines() == []
+
+
+def test_file_ignore_2(tmp_path):  # #13570
+    tests_path = tmp_path / 'tests'
+    os.mkdir(tests_path)
+
+    lib_path = tmp_path / 'lib'
+    os.mkdir(lib_path)
+
+    test_file_1 = lib_path / 'test_1.c'
+    with open(test_file_1, 'wt'):
+        pass
+
+    args = [
+        '-itests',
+        '-itest_1.c',
+        '.'
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
     assert stderr.splitlines() == []

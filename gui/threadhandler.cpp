@@ -83,7 +83,7 @@ void ThreadHandler::setCheckFiles(const QStringList& files)
     }
 }
 
-void ThreadHandler::check(const Settings &settings)
+void ThreadHandler::check(const Settings &settings, Suppressions& supprs)
 {
     if (mResults.getFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
@@ -109,7 +109,7 @@ void ThreadHandler::check(const Settings &settings)
         mThreads[i]->setAddonsAndTools(addonsAndTools);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
-        mThreads[i]->setSettings(settings);
+        mThreads[i]->setSettings(settings, supprs);
         mThreads[i]->start();
     }
 

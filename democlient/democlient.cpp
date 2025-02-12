@@ -21,6 +21,7 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "version.h"
 
 #include <algorithm>
@@ -56,13 +57,14 @@ static FILE *logfile = nullptr;
 class CppcheckExecutor : public ErrorLogger {
 private:
     const std::time_t stoptime;
+    Suppressions supprs;
     CppCheck cppcheck;
 
 public:
     CppcheckExecutor()
         : ErrorLogger()
         , stoptime(std::time(nullptr)+2U)
-        , cppcheck(*this, false, nullptr) {
+        , cppcheck(supprs, *this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
         cppcheck.settings().certainty.enable(Certainty::inconclusive);
     }
