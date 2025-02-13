@@ -1583,10 +1583,15 @@ static Token * createAstAtToken(Token *tok)
     }
     if (Token *const endTok = skipMethodDeclEnding(tok)) {
         if (Token::simpleMatch(endTok, "{")) {
-            const Token *tok2 = tok;
+            Token *tok2 = tok;
             do {
                 tok2 = tok2->next();
                 tok2->setCpp11init(false);
+                if (Token::simpleMatch(tok2, "decltype")) {
+                    AST_state state(cpp);
+                    Token *tok3 = tok2->tokAt(2);
+                    compileExpression(tok3, state);
+                }
             } while (tok2 != endTok);
         }
         return endTok;
