@@ -1168,6 +1168,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         // read underlying project
                         projectFile = projectFileGui;
                         projType = project.import(projectFileGui, &mSettings, &mSuppressions);
+                        if (projType == ImportProject::Type::CPPCHECK_GUI) {
+                            mLogger.printError("nested Cppcheck GUI projects are not supported.");
+                            return Result::Fail;
+                        }
                     }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
