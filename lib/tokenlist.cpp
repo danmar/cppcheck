@@ -1026,7 +1026,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                             curlyBracket = curlyBracket->next();
                     }
                     if (curlyBracket && curlyBracket->originalName() == "->") {
-                        if (Token::simpleMatch(curlyBracket->next(), "decltype")) {
+                        if (Token::simpleMatch(curlyBracket->next(), "decltype (")) {
                             AST_state state2(state.cpp);
                             Token *tok2 = curlyBracket->tokAt(3);
                             compileExpression(tok2, state2);
