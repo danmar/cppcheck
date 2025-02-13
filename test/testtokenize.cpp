@@ -7027,6 +7027,7 @@ private:
         ASSERT_EQUALS("Cc& MakeSpancdata.(csize.(,(",
                       testAst("template <typename C> constexpr auto MakeSpan(C &c) -> decltype(MakeSpan(c.data(), c.size())) {}"));
         ASSERT_EQUALS("Eqeq&key_typek&, eqkk,(", testAst("auto KeyTypeCanBeEq(const Eq& eq, const key_type& k) -> decltype(eq(k, k));"));
+        ASSERT_EQUALS("h{([= si. {return", testAst("auto h = []() -> decltype(s.i) { return {}; };"));
     }
     void astnoexcept() {
         ASSERT_EQUALS("noexceptaswap.b((", testAst("void f() noexcept(noexcept(a.swap(b))) {}"));
