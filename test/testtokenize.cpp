@@ -392,6 +392,7 @@ private:
         TEST_CASE(astcase);
         TEST_CASE(astrefqualifier);
         TEST_CASE(astthrowdelete);
+        TEST_CASE(asttrailingdecltype);
         TEST_CASE(astvardecl);
         TEST_CASE(astnewscoped);
 
@@ -7018,6 +7019,12 @@ private:
 
     void astthrowdelete() {
         ASSERT_EQUALS("a(", testAst("class a { virtual ~a() throw() = delete; };"));
+    }
+
+    void asttrailingdecltype() {
+        ASSERT_EQUALS("Cc& csize.(", testAst("template<class C> constexpr auto s(const C &c) noexcept -> decltype(c.size()) {}"));
+        ASSERT_EQUALS("Cc& MakeSpancdata.(csize.(,(",
+                      testAst("template <typename C> constexpr auto MakeSpan(C &c) -> decltype(MakeSpan(c.data(), c.size())) {}"));
     }
 
     //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
