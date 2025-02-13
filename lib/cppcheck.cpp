@@ -32,6 +32,7 @@
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h"
+#include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
@@ -528,11 +529,13 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
     return flags;
 }
 
-CppCheck::CppCheck(Suppressions& supprs,
+CppCheck::CppCheck(const Settings& settings,
+                   Suppressions& supprs,
                    ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
                    ExecuteCmdFn executeCommand)
-    : mSuppressions(supprs)
+    : mSettings(settings)
+    , mSuppressions(supprs)
     , mLogger(new CppCheckLogger(errorLogger, mSettings, mSuppressions, useGlobalSuppressions))
     , mErrorLogger(*mLogger)
     , mErrorLoggerDirect(errorLogger)
@@ -783,31 +786,33 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
-    // need to pass the externally provided ErrorLogger instead of our internal wrapper
-    CppCheck temp(mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
-    temp.mSettings = mSettings;
-    if (!temp.mSettings.userDefines.empty())
-        temp.mSettings.userDefines += ';';
+    Settings tempSettings = mSettings; // this is a copy
+    if (!tempSettings.userDefines.empty())
+        tempSettings.userDefines += ';';
     if (mSettings.clang)
-        temp.mSettings.userDefines += fs.defines;
+        tempSettings.userDefines += fs.defines;
     else
-        temp.mSettings.userDefines += fs.cppcheckDefines();
-    temp.mSettings.includePaths = fs.includePaths;
-    temp.mSettings.userUndefs.insert(fs.undefs.cbegin(), fs.undefs.cend());
+        tempSettings.userDefines += fs.cppcheckDefines();
+    tempSettings.includePaths = fs.includePaths;
+    tempSettings.userUndefs.insert(fs.undefs.cbegin(), fs.undefs.cend());
     if (fs.standard.find("++") != std::string::npos)
-        temp.mSettings.standards.setCPP(fs.standard);
+        tempSettings.standards.setCPP(fs.standard);
     else if (!fs.standard.empty())
-        temp.mSettings.standards.setC(fs.standard);
+        tempSettings.standards.setC(fs.standard);
     if (fs.platformType != Platform::Type::Unspecified)
-        temp.mSettings.platform.set(fs.platformType);
+        tempSettings.platform.set(fs.platformType);
     if (mSettings.clang) {
-        temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
+        tempSettings.includePaths.insert(tempSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
+        // need to pass the externally provided ErrorLogger instead of our internal wrapper
+        CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
         // TODO: propagate back mFileInfo
         const unsigned int returnValue = temp.check(fs.file);
         if (mUnusedFunctionsCheck)
             mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
         return returnValue;
     }
+    // need to pass the externally provided ErrorLogger instead of our internal wrapper
+    CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
     const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
@@ -1791,11 +1796,6 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
     executeAddons(ctuInfoFiles, "");
 }
 
-Settings &CppCheck::settings()
-{
-    return mSettings;
-}
-
 void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfConfigurations)
 {
     if (!mSettings.severity.isEnabled(Severity::information) && !mTooManyConfigs)
@@ -1861,15 +1861,17 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 {
-    Settings s;
-    s.addEnabled("all");
+    Settings settings;
     Suppressions supprs;
 
-    CppCheck cppcheck(supprs, errorlogger, true, nullptr);
+    CppCheck cppcheck(settings, supprs, errorlogger, true, nullptr);
     cppcheck.purgedConfigurationMessage("","");
     cppcheck.mTooManyConfigs = true;
     cppcheck.tooManyConfigsError("",0U);
     // TODO: add functions to get remaining error messages
+
+    Settings s;
+    s.addEnabled("all");
 
     // call all "getErrorMessages" in all registered Check classes
     for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)

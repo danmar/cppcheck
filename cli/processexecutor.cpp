@@ -284,13 +284,12 @@ unsigned int ProcessExecutor::check()
                 close(pipes[0]);
 
                 PipeWriter pipewriter(pipes[1]);
-                CppCheck fileChecker(mSuppressions, pipewriter, false, mExecuteCommand);
-                fileChecker.settings() = mSettings;
+                CppCheck fileChecker(mSettings, mSuppressions, pipewriter, false, mExecuteCommand);
                 unsigned int resultOfCheck = 0;
 
                 if (iFileSettings != mFileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                    if (fileChecker.settings().clangTidy)
+                    if (mSettings.clangTidy)
                         fileChecker.analyseClangTidy(*iFileSettings);
                 } else {
                     // Read file from a file
