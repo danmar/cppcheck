@@ -3065,3 +3065,101 @@ def test_file_ignore_2(tmp_path):  # #13570
         'cppcheck: Maybe all paths were ignored?'
     ]
     assert stderr.splitlines() == []
+
+
+def test_debug_valueflow(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""int f()
+{
+    double d = 1.0 / 0.5;
+    return d;
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',  # TODO: limit to valueflow output
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    # check sections in output
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+    # check precision in output - #13607
+    valueflow = stdout[stdout.find('##Value flow'):]
+    assert valueflow.splitlines() == [
+        '##Value flow',
+        'File {}'.format(str(test_file).replace('\\', '/')),
+        'Line 3',
+        '  = always 2.0',
+        '  1.0 always 1.0',
+        '  / always 2.0',
+        '  0.5 always 0.5',
+        'Line 4',
+        '  d always {symbolic=(1.0/0.5),2.0}'
+    ]
+
+
+def test_debug_valueflow_xml(tmp_path):  # #13606
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""double f()
+{
+    double d = 0.0000001;
+    return d;
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',  # TODO: limit to valueflow output
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    # check sections in output
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    # check XML nodes in output
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 0
+
+    # check precision in output - #13606
+    value_elem = valueflow_elem[0].findall('values/value')
+    assert len(value_elem) == 3
+    assert 'floatvalue' in value_elem[0].attrib
+    assert value_elem[0].attrib['floatvalue'] == '1e-07'
+    assert 'floatvalue' in value_elem[1].attrib
+    assert value_elem[1].attrib['floatvalue'] == '1e-07'
+    assert 'floatvalue' in value_elem[2].attrib
+    assert value_elem[2].attrib['floatvalue'] == '1e-07'

@@ -335,7 +335,8 @@ TESTOBJ =     test/fixture.o \
               test/testutils.o \
               test/testvaarg.o \
               test/testvalueflow.o \
-              test/testvarid.o
+              test/testvarid.o \
+              test/testvfvalue.o
 
 .PHONY: run-dmake tags
 
@@ -899,6 +900,9 @@ test/testvalueflow.o: test/testvalueflow.cpp externals/simplecpp/simplecpp.h lib
 
 test/testvarid.o: test/testvarid.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testvarid.cpp
+
+test/testvfvalue.o: test/testvfvalue.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h lib/vfvalue.h test/fixture.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testvfvalue.cpp
 
 externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp externals/simplecpp/simplecpp.h
 	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ externals/simplecpp/simplecpp.cpp
