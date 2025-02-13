@@ -244,10 +244,10 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             suppr.isInline = true;
             suppr.checked = parts[1] == "1";
             suppr.matched = parts[2] == "1";
-            const std::string err = mSuppressions.addSuppression(suppr);
+            const std::string err = mSuppressions.nomsg.addSuppression(suppr);
             if (!err.empty()) {
                 // TODO: only update state if it doesn't exist - otherwise propagate error
-                mSuppressions.updateSuppressionState(suppr); // TODO: check result
+                mSuppressions.nomsg.updateSuppressionState(suppr); // TODO: check result
                 // TODO: make this non-fatal
                 //std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
                 //std::exit(EXIT_FAILURE);
@@ -344,7 +344,7 @@ unsigned int ProcessExecutor::check()
                     // TODO: call analyseClangTidy()?
                 }
 
-                pipewriter.writeSuppr(fileChecker.settings().supprs.nomsg);
+                pipewriter.writeSuppr(mSuppressions.nomsg);
 
                 pipewriter.writeEnd(std::to_string(resultOfCheck));
                 std::exit(EXIT_SUCCESS);
