@@ -3396,9 +3396,15 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
                         const Token *closeParen = tok->linkAt(1);
                         if (closeParen) {
                             const Token *eq = TokenList::isFunctionHead(closeParen, ";");
-                            if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
-                                func->isDefault(true);
-                                return;
+                            if (eq) {
+                                if (Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
+                                    func->isDefault(true);
+                                    return;
+                                }
+                                if (Token::simpleMatch(eq->tokAt(-2), "= delete ;")) {
+                                    func->isDelete(true);
+                                    return;
+                                }
                             }
                             if (func->type == Function::eDestructor && destructor) {
                                 func->hasBody(true);
