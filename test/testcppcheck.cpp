@@ -158,7 +158,7 @@ private:
                         "}");
 
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
-        const Settings s = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        const Settings s = settingsBuilder().libraryxml(xmldata).build();
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
