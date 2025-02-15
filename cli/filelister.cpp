@@ -128,7 +128,9 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
             } else {
                 // Directory
                 if (recursive) {
-                    if (!ignored.match(fname)) {
+                    // append a slash if it is a directory since that is what we are doing for mIgnoredPaths directory entries.
+                    // otherwise we would ignore all its contents individually instead as a whole.
+                    if (!ignored.match(fname + '/')) {
                         std::list<FileWithDetails> filesSorted;
 
                         std::string err = addFiles2(filesSorted, fname, extra, recursive, ignored);
@@ -240,7 +242,9 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
 #endif
         if (path_is_directory) {
             if (recursive) {
-                if (!ignored.match(new_path)) {
+                // append a slash if it is a directory since that is what we are doing for mIgnoredPaths directory entries.
+                // otherwise we would ignore all its contents individually instead as a whole.
+                if (!ignored.match(new_path + '/')) {
                     std::string err = addFiles2(files, new_path, extra, recursive, ignored, debug);
                     if (!err.empty()) {
                         return err;

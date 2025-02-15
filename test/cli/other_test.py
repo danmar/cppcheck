@@ -3141,3 +3141,28 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     assert value_elem[1].attrib['floatvalue'] == '1e-07'
     assert 'floatvalue' in value_elem[2].attrib
     assert value_elem[2].attrib['floatvalue'] == '1e-07'
+
+
+def test_dir_ignore(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    lib_dir = tmp_path / 'lib'
+    os.mkdir(lib_dir)
+    lib_test_file = lib_dir / 'test.cpp'
+    with open(lib_test_file, 'wt'):
+        pass
+
+    args = [
+        '-ilib',
+        '--debug-ignore',
+        str(tmp_path)
+    ]
+    # make sure the whole directory is being ignored instead of each of its contents individually
+    out_lines = [
+        'ignored path: {}'.format(lib_dir),
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=str(tmp_path))
