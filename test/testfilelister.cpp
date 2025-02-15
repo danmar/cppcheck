@@ -40,6 +40,7 @@ private:
         TEST_CASE(recursiveAddFilesEmptyPath);
         TEST_CASE(excludeFile1);
         TEST_CASE(excludeFile2);
+        TEST_CASE(excludeDir);
         TEST_CASE(addFiles);
     }
 
@@ -134,6 +135,21 @@ private:
         ASSERT_EQUALS("", err);
         ASSERT_EQUALS(1, files.size());
         ASSERT_EQUALS(basedir + "lib/token.cpp", files.begin()->path());
+    }
+
+    void excludeDir() const {
+        const std::string basedir = findBaseDir() + ".";
+
+        std::list<FileWithDetails> files;
+        std::vector<std::string> ignored{"lib/"}; // needs to end with slash so it matches directories - added by CmdLineParser
+        PathMatch matcher(ignored);
+        std::string err = FileLister::recursiveAddFiles(files, basedir, {}, matcher);
+        ASSERT_EQUALS("", err);
+        ASSERT(!files.empty());
+        const auto it = std::find_if(files.cbegin(), files.cend(), [](const FileWithDetails& f){
+            return f.spath().find("/lib/") != std::string::npos;
+        });
+        ASSERT(it == files.cend());
     }
 
     void addFiles() const {
