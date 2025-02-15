@@ -5727,6 +5727,24 @@ private:
             ASSERT(it->isDefault());
             ASSERT_EQUALS(it->type, Function::Type::eDestructor);
         }
+        {
+            GET_SYMBOL_DB("struct S {\n" // #13637
+                          "    ~S();\n"
+                          "};\n"
+                          "S::~S() = delete;\n");
+            ASSERT_EQUALS(db->scopeList.size(), 2);
+            auto scope = db->scopeList.begin();
+            ASSERT(!scope->functionOf);
+            ++scope;
+            ASSERT_EQUALS(scope->className, "S");
+            ASSERT_EQUALS(scope->functionList.size(), 1);
+            auto it = scope->functionList.begin();
+            ASSERT_EQUALS(it->name(), "S");
+            ASSERT_EQUALS(it->tokenDef->linenr(), 2);
+            ASSERT(it->isDelete());
+            ASSERT(!it->isDefault());
+            ASSERT_EQUALS(it->type, Function::Type::eDestructor);
+        }
     }
 
     void symboldatabase109() { // #13553
