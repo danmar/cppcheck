@@ -1582,19 +1582,17 @@ static Token * createAstAtToken(Token *tok)
             return tok2;
     }
     if (Token *const endTok = skipMethodDeclEnding(tok)) {
-        if (Token::simpleMatch(endTok, "{")) {
-            Token *tok2 = tok;
-            do {
-                tok2 = tok2->next();
-                tok2->setCpp11init(false);
-                if (Token::Match(tok2, "decltype|noexcept (")) {
-                    AST_state state(cpp);
-                    Token *tok3 = tok2->tokAt(2);
-                    compileExpression(tok3, state);
-                    tok2 = tok2->linkAt(1);
-                }
-            } while (tok2 != endTok && !precedes(endTok, tok2));
-        }
+        Token *tok2 = tok;
+        do {
+            tok2 = tok2->next();
+            tok2->setCpp11init(false);
+            if (Token::Match(tok2, "decltype|noexcept (")) {
+                AST_state state(cpp);
+                Token *tok3 = tok2->tokAt(2);
+                compileExpression(tok3, state);
+                tok2 = tok2->linkAt(1);
+            }
+        } while (tok2 != endTok && !precedes(endTok, tok2));
         return endTok;
     }
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
