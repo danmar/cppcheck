@@ -86,8 +86,9 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
     HANDLE hFind = FindFirstFileA(searchPattern.c_str(), &ffd);
     if (INVALID_HANDLE_VALUE == hFind) {
         const DWORD err = GetLastError();
-        if (err == ERROR_FILE_NOT_FOUND) {
-            // no files matched
+        if (err == ERROR_FILE_NOT_FOUND || // the pattern did not match anything
+            err == ERROR_PATH_NOT_FOUND)   // the given search path does not exist
+        {
             return "";
         }
         return "finding files failed. Search pattern: '" + searchPattern + "'. (error: " + std::to_string(err) + ")";

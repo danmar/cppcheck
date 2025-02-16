@@ -181,12 +181,7 @@ private:
         {
             const std::string addfile = Path::join(Path::join(adddir, "lib2"), "token.cpp"); // does not exist
             const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
-#ifdef _WIN32
-            // TODO: get rid of this error - caused by missing intermediate folder
-            ASSERT_EQUALS("finding files failed. Search pattern: '" + dirprefix_nat + "lib2\\token.cpp'. (error: 3)", err);
-#else
             ASSERT_EQUALS("", err);
-#endif
         }
         {
             const std::string addfile = Path::join(Path::join(adddir, "lib"), "matchcompiler.h");
