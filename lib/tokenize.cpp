@@ -9585,6 +9585,10 @@ void Tokenizer::simplifyKeyword()
 
             if (mSettings.standards.c >= Standards::C11) {
                 while (tok->str() == "_Atomic") {
+                    if (Token::simpleMatch(tok->next(), "(")) {
+                        tok->linkAt(1)->deleteThis();
+                        tok->next()->deleteThis();
+                    }
                     for (Token* temp: getTypeTokens())
                         temp->isAtomic(true);
                     tok->deleteThis();
