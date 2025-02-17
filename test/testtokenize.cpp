@@ -469,6 +469,8 @@ private:
         TEST_CASE(funcnameInParenthesis3); // #13585
 
         TEST_CASE(genericInIf); // #13561
+
+        TEST_CASE(preincrementInLambda); // #13312
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8415,6 +8417,19 @@ private:
         const char code[] = "  if (_Generic(s, char * : 1, const float * : (a ? b, c : d), volatile int * : 3, default : 0)) {}";
         const char ast[] = "(( if (( _Generic (, (, (, (, s 1) (? a (: (, b c) d))) 3) 0)))";
         ASSERT_EQUALS(ast, testAst(code, AstStyle::Z3));
+    }
+
+    void preincrementInLambda() { // #13312
+        const char code[] =
+            "void f(const std::vector<int>& v, int a) {\n"
+            "    std::for_each(v.begin(), v.end(), [&](int i)  {\n"
+            "        switch (i) {\n"
+            "        default:\n"
+            "            ++a;\n"
+            "        }\n"
+            "    });\n"
+            "}\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code));
     }
 };
 
