@@ -1803,7 +1803,7 @@ static Token * createAstAtToken(Token *tok)
         !tok->previous() ||
         Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") ||
         (cpp && Token::Match(tok, "%name% {") && iscpp11init(tok->next())) ||
-        Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") ||
+        Token::Match(tok->previous(), "[;{}:] %cop%|++|--|( !!{") ||
         Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%") ||
         Token::Match(tok->previous(), "[;{}] delete new") ||
         (cpp && Token::Match(tok->previous(), "[;{}] ["))) {
