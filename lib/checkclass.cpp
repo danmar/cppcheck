@@ -2400,6 +2400,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                                 !(argVar->valueType() && argVar->valueType()->isConst(argVar->valueType()->pointer)))) { // argument might be modified
                     const Token* arg = args[argIndex];
                     // Member variable given as parameter
+                    while (Token::simpleMatch(arg, "(") && arg->astOperand2())
+                        arg = arg->astOperand2();
                     const Token* varTok = previousBeforeAstLeftmostLeaf(arg);
                     if (!varTok)
                         return false;
