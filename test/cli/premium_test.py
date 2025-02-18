@@ -53,3 +53,35 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert exitcode == 0
     assert 'id="unusedVariable"' in stderr
     assert 'id="checkersReport"' not in stderr
+
+
+def test_misra_c_builtin_style_checks(tmpdir):
+    # 13644 - cppcheck build dir hashes should depend on the cppcheck version
+    # so that files are rescanned when cppcheck is switched
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write(';')
+
+    build_dir = tmpdir.mkdir('b')
+    args = [f'--cppcheck-build-dir={build_dir}', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert 'error' not in stdout
+    assert stderr == ''
+    assert exitcode == 0
+
+    f1 = open(build_dir.join('test.a1'), 'rt').read()
+    assert ' hash="' in f1
+
+    premium_exe = __copy_cppcheck_premium(tmpdir)
+    exitcode, stdout, stderr = cppcheck(args, cppcheck_exe=premium_exe)
+    assert 'error' not in stdout
+    assert stderr == ''
+    assert exitcode == 0
+
+    f2 = open(build_dir.join('test.a1'), 'rt').read()
+    assert ' hash="' in f2
+
+    assert f1 != f2
+
