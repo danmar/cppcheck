@@ -55,7 +55,7 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert 'id="checkersReport"' not in stderr
 
 
-def test_misra_c_builtin_style_checks(tmpdir):
+def test_build_dir_hash_cppcheck_product(tmpdir):
     # 13644 - cppcheck build dir hashes should depend on the cppcheck version
     # so that files are rescanned when cppcheck is switched
 
