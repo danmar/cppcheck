@@ -71,7 +71,8 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert stderr == ''
     assert exitcode == 0
 
-    f1 = open(build_dir.join('test.a1'), 'rt').read()
+    with open(build_dir.join('test.a1'), 'rt') as f:
+        f1 = f.read()
     assert ' hash="' in f1
 
     premium_exe = __copy_cppcheck_premium(tmpdir)
@@ -80,7 +81,8 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert stderr == ''
     assert exitcode == 0
 
-    f2 = open(build_dir.join('test.a1'), 'rt').read()
+    with open(build_dir.join('test.a1'), 'rt') as f:
+        f2 = f.read()
     assert ' hash="' in f2
 
     assert f1 != f2
