@@ -6808,6 +6808,33 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkConst("enum E {\n"
+                   "    E0,\n"
+                   "    E1\n"
+                   "};\n"
+                   "void set1(int i, int* p) {\n"
+                   "    *p = i;\n"
+                   "}\n"
+                   "void set2(int* p, int i) {\n"
+                   "    *p = i;\n"
+                   "}\n"
+                   "struct S {\n"
+                   "    E e;\n"
+                   "    void f1() {\n"
+                   "        set1(1, reinterpret_cast<int*>(&e));\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        set2(reinterpret_cast<int*>(&e), 1);\n"
+                   "    }\n"
+                   "    void g1() {\n"
+                   "        set1(1, reinterpret_cast<int*>(reinterpret_cast<void*>(&e)));\n"
+                   "    }\n"
+                   "    void g2() {\n"
+                   "        set2(reinterpret_cast<int*>(reinterpret_cast<void*>(&e)), 1);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void const_handleDefaultParameters() {
