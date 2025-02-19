@@ -471,6 +471,8 @@ private:
         TEST_CASE(genericInIf); // #13561
 
         TEST_CASE(preincrementInLambda); // #13312
+
+        TEST_CASE(atomicCast); // #12605
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8430,6 +8432,14 @@ private:
             "    });\n"
             "}\n";
         ASSERT_NO_THROW(tokenizeAndStringify(code));
+    }
+
+    void atomicCast() { // #12605
+        const char code[] = "int atomic_add_int(int *ptr, int v)\n"
+                            "{\n"
+                            "    return atomic_fetch_add((_Atomic(unsigned int) *)ptr, v) + v;\n"
+                            "}\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code, settingsDefault, false));
     }
 };
 
