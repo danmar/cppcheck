@@ -2,6 +2,7 @@
 # python -m pytest premium_test.py
 
 import os
+import re
 import shutil
 import sys
 import time
@@ -71,9 +72,17 @@ def test_build_dir_hash_cppcheck_product(tmpdir):
     assert stderr == ''
     assert exitcode == 0
 
+    def _get_hash(s:str):
+        i = s.find(' hash="')
+        if i <= -1:
+            return ''
+        i += 7
+        return s[i:s.find('"', i)]
+
     with open(build_dir.join('test.a1'), 'rt') as f:
         f1 = f.read()
-    assert ' hash="' in f1
+        hash1 = _get_hash(f1)
+    assert re.match(r'^[0-9a-f]{6,}$', hash1), f1
 
     premium_exe = __copy_cppcheck_premium(tmpdir)
     exitcode, stdout, stderr = cppcheck(args, cppcheck_exe=premium_exe)
@@ -83,7 +92,8 @@ def test_build_dir_hash_cppcheck_product(tmpdir):
 
     with open(build_dir.join('test.a1'), 'rt') as f:
         f2 = f.read()
-    assert ' hash="' in f2
+        hash2 = _get_hash(f2)
+    assert re.match(r'^[0-9a-f]{6,}$', hash2), f2
 
-    assert f1 != f2
+    assert hash1 != hash2
 
