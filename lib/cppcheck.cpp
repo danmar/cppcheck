@@ -835,7 +835,7 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
 static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings, const Suppressions& supprs)
 {
     std::ostringstream toolinfo;
-    toolinfo << CPPCHECK_VERSION_STRING;
+    toolinfo << (settings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : settings.cppcheckCfgProductName);
     toolinfo << (settings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
     toolinfo << (settings.severity.isEnabled(Severity::style) ? 's' : ' ');
     toolinfo << (settings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
