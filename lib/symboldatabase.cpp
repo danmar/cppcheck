@@ -5003,7 +5003,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
                 }
                 if (Token::Match(tok2, ", %name%"))
                     addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
-            }   
+            }
         }
     }
 
