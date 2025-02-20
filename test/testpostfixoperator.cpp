@@ -231,7 +231,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-
+        check("void f(const std::string &s) {\n" // #7731
+              "    for (std::string::const_iterator i = s.begin(), r = s.end() - 1; i != r; r--) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
     }
 
     void testvolatile() {
