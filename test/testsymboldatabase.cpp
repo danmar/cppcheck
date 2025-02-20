@@ -435,6 +435,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes7);
         TEST_CASE(createSymbolDatabaseFindAllScopes8); // #12761
         TEST_CASE(createSymbolDatabaseFindAllScopes9);
+        TEST_CASE(createSymbolDatabaseFindAllScopes10);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -5978,6 +5979,21 @@ private:
                       "}\n");
         ASSERT(db && db->scopeList.size() == 4);
         ASSERT_EQUALS(db->scopeList.back().type, Scope::eLambda);
+    }
+
+    void createSymbolDatabaseFindAllScopes10() {
+        GET_SYMBOL_DB("void g() {\n"
+                      "    for (int i = 0, r = 1; i < r; ++i) {}\n"
+                      "}\n");
+        ASSERT(db);
+        ASSERT_EQUALS(3, db->scopeList.size());
+        ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
+        const Token* const iTok = Token::findsimplematch(tokenizer.tokens(), "i");
+        const Token* const rTok = Token::findsimplematch(iTok, "r");
+        const Variable* i = iTok->variable(), *r = rTok->variable();
+        ASSERT(i != nullptr && r != nullptr);
+        ASSERT_EQUALS(i->typeStartToken(), r->typeStartToken());
+        ASSERT(i->valueType()->isTypeEqual(r->valueType()));
     }
 
     void createSymbolDatabaseIncompleteVars()
