@@ -776,6 +776,36 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
             while (stream.good() && ch != '\r' && ch != '\n') {
                 currentToken += ch;
                 ch = stream.readChar();
+
+                if(ch == '\\') {
+                    TokenString tmp;
+                    char tmp_ch = ch;
+                    while((stream.good()) && (tmp_ch == '\\')) {
+                        tmp += tmp_ch;
+                        tmp_ch = stream.readChar();
+                    }
+                    if(!stream.good()) {
+                        if(tmp.size() > 0) {
+                            currentToken += tmp;
+                        }
+                        break;
+                    }
+
+                    if(tmp_ch != '\r' && tmp_ch != '\n') {
+                        currentToken += tmp;
+                    } else {
+                        while((stream.good()) && (tmp_ch == '\r' || tmp_ch == '\n')) {
+                            currentToken += tmp_ch;
+                            tmp_ch = stream.readChar();
+                        }
+                        if(!stream.good()) {
+                            break;
+                        }
+                    }
+
+                    ch = tmp_ch;
+                    continue;
+                }
             }
             const std::string::size_type pos = currentToken.find_last_not_of(" \t");
             if (pos < currentToken.size() - 1U && currentToken[pos] == '\\')
