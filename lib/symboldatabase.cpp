@@ -4993,6 +4993,17 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
             typestart = typestart->next();
 
         addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
+
+        if (type == eFor && orig->strAt(-2) == "for") {
+            for (const Token* tok2 = tok; tok2 && !Token::Match(tok2, "[;:]"); tok2 = tok2->next()) {
+                if (tok2->link()) {
+                    tok2 = tok2->link();
+                    continue;
+                }
+                if (Token::Match(tok2, ", %name%"))
+                    addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
+            }   
+        }
     }
 
     return tok;
