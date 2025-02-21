@@ -955,8 +955,7 @@ https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools
 
 Use the option `--rule-texts` to specify the rules text file that has been downloaded from MISRA.
 
-Open source Cppcheck has partial support for MISRA. Checkers in open source Cppcheck only cover the MISRA rules partially.
-
+Checkers in open source Cppcheck only cover MISRA rules partially.
 
 ### y2038.py
 
