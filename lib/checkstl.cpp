@@ -2899,7 +2899,7 @@ void CheckStl::useStlAlgorithm()
         return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
     };
 
-    enum class ConditionOpType { OTHER, MIN, MAX };
+    enum class ConditionOpType : std::uint8_t { OTHER, MIN, MAX };
     auto isConditionWithoutSideEffects = [this](const Token* tok, ConditionOpType& type) -> bool {
         if (!Token::simpleMatch(tok, "{") || !Token::simpleMatch(tok->previous(), ")"))
             return false;
