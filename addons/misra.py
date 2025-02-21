@@ -3204,7 +3204,7 @@ class MisraChecker:
                 if (prev is None) or (prev.str not in ':;{}'):
                     state = STATE_NONE
             elif token.str == 'case' or token.str == 'default':
-                if state != STATE_OK:
+                if state != STATE_OK and state != STATE_NONE:
                     self.reportError(token, 16, 3)
                 state = STATE_OK
 
