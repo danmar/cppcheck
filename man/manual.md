@@ -950,9 +950,13 @@ Cppcheck is distributed with a few addons which are listed below.
 
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
 
-This standard is proprietary, and open source tools are not allowed to distribute the Misra rule texts. Therefore Cppcheck is not allowed to write the rule texts directly. Cppcheck is allowed to distribute the rules and display the id of each violated rule (for example, [c2012-21.3]). The corresponding rule text can also be written however you need to provide that. To get the rule texts, please buy the PDF from MISRA (https://www.misra.org.uk). If you copy the rule texts from "Appendix A - Summary of guidelines" in the PDF and write those in a text file, then by using that text file Cppcheck can write the proper warning messages. To see how the text file can be formatted, take a look at the files listed here: https://github.com/danmar/cppcheck/blob/main/addons/test/misra/. You can use the option `--rule-texts` to specify your rules text file.
+The misra rule texts should be downloaded from MISRA:
+https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools
 
-The full list of supported rules is available on [Cppcheck](https://cppcheck.sourceforge.io/misra.php) home page.
+Use the option `--rule-texts` to specify the rules text file that has been downloaded from MISRA.
+
+Open source Cppcheck has partial support for MISRA. Checkers in open source Cppcheck only cover the MISRA rules partially.
+
 
 ### y2038.py
 
