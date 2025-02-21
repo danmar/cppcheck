@@ -3231,7 +3231,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if token.str != 'default':
                 continue
-            if token.previous and token.previous.str == '{':
+            if token.previous and (token.previous.str == '{' or token.previous.str == '='):
                 continue
             tok2 = token
             while tok2:
