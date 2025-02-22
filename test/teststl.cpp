@@ -599,7 +599,7 @@ private:
                     "            return i;\n"
                     "    return 0;\n"
                     "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("test.cpp:8:style:Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
 
         checkNormal("bool g();\n"
                     "int f(int x) {\n"
@@ -612,7 +612,7 @@ private:
                     "            return i;\n"
                     "    return 0;\n"
                     "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("test.cpp:8:style:Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
 
         checkNormal("bool g();\n"
                     "void f(int x) {\n"
@@ -2608,7 +2608,7 @@ private:
               "        sum += values[j-1];\n"
               "    return sum;\n"
               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:9]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
         check("struct B { virtual int g() { return 0; } };\n" // #11831
               "struct C {\n"
@@ -5438,6 +5438,14 @@ private:
               "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(const std::vector<int>& v) {\n" // #11493
+              "    int s = 0;\n"
+              "    for (std::size_t i = 0; i < v.size(); ++i)\n"
+              "        s += v[i];\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
     }
 
     void loopAlgoContainerInsert() {

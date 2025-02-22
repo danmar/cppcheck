@@ -2929,7 +2929,7 @@ void CheckStl::useStlAlgorithm()
             const Token *bodyTok = tok->linkAt(1)->next();
             const Token *splitTok = tok->next()->astOperand2();
             const Token* loopVar{};
-            bool isIteratorLoop = false;
+            bool isIteratorOrIndexLoop = false;
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
@@ -2944,13 +2944,14 @@ void CheckStl::useStlAlgorithm()
                 if (!initTok || !condTok || !stepTok)
                     continue;
                 loopVar = Token::Match(condTok, "%comp%") ? condTok->astOperand1() : nullptr;
-                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
+                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() ||
+                    (loopVar->valueType()->type != ValueType::Type::ITERATOR && !loopVar->valueType()->isIntegral()))
                     continue;
                 if (!Token::simpleMatch(initTok, "=") || !Token::Match(initTok->astOperand1(), "%varid%", loopVar->varId()))
                     continue;
                 if (!stepTok->isIncDecOp())
                     continue;
-                isIteratorLoop = true;
+                isIteratorOrIndexLoop = true;
             }
 
             // Check for single assignment
@@ -2988,7 +2989,7 @@ void CheckStl::useStlAlgorithm()
             // Check for container calls
             bool useLoopVarInMemCall;
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, *mSettings);
-            if (memberAccessTok && !isIteratorLoop) {
+            if (memberAccessTok && !isIteratorOrIndexLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())
@@ -3084,7 +3085,7 @@ void CheckStl::useStlAlgorithm()
                     const Token *loopVar2 = Token::findmatch(condBodyTok, "%varid%", condBodyTok->link(), loopVar->varId());
                     std::string algo;
                     if (loopVar2 ||
-                        (isIteratorLoop && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
+                        (isIteratorOrIndexLoop && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
                         algo = "std::find_if";
                     else
                         algo = "std::any_of";
