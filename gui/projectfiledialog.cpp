@@ -948,7 +948,7 @@ int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
     auto it = std::find_if(mSuppressions.begin(), mSuppressions.end(), [&](const SuppressionList::Suppression& sup) {
         return sup.getText() == s;
     });
-    return it == mSuppressions.end() ? -1 : static_cast<int>(std::distance(it, mSuppressions.end()));
+    return it == mSuppressions.end() ? -1 : static_cast<int>(std::distance(mSuppressions.begin(), it));
 }
 
 void ProjectFileDialog::browseMisraFile()

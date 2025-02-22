@@ -117,7 +117,7 @@ int TokenList::appendFileIfNew(std::string fileName)
         return Path::sameFileName(f, fileName);
     });
     if (it != mFiles.end())
-        return static_cast<int>(std::distance(it, mFiles.end()));
+        return static_cast<int>(std::distance(mFiles.begin(), it));
 
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));
