@@ -5836,7 +5836,7 @@ private:
         check("bool f(const std::vector<int>& v, const std::vector<int>& w, int n) {\n"
               "    for (int i = 0; i < n; ++i)\n"
               "        if (v[i] == w[i])\n"
-              "            return true; \n"
+              "            return true;\n"
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
@@ -5844,7 +5844,7 @@ private:
         check("bool f(int n) {\n"
               "    for (int i = 0; i < n; ++i)\n"
               "        if (g(i))\n"
-              "            return true; \n"
+              "            return true;\n"
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
@@ -5909,7 +5909,7 @@ private:
               "        max = v[i] > max ? v[i] : max;\n"
               "    return max;\n"
               "}\n",
-              true);
+              dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
                            "",
                            errout_str());
