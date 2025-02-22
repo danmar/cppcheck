@@ -774,6 +774,19 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
     });
 }
 
+static bool isTemplateInstantion(const Token* tok)
+{
+    if (!tok->isName() || (tok->isKeyword() && !tok->isOperatorKeyword()))
+        return false;
+    if (Token::Match(tok->tokAt(-1), "%type% %name% ::|<"))
+        return true;
+    if (Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<"))
+        return true;
+    if (Token::Match(tok->tokAt(-1), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|("))
+        return true;
+    return Token::Match(tok->tokAt(-2), "(|{|}|;|=|<<|:|.|*|&|return|<|,|!|[ :: %name% ::|<|(");
+}
+
 void TemplateSimplifier::getTemplateInstantiations()
 {
     std::multimap<std::string, const TokenAndName *> functionNameMap;
@@ -830,9 +843,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             Token *tok2 = Token::findsimplematch(tok->tokAt(2), ";");
             if (tok2)
                 tok = tok2;
-        } else if (Token::Match(tok->previous(), "(|{|}|;|=|>|<<|:|.|*|&|return|<|,|!|[ %name% ::|<|(") ||
-                   Token::Match(tok->previous(), "%type% %name% ::|<") ||
-                   Token::Match(tok->tokAt(-2), "[,:] private|protected|public %name% ::|<")) {
+        } else if (isTemplateInstantion(tok)) {
             if (!tok->scopeInfo())
                 syntaxError(tok);
             std::string scopeName = tok->scopeInfo()->name;
@@ -1431,14 +1442,14 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
         } else if (Token::Match(tok->next(), "%type% <")) {
             const Token *closing = tok->tokAt(2)->findClosingBracket();
             if (closing) {
-                if (closing->strAt(1) == "(" && Tokenizer::isFunctionHead(closing->next(), ";|{|:"))
+                if (closing->strAt(1) == "(" && TokenList::isFunctionHead(closing->next(), ";|{|:"))
                     return true;
                 while (tok->next() && tok->next() != closing) {
                     tok = tok->next();
                     namepos++;
                 }
             }
-        } else if (Token::Match(tok->next(), "%type% (") && Tokenizer::isFunctionHead(tok->tokAt(2), ";|{|:")) {
+        } else if (Token::Match(tok->next(), "%type% (") && TokenList::isFunctionHead(tok->tokAt(2), ";|{|:")) {
             return true;
         }
         tok = tok->next();
@@ -1944,7 +1955,7 @@ void TemplateSimplifier::expandTemplate(
             const Token *tok4 = tok3->next()->findClosingBracket();
             while (tok4 && tok4->str() != "(")
                 tok4 = tok4->next();
-            if (!Tokenizer::isFunctionHead(tok4, ":{"))
+            if (!TokenList::isFunctionHead(tok4, ":{"))
                 continue;
             // find function return type start
             tok5 = tok5->next()->findClosingBracket();
@@ -3825,7 +3836,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 
         if (mSettings.debugtemplate && mSettings.debugnormal) {
             std::string title("Template Simplifier pass " + std::to_string(passCount + 1));
-            mTokenList.front()->printOut(std::cout, title.c_str(), mTokenList.getFiles());
+            mTokenList.front()->printOut(std::cout, false, title.c_str(), mTokenList.getFiles());
         }
 
         // Copy default argument values from forward declaration to declaration

@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+class Token;
 template<class T> class ValuePtr;
 
 struct InferModel {

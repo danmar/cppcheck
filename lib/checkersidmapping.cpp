@@ -19,6 +19,8 @@
 // Mappings of Cppcheck warning IDs to guidelines
 #include "checkers.h"
 
+#include <vector>
+
 std::vector<checkers::IdMapping> checkers::idMappingAutosar{
     {"m0-1-1", "unreachableCode,duplicateBreak"},
     {"m0-1-2", "unsignedLessThanZero"},

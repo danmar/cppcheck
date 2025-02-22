@@ -30,7 +30,7 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {

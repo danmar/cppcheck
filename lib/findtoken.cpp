@@ -21,6 +21,8 @@
 #include "astutils.h"
 #include "token.h"
 
+class Library;
+
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 static bool findTokensSkipDeadCodeImpl(const Library& library,
                                        T* start,

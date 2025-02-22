@@ -1,4 +1,4 @@
-/* -*- C++ -*-
+/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2024 Cppcheck team.
  *
@@ -16,31 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SINGLEEXECUTOR_H
-#define SINGLEEXECUTOR_H
+#include "fixture.h"
+#include "vfvalue.h"
 
-#include "executor.h"
-
-#include <list>
-
-class ErrorLogger;
-class Settings;
-class CppCheck;
-struct Suppressions;
-struct FileSettings;
-class FileWithDetails;
-
-class SingleExecutor : public Executor
-{
+class TestValueFlowValue : public TestFixture {
 public:
-    SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
-    SingleExecutor(const SingleExecutor &) = delete;
-    SingleExecutor& operator=(const SingleExecutor &) = delete;
-
-    unsigned int check() override;
+    TestValueFlowValue() : TestFixture("TestValueFlowValue") {}
 
 private:
-    CppCheck &mCppcheck;
+    void run() override {
+        TEST_CASE(toString);
+    }
+
+    void toString() const {
+        {
+            ValueFlow::Value v;
+            ASSERT_EQUALS("0", v.toString());
+            v.intvalue = -1;
+            ASSERT_EQUALS("-1", v.toString());
+        }
+        {
+            ValueFlow::Value v;
+            v.valueType = ValueFlow::Value::ValueType::FLOAT;
+            ASSERT_EQUALS("0.0", v.toString());
+            v.floatValue = 0.0000000000001;
+            ASSERT_EQUALS("1e-13", v.toString());
+        }
+    }
 };
 
-#endif // SINGLEEXECUTOR_H
+REGISTER_TEST(TestValueFlowValue)

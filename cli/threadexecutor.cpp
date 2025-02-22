@@ -26,7 +26,6 @@
 #include "timer.h"
 
 #include <cassert>
-#include <cstdint>
 #include <cstdlib>
 #include <future>
 #include <iostream>
@@ -38,7 +37,7 @@
 #include <utility>
 #include <vector>
 
-ThreadExecutor::ThreadExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ThreadExecutor::ThreadExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -80,8 +79,8 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
-        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, Suppressions& supprs, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(supprs), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -113,14 +112,13 @@ public:
     }
 
     unsigned int check(ErrorLogger &errorLogger, const FileWithDetails *file, const FileSettings *fs) const {
-        CppCheck fileChecker(errorLogger, false, mExecuteCommand);
-        fileChecker.settings() = mSettings; // this is a copy
+        CppCheck fileChecker(mSettings, mSuppressions, errorLogger, false, mExecuteCommand);
 
         unsigned int result;
         if (fs) {
             // file settings..
             result = fileChecker.check(*fs);
-            if (fileChecker.settings().clangTidy)
+            if (mSettings.clangTidy)
                 fileChecker.analyseClangTidy(*fs);
         } else {
             // Read file from a file
@@ -151,6 +149,7 @@ private:
 
     std::mutex mFileSync;
     const Settings &mSettings;
+    Suppressions &mSuppressions;
     CppCheck::ExecuteCmdFn mExecuteCommand;
 
 public:
@@ -179,7 +178,7 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mFileSettings, mExecuteCommand);
+    ThreadData data(*this, mErrorLogger, mSettings, mSuppressions, mFiles, mFileSettings, mExecuteCommand);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {

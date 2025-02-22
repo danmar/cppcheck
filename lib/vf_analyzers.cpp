@@ -435,7 +435,8 @@ private:
             {"^=", "^="}};
         auto it = lookup.find(assign);
         if (it == lookup.end()) {
-            return emptyString;
+            static const std::string s_empty_string;
+            return s_empty_string;
         }
         return it->second;
     }

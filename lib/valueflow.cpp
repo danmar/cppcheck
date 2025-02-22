@@ -959,13 +959,13 @@ static void valueFlowRightShift(TokenList& tokenList, const Settings& settings)
             continue;
         if (lhsmax < 0)
             continue;
-        int lhsbits;
+        std::uint8_t lhsbits;
         if ((tok->astOperand1()->valueType()->type == ValueType::Type::CHAR) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::SHORT) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::WCHAR_T) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::BOOL) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::INT))
-            lhsbits = settings.platform.int_bit;
+            lhsbits = settings.platform.int_bit; // TODO: needs to use the proper *_bit fo each type
         else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONG)
             lhsbits = settings.platform.long_bit;
         else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONGLONG)

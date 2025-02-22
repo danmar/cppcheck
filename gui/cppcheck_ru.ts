@@ -2249,67 +2249,67 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="227"/>
+        <location filename="resultstree.cpp" line="132"/>
         <source>File</source>
         <translation type="unfinished">Файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="228"/>
+        <location filename="resultstree.cpp" line="133"/>
         <source>Line</source>
         <translation type="unfinished">Строка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="229"/>
+        <location filename="resultstree.cpp" line="134"/>
         <source>Severity</source>
         <translation type="unfinished">Важность</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="230"/>
+        <location filename="resultstree.cpp" line="135"/>
         <source>Classification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="231"/>
+        <location filename="resultstree.cpp" line="136"/>
         <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="232"/>
+        <location filename="resultstree.cpp" line="137"/>
         <source>Inconclusive</source>
         <translation type="unfinished">Спорное</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="233"/>
+        <location filename="resultstree.cpp" line="138"/>
         <source>Summary</source>
         <translation type="unfinished">Кратко</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="234"/>
+        <location filename="resultstree.cpp" line="139"/>
         <source>Id</source>
         <translation type="unfinished">Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="235"/>
+        <location filename="resultstree.cpp" line="140"/>
         <source>Guideline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="236"/>
+        <location filename="resultstree.cpp" line="141"/>
         <source>Rule</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="237"/>
+        <location filename="resultstree.cpp" line="142"/>
         <source>Since date</source>
         <translation type="unfinished">Начиная с даты</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="238"/>
+        <location filename="resultstree.cpp" line="143"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="239"/>
+        <location filename="resultstree.cpp" line="144"/>
         <source>CWE</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2356,93 +2356,93 @@ Options:
         <translation type="vanished">Кратко</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="374"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>Undefined file</source>
         <translation>Неопределенный файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="865"/>
+        <location filename="resultstree.cpp" line="751"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1058"/>
+        <location filename="resultstree.cpp" line="944"/>
         <source>Could not find file:</source>
         <translation>Невозможно найти файл:</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1062"/>
+        <location filename="resultstree.cpp" line="948"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>Выберите каталог &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1063"/>
+        <location filename="resultstree.cpp" line="949"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>Выбрать каталог &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="951"/>
         <source>Please select the directory where file is located.</source>
         <translation>Укажите каталог с расположением файла.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="574"/>
+        <location filename="resultstree.cpp" line="460"/>
         <source>debug</source>
         <translation>отлаживать</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="500"/>
+        <location filename="resultstree.cpp" line="386"/>
         <source>note</source>
         <translation>заметка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="864"/>
+        <location filename="resultstree.cpp" line="750"/>
         <source>Recheck</source>
         <translation>Проверить заново</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="752"/>
         <source>Hide</source>
         <translation>Скрыть</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="753"/>
         <source>Hide all with id</source>
         <translation>Скрыть все с id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="886"/>
+        <location filename="resultstree.cpp" line="772"/>
         <source>Suppress selected id(s)</source>
         <translation>Подавить выбранные id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="754"/>
         <source>Open containing folder</source>
         <translation>Открыть содержащую папку</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="577"/>
+        <location filename="resultstree.cpp" line="463"/>
         <source>internal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="907"/>
+        <location filename="resultstree.cpp" line="793"/>
         <source>Tag</source>
         <translation>Тег</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="795"/>
         <source>No tag</source>
         <translation>Тег отсутствует</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="940"/>
-        <location filename="resultstree.cpp" line="954"/>
+        <location filename="resultstree.cpp" line="826"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="941"/>
+        <location filename="resultstree.cpp" line="827"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2451,7 +2451,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Сконфигурируйте приложение редактора для Cppcheck в предпочтениях/Приложениях.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="955"/>
+        <location filename="resultstree.cpp" line="841"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2459,12 +2459,12 @@ Please select the default editor application in preferences/Applications.</sourc
 Выберите приложение редактора по умолчанию в предпочтениях/Приложениях.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="981"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Could not find the file!</source>
         <translation>Не удается найти файл!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1044"/>
+        <location filename="resultstree.cpp" line="930"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2472,7 +2472,7 @@ Please check the application path and parameters are correct.</source>
 Пожалуйста, проверьте путь приложения, и верны ли параметры.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1066"/>
+        <location filename="resultstree.cpp" line="952"/>
         <source>Select Directory</source>
         <translation>Выберите директорию</translation>
     </message>
@@ -2489,32 +2489,32 @@ Please check the application path and parameters are correct.</source>
         <translation type="vanished">Начиная с даты</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="556"/>
+        <location filename="resultstree.cpp" line="442"/>
         <source>style</source>
         <translation>стиль</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="559"/>
+        <location filename="resultstree.cpp" line="445"/>
         <source>error</source>
         <translation>ошибка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="562"/>
+        <location filename="resultstree.cpp" line="448"/>
         <source>warning</source>
         <translation>предупреждение</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="565"/>
+        <location filename="resultstree.cpp" line="451"/>
         <source>performance</source>
         <translation>производительность</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="568"/>
+        <location filename="resultstree.cpp" line="454"/>
         <source>portability</source>
         <translation>переносимость</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="571"/>
+        <location filename="resultstree.cpp" line="457"/>
         <source>information</source>
         <translation>информация</translation>
     </message>

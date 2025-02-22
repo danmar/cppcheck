@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "redirect.h"
-#include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "redirect.h"
+#include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
 #include "threadexecutor.h"
 #include "timer.h"
@@ -96,6 +97,8 @@ private:
             s.plistOutput = opt.plistOutput;
         s.clangTidy = opt.clangTidy;
 
+        Suppressions supprs;
+
         bool executeCommandCalled = false;
         std::string exe;
         std::vector<std::string> args;
@@ -116,7 +119,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        ThreadExecutor executor(filelist, fileSettings, s, s.supprs.nomsg, *this, executeFn);
+        ThreadExecutor executor(filelist, fileSettings, s, supprs, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
         ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
         ASSERT_EQUALS(opt.exe, exe);
@@ -337,7 +340,7 @@ private:
         SUPPRESS;
         const Settings settingsOld = settings;
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
-        settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        settings = settingsBuilder().libraryxml(xmldata).build();
         check(2, 1, 0,
               "int main()\n"
               "{\n"

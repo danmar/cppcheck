@@ -88,7 +88,7 @@ void CheckType::checkTooBigBitwiseShift()
         // C11 Standard, section 6.5.7 Bitwise shift operators, states:
         //   The integer promotions are performed on each of the operands.
         //   The type of the result is that of the promoted left operand.
-        int lhsbits;
+        std::uint8_t lhsbits;
         if ((lhstype->type == ValueType::Type::CHAR) ||
             (lhstype->type == ValueType::Type::SHORT) ||
             (lhstype->type == ValueType::Type::WCHAR_T) ||

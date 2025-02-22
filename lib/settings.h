@@ -27,11 +27,10 @@
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
-#include "suppressions.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <atomic>
-#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <list>
@@ -47,6 +46,7 @@
 #include <cstdio>
 #endif
 
+struct Suppressions;
 enum class SHOWTIME_MODES : std::uint8_t;
 namespace ValueFlow {
     class Value;
@@ -110,6 +110,9 @@ public:
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 
+    /** @brief Report type */
+    ReportType reportType = ReportType::normal;
+
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
 
@@ -134,7 +137,7 @@ public:
     /**
      * Check code in the headers, this is on by default but can
      * be turned off to save CPU */
-    bool checkHeaders = true;
+    bool checkHeaders = true; // TODO: CLI
 
     /** Check for incomplete info in library files? */
     bool checkLibrary{};
@@ -146,10 +149,10 @@ public:
     std::string checkersReportFilename;
 
     /** @brief check unknown function return values */
-    std::set<std::string> checkUnknownFunctionReturn;
+    std::set<std::string> checkUnknownFunctionReturn; // TODO: move to Library?
 
     /** Check unused/uninstantiated templates */
-    bool checkUnusedTemplates = true;
+    bool checkUnusedTemplates = true; // TODO: CLI
 
     /** Use Clang */
     bool clang{};
@@ -158,10 +161,10 @@ public:
     std::string clangExecutable = "clang";
 
     /** Use clang-tidy */
-    bool clangTidy{};
+    bool clangTidy{}; // TODO: CLI
 
     /** Internal: Clear the simplecpp non-existing include cache */
-    bool clearIncludeCache{};
+    bool clearIncludeCache{}; // internal
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -177,6 +180,9 @@ public:
 
     /** @brief Are we running from DACA script? */
     bool daca{};
+
+    /** @brief Is --debug-clang-output given? */
+    bool debugClangOutput{};
 
     /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
@@ -263,8 +269,10 @@ public:
     /** Library */
     Library library;
 
+#ifdef HAS_THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage{};
+#endif
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
@@ -285,7 +293,7 @@ public:
     Platform platform;
 
     /** @brief pid of cppcheck. Intention is that this is set in the main process. */
-    int pid;
+    int pid; // internal
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -386,9 +394,6 @@ public:
     /** Struct contains standards settings */
     Standards standards;
 
-    /** @brief suppressions */
-    Suppressions supprs;
-
     /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */
     std::string templateFormat;
@@ -452,11 +457,8 @@ public:
     /** @brief Is --verbose given? */
     bool verbose{};
 
-    /** @brief write XML results (--xml) */
-    bool xml{};
-
     /** @brief XML version (--xml-version=..) */
-    int xml_version = 2;
+    int xml_version = 2; // TODO: integrate into outputFormat enum?
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs

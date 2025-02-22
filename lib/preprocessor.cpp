@@ -878,7 +878,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
         case simplecpp::Output::FILE_NOT_FOUND:
         case simplecpp::Output::DUI_ERROR:
-            error(emptyString, 0, out.msg);
+            error("", 0, out.msg);
             break;
         }
     }

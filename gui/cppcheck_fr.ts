@@ -2182,67 +2182,67 @@ Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="227"/>
+        <location filename="resultstree.cpp" line="132"/>
         <source>File</source>
         <translation type="unfinished">Fichier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="228"/>
+        <location filename="resultstree.cpp" line="133"/>
         <source>Line</source>
         <translation type="unfinished">Ligne</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="229"/>
+        <location filename="resultstree.cpp" line="134"/>
         <source>Severity</source>
         <translation type="unfinished">Sévérité</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="230"/>
+        <location filename="resultstree.cpp" line="135"/>
         <source>Classification</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="231"/>
+        <location filename="resultstree.cpp" line="136"/>
         <source>Level</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="232"/>
+        <location filename="resultstree.cpp" line="137"/>
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="233"/>
+        <location filename="resultstree.cpp" line="138"/>
         <source>Summary</source>
         <translation type="unfinished">Résumé</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="234"/>
+        <location filename="resultstree.cpp" line="139"/>
         <source>Id</source>
         <translation type="unfinished">Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="235"/>
+        <location filename="resultstree.cpp" line="140"/>
         <source>Guideline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="236"/>
+        <location filename="resultstree.cpp" line="141"/>
         <source>Rule</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="237"/>
+        <location filename="resultstree.cpp" line="142"/>
         <source>Since date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="238"/>
+        <location filename="resultstree.cpp" line="143"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="239"/>
+        <location filename="resultstree.cpp" line="144"/>
         <source>CWE</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2285,18 +2285,18 @@ Do you want to proceed?</source>
         <translation type="obsolete">Ligne</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="374"/>
+        <location filename="resultstree.cpp" line="260"/>
         <source>Undefined file</source>
         <translation>Fichier indéterminé</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="940"/>
-        <location filename="resultstree.cpp" line="954"/>
+        <location filename="resultstree.cpp" line="826"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1044"/>
+        <location filename="resultstree.cpp" line="930"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2305,12 +2305,12 @@ Please check the application path and parameters are correct.</source>
 Merci de vérifier que le chemin de l&apos;application et que les paramètres sont corrects.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="556"/>
+        <location filename="resultstree.cpp" line="442"/>
         <source>style</source>
         <translation>erreur de style</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="559"/>
+        <location filename="resultstree.cpp" line="445"/>
         <source>error</source>
         <translation>erreur</translation>
     </message>
@@ -2319,59 +2319,59 @@ Merci de vérifier que le chemin de l&apos;application et que les paramètres so
         <translation type="vanished">Résumé</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="866"/>
+        <location filename="resultstree.cpp" line="752"/>
         <source>Hide</source>
         <translation>Cacher</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="981"/>
+        <location filename="resultstree.cpp" line="867"/>
         <source>Could not find the file!</source>
         <translation>Fichier introuvable !</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1066"/>
+        <location filename="resultstree.cpp" line="952"/>
         <source>Select Directory</source>
         <translation>Selectionner dossier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="562"/>
+        <location filename="resultstree.cpp" line="448"/>
         <source>warning</source>
         <translation>avertissement</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="565"/>
+        <location filename="resultstree.cpp" line="451"/>
         <source>performance</source>
         <translation>performance</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="568"/>
+        <location filename="resultstree.cpp" line="454"/>
         <source>portability</source>
         <translation>portabilité</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="571"/>
+        <location filename="resultstree.cpp" line="457"/>
         <source>information</source>
         <translation>information</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="574"/>
+        <location filename="resultstree.cpp" line="460"/>
         <source>debug</source>
         <translation>débogage</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="577"/>
+        <location filename="resultstree.cpp" line="463"/>
         <source>internal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="941"/>
+        <location filename="resultstree.cpp" line="827"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="955"/>
+        <location filename="resultstree.cpp" line="841"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2382,62 +2382,62 @@ Please select the default editor application in preferences/Applications.</sourc
         <translation type="vanished">Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="753"/>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="868"/>
+        <location filename="resultstree.cpp" line="754"/>
         <source>Open containing folder</source>
         <translation>Ouvrir l&apos;emplacement du fichier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="864"/>
+        <location filename="resultstree.cpp" line="750"/>
         <source>Recheck</source>
         <translation>Revérifier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="500"/>
+        <location filename="resultstree.cpp" line="386"/>
         <source>note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="886"/>
+        <location filename="resultstree.cpp" line="772"/>
         <source>Suppress selected id(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="907"/>
+        <location filename="resultstree.cpp" line="793"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="909"/>
+        <location filename="resultstree.cpp" line="795"/>
         <source>No tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1058"/>
+        <location filename="resultstree.cpp" line="944"/>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1062"/>
+        <location filename="resultstree.cpp" line="948"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1063"/>
+        <location filename="resultstree.cpp" line="949"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1065"/>
+        <location filename="resultstree.cpp" line="951"/>
         <source>Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="865"/>
+        <location filename="resultstree.cpp" line="751"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>

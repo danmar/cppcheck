@@ -30,6 +30,7 @@
 
 #include "ui_projectfile.h"
 
+#include <array>
 #include <list>
 #include <string>
 #include <utility>
@@ -79,7 +80,7 @@ static QStringList getPaths(const QListWidget *list)
 }
 
 /** Platforms shown in the platform combobox */
-static constexpr Platform::Type builtinPlatforms[] = {
+static const std::array<Platform::Type, 6> builtinPlatforms = {
     Platform::Type::Native,
     Platform::Type::Win32A,
     Platform::Type::Win32W,
@@ -88,8 +89,6 @@ static constexpr Platform::Type builtinPlatforms[] = {
     Platform::Type::Unix64
 };
 
-static constexpr int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
-
 QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
 {
     if (!fileName.endsWith(".sln") && !fileName.endsWith(".vcxproj"))
@@ -97,7 +96,8 @@ QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
     QStringList ret;
     ImportProject importer;
     Settings projSettings;
-    importer.import(fileName.toStdString(), &projSettings);
+    Suppressions projSupprs;
+    importer.import(fileName.toStdString(), &projSettings, &projSupprs);
     for (const std::string &cfg : importer.getVSConfigs())
         ret << QString::fromStdString(cfg);
     return ret;
@@ -335,7 +335,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     const QString& platform = projectFile->getPlatform();
     if (platform.endsWith(".xml")) {
         int i;
-        for (i = numberOfBuiltinPlatforms; i < mUI->mComboBoxPlatform->count(); ++i) {
+        for (i = builtinPlatforms.size(); i < mUI->mComboBoxPlatform->count(); ++i) {
             if (mUI->mComboBoxPlatform->itemText(i) == platform)
                 break;
         }
@@ -347,12 +347,12 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         }
     } else {
         int i;
-        for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
+        for (i = 0; i < builtinPlatforms.size(); ++i) {
             const Platform::Type p = builtinPlatforms[i];
             if (platform == Platform::toString(p))
                 break;
         }
-        if (i < numberOfBuiltinPlatforms)
+        if (i < builtinPlatforms.size())
             mUI->mComboBoxPlatform->setCurrentIndex(i);
         else
             mUI->mComboBoxPlatform->setCurrentIndex(-1);
@@ -481,7 +481,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         projectFile->setPlatform(mUI->mComboBoxPlatform->currentText());
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
-        if (i>=0 && i < numberOfBuiltinPlatforms)
+        if (i>=0 && i < builtinPlatforms.size())
             projectFile->setPlatform(Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());

@@ -107,9 +107,9 @@ private:
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     // CTU
-    static bool isCtuUnsafeBufferUsage(const Settings &settings, const Token *argtok, MathLib::bigint *offset, int type);
-    static bool isCtuUnsafeArrayIndex(const Settings &settings, const Token *argtok, MathLib::bigint *offset);
-    static bool isCtuUnsafePointerArith(const Settings &settings, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafeBufferUsage(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset);
+    static bool isCtuUnsafePointerArith(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
     static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage,

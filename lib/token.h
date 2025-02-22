@@ -167,6 +167,8 @@ class CPPCHECKLIB Token {
 private:
     TokensFrontBack& mTokensFrontBack;
 
+    static const std::string mEmptyString;
+
 public:
     Token(const Token &) = delete;
     Token& operator=(const Token &) = delete;
@@ -256,7 +258,7 @@ public:
     const std::string &strAt(int index) const
     {
         const Token *tok = this->tokAt(index);
-        return tok ? tok->mStr : emptyString;
+        return tok ? tok->mStr : mEmptyString;
     }
 
     /**
@@ -725,6 +727,13 @@ public:
         setFlag(fIsInitComma, b);
     }
 
+    bool isInitBracket() const {
+        return getFlag(fIsInitBracket);
+    }
+    void isInitBracket(bool b) {
+        setFlag(fIsInitBracket, b);
+    }
+
     // cppcheck-suppress unusedFunction
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -983,12 +992,13 @@ public:
 
     /**
      * For debugging purposes, prints token and all tokens followed by it.
+     * @param xml print in XML format
      * @param title Title for the printout or use default parameter or 0
      * for no title.
      * @param fileNames Prints out file name instead of file index.
      * File index should match the index of the string in this vector.
      */
-    void printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const;
+    void printOut(std::ostream& out, bool xml, const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
      * print out tokens - used for debugging
@@ -1265,7 +1275,7 @@ public:
      * @return the original name.
      */
     const std::string & originalName() const {
-        return mImpl->mOriginalName ? *mImpl->mOriginalName : emptyString;
+        return mImpl->mOriginalName ? *mImpl->mOriginalName : mEmptyString;
     }
 
     const std::list<ValueFlow::Value>& values() const {
@@ -1401,6 +1411,7 @@ private:
         fIsSimplifiedTypedef    = (1ULL << 40),
         fIsFinalType            = (1ULL << 41), // Is this a type with final specifier
         fIsInitComma            = (1ULL << 42), // Is this comma located inside some {..}. i.e: {1,2,3,4}
+        fIsInitBracket          = (1ULL << 43), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
     };
 
     enum : std::uint8_t  {

@@ -73,6 +73,8 @@
 #include <QVariantMap>
 #include <Qt>
 
+enum class ReportType : std::uint8_t;
+
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
     mUI(new Ui::ResultsView),

@@ -31,9 +31,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <map>
 
 class Token;
 class TokenList;
+enum class ReportType : std::uint8_t;
 
 namespace tinyxml2 {
     class XMLElement;
@@ -174,6 +176,12 @@ public:
     /** remark from REMARK comment */
     std::string remark;
 
+    /** misra/autosar/certc classification/level */
+    std::string classification;
+
+    /** misra/autosar/certc guideline */
+    std::string guideline;
+
     /** Warning hash */
     std::size_t hash;
 
@@ -196,7 +204,7 @@ public:
         return mSymbolNames;
     }
 
-    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = emptyString);
+    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = "");
 
 private:
     static std::string fixInvalidChars(const std::string& raw);
@@ -281,6 +289,17 @@ CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
 
 /** replaces the static parts of the location template **/
 CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
+
+/** Get a classification string from the given guideline and reporttype */
+CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
+
+/** Get a guidline string froM the given error id, reporttype, mapping and severity */
+CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
+                                     const std::map<std::string, std::string> &guidelineMapping,
+                                     Severity severity);
+
+/** Get a map from cppcheck error ids to guidlines matching the given report type */
+CPPCHECKLIB std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 
 /// @}
 //---------------------------------------------------------------------------

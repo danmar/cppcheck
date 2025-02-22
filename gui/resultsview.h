@@ -23,8 +23,6 @@
 #include "report.h"
 #include "showtypes.h"
 
-#include <cstdint>
-
 #include <QObject>
 #include <QString>
 #include <QStringList>

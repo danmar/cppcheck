@@ -32,6 +32,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 
@@ -913,7 +914,7 @@ namespace
     };
 }
 
-bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Settings &settings, const Token *argtok, MathLib::bigint *offset, int type)
+bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset, int type)
 {
     if (!offset)
         return false;
@@ -930,16 +931,16 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Settings &settings, const 
         return false;
     if (!indexTok->hasKnownIntValue())
         return false;
-    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(settings.platform);
+    offset->value = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(settings.platform);
     return true;
 }
 
-bool CheckBufferOverrun::isCtuUnsafeArrayIndex(const Settings &settings, const Token *argtok, MathLib::bigint *offset)
+bool CheckBufferOverrun::isCtuUnsafeArrayIndex(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset)
 {
     return isCtuUnsafeBufferUsage(settings, argtok, offset, 1);
 }
 
-bool CheckBufferOverrun::isCtuUnsafePointerArith(const Settings &settings, const Token *argtok, MathLib::bigint *offset)
+bool CheckBufferOverrun::isCtuUnsafePointerArith(const Settings &settings, const Token *argtok, CTU::FileInfo::Value* offset)
 {
     return isCtuUnsafeBufferUsage(settings, argtok, offset, 2);
 }
@@ -1030,13 +1031,13 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
     if (type == 1) {
         errorId = "ctuArrayIndex";
         if (unsafeUsage.value > 0)
-            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue.value) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
         else
             errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
         cwe = (unsafeUsage.value > 0) ? CWE_BUFFER_OVERRUN : CWE_BUFFER_UNDERRUN;
     } else {
         errorId = "ctuPointerArith";
-        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue);
+        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue.value);
         cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
     }
 

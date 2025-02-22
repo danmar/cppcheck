@@ -2,6 +2,7 @@
 # python -m pytest premium_test.py
 
 import os
+import re
 import shutil
 import sys
 import time
@@ -53,3 +54,46 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert exitcode == 0
     assert 'id="unusedVariable"' in stderr
     assert 'id="checkersReport"' not in stderr
+
+
+def test_build_dir_hash_cppcheck_product(tmpdir):
+    # 13644 - cppcheck build dir hashes should depend on the cppcheck version
+    # so that files are rescanned when cppcheck is switched
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write(';')
+
+    build_dir = tmpdir.mkdir('b')
+    args = [f'--cppcheck-build-dir={build_dir}', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert 'error' not in stdout
+    assert stderr == ''
+    assert exitcode == 0
+
+    def _get_hash(s:str):
+        i = s.find(' hash="')
+        if i <= -1:
+            return ''
+        i += 7
+        return s[i:s.find('"', i)]
+
+    with open(build_dir.join('test.a1'), 'rt') as f:
+        f1 = f.read()
+        hash1 = _get_hash(f1)
+    assert re.match(r'^[0-9a-f]{6,}$', hash1), f1
+
+    premium_exe = __copy_cppcheck_premium(tmpdir)
+    exitcode, stdout, stderr = cppcheck(args, cppcheck_exe=premium_exe)
+    assert 'error' not in stdout
+    assert stderr == ''
+    assert exitcode == 0
+
+    with open(build_dir.join('test.a1'), 'rt') as f:
+        f2 = f.read()
+        hash2 = _get_hash(f2)
+    assert re.match(r'^[0-9a-f]{6,}$', hash2), f2
+
+    assert hash1 != hash2
+

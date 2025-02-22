@@ -608,7 +608,7 @@ namespace ValueFlow
                     continue;
                 Value v(val);
                 v.intvalue = ~v.intvalue;
-                int bits = 0;
+                std::uint8_t bits = 0;
                 if (tok->valueType() &&
                     tok->valueType()->sign == ValueType::Sign::UNSIGNED &&
                     tok->valueType()->pointer == 0) {
@@ -618,7 +618,7 @@ namespace ValueFlow
                         bits = settings.platform.long_bit;
                 }
                 if (bits > 0 && bits < MathLib::bigint_bits)
-                    v.intvalue &= (((MathLib::biguint)1)<<bits) - 1;
+                    v.intvalue &= (1ULL<<bits) - 1;
                 setTokenValue(parent, std::move(v), settings);
             }
         }

@@ -78,6 +78,7 @@ private:
         TEST_CASE(testParameterPack); // #11289
 
         TEST_CASE(testDefaultSignInt); // #13363
+        TEST_CASE(testPrintfWithGeneric); // #13592
     }
 
     struct CheckOptions
@@ -4950,6 +4951,16 @@ private:
         check(code, dinit(CheckOptions, $.defaultSign = 's'));
         ASSERT_EQUALS("", errout_str());
         check(code, dinit(CheckOptions, $.defaultSign = 'u'));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void testPrintfWithGeneric() { // #13592
+        const char code[] =
+            "void f(void) {\n"
+            "    float x = 27.0f;\n"
+            "    printf(\"%s\\n\", _Generic(x, double: cbrt, float: cbrtf)(x));\n"
+            "}\n";
+        check(code);
         ASSERT_EQUALS("", errout_str());
     }
 };

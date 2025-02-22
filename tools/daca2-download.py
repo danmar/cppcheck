@@ -66,9 +66,6 @@ def getpackages():
             filename = line[1 + line.rfind(' '):]
             filenames.append(filename)
 
-    for a in archives:
-        print(a)
-
     return archives
 
 
@@ -114,6 +111,17 @@ def removeAll():
         count = 0
 
 
+def accept_filename(filename:str):
+    if '.' not in filename:
+        return False
+    ext = filename[filename.rfind('.'):]
+    if ext == '.proto' and ('--protobuf' in sys.argv):
+        print('accept_filename:' + filename)
+        return True
+    return ext in ('.C', '.c', '.H', '.h', '.cc',
+                   '.cpp', '.cxx', '.c++', '.hpp', '.tpp', '.t++')
+
+
 def removeLargeFiles(path):
     for g in glob.glob(path + '*'):
         if g == '.' or g == '..':
@@ -129,8 +137,7 @@ def removeLargeFiles(path):
                 os.remove(g)
 
             # remove non-source files
-            elif g[-2:] not in {'.C', '.c', '.H', '.h'} and g[-3:] != '.cc' and\
-                    g[-4:] not in {'.cpp', '.cxx', '.c++', '.hpp', '.tpp', '.t++'}:
+            elif not accept_filename(g):
                 os.remove(g)
 
 
@@ -145,13 +152,13 @@ def downloadpackage(filepath, outpath):
     filename = filepath[filepath.rfind('/') + 1:]
     if filename[-3:] == '.gz':
         # TODO: handle exitcode?
-        subprocess.call(['tar', 'xzvf', filename])
+        subprocess.call(['tar', 'xzf', filename])
     elif filename[-3:] == '.xz':
         # TODO: handle exitcode?
-        subprocess.call(['tar', 'xJvf', filename])
+        subprocess.call(['tar', 'xJf', filename])
     elif filename[-4:] == '.bz2':
         # TODO: handle exitcode?
-        subprocess.call(['tar', 'xjvf', filename])
+        subprocess.call(['tar', 'xjf', filename])
     else:
         return
 
@@ -160,7 +167,7 @@ def downloadpackage(filepath, outpath):
     for g in glob.glob('[#_A-Za-z0-9]*'):
         if os.path.isdir(g):
             # TODO: handle exitcode?
-            subprocess.call(['tar', '-cJvf', outpath + filename[:filename.rfind('.')] + '.xz', g])
+            subprocess.call(['tar', '-cJf', outpath + filename[:filename.rfind('.')] + '.xz', g])
             break
 
 workdir = os.path.expanduser('~/daca2-packages/tmp/')
