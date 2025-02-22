@@ -2652,7 +2652,9 @@ static const Token *singleIncrementInScope(const Token *start, nonneg int varid,
     return varTok;
 }
 
-static const Token *singleConditionalInScope(const Token *start, nonneg int varid, const Settings& settings)
+enum class LoopType : std::uint8_t { OTHER, RANGE, ITERATOR, INDEX };
+
+static const Token *singleConditionalInScope(const Token *start, nonneg int varid, LoopType loopType, const Settings& settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2671,6 +2673,13 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
         return nullptr;
     if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings))
         return nullptr;
+    if (loopType == LoopType::INDEX) { // check for container access
+        for (const Token* tok = start->tokAt(2); tok != start->linkAt(2); tok = tok->next()) {
+            if (tok->valueType() && tok->valueType()->container && Token::simpleMatch(tok->astParent(), "["))
+                return bodyTok;
+        }
+        return nullptr;
+    }
     return bodyTok;
 }
 
@@ -2929,13 +2938,14 @@ void CheckStl::useStlAlgorithm()
             const Token *bodyTok = tok->linkAt(1)->next();
             const Token *splitTok = tok->next()->astOperand2();
             const Token* loopVar{};
-            bool isIteratorOrIndexLoop = false;
+            LoopType loopType{};
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
                     continue;
                 if (Token::simpleMatch(splitTok->astOperand2(), "{"))
                     continue;
+                loopType = LoopType::RANGE;
             }
             else { // iterator-based loop?
                 const Token* initTok = getInitTok(tok);
@@ -2951,7 +2961,7 @@ void CheckStl::useStlAlgorithm()
                     continue;
                 if (!stepTok->isIncDecOp())
                     continue;
-                isIteratorOrIndexLoop = true;
+                loopType = (loopVar->valueType()->type == ValueType::Type::ITERATOR) ? LoopType::ITERATOR : LoopType::INDEX;
             }
 
             // Check for single assignment
@@ -2989,7 +2999,7 @@ void CheckStl::useStlAlgorithm()
             // Check for container calls
             bool useLoopVarInMemCall;
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, *mSettings);
-            if (memberAccessTok && !isIteratorOrIndexLoop) {
+            if (memberAccessTok && loopType == LoopType::RANGE) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())
@@ -3021,7 +3031,7 @@ void CheckStl::useStlAlgorithm()
             }
 
             // Check for conditionals
-            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), *mSettings);
+            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), loopType, *mSettings);
             if (condBodyTok) {
                 // Check for single assign
                 assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
@@ -3085,7 +3095,7 @@ void CheckStl::useStlAlgorithm()
                     const Token *loopVar2 = Token::findmatch(condBodyTok, "%varid%", condBodyTok->link(), loopVar->varId());
                     std::string algo;
                     if (loopVar2 ||
-                        (isIteratorOrIndexLoop && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
+                        (loopType == LoopType::ITERATOR && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
                         algo = "std::find_if";
                     else
                         algo = "std::any_of";
