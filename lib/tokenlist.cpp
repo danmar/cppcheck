@@ -112,9 +112,11 @@ void TokenList::determineCppC()
 int TokenList::appendFileIfNew(std::string fileName)
 {
     // Has this file been tokenized already?
-    for (int i = 0; i < mFiles.size(); ++i)
-        if (Path::sameFileName(mFiles[i], fileName))
-            return i;
+    auto it = std::find_if(mFiles.begin(), mFiles.end(), [&](const std::string& f) {
+        return f == fileName;
+    });
+    if (it != mFiles.end())
+        return static_cast<int>(std::distance(it, mFiles.end()));
 
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));

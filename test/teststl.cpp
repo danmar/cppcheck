@@ -5833,19 +5833,19 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("bool f(const std::vector<int>& v, const std::vector<int>& w, int n) {\n"
-            "    for (int i = 0; i < n; ++i)\n"
-            "        if (v[i] == w[i])\n"
-            "            return true; \n"
-            "    return false;\n"
-            "}\n");
+              "    for (int i = 0; i < n; ++i)\n"
+              "        if (v[i] == w[i])\n"
+              "            return true; \n"
+              "    return false;\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("bool f(int n) {\n"
-            "    for (int i = 0; i < n; ++i)\n"
-            "        if (g(i))\n"
-            "            return true; \n"
-            "    return false;\n"
-            "}\n");
+              "    for (int i = 0; i < n; ++i)\n"
+              "        if (g(i))\n"
+              "            return true; \n"
+              "    return false;\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5899,6 +5899,17 @@ private:
               "}\n",
               true);
         TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
+                           "",
+                           errout_str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int max = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        max = v[i] > max ? v[i] : max;\n"
+              "    return max;\n"
+              "}\n",
+              true);
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
                            "",
                            errout_str());
     }

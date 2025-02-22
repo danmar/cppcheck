@@ -945,11 +945,10 @@ void ProjectFileDialog::editSuppression(const QModelIndex & /*index*/)
 int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
 {
     const std::string s = shortText.toStdString();
-    for (int i = 0; i < mSuppressions.size(); ++i) {
-        if (mSuppressions[i].getText() == s)
-            return i;
-    }
-    return -1;
+    auto it = std::find_if(mSuppressions.begin(), mSuppressions.end(), [&](const SuppressionList::Suppression& sup) {
+        return sup.getText() == s;
+    });
+    return it == mSuppressions.end() ? -1 : static_cast<int>(std::distance(it, mSuppressions.end()));
 }
 
 void ProjectFileDialog::browseMisraFile()
