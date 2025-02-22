@@ -2598,7 +2598,9 @@ static const Token *singleStatement(const Token *start)
     return endStatement;
 }
 
-static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, const Settings& settings)
+enum class LoopType : std::uint8_t { OTHER, RANGE, ITERATOR, INDEX };
+
+static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, LoopType loopType, const Settings& settings)
 {
     const Token *endStatement = singleStatement(start);
     if (!endStatement)
@@ -2612,6 +2614,15 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
     hasBreak = Token::simpleMatch(endStatement->previous(), "break");
+
+    if (loopType == LoopType::INDEX) { // check for container access
+        int count = 0;
+        for (const Token* tok = assignTok->next(); tok != endStatement; tok = tok->next()) {
+            if (tok->valueType() && tok->valueType()->container && Token::simpleMatch(tok->astParent(), "["))
+                ++count;
+        }
+        return count == 1 ? assignTok : nullptr;
+    }
     return assignTok;
 }
 
@@ -2652,8 +2663,6 @@ static const Token *singleIncrementInScope(const Token *start, nonneg int varid,
     return varTok;
 }
 
-enum class LoopType : std::uint8_t { OTHER, RANGE, ITERATOR, INDEX };
-
 static const Token *singleConditionalInScope(const Token *start, nonneg int varid, LoopType loopType, const Settings& settings)
 {
     if (start->str() != "{")
@@ -2674,11 +2683,12 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
     if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings))
         return nullptr;
     if (loopType == LoopType::INDEX) { // check for container access
+        int count = 0;
         for (const Token* tok = start->tokAt(2); tok != start->linkAt(2); tok = tok->next()) {
             if (tok->valueType() && tok->valueType()->container && Token::simpleMatch(tok->astParent(), "["))
-                return bodyTok;
+                ++count;
         }
-        return nullptr;
+        return count == 1 ? bodyTok : nullptr;
     }
     return bodyTok;
 }
@@ -2966,7 +2976,7 @@ void CheckStl::useStlAlgorithm()
 
             // Check for single assignment
             bool useLoopVarInAssign{}, hasBreak{};
-            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
+            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, loopType, *mSettings);
             if (assignTok) {
                 if (!checkAssignee(assignTok->astOperand1()))
                     continue;
@@ -3034,7 +3044,7 @@ void CheckStl::useStlAlgorithm()
             const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), loopType, *mSettings);
             if (condBodyTok) {
                 // Check for single assign
-                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, loopType, *mSettings);
                 if (assignTok) {
                     if (!checkAssignee(assignTok->astOperand1()))
                         continue;

@@ -5446,6 +5446,14 @@ private:
               "    return s;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
+
+        check("int f(int n) {\n"
+              "    int s = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        s += g(i);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoContainerInsert() {
@@ -5822,6 +5830,22 @@ private:
               "        if (std::strlen(animal) > 4)\n"
               "            throw 1;\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("bool f(const std::vector<int>& v, const std::vector<int>& w, int n) {\n"
+            "    for (int i = 0; i < n; ++i)\n"
+            "        if (v[i] == w[i])\n"
+            "            return true; \n"
+            "    return false;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("bool f(int n) {\n"
+            "    for (int i = 0; i < n; ++i)\n"
+            "        if (g(i))\n"
+            "            return true; \n"
+            "    return false;\n"
+            "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
