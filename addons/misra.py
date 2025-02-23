@@ -45,7 +45,28 @@ STDINT_TYPES = ['%s%d_t' % (n, v) for n, v in itertools.product(
         ['int', 'uint', 'int_least', 'uint_least', 'int_fast', 'uint_fast'],
         [8, 16, 32, 64])]
 
+STDINT_H_DEFINES_MIN = ['%s%d_MIN' % (n, v) for n, v in itertools.product(
+        ['INT', 'INT_LEAST', 'INT_FAST',],
+        [8, 16, 32, 64])]
 
+STDINT_H_DEFINES_MAX = ['%s%d_MAX' % (n, v) for n, v in itertools.product(
+        ['INT', 'UINT','INT_LEAST','UINT_LEAST', 'INT_FAST', 'UINT_FAST',],
+        [8, 16, 32, 64])]
+
+STDINT_H_DEFINES_C = ['%s%d_C' % (n, v) for n, v in itertools.product(
+        ['INT', 'UINT'],
+        [8, 16, 32, 64])]
+
+
+INTTYPES_H_DEFINES = ['%s%d' % (n, v) for n, v in itertools.product(
+        ['PRId', 'PRIi', 'PRIo', 'PRIu', 'PRIx', 'PRIX', 'SCNd',
+         'SCNi', 'SCNo', 'SCNu', 'SCNx', 'PRIdLEAST', 'PRIiLEAST',
+         'PRIoLEAST', 'PRIuLEAST', 'PRIxLEAST', 'PRIXLEAST',
+         'SCNdLEAST', 'SCNiLEAST', 'SCNoLEAST', 'SCNuLEAST', 
+         'SCNxLEAST', 'PRIdFAST', 'PRIiFAST', 'PRIoFAST', 'PRIuFAST', 
+         'PRIxFAST', 'PRIXFAST', 'SCNdFAST', 'SCNiFAST', 'SCNoFAST', 
+         'SCNuFAST', 'SCNxFAST', ],
+        [8, 16, 32, 64])]
 typeBits = {
     'CHAR': None,
     'SHORT': None,
@@ -220,9 +241,13 @@ C99_STDLIB_IDENTIFIERS = {
     'float.h': C90_STDLIB_IDENTIFIERS['float.h'] + ['FLT_EVAL_METHOD'],
     # B.7 Format conversion of integer types
     'inttypes.h': [
+        'PRIdMAX', 'PRIiMAX', 'PRIoMAX', 'PRIuMAX', 'PRIxMAX', 'PRIXMAX',
+        'SCNdMAX', 'SCNiMAX', 'SCNoMAX', 'SCNuMAX', 'SCNxMAX', 'PRIdPTR', 
+        'PRIiPTR', 'PRIoPTR', 'PRIuPTR', 'PRIxPTR', 'PRIXPTR', 'SCNdPTR', 
+        'SCNiPTR', 'SCNoPTR', 'SCNuPTR', 'SCNxPTR', 
         'imaxdiv_t', 'imaxabs', 'imaxdiv', 'strtoimax',
         'strtoumax', 'wcstoimax', 'wcstoumax',
-    ],
+    ] + INTTYPES_H_DEFINES,
     # B.8 Alternative spellings
     'iso646.h': [
         'and', 'and_eq', 'bitand', 'bitor', 'compl', 'not', 'not_eq',
@@ -285,7 +310,7 @@ C99_STDLIB_IDENTIFIERS = {
         'UINTMAX_MAX', 'PTRDIFF_MIN', 'PTRDIFF_MAX', 'SIG_ATOMIC_MIN',
         'SIG_ATOMIC_MAX', 'SIZE_MAX', 'WCHAR_MIN', 'WCHAR_MAX', 'WINT_MIN',
         'WINT_MAX', 'INTN_C', 'UINTN_C', 'INTMAX_C', 'UINTMAX_C',
-    ] + STDINT_TYPES,
+    ] + STDINT_TYPES + STDINT_H_DEFINES_MIN + STDINT_H_DEFINES_MAX + STDINT_H_DEFINES_C,
     # B.18 Input/output
     'stdio.h': C90_STDLIB_IDENTIFIERS['stdio.h'] + [
         'mode', 'restrict', 'snprintf', 'vfscanf', 'vscanf',
@@ -3464,7 +3489,7 @@ class MisraChecker:
             end_token = token.next.link
             while tok != end_token:
                 if tok.isName and tok.function is None and tok.valueType is None and tok.next.str == "(" and \
-                        tok.next.valueType is None and not isKeyword(tok.str) and not isStdLibId(tok.str):
+                        tok.next.valueType is None and not isKeyword(tok.str) and not isStdLibId(tok.str,cfg.standards.c):
                     self.reportError(tok, 17, 3)
                     break
                 tok = tok.next
@@ -3517,7 +3542,7 @@ class MisraChecker:
                     continue
                 if tok.next.str == "(" or tok.str in ["EOF"]:
                     continue
-                if isKeyword(tok.str) or isStdLibId(tok.str):
+                if isKeyword(tok.str) or isStdLibId(tok.str,data.standards.c):
                     continue
                 if tok.astParent is None:
                     continue
