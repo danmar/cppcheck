@@ -544,6 +544,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
             mSettings.addonPython.assign(argv[i]+15);
 
+        else if (std::strcmp(argv[i],"--analyze-all-vs-configs") == 0)
+            mSettings.analyzeAllVsConfigs = true;
+
         // Check configuration
         else if (std::strcmp(argv[i], "--check-config") == 0)
             mSettings.checkConfiguration = true;
@@ -1018,6 +1021,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
         }
 
+        else if (std::strcmp(argv[i],"--no-analyze-all-vs-configs") == 0)
+            mSettings.analyzeAllVsConfigs = false;
+
         else if (std::strcmp(argv[i], "--no-check-headers") == 0)
             mSettings.checkHeaders = false;
 
@@ -1202,8 +1208,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
             }
             if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_VCXPROJ) {
-                if (!project.guiProject.analyzeAllVsConfigs)
-                    project.selectOneVsConfig(mSettings.platform.type);
                 mSettings.libraries.emplace_back("windows");
             }
             if (projectType == ImportProject::Type::MISSING) {
@@ -1605,8 +1609,20 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         return Result::Fail;
     }
 
+    // TODO: conflicts with analyzeAllVsConfigs
     if (!vsConfig.empty()) {
+        // TODO: bail out when this does nothing
         project.ignoreOtherConfigs(vsConfig);
+    }
+
+    if (!mSettings.analyzeAllVsConfigs) {
+        if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
+            mLogger.printError("--no-analyze-all-vs-configs has no effect - no Visual Studio project provided.");
+            return Result::Fail;
+        }
+
+        // TODO: bail out when this does nothing
+        project.selectOneVsConfig(mSettings.platform.type);
     }
 
     if (!mSettings.buildDir.empty() && !Path::isDirectory(mSettings.buildDir)) {

@@ -83,7 +83,6 @@ public:
 
     // Cppcheck GUI output
     struct {
-        bool analyzeAllVsConfigs{true};
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
         std::list<std::string> excludedPaths;
