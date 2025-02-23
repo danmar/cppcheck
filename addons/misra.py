@@ -190,7 +190,7 @@ C90_STDLIB_IDENTIFIERS = {
 
 
 # Identifiers described in Section 7 "Library" of C99 Standard
-# Based on ISO/IEC 9899:1999 (E) Annex B -- Library summary 
+# Based on ISO/IEC 9899:1999 (E) Annex B -- Library summary
 # (https://www.dii.uchile.cl/~daespino/files/Iso_C_1999_definition.pdf)
 C99_STDLIB_IDENTIFIERS = {
     # B.1 Diagnostics
@@ -360,7 +360,7 @@ C99_STDLIB_IDENTIFIERS = {
 }
 
 # Identifiers described in Section 7 "Library" of C11 Standard
-# Based on ISO/IEC 9899:201x N1570 (Draft 12.04.2011) Annex B -- Library summary 
+# Based on ISO/IEC 9899:201x N1570 (Draft 12.04.2011) Annex B -- Library summary
 # (https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf)
 C11_STDLIB_IDENTIFIERS = {
     # B.1 Diagnostics
