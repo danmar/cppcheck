@@ -4968,6 +4968,13 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(unsigned x) {\n" // #13522
+              "    unsigned u = x;\n"
+              "    int i = u - 0;\n"
+              "    if (i < 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueInfer() {
