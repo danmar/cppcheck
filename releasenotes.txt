@@ -1,9 +1,7 @@
-Release Notes for Cppcheck 2.17
+Release Notes for Cppcheck 2.18
 
 New checks:
-- staticFunction: detect functions that should have internal linkage since they
-  are not used outside of their translation unit (C code only).
-- Check null pointer return from memory/resource allocation functions (nullPointerOutOfMemory, nullPointerArithmeticOutOfMemory, nullPointerOutOfResources, ctunullpointerOutOfMemory, ctunullpointerOutOfResources).
+-
 
 Improved checking:
 -
@@ -12,15 +10,10 @@ GUI:
 -
 
 Changed interface:
--Added `reduced` check level. It can be activated with `--check-level=reduced`. You get faster analysis
-but some fewer results. The motivation is to be able to make analysis time "acceptable" for direct usage.
-
--Added `--report-type` option. Enables printing of guidelines and classifications for several coding
-standards in place of the regular error identifiers and severities.
+-
 
 Deprecations:
 -
 
 Other:
-- Removed deperecated support for builds via qmake.
 -
