@@ -3330,7 +3330,7 @@ class MisraChecker:
         for w in cfg.clang_warnings:
             if w['message'].endswith('[-Wimplicit-function-declaration]'):
                 self.reportError(cppcheckdata.Location(w), 17, 3)
-    
+
         # Additional check for implicit function calls in expressions
         for token in cfg.tokenlist:
             if token.isName and token.function is None and token.valueType is None:
