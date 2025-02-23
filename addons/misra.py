@@ -246,11 +246,12 @@ C99_STDLIB_IDENTIFIERS = {
         'acoshl', 'asinh', 'asinhf', 'asinhl', 'atanh', 'atanhf', 'atanhl',
         'cosh', 'coshf', 'coshl', 'sinh', 'sinhf', 'sinhl', 'tanh', 'tanhf',
         'tanhl', 'expf', 'expl', 'exp2', 'exp2f', 'exp2l', 'expm1', 'expm1f',
-        'expm1l', 'frexpf', 'frexpl', 'ilogb', 'ilogbf', 'ilogbl', 'float',
+        'expm1l', 'frexpf', 'frexpl', 'ilogb', 'ilogbf', 'ilogbl', 'ldexpf',
         'ldexpl', 'logf', 'logl', 'log10f', 'log10l', 'log1p', 'log1pf',
         'log1pl', 'log2', 'log2f', 'log2l', 'logb', 'logbf', 'logbl', 'modff',
         'modfl', 'scalbn', 'scalbnf', 'scalbnl', 'scalbln', 'scalblnf',
-        'scalblnl', 'hypotl', 'powf', 'powl', 'sqrtf', 'sqrtl', 'erf', 'erff',
+        'scalblnl','cbrt', 'cbrtf','cbrtl', 'fabs', 'fabsf', 'fabsl',
+        'hypotl', 'hypotf', 'powf', 'powl', 'sqrtf', 'sqrtl', 'erf', 'erff',
         'erfl', 'erfc', 'erfcf', 'erfcl', 'lgamma', 'lgammaf', 'lgammal',
         'tgamma', 'tgammaf', 'tgammal', 'ceilf', 'ceill', 'floorf', 'floorl',
         'nearbyint', 'nearbyintf', 'nearbyintl', 'rint', 'rintf', 'rintl',
@@ -261,7 +262,7 @@ C99_STDLIB_IDENTIFIERS = {
         'remquol', 'copysign', 'copysignf', 'copysignl', 'nan', 'nanf',
         'nanl', 'nextafter', 'nextafterf', 'nextafterl', 'nexttoward',
         'nexttowardf', 'nexttowardl', 'fdim', 'fdimf', 'fdiml', 'fmax',
-        'fmaxf', 'fmaxl', 'fmin', 'fminf', 'fminl', 'fmal', 'isgreater',
+        'fmaxf', 'fmaxl', 'fmin', 'fminf', 'fminl', 'fmaf','fmal', 'isgreater',
         'isgreaterequal', 'isless', 'islessequal', 'islessgreater',
         'isunordered',
     ],
@@ -288,7 +289,7 @@ C99_STDLIB_IDENTIFIERS = {
     # B.18 Input/output
     'stdio.h': C90_STDLIB_IDENTIFIERS['stdio.h'] + [
         'mode', 'restrict', 'snprintf', 'vfscanf', 'vscanf',
-        'vsnprintf', 'vsscanf',
+        'vsnprintf', 'vsscanf','ftell'
     ],
     # B.19 General utilities
     'stdlib.h': C90_STDLIB_IDENTIFIERS['stdlib.h'] + [
@@ -317,22 +318,147 @@ C99_STDLIB_IDENTIFIERS = {
         'vfwprintf', 'vfwscanf', 'vswprintf', 'vswscanf', 'vwprintf',
         'vwscanf', 'wprintf', 'wscanf', 'fgetwc', 'fgetws', 'fputwc', 'fputws',
         'fwide', 'getwc', 'getwchar', 'putwc', 'putwchar', 'ungetwc', 'wcstod',
-        'wcstof', 'double', 'int', 'long', 'long', 'long', 'wcscpy', 'wcsncpy',
-        'wmemcpy', 'wmemmove', 'wcscat', 'wcsncat', 'wcscmp', 'wcscoll',
+        'wcstof', 'wcstold', 'wcstol', 'wcstoll', 'wcstoul', 'wcstoull', 'wcscpy', 
+        'wcsncpy', 'wmemcpy', 'wmemmove', 'wcscat', 'wcsncat', 'wcscmp', 'wcscoll',
         'wcsncmp', 'wcsxfrm', 'wmemcmp', 'wcschr', 'wcscspn', 'wcspbrk',
         'wcsrchr', 'wcsspn', 'wcsstr', 'wcstok', 'wmemchr', 'wcslen',
         'wmemset', 'wcsftime', 'btowc', 'wctob', 'mbsinit', 'mbrlen',
         'mbrtowc', 'wcrtomb', 'mbsrtowcs', 'wcsrtombs',
     ],
+    # B.24 Wide character classification and mapping utilities
+    'wctype.h': ['wint_t', 'wctrans_t', 'wctype_t', 'WEOF',
+        'iswalnum', 'iswalpha', 'iswblank', 'iswcntrl', 'iswdigit',
+        'iswgraph', 'iswlower', 'iswprint', 'iswpunct', 'iswspace', 'iswupper',
+        'iswxdigit', 'iswctype', 'wctype', 'towlower', 'towupper', 'towctrans',
+        'wctrans'],
 }
 
+# Identifiers described in Section 7 "Library" of C11 Standard
+# Based on ISO/IEC 9899:201x N1570 Annex B -- Library summary
+C11_STDLIB_IDENTIFIERS = {
+    # B.1 Diagnostics
+    'assert.h': C99_STDLIB_IDENTIFIERS['assert.h']+ ['static_assert'],
+    # B.2 Complex
+    'complex.h': C99_STDLIB_IDENTIFIERS['complex.h']+['__STDC_NO_COMPLEX__','CMPLX','CMPLXF','CMPLXL'],
+    # B.3 Character handling
+    'ctype.h': C99_STDLIB_IDENTIFIERS['ctype.h'],
+    # B.4 Errors
+    'errno.h': C99_STDLIB_IDENTIFIERS['errno.h']+['__STDC_WANT_LIB_EXT1__', 'errno_t'],
+    # B.5 Floating-point environment
+    'fenv.h': C99_STDLIB_IDENTIFIERS['fenv.h'],
+    # B.6 Characteristics of floating types
+    'float.h': C99_STDLIB_IDENTIFIERS['float.h']+[
+        'FLT_HAS_SUBNORM','DBL_HAS_SUBNORM','LDBL_HAS_SUBNORM',
+        'FLT_DECIMAL_DIG','DBL_DECIMAL_DIG','LDBL_DECIMAL_DIG',
+        'FLT_TRUE_MIN','DBL_TRUE_MIN','LDBL_TRUE_MIN'],
+    # B.7 Format conversion of integer types
+    'inttypes.h': C99_STDLIB_IDENTIFIERS["inttypes.h"],
+    # B.8 Alternative spellings
+    'iso646.h': C99_STDLIB_IDENTIFIERS["iso646.h"],
+    # B.9 Size of integer types
+    'limits.h': C99_STDLIB_IDENTIFIERS['limits.h'],
+    # B.10 Localization
+    'locale.h': C99_STDLIB_IDENTIFIERS['locale.h'],
+    # B.11 Mathematics
+    'math.h': C99_STDLIB_IDENTIFIERS['math.h'],
+    # B.12 Nonlocal jumps
+    'setjmp.h': C99_STDLIB_IDENTIFIERS['setjmp.h'],
+    # B.13 Signal handling
+    'signal.h': C99_STDLIB_IDENTIFIERS['signal.h'],
+    # B.14 Alignment
+    'stdalign.h': ['alignas','__alignas_is_defined'],
+    # B.15 Variable arguments
+    'stdarg.h': C99_STDLIB_IDENTIFIERS['stdarg.h'],
+    # B.16 Atomics
+    'stdatomic.h': ['ATOMIC_BOOL_LOCK_FREE', 'ATOMIC_CHAR_LOCK_FREE',
+        'ATOMIC_CHAR16_T_LOCK_FREE', 'ATOMIC_CHAR32_T_LOCK_FREE', 'ATOMIC_WCHAR_T_LOCK_FREE', 
+        'ATOMIC_SHORT_LOCK_FREE', 'ATOMIC_INT_LOCK_FREE', 'ATOMIC_LONG_LOCK_FREE', 
+        'ATOMIC_LLONG_LOCK_FREE', 'ATOMIC_POINTER_LOCK_FREE', 'ATOMIC_FLAG_INIT', 
+        'memory_order', 'atomic_flag', 'memory_order_relaxed', 'memory_order_consume', 
+        'memory_order_acquire', 'memory_order_release', 'memory_order_acq_rel', 'memory_order_seq_cst',
+        'atomic_bool', 'atomic_char', 'atomic_schar', 'atomic_uchar', 'atomic_short', 'atomic_ushort', 
+        'atomic_int', 'atomic_uint', 'atomic_long', 'atomic_ulong', 'atomic_llong', 'atomic_ullong', 
+        'atomic_char16_t', 'atomic_char32_t', 'atomic_wchar_t', 'atomic_int_least8_t',
+        'atomic_uint_least8_t', 'atomic_int_least16_t', 'atomic_uint_least16_t', 
+        'atomic_int_least32_t', 'atomic_uint_least32_t', 'atomic_int_least64_t', 
+        'atomic_uint_least64_t', 'atomic_int_fast8_t', 'atomic_uint_fast8_t', 
+        'atomic_int_fast16_t', 'atomic_uint_fast16_t', 'atomic_int_fast32_t', 
+        'atomic_uint_fast32_t', 'atomic_int_fast64_t', 'atomic_uint_fast64_t', 
+        'atomic_intptr_t', 'atomic_uintptr_t', 'atomic_size_t', 'atomic_ptrdiff_t', 
+        'atomic_intmax_t', 'atomic_uintmax_t', 'ATOMIC_VAR_INIT', 'type kill_dependency',
+        'atomic_thread_fence', 'atomic_signal_fence', 'atomic_is_lock_free', 
+        'atomic_store', 'atomic_store_explicit', 'atomic_load', 'atomic_load_explicit',
+        'atomic_exchange', 'atomic_exchange_explicit', 'atomic_compare_exchange_strong',
+        'atomic_compare_exchange_strong_explicit', 'atomic_compare_exchange_weak',
+        'atomic_compare_exchange_weak_explicit', 'atomic_fetch_key', 'atomic_fetch_key_explicit', 
+        'atomic_flag_test_and_set', 'atomic_flag_test_and_set_explicit',
+        'atomic_flag_clear', 'atomic_flag_clear_explicit', ],
+    # B.17 Boolean type and values
+    'stdbool.h': C99_STDLIB_IDENTIFIERS['stdbool.h'],
+    # B.18 Common definitions
+    'stddef.h': C99_STDLIB_IDENTIFIERS['stddef.h'] +
+        ['max_align_t','__STDC_WANT_LIB_EXT1__', 'rsize_t'],
+    # B.19 Integer types
+    'stdint.h': C99_STDLIB_IDENTIFIERS['stdint.h']+
+        ['__STDC_WANT_LIB_EXT1__', 'RSIZE_MAX'],
+    # B.20 Input/output
+    'stdio.h': C99_STDLIB_IDENTIFIERS['stdio.h'] + 
+        ['__STDC_WANT_LIB_EXT1__', 'L_tmpnam_s', 'TMP_MAX_S', 'errno_t', 'rsize_t',
+        'tmpfile_s', 'tmpnam_s', 'fopen_s', 'freopen_s', 'fprintf_s', 'fscanf_s',
+        'printf_s','scanf_s','snprintf_s','sprintf_s','sscanf_s','vfprintf_s',
+        'vfscanf_s', 'vsprintf_s', 'vsscanf_s', 'gets_s'
+        ],
+    # B.21 General utilities
+    'stdlib.h': C99_STDLIB_IDENTIFIERS['stdlib.h'] + 
+    ['constraint_handler_t', 'set_constraint_handler_s', 'abort_handler_s',
+     'ignore_handler_s', 'getenv_s', 'bsearch_s', 'qsort_s', 'wctomb_s',
+     'mbstowcs_s', 'wcstombs_s'],
+    # B.22 Noretrun
+    'stdnoreturn.h': ['noreturn'],
+    # B.23 String handling
+    'string.h': C99_STDLIB_IDENTIFIERS['string.h'] + 
+    ['memcpy_s', 'memmoce_s', 'strcpy_s', 'strncpy_s','strcat_s',
+     'strtok_s', 'memset_s', 'strerror_s', 'strerrorlen_s', 'strnlen_s'],
+    # B.24 Type-generic math
+    'tgmath.h': C99_STDLIB_IDENTIFIERS['tgmath.h'],
+    # B.25 Threads
+    'threads.h': ['thread_local', 'ONCE_FLAG_INIT', 'TSS_DTOR_ITERATIONS',
+        'cnd_t', 'thrd_t', 'tss_t', 'mtx_t', 'tss_dtor_t', 'thrd_start_t', 
+        'once_flag', 'mtx_plain', 'mtx_recursive', 'mtx_timed', 'thrd_timedout',
+        'thrd_success', 'thrd_busy', 'thrd_error', 'thrd_nomem', 'call_once',
+        'cnd_broadcast', 'cnd_destroy','cnd_init', 'cnd_signal', 'cnd_timedwait',
+        'cnd_wait','mtx_destroy', 'mtx_init', 'mtx_lock', 'mtx_timedlock',
+        'mtx_trylock', 'mtx_unlock', 'thrd_create', 'thrd_current',
+        'thrd_detach', 'thrd_equal', 'thrd_exit', 'thrd_join', 'thrd_sleep',
+        'thrd_yield', 'tss_create', 'tss_delete', 'tss_get', 'tss_set' ],
+    # B.26 Date and time
+    'time.h': C99_STDLIB_IDENTIFIERS['time.h'] + [
+        'asctime_s', 'ctime_s', 'gmtime_s', 'localtime_s'
+        ],
+    # B.27 Unicode utilities
+    'uchar.h': ['mbstate_t', 'size_t', 'char16_t', 'char32_t',
+        'mbrtoc16', 'c16rtomb', 'mbrtoc32', 'c32rtomb'
+        ],
+    # B.28 Extended multibyte/wide character utilities
+    'wchar.h': C99_STDLIB_IDENTIFIERS["wchar.h"]+[
+        'fwprintf_s', 'fwscanf_s', 'snwprintf_s', 'swprintf_s', 'swscanf_s', 
+        'vfwprintf_s', 'vfwscanf_s', 'vsnwprintf_s', 'vswprintf_s', 'vswscanf_s', 
+        'vwprintf_s', 'vwscanf_s', 'wprintf_s', 'wscanf_s', 'wcscpy_s', 'wcsncpy_s', 
+        'wmemcpy_s', 'wmemmove_s', 'wcscat_s', 'wcsncat_s', 'wcstok_s', 'wcsnlen_s', 
+        'wcrtomb_s', 'mbsrtowcs_s', 'wcsrtombs_s', 
+    ],
+    # B.29 Wide character classification and mapping utilities
+    'wctype.h': C99_STDLIB_IDENTIFIERS['wctype.h'],
+}
 
 def isStdLibId(id_, standard='c99'):
     id_lists = []
     if standard == 'c89':
         id_lists = C90_STDLIB_IDENTIFIERS.values()
-    elif standard in ('c99', 'c11'):
+    elif standard in ('c99'):
         id_lists = C99_STDLIB_IDENTIFIERS.values()
+    elif standard == 'c11':
+        id_lists = C11_STDLIB_IDENTIFIERS.values()
     for l in id_lists:
         if id_ in l:
             return True
