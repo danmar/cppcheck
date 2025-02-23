@@ -1293,7 +1293,7 @@ static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
     auto it = std::find_if(list.cbegin(), list.cend(), [&](const ErrorItem& e) {
         return ErrorItem::sameCID(item, e);
     });
-    return it == list.cend() ? -1 : static_cast<int>(std::distance(list.begin(), it));
+    return it == list.cend() ? -1 : static_cast<int>(std::distance(list.cbegin(), it));
 }
 
 void ResultsTree::updateFromOldReport(const QString &filename)

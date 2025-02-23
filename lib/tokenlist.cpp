@@ -116,7 +116,7 @@ int TokenList::appendFileIfNew(std::string fileName)
     auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
         return Path::sameFileName(f, fileName);
     });
-    if (it != mFiles.end())
+    if (it != mFiles.cend())
         return static_cast<int>(std::distance(mFiles.cbegin(), it));
 
     // The "mFiles" vector remembers what files have been tokenized..
