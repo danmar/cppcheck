@@ -1290,10 +1290,10 @@ void ResultsTree::saveErrors(Report *report, const QStandardItem *fileItem) cons
 
 static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
 {
-    auto it = std::find_if(list.begin(), list.end(), [&](const ErrorItem& e) {
+    auto it = std::find_if(list.cbegin(), list.cend(), [&](const ErrorItem& e) {
         return ErrorItem::sameCID(item, e);
     });
-    return it == list.end() ? -1 : static_cast<int>(std::distance(list.begin(), it));
+    return it == list.cend() ? -1 : static_cast<int>(std::distance(list.begin(), it));
 }
 
 void ResultsTree::updateFromOldReport(const QString &filename)

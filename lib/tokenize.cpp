@@ -7460,7 +7460,7 @@ void Tokenizer::simplifyStaticConst()
             Token* leftTok = tok;
             bool behindOther = false;
             for (; leftTok; leftTok = leftTok->previous()) {
-                behindOther = std::any_of(qualifiers.begin(), qualifiers.begin() + i + 1, [&](const std::string& q) {
+                behindOther = std::any_of(qualifiers.cbegin(), qualifiers.cbegin() + i + 1, [&](const std::string& q) {
                     return q == leftTok->str();
                 });
                 if (behindOther)
