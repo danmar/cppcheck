@@ -825,8 +825,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
 
                 if (!path.empty()) {
-                    path = Path::removeQuotationMarks(std::move(path));
-                    path = Path::simplifyPath(std::move(path));
                     mIgnoredPaths.emplace_back(std::move(path));
                 }
             }
@@ -1589,6 +1587,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     for (auto& path : mIgnoredPaths)
     {
+        path = Path::removeQuotationMarks(std::move(path));
+        path = Path::simplifyPath(std::move(path));
+
         bool isdir = false;
         if (!Path::exists(path, &isdir) && mSettings.debugignore)
             std::cout << "path to ignore does not exist: " << path << std::endl;
