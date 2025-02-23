@@ -3498,7 +3498,7 @@ class MisraChecker:
                     if token.next.next.str == "*" and \
                         token.next.next.next.isName and token.next.next.next.valueType is not None and \
                         token.next.next.next.valueType.pointer > 0 :
-                        # this is a function pointer definition the tokens look like this int16_t ( * misra_8_2_p_a ) () 
+                        # this is a function pointer definition the tokens look like this int16_t ( * misra_8_2_p_a ) ()
                         # and the int16_t causes the detection as the '(' follows
                         continue
                     if not isKeyword(token.str) and not isStdLibId(token.str,cfg.standards.c):
