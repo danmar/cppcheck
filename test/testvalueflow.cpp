@@ -7159,7 +7159,7 @@ private:
                "}";
         ASSERT(isKnownContainerSizeValue(tokenValues(code, "v ["), 3).empty());
 
-        code = "auto f() {\n" // #13450
+        code = "auto f() {\n" // #13654
                "    std::array<uint8_t, 6 * sizeof(uint16_t)> a{};\n"
                "    return a[0];\n"
                "}";
