@@ -79,6 +79,7 @@ CheckOptions:
         target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
     endif()
     #target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_QPAIR)  # TODO: cannot be completely disabled because QBrush uses QPair
+    target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_FOREACH)
 
     if (QHELPGENERATOR)
         # TODO: generate in CMAKE_BINARY_DIR folder

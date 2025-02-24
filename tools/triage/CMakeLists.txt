@@ -38,4 +38,5 @@ CheckOptions:
         target_compile_options_safe(triage -Wno-redundant-parens)
     endif()
     #target_compile_definitions(triage PRIVATE -DQT_NO_QPAIR)  # TODO: cannot be completely disabled because QBrush uses QPair
+    target_compile_definitions(triage PRIVATE -DQT_NO_FOREACH)
 endif()
