@@ -2683,12 +2683,20 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
     if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings))
         return nullptr;
     if (loopType == LoopType::INDEX) { // check for container access
-        int count = 0;
+        nonneg int containerId{};
         for (const Token* tok = start->tokAt(2); tok != start->linkAt(2); tok = tok->next()) {
-            if (tok->valueType() && tok->valueType()->container && Token::simpleMatch(tok->astParent(), "["))
-                ++count;
+            if (tok->varId() == varid) {
+                if (!Token::simpleMatch(tok->astParent(), "["))
+                    return nullptr;
+                const Token* contTok = tok->astParent()->astOperand1();
+                if (!contTok->valueType() || !contTok->valueType()->container || contTok->varId() == 0)
+                    return nullptr;
+                if (containerId > 0 && containerId != contTok->varId()) // allow only one container
+                    return nullptr;
+                containerId = contTok->varId();
+            }
         }
-        return count == 1 ? bodyTok : nullptr;
+        return containerId > 0 ? bodyTok : nullptr;
     }
     return bodyTok;
 }

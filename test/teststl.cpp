@@ -5848,6 +5848,19 @@ private:
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("bool g(int);\n"
+              "bool f(const std::vector<int>&v, int n) {\n"
+              "    bool b{};\n"
+              "    for (int i = 0; i < n; ++i) {\n"
+              "        if (v[i] > 0 && g(i)) {\n"
+              "            b = true;\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoMinMax() {
