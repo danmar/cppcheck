@@ -2616,12 +2616,20 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
     hasBreak = Token::simpleMatch(endStatement->previous(), "break");
 
     if (loopType == LoopType::INDEX) { // check for container access
-        int count = 0;
+        nonneg int containerId{};
         for (const Token* tok = assignTok->next(); tok != endStatement; tok = tok->next()) {
-            if (tok->valueType() && tok->valueType()->container && Token::simpleMatch(tok->astParent(), "["))
-                ++count;
+            if (tok->varId() == varid) {
+                if (!Token::simpleMatch(tok->astParent(), "["))
+                    return nullptr;
+                const Token* contTok = tok->astParent()->astOperand1();
+                if (!contTok->valueType() || !contTok->valueType()->container || contTok->varId() == 0)
+                    return nullptr;
+                if (containerId > 0 && containerId != contTok->varId()) // allow only one container
+                    return nullptr;
+                containerId = contTok->varId();
+            }
         }
-        return count == 1 ? assignTok : nullptr;
+        return containerId > 0 ? assignTok : nullptr;
     }
     return assignTok;
 }

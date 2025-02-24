@@ -2609,7 +2609,7 @@ private:
               "        sum += values[j-1];\n"
               "    return sum;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct B { virtual int g() { return 0; } };\n" // #11831
               "struct C {\n"
@@ -5455,6 +5455,16 @@ private:
               "    return s;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int g(int);\n"
+              "int f(const std::vector<int>&v, int n) {\n"
+              "    int s = 0;\n"
+              "    for (int i = 0; i < n; ++i) {\n"
+              "        s += g(i) + v[i];\n"
+              "    }\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoContainerInsert() {
@@ -5924,7 +5934,7 @@ private:
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
-                           "",
+                           "[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n",
                            errout_str());
     }
 

@@ -912,7 +912,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         });        
         if (it == children.cbegin() + 2)
             throw InternalError(tokenList.back(), "Failed to import CXXForRangeStmt. Range?");
-        AstNodePtr range = children[i]->getChild(0)->getChild(0);
+        AstNodePtr range = (*it)->getChild(0)->getChild(0);
 
         Token *expr2 = range->createTokens(tokenList);
         Token *par2 = addtoken(tokenList, ")");
