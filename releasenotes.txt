@@ -16,4 +16,5 @@ Deprecations:
 -
 
 Other:
+- Updated Qt to 6.8.2 (official Windows release only).
 -
