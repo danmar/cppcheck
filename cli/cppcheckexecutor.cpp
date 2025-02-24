@@ -532,6 +532,15 @@ void StdLogger::writeCheckersReport(const Suppressions& supprs)
 
     if (xmlReport) {
         reportErr("    </errors>\n");
+        if (mSettings.safety)
+            reportErr("    <safety/>\n");
+        if (mSettings.inlineSuppressions)
+            reportErr("    <inline-suppr/>\n");
+        if (!suppressions.empty()) {
+            std::ostringstream suppressionsXml;
+            supprs.nomsg.dump(suppressionsXml);
+            reportErr(suppressionsXml.str());
+        }
         reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
 }
