@@ -1168,8 +1168,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
-                // Need to call this even if the hash will skip this configuration
-                mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                if (mSettings.inlineSuppressions) {
+                    // Need to call this even if the hash will skip this configuration
+                    mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                }
 
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
@@ -1258,10 +1260,14 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         mErrorLogger.reportErr(errmsg);
     }
 
-    // In jointSuppressionReport mode, unmatched suppressions are
-    // collected after all files are processed
-    if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
-        SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+    // TODO: this is done too early causing the whole program analysis suppressions to be reported as unmatched
+    if (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration) {
+        // In jointSuppressionReport mode, unmatched suppressions are
+        // collected after all files are processed
+        if (!mSettings.useSingleJob()) {
+            // TODO: check result?
+            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+        }
     }
 
     if (analyzerInformation) {

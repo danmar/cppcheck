@@ -412,6 +412,12 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
                 suppressions.getUnmatchedLocalSuppressions(i->file, unusedFunctionCheckEnabled), errorLogger);
         }
     }
+    if (settings.inlineSuppressions) {
+        // report unmatched unusedFunction suppressions
+        err |= SuppressionList::reportUnmatchedSuppressions(
+            suppressions.getUnmatchedInlineSuppressions(), errorLogger);
+    }
+
     err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
     return err;
 }

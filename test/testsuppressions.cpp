@@ -880,7 +880,7 @@ private:
                        "#define DIV(A,B) A/B\n"
                        "a = DIV(10,1);\n",
                        "");
-        ASSERT_EQUALS("", errout_str()); // <- no unmatched suppression reported for macro suppression
+        ASSERT_EQUALS("[test.cpp:2]: (information) Unmatched suppression: abc\n", errout_str());
     }
 
     void suppressionsSettingsFiles() {

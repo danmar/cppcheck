@@ -78,7 +78,7 @@ ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const 
 namespace {
     class PipeWriter : public ErrorLogger {
     public:
-        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
+        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2',REPORT_SUPPR_INLINE='3',CHILD_END='5'};
 
         explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
@@ -90,11 +90,32 @@ namespace {
             writeToPipe(REPORT_ERROR, msg.serialize());
         }
 
+        void writeSuppr(const SuppressionList &supprs) const {
+            for (const auto& suppr : supprs.getSuppressions())
+            {
+                if (!suppr.isInline)
+                    continue;
+
+                writeToPipe(REPORT_SUPPR_INLINE, suppressionToString(suppr));
+            }
+            // TODO: update suppression states?
+        }
+
         void writeEnd(const std::string& str) const {
             writeToPipe(CHILD_END, str);
         }
 
     private:
+        static std::string suppressionToString(const SuppressionList::Suppression &suppr)
+        {
+            std::string suppr_str = suppr.toString();
+            suppr_str += ";";
+            suppr_str += suppr.checked ? "1" : "0";
+            suppr_str += ";";
+            suppr_str += suppr.matched ? "1" : "0";
+            return suppr_str;
+        }
+
         // TODO: how to log file name in error?
         void writeToPipeInternal(PipeSignal type, const void* data, std::size_t to_write) const
         {
@@ -124,7 +145,7 @@ namespace {
                 writeToPipeInternal(type, &len, l_size);
             }
 
-            if (len > 0)
+            if (len > 0) // TODO: unexpected - write a warning?
                 writeToPipeInternal(type, data.c_str(), len);
         }
 
@@ -155,7 +176,10 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         std::exit(EXIT_FAILURE);
     }
 
-    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::CHILD_END) {
+    if (type != PipeWriter::REPORT_OUT &&
+        type != PipeWriter::REPORT_ERROR &&
+        type != PipeWriter::REPORT_SUPPR_INLINE &&
+        type != PipeWriter::CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") invalid type " << int(type) << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -174,7 +198,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     }
 
     std::string buf(len, '\0');
-    if (len > 0) {
+    if (len > 0) { // TODO: unexpected - write a warning?
         char *data_start = &buf[0];
         bytes_to_read = len;
         do {
@@ -206,6 +230,29 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
         if (hasToLog(msg))
             mErrorLogger.reportErr(msg);
+    } else if (type == PipeWriter::REPORT_SUPPR_INLINE) {
+        if (!buf.empty()) {
+            // TODO: avoid string splitting
+            auto parts = splitString(buf, ';');
+            if (parts.size() != 3)
+            {
+                // TODO: make this non-fatal
+                std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - insufficient data" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+            auto suppr = SuppressionList::parseLine(parts[0]);
+            suppr.isInline = true;
+            suppr.checked = parts[1] == "1";
+            suppr.matched = parts[2] == "1";
+            const std::string err = mSuppressions.nomsg.addSuppression(suppr);
+            if (!err.empty()) {
+                // TODO: only update state if it doesn't exist - otherwise propagate error
+                mSuppressions.nomsg.updateSuppressionState(suppr); // TODO: check result
+                // TODO: make this non-fatal
+                //std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - " << err << std::endl;
+                //std::exit(EXIT_FAILURE);
+            }
+        }
     } else if (type == PipeWriter::CHILD_END) {
         result += std::stoi(buf);
         res = false;
@@ -296,6 +343,8 @@ unsigned int ProcessExecutor::check()
                     resultOfCheck = fileChecker.check(*iFile);
                     // TODO: call analyseClangTidy()?
                 }
+
+                pipewriter.writeSuppr(mSuppressions.nomsg);
 
                 pipewriter.writeEnd(std::to_string(resultOfCheck));
                 std::exit(EXIT_SUCCESS);

@@ -23,6 +23,7 @@
 #include "errorlogger.h"
 #include "filesettings.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "timer.h"
 
 #include <cassert>
@@ -124,6 +125,23 @@ public:
             // Read file from a file
             result = fileChecker.check(*file);
             // TODO: call analyseClangTidy()?
+        }
+        for (const auto& suppr : mSuppressions.nomsg.getSuppressions()) {
+            // need to transfer all inline suppressions because these are used later on
+            if (suppr.isInline) {
+                const std::string err = mSuppressions.nomsg.addSuppression(suppr);
+                if (!err.empty()) {
+                    // TODO: only update state if it doesn't exist - otherwise propagate error
+                    mSuppressions.nomsg.updateSuppressionState(suppr); // TODO: check result
+                }
+                continue;
+            }
+
+            // propagate state of global suppressions
+            if (!suppr.isLocal()) {
+                mSuppressions.nomsg.updateSuppressionState(suppr); // TODO: check result
+                continue;
+            }
         }
         return result;
     }
