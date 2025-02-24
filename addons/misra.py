@@ -3203,8 +3203,8 @@ class MisraChecker:
                         prev = prev.previous
                 if (prev is None) or (prev.str not in ':;{}'):
                     state = STATE_NONE
-            elif token.str == 'case' or token.str == 'default':
-                if state != STATE_OK and state != STATE_NONE:
+            elif token.str == 'case' or (token.str == 'default' and (tok.previous and tok.previous != '=')):
+                if state != STATE_OK:
                     self.reportError(token, 16, 3)
                 state = STATE_OK
 
@@ -3231,7 +3231,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if token.str != 'default':
                 continue
-            if token.previous and (token.previous.str == '{' or token.previous.str == '='):
+            if token.previous and (token.previous.str == '{'):
                 continue
             tok2 = token
             while tok2:
