@@ -56,6 +56,7 @@
 #include <algorithm>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_set>
@@ -542,8 +543,8 @@ void MainWindow::saveSettings() const
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
     Settings checkSettings;
-    Suppressions supprs;
-    if (!getCppcheckSettings(checkSettings, supprs))
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
         return;
 
     clearResults();
@@ -613,8 +614,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         return;
 
     Settings checkSettings;
-    Suppressions supprs;
-    if (!getCppcheckSettings(checkSettings, supprs))
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
         return;
 
     clearResults();
@@ -1348,8 +1349,8 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     }
 
     Settings checkSettings;
-    Suppressions supprs;
-    if (!getCppcheckSettings(checkSettings, supprs))
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
         return;
 
     // Clear details, statistics and progress
@@ -1383,8 +1384,8 @@ void MainWindow::reAnalyze(bool all)
         return;
 
     Settings checkSettings;
-    Suppressions supprs;
-    if (!getCppcheckSettings(checkSettings, supprs))
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
         return;
 
     // Clear details, statistics and progress

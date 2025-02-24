@@ -37,6 +37,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <QByteArray>
@@ -110,11 +111,11 @@ CheckThread::CheckThread(ThreadResult &result) :
     mResult(result)
 {}
 
-void CheckThread::setSettings(const Settings &settings, Suppressions& supprs)
+void CheckThread::setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs)
 {
     mFiles.clear();
     mSettings = settings; // this is a copy
-    mSuppressions = &supprs;
+    mSuppressions = std::move(supprs);
 }
 
 void CheckThread::analyseWholeProgram(const QStringList &files, const std::string& ctuInfo)

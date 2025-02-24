@@ -25,6 +25,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -55,7 +56,7 @@ public:
      * @param settings settings for cppcheck
      * @param supprs suppressions for cppcheck
      */
-    void setSettings(const Settings &settings, Suppressions& supprs);
+    void setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs);
 
     /**
      * @brief Run whole program analysis
@@ -132,7 +133,7 @@ protected:
     ThreadResult &mResult;
 
     Settings mSettings;
-    Suppressions* mSuppressions{};
+    std::shared_ptr<Suppressions> mSuppressions;
 
 private:
     void runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName);
