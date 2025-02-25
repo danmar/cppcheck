@@ -37,7 +37,6 @@
 
 #include "xml.h"
 
-static const char ID_UNUSEDFUNCTION[] = "unusedFunction";
 static const char ID_CHECKERSREPORT[] = "checkersReport";
 
 SuppressionList::ErrorMessage SuppressionList::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg, const std::set<std::string> &macroNames)
@@ -312,13 +311,10 @@ bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression&
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
-        // Update state of existing global suppression
-        if (!suppression.isLocal()) {
-            if (suppression.checked)
-                foundSuppression->checked = true;
-            if (suppression.matched)
-                foundSuppression->matched = true;
-        }
+        if (suppression.checked)
+            foundSuppression->checked = true;
+        if (suppression.matched)
+            foundSuppression->matched = true;
         return true;
     }
 
@@ -555,7 +551,7 @@ void SuppressionList::dump(std::ostream & out, const std::string& filePath) cons
     out << "  </suppressions>" << std::endl;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool includeUnusedFunction) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file) const
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
 
@@ -573,8 +569,6 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
-        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
-            continue;
         if (!s.isLocal() || s.fileName != file.spath())
             continue;
         result.push_back(s);
@@ -582,7 +576,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
     return result;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool includeUnusedFunction) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions() const
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
 
@@ -596,8 +590,6 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
             continue;
         if (s.hash > 0)
             continue;
-        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
-            continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
         if (s.isLocal())
@@ -607,7 +599,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     return result;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions(const bool includeUnusedFunction) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions() const
 {
     std::list<SuppressionList::Suppression> result;
     for (const SuppressionList::Suppression &s : SuppressionList::mSuppressions) {
@@ -619,8 +611,6 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppr
         if (s.matched)
             continue;
         if (s.hash > 0)
-            continue;
-        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         result.push_back(s);
     }
@@ -658,39 +648,6 @@ void SuppressionList::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &
             }
         }
     }
-}
-
-bool SuppressionList::reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger)
-{
-    bool err = false;
-    // Report unmatched suppressions
-    for (const SuppressionList::Suppression &s : unmatched) {
-        // don't report "unmatchedSuppression" as unmatched
-        if (s.errorId == "unmatchedSuppression")
-            continue;
-
-        // check if this unmatched suppression is suppressed
-        bool suppressed = false;
-        for (const SuppressionList::Suppression &s2 : unmatched) {
-            if (s2.errorId == "unmatchedSuppression") {
-                if ((s2.fileName.empty() || s2.fileName == "*" || s2.fileName == s.fileName) &&
-                    (s2.lineNumber == SuppressionList::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
-                    suppressed = true;
-                    break;
-                }
-            }
-        }
-
-        if (suppressed)
-            continue;
-
-        std::list<::ErrorMessage::FileLocation> callStack;
-        if (!s.fileName.empty())
-            callStack.emplace_back(s.fileName, s.lineNumber, 0);
-        errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
-        err = true;
-    }
-    return err;
 }
 
 std::string SuppressionList::Suppression::toString() const

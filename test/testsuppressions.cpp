@@ -287,7 +287,7 @@ private:
         SingleExecutor executor(cppCheck, filelist, fileSettings, settings, supprs, *this);
         unsigned int exitCode = executor.check();
 
-        const bool err = CppCheckExecutor::reportSuppressions(settings, supprs.nomsg, false, filelist, fileSettings, *this);
+        const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
         if (err && exitCode == 0)
             exitCode = 1;
 
@@ -335,7 +335,7 @@ private:
         ThreadExecutor executor(filelist, fileSettings, settings, supprs, *this, CppCheckExecutor::executeCommand);
         unsigned int exitCode = executor.check();
 
-        const bool err = CppCheckExecutor::reportSuppressions(settings, supprs.nomsg, false, filelist, fileSettings, *this);
+        const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
         if (err && exitCode == 0)
             exitCode = 1;
 
@@ -384,7 +384,7 @@ private:
         ProcessExecutor executor(filelist, fileSettings, settings, supprs, *this, CppCheckExecutor::executeCommand);
         unsigned int exitCode = executor.check();
 
-        const bool err = CppCheckExecutor::reportSuppressions(settings, supprs.nomsg, false, filelist, fileSettings, *this);
+        const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
         if (err && exitCode == 0)
             exitCode = 1;
 
@@ -392,6 +392,7 @@ private:
     }
 #endif
 
+    // TODO: check all results
     void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate errors are present
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
@@ -1267,20 +1268,16 @@ private:
         SuppressionList::Suppression suppression("unusedFunction", "test.c", 3);
         suppression.checked = true; // have to do this because fixes for #5704
         ASSERT_EQUALS("", suppressions.addSuppression(std::move(suppression)));
-        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), false).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0)).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions().empty());
     }
 
     void globalsuppress_unusedFunction() const { // #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         SuppressionList suppressions;
         ASSERT_EQUALS("", suppressions.addSuppressionLine("unusedFunction:*"));
         ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid")));
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), true).empty());
-        ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), false).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0)).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions().empty());
     }
 
     void suppressionWithRelativePaths() {
@@ -1471,55 +1468,76 @@ private:
         ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid2", "test2.cpp", 1), false));
     }
 
+    static void addCheckedSuppression(SuppressionList& supprs, SuppressionList::Suppression suppr)
+    {
+        suppr.checked = true;
+        supprs.addSuppression(std::move(suppr));
+    }
+
     void suppressUnmatchedSuppressions() {
-        std::list<SuppressionList::Suppression> suppressions;
+        const std::list<FileWithDetails> files = { {"a.c", Standards::Language::C, 0}};
+        const std::list<FileSettings> fs;
 
         // No unmatched suppression
-        suppressions.clear();
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress all unmatchedSuppression
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "*", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "*", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress all unmatchedSuppression (corresponds to "--suppress=unmatchedSuppression")
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress all unmatchedSuppression in a.c
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "a.c", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress unmatchedSuppression in a.c at line 10
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", 10U);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "a.c", 10U});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // don't suppress unmatchedSuppression when file is mismatching
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "b.c", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("[a.c:10:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "b.c", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(true, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("[a.c:10:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
+        }
 
         // don't suppress unmatchedSuppression when line is mismatching
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
-        ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("[a.c:10:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "a.c", 1U});
+            ASSERT_EQUALS(true, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("[a.c:10:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
+        }
     }
 
     void suppressionsParseXmlFile() const {
@@ -1626,7 +1644,7 @@ private:
 
             ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
 
-            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions(false);
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions();
             ASSERT_EQUALS(1, l.size());
         }
         {
@@ -1641,7 +1659,7 @@ private:
             s.matched = true;
             ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
 
-            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions(false);
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions();
             ASSERT_EQUALS(0, l.size());
         }
     }
@@ -1766,7 +1784,7 @@ private:
                 ASSERT(!suppr->checked);
                 ASSERT(!suppr->matched);
             }
-            ASSERT(suppressions.getUnmatchedGlobalSuppressions(true).empty());
+            ASSERT(suppressions.getUnmatchedGlobalSuppressions().empty());
         }
 
         {
@@ -1780,7 +1798,7 @@ private:
                 ASSERT(suppr->checked);
                 ASSERT(!suppr->matched);
             }
-            ASSERT(!suppressions.getUnmatchedGlobalSuppressions(true).empty());
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
         }
 
         {
@@ -1794,7 +1812,7 @@ private:
                 ASSERT(suppr->checked);
                 ASSERT(!suppr->matched);
             }
-            ASSERT(!suppressions.getUnmatchedGlobalSuppressions(true).empty());
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
         }
 
         {
@@ -1807,7 +1825,7 @@ private:
                 ASSERT(suppr->checked);
                 ASSERT(suppr->matched);
             }
-            ASSERT(suppressions.getUnmatchedGlobalSuppressions(true).empty());
+            ASSERT(suppressions.getUnmatchedGlobalSuppressions().empty());
         }
 
         {
@@ -1821,7 +1839,7 @@ private:
                 ASSERT(suppr->checked);
                 ASSERT(!suppr->matched);
             }
-            ASSERT(!suppressions.getUnmatchedGlobalSuppressions(true).empty());
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
         }
     }
 };

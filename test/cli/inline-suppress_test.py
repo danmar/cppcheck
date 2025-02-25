@@ -501,3 +501,60 @@ def test_unmatched_cfg():
     ]
     assert stdout == ''
     assert ret == 0, stdout
+
+
+# do not report unmatched unusedFunction inline suppressions when unusedFunction check is disabled
+# unusedFunction is disabled when -j2 is specified without a builddir
+def test_unused_function_disabled_unmatched_j():
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--inline-suppr',
+        '-j2',
+        '--no-cppcheck-build-dir',
+        'proj-inline-suppress/unusedFunctionUnmatched.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == [
+        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+# do not report unmatched misra-* inline suppressions when misra is not provided
+def test_misra_disabled_unmatched():  #14232
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--inline-suppr',
+        'proj-inline-suppress/misraUnmatched.c'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == [
+        '{}misraUnmatched.c:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+# do not report unmatched premium-* inline suppressions when application is not premium
+def test_premium_disabled_unmatched():  #13663
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--inline-suppr',
+        'proj-inline-suppress/premiumUnmatched.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == [
+        '{}premiumUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout

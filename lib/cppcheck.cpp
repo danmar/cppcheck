@@ -1299,16 +1299,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         mErrorLogger.reportErr(errmsg);
     }
 
-    // TODO: this is done too early causing the whole program analysis suppressions to be reported as unmatched
-    if (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration) {
-        // In jointSuppressionReport mode, unmatched suppressions are
-        // collected after all files are processed
-        if (!mSettings.useSingleJob()) {
-            // TODO: check result?
-            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, static_cast<bool>(mUnusedFunctionsCheck)), mErrorLogger);
-        }
-    }
-
     if (analyzerInformation) {
         mLogger->setAnalyzerInfo(nullptr);
         analyzerInformation.reset();
