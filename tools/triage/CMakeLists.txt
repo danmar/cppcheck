@@ -30,8 +30,10 @@ CheckOptions:
             # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
             target_compile_options_safe(triage -Wno-extra-semi-stmt)
         endif()
-        # caused by Qt generated moc code
-        target_compile_options_safe(triage -Wno-redundant-parens)
+        if(QT_VERSION VERSION_LESS "6.4.0")
+            # caused by Qt generated moc code - see https://bugreports.qt.io/browse/QTBUG-100915
+            target_compile_options_safe(triage -Wno-redundant-parens)
+        endif()
     endif()
     #target_compile_definitions(triage PRIVATE -DQT_NO_QPAIR)  # TODO: cannot be completely disabled because QBrush uses QPair
     target_compile_definitions(triage PRIVATE -DQT_NO_FOREACH)
