@@ -3370,3 +3370,23 @@ void f() {}
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
     assert stderr.splitlines() == []  # no error since the unused templates are not being checked
+
+
+
+def test_suppress_unmatched_wildcard(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--suppress=id:test*.cpp',
+        '--suppress=id2:test?.cpp',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []

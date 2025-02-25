@@ -118,14 +118,24 @@ public:
          */
         bool parseComment(std::string comment, std::string *errorMessage);
 
-        bool isSuppressed(const ErrorMessage &errmsg) const;
+        enum class Result {
+            None,
+            Checked,
+            Matched
+        };
+
+        Result isSuppressed(const ErrorMessage &errmsg) const;
 
         bool isMatch(const ErrorMessage &errmsg);
 
         std::string getText() const;
 
+        bool isWildcard() const {
+            return fileName.find_first_of("?*") != std::string::npos;
+        }
+
         bool isLocal() const {
-            return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
+            return !fileName.empty() && !isWildcard();
         }
 
         bool isSameParameters(const Suppression &other) const {
