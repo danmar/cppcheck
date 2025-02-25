@@ -1145,7 +1145,7 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
         case ProjectFile::CheckLevel::exhaustive:
             settings.setCheckLevel(Settings::CheckLevel::exhaustive);
             break;
-        };
+        }
         settings.checkHeaders = mProjectFile->getCheckHeaders();
         settings.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
         settings.safeChecks.classes = mProjectFile->safeChecks.classes;

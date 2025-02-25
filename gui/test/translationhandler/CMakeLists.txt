@@ -11,8 +11,10 @@ target_include_directories(test-translationhandler PRIVATE ${CMAKE_SOURCE_DIR}/g
 target_link_libraries(test-translationhandler ${QT_CORE_LIB} ${QT_WIDGETS_LIB} ${QT_TEST_LIB})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Q_UNUSED() in generated code
-    target_compile_options_safe(test-translationhandler -Wno-extra-semi-stmt)
+    if(QT_VERSION VERSION_LESS "6.0.0")
+        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
+        target_compile_options_safe(test-translationhandler -Wno-extra-semi-stmt)
+    endif()
 endif()
 
 if (REGISTER_GUI_TESTS)

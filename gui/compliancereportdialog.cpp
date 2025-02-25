@@ -122,7 +122,7 @@ void ComplianceReportDialog::buttonClicked(QAbstractButton* button)
         break;
     default:
         break;
-    };
+    }
 }
 
 void ComplianceReportDialog::save()

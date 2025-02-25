@@ -319,7 +319,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     case ProjectFile::CheckLevel::exhaustive:
         mUI->mCheckLevelExhaustive->setChecked(true);
         break;
-    };
+    }
     mUI->mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI->mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI->mInlineSuppressions->setChecked(projectFile->getInlineSuppression());

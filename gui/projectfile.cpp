@@ -1025,7 +1025,7 @@ bool ProjectFile::write(const QString &filename)
         xmlWriter.writeStartElement(CppcheckXml::CheckLevelExhaustiveElementName);
         xmlWriter.writeEndElement();
         break;
-    };
+    }
 
     // Cppcheck Premium
     if (mBughunting) {

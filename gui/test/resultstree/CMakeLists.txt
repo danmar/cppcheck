@@ -39,8 +39,10 @@ if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Q_UNUSED() in generated code
-    target_compile_options_safe(test-resultstree -Wno-extra-semi-stmt)
+    if(QT_VERSION VERSION_LESS "6.0.0")
+        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
+        target_compile_options_safe(test-resultstree -Wno-extra-semi-stmt)
+    endif()
     # caused by mocks
     target_compile_options_safe(test-resultstree -Wno-missing-noreturn)
 endif()

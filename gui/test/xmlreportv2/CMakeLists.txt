@@ -29,7 +29,10 @@ if (BUILD_CORE_DLL)
     target_link_libraries(test-xmlreportv2 cppcheck-core)
 endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options_safe(test-xmlreportv2 -Wno-extra-semi-stmt)
+    if(QT_VERSION VERSION_LESS "6.0.0")
+        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
+        target_compile_options_safe(test-xmlreportv2 -Wno-extra-semi-stmt)
+    endif()
 endif()
 
 if (REGISTER_GUI_TESTS)
