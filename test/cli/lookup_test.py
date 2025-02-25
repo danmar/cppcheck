@@ -843,6 +843,7 @@ def test_config_lookup(tmpdir):
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file], cwd=tmpdir, cppcheck_exe=tmp_cppcheck_exe)
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
+    exepath_sep = exepath_sep.replace('\\', '/')
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
@@ -859,6 +860,7 @@ def test_config_lookup_notfound(tmpdir):
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file])
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
+    exepath_sep = exepath_sep.replace('\\', '/')
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
@@ -887,6 +889,7 @@ def test_config_invalid(tmpdir):
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file], cwd=tmpdir, cppcheck_exe=tmp_cppcheck_exe)
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
+    exepath_sep = exepath_sep.replace('\\', '/')
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [

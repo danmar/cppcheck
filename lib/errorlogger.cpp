@@ -437,6 +437,7 @@ std::string ErrorMessage::getXMLHeader(std::string productName, int xmlVersion)
 {
     const auto nameAndVersion = Settings::getNameAndVersion(productName);
     productName = nameAndVersion.first;
+    // TODO: lacks extra version
     const std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
 
     tinyxml2::XMLPrinter printer;

@@ -7,8 +7,9 @@ import pytest
 import glob
 import json
 import subprocess
+import shutil
 
-from testutils import cppcheck, assert_cppcheck
+from testutils import cppcheck, assert_cppcheck, cppcheck_ex, __lookup_cppcheck_exe
 from xml.etree import ElementTree
 
 
@@ -1720,6 +1721,26 @@ def test_cpp_probe_2(tmpdir):
     args = ['-q', '--template=simple', '--cpp-header-probe', test_file]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=[])
+
+
+def test_config_invalid(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
+    with open(config_file, 'wt'):
+        pass
+
+    exitcode, stdout, stderr, exe = cppcheck_ex([test_file], cwd=tmpdir, cppcheck_exe=exe)
+    assert exitcode == 1, stdout if stdout else stderr
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: '
+    ]
 
 
 def test_checkers_report(tmpdir):

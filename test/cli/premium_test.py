@@ -156,3 +156,13 @@ def test_invalid_license_retry(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert 'Invalid license' not in stderr
+
+
+def test_help(tmpdir):
+    exe = __copy_cppcheck_premium(tmpdir)
+
+    exitcode, stdout, _ = cppcheck(['--help'], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert stdout.startswith('Cppcheck ')  # check for product name - TODO: should be "Cppcheck Premium"
+    assert '--premium=' in stdout, stdout  # check for premium option
+    assert 'cppchecksolutions.com' in stdout, stdout  # check for premium help link

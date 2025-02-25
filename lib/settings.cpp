@@ -67,7 +67,6 @@ Settings::Settings()
 
 std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug)
 {
-    // TODO: this always needs to be run *after* the Settings has been filled
     static const std::string cfgFilename = "cppcheck.cfg";
     std::string fileName;
 #ifdef FILESDIR
@@ -82,7 +81,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
     // cppcheck-suppress knownConditionTrueFalse
     if (fileName.empty()) {
         // TODO: make sure that exename is set
-        fileName = Path::getPathFromFilename(settings.exename) + cfgFilename;
+        fileName = Path::join(Path::getPathFromFilename(settings.exename), cfgFilename);
         if (debug)
             std::cout << "looking for '" << fileName << "'" << std::endl;
         if (!Path::isFile(fileName))
@@ -166,6 +165,8 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
             settings.safety = settings.safety || v.get<bool>();
         }
     }
+
+    settings.settingsFiles.emplace_back(std::move(fileName));
 
     return "";
 }

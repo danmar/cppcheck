@@ -94,6 +94,7 @@ void XmlReportV2::writeHeader()
 {
     const auto nameAndVersion = Settings::getNameAndVersion(mProductName.toStdString());
     const QString name = QString::fromStdString(nameAndVersion.first);
+    // TODO: lacks extraVersion
     const QString version = nameAndVersion.first.empty() ? CppCheck::version() : QString::fromStdString(nameAndVersion.second);
 
     mXmlWriter->setAutoFormatting(true);
