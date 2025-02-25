@@ -415,7 +415,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
     if (settings.inlineSuppressions) {
         // report unmatched unusedFunction suppressions
         err |= SuppressionList::reportUnmatchedSuppressions(
-            suppressions.getUnmatchedInlineSuppressions(), errorLogger);
+            suppressions.getUnmatchedInlineSuppressions(unusedFunctionCheckEnabled), errorLogger);
     }
 
     err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
