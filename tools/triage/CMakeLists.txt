@@ -8,12 +8,6 @@ CheckOptions:
   - { key: HeaderFileExtensions,          value: 'x' }
 ")
 
-    # TODO: limit to target
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_WARNING_OUTPUT>)
-    add_compile_definitions($<$<CONFIG:Debug>:QT_DEBUG>)
-
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
     file(GLOB uis  "*.ui")
@@ -28,7 +22,7 @@ CheckOptions:
         ${PROJECT_SOURCE_DIR}/gui/codeeditorstyle.cpp
         ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
     set_target_properties(triage PROPERTIES AUTOMOC ON)
-    set_target_properties(cppcheck-gui PROPERTIES WIN32_EXECUTABLE ON)
+    set_target_properties(triage PROPERTIES WIN32_EXECUTABLE ON)
     target_include_directories(triage PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB})
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -39,4 +33,9 @@ CheckOptions:
     endif()
     #target_compile_definitions(triage PRIVATE -DQT_NO_QPAIR)  # TODO: cannot be completely disabled because QBrush uses QPair
     target_compile_definitions(triage PRIVATE -DQT_NO_FOREACH)
+
+    target_compile_definitions(triage PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
+    target_compile_definitions(triage PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
+    target_compile_definitions(triage PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_WARNING_OUTPUT>)
+    target_compile_definitions(triage PRIVATE $<$<CONFIG:Debug>:QT_DEBUG>)
 endif()
