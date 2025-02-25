@@ -1091,6 +1091,8 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
             return false;
         }
 
+        settings.premium = startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
+
         const auto cfgAddons = settings.addons;
         settings.addons.clear();
         for (const std::string& addon : cfgAddons) {
@@ -1754,6 +1756,7 @@ void MainWindow::formatAndSetTitle(const QString &text)
         nameWithVersion += " (" + extraVersion + ")";
     }
 
+    // TODO: should not contain the version
     if (!mCppcheckCfgProductName.isEmpty())
         nameWithVersion = mCppcheckCfgProductName;
 
@@ -2282,7 +2285,9 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
     const QString str = reply->readAll();
     qDebug() << "Response: " << str;
     if (reply->url().fileName() == "version.txt") {
+        // TODO: lacks extra version
         QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+        // TODO: this should not contain the version
         if (!mCppcheckCfgProductName.isEmpty())
             nameWithVersion = mCppcheckCfgProductName;
         const int appVersion = getVersion(nameWithVersion);

@@ -124,14 +124,17 @@ private:
 
     void run() override {
         TEST_CASE(nooptions);
+        TEST_CASE(nooptionsWithCfg);
+        TEST_CASE(nooptionsWithInvalidCfg);
         TEST_CASE(helpshort);
         TEST_CASE(helpshortExclusive);
+        TEST_CASE(helpshortWithCfg);
         TEST_CASE(helplong);
         TEST_CASE(helplongExclusive);
+        TEST_CASE(helplongWithCfg);
         TEST_CASE(version);
         TEST_CASE(versionWithCfg);
         TEST_CASE(versionExclusive);
-        TEST_CASE(versionWithInvalidCfg);
         TEST_CASE(checkVersionCorrect);
         TEST_CASE(checkVersionIncorrect);
         TEST_CASE(onefile);
@@ -325,7 +328,6 @@ private:
         TEST_CASE(errorlist);
         TEST_CASE(errorlistWithCfg);
         TEST_CASE(errorlistExclusive);
-        TEST_CASE(errorlistWithInvalidCfg);
         TEST_CASE(ignorepathsnopath);
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
         TEST_CASE(exceptionhandling);
@@ -532,6 +534,30 @@ private:
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
+    void nooptionsWithCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n"
+                        "\"productName\": \"Cppcheck Premium\""
+                        "}\n");
+        const char * const argv[] = {"cppcheck"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
+        ASSERT_EQUALS(1, settings->settingsFiles.size());
+        ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
+        const std::string log_str = logger->str();
+        ASSERT_MSG(startsWith(log_str, "Cppcheck - A tool for static C/C++ code analysis"), "header");
+        ASSERT_MSG(log_str.find("https://files.cppchecksolutions.com/manual.pdf") != std::string::npos, "help url");
+    }
+
+    void nooptionsWithInvalidCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n");
+        const char * const argv[] = {"cppcheck"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
+    }
+
     void helpshort() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-h"};
@@ -546,6 +572,21 @@ private:
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
+    void helpshortWithCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n"
+                        "\"productName\": \"Cppcheck Premium\""
+                        "}\n");
+        const char * const argv[] = {"cppcheck", "-h"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
+        ASSERT_EQUALS(1, settings->settingsFiles.size());
+        ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
+        const std::string log_str = logger->str();
+        ASSERT_MSG(startsWith(log_str, "Cppcheck - A tool for static C/C++ code analysis"), "header");
+        ASSERT_MSG(log_str.find("https://files.cppchecksolutions.com/manual.pdf") != std::string::npos, "help url");
+    }
+
     void helplong() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
@@ -558,6 +599,21 @@ private:
         const char * const argv[] = {"cppcheck", "--library=missing", "--help"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
         ASSERT(startsWith(logger->str(), "Cppcheck - A tool for static C/C++ code analysis"));
+    }
+
+    void helplongWithCfg() {
+        REDIRECT;
+        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
+                        "{\n"
+                        "\"productName\": \"Cppcheck Premium\""
+                        "}\n");
+        const char * const argv[] = {"cppcheck", "--help"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
+        ASSERT_EQUALS(1, settings->settingsFiles.size());
+        ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
+        const std::string log_str = logger->str();
+        ASSERT_MSG(startsWith(log_str, "Cppcheck - A tool for static C/C++ code analysis"), "header");
+        ASSERT_MSG(log_str.find("https://files.cppchecksolutions.com/manual.pdf") != std::string::npos, "help url");
     }
 
     void version() {
@@ -575,8 +631,9 @@ private:
                         "}\n");
         const char * const argv[] = {"cppcheck", "--version"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
-        // TODO: somehow the config is not loaded on some systems
-        (void)logger->str(); //ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
+        ASSERT_EQUALS(1, settings->settingsFiles.size());
+        ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
+        ASSERT_EQUALS("The Product\n", logger->str()); // TODO: include version?
     }
 
     // TODO: test --version with extraVersion
@@ -586,15 +643,6 @@ private:
         const char * const argv[] = {"cppcheck", "--library=missing", "--version"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
         ASSERT(logger->str().compare(0, 11, "Cppcheck 2.") == 0);
-    }
-
-    void versionWithInvalidCfg() {
-        REDIRECT;
-        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
-                        "{\n");
-        const char * const argv[] = {"cppcheck", "--version"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
     void checkVersionCorrect() {
@@ -2159,8 +2207,8 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         const std::string errout_s = GET_REDIRECT_OUTPUT;
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("")));
         ASSERT(endsWith(errout_s, "</results>\n"));
     }
@@ -2171,27 +2219,21 @@ private:
                         R"({"productName": "The Product"}\n)");
         const char * const argv[] = {"cppcheck", "--errorlist"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
+        const std::string errout_s = GET_REDIRECT_OUTPUT;
+        ASSERT_EQUALS(1, settings->settingsFiles.size());
+        ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
         ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
-        ASSERT(startsWith(GET_REDIRECT_OUTPUT, ErrorMessage::getXMLHeader("The Product")));
+        ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("The Product")));
     }
 
     void errorlistExclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--library=missing", "--errorlist"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
-        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         const std::string errout_s = GET_REDIRECT_OUTPUT;
+        ASSERT_EQUALS("", logger->str()); // empty since it is logged via ErrorLogger
         ASSERT(startsWith(errout_s, ErrorMessage::getXMLHeader("")));
         ASSERT(endsWith(errout_s, "</results>\n"));
-    }
-
-    void errorlistWithInvalidCfg() {
-        REDIRECT;
-        ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
-                        "{\n");
-        const char * const argv[] = {"cppcheck", "--errorlist"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 2 near: \n", logger->str());
     }
 
     void ignorepathsnopath() {
@@ -3076,16 +3118,16 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--debug-lookup", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(true, settings->debuglookup);
         GET_REDIRECT_OUTPUT; // ignore config lookup output
+        ASSERT_EQUALS(true, settings->debuglookup);
     }
 
     void debugLookupAll() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--debug-lookup=all", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(true, settings->debuglookup);
         GET_REDIRECT_OUTPUT; // ignore config lookup output
+        ASSERT_EQUALS(true, settings->debuglookup);
     }
 
     void debugLookupAddon() {
@@ -3099,8 +3141,8 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--debug-lookup=config", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(true, settings->debuglookupConfig);
         GET_REDIRECT_OUTPUT; // ignore config lookup output
+        ASSERT_EQUALS(true, settings->debuglookupConfig);
     }
 
     void debugLookupLibrary() {
