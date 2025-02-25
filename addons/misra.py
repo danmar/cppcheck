@@ -3157,15 +3157,15 @@ class MisraChecker:
         STATE_OK = 2  # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
         STATE_SWITCH = 3  # walking through switch statement scope
 
-        macro = None
+        directive = None
         state = STATE_NONE
         end_switch_token = None  # end '}' for the switch scope
         for token in rawTokens:
             if simpleMatch(token, '# define') or simpleMatch(token, '# pragma'):
-                macro = token
-            if macro:
-                if token.linenr != macro.linenr:
-                    macro = None
+                directive = token
+            if directive:
+                if token.linenr != directive.linenr:
+                    directive = None
                 else:
                     continue
 
