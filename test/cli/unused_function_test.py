@@ -3,8 +3,8 @@
 
 import os
 import json
-import pytest
 import sys
+import pytest
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +33,13 @@ def __create_compdb(tmpdir, projpath):
 
 
 def __test_unused_functions(extra_args):
-    args = ['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', __project_dir]
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        __project_dir
+    ]
     args += extra_args
     ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
@@ -48,7 +54,16 @@ def test_unused_functions():
 
 
 def test_unused_functions_j():
-    ret, stdout, stderr = cppcheck(['-q', '--template=simple', '--enable=unusedFunction', '--inline-suppr', '-j2', '--no-cppcheck-build-dir', __project_dir])
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '-j2',
+        '--no-cppcheck-build-dir',
+        __project_dir
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == [
         "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
@@ -69,7 +84,6 @@ def test_unused_functions_builddir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)
 def test_unused_functions_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -78,12 +92,13 @@ def test_unused_functions_builddir_j_process(tmpdir):
 
 def __test_unused_functions_project(extra_args):
     project_file = os.path.join(__project_dir, 'unusedFunction.cppcheck')
-    args = ['-q',
-            '--template=simple',
-            '--enable=unusedFunction',
-            '--inline-suppr',
-            '--project={}'.format(project_file),
-            ]
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(project_file),
+    ]
     args += extra_args
     ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
@@ -99,14 +114,16 @@ def test_unused_functions_project():
 
 def test_unused_functions_project_j():
     project_file = os.path.join(__project_dir, 'unusedFunction.cppcheck')
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(project_file),
-                                    '-j2',
-                                    '--no-cppcheck-build-dir'
-                                    ])
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(project_file),
+        '-j2',
+        '--no-cppcheck-build-dir'
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == [
         "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
@@ -127,7 +144,6 @@ def test_unused_functions_project_builddir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)
 def test_unused_functions_project_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
@@ -136,13 +152,13 @@ def test_unused_functions_project_builddir_j_process(tmpdir):
 
 def __test_unused_functions_compdb(tmpdir, extra_args):
     compdb_file = __create_compdb(tmpdir, __project_dir)
-    args = ['-q',
-            '--template=simple',
-            '--enable=unusedFunction',
-            '--inline-suppr',
-            '--project={}'.format(compdb_file),
-            '-j1'
-            ]
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(compdb_file)
+    ]
     args += extra_args
     ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
@@ -158,25 +174,21 @@ def test_unused_functions_compdb(tmpdir):
 
 def test_unused_functions_compdb_j(tmpdir):
     compdb_file = __create_compdb(tmpdir, __project_dir)
-    ret, stdout, stderr = cppcheck(['-q',
-                                    '--template=simple',
-                                    '--enable=unusedFunction',
-                                    '--inline-suppr',
-                                    '--project={}'.format(compdb_file),
-                                    '-j2',
-                                    '--no-cppcheck-build-dir'
-                                    ])
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=unusedFunction',
+        '--inline-suppr',
+        '--project={}'.format(compdb_file),
+        '-j2',
+        '--no-cppcheck-build-dir'
+    ]
+    ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == [
         "cppcheck: unusedFunction check requires --cppcheck-build-dir to be active with -j."
     ]
     assert stderr.splitlines() == []
     assert ret == 0, stdout
-
-
-def test_unused_functions_compdb_builddir(tmpdir):
-    build_dir = os.path.join(tmpdir, 'b1')
-    os.mkdir(build_dir)
-    __test_unused_functions_compdb(tmpdir, ['-j1', '--cppcheck-build-dir={}'.format(build_dir)])
 
 
 def test_unused_functions_compdb_buildir_j_thread(tmpdir):
@@ -186,8 +198,7 @@ def test_unused_functions_compdb_buildir_j_thread(tmpdir):
 
 
 @pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)
-def test_unused_functions_compdb_buildir_j_process(tmpdir):
+def test_unused_functions_compdb_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_unused_functions_compdb(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])

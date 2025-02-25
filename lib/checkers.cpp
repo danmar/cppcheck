@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ namespace checkers {
         {"CheckStl::knownEmptyContainer","style"},
         {"CheckStl::eraseIteratorOutOfBounds",""},
         {"CheckStl::checkMutexes","warning"},
-        {"CheckBoost::checkBoostForeachModification",""},
         {"CheckNullPointer::nullPointer",""},
         {"CheckNullPointer::nullConstantDereference",""},
         {"CheckNullPointer::arithmetic",""},
@@ -82,6 +81,7 @@ namespace checkers {
         {"CheckBufferOverrun::negativeArraySize",""},
         {"CheckUninitVar::check",""},
         {"CheckUninitVar::valueFlowUninit",""},
+        {"CheckUninitVar::analyseWholeProgram",""},
         {"CheckOther::checkCastIntToCharAndBack","warning"},
         {"CheckOther::clarifyCalculation","style"},
         {"CheckOther::clarifyStatement","warning"},
@@ -357,6 +357,8 @@ namespace checkers {
         {"Cert C: CON39-C",""},
         {"Cert C: CON40-C",""},
         {"Cert C: CON41-C",""},
+        {"Cert C: DCL03-C",""},
+        {"Cert C: DCL04-C",""},
         {"Cert C: DCL31-C",""},
         {"Cert C: DCL36-C",""},
         {"Cert C: DCL37-C",""},
@@ -386,6 +388,7 @@ namespace checkers {
         {"Cert C: EXP40-C",""},
         {"Cert C: EXP42-C",""},
         {"Cert C: EXP43-C",""},
+        {"Cert C: EXP44-C",""},
         {"Cert C: EXP45-C",""},
         {"Cert C: FIO30-C",""},
         {"Cert C: FIO32-C",""},
@@ -415,6 +418,18 @@ namespace checkers {
         {"Cert C: MSC38-C",""},
         {"Cert C: MSC39-C",""},
         {"Cert C: MSC40-C",""},
+        {"Cert C: PRE00-C",""},
+        {"Cert C: PRE01-C",""},
+        {"Cert C: PRE02-C",""},
+        {"Cert C: PRE04-C",""},
+        {"Cert C: PRE05-C",""},
+        {"Cert C: PRE06-C",""},
+        {"Cert C: PRE07-C",""},
+        {"Cert C: PRE08-C",""},
+        {"Cert C: PRE09-C",""},
+        {"Cert C: PRE10-C",""},
+        {"Cert C: PRE11-C",""},
+        {"Cert C: PRE12-C",""},
         {"Cert C: PRE31-C",""},
         {"Cert C: SIG30-C",""},
         {"Cert C: SIG31-C",""},
@@ -772,6 +787,7 @@ namespace checkers {
         {"Misra C: 11.3",""},
         {"Misra C: 11.4",""},
         {"Misra C: 11.8",""},
+        {"Misra C: 12.2",""},
         {"Misra C: 12.3",""},
         {"Misra C: 12.6",""},
         {"Misra C: 13.1",""},
@@ -795,6 +811,7 @@ namespace checkers {
         {"Misra C: 18.8",""},
         {"Misra C: 18.9",""},
         {"Misra C: 20.3",""},
+        {"Misra C: 20.7",""},
         {"Misra C: 21.1",""},
         {"Misra C: 21.12",""},
         {"Misra C: 21.16",""},
@@ -843,6 +860,7 @@ namespace checkers {
         {"Misra C: 8.8",""},
         {"Misra C: 9.6",""},
         {"Misra C: 9.7",""},
+        {"Misra C: Dir 4.12",""},
         {"Misra C: Dir 4.3",""},
         {"Misra C: Dir 4.4",""},
         {"Misra C: Dir 4.5",""},
@@ -854,11 +872,13 @@ namespace checkers {
         {"PremiumCheckHang::infiniteLoop",""},
         {"PremiumCheckHang::infiniteLoopContinue",""},
         {"PremiumCheckOther::arrayPointerComparison","style"},
+        {"PremiumCheckOther::invalidPointerLiteral",""},
         {"PremiumCheckOther::knownResult","style"},
         {"PremiumCheckOther::lossOfPrecision","style"},
         {"PremiumCheckOther::pointerCast","style"},
         {"PremiumCheckOther::reassignInLoop","style"},
         {"PremiumCheckOther::unreachableCode","style"},
+        {"PremiumCheckOther::useAfterFree",""},
         {"PremiumCheckStrictAlias::strictAliasCondition","warning"},
         {"PremiumCheckUninitVar::uninitmember",""},
         {"PremiumCheckUninitVar::uninitvar",""},
@@ -2096,3 +2116,5 @@ std::vector<checkers::Info> checkers::certCppInfo{
     {"MSC53-CPP", "L2"},
     {"MSC54-CPP", "L2"},
 };
+
+

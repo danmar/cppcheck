@@ -682,7 +682,7 @@ cli/singleexecutor.o: cli/singleexecutor.cpp cli/executor.h cli/singleexecutor.h
 cli/stacktrace.o: cli/stacktrace.cpp cli/stacktrace.h lib/config.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/stacktrace.cpp
 
-cli/threadexecutor.o: cli/threadexecutor.cpp cli/executor.h cli/threadexecutor.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/timer.h lib/utils.h
+cli/threadexecutor.o: cli/threadexecutor.cpp cli/executor.h cli/threadexecutor.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/threadexecutor.cpp
 
 test/fixture.o: test/fixture.cpp externals/simplecpp/simplecpp.h externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/xml.h test/fixture.h test/helpers.h test/options.h test/redirect.h

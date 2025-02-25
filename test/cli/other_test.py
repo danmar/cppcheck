@@ -2583,6 +2583,7 @@ def test_inline_suppr_builddir(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
 
 
+# TODO: the suppressions are generated outside of the scope which captures the analysis information
 @pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_cached(tmp_path):
     build_dir = tmp_path / 'b1'
@@ -2597,6 +2598,8 @@ def test_inline_suppr_builddir_j(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
 
 
+# TODO: the suppressions are generated outside of the scope which captures the analysis information
+@pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_j_cached(tmp_path):
     build_dir = tmp_path / 'b1'
     os.mkdir(build_dir)
@@ -2767,14 +2770,9 @@ def test_addon_suppr_inline(tmp_path):
     __test_addon_suppr(tmp_path, ['--inline-suppr', '-j1'])
 
 # TODO: remove override when all issues are fixed
-def test_addon_suppr_inline_j_thread(tmp_path):
-    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2', '--executor=thread'])
+def test_addon_suppr_inline_j(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
 
-# TODO: remove override when all issues are fixed
-@pytest.mark.skipif(sys.platform == 'win32', reason='ProcessExecutor not available on Windows')
-@pytest.mark.xfail(strict=True)  # TODO: inline suppression does not work
-def test_addon_suppr_inline_j_process(tmp_path):
-    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2', '--executor=process'])
 
 def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])

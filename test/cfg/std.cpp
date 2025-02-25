@@ -1007,6 +1007,11 @@ int std_map_find_constref(std::map<int, int>& m) // #11857
     return ++*p;
 }
 
+void std_rotate_constref(std::vector<int>& v) // #13657
+{
+    std::rotate(v.begin(), v.begin() + 1, v.begin() + 2);
+}
+
 void std_queue_front_ignoredReturnValue(const std::queue<int>& q) {
     // cppcheck-suppress ignoredReturnValue
     q.front();

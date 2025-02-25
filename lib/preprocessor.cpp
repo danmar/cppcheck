@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,6 +135,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<SuppressionList::Suppression> suppressions = SuppressionList::parseMultiSuppressComment(comment, &errmsg);
 
         for (SuppressionList::Suppression &s : suppressions) {
+            s.isInline = true;
             s.type = errorType;
             s.lineNumber = tok->location.line;
         }
@@ -152,6 +153,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!s.parseComment(comment, &errmsg))
             return false;
 
+        s.isInline = true;
         s.type = errorType;
         s.lineNumber = tok->location.line;
 

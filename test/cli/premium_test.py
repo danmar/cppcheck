@@ -55,6 +55,22 @@ def test_misra_c_builtin_style_checks(tmpdir):
     assert 'id="unusedVariable"' in stderr
     assert 'id="checkersReport"' not in stderr
 
+    exitcode, _, stderr = cppcheck(['--xml-version=3', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<safety/>' in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--premium=safety-off', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<safety/>' not in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--inline-suppr', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<inline-suppr/>' in stderr
+
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--suppress=foo', test_file], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert '<suppression errorId="foo" />' in stderr
+
 
 def test_build_dir_hash_cppcheck_product(tmpdir):
     # 13644 - cppcheck build dir hashes should depend on the cppcheck version
@@ -96,4 +112,5 @@ def test_build_dir_hash_cppcheck_product(tmpdir):
     assert re.match(r'^[0-9a-f]{6,}$', hash2), f2
 
     assert hash1 != hash2
+
 
