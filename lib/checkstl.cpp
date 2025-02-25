@@ -2770,11 +2770,9 @@ static std::string flipMinMax(const std::string &algo)
     return algo;
 }
 
-static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonneg int assignVar, bool invert = false)
+static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonneg int assignVar, LoopType loopType, bool invert = false)
 {
-    if (!Token::Match(condTok, "<|<=|>=|>"))
-        return "std::accumulate";
-    if (!hasVarIds(condTok, loopVar, assignVar))
+    if (loopType == LoopType::RANGE && !hasVarIds(condTok, loopVar, assignVar))
         return "std::accumulate";
     std::string algo = "std::max_element";
     if (Token::Match(condTok, "<|<="))
@@ -2784,6 +2782,38 @@ static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonne
     if (invert)
         algo = flipMinMax(algo);
     return algo;
+}
+
+static bool isTernaryAssignment(const Token* assignTok, nonneg int loopVarId, nonneg int assignVarId, LoopType loopType, std::string& algo)
+{
+    if (!Token::simpleMatch(assignTok->astOperand2(), "?"))
+        return false;
+    const Token* condTok = assignTok->astOperand2()->astOperand1();
+    if (!Token::Match(condTok, "<|<=|>=|>"))
+        return false;
+
+    const Token* colon = assignTok->astOperand2()->astOperand2();
+    if (loopType == LoopType::RANGE) {
+        if (!(condTok->astOperand1()->varId() && condTok->astOperand2()->varId() && colon->astOperand1()->varId() && colon->astOperand2()->varId()))
+            return false;
+    }
+    else if (loopType == LoopType::INDEX) {
+        int nVar = 0, nCont = 0;
+        for (const Token* tok : { condTok->astOperand1(), condTok->astOperand2(), colon->astOperand1(), colon->astOperand2() }) {
+            if (tok->varId())
+                ++nVar;
+            else if (tok->str() == "[" && tok->astOperand1()->varId() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container &&
+                     tok->astOperand2()->varId() == loopVarId)
+                ++nCont;
+        }
+        if (nVar != 2 || nCont != 2)
+            return false;
+    }
+    else
+        return false;
+
+    algo = minmaxCompare(condTok, loopVarId, assignVarId, loopType, colon->astOperand1()->varId() == assignVarId);
+    return true;
 }
 
 namespace {
@@ -3023,8 +3053,8 @@ void CheckStl::useStlAlgorithm()
                         algo = "std::distance";
                     else if (accumulateBool(assignTok, assignVarId))
                         algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
-                    else if (Token::Match(assignTok, "= %var% <|<=|>=|> %var% ? %var% : %var%") && hasVarIds(assignTok->tokAt(6), loopVar->varId(), assignVarId))
-                        algo = minmaxCompare(assignTok->tokAt(2), loopVar->varId(), assignVarId, assignTok->tokAt(5)->varId() == assignVarId);
+                    else if (isTernaryAssignment(assignTok, loopVar->varId(), assignVarId, loopType, algo))
+                        ;
                     else if (isAccumulation(assignTok, assignVarId))
                         algo = "std::accumulate";
                     else

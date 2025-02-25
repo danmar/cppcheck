@@ -5942,9 +5942,18 @@ private:
               "    return max;\n"
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
-                           "[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
+                      errout_str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int min = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        min = v[i] < min ? v[i] : min;\n"
+              "    return min;\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::min_element algorithm instead of a raw loop.\n",
+                      errout_str());
     }
 
     void loopAlgoMultipleReturn()
