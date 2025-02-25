@@ -373,26 +373,31 @@ bool SuppressionList::Suppression::parseComment(std::string comment, std::string
     return true;
 }
 
-bool SuppressionList::Suppression::isSuppressed(const SuppressionList::ErrorMessage &errmsg) const
+SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(const SuppressionList::ErrorMessage &errmsg) const
 {
-    if (hash > 0 && hash != errmsg.hash)
-        return false;
-    if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
-        return false;
     if (type == SuppressionList::Type::macro) {
         if (errmsg.macroNames.count(macroName) == 0)
-            return false;
+            return Result::None;
+        if (hash > 0 && hash != errmsg.hash)
+            return Result::Checked;
+        if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
+            return Result::Checked;
     } else {
         if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
-            return false;
+            return Result::None;
         if ((SuppressionList::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
             if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
-                return false;
+                return Result::None;
         }
+        if (hash > 0 && hash != errmsg.hash)
+            return Result::Checked;
+        if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
+            return Result::Checked;
         if ((SuppressionList::Type::block == type) && ((errmsg.lineNumber < lineBegin) || (errmsg.lineNumber > lineEnd)))
-            return false;
+            return Result::Checked;
     }
     if (!symbolName.empty()) {
+        bool matchedSymbol = false;
         for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
             const std::string::size_type pos2 = errmsg.symbolNames.find('\n',pos);
             std::string symname;
@@ -403,21 +408,31 @@ bool SuppressionList::Suppression::isSuppressed(const SuppressionList::ErrorMess
                 symname = errmsg.symbolNames.substr(pos,pos2-pos);
                 pos = pos2+1;
             }
-            if (matchglob(symbolName, symname))
-                return true;
+            if (matchglob(symbolName, symname)) {
+                matchedSymbol = true;
+                break;
+            }
         }
-        return false;
+        if (!matchedSymbol)
+            return Result::Checked;
     }
-    return true;
+    return Result::Matched;
 }
 
 bool SuppressionList::Suppression::isMatch(const SuppressionList::ErrorMessage &errmsg)
 {
-    if (!isSuppressed(errmsg))
+    switch (isSuppressed(errmsg)) {
+    case Result::None:
         return false;
-    matched = true;
-    checked = true;
-    return true;
+    case Result::Checked:
+        checked = true;
+        return false;
+    case Result::Matched:
+        checked = true;
+        matched = true;
+        return true;
+    }
+    cppcheck::unreachable();
 }
 
 // cppcheck-suppress unusedFunction - used by GUI only
@@ -525,7 +540,9 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
     for (const Suppression &s : mSuppressions) {
         if (s.isInline)
             continue;
-        if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
+        if (s.matched)
+            continue;
+        if ((s.lineNumber != Suppression::NO_LINE) && !s.checked)
             continue;
         if (s.type == SuppressionList::Type::macro)
             continue;
@@ -550,7 +567,9 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     for (const Suppression &s : mSuppressions) {
         if (s.isInline)
             continue;
-        if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
+        if (s.matched)
+            continue;
+        if (!s.checked && s.isWildcard())
             continue;
         if (s.hash > 0)
             continue;
@@ -571,6 +590,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppr
     for (const SuppressionList::Suppression &s : SuppressionList::mSuppressions) {
         if (!s.isInline)
             continue;
+        // TODO: remove this and markUnmatchedInlineSuppressionsAsChecked()?
         if (!s.checked)
             continue;
         if (s.matched)
