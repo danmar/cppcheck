@@ -4969,6 +4969,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     const Token *typetok = nullptr;
 
     if (tok && isVariableDeclaration(tok, vartok, typetok)) {
+        const Token* const orig = tok;
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         tok = vartok->next();
         while (Token::Match(tok, "[|{"))
@@ -4993,6 +4994,17 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
             typestart = typestart->next();
 
         addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
+
+        if (type == eFor && orig->strAt(-2) == "for") {
+            for (const Token* tok2 = tok; tok2 && !Token::Match(tok2, "[;:]"); tok2 = tok2->next()) {
+                if (tok2->link()) {
+                    tok2 = tok2->link();
+                    continue;
+                }
+                if (Token::Match(tok2, ", %name%"))
+                    addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
+            }
+        }
     }
 
     return tok;
