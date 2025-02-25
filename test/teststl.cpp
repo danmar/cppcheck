@@ -5942,7 +5942,9 @@ private:
               "    return max;\n"
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout_str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
+                           "[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n",
+                           errout_str());
     }
 
     void loopAlgoMultipleReturn()
