@@ -5859,7 +5859,7 @@ private:
               dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
-        check("void f(const std::vector<int>& v) {\n"
+        check("void f(const std::vector<int>& v) {\n" // #9091
               "    int maxY = 0;\n"
               "    for (int y : v) {\n"
               "        if (y > maxY)\n"
@@ -5867,9 +5867,18 @@ private:
               "    }\n"
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
-                           "",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout_str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int minY = 0;\n"
+              "    for (int y : v) {\n"
+              "        if (y < minY)\n"
+              "            minY = y;\n"
+              "    }\n"
+              "    return minY;\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::min_element algorithm instead of a raw loop.\n", errout_str());
     }
 
     void loopAlgoMultipleReturn()
