@@ -69,6 +69,7 @@ private:
         TEST_CASE(inlinesuppress_symbolname_Files);
         TEST_CASE(inlinesuppress_symbolname_FS);
         TEST_CASE(inlinesuppress_comment);
+        TEST_CASE(inlinesuppress_unchecked);
 
         TEST_CASE(multi_inlinesuppress);
         TEST_CASE(multi_inlinesuppress_comment);
@@ -936,7 +937,7 @@ private:
         suppressionsMultiFileInternal(&TestSuppressions::checkSuppressionFS);
     }
 
-    // TODO: internal function tests
+    // TODO: this tests an internal function - should it be private?
     void suppressionsPathSeparator() const {
         const SuppressionList::Suppression s1("*", "test/foo/*");
         ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s1.isSuppressed(errorMessage("someid", "test/foo/bar.cpp", 142)));
@@ -1070,6 +1071,19 @@ private:
         ASSERT_EQUALS("", errMsg);
         ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
         ASSERT_EQUALS("", errMsg);
+    }
+
+    // TODO: tests internal function - should it be private?
+    void inlinesuppress_unchecked() const {
+        SuppressionList::Suppression s;
+        std::string errMsg;
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        s.lineNumber = 5;
+
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::None, s.isSuppressed(errorMessage("id", "test.cpp", 11)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Checked, s.isSuppressed(errorMessage("id", "test.cpp", 5)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s.isSuppressed(errorMessage("abc", "test.cpp", 5)));
     }
 
     void multi_inlinesuppress() const {
@@ -1708,8 +1722,6 @@ private:
     }
 
     void suppressionWildcard() const {
-        //const std::string supprLine = "id:test*.cpp";
-
         {
             SuppressionList suppressions;
             ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
@@ -1752,9 +1764,9 @@ private:
             ASSERT(!suppressions.getUnmatchedGlobalSuppressions(true).empty());
         }
 
-       {
-           SuppressionList suppressions;
-           ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("id", "test.cpp", 1)));
             {
                 const auto supprs = suppressions.getSuppressions();
@@ -1763,7 +1775,7 @@ private:
                 ASSERT(suppr->matched);
             }
             ASSERT(suppressions.getUnmatchedGlobalSuppressions(true).empty());
-       }
+        }
     }
 };
 

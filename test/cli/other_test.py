@@ -3372,21 +3372,36 @@ void f() {}
     assert stderr.splitlines() == []  # no error since the unused templates are not being checked
 
 
-
-def test_suppress_unmatched_wildcard(tmp_path):
+def test_suppress_unmatched_wildcard(tmp_path):  # #13660
     test_file = tmp_path / 'test.c'
     with open(test_file, 'wt') as f:
-        pass
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
 
+    # need to run in the temporary folder because the path of the suppression has to match
     args = [
         '-q',
         '--template=simple',
         '--enable=information',
-        '--suppress=id:test*.cpp',
-        '--suppress=id2:test?.cpp',
-        str(test_file)
+        '--suppress=nullPointer:test*.c',  # checked and matched
+        '--suppress=id:test*.c',  # checked and unmatched
+        '--suppress=id2:test*.c',  # checked and unmatched
+        '--suppress=id2:tes?.c',  # checked and unmatched
+        '--suppress=*:test*.c',  # checked and unmatched
+        '--suppress=id:test*.cpp',  # unchecked
+        '--suppress=id2:test?.cpp',  # unchecked
+        'test.c'
     ]
-    exitcode, stdout, stderr = cppcheck(args)
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
-    assert stderr.splitlines() == []
+    # TODO: invalid locations - see #13659
+    assert stderr.splitlines() == [
+        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'test*.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'tes?.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]'
+    ]

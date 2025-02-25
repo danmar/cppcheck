@@ -385,14 +385,14 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
     } else {
         if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
             return Result::None;
+        if ((SuppressionList::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
+            if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
+                return Result::None;
+        }
         if (hash > 0 && hash != errmsg.hash)
             return Result::Checked;
         if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
             return Result::Checked;
-        if ((SuppressionList::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
-            if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
-                return Result::Checked;
-        }
         if ((SuppressionList::Type::block == type) && ((errmsg.lineNumber < lineBegin) || (errmsg.lineNumber > lineEnd)))
             return Result::Checked;
     }
@@ -432,6 +432,7 @@ bool SuppressionList::Suppression::isMatch(const SuppressionList::ErrorMessage &
             matched = true;
             return true;
     }
+    cppcheck::unreachable();
 }
 
 // cppcheck-suppress unusedFunction - used by GUI only
