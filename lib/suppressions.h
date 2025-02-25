@@ -259,7 +259,7 @@ public:
      * @brief Returns list of unmatched inline suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedInlineSuppressions() const;
+    std::list<Suppression> getUnmatchedInlineSuppressions(bool includeUnusedFunction) const;
 
     /**
      * @brief Returns list of all suppressions.
