@@ -241,7 +241,7 @@ namespace {
 
         void printRaw(const std::string &message) override
         {
-            std::cout << message << std::endl;
+            std::cout << message << std::endl; // TODO: should not append newline
         }
     };
 
