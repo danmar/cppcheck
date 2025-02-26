@@ -118,6 +118,7 @@ private:
     static void printError(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
+    void setFileSizes();
 
     std::string mPath;
     std::set<std::string> mAllVSConfigs;
