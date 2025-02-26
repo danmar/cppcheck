@@ -27,5 +27,5 @@ fi
 
 while :
 do
-    "${cppcheck_tools_path}/donate-cpu-server.py" --test
+    "${cppcheck_tools_path}/donate-cpu-server.py"
 done
