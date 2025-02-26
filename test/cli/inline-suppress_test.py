@@ -420,3 +420,21 @@ def test_unused_function_unmatched_builddir_j_process(tmpdir):
     build_dir = os.path.join(tmpdir, 'b1')
     os.mkdir(build_dir)
     __test_unused_function_unmatched(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir), '--executor=process'])
+
+
+# do not report unmatched unusedFunction inline suppressions when unusedFunction check is disabled
+def test_unused_function_disabled_unmatched():
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--inline-suppr',
+        'proj-inline-suppress/unusedFunctionUnmatched.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert stderr.splitlines() == [
+        '{}unusedFunctionUnmatched.cpp:5:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'.format(__proj_inline_suppres_path)
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
