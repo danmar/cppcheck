@@ -8,6 +8,7 @@ CheckOptions:
   - { key: HeaderFileExtensions,          value: 'x' }
 ")
 
+    # TODO: limit to target
     add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
     add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
     add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_WARNING_OUTPUT>)
@@ -36,4 +37,5 @@ CheckOptions:
         # caused by Qt generated moc code
         target_compile_options_safe(triage -Wno-redundant-parens)
     endif()
+    #target_compile_definitions(triage PRIVATE -DQT_NO_QPAIR)  # TODO: cannot be completely disabled because QBrush uses QPair
 endif()

@@ -23,7 +23,6 @@
 #include <QFile>
 #include <QIODevice>
 #include <QList>
-#include <QPair>
 #include <QStringList>
 #include <QTextStream>
 #include <QtTest>
