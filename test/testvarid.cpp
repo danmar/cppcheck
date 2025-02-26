@@ -46,6 +46,7 @@ private:
         TEST_CASE(varid7);
         TEST_CASE(varidReturn1);
         TEST_CASE(varidReturn2);
+        TEST_CASE(varidReturn3);
         TEST_CASE(varid8);
         TEST_CASE(varid9);
         TEST_CASE(varid10);
@@ -505,6 +506,21 @@ private:
                                 "3: unsigned long mask@1 ; mask@1 = ( 1UL << size_ ) - 1 ;\n"
                                 "4: return ( abits_val_ & mask@1 ) ;\n"
                                 "5: }\n";
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidReturn3() {
+        const std::string actual = tokenize(
+            "struct S { int i; };\n"
+            "int f(S s) {\n"
+            "    return (&s)->i;\n"
+            "}\n");
+
+        const char expected[] = "1: struct S { int i@1 ; } ;\n"
+                                "2: int f ( S s@2 ) {\n"
+                                "3: return ( & s@2 ) . i@3 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
