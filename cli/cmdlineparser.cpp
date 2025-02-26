@@ -129,7 +129,8 @@ namespace {
         }
 
         void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
-        {}
+        {
+        }
     };
 }
 
@@ -367,6 +368,45 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             return false;
         }
     }
+
+    return true;
+}
+
+bool CmdLineParser::loadMacroFile(const std::string &path) {
+
+    if (path.empty()) {
+        mLogger.printError("argument to '--macro-file' is missing.");
+        return false;
+    }
+
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        mLogger.printError("error opening '" + path + "'");
+        return false;
+    }
+
+    std::string line;
+    std::stringstream result;
+
+    while (std::getline(file, line)) {
+        size_t pos = line.find("#define");
+        if (pos != std::string::npos) {
+
+            // extract name and value
+            std::istringstream iss(line.substr(pos + 8));
+            std::string name, value;
+            iss >> name >> value;
+
+            std::string rest;
+            std::getline(iss, rest);
+            value += rest;
+
+            result << name << "=" << value;
+            result << ";";
+        }
+    }
+
+    mSettings.userDefines += result.str();
 
     return true;
 }
@@ -962,6 +1002,16 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     }
                     mSettings.libraries.emplace_back(std::move(l));
                 }
+            }
+
+            // User macro file with multiple define statements in it
+            else if (std::strncmp(argv[i], "--macro-file=", 13) == 0) {
+
+                if (!loadMacroFile(13 + argv[i])) {
+                    return Result::Fail;
+                }
+
+                def = true;
             }
 
             // Set maximum number of #ifdef configurations to check
