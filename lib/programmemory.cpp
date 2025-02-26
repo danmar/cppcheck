@@ -1368,18 +1368,36 @@ namespace {
 
         ValueFlow::Value executeImpl(const Token* expr)
         {
-            const ValueFlow::Value* value = nullptr;
             if (!expr)
                 return unknown();
-            if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
-                return expr->values().front();
-            if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::TOK)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
-                (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
-                return *value;
+            const ValueFlow::Value* value = nullptr;
+            for (const auto& val : expr->values())
+            {
+                if (!val.isKnown())
+                    continue;
+                switch (val.valueType) {
+                    case ValueFlow::Value::ValueType::INT: {
+                        if (!expr->isAssignmentOp() && expr->str() != ",")
+                            return expr->values().front();
+                        break;
+                    }
+                    case ValueFlow::Value::ValueType::FLOAT:
+                    case ValueFlow::Value::ValueType::TOK:
+                    case ValueFlow::Value::ValueType::ITERATOR_START:
+                    case ValueFlow::Value::ValueType::ITERATOR_END:
+                    case ValueFlow::Value::ValueType::CONTAINER_SIZE: {
+                        assert(!value);
+                        value = &val;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                //if (value)
+                //    return *value;
             }
+            if (value)
+                return *value;
             if (expr->isNumber()) {
                 if (MathLib::isFloat(expr->str()))
                     return unknown();
