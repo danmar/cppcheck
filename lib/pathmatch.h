@@ -35,6 +35,9 @@ public:
 
     /**
      * The constructor.
+     *
+     * If a path is a directory it needs to end with a file separator.
+     *
      * @param paths List of masks.
      * @param caseSensitive Match the case of the characters when
      *   matching paths?
@@ -43,6 +46,9 @@ public:
 
     /**
      * @brief Match path against list of masks.
+     *
+     * If you want to match a directory the given path needs to end with a path separator.
+     *
      * @param path Path to match.
      * @return true if any of the masks match the path, false otherwise.
      */

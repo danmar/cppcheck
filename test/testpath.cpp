@@ -55,6 +55,7 @@ private:
         TEST_CASE(simplifyPath);
         TEST_CASE(getAbsolutePath);
         TEST_CASE(exists);
+        TEST_CASE(fromNativeSeparators);
     }
 
     void removeQuotationMarks() const {
@@ -576,6 +577,20 @@ private:
         ASSERT_EQUALS(false, b);
         ASSERT_EQUALS(false, Path::exists("testpath.txt", &b));
         ASSERT_EQUALS(false, b);
+    }
+
+    void fromNativeSeparators() const {
+        ASSERT_EQUALS("lib/file.c", Path::fromNativeSeparators("lib/file.c"));
+        ASSERT_EQUALS("lib//file.c", Path::fromNativeSeparators("lib//file.c"));
+        ASSERT_EQUALS("/lib/file.c", Path::fromNativeSeparators("/lib/file.c"));
+        ASSERT_EQUALS("//lib/file.c", Path::fromNativeSeparators("//lib/file.c"));
+        ASSERT_EQUALS("./lib/file.c", Path::fromNativeSeparators("./lib/file.c"));
+
+        ASSERT_EQUALS("lib/file.c", Path::fromNativeSeparators("lib\\file.c"));
+        ASSERT_EQUALS("lib//file.c", Path::fromNativeSeparators("lib\\\\file.c"));
+        ASSERT_EQUALS("/lib/file.c", Path::fromNativeSeparators("\\lib\\file.c"));
+        ASSERT_EQUALS("//lib/file.c", Path::fromNativeSeparators("\\\\lib\\file.c"));
+        ASSERT_EQUALS("./lib/file.c", Path::fromNativeSeparators(".\\lib\\file.c"));
     }
 };
 
