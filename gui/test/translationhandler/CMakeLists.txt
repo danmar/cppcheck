@@ -16,8 +16,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (REGISTER_GUI_TESTS)
-    # TODO: requires X session - run with QT_QPA_PLATFORM=offscreen?
-    #add_test(NAME test-translationhandler COMMAND $<TARGET_FILE:test-translationhandler>)
+    add_test(NAME test-translationhandler COMMAND $<TARGET_FILE:test-translationhandler> -platform offscreen)
 endif()
 
 add_dependencies(gui-tests test-translationhandler)

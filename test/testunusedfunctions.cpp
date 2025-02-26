@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,14 +91,22 @@ private:
         TEST_CASE(staticFunction);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        Platform::Type platform = Platform::Type::Native;
+        const Settings* s = nullptr;
+        bool cpp = true;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], Platform::Type platform = Platform::Type::Native, const Settings *s = nullptr, bool cpp = true) {
-        const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).platform(options.platform).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions;
@@ -692,10 +700,10 @@ private:
 
         const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int WinMain() { }", Platform::Type::Native, &s);
+        check("int WinMain() { }", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
 
-        check("int _tmain() { }", Platform::Type::Native, &s);
+        check("int _tmain() { }", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -708,10 +716,10 @@ private:
 
         const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int wWinMain() { }", Platform::Type::Native, &s);
+        check("int wWinMain() { }", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
 
-        check("int _tmain() { }", Platform::Type::Native, &s);
+        check("int _tmain() { }", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -724,7 +732,7 @@ private:
         const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
 
         check("int _init() { }\n"
-              "int _fini() { }\n", Platform::Type::Native, &s);
+              "int _fini() { }\n", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -812,10 +820,10 @@ private:
 
     void attributeMaybeUnused()
     {
-        check("[[__maybe_unused__]] void f() {}\n", Platform::Type::Native, nullptr, false);
+        check("[[__maybe_unused__]] void f() {}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
-        check("[[maybe_unused]] void f() {}\n", Platform::Type::Native, nullptr, false);
+        check("[[maybe_unused]] void f() {}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("[[maybe_unused]] void f() {}\n");
@@ -833,7 +841,7 @@ private:
         check("void f(void) {}\n"
               "int main() {\n"
               "    f();\n"
-              "}\n", Platform::Type::Native, nullptr, false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:1]: (style) The function 'f' should have static linkage since it is not used outside of its translation unit.\n", errout_str());
     }
 };

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -215,7 +215,10 @@ protected:
 
         SettingsBuilder& library(const char lib[]);
 
-        SettingsBuilder& libraryxml(const char xmldata[], std::size_t len);
+        template<size_t size>
+        SettingsBuilder& libraryxml(const char (&xmldata)[size]) {
+            return libraryxml(xmldata, size-1);
+        }
 
         SettingsBuilder& platform(Platform::Type type);
 
@@ -237,6 +240,8 @@ protected:
             return std::move(settings);
         }
     private:
+        SettingsBuilder& libraryxml(const char xmldata[], std::size_t len);
+
         const TestFixture &fixture;
         Settings settings;
 

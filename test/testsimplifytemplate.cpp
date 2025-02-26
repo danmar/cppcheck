@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "platform.h"
 #include "settings.h"
 #include "templatesimplifier.h"
 #include "token.h"
@@ -241,6 +240,7 @@ private:
         TEST_CASE(template_namespace_10);
         TEST_CASE(template_namespace_11); // #7145
         TEST_CASE(template_namespace_12);
+        TEST_CASE(template_namespace_13);
         TEST_CASE(template_pointer_type);
         TEST_CASE(template_array_type);
 
@@ -309,10 +309,16 @@ private:
         TEST_CASE(explicitBool2);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        bool debugwarnings = false;
+    };
+
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tok_(const char* file, int line, const char (&code)[size], bool debugwarnings = false, Platform::Type type = Platform::Type::Native) {
-        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(debugwarnings).platform(type).build();
+    std::string tok_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(options.debugwarnings).build();
         SimpleTokenizer tokenizer(settings1, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -1205,7 +1211,7 @@ private:
                                 "struct TypeMath<int,Constants::fourtytwo> { "
                                 "static const int mult = sizeof ( int ) * Constants :: fourtytwo ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true));
+        ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1333,7 +1339,7 @@ private:
                                 "struct Factorial<1> { "
                                 "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true));
+        ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1393,7 +1399,7 @@ private:
                                 "} struct Foo<true> { "
                                 "std :: array < int , 1 > mfoo ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, true));
+        ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5307,6 +5313,22 @@ private:
                       tok(code));
     }
 
+    void template_namespace_13() {
+        const char code[] = "namespace N {\n" // #13593
+                            "    template<typename T>\n"
+                            "    struct S {\n"
+                            "        using U = T*;\n"
+                            "    };\n"
+                            "}\n"
+                            "::N::S<int>::U u;\n";
+        ASSERT_EQUALS("namespace N { "
+                      "struct S<int> ; "
+                      "} "
+                      "int * u ; "
+                      "struct N :: S<int> { } ;",
+                      tok(code));
+    }
+
     void template_pointer_type() {
         const char code[] = "template<class T> void foo(const T x) {}\n"
                             "void bar() { foo<int*>(0); }";
@@ -5817,9 +5839,9 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-#define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
+#define instantiateMatch(...) instantiateMatch_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool instantiateMatch_(const char (&code)[size], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
+    bool instantiateMatch_(const char* file, int line, const char (&code)[size], const std::size_t numberOfArguments, const char patternAfter[]) {
         SimpleTokenizer tokenizer(settings, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

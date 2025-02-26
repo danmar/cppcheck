@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -53,8 +54,9 @@ public:
      * @brief Set settings for cppcheck
      *
      * @param settings settings for cppcheck
+     * @param supprs suppressions for cppcheck
      */
-    void setSettings(const Settings &settings);
+    void setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs);
 
     /**
      * @brief Run whole program analysis
@@ -72,7 +74,7 @@ public:
     }
 
     void setSuppressions(const QList<SuppressionList::Suppression> &s) {
-        mSuppressions = s;
+        mSuppressionsUi = s;
     }
 
     /**
@@ -131,6 +133,7 @@ protected:
     ThreadResult &mResult;
 
     Settings mSettings;
+    std::shared_ptr<Suppressions> mSuppressions;
 
 private:
     void runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName);
@@ -144,7 +147,7 @@ private:
     std::string mCtuInfo;
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
-    QList<SuppressionList::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressionsUi;
 };
 /// @}
 #endif // CHECKTHREAD_H

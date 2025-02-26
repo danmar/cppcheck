@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ void ThreadHandler::setCheckFiles(const QStringList& files)
     }
 }
 
-void ThreadHandler::check(const Settings &settings)
+void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppressions>& supprs)
 {
     if (mResults.getFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
@@ -109,7 +109,7 @@ void ThreadHandler::check(const Settings &settings)
         mThreads[i]->setAddonsAndTools(addonsAndTools);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
-        mThreads[i]->setSettings(settings);
+        mThreads[i]->setSettings(settings, supprs);
         mThreads[i]->start();
     }
 

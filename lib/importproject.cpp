@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ void ImportProject::fsSetIncludePaths(FileSettings& fs, const std::string &basep
     }
 }
 
-ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
+ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings, Suppressions *supprs)
 {
     std::ifstream fin(filename);
     if (!fin.is_open())
@@ -213,8 +213,8 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
             setRelativePaths(filename);
             return ImportProject::Type::BORLAND;
         }
-    } else if (settings && endsWith(filename, ".cppcheck")) {
-        if (importCppcheckGuiProject(fin, settings)) {
+    } else if (settings && supprs && endsWith(filename, ".cppcheck")) {
+        if (importCppcheckGuiProject(fin, *settings, *supprs)) {
             setRelativePaths(filename);
             return ImportProject::Type::CPPCHECK_GUI;
         }
@@ -1235,7 +1235,7 @@ static std::string istream_to_string(std::istream &istr)
     return std::string(std::istreambuf_iterator<char>(istr), eos);
 }
 
-bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
+bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs)
 {
     tinyxml2::XMLDocument doc;
     const std::string xmldata = istream_to_string(istr);
@@ -1387,31 +1387,31 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             return false;
         }
     }
-    settings->basePaths = temp.basePaths;
-    settings->relativePaths |= temp.relativePaths;
-    settings->buildDir = temp.buildDir;
-    settings->includePaths = temp.includePaths;
-    settings->userDefines = temp.userDefines;
-    settings->userUndefs = temp.userUndefs;
-    settings->addons = temp.addons;
-    settings->clang = temp.clang;
-    settings->clangTidy = temp.clangTidy;
+    settings.basePaths = temp.basePaths;
+    settings.relativePaths |= temp.relativePaths;
+    settings.buildDir = temp.buildDir;
+    settings.includePaths = temp.includePaths;
+    settings.userDefines = temp.userDefines;
+    settings.userUndefs = temp.userUndefs;
+    settings.addons = temp.addons;
+    settings.clang = temp.clang;
+    settings.clangTidy = temp.clangTidy;
 
-    if (!settings->premiumArgs.empty())
-        settings->premiumArgs += temp.premiumArgs;
+    if (!settings.premiumArgs.empty())
+        settings.premiumArgs += temp.premiumArgs;
     else if (!temp.premiumArgs.empty())
-        settings->premiumArgs = temp.premiumArgs.substr(1);
+        settings.premiumArgs = temp.premiumArgs.substr(1);
 
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(Path::fromNativeSeparators(p));
-    settings->supprs.nomsg.addSuppressions(std::move(suppressions)); // TODO: check result
-    settings->checkHeaders = temp.checkHeaders;
-    settings->checkUnusedTemplates = temp.checkUnusedTemplates;
-    settings->maxCtuDepth = temp.maxCtuDepth;
-    settings->maxTemplateRecursion = temp.maxTemplateRecursion;
-    settings->inlineSuppressions |= temp.inlineSuppressions;
-    settings->safeChecks = temp.safeChecks;
-    settings->setCheckLevel(temp.checkLevel);
+    supprs.nomsg.addSuppressions(std::move(suppressions)); // TODO: check result
+    settings.checkHeaders = temp.checkHeaders;
+    settings.checkUnusedTemplates = temp.checkUnusedTemplates;
+    settings.maxCtuDepth = temp.maxCtuDepth;
+    settings.maxTemplateRecursion = temp.maxTemplateRecursion;
+    settings.inlineSuppressions |= temp.inlineSuppressions;
+    settings.safeChecks = temp.safeChecks;
+    settings.setCheckLevel(temp.checkLevel);
 
     return true;
 }

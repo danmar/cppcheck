@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 struct FileSettings;
 
-Executor::Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
+Executor::Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {
     // the two inputs may only be used exclusively
@@ -40,10 +40,10 @@ Executor::Executor(const std::list<FileWithDetails> &files, const std::list<File
 // TODO: this logic is duplicated in CppCheck::reportErr()
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
-    if (!mSettings.library.reportErrors(msg.file0))
-        return false;
+    if (msg.severity == Severity::internal)
+        return true;
 
-    if (!mSuppressions.isSuppressed(msg, {}))
+    if (!mSuppressions.nomsg.isSuppressed(msg, {}))
     {
         // TODO: there should be no need for verbose and default messages here
         std::string errmsg = msg.toString(mSettings.verbose);

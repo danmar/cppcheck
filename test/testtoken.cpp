@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,13 +139,13 @@ private:
     }
 
 #define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
-    bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
+    bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern) {
         SimpleTokenizer tokenizer(settingsDefault, *this);
         const std::string code2 = ";" + code + ";";
         try {
             ASSERT_LOC(tokenizer.tokenize(code2), file, line);
         } catch (...) {}
-        return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
+        return Token::Match(tokenizer.tokens()->next(), pattern.c_str());
     }
 
     void multiCompare() const {

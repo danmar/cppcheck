@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "options.h"
 #include "fixture.h"
+#include "options.h"
+#include "utils.h"
 
 #include <functional>
 #include <set>
@@ -50,75 +51,75 @@ private:
 
     void which_test() const {
         const char* argv[] = {"./test_runner", "TestClass"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT(std::set<std::string> {"TestClass"} == args.which_test());
     }
 
 
     void which_test_method() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT(std::set<std::string> {"TestClass::TestMethod"} == args.which_test());
     }
 
 
     void no_test_method() const {
         const char* argv[] = {"./test_runner"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT(std::set<std::string> {""} == args.which_test());
     }
 
 
     void not_quiet() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-v"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(false, args.quiet());
     }
 
 
     void quiet() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-q"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(true, args.quiet());
     }
 
     void not_help() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-v"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(false, args.help());
     }
 
 
     void help() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-h"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(true, args.help());
     }
 
 
     void help_long() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "--help"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(true, args.help());
     }
 
     void multiple_testcases() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "TestClass::AnotherTestMethod"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         std::set<std::string> expected {"TestClass::TestMethod", "TestClass::AnotherTestMethod"};
         ASSERT(expected == args.which_test());
     }
 
     void multiple_testcases_ignore_duplicates() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "TestClass"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         std::set<std::string> expected {"TestClass"};
         ASSERT(expected == args.which_test());
     }
 
     void invalid_switches() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-a", "-v", "-q"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         std::set<std::string> expected {"TestClass::TestMethod"};
         ASSERT(expected == args.which_test());
         ASSERT_EQUALS(true, args.quiet());
@@ -126,13 +127,13 @@ private:
 
     void summary() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-n"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(false, args.summary());
     }
 
     void dry_run() const {
         const char* argv[] = {"./test_runner", "TestClass::TestMethod", "-d"};
-        options args(sizeof argv / sizeof argv[0], argv);
+        options args(getArrayLength(argv), argv);
         ASSERT_EQUALS(true, args.dry_run());
     }
 };

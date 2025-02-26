@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -200,6 +200,14 @@ public:
     void clangSetOrigFiles();
 
     bool isKeyword(const std::string &str) const;
+
+    /**
+     * is token pointing at function head?
+     * @param tok         A '(' or ')' token in a possible function head
+     * @param endsWith    string after function head
+     * @return token matching with endsWith if syntax seems to be a function head else nullptr
+     */
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
 private:
     void determineCppC();

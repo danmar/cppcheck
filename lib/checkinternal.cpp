@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ void CheckInternal::checkRedundantTokCheck()
 void CheckInternal::checkRedundantTokCheckError(const Token* tok)
 {
     reportError(tok, Severity::style, "redundantTokCheck",
-                "Unnecessary check of \"" + (tok? tok->expressionString(): emptyString) + "\", match-function already checks if it is null.");
+                "Unnecessary check of \"" + (tok? tok->expressionString(): "") + "\", match-function already checks if it is null.");
 }
 
 void CheckInternal::checkTokenSimpleMatchPatterns()

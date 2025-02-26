@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,37 +47,49 @@ private:
         TEST_CASE(shiftTooManyBits); // #11496
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        Standards::cppstd_t standard = Standards::cppstd_t::CPP11;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
-        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
+    void check_(const char* file, int line, const char (&code)[size], const Settings& settings, const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(options.standard).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckType>(tokenizer, this);
     }
 
     // TODO: get rid of this
-    void check_(const char* file, int line, const std::string& code, const Settings& settings, bool cpp = true, Standards::cppstd_t standard = Standards::cppstd_t::CPP11) {
-        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(standard).build();
+    void check_(const char* file, int line, const std::string& code, const Settings& settings, const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).cpp(options.standard).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckType>(tokenizer, this);
     }
 
+    struct CheckPOptions
+    {
+        CheckPOptions() = default;
+        const char* filename = "test.cpp";
+    };
+
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const char filename[] = "test.cpp") {
+    void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const CheckPOptions& options = make_default_obj()) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
-        std::vector<std::string> files(1, filename);
+        std::vector<std::string> files(1, options.filename);
         Tokenizer tokenizer(settings1, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -122,9 +134,9 @@ private:
                 ASSERT_EQUALS("", errout_str());
 
                 // c++14
-                check(type + " foo(" + type + " x) { return x << 31; }", settings, true, Standards::cppstd_t::CPP14);
+                check(type + " foo(" + type + " x) { return x << 31; }", settings, dinit(CheckOptions, $.standard = Standards::CPP14));
                 ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 32-bit value by 31 bits is implementation-defined behaviour\n", errout_str());
-                check(type + " f(int x) { return (x = (" + type + ")x << 32); }", settings, true, Standards::cppstd_t::CPP14);
+                check(type + " f(int x) { return (x = (" + type + ")x << 32); }", settings, dinit(CheckOptions, $.standard = Standards::CPP14));
                 ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n", errout_str());
             }
         }
@@ -157,11 +169,11 @@ private:
             ASSERT_EQUALS("", errout_str());
 
             // c++14
-            check("signed long long foo(signed long long x) { return x << 64; }",settings, true, Standards::cppstd_t::CPP14);
+            check("signed long long foo(signed long long x) { return x << 64; }",settings, dinit(CheckOptions, $.standard = Standards::CPP14));
             ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
-            check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",settings, true, Standards::cppstd_t::CPP14);
+            check("signed long long f(long long x) { return (x = (signed long long)x << 64); }",settings, dinit(CheckOptions, $.standard = Standards::CPP14));
             ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 64-bit value by 64 bits is undefined behaviour\n", errout_str());
-            check("signed long long f(signed long long x) { return x << 63; }",settings, true, Standards::cppstd_t::CPP14);
+            check("signed long long f(signed long long x) { return x << 63; }",settings, dinit(CheckOptions, $.standard = Standards::CPP14));
             ASSERT_EQUALS("[test.cpp:1]: (portability) Shifting signed 64-bit value by 63 bits is implementation-defined behaviour\n", errout_str());
             check("signed long long f(signed long long x) { return x << 62; }",settings);
             ASSERT_EQUALS("", errout_str());
@@ -554,14 +566,14 @@ private:
                "void f()\n"
                "{\n"
                "    unsigned short u = TEST(true, 75000.0);\n"
-               "}\n", settingsDefault, "test.c");
+               "}\n", settingsDefault, dinit(CheckPOptions, $.filename = "test.c"));
         ASSERT_EQUALS("", errout_str());
 
         checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n"
                "void f()\n"
                "{\n"
                "    unsigned short u = TEST(false, 75000.0);\n"
-               "}\n", settingsDefault, "test.c");
+               "}\n", settingsDefault, dinit(CheckPOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
     }
@@ -579,14 +591,14 @@ private:
                "int f()\n"
                "{\n"
                "    fun(INT_MIN);\n"
-               "}", s, "test.cpp");
+               "}", s);
         ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout_str());
 
         checkP("void f() {\n" // #8399
                "    int32_t i = INT32_MAX;\n"
                "    i << 1;\n"
                "    i << 2;\n"
-               "}", s, "test.cpp");
+               "}", s);
         ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout_str());
     }
 

@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.8.1]
+        qt_ver: [5.15.2, 6.8.2]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -54,14 +54,14 @@ jobs:
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
 
       - name: Run CMake for GUI release (Qt 6)
         if: startsWith(matrix.qt_ver, '6')
         run: |
           ; TODO: enable rules?
           ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
 
       - name: Run CMake build
         run: |

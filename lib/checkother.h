@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ private:
 
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
-    void overlappingWriteFunction(const Token *tok);
+    void overlappingWriteFunction(const Token *tok, const std::string& funcname);
 
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, bool result);

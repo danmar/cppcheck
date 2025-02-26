@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,12 +100,20 @@ private:
         TEST_CASE(scopeInfo2);
     }
 
+    struct TokOptions
+    {
+        TokOptions() = default;
+        Platform::Type type = Platform::Type::Native;
+        bool debugwarnings = true;
+        bool preprocess = false;
+    };
+
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tok_(const char* file, int line, const char (&code)[size], Platform::Type type = Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
-        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+    std::string tok_(const char* file, int line, const char (&code)[size], const TokOptions& options = make_default_obj()) {
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(options.debugwarnings).platform(options.type).build();
 
-        if (preprocess) {
+        if (options.preprocess) {
             Tokenizer tokenizer(settings, *this);
             std::vector<std::string> files(1, "test.cpp");
             PreprocessorHelper::preprocess(code, files, tokenizer, *this);
@@ -415,7 +423,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, dinit(TokOptions, $.debugwarnings = false)), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout_str());
     }
 
@@ -682,7 +690,7 @@ private:
                             "    T* p{ new T };\n"
                             "}\n";
         const char expected[] = "void f ( ) { int * p { new int } ; }";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -690,7 +698,7 @@ private:
         const char code[] = "using T = int*;\n"
                             "void f(T = T()) {}\n";
         const char expected[] = "void f ( int * = ( int * ) 0 ) { }";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -701,20 +709,20 @@ private:
                                 "    std::string str = to_string(1);\n"
                                 "}\n";
             const char expected[] = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
-            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout_str());
         }
         {
             const char code[] = "using std::cout, std::endl, std::cerr, std::ostringstream;\n"
                                 "cerr << \"abc\";\n";
             const char expected[] = "std :: cerr << \"abc\" ;";
-            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout_str());
         }
         {
             const char code[] = "using std::string_view_literals::operator\"\"sv;\n";
             const char expected[] = "using std :: string_view_literals :: operator\"\"sv ;";
-            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout_str());
         }
         {
@@ -732,7 +740,7 @@ private:
                                     "using vector<int> = :: std :: vector<int> :: vector<int> ; "
                                     "vector<int> ( ) { } "
                                     "} ;";
-            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout_str());
         }
         {
@@ -744,7 +752,7 @@ private:
                                     "void f ( const char * c ) { "
                                     "cout << std :: string ( c ) << \"abc\" ; "
                                     "}";
-            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS(
                 "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cout\n",
                 errout_str());
@@ -756,7 +764,7 @@ private:
             const char expected[] = "class T : private std :: vector < std :: pair < std :: string , const int * > > { "
                                     "using empty = std :: vector < std :: pair < std :: string , const int * > > :: empty ; "
                                     "} ;";
-            ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+            ASSERT_EQUALS(expected, tok(code));
             ASSERT_EQUALS("", errout_str());
         }
     }
@@ -784,7 +792,7 @@ private:
                                 "} "
                                 "B b ; "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -794,7 +802,7 @@ private:
                             "T g() { return T(malloc(4)); }\n";
         const char expected[] = "int * f ( ) { return ( int * ) 0 ; } "
                                 "int * g ( ) { return ( int * ) ( malloc ( 4 ) ) ; }";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
 
         const char code2[] = "struct S {\n" // #13095
@@ -810,9 +818,17 @@ private:
                                  "int i ; "
                                  "} ; "
                                  "auto S :: get ( ) . int & { return i ; }";
-        ASSERT_EQUALS(expected2, tok(code2, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected2, tok(code2));
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:6]: (debug) auto token with no type.\n"
+                           "", errout_str());
+
+        const char code3[] = "using V = int*;\n"
+                             "auto g() -> const volatile V { return {}; }\n";
+        const char expected3[] = "auto g ( ) . const volatile int * { return { } ; }";
+        ASSERT_EQUALS(expected3, tok(code3));
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:2]: (debug) auto token with no type.\n"
                            "", errout_str());
     }
 
@@ -831,7 +847,7 @@ private:
                                 "struct S { "
                                 "int g ( ) { return ( int ) 0 ; } "
                                 "} ;";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -851,7 +867,7 @@ private:
                                 "void f ( ) { "
                                 "g ( { A :: a } ) ; "
                                 "}";
-        ASSERT_EQUALS(expected, tok(code, Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -913,11 +929,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, Platform::Type::Unix32));
-        ASSERT_EQUALS(exp, tok(code, Platform::Type::Unix64));
-        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win32A));
-        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win32W));
-        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win64));
+        ASSERT_EQUALS(exp, tok(code, dinit(TokOptions, $.type = Platform::Unix32)));
+        ASSERT_EQUALS(exp, tok(code, dinit(TokOptions, $.type = Platform::Unix64)));
+        ASSERT_EQUALS(exp, tok(code, dinit(TokOptions, $.type = Platform::Win32A)));
+        ASSERT_EQUALS(exp, tok(code, dinit(TokOptions, $.type = Platform::Win32W)));
+        ASSERT_EQUALS(exp, tok(code, dinit(TokOptions, $.type = Platform::Win64)));
     }
 
     void simplifyUsing9042() {
@@ -937,7 +953,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, Platform::Type::Win64));
+        ASSERT_EQUALS(exp, tok(code, dinit(TokOptions, $.type = Platform::Win64)));
     }
 
     void simplifyUsing9191() {
@@ -1573,7 +1589,7 @@ private:
                             "STAMP(A, int);\n"
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
-        (void)tok(code, Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
+        (void)tok(code, dinit(TokOptions, $.preprocess = true));
         ASSERT(startsWith(errout_str(), "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"));
     }
 

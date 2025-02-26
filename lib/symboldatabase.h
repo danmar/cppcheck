@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,7 +125,8 @@ public:
     std::string name() const;
 
     const std::string& type() const {
-        return classDef ? classDef->str() : emptyString;
+        static const std::string s_empty_string;
+        return classDef ? classDef->str() : s_empty_string;
     }
 
     bool isClassType() const;
@@ -294,7 +295,8 @@ public:
         if (mNameToken)
             return mNameToken->str();
 
-        return emptyString;
+        static const std::string s_empty_string;
+        return s_empty_string;
     }
 
     /**

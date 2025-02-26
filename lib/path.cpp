@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #else
+#include <stdexcept>
+
 #include <direct.h>
 #include <windows.h>
 #endif
@@ -426,10 +428,18 @@ bool Path::isDirectory(const std::string &path)
     return file_type(path) == S_IFDIR;
 }
 
-bool Path::exists(const std::string &path)
+bool Path::exists(const std::string &path, bool* isdir)
 {
     const auto type = file_type(path);
-    return type == S_IFREG || type == S_IFDIR;
+    if (type == S_IFDIR)
+    {
+        if (isdir)
+            *isdir = true;
+        return true;
+    }
+    if (isdir)
+        *isdir = false;
+    return type == S_IFREG;
 }
 
 std::string Path::join(const std::string& path1, const std::string& path2) {

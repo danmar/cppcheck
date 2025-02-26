@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -5284,7 +5284,7 @@ private:
                                    "    <arg nr=\"1\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
 
         check("void foo() {\n"
               "    exit(0);\n"
@@ -7180,7 +7180,7 @@ private:
                                    "    <arg nr=\"2\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@
 
 #include "filelister.h"
 #include "filesettings.h"
+#include "fixture.h"
 #include "path.h"
 #include "pathmatch.h"
-#include "fixture.h"
+#include "standards.h"
 
 #include <algorithm>
 #include <list>

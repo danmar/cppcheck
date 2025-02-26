@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
+#include "standards.h"
+#include "suppressions.h"
 
 #include "simplecpp.h"
 
@@ -110,8 +112,10 @@ private:
                         "  return 0;\n"
                         "}");
 
+        const Settings s;
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
@@ -130,8 +134,10 @@ private:
                         "  return 0;\n"
                         "}");
 
+        const Settings s;
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
         FileSettings fs{file.path()};
         ASSERT_EQUALS(1, cppcheck.check(fs));
         // TODO: how to properly disable these warnings?
@@ -151,11 +157,11 @@ private:
                         "  return 0;\n"
                         "}");
 
-        ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
-        const Settings s = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
-        cppcheck.settings() = s;
+        const Settings s = settingsBuilder().libraryxml(xmldata).build();
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
         ASSERT_EQUALS(0, cppcheck.check(FileWithDetails(file.path())));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
@@ -177,8 +183,10 @@ private:
         ScopedFile test_file_b("b.cpp",
                                "#include \"inc.h\"");
 
+        const Settings s;
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_a.path())));
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_b.path())));
         // TODO: how to properly disable these warnings?
@@ -194,36 +202,48 @@ private:
     }
 
     void isPremiumCodingStandardId() const {
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
 
-        cppcheck.settings().premiumArgs = "";
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
-        ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
+        {
+            Settings s;
+            s.premiumArgs = "";
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
 
-        cppcheck.settings().premiumArgs = "--misra-c-2012 --cert-c++-2016 --autosar";
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
-        ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
+        }
+
+        {
+            Settings s;
+            s.premiumArgs = "--misra-c-2012 --cert-c++-2016 --autosar";
+
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
+
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
+        }
     }
 
     void getDumpFileContentsRawTokens() const {
+        Settings s = settingsBuilder().build();
+        s.relativePaths = true;
+        s.basePaths.emplace_back("/some/path");
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
-        cppcheck.settings() = settingsBuilder().build();
-        cppcheck.settings().relativePaths = true;
-        cppcheck.settings().basePaths.emplace_back("/some/path");
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
         std::vector<std::string> files{"/some/path/test.cpp"};
         simplecpp::TokenList tokens1(files);
         const std::string expected = "  <rawtokens>\n"
@@ -233,21 +253,34 @@ private:
     }
 
     void getDumpFileContentsLibrary() const {
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
-        cppcheck.settings().libraries.emplace_back("std.cfg");
-        std::vector<std::string> files{ "/some/path/test.cpp" };
-        const std::string expected1 = "  <library lib=\"std.cfg\"/>\n";
-        ASSERT_EQUALS(expected1, cppcheck.getLibraryDumpData());
-        cppcheck.settings().libraries.emplace_back("posix.cfg");
-        const std::string expected2 = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
-        ASSERT_EQUALS(expected2, cppcheck.getLibraryDumpData());
+
+        {
+            Settings s;
+            s.libraries.emplace_back("std.cfg");
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
+            //std::vector<std::string> files{ "/some/path/test.cpp" };
+            const std::string expected = "  <library lib=\"std.cfg\"/>\n";
+            ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
+        }
+
+        {
+            Settings s;
+            s.libraries.emplace_back("std.cfg");
+            s.libraries.emplace_back("posix.cfg");
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
+            const std::string expected = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
+            ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
+        }
     }
 
     void getClangFlagsIncludeFile() const {
+        Settings s;
+        s.userIncludes.emplace_back("1.h");
+        Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(errorLogger, false, {});
-        cppcheck.settings().userIncludes.emplace_back("1.h");
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
         ASSERT_EQUALS("-x c --include 1.h ", cppcheck.getClangFlags(Standards::Language::C));
     }
 

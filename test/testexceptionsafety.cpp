@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,10 +57,17 @@ private:
         TEST_CASE(rethrowNoCurrentException3);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        bool inconclusive = false;
+        const Settings *s = nullptr;
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], bool inconclusive = false, const Settings *s = nullptr) {
-        const Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
+    void check_(const char* file, int line, const char (&code)[size],  const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).certainty(Certainty::inconclusive, options.inconclusive).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this);
@@ -145,7 +152,7 @@ private:
               "    if (foo)\n"
               "        throw 1;\n"
               "    p = new int;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -153,7 +160,7 @@ private:
               "    delete p;\n"
               "    reset(p);\n"
               "    throw 1;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -169,7 +176,7 @@ private:
               "    static int* p = 0;\n"
               "    delete p;\n"
               "    throw 1;\n"
-              "}", true);
+              "}", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
     }
 
@@ -385,7 +392,7 @@ private:
               "  try {\n"
               "    myThrowingFoo();\n"
               "  } catch(MyException &) {}\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout_str());
     }
 
@@ -394,7 +401,7 @@ private:
               "int main()\n"
               "{\n"
               "    f();\n"
-              "}\n", true);
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -411,12 +418,12 @@ private:
                             "    f();\n"
                             "}\n";
 
-        check(code, true);
+        check(code, dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
                       "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout_str());
 
         const Settings s = settingsBuilder().library("gnu.cfg").build();
-        check(code, true, &s);
+        check(code, dinit(CheckOptions, $.inconclusive = true, $.s = &s));
         ASSERT_EQUALS("", errout_str());
     }
 

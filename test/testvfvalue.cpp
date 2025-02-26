@@ -1,4 +1,4 @@
-/* -*- C++ -*-
+/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2025 Cppcheck team.
  *
@@ -16,28 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef jsonH
-#define jsonH
+#include "fixture.h"
+#include "vfvalue.h"
 
-#include "config.h"
+class TestValueFlowValue : public TestFixture {
+public:
+    TestValueFlowValue() : TestFixture("TestValueFlowValue") {}
 
-SUPPRESS_WARNING_PUSH("-Wfloat-equal")
-SUPPRESS_WARNING_GCC_PUSH("-Wuseless-cast")
-SUPPRESS_WARNING_CLANG_PUSH("-Wtautological-type-limit-compare")
-SUPPRESS_WARNING_CLANG_PUSH("-Wextra-semi-stmt")
-SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
-SUPPRESS_WARNING_CLANG_PUSH("-Wformat")
-SUPPRESS_WARNING_CLANG_PUSH("-Wfloat-conversion")
+private:
+    void run() override {
+        TEST_CASE(toString);
+    }
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
+    void toString() const {
+        {
+            ValueFlow::Value v;
+            ASSERT_EQUALS("0", v.toString());
+            v.intvalue = -1;
+            ASSERT_EQUALS("-1", v.toString());
+        }
+        {
+            ValueFlow::Value v;
+            v.valueType = ValueFlow::Value::ValueType::FLOAT;
+            ASSERT_EQUALS("0.0", v.toString());
+            v.floatValue = 0.0000000000001;
+            ASSERT_EQUALS("1e-13", v.toString());
+        }
+    }
+};
 
-SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_CLANG_POP
-SUPPRESS_WARNING_GCC_POP
-SUPPRESS_WARNING_POP
-
-#endif // jsonH
+REGISTER_TEST(TestValueFlowValue)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -582,7 +583,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Settings &settings, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings &settings, const Token *vartok, CTU::FileInfo::Value *value)
 {
     (void)value;
     bool unknown = false;
@@ -658,6 +659,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                 if (warning == 1 && !settings.severity.isEnabled(Severity::warning))
                     break;
 
+                ValueFlow::Value::UnknownFunctionReturn unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::no;
                 const std::list<ErrorMessage::FileLocation> &locationList =
                     CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                                 unsafeUsage,
@@ -665,15 +667,26 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                                                 "Dereferencing argument ARG that is null",
                                                 nullptr,
                                                 warning,
-                                                settings.maxCtuDepth);
+                                                settings.maxCtuDepth,
+                                                &unknownFunctionReturn);
                 if (locationList.empty())
                     continue;
+
+                std::string id = "ctunullpointer";
+                std::string message = "Null pointer dereference: " + unsafeUsage.myArgumentName;
+                if (unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+                    id += "OutOfMemory";
+                    message = "If memory allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
+                } else if (unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+                    id += "OutOfResources";
+                    message = "If resource allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
+                }
 
                 const ErrorMessage errmsg(locationList,
                                           fi->file0,
                                           warning ? Severity::warning : Severity::error,
-                                          "Null pointer dereference: " + unsafeUsage.myArgumentName,
-                                          "ctunullpointer",
+                                          message,
+                                          id,
                                           CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
                 errorLogger.reportErr(errmsg);
 

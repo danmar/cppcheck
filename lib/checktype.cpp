@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ void CheckType::checkTooBigBitwiseShift()
         // C11 Standard, section 6.5.7 Bitwise shift operators, states:
         //   The integer promotions are performed on each of the operands.
         //   The type of the result is that of the promoted left operand.
-        int lhsbits;
+        std::uint8_t lhsbits;
         if ((lhstype->type == ValueType::Type::CHAR) ||
             (lhstype->type == ValueType::Type::SHORT) ||
             (lhstype->type == ValueType::Type::WCHAR_T) ||

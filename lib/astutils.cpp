@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1991,8 +1991,6 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         return true;
     if (!Token::Match(ftok, "%name% ("))
         return false;
-    if (ftok->isStandardType())
-        return true;
     if (const Function* f = ftok->function()) {
         if (f->isAttributePure() || f->isAttributeConst())
             return true;
@@ -2877,21 +2875,6 @@ const Token* findEscapeStatement(const Scope* scope, const Library* library)
     return nullptr;
 }
 
-// Thread-unsafe memoization
-template<class F, class R=decltype(std::declval<F>()())>
-static std::function<R()> memoize(F f)
-{
-    bool init = false;
-    R result{};
-    return [=]() mutable -> R {
-        if (init)
-            return result;
-        result = f();
-        init = true;
-        return result;
-    };
-}
-
 template<class F,
          REQUIRES("F must be a function that returns a Token class",
                   std::is_convertible<decltype(std::declval<F>()()), const Token*> )>
@@ -2956,7 +2939,7 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
         return nullptr;
     if (depth < 0)
         return start;
-    auto getExprTok = memoize([&] {
+    auto getExprTok = utils::memoize([&] {
         return findExpression(start, exprid);
     });
     for (Token *tok = start; tok != end; tok = tok->next()) {

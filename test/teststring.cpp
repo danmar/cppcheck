@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,9 +61,15 @@ private:
         TEST_CASE(deadStrcmp);
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() = default;
+        const char* filename = "test.cpp";
+    };
+
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
-        std::vector<std::string> files(1, filename);
+    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+        std::vector<std::string> files(1, options.filename);
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -326,22 +332,22 @@ private:
 
         check("bool foo(char* c) {\n"
               "    return \"x\" == c+foo;\n"
-              "}", "test.cpp");
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("bool foo(char* c) {\n"
               "    return \"x\" == c+foo;\n"
-              "}", "test.c");
+              "}", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c+foo'. Did you intend to use strcmp() instead?\n", errout_str());
 
         check("bool foo(Foo c) {\n"
               "    return \"x\" == c.foo;\n"
-              "}", "test.cpp");
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("bool foo(Foo c) {\n"
               "    return \"x\" == c.foo;\n"
-              "}", "test.c");
+              "}", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c.foo'. Did you intend to use strcmp() instead?\n", errout_str());
 
         check("bool foo(const std::string& c) {\n"
@@ -357,7 +363,7 @@ private:
         // Ticket #4257
         check("bool foo() {\n"
               "MyString *str=Getter();\n"
-              "return *str==\"bug\"; }\n", "test.c");
+              "return *str==\"bug\"; }\n", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '*str'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // Ticket #4257
@@ -369,27 +375,27 @@ private:
         // Ticket #4257
         check("bool foo() {\n"
               "MyString **str=OtherGetter();\n"
-              "return *str==\"bug\"; }", "test.c");
+              "return *str==\"bug\"; }", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '*str'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // Ticket #4257
         check("bool foo() {\n"
               "MyString str=OtherGetter2();\n"
-              "return &str==\"bug\"; }", "test.c");
+              "return &str==\"bug\"; }", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '&str'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // Ticket #5734
         check("int foo(char c) {\n"
-              "return c == '4';}", "test.cpp");
+              "return c == '4';}");
         ASSERT_EQUALS("", errout_str());
         check("int foo(char c) {\n"
-              "return c == '4';}", "test.c");
+              "return c == '4';}", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("", errout_str());
         check("int foo(char c) {\n"
-              "return c == \"42\"[0];}", "test.cpp");
+              "return c == \"42\"[0];}");
         ASSERT_EQUALS("", errout_str());
         check("int foo(char c) {\n"
-              "return c == \"42\"[0];}", "test.c");
+              "return c == \"42\"[0];}", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("", errout_str());
 
         // 5639 String literal compared with char buffer in a struct
@@ -399,7 +405,7 @@ private:
               "void foo() {\n"
               "   struct Example example;\n"
               "   if (example.buffer == \"test\") ;\n"
-              "}\n", "test.cpp");
+              "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) String literal compared with variable 'example.buffer'. Did you intend to use strcmp() instead?\n", errout_str());
         check("struct Example {\n"
               "   char buffer[200];\n"
@@ -407,7 +413,7 @@ private:
               "void foo() {\n"
               "   struct Example example;\n"
               "   if (example.buffer == \"test\") ;\n"
-              "}\n", "test.c");
+              "}\n", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("[test.c:6]: (warning) String literal compared with variable 'example.buffer'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // #9726
@@ -461,7 +467,7 @@ private:
 
         check("bool foo(char* c) {\n"
               "    return *c == 0;\n"
-              "}", "test.c");
+              "}", dinit(CheckOptions, $.filename = "test.c"));
         ASSERT_EQUALS("", errout_str());
 
         check("bool foo(char* c) {\n"

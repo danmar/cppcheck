@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -435,6 +435,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes7);
         TEST_CASE(createSymbolDatabaseFindAllScopes8); // #12761
         TEST_CASE(createSymbolDatabaseFindAllScopes9);
+        TEST_CASE(createSymbolDatabaseFindAllScopes10);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
@@ -5675,6 +5676,21 @@ private:
             ASSERT_EQUALS(3, db->scopeList.size());
             ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
             ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+            ASSERT_EQUALS("i", db->scopeList.back().varlist.back().name());
+        }
+        {
+            GET_SYMBOL_DB_DBG("void bar(int) {}\n" // #9960
+                              "void foo() {\n"
+                              "    std::vector<int*> a(10);\n"
+                              "    for (int i = 0; i < 10; i++)\n"
+                              "        bar(*a[4]);\n"
+                              "}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout_str());
+            ASSERT_EQUALS(4, db->scopeList.size());
+            ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
+            ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+            ASSERT_EQUALS("i", db->scopeList.back().varlist.back().name());
         }
     }
 
@@ -5710,6 +5726,24 @@ private:
             ASSERT_EQUALS(it->tokenDef->linenr(), 4);
             ASSERT(!it->isDelete());
             ASSERT(it->isDefault());
+            ASSERT_EQUALS(it->type, Function::Type::eDestructor);
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n" // #13637
+                          "    ~S();\n"
+                          "};\n"
+                          "S::~S() = delete;\n");
+            ASSERT_EQUALS(db->scopeList.size(), 2);
+            auto scope = db->scopeList.begin();
+            ASSERT(!scope->functionOf);
+            ++scope;
+            ASSERT_EQUALS(scope->className, "S");
+            ASSERT_EQUALS(scope->functionList.size(), 1);
+            auto it = scope->functionList.begin();
+            ASSERT_EQUALS(it->name(), "S");
+            ASSERT_EQUALS(it->tokenDef->linenr(), 2);
+            ASSERT(it->isDelete());
+            ASSERT(!it->isDefault());
             ASSERT_EQUALS(it->type, Function::Type::eDestructor);
         }
     }
@@ -5945,6 +5979,21 @@ private:
                       "}\n");
         ASSERT(db && db->scopeList.size() == 4);
         ASSERT_EQUALS(db->scopeList.back().type, Scope::eLambda);
+    }
+
+    void createSymbolDatabaseFindAllScopes10() {
+        GET_SYMBOL_DB("void g() {\n"
+                      "    for (int i = 0, r = 1; i < r; ++i) {}\n"
+                      "}\n");
+        ASSERT(db);
+        ASSERT_EQUALS(3, db->scopeList.size());
+        ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
+        const Token* const iTok = Token::findsimplematch(tokenizer.tokens(), "i");
+        const Token* const rTok = Token::findsimplematch(iTok, "r");
+        const Variable* i = iTok->variable(), *r = rTok->variable();
+        ASSERT(i != nullptr && r != nullptr);
+        ASSERT_EQUALS(i->typeStartToken(), r->typeStartToken());
+        ASSERT(i->valueType()->isTypeEqual(r->valueType()));
     }
 
     void createSymbolDatabaseIncompleteVars()
@@ -9401,7 +9450,7 @@ private:
                                "<returnValue type=\"" #type "\"/>\n" \
                                "</function>\n" \
                                "</def>";              \
-        const Settings sF = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build(); \
+        const Settings sF = settingsBuilder().libraryxml(xmldata).build(); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", true, &sF)); \
 } while (false)
         // *INDENT-OFF*
@@ -9431,7 +9480,7 @@ private:
                                        "  <podtype name=\"char16_t\" sign=\"u\" size=\"2\"/>\n"
                                        "  <podtype name=\"char32_t\" sign=\"u\" size=\"4\"/>\n"
                                        "</def>";
-            /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).build();
             settings.platform.sizeof_short = 2;
             settings.platform.sizeof_int = 4;
 
@@ -9450,7 +9499,7 @@ private:
                                        "  <podtype name=\"xyz::x\" sign=\"u\" size=\"4\"/>\n"
                                        "  <podtype name=\"podtype2\" sign=\"u\" size=\"0\" stdtype=\"int\"/>\n"
                                        "</def>";
-            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("u32", settingsWin64));
             ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", settingsWin64));
@@ -9472,7 +9521,7 @@ private:
                                        "    <platform type=\"unix32\"/>\n"
                                        "  </platformtype>\n"
                                        "</def>";
-            const Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).libraryxml(xmldata).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
@@ -9485,7 +9534,7 @@ private:
                                        "    <platform type=\"win64\"/>\n"
                                        "  </platformtype>\n"
                                        "</def>";
-            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).libraryxml(xmldata).build();
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
@@ -9496,7 +9545,7 @@ private:
                                        "<def>\n"
                                        "  <container id=\"C\" startPattern=\"C\"/>\n"
                                        "</def>";
-            const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings sC = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("container(C) *", typeOf("C*c=new C;","new",true,&sC));
             ASSERT_EQUALS("container(C) *", typeOf("x=(C*)c;","(",true,&sC));
             ASSERT_EQUALS("container(C)", typeOf("C c = C();","(",true,&sC));
@@ -9518,7 +9567,7 @@ private:
                                        "    <access indexOperator=\"array-like\"/>\n"
                                        "  </container>\n"
                                        "</def>";
-            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings set = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("signed int", typeOf("Vector<int> v; v[0]=3;", "[", true, &set));
             ASSERT_EQUALS("container(test :: string)", typeOf("{return test::string();}", "(", true, &set));
             ASSERT_EQUALS(
@@ -9584,7 +9633,7 @@ private:
                                        "<def>\n"
                                        "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
                                        "</def>";
-            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings set = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("smart-pointer(std::shared_ptr)",
                           typeOf("class C {}; x = std::make_shared<C>();", "(", true, &set));
         }
@@ -9596,7 +9645,7 @@ private:
                                        "<def>\n"
                                        "  <container id=\"C\" startPattern=\"C\"/>\n"
                                        "</def>";
-            const Settings sC = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings sC = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("container(C)", typeOf("C f(char *p) { char data[10]; return data; }", "return", true, &sC));
         }
         // Smart pointer
@@ -9605,7 +9654,7 @@ private:
                                        "<def>\n"
                                        "  <smart-pointer class-name=\"MyPtr\"/>\n"
                                        "</def>";
-            const Settings set = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+            const Settings set = settingsBuilder().libraryxml(xmldata).build();
             ASSERT_EQUALS("smart-pointer(MyPtr)",
                           typeOf("void f() { MyPtr<int> p; return p; }", "p ;", true, &set));
             ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", true, &set));

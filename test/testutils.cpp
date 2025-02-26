@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ private:
         TEST_CASE(replaceEscapeSequences);
         TEST_CASE(splitString);
         TEST_CASE(as_const);
+        TEST_CASE(memoize);
     }
 
     void isValidGlobPattern() const {
@@ -517,6 +518,22 @@ private:
             utils::as_const(cp)->f(); // (correctly) calls non-const version
             ASSERT(c.written);
         }
+    }
+
+    void memoize() const {
+        int count = 0;
+        auto f = [&count]() {
+            ++count;
+            return count;
+        };
+        const auto callF = utils::memoize([&]() {
+            return f();
+        });
+        ASSERT_EQUALS(0, count);
+        ASSERT_EQUALS(1, callF());
+        ASSERT_EQUALS(1, count);
+        ASSERT_EQUALS(1, callF());
+        ASSERT_EQUALS(1, count);
     }
 };
 

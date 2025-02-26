@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "settings.h"
+#include "standards.h"
 
 #include <cstdint>
 #include <fstream>
@@ -41,6 +41,8 @@ class Tokenizer;
 class FileWithDetails;
 class AnalyzerInformation;
 class ErrorLogger;
+class Settings;
+struct Suppressions;
 
 namespace simplecpp { class TokenList; }
 
@@ -60,7 +62,9 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(ErrorLogger &errorLogger,
+    CppCheck(const Settings& settings,
+             Suppressions& supprs,
+             ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
              ExecuteCmdFn executeCommand);
 
@@ -98,12 +102,6 @@ public:
      *  settings()).
      */
     unsigned int check(const FileWithDetails &file, const std::string &content);
-
-    /**
-     * @brief Get reference to current settings.
-     * @return a reference to current settings
-     */
-    Settings &settings();
 
     /**
      * @brief Returns current version number as a string.
@@ -207,7 +205,8 @@ private:
 
     unsigned int checkClang(const FileWithDetails &file);
 
-    Settings mSettings;
+    const Settings& mSettings;
+    Suppressions& mSuppressions;
 
     class CppCheckLogger;
     std::unique_ptr<CppCheckLogger> mLogger;

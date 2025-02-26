@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,12 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include "common.h"
 #include "showtypes.h"
+#include "checkers.h"
 
 #include <cstdint>
+#include <map>
+#include <string>
 
 #include <QObject>
 #include <QStandardItemModel>
@@ -519,16 +521,9 @@ private:
     /** @brief Convert GUI error item into data error item */
     void readErrorItem(const QStandardItem *error, ErrorItem *item) const;
 
-    bool isCertReport() const {
-        return mReportType == ReportType::certC || mReportType == ReportType::certCpp;
-    }
+    bool isCertReport() const;
 
-    bool isAutosarMisraReport() const {
-        return mReportType == ReportType::autosar ||
-               mReportType == ReportType::misraC ||
-               mReportType == ReportType::misraCpp2008 ||
-               mReportType == ReportType::misraCpp2023;
-    }
+    bool isAutosarMisraReport() const;
 
     QStringList mHiddenMessageId;
 
@@ -540,7 +535,7 @@ private:
 
     ReportType mReportType = ReportType::normal;
 
-    QMap<QString,QString> mGuideline;
+    std::map<std::string, std::string> mGuideline;
 };
 /// @}
 #endif // RESULTSTREE_H

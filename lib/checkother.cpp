@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3512,7 +3512,7 @@ void CheckOther::unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef
     if (hasIfdef)
         id += "Configuration";
 
-    std::string msg = "$symbol:" + (tok ? tok->str() : emptyString) + "\nLabel '$symbol' is not used.";
+    std::string msg = "$symbol:" + (tok ? tok->str() : "") + "\nLabel '$symbol' is not used.";
     if (hasIfdef)
         msg += " There is #if in function body so the label might be used in code that is removed by the preprocessor.";
     if (inSwitch)
@@ -4325,7 +4325,7 @@ void CheckOther::checkOverlappingWrite()
                         constexpr bool follow = true;
                         if (!isSameExpression(macro, ptr1, ptr2, *mSettings, pure, follow, &errorPath))
                             continue;
-                        overlappingWriteFunction(tok);
+                        overlappingWriteFunction(tok, tok->str());
                     }
                     continue;
                 }
@@ -4351,7 +4351,7 @@ void CheckOther::checkOverlappingWrite()
                 constexpr bool follow = true;
                 if (!isSameExpression(macro, buf1, buf2, *mSettings, pure, follow, &errorPath))
                     continue;
-                overlappingWriteFunction(tok);
+                overlappingWriteFunction(tok, tok->str());
             }
         }
     }
@@ -4362,9 +4362,8 @@ void CheckOther::overlappingWriteUnion(const Token *tok)
     reportError(tok, Severity::error, "overlappingWriteUnion", "Overlapping read/write of union is undefined behavior");
 }
 
-void CheckOther::overlappingWriteFunction(const Token *tok)
+void CheckOther::overlappingWriteFunction(const Token *tok, const std::string& funcname)
 {
-    const std::string &funcname = tok ? tok->str() : emptyString;
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
 
@@ -4430,7 +4429,7 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.raceAfterInterlockedDecrementError(nullptr);
     c.invalidFreeError(nullptr, "malloc", false);
     c.overlappingWriteUnion(nullptr);
-    c.overlappingWriteFunction(nullptr);
+    c.overlappingWriteFunction(nullptr, "funcname");
 
     //performance
     c.redundantCopyError(nullptr,  "varname");

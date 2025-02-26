@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ class ImportProject;
 class QNetworkAccessManager;
 class QNetworkReply;
 class Settings;
+struct Suppressions;
 namespace Ui {
     class MainWindow;
 }
@@ -317,10 +318,8 @@ private:
 
     /**
      * @brief Get our default cppcheck settings and read project file.
-     *
-     * @return Default cppcheck settings
      */
-    QPair<bool, Settings> getCppcheckSettings();
+    bool getCppcheckSettings(Settings& settings, Suppressions& supprs);
 
     /** @brief Load program settings */
     void loadSettings();

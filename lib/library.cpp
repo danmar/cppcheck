@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,6 +142,8 @@ struct Library::LibraryData
     std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
     std::unordered_set<std::string> mEntrypoints;
 };
+
+const std::string Library::mEmptyString;
 
 Library::Library()
     : mData(new LibraryData())
@@ -1588,9 +1590,9 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 const std::string& Library::returnValue(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
-        return emptyString;
+        return mEmptyString;
     const auto it = utils::as_const(mData->mReturnValue).find(getFunctionName(ftok));
-    return it != mData->mReturnValue.cend() ? it->second : emptyString;
+    return it != mData->mReturnValue.cend() ? it->second : mEmptyString;
 }
 
 const std::string& Library::returnValueType(const Token *ftok) const
@@ -1601,10 +1603,10 @@ const std::string& Library::returnValueType(const Token *ftok) const
             if (contTok->valueType() && contTok->valueType()->container)
                 return contTok->valueType()->container->getReturnType(ftok->str());
         }
-        return emptyString;
+        return mEmptyString;
     }
     const auto it = utils::as_const(mData->mReturnValueType).find(getFunctionName(ftok));
-    return it != mData->mReturnValueType.cend() ? it->second : emptyString;
+    return it != mData->mReturnValueType.cend() ? it->second : mEmptyString;
 }
 
 int Library::returnValueContainer(const Token *ftok) const
@@ -1794,7 +1796,7 @@ const std::string& Library::blockstart(const std::string &file) const
     if (map_it != mData->mExecutableBlocks.end()) {
         return map_it->second.start();
     }
-    return emptyString;
+    return mEmptyString;
 }
 
 const std::string& Library::blockend(const std::string &file) const
@@ -1805,7 +1807,7 @@ const std::string& Library::blockend(const std::string &file) const
     if (map_it != mData->mExecutableBlocks.end()) {
         return map_it->second.end();
     }
-    return emptyString;
+    return mEmptyString;
 }
 
 bool Library::iskeyword(const std::string &file, const std::string &keyword) const

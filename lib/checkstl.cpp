@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2514,7 +2514,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
                     outOfBoundsError(emptyAdvance,
                                      lValue.tokvalue->expressionString(),
                                      cValue,
-                                     advanceIndex ? advanceIndex->expressionString() : emptyString,
+                                     advanceIndex ? advanceIndex->expressionString() : "",
                                      nullptr);
                 else
                     outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
@@ -2899,10 +2899,21 @@ void CheckStl::useStlAlgorithm()
         return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
     };
 
-    auto isConditionWithoutSideEffects = [this](const Token* tok) -> bool {
+    enum class ConditionOpType : std::uint8_t { OTHER, MIN, MAX };
+    auto isConditionWithoutSideEffects = [this](const Token* tok, ConditionOpType& type) -> bool {
         if (!Token::simpleMatch(tok, "{") || !Token::simpleMatch(tok->previous(), ")"))
             return false;
-        return isConstExpression(tok->linkAt(-1)->astOperand2(), mSettings->library);
+        const Token* condTok = tok->linkAt(-1)->astOperand2();
+        if (isConstExpression(condTok, mSettings->library)) {
+            if (condTok->str() == "<")
+                type = ConditionOpType::MIN;
+            else if (condTok->str() == ">")
+                type = ConditionOpType::MAX;
+            else
+                type = ConditionOpType::OTHER;
+            return true;
+        }
+        return false;
     };
 
     auto isAccumulation = [](const Token* tok, int varId) {
@@ -3035,14 +3046,27 @@ void CheckStl::useStlAlgorithm()
                         else
                             algo = "std::replace_if";
                     } else {
+                        ConditionOpType type{};
                         if (addByOne(assignTok, assignVarId))
                             algo = "std::count_if";
                         else if (accumulateBoolLiteral(assignTok, assignVarId))
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                         else if (assignTok->str() != "=")
                             algo = "std::accumulate";
-                        else if (hasBreak && isConditionWithoutSideEffects(condBodyTok))
-                            algo = "std::any_of, std::all_of, std::none_of";
+                        else if (isConditionWithoutSideEffects(condBodyTok, type)) {
+                            if (hasBreak)
+                                algo = "std::any_of, std::all_of, std::none_of";
+                            else if (assignTok->astOperand2()->varId() == loopVar->varId()) {
+                                if (type == ConditionOpType::MIN)
+                                    algo = "std::min_element";
+                                else if (type == ConditionOpType::MAX)
+                                    algo = "std::max_element";
+                                else
+                                    continue;
+                            }
+                            else
+                                continue;
+                        }
                         else
                             continue;
                     }
@@ -3148,7 +3172,7 @@ void CheckStl::knownEmptyContainer()
                 const Token* contTok = splitTok->astOperand2();
                 if (!isKnownEmptyContainer(contTok))
                     continue;
-                knownEmptyContainerError(contTok, emptyString);
+                knownEmptyContainerError(contTok, "");
             } else {
                 const std::vector<const Token *> args = getArguments(tok);
                 if (args.empty())

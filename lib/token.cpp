@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "astutils.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "simplecpp.h"
 #include "symboldatabase.h"
@@ -33,6 +34,7 @@
 #include <cassert>
 #include <cctype>
 #include <climits>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -56,6 +58,7 @@ namespace {
 }
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
+const std::string Token::mEmptyString;
 
 Token::Token(TokensFrontBack &tokensFrontBack)
     : mTokensFrontBack(tokensFrontBack)
@@ -1201,11 +1204,21 @@ void Token::printOut(std::ostream& out, const char *title) const
     out << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
-void Token::printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const
+void Token::printOut(std::ostream& out, bool xml, const char *title, const std::vector<std::string> &fileNames) const
 {
+    if (xml)
+    {
+        out << "<file>" << std::endl;
+        out << "<![CDATA[";
+    }
     if (title && title[0])
         out << "\n### " << title << " ###\n";
     out << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
+    if (xml)
+    {
+        out << "]]>" << std::endl;
+        out << "</file>" << std::endl;
+    }
 }
 
 // cppcheck-suppress unusedFunction - used for debugging
@@ -1789,7 +1802,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::FLOAT:
                     outs += "floatvalue=\"";
-                    outs += std::to_string(value.floatValue); // TODO: should this be MathLib::toString()?
+                    outs += MathLib::toString(value.floatValue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::MOVED:
@@ -1863,7 +1876,6 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
 
                 outs += "/>\n";
             }
-
             else {
                 if (&value != &values->front())
                     outs += ",";

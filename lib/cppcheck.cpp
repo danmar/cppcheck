@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h"
+#include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
@@ -391,11 +392,11 @@ static void createDumpFile(const Settings& settings,
     fdump << "<dumps" << language << ">\n";
     fdump << "  <platform"
           << " name=\"" << settings.platform.toString() << '\"'
-          << " char_bit=\"" << settings.platform.char_bit << '\"'
-          << " short_bit=\"" << settings.platform.short_bit << '\"'
-          << " int_bit=\"" << settings.platform.int_bit << '\"'
-          << " long_bit=\"" << settings.platform.long_bit << '\"'
-          << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
+          << " char_bit=\"" << static_cast<unsigned>(settings.platform.char_bit) << '\"'
+          << " short_bit=\"" << static_cast<unsigned>(settings.platform.short_bit) << '\"'
+          << " int_bit=\"" << static_cast<unsigned>(settings.platform.int_bit) << '\"'
+          << " long_bit=\"" << static_cast<unsigned>(settings.platform.long_bit) << '\"'
+          << " long_long_bit=\"" << static_cast<unsigned>(settings.platform.long_long_bit) << '\"'
           << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
           << " wchar_t_bit=\"" << (settings.platform.sizeof_wchar_t * settings.platform.char_bit) << '\"'
           << " size_t_bit=\"" << (settings.platform.sizeof_size_t * settings.platform.char_bit) << '\"'
@@ -528,10 +529,14 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
     return flags;
 }
 
-CppCheck::CppCheck(ErrorLogger &errorLogger,
+CppCheck::CppCheck(const Settings& settings,
+                   Suppressions& supprs,
+                   ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
                    ExecuteCmdFn executeCommand)
-    : mLogger(new CppCheckLogger(errorLogger, mSettings, mSettings.supprs, useGlobalSuppressions))
+    : mSettings(settings)
+    , mSuppressions(supprs)
+    , mLogger(new CppCheckLogger(errorLogger, mSettings, mSuppressions, useGlobalSuppressions))
     , mErrorLogger(*mLogger)
     , mErrorLoggerDirect(errorLogger)
     , mUseGlobalSuppressions(useGlobalSuppressions)
@@ -658,10 +663,10 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         mErrorLogger.reportOut(std::string("Checking ") + file.spath() + " ...", Color::FgGreen);
 
     // TODO: get language from FileWithDetails object
-    const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "");
-    const std::string clangcmd = analyzerInfo + ".clang-cmd";
-    const std::string clangStderr = analyzerInfo + ".clang-stderr";
-    const std::string clangAst = analyzerInfo + ".clang-ast";
+    std::string clangStderr;
+    if (!mSettings.buildDir.empty())
+        clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "") + ".clang-stderr";
+
     std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
     // append .exe if it is not a path
@@ -673,17 +678,17 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
                               getClangFlags(Path::identify(file.spath(), mSettings.cppHeaderProbe)) +
                               file.spath();
-    const std::string redirect2 = analyzerInfo.empty() ? std::string("2>&1") : ("2> " + clangStderr);
-    if (!mSettings.buildDir.empty()) {
-        std::ofstream fout(clangcmd);
-        fout << exe << " " << args2 << " " << redirect2 << std::endl;
-    }
+    const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
     if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2);
     }
 
     std::string output2;
     const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
+    if (mSettings.debugClangOutput) {
+        std::cout << output2 << std::endl;
+    }
+    // TODO: this might also fail if compiler errors are encountered - we should report them properly
     if (exitcode != EXIT_SUCCESS) {
         // TODO: report as proper error
         std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (exitcode: " << exitcode << " / output: " << output2 << ")" << std::endl;
@@ -696,27 +701,20 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         return 0; // TODO: report as failure?
     }
 
+    const auto reportError = [this](const ErrorMessage& errorMessage) {
+        mErrorLogger.reportErr(errorMessage);
+    };
+
     // Ensure there are not syntax errors...
     std::vector<ErrorMessage> compilerWarnings;
-    if (!mSettings.buildDir.empty()) {
+    if (!clangStderr.empty()) {
         std::ifstream fin(clangStderr);
-        auto reportError = [this](const ErrorMessage& errorMessage) {
-            mErrorLogger.reportErr(errorMessage);
-        };
         if (reportClangErrors(fin, reportError, compilerWarnings))
             return 0; // TODO: report as failure?
     } else {
         std::istringstream istr(output2);
-        auto reportError = [this](const ErrorMessage& errorMessage) {
-            mErrorLogger.reportErr(errorMessage);
-        };
         if (reportClangErrors(istr, reportError, compilerWarnings))
             return 0; // TODO: report as failure?
-    }
-
-    if (!mSettings.buildDir.empty()) {
-        std::ofstream fout(clangAst);
-        fout << output2 << std::endl;
     }
 
     try {
@@ -788,44 +786,34 @@ unsigned int CppCheck::check(const FileSettings &fs)
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
 
-    // need to pass the externally provided ErrorLogger instead of our internal wrapper
-    CppCheck temp(mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
-    temp.mSettings = mSettings;
-    if (!temp.mSettings.userDefines.empty())
-        temp.mSettings.userDefines += ';';
+    Settings tempSettings = mSettings; // this is a copy
+    if (!tempSettings.userDefines.empty())
+        tempSettings.userDefines += ';';
     if (mSettings.clang)
-        temp.mSettings.userDefines += fs.defines;
+        tempSettings.userDefines += fs.defines;
     else
-        temp.mSettings.userDefines += fs.cppcheckDefines();
-    temp.mSettings.includePaths = fs.includePaths;
-    temp.mSettings.userUndefs.insert(fs.undefs.cbegin(), fs.undefs.cend());
+        tempSettings.userDefines += fs.cppcheckDefines();
+    tempSettings.includePaths = fs.includePaths;
+    tempSettings.userUndefs.insert(fs.undefs.cbegin(), fs.undefs.cend());
     if (fs.standard.find("++") != std::string::npos)
-        temp.mSettings.standards.setCPP(fs.standard);
+        tempSettings.standards.setCPP(fs.standard);
     else if (!fs.standard.empty())
-        temp.mSettings.standards.setC(fs.standard);
+        tempSettings.standards.setC(fs.standard);
     if (fs.platformType != Platform::Type::Unspecified)
-        temp.mSettings.platform.set(fs.platformType);
+        tempSettings.platform.set(fs.platformType);
     if (mSettings.clang) {
-        temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
-        // TODO: propagate back suppressions
+        tempSettings.includePaths.insert(tempSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
+        // need to pass the externally provided ErrorLogger instead of our internal wrapper
+        CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
         // TODO: propagate back mFileInfo
         const unsigned int returnValue = temp.check(fs.file);
         if (mUnusedFunctionsCheck)
             mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
         return returnValue;
     }
+    // need to pass the externally provided ErrorLogger instead of our internal wrapper
+    CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
     const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
-    for (const auto& suppr : temp.mSettings.supprs.nomsg.getSuppressions())
-    {
-        const bool res = mSettings.supprs.nomsg.updateSuppressionState(suppr);
-        if (!res)
-        {
-            // TODO: remove fallback
-            const std::string err = mSettings.supprs.nomsg.addSuppression(suppr);
-            if (!err.empty())
-                throw InternalError(nullptr, "could not update suppression '" + suppr.errorId + "'");
-        }
-    }
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     while (!temp.mFileInfo.empty()) {
@@ -844,10 +832,10 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
-static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings)
+static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings, const Suppressions& supprs)
 {
     std::ostringstream toolinfo;
-    toolinfo << CPPCHECK_VERSION_STRING;
+    toolinfo << (settings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : settings.cppcheckCfgProductName);
     toolinfo << (settings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
     toolinfo << (settings.severity.isEnabled(Severity::style) ? 's' : ' ');
     toolinfo << (settings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
@@ -856,7 +844,7 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
     toolinfo << settings.userDefines;
     toolinfo << std::to_string(static_cast<std::uint8_t>(settings.checkLevel));
     // TODO: do we need to add more options?
-    settings.supprs.nomsg.dump(toolinfo);
+    supprs.nomsg.dump(toolinfo);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
@@ -918,7 +906,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     simplecpp::TokenList tokens(*fileStream, files);
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
-                        hash = calculateHash(preprocessor, tokens, mSettings);
+                        hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
                     tokenizer.list.createTokens(std::move(tokens));
                 }
@@ -927,7 +915,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     simplecpp::TokenList tokens(file.spath(), files);
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
-                        hash = calculateHash(preprocessor, tokens, mSettings);
+                        hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
                     tokenizer.list.createTokens(std::move(tokens));
                 }
@@ -994,10 +982,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         // Parse comments and then remove them
         mLogger->setRemarkComments(preprocessor.getRemarkComments(tokens1));
-        preprocessor.inlineSuppressions(tokens1, mSettings.supprs.nomsg);
+        preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
         if (mSettings.dump || !mSettings.addons.empty()) {
             std::ostringstream oss;
-            mSettings.supprs.nomsg.dump(oss);
+            mSuppressions.nomsg.dump(oss);
             dumpProlog += oss.str();
         }
         preprocessor.removeComments(tokens1);
@@ -1009,7 +997,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings);
+            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
             std::list<ErrorMessage> errors;
             if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
                 while (!errors.empty()) {
@@ -1180,8 +1168,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
-                // Need to call this even if the hash will skip this configuration
-                mSettings.supprs.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                if (mSettings.inlineSuppressions) {
+                    // Need to call this even if the hash will skip this configuration
+                    mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                }
 
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
@@ -1270,10 +1260,14 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         mErrorLogger.reportErr(errmsg);
     }
 
-    // In jointSuppressionReport mode, unmatched suppressions are
-    // collected after all files are processed
-    if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
-        SuppressionList::reportUnmatchedSuppressions(mSettings.supprs.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+    // TODO: this is done too early causing the whole program analysis suppressions to be reported as unmatched
+    if (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration) {
+        // In jointSuppressionReport mode, unmatched suppressions are
+        // collected after all files are processed
+        if (!mSettings.useSingleJob()) {
+            // TODO: check result?
+            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+        }
     }
 
     if (analyzerInformation) {
@@ -1808,11 +1802,6 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
     executeAddons(ctuInfoFiles, "");
 }
 
-Settings &CppCheck::settings()
-{
-    return mSettings;
-}
-
 void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfConfigurations)
 {
     if (!mSettings.severity.isEnabled(Severity::information) && !mTooManyConfigs)
@@ -1878,14 +1867,17 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 {
-    Settings s;
-    s.addEnabled("all");
+    Settings settings;
+    Suppressions supprs;
 
-    CppCheck cppcheck(errorlogger, true, nullptr);
+    CppCheck cppcheck(settings, supprs, errorlogger, true, nullptr);
     cppcheck.purgedConfigurationMessage("","");
     cppcheck.mTooManyConfigs = true;
     cppcheck.tooManyConfigsError("",0U);
     // TODO: add functions to get remaining error messages
+
+    Settings s;
+    s.addEnabled("all");
 
     // call all "getErrorMessages" in all registered Check classes
     for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)

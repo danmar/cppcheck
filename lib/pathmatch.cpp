@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,11 @@ bool PathMatch::match(const std::string &path) const
     std::string findpath = Path::fromNativeSeparators(path);
     if (!mCaseSensitive)
         strTolower(findpath);
+    std::string finddir;
+    if (!endsWith(findpath,'/'))
+        finddir = removeFilename(findpath);
+    else
+        finddir = findpath;
 
     const bool is_absolute = Path::isAbsolute(path);
 
@@ -54,19 +59,16 @@ bool PathMatch::match(const std::string &path) const
 
         // Filtering directory name
         if (endsWith(pathToMatch,'/')) {
-            if (!endsWith(findpath,'/'))
-                findpath = removeFilename(findpath);
-
-            if (pathToMatch.length() > findpath.length())
+            if (pathToMatch.length() > finddir.length())
                 continue;
             // Match relative paths starting with mask
             // -isrc matches src/foo.cpp
-            if (findpath.compare(0, pathToMatch.size(), pathToMatch) == 0)
+            if (finddir.compare(0, pathToMatch.size(), pathToMatch) == 0)
                 return true;
             // Match only full directory name in middle or end of the path
             // -isrc matches myproject/src/ but does not match
             // myproject/srcfiles/ or myproject/mysrc/
-            if (findpath.find("/" + pathToMatch) != std::string::npos)
+            if (finddir.find("/" + pathToMatch) != std::string::npos)
                 return true;
         }
         // Filtering filename

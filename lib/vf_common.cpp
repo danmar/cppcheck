@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ namespace ValueFlow
         if (!vt || !vt->isIntegral() || vt->pointer)
             return false;
 
-        int bits;
+        std::uint8_t bits;
         switch (vt->type) {
         case ValueType::Type::BOOL:
             bits = 1;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "version.h"
 
 #include <algorithm>
@@ -56,16 +57,14 @@ static FILE *logfile = nullptr;
 class CppcheckExecutor : public ErrorLogger {
 private:
     const std::time_t stoptime;
+    Suppressions supprs;
     CppCheck cppcheck;
 
 public:
-    CppcheckExecutor()
-        : ErrorLogger()
-        , stoptime(std::time(nullptr)+2U)
-        , cppcheck(*this, false, nullptr) {
-        cppcheck.settings().addEnabled("all");
-        cppcheck.settings().certainty.enable(Certainty::inconclusive);
-    }
+    CppcheckExecutor(const Settings& settings)
+        : stoptime(std::time(nullptr)+2U)
+        , cppcheck(settings, supprs, *this, false, nullptr)
+    {}
 
     void run(const char code[]) {
         cppcheck.check(FileWithDetails("test.cpp"), code);
@@ -127,7 +126,10 @@ int main()
 
     std::cout << "<html><body>Cppcheck " CPPCHECK_VERSION_STRING "<pre>";
 
-    CppcheckExecutor cppcheckExecutor;
+    Settings s;
+    s.addEnabled("all");
+    s.certainty.enable(Certainty::inconclusive);
+    CppcheckExecutor cppcheckExecutor(s);
     cppcheckExecutor.run(code);
 
     std::fclose(logfile);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ private:
                                "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
                                "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                                "</def>";
-        settings = settingsBuilder(settings).libraryxml(cfg, sizeof(cfg)).build();
+        settings = settingsBuilder(settings).libraryxml(cfg).build();
 
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);

@@ -2583,6 +2583,7 @@ def test_inline_suppr_builddir(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
 
 
+# TODO: the suppressions are generated outside of the scope which captures the analysis information
 @pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_cached(tmp_path):
     build_dir = tmp_path / 'b1'
@@ -2597,6 +2598,8 @@ def test_inline_suppr_builddir_j(tmp_path):
     __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
 
 
+# TODO: the suppressions are generated outside of the scope which captures the analysis information
+@pytest.mark.xfail(strict=True)
 def test_inline_suppr_builddir_j_cached(tmp_path):
     build_dir = tmp_path / 'b1'
     os.mkdir(build_dir)
@@ -2766,9 +2769,7 @@ typedef int MISRA_5_6_VIOLATION_1;
 def test_addon_suppr_inline(tmp_path):
     __test_addon_suppr(tmp_path, ['--inline-suppr', '-j1'])
 
-
 # TODO: remove override when all issues are fixed
-@pytest.mark.xfail(strict=True)  # TODO: inline suppression does not work
 def test_addon_suppr_inline_j(tmp_path):
     __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
 
@@ -2785,3 +2786,378 @@ def test_addon_suppr_cli_file_line(tmp_path):
 def test_addon_suppr_cli_absfile_line(tmp_path):
     test_file = tmp_path / 'test.c'
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:{}:3'.format(test_file)])
+
+
+def test_ctu_path_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        str(test_file)
+    ]
+
+    # the CTU path was not properly read leading to missing location information
+    stderr_exp = [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file),
+        'void f(int *p) { *p = 3; }',
+        '                  ^',
+        "{}:4:14: note: Assignment 'p=0', assigned value is 0".format(test_file),
+        '    int *p = 0;',
+        '             ^',
+        '{}:5:2: note: Calling function f, 1st argument is null'.format(test_file),
+        'f(p);',
+        ' ^',
+        '{}:2:19: note: Dereferencing argument p that is null'.format(test_file),
+        'void f(int *p) { *p = 3; }',
+        '                  ^'
+    ]
+
+    exitcode_1, stdout_1, stderr_1 = cppcheck(args)
+    assert exitcode_1 == 0, stdout_1
+    assert stdout_1 == ''
+    assert stderr_1.splitlines() == stderr_exp
+
+    exitcode_2, stdout_2, stderr_2 = cppcheck(args)
+    assert exitcode_2 == 0, stdout_2
+    assert stdout_2 == ''
+    assert stderr_2.splitlines() == stderr_exp
+
+
+@pytest.mark.xfail(strict=True)
+def test_ctu_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '-j1',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    # the CTU was run and then evaluated again from the builddir leading to duplicated findings
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file)
+    ]
+
+
+def test_debug(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_xml(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 0
+
+
+def test_debug_verbose(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--verbose',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') != -1
+    assert stdout.find('##AST') != -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_verbose_xml(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--verbose',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 1
+
+
+# TODO: test with --xml
+def test_debug_template(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""template<class T> class TemplCl;
+void f
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',  # TODO: remove depdency on this
+        '--debug-template',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') != -1
+    assert stderr.splitlines() == []
+
+
+def test_file_ignore_2(tmp_path):  # #13570
+    tests_path = tmp_path / 'tests'
+    os.mkdir(tests_path)
+
+    lib_path = tmp_path / 'lib'
+    os.mkdir(lib_path)
+
+    test_file_1 = lib_path / 'test_1.c'
+    with open(test_file_1, 'wt'):
+        pass
+
+    args = [
+        '-itests',
+        '-itest_1.c',
+        '.'
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+    assert stderr.splitlines() == []
+
+
+def test_debug_valueflow(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""int f()
+{
+    double d = 1.0 / 0.5;
+    return d;
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',  # TODO: limit to valueflow output
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    # check sections in output
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+    # check precision in output - #13607
+    valueflow = stdout[stdout.find('##Value flow'):]
+    assert valueflow.splitlines() == [
+        '##Value flow',
+        'File {}'.format(str(test_file).replace('\\', '/')),
+        'Line 3',
+        '  = always 2.0',
+        '  1.0 always 1.0',
+        '  / always 2.0',
+        '  0.5 always 0.5',
+        'Line 4',
+        '  d always {symbolic=(1.0/0.5),2.0}'
+    ]
+
+
+def test_debug_valueflow_xml(tmp_path):  # #13606
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""double f()
+{
+    double d = 0.0000001;
+    return d;
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',  # TODO: limit to valueflow output
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    # check sections in output
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    # check XML nodes in output
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 0
+
+    # check precision in output - #13606
+    value_elem = valueflow_elem[0].findall('values/value')
+    assert len(value_elem) == 3
+    assert 'floatvalue' in value_elem[0].attrib
+    assert value_elem[0].attrib['floatvalue'] == '1e-07'
+    assert 'floatvalue' in value_elem[1].attrib
+    assert value_elem[1].attrib['floatvalue'] == '1e-07'
+    assert 'floatvalue' in value_elem[2].attrib
+    assert value_elem[2].attrib['floatvalue'] == '1e-07'

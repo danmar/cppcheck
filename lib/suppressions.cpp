@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ std::vector<SuppressionList::Suppression> SuppressionList::parseMultiSuppressCom
     return suppressions;
 }
 
-std::string SuppressionList::addSuppressionLine(const std::string &line)
+SuppressionList::Suppression SuppressionList::parseLine(const std::string &line)
 {
     std::istringstream lineStream;
     SuppressionList::Suppression suppression;
@@ -249,11 +249,18 @@ std::string SuppressionList::addSuppressionLine(const std::string &line)
 
     suppression.fileName = Path::simplifyPath(suppression.fileName);
 
-    return addSuppression(std::move(suppression));
+    return suppression;
+}
+
+std::string SuppressionList::addSuppressionLine(const std::string &line)
+{
+    return addSuppression(parseLine(line));
 }
 
 std::string SuppressionList::addSuppression(SuppressionList::Suppression suppression)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     // Check if suppression is already in list
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
@@ -294,8 +301,11 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
     return "";
 }
 
+// cppcheck-suppress unusedFunction
 bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     // Check if suppression is already in list
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
@@ -430,6 +440,8 @@ std::string SuppressionList::Suppression::getText() const
 
 bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, bool global)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
     bool returnValue = false;
     for (Suppression &s : mSuppressions) {
@@ -445,6 +457,8 @@ bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, 
 
 bool SuppressionList::isSuppressedExplicitly(const SuppressionList::ErrorMessage &errmsg, bool global)
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     for (Suppression &s : mSuppressions) {
         if (!global && !s.isLocal())
             continue;
@@ -458,13 +472,19 @@ bool SuppressionList::isSuppressedExplicitly(const SuppressionList::ErrorMessage
 
 bool SuppressionList::isSuppressed(const ::ErrorMessage &errmsg, const std::set<std::string>& macroNames)
 {
-    if (mSuppressions.empty())
-        return false;
+    {
+        std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
+        if (mSuppressions.empty())
+            return false;
+    }
     return isSuppressed(SuppressionList::ErrorMessage::fromErrorMessage(errmsg, macroNames));
 }
 
 void SuppressionList::dump(std::ostream & out) const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     out << "  <suppressions>" << std::endl;
     for (const Suppression &suppression : mSuppressions) {
         out << "    <suppression";
@@ -496,10 +516,14 @@ void SuppressionList::dump(std::ostream & out) const
     out << "  </suppressions>" << std::endl;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppressions(const FileWithDetails &file, const bool includeUnusedFunction) const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
+        if (s.isInline)
+            continue;
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.type == SuppressionList::Type::macro)
@@ -508,7 +532,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (!s.isLocal() || s.fileName != file.spath())
             continue;
@@ -517,15 +541,19 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
     return result;
 }
 
-std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool unusedFunctionChecking) const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppressions(const bool includeUnusedFunction) const
 {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
+        if (s.isInline)
+            continue;
         if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
             continue;
-        if (!unusedFunctionChecking && s.errorId == ID_UNUSEDFUNCTION)
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
@@ -536,12 +564,35 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedGlobalSuppr
     return result;
 }
 
-const std::list<SuppressionList::Suppression> &SuppressionList::getSuppressions() const
+std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedInlineSuppressions(const bool includeUnusedFunction) const
 {
+    std::list<SuppressionList::Suppression> result;
+    for (const SuppressionList::Suppression &s : SuppressionList::mSuppressions) {
+        if (!s.isInline)
+            continue;
+        if (!s.checked)
+            continue;
+        if (s.matched)
+            continue;
+        if (s.hash > 0)
+            continue;
+        if (!includeUnusedFunction && s.errorId == ID_UNUSEDFUNCTION)
+            continue;
+        result.push_back(s);
+    }
+    return result;
+}
+
+std::list<SuppressionList::Suppression> SuppressionList::getSuppressions() const
+{
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     return mSuppressions;
 }
 
 void SuppressionList::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
+    std::lock_guard<std::mutex> lg(mSuppressionsSync);
+
     int currLineNr = -1;
     int currFileIdx = -1;
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {

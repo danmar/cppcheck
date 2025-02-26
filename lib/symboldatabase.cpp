@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -218,7 +218,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     // skip variable declaration
                     else if (Token::Match(tok2, "*|&|>"))
                         continue;
-                    else if (Token::Match(tok2, "%name% (") && Tokenizer::isFunctionHead(tok2->next(), "{;"))
+                    else if (Token::Match(tok2, "%name% (") && TokenList::isFunctionHead(tok2->next(), "{;"))
                         continue;
                     else if (Token::Match(tok2, "%name% [|="))
                         continue;
@@ -562,7 +562,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     function.arg = function.argDef;
 
                     // out of line function
-                    if (const Token *endTok = Tokenizer::isFunctionHead(end, ";")) {
+                    if (const Token *endTok = TokenList::isFunctionHead(end, ";")) {
                         tok = endTok;
                         scope->addFunction(std::move(function));
                     }
@@ -1609,7 +1609,7 @@ namespace {
                     typeEndToken = tok->astParent()->link();
                 }
                 std::string type;
-                for (const Token* t = typeStartToken; t != typeEndToken; t = t->next()) {
+                for (const Token* t = typeStartToken; precedes(t, typeEndToken); t = t->next()) {
                     type += " " + t->str();
                 }
                 key.parentOp += type;
@@ -1848,7 +1848,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             }
 
             if (dimension.tok->valueType() && dimension.tok->valueType()->pointer == 0) {
-                int bits = 0;
+                std::uint8_t bits = 0;
                 switch (dimension.tok->valueType()->type) {
                 case ValueType::Type::CHAR:
                     bits = mSettings.platform.char_bit;
@@ -1942,7 +1942,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         const Token* tok1 = tok->previous();
         const Token* tok2 = tok->linkAt(1)->next();
 
-        if (!Tokenizer::isFunctionHead(tok->next(), ";:{"))
+        if (!TokenList::isFunctionHead(tok->next(), ";:{"))
             return false;
 
         // skip over destructor "~"
@@ -2607,7 +2607,7 @@ Function::Function(const Token *tok,
             tok = tok->next();
     }
 
-    if (Tokenizer::isFunctionHead(end, ":{")) {
+    if (TokenList::isFunctionHead(end, ":{")) {
         // assume implementation is inline (definition and implementation same)
         token = tokenDef;
         arg = argDef;
@@ -3320,7 +3320,7 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
                         if (!func->hasBody()) {
                             const Token *closeParen = tok->linkAt(1);
                             if (closeParen) {
-                                const Token *eq = Tokenizer::isFunctionHead(closeParen, ";");
+                                const Token *eq = TokenList::isFunctionHead(closeParen, ";");
                                 if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
                                     func->isDefault(true);
                                     return;
@@ -3395,9 +3395,12 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
                     if (func->argsMatch(scope1, func->argDef, tok->next(), path, path_length)) {
                         const Token *closeParen = tok->linkAt(1);
                         if (closeParen) {
-                            const Token *eq = Tokenizer::isFunctionHead(closeParen, ";");
-                            if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
-                                func->isDefault(true);
+                            const Token *eq = TokenList::isFunctionHead(closeParen, ";");
+                            if (eq && Token::Match(eq->tokAt(-2), "= default|delete ;")) {
+                                if (eq->strAt(-1) == "default")
+                                    func->isDefault(true);
+                                else
+                                    func->isDelete(true);
                                 return;
                             }
                             if (func->type == Function::eDestructor && destructor) {
@@ -4966,6 +4969,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     const Token *typetok = nullptr;
 
     if (tok && isVariableDeclaration(tok, vartok, typetok)) {
+        const Token* const orig = tok;
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         tok = vartok->next();
         while (Token::Match(tok, "[|{"))
@@ -4990,6 +4994,17 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
             typestart = typestart->next();
 
         addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
+
+        if (type == eFor && orig->strAt(-2) == "for") {
+            for (const Token* tok2 = tok; tok2 && !Token::Match(tok2, "[;:]"); tok2 = tok2->next()) {
+                if (tok2->link()) {
+                    tok2 = tok2->link();
+                    continue;
+                }
+                if (Token::Match(tok2, ", %name%"))
+                    addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
+            }
+        }
     }
 
     return tok;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@ public:
 private:
     const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
-#define check(code) check_(code, __FILE__, __LINE__)
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char (&code)[size], const char* file, int line) {
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -231,7 +231,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-
+        check("void f(const std::string &s) {\n" // #7731
+              "    for (std::string::const_iterator i = s.begin(), r = s.end() - 1; i != r; r--) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
     }
 
     void testvolatile() {

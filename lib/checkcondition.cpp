@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1944,7 +1944,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     continue;
                 if (valueTok->valueType() && valueTok->valueType()->isTypeEqual(typeTok->valueType()))
                     continue;
-                int bits = 0;
+                std::uint8_t bits = 0;
                 switch (typeTok->valueType()->type) {
                 case ValueType::Type::BOOL:
                     bits = 1;

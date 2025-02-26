@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2038,7 +2038,7 @@ void CheckClass::virtualDestructor()
     }
 
     for (const Function *func : inconclusiveErrors)
-        virtualDestructorError(func->tokenDef, func->name(), emptyString, true);
+        virtualDestructorError(func->tokenDef, func->name(), "", true);
 }
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
@@ -2400,6 +2400,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                                 !(argVar->valueType() && argVar->valueType()->isConst(argVar->valueType()->pointer)))) { // argument might be modified
                     const Token* arg = args[argIndex];
                     // Member variable given as parameter
+                    while (Token::simpleMatch(arg, "(") && arg->astOperand2())
+                        arg = arg->astOperand2();
                     const Token* varTok = previousBeforeAstLeftmostLeaf(arg);
                     if (!varTok)
                         return false;
@@ -3340,11 +3342,10 @@ void CheckClass::checkUselessOverride()
                     continue;
                 if (Token::simpleMatch(call->astParent(), "."))
                     continue;
-                std::vector<const Token*> funcArgs = getArguments(func.tokenDef);
                 std::vector<const Token*> callArgs = getArguments(call);
-                if (funcArgs.size() != callArgs.size() ||
-                    !std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
-                    return t1->str() == t2->str();
+                if (func.argumentList.size() != callArgs.size() ||
+                    !std::equal(func.argumentList.begin(), func.argumentList.end(), callArgs.begin(), [](const Variable& v, const Token* t) {
+                    return v.nameToken() && v.nameToken()->str() == t->str();
                 }))
                     continue;
                 uselessOverrideError(baseFunc, &func);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,10 @@
 #include <set>
 #include <string>
 #include <vector>
+
+#ifndef _WIN32
+#include <stdexcept>
+#endif
 
 class TestPath : public TestFixture {
 public:
@@ -551,13 +555,27 @@ private:
     void exists() const {
         ScopedFile file("testpath.txt", "", "testpath");
         ScopedFile file2("testpath2.txt", "");
+
         ASSERT_EQUALS(true, Path::exists("testpath"));
-        ASSERT_EQUALS(true, Path::exists("testpath/testpath.txt"));
         ASSERT_EQUALS(true, Path::exists("testpath2.txt"));
 
         ASSERT_EQUALS(false, Path::exists("testpath2"));
-        ASSERT_EQUALS(false, Path::exists("testpath/testpath2.txt"));
-        ASSERT_EQUALS(false, Path::exists("testpath.txt"));
+
+        bool b = false;
+
+        ASSERT_EQUALS(true, Path::exists("testpath", &b));
+        ASSERT_EQUALS(true, b);
+        ASSERT_EQUALS(true, Path::exists("testpath/testpath.txt", &b));
+        ASSERT_EQUALS(false, b);
+        ASSERT_EQUALS(true, Path::exists("testpath2.txt", &b));
+        ASSERT_EQUALS(false, b);
+
+        ASSERT_EQUALS(false, Path::exists("testpath2", &b));
+        ASSERT_EQUALS(false, b);
+        ASSERT_EQUALS(false, Path::exists("testpath/testpath2.txt", &b));
+        ASSERT_EQUALS(false, b);
+        ASSERT_EQUALS(false, Path::exists("testpath.txt", &b));
+        ASSERT_EQUALS(false, b);
     }
 };
 

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,9 +195,10 @@ public:
     /**
      * @brief Checks if a given path exists (i.e. is a file or directory)
      * @param path Path to be checked
+     * @param isdir Optional parameter which indicates if the existing path is a directory
      * @return true if given path exists
      */
-    static bool exists(const std::string &path);
+    static bool exists(const std::string &path, bool* isdir = nullptr);
 
     /**
      * join 2 paths with '/' separators

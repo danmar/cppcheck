@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,19 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "config.h"
+
+enum class ReportType : std::uint8_t {
+    normal = 0,
+    autosar = 1,
+    certC = 2,
+    certCpp = 3,
+    misraC = 4,
+    misraCpp2008 = 5,
+    misraCpp2023 = 6,
+};
 
 namespace checkers {
     extern CPPCHECKLIB const std::map<std::string, std::string> allCheckers;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,9 +39,9 @@ private:
         TEST_CASE(open);
     }
 
-#define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
+#define functionReturnType(...) functionReturnType_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    CheckMemoryLeak::AllocType functionReturnType_(const char (&code)[size], const char* file, int line) {
+    CheckMemoryLeak::AllocType functionReturnType_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -2771,7 +2771,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'fopen' is not stored.\n", errout_str());
 
         check("void foo() {\n"
-              "  FILE f* = fopen(\"file.txt\", \"r\");\n"
+              "  FILE *f = fopen(\"file.txt\", \"r\");\n"
               "  freopen(\"file.txt\", \"r\", f);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'freopen' is not stored.\n", errout_str());
