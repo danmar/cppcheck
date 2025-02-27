@@ -32,14 +32,12 @@
 class CPPCHECKLIB Regex
 {
 public:
-    std::string compile(std::string pattern);
+    virtual ~Regex() = default;
 
     using MatchFn = std::function<void (int start, int end)>;
-    std::string match(const std::string& str, const MatchFn& match)const;
+    virtual std::string match(const std::string& str, const MatchFn& matchFn) const = 0;
 
-private:
-    class Data;
-    std::shared_ptr<Data> mData;
+    static std::shared_ptr<Regex> create(std::string pattern, std::string& err);
 };
 
 #endif // HAVE_RULES

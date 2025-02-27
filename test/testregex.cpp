@@ -34,17 +34,26 @@ private:
         TEST_CASE(match);
         TEST_CASE(nomatch);
         TEST_CASE(compileError);
-        TEST_CASE(recompile);
-        TEST_CASE(notcompiled);
         TEST_CASE(copy);
         TEST_CASE(multimatch);
         TEST_CASE(partialmatch);
         TEST_CASE(exactmatch);
     }
 
+#define assertRegex(...) assertRegex_(__FILE__, __LINE__, __VA_ARGS__)
+    std::shared_ptr<Regex> assertRegex_(const char* file, int line, std::string pattern, const std::string& exp_err = "") const {
+        std::string regex_err;
+        auto r = Regex::create(std::move(pattern), regex_err);
+        if (exp_err.empty())
+            ASSERT_LOC(!!r.get(), file, line);
+        else
+            ASSERT_LOC(!r.get(), file, line); // only not set if we encountered an error
+        ASSERT_EQUALS_LOC(exp_err, regex_err, file, line);
+        return r;
+    }
+
     void match() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile("begin.*end"));
+        const auto r = assertRegex("begin.*end");
         int called = 0;
         int s = -1;
         int e = -1;
@@ -53,42 +62,28 @@ private:
             s = start;
             e = end;
         };
-        ASSERT_EQUALS("", r.match("begin-123-end", std::move(f)));
+        ASSERT_EQUALS("", r->match("begin-123-end", std::move(f)));
         ASSERT_EQUALS(1, called);
         ASSERT_EQUALS(0, s);
         ASSERT_EQUALS(13, e);
     }
 
     void nomatch() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile("begin.*end"));
+        const auto r = assertRegex("begin.*end");
         int called = 0;
         auto f = [&](int /*start*/, int /*end*/) {
             ++called;
         };
-        ASSERT_EQUALS("", r.match("end-123-begin", std::move(f)));
+        ASSERT_EQUALS("", r->match("end-123-begin", std::move(f)));
         ASSERT_EQUALS(0, called);
     }
 
     void compileError() const {
-        Regex r;
-        ASSERT_EQUALS("pcre_compile failed: missing terminating ] for character class", r.compile("["));
-    }
-
-    void recompile() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile(".*"));
-        ASSERT_EQUALS("regular expression has already been compiled", r.compile(".*"));
-    }
-
-    void notcompiled()const {
-        Regex r;
-        ASSERT_EQUALS("regular expression hat not been compiled yet", r.match("string", {}));
+        (void)assertRegex("[", "pcre_compile failed: missing terminating ] for character class");
     }
 
     void copy() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile("begin.*end"));
+        const auto r = assertRegex("begin.*end");
 
         int called = 0;
         int s = -1;
@@ -101,8 +96,8 @@ private:
 
         {
             // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
-            Regex r2 = r;
-            ASSERT_EQUALS("", r2.match("begin-123-end", f));
+            auto r2 = r;
+            ASSERT_EQUALS("", r2->match("begin-123-end", f));
             ASSERT_EQUALS(1, called);
             ASSERT_EQUALS(0, s);
             ASSERT_EQUALS(13, e);
@@ -111,15 +106,14 @@ private:
         called = 0;
         s = -1;
         e = -1;
-        ASSERT_EQUALS("", r.match("begin-123-end", f));
+        ASSERT_EQUALS("", r->match("begin-123-end", f));
         ASSERT_EQUALS(1, called);
         ASSERT_EQUALS(0, s);
         ASSERT_EQUALS(13, e);
     }
 
     void multimatch() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile("info:.*"));
+        const auto r = assertRegex("info:.*");
 
         std::string input =
             "info: start\n"
@@ -133,7 +127,7 @@ private:
         auto f = [&](int start, int end) {
             matches.push_back(input.substr(start, end - start));
         };
-        ASSERT_EQUALS("", r.match(input, std::move(f)));
+        ASSERT_EQUALS("", r->match(input, std::move(f)));
         ASSERT_EQUALS(3, matches.size());
         auto it = matches.cbegin();
         ASSERT_EQUALS("info: start", *it);
@@ -142,8 +136,7 @@ private:
     }
 
     void partialmatch() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile("123"));
+        const auto r = assertRegex("123");
         int called = 0;
         int s = -1;
         int e = -1;
@@ -152,15 +145,14 @@ private:
             s = start;
             e = end;
         };
-        ASSERT_EQUALS("", r.match("begin-123-end", std::move(f)));
+        ASSERT_EQUALS("", r->match("begin-123-end", std::move(f)));
         ASSERT_EQUALS(1, called);
         ASSERT_EQUALS(6, s);
         ASSERT_EQUALS(9, e);
     }
 
     void exactmatch() const {
-        Regex r;
-        ASSERT_EQUALS("", r.compile("^123$"));
+        const auto r = assertRegex("^123$");
 
         int called = 0;
         int s = -1;
@@ -171,28 +163,30 @@ private:
             e = end;
         };
 
-        ASSERT_EQUALS("", r.match("begin-123-end", f));
+        ASSERT_EQUALS("", r->match("begin-123-end", f));
         ASSERT_EQUALS(0, called);
         ASSERT_EQUALS(-1, s);
         ASSERT_EQUALS(-1, e);
 
-        ASSERT_EQUALS("", r.match("123\n123", f));
+        ASSERT_EQUALS("", r->match("123\n123", f));
         ASSERT_EQUALS(0, called);
         ASSERT_EQUALS(-1, s);
         ASSERT_EQUALS(-1, e);
 
-        ASSERT_EQUALS("", r.match("123123", f));
+        ASSERT_EQUALS("", r->match("123123", f));
         ASSERT_EQUALS(0, called);
         ASSERT_EQUALS(-1, s);
         ASSERT_EQUALS(-1, e);
 
-        ASSERT_EQUALS("", r.match("123", f));
+        ASSERT_EQUALS("", r->match("123", f));
         ASSERT_EQUALS(1, called);
         ASSERT_EQUALS(0, s);
         ASSERT_EQUALS(3, e);
     }
 
     // TODO: how to provoke a match() error?
+
+#undef assertRegex
 };
 
 REGISTER_TEST(TestRegEx)

@@ -45,7 +45,9 @@
 #endif
 
 #ifdef HAVE_RULES
-#include "regex.h"
+#include <memory>
+
+class Regex;
 #endif
 
 struct Suppressions;
@@ -342,7 +344,7 @@ public:
         std::string id = "rule"; // default id
         std::string summary;
         Severity severity = Severity::style; // default severity
-        Regex regex;
+        std::shared_ptr<Regex> regex;
     };
 
     /**
