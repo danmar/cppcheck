@@ -418,12 +418,16 @@ The available options are:
 
 - c89: C code is C89 compatible
 - c99: C code is C99 compatible
-- c11: C code is C11 compatible (default)
+- c11: C code is C11 compatible
+- c17: C code is C17 compatible
+- c23: C code is C23 compatible (default)
 - c++03: C++ code is C++03 compatible
 - c++11: C++ code is C++11 compatible
 - c++14: C++ code is C++14 compatible
 - c++17: C++ code is C++17 compatible
-- c++20: C++ code is C++20 compatible (default)
+- c++20: C++ code is C++20 compatible
+- c++23: C++ code is C++23 compatible
+- c++26: C++ code is C++26 compatible (default)
 
 # Cppcheck build dir
 
@@ -757,12 +761,12 @@ The output will look like this:
 
 You can write your own pattern. For instance, to get warning messages that are formatted like traditional gcc, then the following format can be used:
 
-    cppcheck --template="{file}:{line}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck --template="{file}:{line}:{column}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
 
 The output will then look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c:6: error: Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c:6:6: error: Array 'a[2]' accessed at index 2, which is out of bounds.
 
 A comma separated format:
 
