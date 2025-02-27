@@ -246,9 +246,44 @@ namespace {
     }
 }
 
+#include <regex>
+
+namespace {
+    class StdRegex : public Regex
+    {
+    public:
+        StdRegex(std::string pattern)
+        : mPattern(std::move(pattern))
+        {}
+
+        std::string compile() {
+            // TODO: check if already compiled
+            mRegex = std::regex(mPattern);
+        }
+
+        std::string match(const std::string& str, const MatchFn& matchFn) const override
+        {
+            // TODO: check if compiled
+            auto I = std::sregex_iterator(str.cbegin(), str.cend(), mRegex);
+            const auto E = std::sregex_iterator();
+            while (I != E)
+            {
+                const std::smatch& match = *I;
+                matchFn(match.position(), match.position() + match.length());
+                ++I;
+            }
+            return "";
+        }
+
+    private:
+        std::string mPattern;
+        std::regex mRegex;
+    };
+}
+
 std::shared_ptr<Regex> Regex::create(std::string pattern, std::string& err)
 {
-    auto* regex = new PcreRegex(std::move(pattern));
+    auto* regex = new StdRegex(std::move(pattern));
     err = regex->compile();
     if (!err.empty()) {
         delete regex;
