@@ -468,7 +468,7 @@ const Token *Tokenizer::processFunc(const Token *tok2, bool inOperator) const
                 while (Token::Match(tok2, "%name% ::"))
                     tok2 = tok2->tokAt(2);
 
-                if (Token::Match(tok2, "const"))
+                if (Token::simpleMatch(tok2, "const"))
                     tok2 = tok2->next();
 
                 if (!tok2)
