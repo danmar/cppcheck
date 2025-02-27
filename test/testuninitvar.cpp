@@ -90,6 +90,7 @@ private:
         TEST_CASE(valueFlowUninitTest);
         TEST_CASE(valueFlowUninitBreak);
         TEST_CASE(valueFlowUninitStructMembers);
+        TEST_CASE(valueFlowUninitForLoop);
         TEST_CASE(uninitvar_ipa);
         TEST_CASE(uninitvar_memberfunction);
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
@@ -7631,6 +7632,16 @@ private:
                         "    S s{ d };\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: d\n", errout_str());
+    }
+
+    void valueFlowUninitForLoop()
+    {
+        valueFlowUninit("void f() {\n" // #9924
+                        "    for (unsigned int a = 0, b; a < 42; a++) {\n"
+                        "        std::cout << ++b << std::endl;\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: b\n", errout_str());
     }
 
     void uninitvar_memberfunction() {
