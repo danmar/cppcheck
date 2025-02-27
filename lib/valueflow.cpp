@@ -6528,7 +6528,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 const Dimension& dim = var->dimensions().front();
                 if (dim.known) {
                     size = dim.num;
-                } else if (dim.tok && dim.tok->hasKnownIntValue()) {
+                } else if (dim.tok && dim.tok->hasKnownIntValue() && dim.tok->strAt(1) == ">") {
                     size = dim.tok->values().front().intvalue;
                 }
             }
