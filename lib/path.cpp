@@ -318,7 +318,6 @@ static bool hasEmacsCppMarker(const char* path)
 
 Standards::Language Path::identify(const std::string &path, bool cppHeaderProbe, bool *header)
 {
-    // cppcheck-suppress uninitvar - TODO: FP
     if (header)
         *header = false;
 
@@ -336,7 +335,6 @@ Standards::Language Path::identify(const std::string &path, bool cppHeaderProbe,
         return Standards::Language::CPP;
     if (c_src_exts.find(ext) != c_src_exts.end())
         return Standards::Language::C;
-    // cppcheck-suppress knownConditionTrueFalse - TODO: FP
     if (!caseInsensitiveFilesystem())
         strTolower(ext);
     if (ext == ".h") {
