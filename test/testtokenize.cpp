@@ -473,6 +473,7 @@ private:
         TEST_CASE(preincrementInLambda); // #13312
 
         TEST_CASE(atomicCast); // #12605
+        TEST_CASE(constFunctionPtrTypedef); // #12135
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8442,6 +8443,21 @@ private:
                             "    return atomic_fetch_add((_Atomic(unsigned int) *)ptr, v) + v;\n"
                             "}\n";
         ASSERT_NO_THROW(tokenizeAndStringify(code, settingsDefault, false));
+    }
+
+    void constFunctionPtrTypedef() { // #12135
+        const char code[] = "struct S {\n"
+                            "    template<typename T> T g() {\n"
+                            "        return T();\n"
+                            "    }\n"
+                            "};\n"
+                            "void f() {\n"
+                            "    S s;\n"
+                            "    typedef void (*fp_t)();\n"
+                            "    if (fp_t const fp = s.g<fp_t>()) {}\n"
+                            "}\n";
+        ASSERT_NO_THROW(tokenizeAndStringify(code));
+        ASSERT_EQUALS("void ( * const f ) ( ) ;", tokenizeAndStringify("typedef void (*fp_t)(); fp_t const f;"));
     }
 };
 
