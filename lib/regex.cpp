@@ -156,115 +156,105 @@ namespace {
         }
         return "unknown PCRE error " + std::to_string(pcreExecRet);
     }
-}
 
-class Regex::Data
-{
-public:
-    explicit Data(std::string pattern)
-        : mPattern(std::move(pattern))
-    {}
-
-    ~Data()
+    class PcreRegex : public Regex
     {
-        if (mExtra) {
-            pcre_free(mExtra);
-            mExtra = nullptr;
+    public:
+        explicit PcreRegex(std::string pattern)
+            : mPattern(std::move(pattern))
+        {}
+
+        ~PcreRegex() override
+        {
+            if (mExtra) {
+                pcre_free(mExtra);
+                mExtra = nullptr;
+            }
+            if (mRe) {
+                pcre_free(mRe);
+                mRe = nullptr;
+            }
         }
-        if (mRe) {
-            pcre_free(mRe);
-            mRe = nullptr;
+
+        std::string compile();
+        std::string match(const std::string& str, const MatchFn& match) const override;
+
+    private:
+        std::string mPattern;
+        pcre* mRe{};
+        pcre_extra* mExtra{};
+    };
+
+    std::string PcreRegex::compile()
+    {
+        if (mRe)
+            return "pcre_compile failed: regular expression has already been compiled";
+
+        const char *pcreCompileErrorStr = nullptr;
+        int erroffset = 0;
+        pcre * const re = pcre_compile(mPattern.c_str(),0,&pcreCompileErrorStr,&erroffset,nullptr);
+        if (!re) {
+            if (pcreCompileErrorStr)
+                return "pcre_compile failed: " + std::string(pcreCompileErrorStr);
+            return "pcre_compile failed: unknown error";
         }
-    }
 
-    std::string compile();
-    std::string match(const std::string& str, const MatchFn& match) const;
-
-private:
-    std::string mPattern;
-    pcre* mRe{};
-    pcre_extra* mExtra{};
-};
-
-std::string Regex::Data::compile()
-{
-    if (mRe)
-        return "pcre_compile failed: regular expression has already been compiled";
-
-    const char *pcreCompileErrorStr = nullptr;
-    int erroffset = 0;
-    pcre * const re = pcre_compile(mPattern.c_str(),0,&pcreCompileErrorStr,&erroffset,nullptr);
-    if (!re) {
-        if (pcreCompileErrorStr)
-            return "pcre_compile failed: " + std::string(pcreCompileErrorStr);
-        return "pcre_compile failed: unknown error";
-    }
-
-    // Optimize the regex, but only if PCRE_CONFIG_JIT is available
+        // Optimize the regex, but only if PCRE_CONFIG_JIT is available
 #ifdef PCRE_CONFIG_JIT
-    const char *pcreStudyErrorStr = nullptr;
-    pcre_extra * const pcreExtra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &pcreStudyErrorStr);
-    // pcre_study() returns NULL for both errors and when it can not optimize the regex.
-    // The last argument is how one checks for errors.
-    // It is NULL if everything works, and points to an error string otherwise.
-    if (pcreStudyErrorStr) {
-        // pcre_compile() worked, but pcre_study() returned an error. Free the resources allocated by pcre_compile().
-        pcre_free(re);
-        return "pcre_study failed: " + std::string(pcreStudyErrorStr);
-    }
-    mExtra = pcreExtra;
+        const char *pcreStudyErrorStr = nullptr;
+        pcre_extra * const pcreExtra = pcre_study(re, PCRE_STUDY_JIT_COMPILE, &pcreStudyErrorStr);
+        // pcre_study() returns NULL for both errors and when it can not optimize the regex.
+        // The last argument is how one checks for errors.
+        // It is NULL if everything works, and points to an error string otherwise.
+        if (pcreStudyErrorStr) {
+            // pcre_compile() worked, but pcre_study() returned an error. Free the resources allocated by pcre_compile().
+            pcre_free(re);
+            return "pcre_study failed: " + std::string(pcreStudyErrorStr);
+        }
+        mExtra = pcreExtra;
 #endif
 
-    mRe = re;
+        mRe = re;
 
-    return "";
-}
-
-std::string Regex::Data::match(const std::string& str, const MatchFn& match) const
-{
-    if (!mRe)
-        return "pcre_exec failed: regular expression has not been compiled yet";
-
-    int pos = 0;
-    int ovector[30]= {0};
-    while (pos < static_cast<int>(str.size())) {
-        const int pcreExecRet = pcre_exec(mRe, mExtra, str.c_str(), static_cast<int>(str.size()), pos, 0, ovector, 30);
-        if (pcreExecRet == PCRE_ERROR_NOMATCH)
-            return "";
-        if (pcreExecRet < 0) {
-            return "pcre_exec failed (pos: " + std::to_string(pos) + "): " + pcreErrorCodeToString(pcreExecRet);
-        }
-        const auto pos1 = static_cast<unsigned int>(ovector[0]);
-        const auto pos2 = static_cast<unsigned int>(ovector[1]);
-
-        match(pos1, pos2);
-
-        // jump to the end of the match for the next pcre_exec
-        pos = static_cast<int>(pos2);
+        return "";
     }
 
-    return "";
+    std::string PcreRegex::match(const std::string& str, const MatchFn& match) const
+    {
+        if (!mRe)
+            return "pcre_exec failed: regular expression has not been compiled yet";
+
+        int pos = 0;
+        int ovector[30]= {0};
+        while (pos < static_cast<int>(str.size())) {
+            const int pcreExecRet = pcre_exec(mRe, mExtra, str.c_str(), static_cast<int>(str.size()), pos, 0, ovector, 30);
+            if (pcreExecRet == PCRE_ERROR_NOMATCH)
+                return "";
+            if (pcreExecRet < 0) {
+                return "pcre_exec failed (pos: " + std::to_string(pos) + "): " + pcreErrorCodeToString(pcreExecRet);
+            }
+            const auto pos1 = static_cast<unsigned int>(ovector[0]);
+            const auto pos2 = static_cast<unsigned int>(ovector[1]);
+
+            match(pos1, pos2);
+
+            // jump to the end of the match for the next pcre_exec
+            pos = static_cast<int>(pos2);
+        }
+
+        return "";
+    }
 }
 
-std::string Regex::compile(std::string pattern)
+std::shared_ptr<Regex> Regex::create(std::string pattern, std::string& err)
 {
-    if (mData)
-        return "regular expression has already been compiled";
-
-    auto* data = new Data(std::move(pattern));
-    auto res = data->compile();
-    if (res.empty())
-        mData.reset(data);
-    else
-        delete data;
-    return res;
-}
-
-std::string Regex::match(const std::string& str, const MatchFn& match) const
-{
-    if (!mData)
-        return "regular expression hat not been compiled yet";
-    return mData->match(str, match);
+    auto* regex = new PcreRegex(std::move(pattern));
+    err = regex->compile();
+    if (!err.empty()) {
+        delete regex;
+        return nullptr;
+    }
+    return std::shared_ptr<Regex>(regex);
 }
 
 #endif // HAVE_RULES

@@ -51,6 +51,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -1275,9 +1276,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
-            Regex regex;
-            const std::string regex_err = regex.compile(rule.pattern);
-            if (!regex_err.empty()) {
+            std::string regex_err;
+            auto regex = Regex::create(rule.pattern, regex_err);
+            if (!regex) {
                 mLogger.printError("failed to compile rule pattern '" + rule.pattern + "' (" + regex_err + ").");
                 return Result::Fail;
             }
@@ -1359,11 +1360,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         return Result::Fail;
                     }
 
-                    const std::string regex_err = rule.regex.compile(rule.pattern);
-                    if (!regex_err.empty()) {
+                    std::string regex_err;
+                    auto regex = Regex::create(rule.pattern, regex_err);
+                    if (!regex) {
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - pattern '" + rule.pattern + "' failed to compile (" + regex_err + ").");
                         return Result::Fail;
                     }
+                    rule.regex = std::move(regex);
 
                     if (rule.severity == Severity::none) {
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule has an invalid severity.");

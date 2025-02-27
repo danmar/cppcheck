@@ -1488,7 +1488,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
             mErrorLogger.reportErr(errmsg);
         };
 
-        const std::string err = rule.regex.match(str, f);
+        const std::string err = rule.regex->match(str, f);
         if (!err.empty()) {
             const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
                                       emptyString,
