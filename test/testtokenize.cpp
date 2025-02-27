@@ -8457,6 +8457,7 @@ private:
                             "    if (fp_t const fp = s.g<fp_t>()) {}\n"
                             "}\n";
         ASSERT_NO_THROW(tokenizeAndStringify(code));
+        ASSERT_EQUALS("void ( * const f ) ( ) ;", tokenizeAndStringify("typedef void (*fp_t)(); fp_t const f;"));
     }
 };
 
