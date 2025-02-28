@@ -759,7 +759,7 @@ The output will look like this:
 
 ## User defined output format (single line)
 
-You can write your own pattern. For instance, to get warning messages that are separated by colon you could use this pattern:
+You can write your own pattern. For instance:
 
     cppcheck --template="{file}:{line}:{column}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
 
@@ -1147,9 +1147,7 @@ This is analysis that is more noisy than normal analysis. Most warnings will be 
 It is not intended to be used in normal CI or regular static analysis by developers. The noise makes it useless for that.
 
 It is intended to be used when you are looking for bugs and you really can accept noise. For example:
- * You have developed a brand new feature and want to ensure that there are no bugs.
- * Maybe as part of release testing your product you can run bug hunting on modified files.
- * Etc
+You have developed a brand new feature and want to ensure that there are no bugs. Maybe as part of release testing your product you can run bug hunting on modified files. Etc
 
 Technically, analysis that is "sound" will detect all bugs. Analysis that is "soundy" has the goal to detect most bugs and it tries to keep the noise at an reasonable level.
 
@@ -1161,27 +1159,27 @@ Command:
 
 ## Coding standards
 
-Command to active Autosar checkers:
+Command to activate Autosar checkers:
 
     cppcheck --premium=autosar ....
 
-Command to active Cert C checkers:
+Command to activate Cert C checkers:
 
     cppcheck --premium=cert-c ....
 
-Command to active Cert C++ checkers:
+Command to activate Cert C++ checkers:
 
     cppcheck --premium=cert-c++ ....
 
-Command to active Misra C 2023 checkers:
+Command to activate Misra C 2023 checkers:
 
     cppcheck --premium=misra-c-2023 ....
 
-Command to active Misra C++ 2008 checkers:
+Command to activate Misra C++ 2008 checkers:
 
     cppcheck --premium=misra-c++-2008 ....
 
-Command to active Misra C++ 2023 checkers:
+Command to activate Misra C++ 2023 checkers:
 
     cppcheck --premium=misra-c++-2023 ....
 

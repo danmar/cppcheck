@@ -760,7 +760,7 @@ The output will look like this:
 
 ## User defined output format (single line)
 
-You can write your own pattern. For instance, to get warning messages that are separated by colon you could use this pattern::
+You can write your own pattern. For instance:
 
     cppcheck --template="{file}:{line}:{column}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
 
@@ -1140,16 +1140,6 @@ In the GUI:
  * In the "Analysis" tab there are several options.
 
 If you want to use these limitations on the command line also you can import the GUI project file with --project.
-
-## Licenses
-
-### Individual license
-
-A license that is connected to your computer. You can check any code you want.
-
-### LOC license
-
-A license that allows you to run cppcheck on a limited number of lines of code. It can only be used for certain licensed paths in a repository.
 
 #### Running analysis
 
