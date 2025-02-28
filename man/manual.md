@@ -245,7 +245,8 @@ On the command line you configure that through `--cppcheck-build-dir=path`. Exam
 
     mkdir b
     cppcheck --cppcheck-build-dir=b src # <- All files are analyzed
-    cppcheck --cppcheck-build-dir=b src # <- Faster! Results of unchanged files are reused
+    cppcheck --cppcheck-build-dir=b src # <- Faster! Results of
+    unchanged files are reused
 
 In the GUI it is configured in the project settings.
 
@@ -296,7 +297,8 @@ Running Cppcheck on a Visual Studio project:
 Both options will analyze all available configurations in the project(s).
 Limiting on a single configuration:
 
-    cppcheck --project=foobar.sln "--project-configuration=Release|Win32"
+    cppcheck --project=foobar.sln \
+    "--project-configuration=Release|Win32"
 
 In the `Cppcheck GUI` you have the option to only analyze a single debug configuration. If you want to use this option on the command line, then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
@@ -359,11 +361,16 @@ Cppcheck will only check 1 configuration unless these are used.
 
 Example:
 
-    cppcheck test.c => test all configurations => all bugs are found
-    cppcheck -DA test.c => only test configuration "-DA" => No bug is found (#error)
-    cppcheck -DA -DC test.c => only test configuration "-DA -DC" => The first bug is found
-    cppcheck -UA test.c => The configuration "-DC" is tested => The last bug is found
-    cppcheck --force -DA test.c => All configurations with "-DA" are tested => The two first bugs are found
+    cppcheck test.c => test all configurations => all bugs
+    are found
+    cppcheck -DA test.c => only test configuration "-DA"
+    => No bug is found (#error)
+    cppcheck -DA -DC test.c => only test configuration "-DA -DC"
+    => The first bug is found
+    cppcheck -UA test.c => The configuration "-DC" is tested
+    => The last bug is found
+    cppcheck --force -DA test.c => All configurations with
+    "-DA" are tested => The two first bugs are found
 
 
 ## Include paths
@@ -745,7 +752,8 @@ To get Visual Studio compatible output you can use --template=vs:
 This output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c(6): error: Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c(6): error: Array
+    'a[2]' accessed at index 2, which is out of bounds.
 
 To get gcc compatible output you can use --template=gcc:
 
@@ -754,7 +762,8 @@ To get gcc compatible output you can use --template=gcc:
 The output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c:6:6: warning: Array 'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]
+    samples/arrayIndexOutOfBounds/bad.c:6:6: warning: Array
+    'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]
     a[2] = 0;
       ^
 
@@ -762,21 +771,25 @@ The output will look like this:
 
 You can write your own pattern. For instance:
 
-    cppcheck --template="{file}:{line}:{column}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck --template="{file}:{line}:{column}: {severity}:
+    {message}" samples/arrayIndexOutOfBounds/bad.c
 
 The output will then look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c:6:6: error: Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c:6:6: error: Array
+    'a[2]' accessed at index 2, which is out of bounds.
 
 A comma separated format:
 
-    cppcheck --template="{file},{line},{severity},{id},{message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck --template="{file},{line},{severity},{id},
+    {message}" samples/arrayIndexOutOfBounds/bad.c
 
 The output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c,6,error,
+    arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.
 
 ## User defined output format (multi line)
 
@@ -809,7 +822,8 @@ The output from Cppcheck is:
     multiline.c:8: note: Assignment 'p=0', assigned value is 0
         int *p = 0;
                  ^
-    multiline.c:9: note: Calling function 'f', 1st argument 'p' value is 0
+    multiline.c:9: note: Calling function 'f', 1st argument
+    'p' value is 0
         f(p);
           ^
     multiline.c:3: note: Null pointer dereference
@@ -930,9 +944,11 @@ Example code:
 
 In Cppcheck text output the remarks are not shown by default, you can use `--template` option `{remark}` to show remarks:
 
-    $ ./cppcheck --enable=style --template="{file}:{line}: {message} [{id}]\\n{remark}" test1.c
+    $ ./cppcheck --enable=style --template="{file}:{line}:
+    {message} [{id}]\\n{remark}" test1.c
     Checking test1.c ...
-    test1.c:4: Variable 'x' is assigned a value that is never used. [unreadVariable]
+    test1.c:4: Variable 'x' is assigned a value that is
+    never used. [unreadVariable]
     Initialize x with 0
 
 In xml output the comment text is provided in a "remark" attribute:
@@ -990,7 +1006,8 @@ And then the configuration can be executed on the Cppcheck command line:
 By default Cppcheck would search addon at the standard path which was specified 
 during the installation process. You also can set this path directly, for example:
 
-    cppcheck --addon=/opt/cppcheck/configurations/my_misra.json somefile.c
+    cppcheck --addon=/opt/cppcheck/configurations/my_misra.json \
+    somefile.c
 
 This allows you to create and manage multiple configuration files for different projects.
 
@@ -1076,17 +1093,21 @@ The output screen says:
 
     Options:
        -h, --help      show this help message and exit
-       --file=FILE     The cppcheck xml output file to read defects from.
+       --file=FILE     The cppcheck xml output file to read
+                       defects from.
                        Default is reading from stdin.
        --report-dir=REPORT_DIR
-                       The directory where the html report content is written.
+                       The directory where the html report
+                       content is written.
        --source-dir=SOURCE_DIR
-                       Base directory where source code files can be found.
+                       Base directory where source code
+                       files can be found.
 
 Example usage:
 
-    ./cppcheck gui/test.cpp --xml 2> err.xml
-    htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
+    ./cppcheck gui/test.cpp --xml 2> err.xml \
+    htmlreport/cppcheck-htmlreport --file=err.xml \
+    --report-dir=test1 --source-dir=.
 
 # Check Level
 
@@ -1101,6 +1122,7 @@ than "normal" provides then this reduced checking can be an option.
 The "normal" check level is chosen by default. Our aim is that this checking level will provide an effective checking in "reasonable" time.
 
 The "normal" check level should be useful during active development:
+
 - checking files while you edit them.
 - block changes to the repo
 - etc
@@ -1110,6 +1132,7 @@ The "normal" check level should be useful during active development:
 When you can wait longer for the results you can enable the "exhaustive" checking, by using the option `--check-level=exhaustive`.
 
 Exhaustive checking level should be useful for scenarios where you can wait for results. For instance:
+
 - nightly builds
 - etc
 
@@ -1124,6 +1147,7 @@ For performance reasons it might be a good idea to limit preprocessor configurat
 The command line option `--performance-valueflow-max-if-count` adjusts the max count for number of if in a function.
 
 When that limit is exceeded there is a limitation of data flow in that function. It is not drastic:
+
 - Analysis of other functions are not affected.
 - It's only for some specific data flow analysis, we have data flow analysis that is always executed.
 - All checks are always executed. There can still be plenty of warnings in the limited function.
@@ -1136,6 +1160,7 @@ analysis time explodes.
 In the GUI there are various options to limit analysis.
 
 In the GUI:
+
 - Open the project dialog.
 - In the "Analysis" tab there are several options.
 
@@ -1148,7 +1173,8 @@ Commands:
     cd check-path
 
     # Calculate lines of code and validate the license
-    premiumaddon --check-loc-license some-path/license-file > cppcheck-premium-loc
+    premiumaddon --check-loc-license some-path/license-file \
+    > cppcheck-premium-loc
 
     # Run cppcheck analysis
     cppcheck <usual cppcheck parameters>
