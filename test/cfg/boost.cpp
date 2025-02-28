@@ -170,7 +170,6 @@ void test_require()
     BOOST_REQUIRE(some_int);
     BOOST_TEST_REQUIRE(some_other_int);
     *some_int = 42;
-    // cppcheck-suppress nullPointerOutOfMemory
     *some_other_int = 42;
     std::free(some_int);
     free(some_other_int);
