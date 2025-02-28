@@ -132,6 +132,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
@@ -235,7 +236,7 @@ private:
               "  {int i = *((int*)0);}\n"
               "  return 0;\n"
               "}");
-        ASSERT_EQUALS("[" + fprefix() + "_1.cpp:3]: (error) Null pointer dereference: (int*)0\n", errout_str());
+        ASSERT_EQUALS("[" + fprefix() + "_1.cpp:3:14]: (error) Null pointer dereference: (int*)0 [nullPointer]\n", errout_str());
     }
 
     void one_error_several_files() {
@@ -362,7 +363,7 @@ private:
         check(2, 2, 2,
               "#include \"" + inc_h.name() +"\"");
         // this is made unique by the executor
-        ASSERT_EQUALS("[" + inc_h.name() + ":3]: (error) Null pointer dereference: (int*)0\n", errout_str());
+        ASSERT_EQUALS("[" + inc_h.name() + ":3:11]: (error) Null pointer dereference: (int*)0 [nullPointer]\n", errout_str());
     }
 
     // TODO: test whole program analysis

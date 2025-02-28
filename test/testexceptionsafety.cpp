@@ -34,6 +34,7 @@ private:
     void run() override {
         settings.severity.fill();
 
+        mNewTemplate = true;
         TEST_CASE(destructors);
         TEST_CASE(deallocThrow1);
         TEST_CASE(deallocThrow2);
@@ -83,8 +84,8 @@ private:
               "        throw e;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Class x is not safe, destructor throws exception\n"
-                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:9]: (warning) Class x is not safe, destructor throws exception [exceptThrowInDestructor]\n"
+                      "[test.cpp:3:9]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         check("class x {\n"
               "    ~x();\n"
@@ -92,8 +93,8 @@ private:
               "x::~x() {\n"
               "    throw e;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Class x is not safe, destructor throws exception\n"
-                      "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) Class x is not safe, destructor throws exception [exceptThrowInDestructor]\n"
+                      "[test.cpp:5:5]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         // #3858 - throwing exception in try block in destructor.
         check("class x {\n"
@@ -113,7 +114,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:13]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         // #11031 should not warn when noexcept false
         check("class A {\n"
@@ -133,7 +134,7 @@ private:
               "        throw 123;\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:9]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory. [exceptDeallocThrow]\n", errout_str());
 
         check("void f() {\n"
               "    static int* p = foo;\n"
@@ -142,7 +143,7 @@ private:
               "        throw 1;\n"
               "    p = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:9]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory. [exceptDeallocThrow]\n", errout_str());
     }
 
     void deallocThrow2() {
@@ -177,7 +178,7 @@ private:
               "    delete p;\n"
               "    throw 1;\n"
               "}", dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) Exception thrown in invalid state, 'p' points at deallocated memory. [exceptDeallocThrow]\n", errout_str());
     }
 
     void rethrowCopy1() {
@@ -191,7 +192,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:9]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception. [exceptRethrowCopy]\n", errout_str());
     }
 
     void rethrowCopy2() {
@@ -205,7 +206,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:9]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception. [exceptRethrowCopy]\n", errout_str());
     }
 
     void rethrowCopy3() {
@@ -217,7 +218,7 @@ private:
               "        throw err;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:9]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception. [exceptRethrowCopy]\n", errout_str());
     }
 
     void rethrowCopy4() {
@@ -249,7 +250,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:10:13]: (style) Throwing a copy of the caught exception instead of rethrowing the original exception. [exceptRethrowCopy]\n", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -276,7 +277,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (style) Exception should be caught by reference. [catchExceptionByValue]\n", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -286,7 +287,7 @@ private:
               "        foo(err);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Exception should be caught by reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (style) Exception should be caught by reference. [catchExceptionByValue]\n", errout_str());
 
         check("void f() {\n"
               "    try {\n"
@@ -346,9 +347,9 @@ private:
               "void func4() noexcept(false) { throw 1; }\n"
               "void func5() noexcept(true) { func1(); }\n"
               "void func6() noexcept(false) { func1(); }");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:5]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:25]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n"
+                      "[test.cpp:3:31]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n"
+                      "[test.cpp:5:31]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         // avoid false positives
         check("const char *func() noexcept { return 0; }\n"
@@ -362,8 +363,8 @@ private:
               "void func3() throw(int) { throw 1; }\n"
               "void func4() throw() { func1(); }\n"
               "void func5() throw(int) { func1(); }");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:4]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:24]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n"
+                      "[test.cpp:4:24]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         // avoid false positives
         check("const char *func() throw() { return 0; }");
@@ -393,7 +394,7 @@ private:
               "    myThrowingFoo();\n"
               "  } catch(MyException &) {}\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo().\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:3] -> [test.cpp:1:6]: (style, inconclusive) Unhandled exception specification when calling function myThrowingFoo(). [unhandledExceptionSpecification]\n", errout_str());
     }
 
     void unhandledExceptionSpecification2() {
@@ -419,8 +420,8 @@ private:
                             "}\n";
 
         check(code, dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
-                      "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5] -> [test.cpp:1:6]: (style, inconclusive) Unhandled exception specification when calling function f(). [unhandledExceptionSpecification]\n"
+                      "[test.cpp:6:5] -> [test.cpp:1:6]: (style, inconclusive) Unhandled exception specification when calling function f(). [unhandledExceptionSpecification]\n", errout_str());
 
         const Settings s = settingsBuilder().library("gnu.cfg").build();
         check(code, dinit(CheckOptions, $.inconclusive = true, $.s = &s));
@@ -431,8 +432,8 @@ private:
         check("void func1() throw(int) { throw 1; }\n"
               "void func2() __attribute((nothrow)); void func2() { throw 1; }\n"
               "void func3() __attribute((nothrow)); void func3() { func1(); }");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:53]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n"
+                      "[test.cpp:3:53]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
@@ -452,8 +453,8 @@ private:
         check("void func1() throw(int) { throw 1; }\n"
               "void __declspec(nothrow) func2() { throw 1; }\n"
               "void __declspec(nothrow) func3() { func1(); }");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Exception thrown in function declared not to throw exceptions.\n"
-                      "[test.cpp:3]: (error) Exception thrown in function declared not to throw exceptions.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:36]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n"
+                      "[test.cpp:3:36]: (error) Exception thrown in function declared not to throw exceptions. [throwInNoexceptFunction]\n", errout_str());
 
         // avoid false positives
         check("const char *func() __attribute((nothrow)); void func1() { return 0; }");
@@ -462,14 +463,14 @@ private:
 
     void rethrowNoCurrentException1() {
         check("void func1(const bool flag) { try{ if(!flag) throw; } catch (int&) { ; } }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
-                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:46]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object [rethrowNoCurrentException]\n", errout_str());
     }
 
     void rethrowNoCurrentException2() {
         check("void func1() { try{ ; } catch (...) { ; } throw; }");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
-                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:43]: (error) Rethrowing current exception with 'throw;', it seems there is no current exception to rethrow."
+                      " If there is no current exception this calls std::terminate(). More: https://isocpp.org/wiki/faq/exceptions#throw-without-an-object [rethrowNoCurrentException]\n", errout_str());
     }
 
     void rethrowNoCurrentException3() {

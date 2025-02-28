@@ -21,6 +21,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "fixture.h"
+#include "suppressions.h"
 
 #include <list>
 #include <string>
@@ -43,6 +44,7 @@ private:
         TEST_CASE(PatternSearchReplace);
         TEST_CASE(FileLocationConstruct);
         TEST_CASE(FileLocationSetFile);
+        TEST_CASE(FileLocationSetFile2);
         TEST_CASE(ErrorMessageConstruct);
         TEST_CASE(ErrorMessageConstructLocations);
         TEST_CASE(ErrorMessageVerbose);
@@ -118,6 +120,8 @@ private:
         ASSERT_EQUALS("foo.cpp", loc.getfile());
         ASSERT_EQUALS(1, loc.line);
         ASSERT_EQUALS(2, loc.column);
+        ASSERT_EQUALS("[foo.cpp:1]", loc.stringify(false));
+        ASSERT_EQUALS("[foo.cpp:1:2]", loc.stringify(true));
     }
 
     void FileLocationSetFile() const {
@@ -127,6 +131,20 @@ private:
         ASSERT_EQUALS("foo.cpp", loc.getfile());
         ASSERT_EQUALS(0, loc.line);
         ASSERT_EQUALS(0, loc.column);
+        // TODO: the following looks wrong - there is no line or column 0
+        ASSERT_EQUALS("[foo.cpp:0]", loc.stringify(false));
+        ASSERT_EQUALS("[foo.cpp:0:0]", loc.stringify(true));
+    }
+
+    void FileLocationSetFile2() const {
+        ErrorMessage::FileLocation loc("foo1.cpp", SuppressionList::Suppression::NO_LINE, 0); // TODO: should not depend on Suppression
+        loc.setfile("foo.cpp");
+        ASSERT_EQUALS("foo1.cpp", loc.getOrigFile());
+        ASSERT_EQUALS("foo.cpp", loc.getfile());
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, loc.line);
+        ASSERT_EQUALS(0, loc.column);
+        ASSERT_EQUALS("[foo.cpp]", loc.stringify(false));
+        ASSERT_EQUALS("[foo.cpp]", loc.stringify(true));
     }
 
     void ErrorMessageConstruct() const {
