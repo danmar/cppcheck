@@ -1411,6 +1411,18 @@ private:
                                 "2: for ( int a@3 [ 2 ] = { 2 , w@1 / 2 } , b@4 = 2 ; a@3 [ 1 ] && a@3 [ 0 ] <= h@2 ; a@3 [ 1 ] /= 2 , a@3 [ 0 ] *= 2 ) { }\n"
                                 "3: }\n";
         ASSERT_EQUALS(expected, tokenize(code));
+
+        const char code2[] = "void f() {\n"
+                             "    for (int a(1), b{ 2 }, c = 3; a < b + c; ++a) {}\n"
+                             "    for (int a{ 1 }, b(2), c = 3; a < b + c; ++a) {}\n"
+                             "    for (int a = 1, b{ 2 }, c(3); a < b + c; ++a) {}\n"
+                            "}\n";
+        const char expected2[] = "1: void f ( ) {\n"
+                                 "2: for ( int a@1 ( 1 ) , b@2 { 2 } , c@3 = 3 ; a@1 < b@2 + c@3 ; ++ a@1 ) { }\n"
+                                 "3: for ( int a@4 { 1 } , b@5 ( 2 ) , c@6 = 3 ; a@4 < b@5 + c@6 ; ++ a@4 ) { }\n"
+                                 "4: for ( int a@7 = 1 , b@8 { 2 } , c@9 ( 3 ) ; a@7 < b@8 + c@9 ; ++ a@7 ) { }\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected2, tokenize(code2));
     }
 
     void varid_cpp_keywords_in_c_code() {
