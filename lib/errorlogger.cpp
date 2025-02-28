@@ -691,12 +691,12 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     return result;
 }
 
-std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
+std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack, bool addcolumn)
 {
     std::string str;
     for (auto tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
         str += (tok == callStack.cbegin() ? "" : " -> ");
-        str += tok->stringify();
+        str += tok->stringify(addcolumn);
     }
     return str;
 }
@@ -729,14 +729,18 @@ void ErrorMessage::FileLocation::setfile(std::string file)
     mFileName = Path::simplifyPath(std::move(file));
 }
 
-std::string ErrorMessage::FileLocation::stringify() const
+std::string ErrorMessage::FileLocation::stringify(bool addcolumn) const
 {
     std::string str;
     str += '[';
     str += Path::toNativeSeparators(mFileName);
-    if (line != SuppressionList::Suppression::NO_LINE) {
+    if (line != SuppressionList::Suppression::NO_LINE) { // TODO: should not depend on Suppression
         str += ':';
         str += std::to_string(line);
+        if (addcolumn) {
+            str += ':';
+            str += std::to_string(column);
+        }
     }
     str += ']';
     return str;
