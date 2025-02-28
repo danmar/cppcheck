@@ -760,7 +760,7 @@ The output will look like this:
 
 ## User defined output format (single line)
 
-You can write your own pattern. For instance, to get warning messages that are formatted like traditional gcc, then the following format can be used:
+You can write your own pattern. For instance, to get warning messages that are separated by colon you could use this pattern::
 
     cppcheck --template="{file}:{line}:{column}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
 
@@ -1140,45 +1140,6 @@ In the GUI:
  * In the "Analysis" tab there are several options.
 
 If you want to use these limitations on the command line also you can import the GUI project file with --project.
-
-# Cppcheck Premium
-
-## Bug hunting
-
-This is analysis that is more noisy than normal analysis. Most warnings will be false positives (cppcheck will wrongly claim that there are bugs). The design goal is to not have more than roughly 5 - 10 false positives in each file.
-
-It is not intended to be used in normal CI or regular static analysis by developers. The noise makes it useless for that.
-
-It is intended to be used when you are looking for bugs and you really can accept noise. For example:
- * You have developed a brand new feature and want to ensure that there are no bugs.
- * Maybe as part of release testing your product you can run bug hunting on modified files.
- * Etc
-
-Technically, analysis that is "sound" will detect all bugs. Analysis that is "soundy" has the goal to detect most bugs and it tries to keep the noise at an reasonable level.
-
-The Cppcheck bug hunting analysis is "soundy".
-
-Command:
-
-    cppcheck --premium=bughunting ....
-
-## Coding standards
-
-Command to active Autosar checkers:
-
-    cppcheck --premium=autosar ....
-
-Command to active Cert C checkers:
-
-    cppcheck --premium=cert-c ....
-
-Command to active Cert C++ checkers:
-
-    cppcheck --premium=cert-c++ ....
-
-Command to active Misra C++ 2008 checkers:
-
-    cppcheck --premium=misra-c++-2008 ....
 
 ## Licenses
 

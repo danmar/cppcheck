@@ -759,7 +759,7 @@ The output will look like this:
 
 ## User defined output format (single line)
 
-You can write your own pattern. For instance, to get warning messages that are formatted like traditional gcc, then the following format can be used:
+You can write your own pattern. For instance, to get warning messages that are separated by colon you could use this pattern:
 
     cppcheck --template="{file}:{line}:{column}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
 
@@ -1087,6 +1087,12 @@ Example usage:
 
 # Check Level
 
+## Reduced
+
+The "reduced" check level performs a limited data flow analysis. If developers
+want to run cppcheck directly during development and require faster results
+than "normal" provides then this reduced checking can be an option.
+
 ## Normal
 
 The "normal" check level is chosen by default. Our aim is that this checking level will provide an effective checking in "reasonable" time.
@@ -1167,9 +1173,17 @@ Command to active Cert C++ checkers:
 
     cppcheck --premium=cert-c++ ....
 
+Command to active Misra C 2023 checkers:
+
+    cppcheck --premium=misra-c-2023 ....
+
 Command to active Misra C++ 2008 checkers:
 
     cppcheck --premium=misra-c++-2008 ....
+
+Command to active Misra C++ 2023 checkers:
+
+    cppcheck --premium=misra-c++-2023 ....
 
 ## Compliance report
 
