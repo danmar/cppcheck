@@ -106,6 +106,7 @@ private:
         TEST_CASE(varid71); // #12676 - wrong varid in uninstantiated templated constructor
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
+        TEST_CASE(varid_for_3);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varid_cpp_keywords_in_c_code3);
@@ -1398,6 +1399,16 @@ private:
                             "}";
         const char expected[] = "1: void foo ( int a@1 , int b@2 ) {\n"
                                 "2: for ( int a@3 = f ( x , y , z ) , b@4 = 2 ; ; ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid_for_3() {
+        const char code[] = "void f(int w, int h) {\n" // #13670
+                            "    for (int a[2] = { 2, w / 2 }, b = 2; a[1] && a[0] <= h; a[1] /= 2, a[0] *= 2) {}\n"
+                            "}\n";
+        const char expected[] = "1: void f ( int w@1 , int h@2 ) {\n"
+                                "2: for ( int a@3 [ 2 ] = { 2 , w@1 / 2 } , b@4 = 2 ; a@3 [ 1 ] && a@3 [ 0 ] <= h@2 ; a@3 [ 1 ] /= 2 , a@3 [ 0 ] *= 2 ) { }\n"
                                 "3: }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
