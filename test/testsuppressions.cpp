@@ -44,6 +44,8 @@ public:
 
 private:
 
+    const std::string templateFormat{"{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"};
+
     void run() override {
         TEST_CASE(suppressionsBadId1);
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
@@ -253,6 +255,7 @@ private:
         settings.severity.enable(Severity::information);
         if (suppression == "unusedFunction")
             settings.checks.setEnabled(Checks::unusedFunction, true);
+        settings.templateFormat = templateFormat;
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
@@ -294,6 +297,7 @@ private:
                                             $.quiet = true,
                                             $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
+        settings.templateFormat = templateFormat;
 
         Suppressions supprs;
         if (!suppression.empty()) {
@@ -340,6 +344,7 @@ private:
                                             $.quiet = true,
                                             $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
+        settings.templateFormat = templateFormat;
 
         Suppressions supprs;
         if (!suppression.empty()) {
@@ -1198,6 +1203,7 @@ private:
         Settings settings;
         settings.quiet = true;
         settings.exitCode = 1;
+        settings.templateFormat = templateFormat;
 
         Suppressions supprs;
         ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine("uninitvar"));
@@ -1238,6 +1244,7 @@ private:
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");
+        settings.templateFormat = templateFormat;
         const char code[] =
             "struct Point\n"
             "{\n"
