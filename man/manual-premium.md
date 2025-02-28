@@ -1147,7 +1147,9 @@ This is analysis that is more noisy than normal analysis. Most warnings will be 
 It is not intended to be used in normal CI or regular static analysis by developers. The noise makes it useless for that.
 
 It is intended to be used when you are looking for bugs and you really can accept noise. For example:
-You have developed a brand new feature and want to ensure that there are no bugs. Maybe as part of release testing your product you can run bug hunting on modified files. Etc
+ * You have developed a brand new feature and want to ensure that there are no bugs.
+ * Maybe as part of release testing your product you can run bug hunting on modified files.
+ * Etc
 
 Technically, analysis that is "sound" will detect all bugs. Analysis that is "soundy" has the goal to detect most bugs and it tries to keep the noise at an reasonable level.
 
