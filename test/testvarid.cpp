@@ -1416,7 +1416,7 @@ private:
                              "    for (int a(1), b{ 2 }, c = 3; a < b + c; ++a) {}\n"
                              "    for (int a{ 1 }, b(2), c = 3; a < b + c; ++a) {}\n"
                              "    for (int a = 1, b{ 2 }, c(3); a < b + c; ++a) {}\n"
-                            "}\n";
+                             "}\n";
         const char expected2[] = "1: void f ( ) {\n"
                                  "2: for ( int a@1 ( 1 ) , b@2 { 2 } , c@3 = 3 ; a@1 < b@2 + c@3 ; ++ a@1 ) { }\n"
                                  "3: for ( int a@4 { 1 } , b@5 ( 2 ) , c@6 = 3 ; a@4 < b@5 + c@6 ; ++ a@4 ) { }\n"
