@@ -32,6 +32,7 @@
 
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <limits>
 #include <utility>

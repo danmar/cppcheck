@@ -39,11 +39,10 @@
 #include <simplecpp.h>
 
 #ifndef _WIN32
+#include <stdexcept>
 #include <sys/types.h>
 #include <unistd.h>
 #else
-#include <stdexcept>
-
 #include <direct.h>
 #include <windows.h>
 #endif

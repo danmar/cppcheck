@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "mathlib.h"
 #include "vfvalue.h"
 
 #include <cstdint>

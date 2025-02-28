@@ -26,6 +26,7 @@
 #include "color.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <set>
 #include <string>
