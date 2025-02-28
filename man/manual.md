@@ -918,8 +918,8 @@ You can add remark comments in the source code that justify why there is a warni
 
 Such a remark comment shall:
 
- * start with REMARK.
- * can either be added above the source code that generates the warning, or after the code on the same line.
+- start with REMARK.
+- can either be added above the source code that generates the warning, or after the code on the same line.
 
 Example code:
 
@@ -1101,17 +1101,17 @@ than "normal" provides then this reduced checking can be an option.
 The "normal" check level is chosen by default. Our aim is that this checking level will provide an effective checking in "reasonable" time.
 
 The "normal" check level should be useful during active development:
- * checking files while you edit them.
- * block changes to the repo
- * etc
+- checking files while you edit them.
+- block changes to the repo
+- etc
 
 ## Exhaustive
 
 When you can wait longer for the results you can enable the "exhaustive" checking, by using the option `--check-level=exhaustive`.
 
 Exhaustive checking level should be useful for scenarios where you can wait for results. For instance:
- * nightly builds
- * etc
+- nightly builds
+- etc
 
 # Speeding up analysis
 
@@ -1124,9 +1124,9 @@ For performance reasons it might be a good idea to limit preprocessor configurat
 The command line option `--performance-valueflow-max-if-count` adjusts the max count for number of if in a function.
 
 When that limit is exceeded there is a limitation of data flow in that function. It is not drastic:
- * Analysis of other functions are not affected.
- * It's only for some specific data flow analysis, we have data flow analysis that is always executed.
- * All checks are always executed. There can still be plenty of warnings in the limited function.
+- Analysis of other functions are not affected.
+- It's only for some specific data flow analysis, we have data flow analysis that is always executed.
+- All checks are always executed. There can still be plenty of warnings in the limited function.
 
 There is data flow analysis that slows down exponentially when number of if increase. And the limit is intended to avoid that
 analysis time explodes.
@@ -1136,8 +1136,8 @@ analysis time explodes.
 In the GUI there are various options to limit analysis.
 
 In the GUI:
- * Open the project dialog.
- * In the "Analysis" tab there are several options.
+- Open the project dialog.
+- In the "Analysis" tab there are several options.
 
 If you want to use these limitations on the command line also you can import the GUI project file with --project.
 
