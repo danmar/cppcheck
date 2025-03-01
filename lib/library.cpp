@@ -1600,7 +1600,7 @@ const std::string& Library::returnValueType(const Token *ftok) const
     while (Token::simpleMatch(ftok, "::"))
         ftok = ftok->astOperand2() ? ftok->astOperand2() : ftok->astOperand1();
     if (!ftok)
-        return nullptr;
+        return mEmptyString;
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
             const Token* contTok = ftok->astParent()->astOperand1();
