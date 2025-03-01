@@ -1966,6 +1966,8 @@ def test_addon_lookup_ext_notfound(tmpdir):
 def test_config_lookup(tmpdir):
     # cppcheck.cfg needs to be next to executable
     exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
     shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
 
     test_file = os.path.join(tmpdir, 'test.c')
@@ -2007,6 +2009,8 @@ def test_config_lookup_notfound(tmpdir):
 def test_config_invalid(tmpdir):
     # cppcheck.cfg needs to be next to executable
     exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
     shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
 
     test_file = os.path.join(tmpdir, 'test.c')
@@ -2027,6 +2031,8 @@ def test_config_invalid(tmpdir):
 def test_config_override(tmpdir):
     # cppcheck.cfg needs to be next to executable
     exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
     shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
 
     test_file = os.path.join(tmpdir, 'test.c')
