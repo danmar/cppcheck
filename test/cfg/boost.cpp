@@ -21,6 +21,7 @@
 #include <boost/core/scoped_enum.hpp>
 #include <boost/foreach.hpp>
 
+#include <cstdlib>
 #include <set>
 #include <vector>
 
@@ -160,6 +161,18 @@ void test_BOOST_FOREACH_6(std::vector<int> data)
         data.push_back(123);
         break;
     }
+}
+
+void test_require()
+{
+    int *some_int = static_cast<int*>(std::malloc(sizeof(int)));
+    int *some_other_int = static_cast<int*>(malloc(sizeof(int)));
+    BOOST_REQUIRE(some_int);
+    BOOST_TEST_REQUIRE(some_other_int);
+    *some_int = 42;
+    *some_other_int = 42;
+    std::free(some_int);
+    free(some_other_int);
 }
 
 BOOST_AUTO_TEST_SUITE(my_auto_test_suite)
