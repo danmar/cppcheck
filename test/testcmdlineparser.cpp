@@ -489,6 +489,10 @@ private:
         TEST_CASE(debugNormalVerbose);
         TEST_CASE(debug);
         TEST_CASE(debugVerbose);
+        TEST_CASE(safety);
+        TEST_CASE(safetyOverride);
+        TEST_CASE(noSafety);
+        TEST_CASE(noSafetyOverride);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3387,6 +3391,34 @@ private:
         ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(true, settings->debugast);
         ASSERT_EQUALS(true, settings->debugsymdb);
+    }
+
+    void safety() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--safety", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->safety);
+    }
+
+    void safetyOverride() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-safety", "--safety", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->safety);
+    }
+
+    void noSafety() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-safety", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(false, settings->safety);
+    }
+
+    void noSafetyOverride() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--safety", "--no-safety", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(false, settings->safety);
     }
 
     void ignorepaths1() {

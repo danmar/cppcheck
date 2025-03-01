@@ -162,7 +162,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
             const auto& v = it->second;
             if (!v.is<bool>())
                 return "'safety' is not a bool";
-            settings.safety = settings.safety || v.get<bool>();
+            settings.safety = v.get<bool>();
         }
     }
 

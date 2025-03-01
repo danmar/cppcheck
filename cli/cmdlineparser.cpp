@@ -1016,6 +1016,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.cppHeaderProbe = false;
         }
 
+        else if (std::strcmp(argv[i], "--no-safety") == 0)
+            mSettings.safety = false;
+
         // Write results in file
         else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
             mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
@@ -1116,7 +1119,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 "misra-c++-2023",
                 "misra-cpp-2023",
                 "bughunting",
-                "safety",
+                "safety",  // TODO: deprecate in favor of the regular --saftey/--no-safety
                 "debug-progress"};
             // valid options --premium-..=
             const std::set<std::string> valid2{

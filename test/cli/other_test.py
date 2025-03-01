@@ -1743,6 +1743,27 @@ def test_config_invalid(tmpdir):
     ]
 
 
+def test_config_override(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
+    with open(config_file, 'wt') as f:
+        f.write(json.dumps({
+            'safety': False
+        }))
+
+    exitcode, stdout, stderr, exe = cppcheck_ex(['-q', '--safety', test_file], cwd=tmpdir, cppcheck_exe=exe, remove_checkers_report=False)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert 'checkersReport' in stderr
+
+
 def test_checkers_report(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
