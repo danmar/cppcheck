@@ -482,7 +482,7 @@ def isStdLibId(id_, standard='c99'):
     id_lists = []
     if standard == 'c89':
         id_lists = C90_STDLIB_IDENTIFIERS.values()
-    elif standard in ('c99'):
+    elif standard == 'c99':
         id_lists = C99_STDLIB_IDENTIFIERS.values()
     elif standard == 'c11':
         id_lists = C11_STDLIB_IDENTIFIERS.values()
@@ -502,16 +502,23 @@ C90_KEYWORDS = {
 }
 
 
-# Reserved keywords defined in ISO/IEC 9899 WF14/N1256 -- ch. 6.4.1
+# Reserved keywords defined in Section 6.4.1 "Language" of C99 Standard
+# Based on ISO/IEC 9899:1999 (E) 6.4.1 Keywords
+# Adding the expanding macros from Section 7 too
+# (https://www.dii.uchile.cl/~daespino/files/Iso_C_1999_definition.pdf)
 C99_ADDED_KEYWORDS = {
     'inline', 'restrict', '_Bool', '_Complex', '_Imaginary',
     'bool', 'complex', 'imaginary'
 }
 
+# Reserved keywords defined in Section 6.4.1 "Language" of C11 Standard
+# Based on ISO/IEC 9899:201x N1570 (Draft 12.04.2011) 6.4.1 Keywords
+# Adding the expanding macros from Section 7 too
+# (https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf)
 C11_ADDED_KEYWORDS = {
     '_Alignas', '_Alignof', '_Atomic', '_Generic', '_Noreturn',
-    '_Statis_assert', '_Thread_local' ,
-    'alignas', 'alignof', 'noreturn', 'static_assert'
+    '_Static_assert', '_Thread_local' ,
+    'alignas', 'alignof', 'noreturn', 'static_assert','thread_local'
 }
 
 def isKeyword(keyword, standard='c99'):
