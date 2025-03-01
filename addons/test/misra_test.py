@@ -197,19 +197,22 @@ def test_stdC11_identifiers():
 
 def test_isStdLibId():
     # Check that Identifiers from C90 are correctly classified
-    assert isStdLibId("assert",'c89') is True
-    assert isStdLibId("assert",'c99') is True
-    assert isStdLibId("assert",'c11') is True
+    assert isStdLibId("assert", 'c89') is True
+    assert isStdLibId("assert", 'c99') is True
+    assert isStdLibId("assert", 'c11') is True
+    assert isStdLibId("assert", 'c23') is True
 
     # Check that Identifiers from C99 are correctly classified
-    assert isStdLibId("UINT32_C",'c89') is False
-    assert isStdLibId("UINT32_C",'c99') is True
-    assert isStdLibId("UINT32_C",'c11') is True
+    assert isStdLibId("UINT32_C", 'c89') is False
+    assert isStdLibId("UINT32_C", 'c99') is True
+    assert isStdLibId("UINT32_C", 'c11') is True
+    assert isStdLibId("UINT32_C", 'c23') is True
 
     # Check that Identifiers from C11 are correctly classified
-    assert isStdLibId("sprintf_s",'c89') is False
-    assert isStdLibId("sprintf_s",'c99') is False
-    assert isStdLibId("sprintf_s",'c11') is True
+    assert isStdLibId("sprintf_s", 'c89') is False
+    assert isStdLibId("sprintf_s", 'c99') is False
+    assert isStdLibId("sprintf_s", 'c11') is True
+    assert isStdLibId("sprintf_s", 'c23') is True
 
     # Function Defaulting to C99
     assert isStdLibId("assert") is True
@@ -218,19 +221,22 @@ def test_isStdLibId():
 
 def test_isKeyword():
     # Check that Keywords from C90 are correctly classified
-    assert isKeyword("if",'c89') is True
-    assert isKeyword("if",'c99') is True
-    assert isKeyword("if",'c11') is True
+    assert isKeyword("if", 'c89') is True
+    assert isKeyword("if", 'c99') is True
+    assert isKeyword("if", 'c11') is True
+    assert isKeyword("if", 'c23') is True
 
     # Check that Keywords from C99 are correctly classified
-    assert isKeyword("inline",'c89') is False
-    assert isKeyword("inline",'c99') is True
-    assert isKeyword("inline",'c11') is True
+    assert isKeyword("inline", 'c89') is False
+    assert isKeyword("inline", 'c99') is True
+    assert isKeyword("inline", 'c11') is True
+    assert isKeyword("inline", 'c23') is True
 
     # Check that Keywords from C11 are correctly classified
-    assert isKeyword("static_assert",'c89') is False
-    assert isKeyword("static_assert",'c99') is False
-    assert isKeyword("static_assert",'c11') is True
+    assert isKeyword("static_assert", 'c89') is False
+    assert isKeyword("static_assert", 'c99') is False
+    assert isKeyword("static_assert", 'c11') is True
+    assert isKeyword("static_assert", 'c23') is True
 
     # Function Defaulting to C99
     assert isKeyword("if") is True

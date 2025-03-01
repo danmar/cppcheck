@@ -484,7 +484,7 @@ def isStdLibId(id_, standard='c99'):
         id_lists = C90_STDLIB_IDENTIFIERS.values()
     elif standard == 'c99':
         id_lists = C99_STDLIB_IDENTIFIERS.values()
-    elif standard == 'c11':
+    else:
         id_lists = C11_STDLIB_IDENTIFIERS.values()
     for l in id_lists:
         if id_ in l:
@@ -1707,7 +1707,7 @@ class MisraChecker:
         for token in cfg.tokenlist:
             if token.str in ('_Atomic', '_Noreturn', '_Generic', '_Thread_local', '_Alignas', '_Alignof'):
                 self.reportError(token, 1, 4)
-            if token.str.endswith('_s') and isFunctionCall(token.next):
+            if token.str.endswith('_s') and isFunctionCall(token.next, cfg.standards.c):
                 # See C specification C11 - Annex K, page 578
                 if token.str in ('tmpfile_s', 'tmpnam_s', 'fopen_s', 'freopen_s', 'fprintf_s', 'fscanf_s', 'printf_s', 'scanf_s',
                                  'snprintf_s', 'sprintf_s', 'sscanf_s', 'vfprintf_s', 'vfscanf_s', 'vprintf_s', 'vscanf_s',
@@ -2102,7 +2102,7 @@ class MisraChecker:
                         self.reportError(token, 7, 4)
 
             # Check use as function parameter
-            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
+            if isFunctionCall(token, data.standards.c) and token.astOperand1 and token.astOperand1.function:
                 functionDeclaration = token.astOperand1.function
 
                 if functionDeclaration.tokenDef:
@@ -3429,7 +3429,7 @@ class MisraChecker:
 
     def misra_17_1(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and token.astOperand1.str in (
+            if isFunctionCall(token, data.standards.c) and token.astOperand1.str in (
             'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'):
                 self.reportError(token, 17, 1)
             elif token.str == 'va_list':
@@ -3498,7 +3498,7 @@ class MisraChecker:
             end_token = token.next.link
             while tok != end_token:
                 if tok.isName and tok.function is None and tok.valueType is None and tok.next.str == "(" and \
-                        tok.next.valueType is None and not isKeyword(tok.str) and not isStdLibId(tok.str,cfg.standards.c):
+                        tok.next.valueType is None and not isKeyword(tok.str, cfg.standards.c) and not isStdLibId(tok.str, cfg.standards.c):
                     self.reportError(tok, 17, 3)
                     break
                 tok = tok.next
@@ -3551,7 +3551,7 @@ class MisraChecker:
                     continue
                 if tok.next.str == "(" or tok.str in ["EOF"]:
                     continue
-                if isKeyword(tok.str) or isStdLibId(tok.str,data.standards.c):
+                if isKeyword(tok.str, data.standards.c) or isStdLibId(tok.str, data.standards.c):
                     continue
                 if tok.astParent is None:
                     continue
@@ -3816,7 +3816,7 @@ class MisraChecker:
                     break
             for s in cond.E.split(' '):
                 if (s[0] >= 'A' and s[0] <= 'Z') or (s[0] >= 'a' and s[0] <= 'z'):
-                    if isKeyword(s):
+                    if isKeyword(s, cfg.standards.c):
                         continue
                     if s in defined:
                         continue
@@ -3950,7 +3950,7 @@ class MisraChecker:
 
     def misra_21_3(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
+            if isFunctionCall(token, data.standards.c) and (token.astOperand1.str in ('malloc', 'calloc', 'realloc', 'free')):
                 self.reportError(token, 21, 3)
 
     def misra_21_4(self, data):
@@ -3973,12 +3973,12 @@ class MisraChecker:
 
     def misra_21_7(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('atof', 'atoi', 'atol', 'atoll')):
+            if isFunctionCall(token, data.standards.c) and (token.astOperand1.str in ('atof', 'atoi', 'atol', 'atoll')):
                 self.reportError(token, 21, 7)
 
     def misra_21_8(self, data):
         for token in data.tokenlist:
-            if isFunctionCall(token) and (token.astOperand1.str in ('abort', 'exit', 'getenv')):
+            if isFunctionCall(token, data.standards.c) and (token.astOperand1.str in ('abort', 'exit', 'getenv')):
                 self.reportError(token, 21, 8)
 
     def misra_21_9(self, data):
@@ -4005,7 +4005,7 @@ class MisraChecker:
             for token in data.tokenlist:
                 if token.str == 'fexcept_t' and token.isName:
                     self.reportError(token, 21, 12)
-                if isFunctionCall(token) and (token.astOperand1.str in (
+                if isFunctionCall(token, data.standards.c) and (token.astOperand1.str in (
                         'feclearexcept',
                         'fegetexceptflag',
                         'feraiseexcept',
@@ -4017,7 +4017,7 @@ class MisraChecker:
         # buffers used in strcpy/strlen/etc function calls
         string_buffers = []
         for token in data.tokenlist:
-            if token.str[0] == 's' and isFunctionCall(token.next):
+            if token.str[0] == 's' and isFunctionCall(token.next, data.standards.c):
                 name, args = cppcheckdata.get_function_call_name_args(token)
                 if name is None:
                     continue
