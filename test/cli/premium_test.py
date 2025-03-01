@@ -14,6 +14,8 @@ __PRODUCT_NAME = 'Cppcheck Premium ' + str(time.time())
 
 def __copy_cppcheck_premium(tmpdir):
     exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
 
     # add minimum cfg/std.cfg
     test_cfg_folder = tmpdir.mkdir('cfg')
@@ -35,10 +37,6 @@ def __copy_cppcheck_premium(tmpdir):
 
 
 def test_misra_c_builtin_style_checks(tmpdir):
-    # FIXME this test does not work in ci-windows.yml (release build)
-    if sys.platform == 'win32':
-        return
-
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         f.write('void foo() { int x; y = 0; }')
