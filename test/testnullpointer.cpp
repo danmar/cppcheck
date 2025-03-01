@@ -4101,7 +4101,14 @@ private:
               "    *(p+2) = 0;\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) If memory allocation fail: pointer addition with NULL pointer.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) If memory allocation fails: pointer addition with NULL pointer.\n", errout_str());
+
+        check("void f() {\n" // #13676
+              "    int* q = static_cast<int*>(std::malloc(4));\n"
+              "    *q = 0;\n"
+              "    std::free(q);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) If memory allocation fails, then there is a possible null pointer dereference: q\n", errout_str());
     }
 
     void functioncall() {    // #3443 - function calls

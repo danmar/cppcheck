@@ -546,11 +546,11 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
 
     std::string id = "nullPointerArithmetic";
     if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
-        errmsg = "If memory allocation fail: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
+        errmsg = "If memory allocation fails: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
         id += "OutOfMemory";
     }
     else if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
-        errmsg = "If resource allocation fail: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
+        errmsg = "If resource allocation fails: " + ((char)std::tolower(errmsg[0]) + errmsg.substr(1));
         id += "OutOfResources";
     }
 
