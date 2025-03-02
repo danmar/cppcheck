@@ -906,15 +906,14 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         varDecl->children.clear();
         Token *expr1 = varDecl->createTokens(tokenList);
         Token *colon = addtoken(tokenList, ":");
-        AstNodePtr range;
-        for (std::size_t i = 0; i < 2; i++) {
-            if (children[i] && children[i]->nodeType == DeclStmt && children[i]->getChild(0)->nodeType == VarDecl) {
-                range = children[i]->getChild(0)->getChild(0);
-                break;
-            }
-        }
-        if (!range)
+
+        auto it = std::find_if(children.cbegin(), children.cbegin() + 2, [&](const AstNodePtr& c) {
+            return c && c->nodeType == DeclStmt && c->getChild(0)->nodeType == VarDecl;
+        });
+        if (it == children.cbegin() + 2)
             throw InternalError(tokenList.back(), "Failed to import CXXForRangeStmt. Range?");
+        AstNodePtr range = (*it)->getChild(0)->getChild(0);
+
         Token *expr2 = range->createTokens(tokenList);
         Token *par2 = addtoken(tokenList, ")");
 

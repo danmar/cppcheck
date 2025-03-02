@@ -2598,7 +2598,9 @@ static const Token *singleStatement(const Token *start)
     return endStatement;
 }
 
-static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, const Settings& settings)
+enum class LoopType : std::uint8_t { OTHER, RANGE, ITERATOR, INDEX };
+
+static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, bool &hasBreak, LoopType loopType, const Settings& settings)
 {
     const Token *endStatement = singleStatement(start);
     if (!endStatement)
@@ -2612,6 +2614,23 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
     hasBreak = Token::simpleMatch(endStatement->previous(), "break");
+
+    if (loopType == LoopType::INDEX) { // check for container access
+        nonneg int containerId{};
+        for (const Token* tok = assignTok->next(); tok != endStatement; tok = tok->next()) {
+            if (tok->varId() == varid) {
+                if (!Token::simpleMatch(tok->astParent(), "["))
+                    return nullptr;
+                const Token* contTok = tok->astParent()->astOperand1();
+                if (!contTok->valueType() || !contTok->valueType()->container || contTok->varId() == 0)
+                    return nullptr;
+                if (containerId > 0 && containerId != contTok->varId()) // allow only one container
+                    return nullptr;
+                containerId = contTok->varId();
+            }
+        }
+        return containerId > 0 ? assignTok : nullptr;
+    }
     return assignTok;
 }
 
@@ -2652,7 +2671,7 @@ static const Token *singleIncrementInScope(const Token *start, nonneg int varid,
     return varTok;
 }
 
-static const Token *singleConditionalInScope(const Token *start, nonneg int varid, const Settings& settings)
+static const Token *singleConditionalInScope(const Token *start, nonneg int varid, LoopType loopType, const Settings& settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2671,6 +2690,22 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
         return nullptr;
     if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings))
         return nullptr;
+    if (loopType == LoopType::INDEX) { // check for container access
+        nonneg int containerId{};
+        for (const Token* tok = start->tokAt(2); tok != start->linkAt(2); tok = tok->next()) {
+            if (tok->varId() == varid) {
+                if (!Token::simpleMatch(tok->astParent(), "["))
+                    return nullptr;
+                const Token* contTok = tok->astParent()->astOperand1();
+                if (!contTok->valueType() || !contTok->valueType()->container || contTok->varId() == 0)
+                    return nullptr;
+                if (containerId > 0 && containerId != contTok->varId()) // allow only one container
+                    return nullptr;
+                containerId = contTok->varId();
+            }
+        }
+        return containerId > 0 ? bodyTok : nullptr;
+    }
     return bodyTok;
 }
 
@@ -2735,11 +2770,9 @@ static std::string flipMinMax(const std::string &algo)
     return algo;
 }
 
-static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonneg int assignVar, bool invert = false)
+static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonneg int assignVar, LoopType loopType, bool invert = false)
 {
-    if (!Token::Match(condTok, "<|<=|>=|>"))
-        return "std::accumulate";
-    if (!hasVarIds(condTok, loopVar, assignVar))
+    if (loopType == LoopType::RANGE && !hasVarIds(condTok, loopVar, assignVar))
         return "std::accumulate";
     std::string algo = "std::max_element";
     if (Token::Match(condTok, "<|<="))
@@ -2749,6 +2782,38 @@ static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonne
     if (invert)
         algo = flipMinMax(algo);
     return algo;
+}
+
+static bool isTernaryAssignment(const Token* assignTok, nonneg int loopVarId, nonneg int assignVarId, LoopType loopType, std::string& algo)
+{
+    if (!Token::simpleMatch(assignTok->astOperand2(), "?"))
+        return false;
+    const Token* condTok = assignTok->astOperand2()->astOperand1();
+    if (!Token::Match(condTok, "<|<=|>=|>"))
+        return false;
+
+    const Token* colon = assignTok->astOperand2()->astOperand2();
+    if (loopType == LoopType::RANGE) {
+        if (!(condTok->astOperand1()->varId() && condTok->astOperand2()->varId() && colon->astOperand1()->varId() && colon->astOperand2()->varId()))
+            return false;
+    }
+    else if (loopType == LoopType::INDEX) {
+        int nVar = 0, nCont = 0;
+        for (const Token* tok : { condTok->astOperand1(), condTok->astOperand2(), colon->astOperand1(), colon->astOperand2() }) {
+            if (tok->varId())
+                ++nVar;
+            else if (tok->str() == "[" && tok->astOperand1()->varId() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container &&
+                     tok->astOperand2()->varId() == loopVarId)
+                ++nCont;
+        }
+        if (nVar != 2 || nCont != 2)
+            return false;
+    }
+    else
+        return false;
+
+    algo = minmaxCompare(condTok, loopVarId, assignVarId, loopType, colon->astOperand1()->varId() == assignVarId);
+    return true;
 }
 
 namespace {
@@ -2940,13 +3005,14 @@ void CheckStl::useStlAlgorithm()
             const Token *bodyTok = tok->linkAt(1)->next();
             const Token *splitTok = tok->next()->astOperand2();
             const Token* loopVar{};
-            bool isIteratorLoop = false;
+            LoopType loopType{};
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (loopVar->varId() == 0)
                     continue;
                 if (Token::simpleMatch(splitTok->astOperand2(), "{"))
                     continue;
+                loopType = LoopType::RANGE;
             }
             else { // iterator-based loop?
                 const Token* initTok = getInitTok(tok);
@@ -2955,18 +3021,19 @@ void CheckStl::useStlAlgorithm()
                 if (!initTok || !condTok || !stepTok)
                     continue;
                 loopVar = Token::Match(condTok, "%comp%") ? condTok->astOperand1() : nullptr;
-                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
+                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() ||
+                    (loopVar->valueType()->type != ValueType::Type::ITERATOR && !loopVar->valueType()->isIntegral()))
                     continue;
                 if (!Token::simpleMatch(initTok, "=") || !Token::Match(initTok->astOperand1(), "%varid%", loopVar->varId()))
                     continue;
                 if (!stepTok->isIncDecOp())
                     continue;
-                isIteratorLoop = true;
+                loopType = (loopVar->valueType()->type == ValueType::Type::ITERATOR) ? LoopType::ITERATOR : LoopType::INDEX;
             }
 
             // Check for single assignment
             bool useLoopVarInAssign{}, hasBreak{};
-            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
+            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, loopType, *mSettings);
             if (assignTok) {
                 if (!checkAssignee(assignTok->astOperand1()))
                     continue;
@@ -2986,8 +3053,8 @@ void CheckStl::useStlAlgorithm()
                         algo = "std::distance";
                     else if (accumulateBool(assignTok, assignVarId))
                         algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
-                    else if (Token::Match(assignTok, "= %var% <|<=|>=|> %var% ? %var% : %var%") && hasVarIds(assignTok->tokAt(6), loopVar->varId(), assignVarId))
-                        algo = minmaxCompare(assignTok->tokAt(2), loopVar->varId(), assignVarId, assignTok->tokAt(5)->varId() == assignVarId);
+                    else if (isTernaryAssignment(assignTok, loopVar->varId(), assignVarId, loopType, algo))
+                        ;
                     else if (isAccumulation(assignTok, assignVarId))
                         algo = "std::accumulate";
                     else
@@ -2999,7 +3066,7 @@ void CheckStl::useStlAlgorithm()
             // Check for container calls
             bool useLoopVarInMemCall;
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, *mSettings);
-            if (memberAccessTok && !isIteratorLoop) {
+            if (memberAccessTok && loopType == LoopType::RANGE) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())
@@ -3031,10 +3098,10 @@ void CheckStl::useStlAlgorithm()
             }
 
             // Check for conditionals
-            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), *mSettings);
+            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), loopType, *mSettings);
             if (condBodyTok) {
                 // Check for single assign
-                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, *mSettings);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, hasBreak, loopType, *mSettings);
                 if (assignTok) {
                     if (!checkAssignee(assignTok->astOperand1()))
                         continue;
@@ -3108,7 +3175,7 @@ void CheckStl::useStlAlgorithm()
                     const Token *loopVar2 = Token::findmatch(condBodyTok, "%varid%", condBodyTok->link(), loopVar->varId());
                     std::string algo;
                     if (loopVar2 ||
-                        (isIteratorLoop && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
+                        (loopType == LoopType::ITERATOR && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
                         algo = "std::find_if";
                     else
                         algo = "std::any_of";
