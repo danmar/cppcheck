@@ -1031,7 +1031,8 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | boost.cfg         | [Boost](http://www.boost.org/) | |
 | bsd.cfg           | [BSD](https://www.freebsd.org/) | |
 | cairo.cfg         | [cairo](https://www.cairographics.org/) | |
-| cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
+| cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of
+the Cppcheck code base |
 | cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) |
 | dpdk.cfg          |               |               |
 | embedded_sql.cfg  |               |               |
