@@ -814,7 +814,9 @@ There is a possible null pointer dereference at line 3.
 Cppcheck can show how it came to that conclusion by showing extra location information. 
 You need to use both --template and --template-location at the command line, for example:
 
-    cppcheck --template="{file}:{line}: {severity}: {message}\n{code}" --template-location="{file}:{line}: note: {info}\n{code}" multiline.c
+    cppcheck --template="{file}:{line}: {severity}: \
+    {message}\n{code}" --template-location="{file}:{line}: \
+    note: {info}\n{code}" multiline.c
 
 The output from Cppcheck is:
 
@@ -1021,56 +1023,57 @@ Cppcheck already contains configurations for several libraries. They can be load
 ## Using a .cfg file
 
 To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the currently existing libraries:
-| .cfg file  | Library | Comment |
-| ------------- | ------------- | ------------- |
-| avr.cfg | |
-| bento4.cfg | [Bento4](http://www.bento4.com/) |
-| boost.cfg | [Boost](http://www.boost.org/)|
-| bsd.cfg | [BSD](https://www.freebsd.org/) |
-| cairo.cfg | [cairo](https://www.cairographics.org/) |
-| cppcheck-lib.cfg | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
-| cppunit.cfg | [CppUnit](https://sourceforge.net/projects/cppunit/) |
-| dpdk.cfg | |
-| embedded_sql.cfg | |
-| emscripten.cfg | |
-| ginac.cfg | |
-| gnu.cfg | [GNU](https://www.gnu.org/) |
-| googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
-| gtk.cfg | [GTK](https://www.gtk.org/) |
-| icu.cfg | |
-| kde.cfg | [KDE](https://kde.org/) |
-| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) |
-| libcurl.cfg | [libcurl](https://curl.se/libcurl/) |
-| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) |
-| lua.cfg | |
-| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) |
-| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) |
-| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) |
-| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) |
-| motif.cfg | |
-| nspr.cfg | |
-| ntl.cfg | |
-| opencv2.cfg | [OpenCV](https://opencv.org/) |
-| opengl.cfg | [OpenGL](https://opengl.org/) |
-| openmp.cfg | [OpenMP](https://www.openmp.org/) |
-| openssl.cfg | [OpenSSL](https://www.openssl.org/) |
-| pcre.cfg | [PCRE](https://pcre.org/) |
-| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) |
-| python.cfg | |
-| qt.cfg | [Qt](https://doc.qt.io/qt.html) |
-| ruby.cfg | |
-| sdl.cfg | |
-| sfml.cfg | |
-| sqlite3.cfg | [SQLite](https://www.sqlite.org/) |
+
+| .cfg file         | Library       | Comment       |
+| ----------------- | ------------- | ------------- |
+| avr.cfg           |               |               |
+| bento4.cfg        | [Bento4](http://www.bento4.com/) | |
+| boost.cfg         | [Boost](http://www.boost.org/) | |
+| bsd.cfg           | [BSD](https://www.freebsd.org/) | |
+| cairo.cfg         | [cairo](https://www.cairographics.org/) | |
+| cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
+| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) |
+| dpdk.cfg          |               |               |
+| embedded_sql.cfg  |               |               |
+| emscripten.cfg | | |
+| ginac.cfg | | |
+| gnu.cfg | [GNU](https://www.gnu.org/) | |
+| googletest.cfg | [GoogleTest](https://github.com/google/googletest) | |
+| gtk.cfg | [GTK](https://www.gtk.org/) | |
+| icu.cfg | | |
+| kde.cfg | [KDE](https://kde.org/) | |
+| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) | |
+| libcurl.cfg | [libcurl](https://curl.se/libcurl/) | |
+| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) | |
+| lua.cfg | | |
+| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) | |
+| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) | |
+| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) | |
+| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) | |
+| motif.cfg | | |
+| nspr.cfg | | |
+| ntl.cfg | | |
+| opencv2.cfg | [OpenCV](https://opencv.org/) | |
+| opengl.cfg | [OpenGL](https://opengl.org/) | |
+| openmp.cfg | [OpenMP](https://www.openmp.org/) | |
+| openssl.cfg | [OpenSSL](https://www.openssl.org/) | |
+| pcre.cfg | [PCRE](https://pcre.org/) | |
+| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) | |
+| python.cfg | | |
+| qt.cfg | [Qt](https://doc.qt.io/qt.html) | |
+| ruby.cfg | | |
+| sdl.cfg | | |
+| sfml.cfg | | |
+| sqlite3.cfg | [SQLite](https://www.sqlite.org/) | |
 | std.cfg | C/C++ standard library | Loaded by default
-| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) |
-| vcl.cfg | |
-| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) |
-| wxsqlite3.cfg | |
-| wxsvg.cfg | |
-| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) |
-| zephyr.cfg | |
-| zlib.cfg | [zlib](https://www.zlib.net) |
+| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) | |
+| vcl.cfg | | |
+| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) | |
+| wxsqlite3.cfg | | |
+| wxsvg.cfg | | |
+| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) | |
+| zephyr.cfg | | |
+| zlib.cfg | [zlib](https://www.zlib.net) | |
 
 ## Creating a custom .cfg file
 
