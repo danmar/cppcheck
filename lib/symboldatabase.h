@@ -704,6 +704,8 @@ private:
     void evaluate(const Settings& settings);
 };
 
+enum class FunctionType : std::uint8_t { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
+
 class CPPCHECKLIB Function {
     // only symbol database can change this
     friend class SymbolDatabase;
@@ -756,8 +758,6 @@ class CPPCHECKLIB Function {
     }
 
 public:
-    enum Type : std::uint8_t { eConstructor, eCopyConstructor, eMoveConstructor, eOperatorEqual, eDestructor, eFunction, eLambda };
-
     Function(const Token *tok, const Scope *scope, const Token *tokDef, const Token *tokArgDef);
     Function(const Token *tokenDef, const std::string &clangType);
 
@@ -788,17 +788,17 @@ public:
     const Function *getOverriddenFunction(bool *foundAllBaseClasses = nullptr) const;
 
     bool isLambda() const {
-        return type==eLambda;
+        return type==FunctionType::eLambda;
     }
 
     bool isConstructor() const {
-        return type==eConstructor ||
-               type==eCopyConstructor ||
-               type==eMoveConstructor;
+        return type==FunctionType::eConstructor ||
+               type==FunctionType::eCopyConstructor ||
+               type==FunctionType::eMoveConstructor;
     }
 
     bool isDestructor() const {
-        return type==eDestructor;
+        return type==FunctionType::eDestructor;
     }
     bool isAttributeConstructor() const {
         return tokenDef->isAttributeConstructor();
@@ -926,7 +926,7 @@ public:
     const Scope* nestedIn{};          ///< Scope the function is declared in
     std::list<Variable> argumentList; ///< argument list, must remain list due to clangimport usage!
     nonneg int initArgCount{};        ///< number of args with default values
-    Type type = eFunction;            ///< constructor, destructor, ...
+    FunctionType type = FunctionType::eFunction; ///< constructor, destructor, ...
     const Token* noexceptArg{};       ///< noexcept token
     const Token* throwArg{};          ///< throw token
     const Token* templateDef{};       ///< points to 'template <' before function

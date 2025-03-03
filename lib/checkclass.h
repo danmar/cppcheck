@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "symboldatabase.h"
 
 #include <cstdint>
 #include <list>
@@ -36,6 +35,12 @@ class ErrorLogger;
 class Settings;
 class Tokenizer;
 class Token;
+class Scope;
+class SymbolDatabase;
+class Function;
+class Variable;
+class Type;
+enum class FunctionType : std::uint8_t;
 
 /// @addtogroup Checks
 /// @{
@@ -150,9 +155,9 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, FunctionType functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
-    void missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname);
+    void missingMemberCopyError(const Token *tok, FunctionType functionType, const std::string& classname, const std::string& varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer = false);

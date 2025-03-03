@@ -60,7 +60,7 @@ void CheckExceptionSafety::destructors()
         if (!function)
             continue;
         // only looking for destructors
-        if (function->type == Function::eDestructor) {
+        if (function->type == FunctionType::eDestructor) {
             // Inspect this destructor.
             for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
                 // Skip try blocks

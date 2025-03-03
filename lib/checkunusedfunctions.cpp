@@ -79,7 +79,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
                 continue;
 
             // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
-            if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
+            if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != FunctionType::eFunction || func->isOperator())
                 continue;
 
             if (func->isAttributeUnused() || func->isAttributeMaybeUnused())

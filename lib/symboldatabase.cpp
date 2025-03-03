@@ -872,13 +872,13 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
             const Variable* firstArg = func->getArgumentVar(0);
             if (firstArg->type() == scope.definedType) {
                 if (firstArg->isRValueReference())
-                    func->type = Function::eMoveConstructor;
+                    func->type = FunctionType::eMoveConstructor;
                 else if (firstArg->isReference() && !firstArg->isPointer())
-                    func->type = Function::eCopyConstructor;
+                    func->type = FunctionType::eCopyConstructor;
             }
 
-            if (func->type == Function::eCopyConstructor ||
-                func->type == Function::eMoveConstructor)
+            if (func->type == FunctionType::eCopyConstructor ||
+                func->type == FunctionType::eMoveConstructor)
                 scope.numCopyOrMoveConstructors++;
         }
     }
@@ -954,7 +954,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     bool hasDefaultConstructor = false;
 
                     for (const Function& func : scope.functionList) {
-                        if (func.type == Function::eConstructor) {
+                        if (func.type == FunctionType::eConstructor) {
                             // check for no arguments: func ( )
                             if (func.argCount() == 0) {
                                 hasDefaultConstructor = true;
@@ -2521,11 +2521,11 @@ Function::Function(const Token *tok,
 
         // 'operator =' is special
         if (tokenDef->str() == "operator=")
-            type = Function::eOperatorEqual;
+            type = FunctionType::eOperatorEqual;
     }
 
     else if (tokenDef->str() == "[") {
-        type = Function::eLambda;
+        type = FunctionType::eLambda;
     }
 
     // class constructor/destructor
@@ -2536,12 +2536,12 @@ Function::Function(const Token *tok,
                tokenDef->str()[scope->className.size() + 1] == '<'))) {
         // destructor
         if (tokenDef->strAt(-1) == "~") {
-            type = Function::eDestructor;
+            type = FunctionType::eDestructor;
             isNoExcept(true);
         }
         // constructor of any kind
         else
-            type = Function::eConstructor;
+            type = FunctionType::eConstructor;
 
         isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
     }
@@ -2628,7 +2628,7 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
 
         // 'operator =' is special
         if (tokenDef->str() == "operator=")
-            type = Function::eOperatorEqual;
+            type = FunctionType::eOperatorEqual;
     }
 
     setFlags(tokenDef, tokenDef->scope());
@@ -3087,7 +3087,7 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
 {
     if (!function)
         return false;
-    if (function->type != Function::eFunction && function->type != Function::eOperatorEqual && function->type != Function::eLambda)
+    if (function->type != FunctionType::eFunction && function->type != FunctionType::eOperatorEqual && function->type != FunctionType::eLambda)
         return false;
     const Token* defStart = function->retDef;
     if (!defStart)
@@ -3392,7 +3392,7 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
             auto range = scope1->functionMap.equal_range(tok->str());
             for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
                 auto * func = const_cast<Function *>(it->second);
-                if (destructor && func->type != Function::Type::eDestructor)
+                if (destructor && func->type != FunctionType::eDestructor)
                     continue;
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, tok->next(), path, path_length)) {
@@ -3406,9 +3406,9 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
                                     func->isDelete(true);
                                 return;
                             }
-                            if (func->type == Function::eDestructor && destructor) {
+                            if (func->type == FunctionType::eDestructor && destructor) {
                                 func->hasBody(true);
-                            } else if (func->type != Function::eDestructor && !destructor) {
+                            } else if (func->type != FunctionType::eDestructor && !destructor) {
                                 // normal function?
                                 const bool hasConstKeyword = closeParen->strAt(1) == "const";
                                 if ((func->isConst() == hasConstKeyword) &&
@@ -3823,22 +3823,22 @@ static std::string accessControlToString(AccessControl access)
     return "Unknown";
 }
 
-static const char* functionTypeToString(Function::Type type)
+static const char* functionTypeToString(FunctionType type)
 {
     switch (type) {
-    case Function::eConstructor:
+    case FunctionType::eConstructor:
         return "Constructor";
-    case Function::eCopyConstructor:
+    case FunctionType::eCopyConstructor:
         return "CopyConstructor";
-    case Function::eMoveConstructor:
+    case FunctionType::eMoveConstructor:
         return "MoveConstructor";
-    case Function::eOperatorEqual:
+    case FunctionType::eOperatorEqual:
         return "OperatorEqual";
-    case Function::eDestructor:
+    case FunctionType::eDestructor:
         return "Destructor";
-    case Function::eFunction:
+    case FunctionType::eFunction:
         return "Function";
-    case Function::eLambda:
+    case FunctionType::eLambda:
         return "Lambda";
     default:
         return "Unknown";
@@ -4569,7 +4569,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             initArgCount++;
             if (tok->strAt(1) == "[") {
                 const Token* lambdaStart = tok->next();
-                if (type == eLambda)
+                if (type == FunctionType::eLambda)
                     tok = findLambdaEndTokenWithoutAST(lambdaStart);
                 else {
                     tok = findLambdaEndToken(lambdaStart);
@@ -6296,7 +6296,7 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 const Function *Scope::getDestructor() const
 {
     auto it = std::find_if(functionList.cbegin(), functionList.cend(), [](const Function& f) {
-        return f.type == Function::eDestructor;
+        return f.type == FunctionType::eDestructor;
     });
     return it == functionList.end() ? nullptr : &*it;
 }

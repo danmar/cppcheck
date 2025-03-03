@@ -2211,7 +2211,7 @@ private:
             for (auto func = scope.functionList.cbegin(); func != scope.functionList.cend(); ++func) {
                 ASSERT_EQUALS("Sub", func->token->str());
                 ASSERT_EQUALS(true, func->hasBody());
-                ASSERT_EQUALS(Function::eConstructor, func->type);
+                ASSERT_EQUALS_ENUM(FunctionType::eConstructor, func->type);
                 seen_something = true;
             }
         }
@@ -2222,74 +2222,74 @@ private:
         {
             GET_SYMBOL_DB("class Foo { Foo(); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eConstructor && !ctor->isExplicit());
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor && !ctor->isExplicit());
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { explicit Foo(Foo f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(4)->function();
-            ASSERT(db && ctor && ctor->type == Function::eConstructor && ctor->isExplicit());
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor && ctor->isExplicit());
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Bar& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eCopyConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(const Foo &f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eCopyConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("template <T> class Foo { Foo(Foo<T>& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(7)->function();
-            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eCopyConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f, int default = 0); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eCopyConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eCopyConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo& f, char noDefault); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo&& f); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("class Foo { Foo(Foo&& f, int default = 1, bool defaultToo = true); };");
             const Function* ctor = tokenizer.tokens()->tokAt(3)->function();
-            ASSERT(db && ctor && ctor->type == Function::eMoveConstructor);
+            ASSERT(db && ctor && ctor->type == FunctionType::eMoveConstructor);
             ASSERT(ctor && ctor->retDef == nullptr);
         }
         {
             GET_SYMBOL_DB("void f() { extern void f(); }");
             ASSERT(db && db->scopeList.size() == 2);
             const Function* f = findFunctionByName("f", &db->scopeList.back());
-            ASSERT(f && f->type == Function::eFunction);
+            ASSERT(f && f->type == FunctionType::eFunction);
         }
     }
 
@@ -3485,9 +3485,9 @@ private:
         unsigned int constructor = 0;
         unsigned int destructor = 0;
         for (const Function& f : fredScope->functionList) {
-            if (f.type == Function::eConstructor)
+            if (f.type == FunctionType::eConstructor)
                 constructor = f.token->linenr();  // line number for constructor body
-            if (f.type == Function::eDestructor)
+            if (f.type == FunctionType::eDestructor)
                 destructor = f.token->linenr();  // line number for destructor body
         }
 
@@ -5003,7 +5003,7 @@ private:
         const Token * f = db ? Token::findsimplematch(tokenizer.tokens(), "B ( const B & ) { }") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 4);
-        ASSERT(f && f->function() && f->function()->type == Function::eCopyConstructor);
+        ASSERT(f && f->function() && f->function()->type == FunctionType::eCopyConstructor);
     }
 
     void symboldatabase74() { // #8838 - final
@@ -5456,7 +5456,7 @@ private:
         const Token *functok = Token::findmatch(tokenizer.tokens(), "%name% (");
         ASSERT(functok);
         ASSERT(functok->function());
-        ASSERT_EQUALS(functok->function()->type, Function::Type::eConstructor);
+        ASSERT_EQUALS_ENUM(functok->function()->type, FunctionType::eConstructor);
     }
 
     void symboldatabase98() { // #10451
@@ -5714,19 +5714,19 @@ private:
             ASSERT_EQUALS(it->tokenDef->linenr(), 2);
             ASSERT(it->isDelete());
             ASSERT(!it->isDefault());
-            ASSERT_EQUALS(it->type, Function::Type::eConstructor);
+            ASSERT_EQUALS_ENUM(it->type, FunctionType::eConstructor);
             ++it;
             ASSERT_EQUALS(it->name(), "S");
             ASSERT_EQUALS(it->tokenDef->linenr(), 3);
             ASSERT(!it->isDelete());
             ASSERT(!it->isDefault());
-            ASSERT_EQUALS(it->type, Function::Type::eConstructor);
+            ASSERT_EQUALS_ENUM(it->type, FunctionType::eConstructor);
             ++it;
             ASSERT_EQUALS(it->name(), "S");
             ASSERT_EQUALS(it->tokenDef->linenr(), 4);
             ASSERT(!it->isDelete());
             ASSERT(it->isDefault());
-            ASSERT_EQUALS(it->type, Function::Type::eDestructor);
+            ASSERT_EQUALS_ENUM(it->type, FunctionType::eDestructor);
         }
         {
             GET_SYMBOL_DB("struct S {\n" // #13637
@@ -5744,7 +5744,7 @@ private:
             ASSERT_EQUALS(it->tokenDef->linenr(), 2);
             ASSERT(it->isDelete());
             ASSERT(!it->isDefault());
-            ASSERT_EQUALS(it->type, Function::Type::eDestructor);
+            ASSERT_EQUALS_ENUM(it->type, FunctionType::eDestructor);
         }
     }
 
