@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "vfvalue.h"
 
 #include <cstdint>
 #include <list>
@@ -40,6 +39,11 @@ class Tokenizer;
 class Variable;
 struct Dimension;
 enum class Certainty : std::uint8_t;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 /// @addtogroup Checks
 /// @{

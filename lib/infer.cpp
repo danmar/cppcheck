@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <cassert>
 #include <algorithm>

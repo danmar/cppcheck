@@ -35,6 +35,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cassert>
