@@ -2986,7 +2986,7 @@ bool isVariablesChanged(const Token* start,
     const bool globalvar = std::any_of(vars.cbegin(), vars.cend(), [](const Variable* var) {
         return var->isGlobal();
     });
-    for (const Token* tok = start; tok != end; tok = tok->next()) {
+    for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
         if (tok->varId() == 0 || varids.count(tok->varId()) == 0) {
             if (globalvar && Token::Match(tok, "%name% ("))
                 // TODO: Is global variable really changed by function call?
