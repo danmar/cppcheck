@@ -20,7 +20,7 @@
 
 #include "color.h"
 #include "errorlogger.h"
-#include "library.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "suppressions.h"
 

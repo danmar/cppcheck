@@ -31,11 +31,13 @@
 #include "standards.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdint>
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <utility>
 #include <set>
 #include <stack>
