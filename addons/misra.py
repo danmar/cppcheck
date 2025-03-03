@@ -2513,6 +2513,8 @@ class MisraChecker:
                     continue
             elif isFunctionCall(tok, cfg.standards.c):
                 arguments = getArguments(tok)
+                if tok.astOperand1.function is None:
+                    continue
                 for argnr, argvar in tok.astOperand1.function.argument.items():
                     functionArgTok = argvar.nameToken
                     callArgTok = arguments[argnr - 1]
@@ -2545,7 +2547,7 @@ class MisraChecker:
                     if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
                         self.reportError(tok, 10, 3)
                         continue
-            elif tok.str == "return" and tok.astOperand1:
+            elif tok.str == "return" and tok.astOperand1 != None:
                 lhs = getEssentialType(tok)
                 rhs = getEssentialType(tok.astOperand1)
                 if lhs is None or rhs is None:
