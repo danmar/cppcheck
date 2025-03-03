@@ -32,6 +32,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cctype>
@@ -431,6 +432,13 @@ void CheckNullPointer::nullConstantDereference()
                 nullPointerError(tokNull);
         }
     }
+}
+
+void CheckNullPointer::nullPointerError(const Token *tok)
+{
+    ValueFlow::Value v(0);
+    v.setKnown();
+    nullPointerError(tok, "", &v, false);
 }
 
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)

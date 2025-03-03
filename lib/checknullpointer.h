@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "vfvalue.h"
 
 #include <list>
 #include <string>
@@ -34,6 +33,11 @@ class Library;
 class Settings;
 class Token;
 class Tokenizer;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 /// @addtogroup Checks
 /// @{
@@ -85,11 +89,7 @@ private:
     /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
     void nullConstantDereference();
 
-    void nullPointerError(const Token *tok) {
-        ValueFlow::Value v(0);
-        v.setKnown();
-        nullPointerError(tok, "", &v, false);
-    }
+    void nullPointerError(const Token *tok);
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 
     /** @brief Parse current TU and extract file info */

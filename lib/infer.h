@@ -21,7 +21,6 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "vfvalue.h"
 
 #include <list>
 #include <string>
@@ -29,6 +28,11 @@
 
 class Token;
 template<class T> class ValuePtr;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 struct InferModel {
     virtual bool match(const ValueFlow::Value& value) const = 0;

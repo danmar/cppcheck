@@ -23,7 +23,6 @@
 #include "mathlib.h"
 #include "sourcelocation.h"
 #include "symboldatabase.h"
-#include "vfvalue.h"
 
 #include <cstddef>
 #include <string>
@@ -31,6 +30,11 @@
 class Token;
 class Settings;
 class Platform;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 namespace ValueFlow
 {
