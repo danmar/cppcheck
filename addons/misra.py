@@ -662,6 +662,11 @@ def getEssentialTypeCategory(expr):
             castTok = castTok.next
 
     if expr.valueType:
+        # For float and bool the sign is None and both are own categories
+        if expr.valueType.type == 'bool':
+            return 'bool'
+        if expr.valueType.type == 'float':
+            return "float"
         return expr.valueType.sign
     return None
 
@@ -765,6 +770,17 @@ def getEssentialType(expr):
     elif expr.str == "~":
         e1 = getEssentialType(expr.astOperand1)
         return e1
+    elif expr.str == "true" or expr.str == "false":
+        return 'bool'
+    elif expr.valueType != None:
+        # First try to get smallest essential type based on the known Value of the expression
+        if expr.valueType.sign != None and expr.valueType.type != None: 
+            e = get_essential_type_from_value(expr.getKnownIntValue(), expr.valueType.sign == 'signed')
+            if e:
+                return e
+            return (expr.valueType.sign + ' ' + expr.valueType.type)
+        elif expr.valueType.type != None:
+            return expr.valueType.type
 
     return None
 
@@ -822,6 +838,8 @@ def is_constant_integer_expression(expr):
     if expr is None:
         return False
     if expr.isInt:
+        return True
+    if expr.isCast and is_constant_integer_expression(expr.astOperand1):
         return True
     if not expr.isArithmeticalOp:
         return False
@@ -2464,29 +2482,70 @@ class MisraChecker:
                     self.reportError(token, 10, 2)
 
     def misra_10_3(self, cfg):
-        def get_category(essential_type):
-            if essential_type:
-                if essential_type in ('bool', 'char'):
-                    return essential_type
-                if essential_type.split(' ')[-1] in ('float', 'double'):
-                    return 'floating'
-                if essential_type.split(' ')[0] in ('unsigned', 'signed'):
-                    return essential_type.split(' ')[0]
-            return None
         for tok in cfg.tokenlist:
             if tok.isAssignmentOp:
                 lhs = getEssentialType(tok.astOperand1)
                 rhs = getEssentialType(tok.astOperand2)
-                #print(lhs)
-                #print(rhs)
                 if lhs is None or rhs is None:
                     continue
-                lhs_category = get_category(lhs)
-                rhs_category = get_category(rhs)
-                if lhs_category and rhs_category and lhs_category != rhs_category and rhs_category not in ('signed','unsigned'):
+                lhs_category = getEssentialTypeCategory(tok.astOperand1)
+                rhs_category = getEssentialTypeCategory(tok.astOperand2)
+
+                if lhs_category and rhs_category and lhs_category != rhs_category:
+                    # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
+                    # This is done to not throw errors while assigning the Enums Values (size then always matches) and
+                    # Anonymous Enum (in Misa Constant Enums) are allowed to be assigned if the size matches
+                    if("enum<Anonymous" in rhs_category or "enum<Anonymous" in lhs_category):
+                        pass
+                    # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object 
+                    # of essentially unsigned type if its value can be represented in that type. Go to Size Check
+                    elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
+                        pass
+                    # Backwards compatibility Exception: In C89, an integer constant expression of 0,1 or defines FALSE, TRUE may be assigned to a variable of type bool
+                    elif( cfg.standards.c == 'c89' and lhs_category == "bool" and tok.astOperand2.str in ('0','1','FALSE','TRUE')):
+                        continue
+                    else:                        
+                        self.reportError(tok, 10, 3)
+                        continue
+
+                if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
                     self.reportError(tok, 10, 3)
-                if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs) and (lhs != "bool" or tok.astOperand2.str not in ('0','1')):
-                    self.reportError(tok, 10, 3)
+                    continue
+            elif isFunctionCall(tok, cfg.standards.c):
+                arguments = getArguments(tok)
+                for argnr, argvar in tok.astOperand1.function.argument.items():
+                    functionArgTok = argvar.nameToken
+                    callArgTok = arguments[argnr - 1]
+                    lhs = getEssentialType(functionArgTok)
+                    rhs = getEssentialType(callArgTok)
+
+                    if lhs is None or rhs is None:
+                        continue
+
+                    lhs_category = getEssentialTypeCategory(functionArgTok)
+                    rhs_category = getEssentialTypeCategory(callArgTok)
+
+                    if lhs_category and rhs_category and lhs_category != rhs_category:
+                        # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
+                        # This is done to not throw errors while assigning the Enums Values (size then always matches) and
+                        # Anonymous Enum (in Misa Constant Enums) are allowed to be assigned if the size matches
+                        if("enum<Anonymous" in rhs_category or "enum<Anonymous" in lhs_category):
+                            pass
+                        # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object 
+                        # of essentially unsigned type if its value can be represented in that type. Go to Size Check
+                        elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
+                            pass
+                        # Backwards compatibility Exception: In C89, an integer constant expression of 0,1 or defines FALSE, TRUE may be assigned to a variable of type bool
+                        elif( cfg.standards.c == 'c89' and lhs_category == "bool" and tok.astOperand2.str in ('0','1','FALSE','TRUE')):
+                            continue
+                        else:
+                            self.reportError(tok, 10, 3)
+                            continue
+
+                    if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
+                        self.reportError(tok, 10, 3)
+                        continue
+                    
 
     def misra_10_4(self, data):
         op = {'+', '-', '*', '/', '%', '&', '|', '^', '+=', '-=', ':'}
