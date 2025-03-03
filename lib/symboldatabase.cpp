@@ -5001,8 +5001,13 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
                     tok2 = tok2->link();
                     continue;
                 }
-                if (Token::Match(tok2, ", %name%"))
+                if (Token::Match(tok2, ", %name%")) {
+                    if (tok2->next()->varId() == 0) {
+                        check->debugMessage(tok2->next(), "varid0", "Scope::checkVariable found variable \'" + tok2->strAt(1) + "\' with varid 0.");
+                        return tok;
+                    }
                     addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
+                }
             }
         }
     }

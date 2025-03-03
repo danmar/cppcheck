@@ -4727,7 +4727,7 @@ void Tokenizer::setVarIdPass1()
                 const Token* prev2 = tok2->previous();
                 if (Token::Match(prev2, "%type% [;[=,)]") && tok2->strAt(-1) != "const")
                     ;
-                else if (Token::Match(prev2, "%type% :") && tok->strAt(-1) == "for")
+                else if (Token::Match(prev2, "%type% [:({]") && tok->strAt(-1) == "for")
                     ;
                 else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                     // In C++ , a variable can't be called operator+ or something like that.
@@ -4780,11 +4780,11 @@ void Tokenizer::setVarIdPass1()
                         syntaxErrorC(prev2, prev2->strAt(-2) + prev2->strAt(-1) + " " + prev2->str());
                     variableMap.addVariable(prev2->str(), scopeStack.size() <= 1);
 
-                    if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
+                    if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=[({,]")) {
                         for (const Token *tok3 = prev2->next(); tok3 && tok3->str() != ";"; tok3 = tok3->next()) {
                             if (Token::Match(tok3, "[([]"))
                                 tok3 = tok3->link();
-                            if (Token::Match(tok3, ", %name% [,=;]"))
+                            if (Token::Match(tok3, ", %name% [=[({,;]"))
                                 variableMap.addVariable(tok3->strAt(1), false);
                         }
                     }
