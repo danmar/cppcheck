@@ -203,8 +203,8 @@ namespace {
                 if (tok->index() >= i)
                     throw InternalError(tok, "Cyclic reverse analysis.");
                 i = tok->index();
-                if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
-                                                           tok->scope()->type == Scope::ScopeType::eLambda))) {
+                if (tok == start || (tok->str() == "{" && (tok->scope()->type == ScopeType::eFunction ||
+                                                           tok->scope()->type == ScopeType::eLambda))) {
                     const Function* f = tok->scope()->function;
                     if (f && f->isConstructor()) {
                         if (const Token* initList = f->constructorMemberInitialization())
@@ -367,9 +367,9 @@ namespace {
                 }
                 if (tok->str() == "case") {
                     const Scope* scope = tok->scope();
-                    while (scope && scope->type != Scope::eSwitch)
+                    while (scope && scope->type != ScopeType::eSwitch)
                         scope = scope->nestedIn;
-                    if (!scope || scope->type != Scope::eSwitch)
+                    if (!scope || scope->type != ScopeType::eSwitch)
                         break;
                     tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
                     continue;

@@ -1285,11 +1285,11 @@ void CheckStl::stlOutOfBounds()
     for (const Scope &scope : symbolDatabase->scopeList) {
         const Token* tok = scope.classDef;
         // only interested in conditions
-        if ((!scope.isLoopScope() && scope.type != Scope::eIf) || !tok)
+        if ((!scope.isLoopScope() && scope.type != ScopeType::eIf) || !tok)
             continue;
 
         const Token *condition = nullptr;
-        if (scope.type == Scope::eFor) {
+        if (scope.type == ScopeType::eFor) {
             if (Token::simpleMatch(tok->next()->astOperand2(), ";") && Token::simpleMatch(tok->next()->astOperand2()->astOperand2(), ";"))
                 condition = tok->next()->astOperand2()->astOperand2()->astOperand1();
         } else if (Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok->linkAt(1), "} while ("))
@@ -1414,7 +1414,7 @@ void CheckStl::erase()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type == Scope::eFor && Token::simpleMatch(scope.classDef, "for (")) {
+        if (scope.type == ScopeType::eFor && Token::simpleMatch(scope.classDef, "for (")) {
             const Token *tok = scope.classDef->linkAt(1);
             if (!Token::Match(tok->tokAt(-3), "; ++| %var% ++| ) {"))
                 continue;
@@ -1422,7 +1422,7 @@ void CheckStl::erase()
             if (!tok->isName())
                 tok = tok->previous();
             eraseCheckLoopVar(scope, tok->variable());
-        } else if (scope.type == Scope::eWhile && Token::Match(scope.classDef, "while ( %var% !=")) {
+        } else if (scope.type == ScopeType::eWhile && Token::Match(scope.classDef, "while ( %var% !=")) {
             eraseCheckLoopVar(scope, scope.classDef->tokAt(2)->variable());
         }
     }
@@ -1538,7 +1538,7 @@ void CheckStl::if_find()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if ((scope.type != Scope::eIf && scope.type != Scope::eWhile) || !scope.classDef)
+        if ((scope.type != ScopeType::eIf && scope.type != ScopeType::eWhile) || !scope.classDef)
             continue;
 
         const Token *conditionStart = scope.classDef->next();
@@ -1843,7 +1843,7 @@ void CheckStl::redundantCondition()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eIf)
+        if (scope.type != ScopeType::eIf)
             continue;
 
         const Token* tok = scope.classDef->tokAt(2);
@@ -1884,7 +1884,7 @@ void CheckStl::missingComparison()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eFor || !scope.classDef)
+        if (scope.type != ScopeType::eFor || !scope.classDef)
             continue;
 
         for (const Token *tok2 = scope.classDef->tokAt(2); tok2 != scope.bodyStart; tok2 = tok2->next()) {
@@ -2010,7 +2010,7 @@ void CheckStl::string_c_str()
 
     // Try to detect common problems when using string::c_str()
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eFunction || !scope.function)
+        if (scope.type != ScopeType::eFunction || !scope.function)
             continue;
 
         enum : std::uint8_t {charPtr, stdString, stdStringConstRef, Other} returnType = Other;
@@ -2376,12 +2376,12 @@ void CheckStl::checkDereferenceInvalidIterator()
     // Iterate over "if", "while", and "for" conditions where there may
     // be an iterator that is dereferenced before being checked for validity.
     for (const Scope &scope : mTokenizer->getSymbolDatabase()->scopeList) {
-        if (!(scope.type == Scope::eIf || scope.isLoopScope()))
+        if (!(scope.type == ScopeType::eIf || scope.isLoopScope()))
             continue;
 
         const Token* const tok = scope.classDef;
         const Token* startOfCondition = tok->next();
-        if (scope.type == Scope::eDo)
+        if (scope.type == ScopeType::eDo)
             startOfCondition = startOfCondition->link()->tokAt(2);
         if (!startOfCondition) // ticket #6626 invalid code
             continue;
@@ -2390,7 +2390,7 @@ void CheckStl::checkDereferenceInvalidIterator()
             continue;
 
         // For "for" loops, only search between the two semicolons
-        if (scope.type == Scope::eFor) {
+        if (scope.type == ScopeType::eFor) {
             startOfCondition = Token::findsimplematch(tok->tokAt(2), ";", endOfCondition);
             if (!startOfCondition)
                 continue;

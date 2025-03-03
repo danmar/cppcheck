@@ -1431,7 +1431,7 @@ bool Library::isNotLibraryFunction(const Token *ftok, const Function **func) con
     if (ftok->isKeyword() || ftok->isStandardType())
         return true;
 
-    if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
+    if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != ScopeType::eGlobal)
         return true;
 
     // variables are not library functions.

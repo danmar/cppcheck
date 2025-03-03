@@ -197,8 +197,8 @@ static bool variableIsUsedInScope(const Token* start, nonneg int varId, const Sc
     for (const Token *tok = start; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->varId() == varId)
             return true;
-        const Scope::ScopeType scopeType = tok->scope()->type;
-        if (scopeType == Scope::eFor || scopeType == Scope::eDo || scopeType == Scope::eWhile) // In case of loops, better checking would be necessary
+        const ScopeType scopeType = tok->scope()->type;
+        if (scopeType == ScopeType::eFor || scopeType == ScopeType::eDo || scopeType == ScopeType::eWhile) // In case of loops, better checking would be necessary
             return true;
         if (Token::simpleMatch(tok, "asm ("))
             return true;
@@ -328,7 +328,7 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
     if (!startToken)
         startToken = Token::findsimplematch(expr, "=")->next();
     for (const Token *tok = startToken; tok; tok = tok->next()) {
-        if (tok->str() == "}" && tok->scope()->type == Scope::ScopeType::eFunction)
+        if (tok->str() == "}" && tok->scope()->type == ScopeType::eFunction)
             errorAutoVariableAssignment(expr, inconclusive);
 
         if (Token::Match(tok, "return|throw|break|continue")) {
@@ -665,9 +665,9 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
         }
         if (tok->str() == "{" && tok->scope()) {
             // Check functions in local classes
-            if (tok->scope()->type == Scope::eClass ||
-                tok->scope()->type == Scope::eStruct ||
-                tok->scope()->type == Scope::eUnion) {
+            if (tok->scope()->type == ScopeType::eClass ||
+                tok->scope()->type == ScopeType::eStruct ||
+                tok->scope()->type == ScopeType::eUnion) {
                 for (const Function& f:tok->scope()->functionList) {
                     if (f.functionScope)
                         checkVarLifetimeScope(f.functionScope->bodyStart, f.functionScope->bodyEnd);

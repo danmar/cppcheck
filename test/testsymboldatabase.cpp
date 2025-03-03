@@ -136,7 +136,7 @@ private:
 
     static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
         for (auto scope = db->scopeList.cbegin(); scope != db->scopeList.cend(); ++scope) {
-            if (scope->type == Scope::eFunction) {
+            if (scope->type == ScopeType::eFunction) {
                 if (scope->classDef == tok)
                     return &(*scope);
             }
@@ -1599,7 +1599,7 @@ private:
 
         ASSERT(db != nullptr);
 
-        ASSERT(db->scopeList.back().type == Scope::eFor);
+        ASSERT(db->scopeList.back().type == ScopeType::eFor);
         ASSERT_EQUALS(2, db->variableList().size());
 
         const Variable* e = db->getVariableFromVarId(1);
@@ -2644,7 +2644,7 @@ private:
             const Variable* v = db->getVariableFromVarId(1);
             ASSERT(v && v->isReference() && v->isConst() && v->isArgument());
             const Scope* f = db->findScopeByName("f");
-            ASSERT(f && f->type == Scope::eFunction && f->function);
+            ASSERT(f && f->type == ScopeType::eFunction && f->function);
 
             ASSERT(f->function->argumentList.size() == 2 && f->function->argumentList.front().index() == 0 && f->function->argumentList.front().name().empty() && f->function->argumentList.back().index() == 1);
             ASSERT_EQUALS("", errout_str());
@@ -2655,31 +2655,31 @@ private:
             const Variable* m = db->getVariableFromVarId(1);
             ASSERT(m && !m->isReference() && !m->isConst() && m->isArgument() && m->isClass());
             const Scope* g = db->findScopeByName("g");
-            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().index() == 0);
+            ASSERT(g && g->type == ScopeType::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().index() == 0);
             ASSERT_EQUALS("", errout_str());
         }
         {
             GET_SYMBOL_DB("void g(std::map<int, int> m = std::map<int, int>()) { }");
             const Scope* g = db->findScopeByName("g");
-            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().index() == 0 && g->function->initializedArgCount() == 1);
+            ASSERT(g && g->type == ScopeType::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().index() == 0 && g->function->initializedArgCount() == 1);
             ASSERT_EQUALS("", errout_str());
         }
         {
             GET_SYMBOL_DB("void g(int = 0) { }");
             const Scope* g = db->findScopeByName("g");
-            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().hasDefault());
+            ASSERT(g && g->type == ScopeType::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().hasDefault());
             ASSERT_EQUALS("", errout_str());
         }
         {
             GET_SYMBOL_DB("void g(int*) { }"); // unnamed pointer argument (#8052)
             const Scope* g = db->findScopeByName("g");
-            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr && g->function->argumentList.front().isPointer());
+            ASSERT(g && g->type == ScopeType::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr && g->function->argumentList.front().isPointer());
             ASSERT_EQUALS("", errout_str());
         }
         {
             GET_SYMBOL_DB("void g(int* const) { }"); // 'const' is not the name of the variable - #5882
             const Scope* g = db->findScopeByName("g");
-            ASSERT(g && g->type == Scope::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr);
+            ASSERT(g && g->type == ScopeType::eFunction && g->function && g->function->argumentList.size() == 1 && g->function->argumentList.front().nameToken() == nullptr);
             ASSERT_EQUALS("", errout_str());
         }
     }
@@ -2848,7 +2848,7 @@ private:
         ASSERT_EQUALS(3, db->scopeList.size());
         auto scope = db->scopeList.cbegin();
         ++scope;
-        ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eClass, scope->type);
         ASSERT_EQUALS(1, scope->functionList.size());
         ASSERT(scope->functionList.cbegin()->functionScope != nullptr);
         const Scope * functionScope = scope->functionList.cbegin()->functionScope;
@@ -2866,7 +2866,7 @@ private:
         ASSERT_EQUALS(3, db->scopeList.size());
         auto scope = db->scopeList.cbegin();
         ++scope;
-        ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eClass, scope->type);
         ASSERT_EQUALS(1, scope->functionList.size());
         ASSERT(scope->functionList.cbegin()->functionScope != nullptr);
         const Scope * functionScope = scope->functionList.cbegin()->functionScope;
@@ -2944,7 +2944,7 @@ private:
         ASSERT(db);
         ASSERT_EQUALS(2, db->scopeList.size());
         const Scope& classScope = db->scopeList.back();
-        ASSERT_EQUALS(Scope::eClass, classScope.type);
+        ASSERT_EQUALS_ENUM(ScopeType::eClass, classScope.type);
         ASSERT_EQUALS("Class", classScope.className);
         ASSERT_EQUALS(1, classScope.functionList.size());
         const Function& method = classScope.functionList.front();
@@ -3012,7 +3012,7 @@ private:
             GET_SYMBOL_DB(code);
             ASSERT(db != nullptr);
             ASSERT_EQUALS(3, db->scopeList.size());
-            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+            ASSERT_EQUALS_ENUM(ScopeType::eLambda, db->scopeList.back().type);
         }
         {
             const char code[] = "void f() {\n"
@@ -3021,7 +3021,7 @@ private:
             GET_SYMBOL_DB(code);
             ASSERT(db != nullptr);
             ASSERT_EQUALS(3, db->scopeList.size());
-            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+            ASSERT_EQUALS_ENUM(ScopeType::eLambda, db->scopeList.back().type);
         }
         {
             const char code[] = "void f() {\n"
@@ -3030,7 +3030,7 @@ private:
             GET_SYMBOL_DB(code);
             ASSERT(db != nullptr);
             ASSERT_EQUALS(3, db->scopeList.size());
-            ASSERT_EQUALS(Scope::ScopeType::eLambda, db->scopeList.back().type);
+            ASSERT_EQUALS_ENUM(ScopeType::eLambda, db->scopeList.back().type);
         }
     }
 
@@ -3170,8 +3170,8 @@ private:
         GET_SYMBOL_DB("namespace fred UNKNOWN_MACRO(default) {\n"
                       "}");
         ASSERT_EQUALS(2U, db->scopeList.size());
-        ASSERT_EQUALS(Scope::eGlobal, db->scopeList.front().type);
-        ASSERT_EQUALS(Scope::eNamespace, db->scopeList.back().type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, db->scopeList.front().type);
+        ASSERT_EQUALS_ENUM(ScopeType::eNamespace, db->scopeList.back().type);
     }
 
     void namespaces4() { // #4698 - type lookup
@@ -3734,13 +3734,13 @@ private:
 
         ASSERT_EQUALS(4U, db->scopeList.size());
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eFunction, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFunction, scope->type);
     }
 
     void symboldatabase46() { // #6171 (anonymous namespace)
@@ -3752,15 +3752,15 @@ private:
         ASSERT(db != nullptr);
         ASSERT_EQUALS(4U, db->scopeList.size());
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, scope->type);
         ASSERT_EQUALS(scope->className, "S");
         ++scope;
-        ASSERT_EQUALS(Scope::eNamespace, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eNamespace, scope->type);
         ASSERT_EQUALS(scope->className, "");
         ++scope;
-        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, scope->type);
         ASSERT_EQUALS(scope->className, "S");
     }
 
@@ -3907,7 +3907,7 @@ private:
 
             ASSERT(db != nullptr);
             ASSERT_EQUALS(0U, db->functionScopes.size());
-            ASSERT(db->scopeList.back().type == Scope::eClass && db->scopeList.back().className == "NestedClass");
+            ASSERT(db->scopeList.back().type == ScopeType::eClass && db->scopeList.back().className == "NestedClass");
             ASSERT(db->scopeList.back().functionList.size() == 1U && !db->scopeList.back().functionList.front().hasBody());
         }
         {
@@ -3918,7 +3918,7 @@ private:
 
             ASSERT(db != nullptr);
             ASSERT_EQUALS(1U, db->functionScopes.size());
-            ASSERT(db->scopeList.back().type == Scope::eFunction && db->scopeList.back().className == "f2");
+            ASSERT(db->scopeList.back().type == ScopeType::eFunction && db->scopeList.back().className == "f2");
             ASSERT(db->scopeList.back().function && db->scopeList.back().function->hasBody());
         }
         {
@@ -3942,10 +3942,10 @@ private:
         ASSERT(db != nullptr);
         ASSERT(db->scopeList.size() == 4U);
         auto it = db->scopeList.cbegin();
-        ASSERT(it->type == Scope::eGlobal);
-        ASSERT((++it)->type == Scope::eFunction);
-        ASSERT((++it)->type == Scope::eIf);
-        ASSERT((++it)->type == Scope::eElse);
+        ASSERT(it->type == ScopeType::eGlobal);
+        ASSERT((++it)->type == ScopeType::eFunction);
+        ASSERT((++it)->type == ScopeType::eIf);
+        ASSERT((++it)->type == ScopeType::eElse);
     }
 
     void symboldatabase58() { // #6985 (using namespace type lookup)
@@ -5566,7 +5566,7 @@ private:
                       "void g() {}");
         ASSERT(db);
         ASSERT(db->scopeList.size() == 2);
-        ASSERT(db->scopeList.front().type == Scope::eGlobal);
+        ASSERT(db->scopeList.front().type == ScopeType::eGlobal);
         ASSERT(db->scopeList.back().className == "g");
     }
 
@@ -5674,7 +5674,7 @@ private:
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout_str());
             ASSERT_EQUALS(3, db->scopeList.size());
-            ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
+            ASSERT_EQUALS_ENUM(ScopeType::eFor, db->scopeList.back().type);
             ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
             ASSERT_EQUALS("i", db->scopeList.back().varlist.back().name());
         }
@@ -5688,7 +5688,7 @@ private:
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout_str());
             ASSERT_EQUALS(4, db->scopeList.size());
-            ASSERT_EQUALS(Scope::ScopeType::eFor, db->scopeList.back().type);
+            ASSERT_EQUALS_ENUM(ScopeType::eFor, db->scopeList.back().type);
             ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
             ASSERT_EQUALS("i", db->scopeList.back().varlist.back().name());
         }
@@ -5763,7 +5763,7 @@ private:
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
-        ASSERT_EQUALS(Scope::eUnion, db->scopeList.back().type);
+        ASSERT_EQUALS_ENUM(ScopeType::eUnion, db->scopeList.back().type);
     }
 
     void createSymbolDatabaseFindAllScopes2() {
@@ -5908,10 +5908,10 @@ private:
             auto anon = db->scopeList.begin();
             ++anon;
             ASSERT(anon->className.empty());
-            ASSERT_EQUALS(anon->type, Scope::eNamespace);
+            ASSERT_EQUALS_ENUM(anon->type, ScopeType::eNamespace);
             auto S = anon;
             ++S;
-            ASSERT_EQUALS(S->type, Scope::eStruct);
+            ASSERT_EQUALS_ENUM(S->type, ScopeType::eStruct);
             ASSERT_EQUALS(S->className, "S");
             ASSERT_EQUALS(S->nestedIn, &*anon);
             const Token* f = Token::findsimplematch(tokenizer.tokens(), "f ( ) {");
@@ -5978,7 +5978,7 @@ private:
                       "    if ([](int i) { return i == 2; }(n)) {}\n"
                       "}\n");
         ASSERT(db && db->scopeList.size() == 4);
-        ASSERT_EQUALS(db->scopeList.back().type, Scope::eLambda);
+        ASSERT_EQUALS_ENUM(db->scopeList.back().type, ScopeType::eLambda);
     }
 
     void createSymbolDatabaseFindAllScopes10() {
@@ -6113,7 +6113,7 @@ private:
         GET_SYMBOL_DB("enum BOOL { FALSE, TRUE }; enum BOOL b;");
 
         /* there is a enum scope with the name BOOL */
-        ASSERT(db && db->scopeList.back().type == Scope::eEnum && db->scopeList.back().className == "BOOL");
+        ASSERT(db && db->scopeList.back().type == ScopeType::eEnum && db->scopeList.back().className == "BOOL");
 
         /* b is a enum variable, type is BOOL */
         ASSERT(db && db->getVariableFromVarId(1)->isEnumType());
@@ -6123,7 +6123,7 @@ private:
         GET_SYMBOL_DB("enum BOOL { FALSE, TRUE } b;");
 
         /* there is a enum scope with the name BOOL */
-        ASSERT(db && db->scopeList.back().type == Scope::eEnum && db->scopeList.back().className == "BOOL");
+        ASSERT(db && db->scopeList.back().type == ScopeType::eEnum && db->scopeList.back().className == "BOOL");
 
         /* b is a enum variable, type is BOOL */
         ASSERT(db && db->getVariableFromVarId(1)->isEnumType());
@@ -6131,7 +6131,7 @@ private:
 
     void enum3() {
         GET_SYMBOL_DB("enum ABC { A=11,B,C=A+B };");
-        ASSERT(db && db->scopeList.back().type == Scope::eEnum);
+        ASSERT(db && db->scopeList.back().type == ScopeType::eEnum);
 
         /* There is an enum A with value 11 */
         const Enumerator *A = db->scopeList.back().findEnumerator("A");
@@ -6158,7 +6158,7 @@ private:
 
         // Offsets
         ++scope;
-        ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eEnum, scope->type);
         ASSERT_EQUALS(4U, scope->enumeratorList.size());
 
         ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
@@ -6199,7 +6199,7 @@ private:
 
         // MyEnums
         ++scope;
-        ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eEnum, scope->type);
         ASSERT_EQUALS(3U, scope->enumeratorList.size());
 
         ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
@@ -6245,7 +6245,7 @@ private:
         auto scope = db->scopeList.cbegin();
 
         ++scope;
-        ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eEnum, scope->type);
         ASSERT_EQUALS(2U, scope->enumeratorList.size());
         ASSERT_EQUALS(true, scope->enumeratorList[0].value_known);
         ASSERT_EQUALS(10, scope->enumeratorList[0].value);
@@ -6928,7 +6928,7 @@ private:
         ASSERT_EQUALS(2, db->scopeList.size());
         const Token* ret = Token::findsimplematch(tokenizer.tokens(), "return");
         ASSERT(ret != nullptr);
-        ASSERT(ret->scope() && ret->scope()->type == Scope::eFunction);
+        ASSERT(ret->scope() && ret->scope()->type == ScopeType::eFunction);
     }
 
 
@@ -9061,11 +9061,11 @@ private:
 
         ASSERT(db && db->scopeList.size() == 3);
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eFunction, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFunction, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eLambda, scope->type);
     }
 
     void lambda2() {
@@ -9080,11 +9080,11 @@ private:
 
         ASSERT(db && db->scopeList.size() == 3);
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eFunction, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFunction, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eLambda, scope->type);
     }
 
     void lambda3() {
@@ -9094,11 +9094,11 @@ private:
 
         ASSERT(db && db->scopeList.size() == 3);
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eFunction, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFunction, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eLambda, scope->type);
     }
 
     void lambda4() { // #11719
@@ -9110,11 +9110,11 @@ private:
 
         ASSERT(db && db->scopeList.size() == 3);
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eLambda, scope->type);
         ASSERT_EQUALS(1, scope->varlist.size());
         const Variable& s = scope->varlist.front();
         ASSERT_EQUALS(s.name(), "s");
@@ -9133,14 +9133,14 @@ private:
 
         ASSERT(db && db->scopeList.size() == 3);
         auto scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eFunction, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFunction, scope->type);
         ++scope;
-        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eLambda, scope->type);
         const Token* ret = Token::findsimplematch(tokenizer.tokens(), "return true");
         ASSERT(ret && ret->scope());
-        ASSERT_EQUALS(ret->scope()->type, Scope::eLambda);
+        ASSERT_EQUALS_ENUM(ret->scope()->type, ScopeType::eLambda);
     }
 
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"
@@ -9168,9 +9168,9 @@ private:
 
             ASSERT(db && db->scopeList.size() == 3);
             auto scope = db->scopeList.cbegin();
-            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
             ++scope;
-            ASSERT_EQUALS(Scope::eClass, scope->type);
+            ASSERT_EQUALS_ENUM(ScopeType::eClass, scope->type);
             const Scope* class_scope = &*scope;
             ++scope;
             ASSERT(class_scope->functionList.size() == 1);
@@ -9183,10 +9183,10 @@ private:
 
             ASSERT(db && db->scopeList.size() == 2);
             auto scope = db->scopeList.cbegin();
-            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ASSERT_EQUALS_ENUM(ScopeType::eGlobal, scope->type);
             ASSERT(scope->functionList.size() == 1);
             ++scope;
-            ASSERT_EQUALS(Scope::eFunction, scope->type);
+            ASSERT_EQUALS_ENUM(ScopeType::eFunction, scope->type);
         }
     }
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)

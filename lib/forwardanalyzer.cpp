@@ -607,10 +607,10 @@ namespace {
                         return Break(Analyzer::Terminate::Bail);
                 } else if (tok->link() && tok->str() == "}" && tok == tok->scope()->bodyEnd) { // might be an init list
                     const Scope* scope = tok->scope();
-                    if (contains({Scope::eDo, Scope::eFor, Scope::eWhile, Scope::eIf, Scope::eElse, Scope::eSwitch}, scope->type)) {
-                        const bool inElse = scope->type == Scope::eElse;
-                        const bool inDoWhile = scope->type == Scope::eDo;
-                        const bool inLoop = contains({Scope::eDo, Scope::eFor, Scope::eWhile}, scope->type);
+                    if (contains({ScopeType::eDo, ScopeType::eFor, ScopeType::eWhile, ScopeType::eIf, ScopeType::eElse, ScopeType::eSwitch}, scope->type)) {
+                        const bool inElse = scope->type == ScopeType::eElse;
+                        const bool inDoWhile = scope->type == ScopeType::eDo;
+                        const bool inLoop = contains({ScopeType::eDo, ScopeType::eFor, ScopeType::eWhile}, scope->type);
                         Token* condTok = getCondTokFromEnd(tok);
                         if (!condTok)
                             return Break();
@@ -642,10 +642,10 @@ namespace {
                         assert(!inDoWhile || Token::simpleMatch(tok, "} while ("));
                         if (Token::simpleMatch(tok, "} else {") || inDoWhile)
                             tok = tok->linkAt(2);
-                    } else if (contains({Scope::eTry, Scope::eCatch}, scope->type)) {
+                    } else if (contains({ScopeType::eTry, ScopeType::eCatch}, scope->type)) {
                         if (!analyzer->lowerToPossible())
                             return Break(Analyzer::Terminate::Bail);
-                    } else if (scope->type == Scope::eLambda) {
+                    } else if (scope->type == ScopeType::eLambda) {
                         return Break();
                     }
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&

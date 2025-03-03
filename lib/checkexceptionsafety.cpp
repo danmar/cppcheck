@@ -178,7 +178,7 @@ void CheckExceptionSafety::checkRethrowCopy()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eCatch)
+        if (scope.type != ScopeType::eCatch)
             continue;
 
         const unsigned int varid = scope.bodyStart->tokAt(-2)->varId();
@@ -222,7 +222,7 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eCatch)
+        if (scope.type != ScopeType::eCatch)
             continue;
 
         // Find a pass-by-value declaration in the catch(), excluding basic types

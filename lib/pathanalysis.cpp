@@ -31,7 +31,7 @@ const Scope* PathAnalysis::findOuterScope(const Scope * scope)
 {
     if (!scope)
         return nullptr;
-    if (scope->isLocal() && scope->type != Scope::eSwitch)
+    if (scope->isLocal() && scope->type != ScopeType::eSwitch)
         return findOuterScope(scope->nestedIn);
     return scope;
 }

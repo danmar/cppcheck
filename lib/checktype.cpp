@@ -466,9 +466,9 @@ void CheckType::checkFloatToIntegerOverflow()
             if (isUnreachableOperand(tok))
                 continue;
             const Scope *scope = tok->scope();
-            while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
+            while (scope && scope->type != ScopeType::eLambda && scope->type != ScopeType::eFunction)
                 scope = scope->nestedIn;
-            if (scope && scope->type == Scope::ScopeType::eFunction && scope->function && scope->function->retDef) {
+            if (scope && scope->type == ScopeType::eFunction && scope->function && scope->function->retDef) {
                 const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, *mSettings);
                 vtfloat = tok->astOperand1()->valueType();
                 checkFloatToIntegerOverflow(tok, &valueType, vtfloat, tok->astOperand1()->values());

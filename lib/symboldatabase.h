@@ -1026,6 +1026,8 @@ private:
     RET_NONNULL const Token *setFlags(const Token *tok1, const Scope *scope);
 };
 
+enum class ScopeType : std::uint8_t { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
+
 class CPPCHECKLIB Scope {
     // let tests access private function for testing
     friend class TestSymbolDatabase;
@@ -1035,8 +1037,6 @@ public:
         const Token *start;
         const Scope *scope;
     };
-
-    enum ScopeType : std::uint8_t { eGlobal, eClass, eStruct, eUnion, eNamespace, eFunction, eIf, eElse, eFor, eWhile, eDo, eSwitch, eUnconditional, eTry, eCatch, eLambda, eEnum };
 
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
@@ -1101,7 +1101,7 @@ public:
 
     static Function* nestedInFunction(const Scope* scope) {
         while (scope) {
-            if (scope->type == Scope::eFunction)
+            if (scope->type == ScopeType::eFunction)
                 break;
             scope = scope->nestedIn;
         }
@@ -1111,26 +1111,26 @@ public:
     }
 
     bool isClassOrStruct() const {
-        return (type == eClass || type == eStruct);
+        return (type == ScopeType::eClass || type == ScopeType::eStruct);
     }
 
     bool isClassOrStructOrUnion() const {
-        return (type == eClass || type == eStruct || type == eUnion);
+        return (type == ScopeType::eClass || type == ScopeType::eStruct || type == ScopeType::eUnion);
     }
 
     bool isExecutable() const {
-        return type != eClass && type != eStruct && type != eUnion && type != eGlobal && type != eNamespace && type != eEnum;
+        return type != ScopeType::eClass && type != ScopeType::eStruct && type != ScopeType::eUnion && type != ScopeType::eGlobal && type != ScopeType::eNamespace && type != ScopeType::eEnum;
     }
 
     bool isLoopScope() const {
-        return type == Scope::ScopeType::eFor || type == Scope::ScopeType::eWhile || type == Scope::ScopeType::eDo;
+        return type == ScopeType::eFor || type == ScopeType::eWhile || type == ScopeType::eDo;
     }
 
     bool isLocal() const {
-        return (type == eIf || type == eElse ||
-                type == eFor || type == eWhile || type == eDo ||
-                type == eSwitch || type == eUnconditional ||
-                type == eTry || type == eCatch);
+        return (type == ScopeType::eIf || type == ScopeType::eElse ||
+                type == ScopeType::eFor || type == ScopeType::eWhile || type == ScopeType::eDo ||
+                type == ScopeType::eSwitch || type == ScopeType::eUnconditional ||
+                type == ScopeType::eTry || type == ScopeType::eCatch);
     }
 
     // Is there lambda/inline function(s) in this scope?
@@ -1306,7 +1306,7 @@ public:
     bool fromLibraryType(const std::string &typestr, const Settings &settings);
 
     bool isEnum() const {
-        return typeScope && typeScope->type == Scope::eEnum;
+        return typeScope && typeScope->type == ScopeType::eEnum;
     }
 
     bool isConst(nonneg int indirect = 0) const;
