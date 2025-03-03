@@ -2545,6 +2545,34 @@ class MisraChecker:
                     if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
                         self.reportError(tok, 10, 3)
                         continue
+            elif tok.str == "return" and tok.astOperand1:
+                lhs = getEssentialType(tok)
+                rhs = getEssentialType(tok.astOperand1)
+                if lhs is None or rhs is None:
+                    continue
+                lhs_category = getEssentialTypeCategory(tok)
+                rhs_category = getEssentialTypeCategory(tok.astOperand1)
+
+                if lhs_category and rhs_category and lhs_category != rhs_category:
+                    # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
+                    # This is done to not throw errors while assigning the Enums Values (size then always matches) and
+                    # Anonymous Enum (in Misa Constant Enums) are allowed to be assigned if the size matches
+                    if("enum<Anonymous" in rhs_category or "enum<Anonymous" in lhs_category):
+                        pass
+                    # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object
+                    # of essentially unsigned type if its value can be represented in that type. Go to Size Check
+                    elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
+                        pass
+                    # Backwards compatibility Exception: In C89, an integer constant expression of 0,1 or defines FALSE, TRUE may be assigned to a variable of type bool
+                    elif( cfg.standards.c == 'c89' and lhs_category == "bool" and tok.astOperand2.str in ('0','1','FALSE','TRUE')):
+                        continue
+                    else:
+                        self.reportError(tok, 10, 3)
+                        continue
+
+                if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs): # and (lhs != "bool" or (tok.astOperand2.str not in ('0','1') and cfg.standards.c == 'c89')):
+                    self.reportError(tok, 10, 3)
+                    continue
                     
 
     def misra_10_4(self, data):
