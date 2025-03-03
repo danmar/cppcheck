@@ -288,13 +288,15 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
-        return v + p.size();
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& fwd) {
+        return v + fwd.size();
+    }) + std::accumulate(mFileSettings.cbegin(), mFileSettings.cend(), std::size_t(0), [](std::size_t v, const FileSettings& fs) {
+        return v + fs.filesize();
     });
 
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;
-    std::map<int, std::string> pipeFile;
+    std::map<int, std::pair<std::string, std::size_t>> pipeFile;
     std::size_t processedsize = 0;
     auto iFile = mFiles.cbegin();
     auto iFileSettings = mFileSettings.cbegin();
@@ -354,11 +356,11 @@ unsigned int ProcessExecutor::check()
             rpipes.push_back(pipes[0]);
             if (iFileSettings != mFileSettings.end()) {
                 childFile[pid] = iFileSettings->filename() + ' ' + iFileSettings->cfg;
-                pipeFile[pipes[0]] = iFileSettings->filename() + ' ' + iFileSettings->cfg;
+                pipeFile[pipes[0]] = { iFileSettings->filename() + ' ' + iFileSettings->cfg, iFileSettings->filesize() };
                 ++iFileSettings;
             } else {
                 childFile[pid] = iFile->path();
-                pipeFile[pipes[0]] = iFile->path();
+                pipeFile[pipes[0]] = { iFile->path(), iFile->size() };
                 ++iFile;
             }
         }
@@ -377,21 +379,16 @@ unsigned int ProcessExecutor::check()
                 while (rp != rpipes.cend()) {
                     if (FD_ISSET(*rp, &rfds)) {
                         std::string name;
-                        const auto p = utils::as_const(pipeFile).find(*rp);
+                        std::size_t size = 0;
+                        const std::map<int, std::pair<std::string, std::size_t>>::const_iterator p = pipeFile.find(*rp);
                         if (p != pipeFile.cend()) {
-                            name = p->second;
+                            name = p->second.first;
+                            size = p->second.second;
                         }
                         const bool readRes = handleRead(*rp, result, name);
                         if (!readRes) {
-                            std::size_t size = 0;
                             if (p != pipeFile.cend()) {
                                 pipeFile.erase(p);
-                                const auto fs = std::find_if(mFiles.cbegin(), mFiles.cend(), [&name](const FileWithDetails& entry) {
-                                    return entry.path() == name;
-                                });
-                                if (fs != mFiles.end()) {
-                                    size = fs->size();
-                                }
                             }
 
                             fileCount++;
