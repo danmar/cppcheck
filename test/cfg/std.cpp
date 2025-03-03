@@ -1854,6 +1854,7 @@ void uninitar_fopen(void)
     const char *mode;
     // cppcheck-suppress uninitvar
     FILE * fp = std::fopen(filename, mode);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
