@@ -2295,11 +2295,11 @@ bool Variable::isUnsigned() const
 const Token * Variable::declEndToken() const
 {
     Token const * declEnd = typeStartToken();
+    if (declEnd->tokAt(-1) && Token::simpleMatch(declEnd->tokAt(-2), "for ("))
+        declEnd = nameToken();
     while (declEnd && !Token::Match(declEnd, "[;:,)={]")) {
         if (declEnd->link() && Token::Match(declEnd,"(|[|<"))
             declEnd = declEnd->link();
-        if (declEnd->variable() && declEnd->variable() != this)
-            return nullptr;
         declEnd = declEnd->next();
     }
     return declEnd;
