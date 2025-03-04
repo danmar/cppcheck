@@ -361,16 +361,25 @@ Cppcheck will only check 1 configuration unless these are used.
 
 Example:
 
-    cppcheck test.c => test all configurations => all bugs
-    are found
-    cppcheck -DA test.c => only test configuration "-DA" =>
-    No bug is found (#error)
-    cppcheck -DA -DC test.c => only test configuration
-    "-DA -DC" => The first bug is found
-    cppcheck -UA test.c => The configuration "-DC" is
-    tested => The last bug is found
-    cppcheck --force -DA test.c => All configurations
-    with "-DA" are tested => The two first bugs are found
+    # test all configurations
+    # all bugs are found
+    cppcheck test.c
+
+    # only test configuration "-DA"
+    # No bug is found (#error)
+    cppcheck -DA test.c
+
+    # only test configuration "-DA -DC"
+    # The first bug is found
+    cppcheck -DA -DC test.c
+
+    # The configuration "-DC" is tested
+    # The last bug is found
+    cppcheck -UA test.c
+
+    # All configurations with "-DA" are tested
+    # The two first bugs are found
+    cppcheck --force -DA test.c
 
 
 ## Include paths
