@@ -68,7 +68,7 @@ def test_addon_local_path():
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
     assert stderr == ('[main.c:5]: (error) Division by zero.\n'
-                      '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
+                      '[main.c:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
 def test_addon_local_path_not_enable():
     args = [
@@ -91,7 +91,7 @@ def test_addon_absolute_path():
     filename = os.path.join(__proj_dir, 'main.c')
     assert ret == 0, stdout
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+                      '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
 def test_addon_relative_path():
     args = [
@@ -106,7 +106,7 @@ def test_addon_relative_path():
     assert stdout == ('Checking %s ...\n'
                       'Checking %s: SOME_CONFIG...\n' % (filename, filename))
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+                      '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
 def test_addon_with_gui_project():
     project_file = os.path.join('helloworld', 'test.cppcheck')
@@ -123,7 +123,7 @@ def test_addon_with_gui_project():
     assert ret == 0, stdout
     assert stdout == 'Checking %s ...\n' % filename
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+                      '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
 def test_basepath_relative_path():
     args = [
