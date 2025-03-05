@@ -3964,12 +3964,16 @@ class MisraChecker:
             self.reportError(directive, 21, 5)
 
     def misra_21_6(self, data):
-        dir_stdio = findInclude(data.directives, '<stdio.h>')
-        dir_wchar = findInclude(data.directives, '<wchar.h>')
-        if dir_stdio:
-            self.reportError(dir_stdio, 21, 6)
-        if dir_wchar:
-            self.reportError(dir_wchar, 21, 6)
+        for token in data.tokenlist:
+            if not isFunctionCall(token) or token.previous.function:
+                continue
+            standard = data.standards.c
+            if ((standard == 'c89' and token.previous.str in C90_STDLIB_IDENTIFIERS["stdio.h"]) or
+                (standard == 'c99' and (token.previous.str in C99_STDLIB_IDENTIFIERS["stdio.h"] or
+                                        token.previous.str in C99_STDLIB_IDENTIFIERS["wchar.h"])) or
+                (token.previous.str in C11_STDLIB_IDENTIFIERS["stdio.h"] or
+                    token.previous.str in C11_STDLIB_IDENTIFIERS["wchar.h"])):
+                self.reportError(token, 21, 6)
 
     def misra_21_7(self, data):
         for token in data.tokenlist:
