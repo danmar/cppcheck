@@ -7820,6 +7820,17 @@ private:
               "    for (; t && t->str() == s; t = t->next());\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::string &out, const std::vector<std::string> &list) {\n" // #13669
+              "    for (int i = 0, size = list.size(); i < size; i++) {\n"
+              "        out += list[i];\n"
+              "        if (size > 0 && i < (size - 2))\n"
+              "            out += \",\";\n"
+              "        else if (i == (size - 1))\n"
+              "            out += \".\";\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void duplicateExpressionTernary() { // #6391

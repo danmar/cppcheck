@@ -2243,6 +2243,8 @@ struct LifetimeStore {
             if (!var)
                 continue;
             const Token * const varDeclEndToken = var->declEndToken();
+            if (!varDeclEndToken)
+                continue;
             for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
                     update |= LifetimeStore{tok3, message, type, inconclusive}
