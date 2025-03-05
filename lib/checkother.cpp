@@ -3872,7 +3872,7 @@ static const Token *findShadowed(const Scope *scope, const Variable& var, int li
             return v.nameToken();
     }
     auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) {
-        return f.type == Function::Type::eFunction && f.name() == var.name() && precedes(f.tokenDef, var.nameToken());
+        return f.type == FunctionType::eFunction && f.name() == var.name() && precedes(f.tokenDef, var.nameToken());
     });
     if (it != scope->functionList.end())
         return it->tokenDef;

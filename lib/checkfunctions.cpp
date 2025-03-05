@@ -323,7 +323,7 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (function->name() == "main" && !(mTokenizer->isC() && mSettings->standards.c < Standards::C99))
             continue;
-        if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
+        if (function->type != FunctionType::eFunction && function->type != FunctionType::eOperatorEqual)
             continue;
         if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
             continue;

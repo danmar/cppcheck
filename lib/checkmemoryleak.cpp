@@ -677,7 +677,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
     for (const Function &func : scope->functionList) {
-        if ((func.type == Function::eFunction || func.type == Function::eOperatorEqual) &&
+        if ((func.type == FunctionType::eFunction || func.type == FunctionType::eOperatorEqual) &&
             func.access == AccessControl::Public && func.hasBody()) {
             const Token *tok2 = func.functionScope->bodyStart->next();
             if (Token::Match(tok2, "%varid% =", varid)) {

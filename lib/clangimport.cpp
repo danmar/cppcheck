@@ -1383,9 +1383,9 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
         nestedIn->functionList.emplace_back(nameToken, unquote(getFullType()));
         mData->funcDecl(mExtTokens.front(), nameToken, &nestedIn->functionList.back());
         if (nodeType == CXXConstructorDecl)
-            nestedIn->functionList.back().type = Function::Type::eConstructor;
+            nestedIn->functionList.back().type = FunctionType::eConstructor;
         else if (nodeType == CXXDestructorDecl)
-            nestedIn->functionList.back().type = Function::Type::eDestructor;
+            nestedIn->functionList.back().type = FunctionType::eDestructor;
         else
             nestedIn->functionList.back().retDef = startToken;
     }
