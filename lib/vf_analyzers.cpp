@@ -1019,13 +1019,13 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         const Scope* scope = endBlock->scope();
         if (!scope)
             return false;
-        if (scope->type == Scope::eLambda) {
+        if (scope->type == ScopeType::eLambda) {
             return std::all_of(values.cbegin(), values.cend(), [](const std::pair<nonneg int, ValueFlow::Value>& p) {
                 return p.second.isLifetimeValue();
             });
         }
-        if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
-            scope->type == Scope::eFor) {
+        if (scope->type == ScopeType::eIf || scope->type == ScopeType::eElse || scope->type == ScopeType::eWhile ||
+            scope->type == ScopeType::eFor) {
             auto pred = [](const ValueFlow::Value& value) {
                 if (value.isKnown())
                     return true;
@@ -1190,10 +1190,10 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         const Scope* scope = endBlock->scope();
         if (!scope)
             return false;
-        if (scope->type == Scope::eLambda)
+        if (scope->type == ScopeType::eLambda)
             return value.isLifetimeValue();
-        if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
-            scope->type == Scope::eFor) {
+        if (scope->type == ScopeType::eIf || scope->type == ScopeType::eElse || scope->type == ScopeType::eWhile ||
+            scope->type == ScopeType::eFor) {
             if (value.isKnown() || value.isImpossible())
                 return true;
             if (value.isLifetimeValue())

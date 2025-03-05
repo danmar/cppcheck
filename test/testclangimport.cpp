@@ -1093,7 +1093,7 @@ private:
         // Enum scope and type
         ASSERT_EQUALS(3, db->scopeList.size());
         const Scope &enumScope = db->scopeList.back();
-        ASSERT_EQUALS(Scope::ScopeType::eEnum, enumScope.type);
+        ASSERT_EQUALS_ENUM(ScopeType::eEnum, enumScope.type);
         ASSERT_EQUALS("abc", enumScope.className);
         const Type *enumType = enumScope.definedType;
         ASSERT_EQUALS("abc", enumType->name());
@@ -1257,7 +1257,7 @@ private:
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "i");
         ASSERT(!!tok);
         ASSERT(!!tok->variable());
-        ASSERT_EQUALS(Scope::ScopeType::eFor, tok->variable()->scope()->type);
+        ASSERT_EQUALS_ENUM(ScopeType::eFor, tok->variable()->scope()->type);
     }
 
     void valueFlow1() {

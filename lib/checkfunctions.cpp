@@ -70,7 +70,7 @@ void CheckFunctions::checkProhibitedFunctions()
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
             // alloca() is special as it depends on the code being C or C++, so it is not in Library
-            if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == Scope::eGlobal)) {
+            if (checkAlloca && Token::simpleMatch(tok, "alloca (") && (!tok->function() || tok->function()->nestedIn->type == ScopeType::eGlobal)) {
                 if (tok->isC()) {
                     if (mSettings->standards.c > Standards::C89)
                         reportError(tok, Severity::warning, "allocaCalled",
@@ -342,7 +342,7 @@ static bool isForwardJump(const Token *gotoToken)
     for (const Token *prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
         if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->strAt(1))
             return true;
-        if (prev->str() == "{" && prev->scope()->type == Scope::eFunction)
+        if (prev->str() == "{" && prev->scope()->type == ScopeType::eFunction)
             return false;
     }
     return false;
@@ -363,7 +363,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (prev->str() == "goto" && !isForwardJump(prev))
                     return nullptr;
             }
-            if (tok->scope()->type == Scope::ScopeType::eSwitch) {
+            if (tok->scope()->type == ScopeType::eSwitch) {
                 bool reachable = false;
                 for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
                     if (reachable && Token::simpleMatch(switchToken, "break ;")) {
@@ -378,17 +378,17 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                         reachable = false;
                     if (Token::Match(switchToken, "case|default"))
                         reachable = true;
-                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
+                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == ScopeType::eSwitch))
                         switchToken = switchToken->link();
                 }
                 if (!isExhaustiveSwitch(tok->link()))
                     return tok->link();
-            } else if (tok->scope()->type == Scope::ScopeType::eIf) {
+            } else if (tok->scope()->type == ScopeType::eIf) {
                 const Token *condition = tok->scope()->classDef->next()->astOperand2();
                 if (condition && condition->hasKnownIntValue() && condition->getKnownIntValue() == 1)
                     return checkMissingReturnScope(tok, library);
                 return tok;
-            } else if (tok->scope()->type == Scope::ScopeType::eElse) {
+            } else if (tok->scope()->type == ScopeType::eElse) {
                 const Token *errorToken = checkMissingReturnScope(tok, library);
                 if (errorToken)
                     return errorToken;
@@ -731,7 +731,7 @@ void CheckFunctions::useStandardLibrary()
     logChecker("CheckFunctions::useStandardLibrary"); // style
 
     for (const Scope& scope: mTokenizer->getSymbolDatabase()->scopeList) {
-        if (scope.type != Scope::ScopeType::eFor)
+        if (scope.type != ScopeType::eFor)
             continue;
 
         const Token *forToken = scope.classDef;

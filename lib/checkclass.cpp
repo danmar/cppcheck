@@ -138,7 +138,7 @@ void CheckClass::constructors()
         const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
         const bool usedInUnion = std::any_of(mSymbolDatabase->scopeList.cbegin(), mSymbolDatabase->scopeList.cend(), [&](const Scope& unionScope) {
-            if (unionScope.type != Scope::eUnion)
+            if (unionScope.type != ScopeType::eUnion)
                 return false;
             return std::any_of(unionScope.varlist.cbegin(), unionScope.varlist.cend(), [&](const Variable& var) {
                 return var.type() && var.type()->classScope == scope;
@@ -176,7 +176,7 @@ void CheckClass::constructors()
         // TODO: handle union variables better
         {
             const bool bailout = std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [](const Scope* nestedScope) {
-                return nestedScope->type == Scope::eUnion;
+                return nestedScope->type == ScopeType::eUnion;
             });
             if (bailout)
                 continue;
@@ -219,15 +219,15 @@ void CheckClass::constructors()
                 if (!usage.assign && !usage.init)
                     continue;
                 const Scope* varScope1 = var.nameToken()->scope();
-                while (varScope1->type == Scope::ScopeType::eStruct)
+                while (varScope1->type == ScopeType::eStruct)
                     varScope1 = varScope1->nestedIn;
-                if (varScope1->type == Scope::ScopeType::eUnion) {
+                if (varScope1->type == ScopeType::eUnion) {
                     for (Usage &usage2 : usageList) {
                         const Variable& var2 = *usage2.var;
                         if (usage2.assign || usage2.init || var2.isStatic())
                             continue;
                         const Scope* varScope2 = var2.nameToken()->scope();
-                        while (varScope2->type == Scope::ScopeType::eStruct)
+                        while (varScope2->type == ScopeType::eStruct)
                             varScope2 = varScope2->nestedIn;
                         if (varScope1 == varScope2)
                             usage2.assign = true;
@@ -311,7 +311,7 @@ void CheckClass::constructors()
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
                     const Scope *varType = var.typeScope();
-                    if (!varType || varType->type != Scope::eUnion) {
+                    if (!varType || varType->type != ScopeType::eUnion) {
                         const bool derived = scope != var.scope();
                         if (func.type == Function::eConstructor &&
                             func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
@@ -371,7 +371,7 @@ void CheckClass::checkExplicitConstructors()
                 func.type != Function::eMoveConstructor &&
                 !(func.templateDef && Token::simpleMatch(func.argumentList.front().typeEndToken(), "...")) &&
                 func.argumentList.front().getTypeName() != "std::initializer_list") {
-                noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
+                noExplicitConstructorError(func.tokenDef, scope->className, scope->type == ScopeType::eStruct);
             }
         }
     }
@@ -542,7 +542,7 @@ void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::st
 static std::string noMemberErrorMessage(const Scope *scope, const char function[], bool isdefault)
 {
     const std::string &classname = scope ? scope->className : "class";
-    const std::string type = (scope && scope->type == Scope::eStruct) ? "Struct" : "Class";
+    const std::string type = (scope && scope->type == ScopeType::eStruct) ? "Struct" : "Class";
     const bool isDestructor = (function[0] == 'd');
     std::string errmsg = "$symbol:" + classname + '\n';
 
@@ -1344,7 +1344,7 @@ void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string 
 static const Scope* findFunctionOf(const Scope* scope)
 {
     while (scope) {
-        if (scope->type == Scope::eFunction)
+        if (scope->type == ScopeType::eFunction)
             return scope->functionOf;
         scope = scope->nestedIn;
     }
@@ -2186,7 +2186,7 @@ void CheckClass::checkConst()
 
             std::string classname = scope->className;
             const Scope *nest = scope->nestedIn;
-            while (nest && nest->type != Scope::eGlobal) {
+            while (nest && nest->type != ScopeType::eGlobal) {
                 classname = nest->className + "::" + classname;
                 nest = nest->nestedIn;
             }
@@ -2259,7 +2259,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
             bool isMember = tok == fqTok;
             std::string scopeStr;
             const Scope* curScope = scope;
-            while (!isMember && curScope && curScope->type != Scope::ScopeType::eGlobal) {
+            while (!isMember && curScope && curScope->type != ScopeType::eGlobal) {
                 scopeStr.insert(0, curScope->className + " :: ");
                 isMember = Token::Match(fqTok, scopeStr.c_str());
 
@@ -2877,7 +2877,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
                 continue;
             }
         }
-        if (tok->scope()->type == Scope::eLambda)
+        if (tok->scope()->type == ScopeType::eLambda)
             tok = tok->scope()->bodyEnd->next();
 
         const Function * callFunction = tok->function();
@@ -3086,16 +3086,16 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
     for (const auto& r : resultsVar) {
         duplInheritedMembersError(r.classVar->nameToken(), r.parentClassVar->nameToken(),
                                   typeCurrent->name(), r.parentClass->type->name(), r.classVar->name(),
-                                  typeCurrent->classScope->type == Scope::eStruct,
-                                  r.parentClass->type->classScope->type == Scope::eStruct);
+                                  typeCurrent->classScope->type == ScopeType::eStruct,
+                                  r.parentClass->type->classScope->type == ScopeType::eStruct);
     }
 
     const auto resultsFunc = getDuplInheritedMemberFunctionsRecursive(typeCurrent, typeBase);
     for (const auto& r : resultsFunc) {
         duplInheritedMembersError(r.classFunc->token, r.parentClassFunc->token,
                                   typeCurrent->name(), r.parentClass->type->name(), r.classFunc->name(),
-                                  typeCurrent->classScope->type == Scope::eStruct,
-                                  r.parentClass->type->classScope->type == Scope::eStruct, /*isFunction*/ true);
+                                  typeCurrent->classScope->type == ScopeType::eStruct,
+                                  r.parentClass->type->classScope->type == ScopeType::eStruct, /*isFunction*/ true);
     }
 }
 
@@ -3176,7 +3176,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
         if (copyCtors != CtorType::NO && assignmentOperators != CtorType::NO)
             continue;
 
-        copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == Scope::eStruct, copyCtors == CtorType::WITH_BODY);
+        copyCtorAndEqOperatorError(scope->classDef, scope->className, scope->type == ScopeType::eStruct, copyCtors == CtorType::WITH_BODY);
     }
 }
 
@@ -3504,7 +3504,7 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
         } else if (freeToken && Token::Match(tok, "return|throw")) {
             // TODO
             return tok->str() == "throw";
-        } else if (tok->str() == "{" && tok->scope()->type == Scope::ScopeType::eLambda) {
+        } else if (tok->str() == "{" && tok->scope()->type == ScopeType::eLambda) {
             tok = tok->link();
         }
     }
@@ -3637,7 +3637,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Setti
         if (name.empty())
             continue;
         name.erase(name.size() - 2);
-        if (scope->type != Scope::ScopeType::eGlobal)
+        if (scope->type != ScopeType::eGlobal)
             continue;
 
         MyFileInfo::NameLoc nameLoc;

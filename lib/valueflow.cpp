@@ -533,7 +533,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
                 return 0;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
-            return vt.typeScope->type == Scope::eUnion ? std::max(total, n) : total + padding + n;
+            return vt.typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
         };
         size_t total = accumulateStructMembers(vt.typeScope, accHelper);
         if (const Type* dt = vt.typeScope->definedType) {
@@ -1141,7 +1141,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
 static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings & settings)
 {
     for (Scope & scope : symboldatabase.scopeList) {
-        if (scope.type != Scope::eEnum)
+        if (scope.type != ScopeType::eEnum)
             continue;
         MathLib::bigint value = 0;
         bool prev_enum_is_known = true;
@@ -1838,7 +1838,7 @@ static bool isRangeForScope(const Scope* scope)
 {
     if (!scope)
         return false;
-    if (scope->type != Scope::eFor)
+    if (scope->type != ScopeType::eFor)
         return false;
     if (!scope->bodyStart)
         return false;
@@ -2827,7 +2827,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
         if (!tok->scope())
             continue;
-        if (tok->scope()->type == Scope::eGlobal)
+        if (tok->scope()->type == ScopeType::eGlobal)
             continue;
         Lambda lam(tok);
         // Lambdas
@@ -3298,7 +3298,7 @@ static const Scope* getLoopScope(const Token* tok)
     if (!tok)
         return nullptr;
     const Scope* scope = tok->scope();
-    while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eDo)
+    while (scope && scope->type != ScopeType::eWhile && scope->type != ScopeType::eFor && scope->type != ScopeType::eDo)
         scope = scope->nestedIn;
     return scope;
 }
@@ -5266,7 +5266,7 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
 static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger &errorLogger, const Settings &settings)
 {
     for (const Scope &scope : symboldatabase.scopeList) {
-        if (scope.type != Scope::eFor)
+        if (scope.type != ScopeType::eFor)
             continue;
 
         auto* tok = const_cast<Token*>(scope.classDef);
@@ -5451,7 +5451,7 @@ static void valueFlowSwitchVariable(const TokenList& tokenlist,
                                     const Settings& settings)
 {
     for (const Scope& scope : symboldatabase.scopeList) {
-        if (scope.type != Scope::ScopeType::eSwitch)
+        if (scope.type != ScopeType::eSwitch)
             continue;
         if (!Token::Match(scope.classDef, "switch ( %var% ) {"))
             continue;
@@ -6493,7 +6493,7 @@ static void valueFlowContainerSetTokValue(const TokenList& tokenlist, ErrorLogge
 }
 
 static const Scope* getFunctionScope(const Scope* scope) {
-    while (scope && scope->type != Scope::ScopeType::eFunction)
+    while (scope && scope->type != ScopeType::eFunction)
         scope = scope->nestedIn;
     return scope;
 }
@@ -7148,7 +7148,7 @@ struct ValueFlowPassRunner {
                     scopes.pop_back();
                     for (const Scope* s2 : s->nestedList) {
                         scopes.emplace_back(s2);
-                        if (s2->type == Scope::ScopeType::eIf)
+                        if (s2->type == ScopeType::eIf)
                             ++countIfScopes;
                     }
                 }

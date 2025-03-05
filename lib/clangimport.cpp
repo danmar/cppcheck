@@ -360,8 +360,8 @@ namespace clangimport {
         Token *addtoken(TokenList &tokenList, const std::string &str, bool valueType=true);
         const ::Type *addTypeTokens(TokenList &tokenList, const std::string &str, const Scope *scope = nullptr);
         void addFullScopeNameTokens(TokenList &tokenList, const Scope *recordScope);
-        Scope *createScope(TokenList &tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def);
-        Scope *createScope(TokenList &tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> &children2, const Token *def);
+        Scope *createScope(TokenList &tokenList, ScopeType scopeType, AstNodePtr astNode, const Token *def);
+        Scope *createScope(TokenList &tokenList, ScopeType scopeType, const std::vector<AstNodePtr> &children2, const Token *def);
         RET_NONNULL Token *createTokensCall(TokenList &tokenList);
         void createTokensFunctionDecl(TokenList &tokenList);
         void createTokensForCXXRecord(TokenList &tokenList);
@@ -686,13 +686,13 @@ void clangimport::AstNode::setValueType(Token *tok)
     }
 }
 
-Scope *clangimport::AstNode::createScope(TokenList &tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def)
+Scope *clangimport::AstNode::createScope(TokenList &tokenList, ScopeType scopeType, AstNodePtr astNode, const Token *def)
 {
     std::vector<AstNodePtr> children2{std::move(astNode)};
     return createScope(tokenList, scopeType, children2, def);
 }
 
-Scope *clangimport::AstNode::createScope(TokenList &tokenList, Scope::ScopeType scopeType, const std::vector<AstNodePtr> & children2, const Token *def)
+Scope *clangimport::AstNode::createScope(TokenList &tokenList, ScopeType scopeType, const std::vector<AstNodePtr> & children2, const Token *def)
 {
     SymbolDatabase *symbolDatabase = mData->mSymbolDatabase;
 
@@ -700,7 +700,7 @@ Scope *clangimport::AstNode::createScope(TokenList &tokenList, Scope::ScopeType 
 
     symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nestedIn);
     Scope *scope = &symbolDatabase->scopeList.back();
-    if (scopeType == Scope::ScopeType::eEnum)
+    if (scopeType == ScopeType::eEnum)
         scope->enumeratorList.reserve(children2.size());
     nestedIn->nestedList.push_back(scope);
     scope->type = scopeType;
@@ -746,7 +746,7 @@ Scope *clangimport::AstNode::createScope(TokenList &tokenList, Scope::ScopeType 
                 continue;
             }
             astNode->createTokens(tokenList);
-            if (scopeType == Scope::ScopeType::eEnum)
+            if (scopeType == ScopeType::eEnum)
                 astNode->addtoken(tokenList, ",");
             else if (!Token::Match(tokenList.back(), "[;{}]"))
                 astNode->addtoken(tokenList, ";");
@@ -925,7 +925,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         par1->astOperand1(forToken);
         par1->astOperand2(colon);
 
-        createScope(tokenList, Scope::ScopeType::eFor, children.back(), forToken);
+        createScope(tokenList, ScopeType::eFor, children.back(), forToken);
         return nullptr;
     }
     if (nodeType == CXXMethodDecl) {
@@ -1008,7 +1008,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
     }
     if (nodeType == DoStmt) {
         addtoken(tokenList, "do");
-        createScope(tokenList, Scope::ScopeType::eDo, getChild(0), tokenList.back());
+        createScope(tokenList, ScopeType::eDo, getChild(0), tokenList.back());
         Token *tok1 = addtoken(tokenList, "while");
         Token *par1 = addtoken(tokenList, "(");
         Token *expr = children[1]->createTokens(tokenList);
@@ -1051,7 +1051,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
                 addTypeTokens(tokenList, mExtTokens.back());
             }
         }
-        Scope *enumscope = createScope(tokenList, Scope::ScopeType::eEnum, children, enumtok);
+        Scope *enumscope = createScope(tokenList, ScopeType::eEnum, children, enumtok);
         if (nametok)
             enumscope->className = nametok->str();
         if (enumscope->bodyEnd && Token::simpleMatch(enumscope->bodyEnd->previous(), ", }"))
@@ -1088,7 +1088,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         sep1->astOperand2(sep2);
         sep2->astOperand1(expr2);
         sep2->astOperand2(expr3);
-        createScope(tokenList, Scope::ScopeType::eFor, children[4], forToken);
+        createScope(tokenList, ScopeType::eFor, children[4], forToken);
         return nullptr;
     }
     if (nodeType == FunctionDecl) {
@@ -1132,10 +1132,10 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eIf, std::move(thenCode), iftok);
+        createScope(tokenList, ScopeType::eIf, std::move(thenCode), iftok);
         if (elseCode) {
             elseCode->addtoken(tokenList, "else");
-            createScope(tokenList, Scope::ScopeType::eElse, std::move(elseCode), tokenList.back());
+            createScope(tokenList, ScopeType::eElse, std::move(elseCode), tokenList.back());
         }
         return nullptr;
     }
@@ -1199,7 +1199,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         const std::string &s = mExtTokens[mExtTokens.size() - 2];
         const Token* nameToken = (startsWith(s, "col:") || startsWith(s, "line:")) ?
                                  addtoken(tokenList, mExtTokens.back()) : nullptr;
-        Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children, defToken);
+        Scope *scope = createScope(tokenList, ScopeType::eNamespace, children, defToken);
         if (nameToken)
             scope->className = nameToken->str();
         return nullptr;
@@ -1224,7 +1224,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
             return nullptr;
         }
 
-        Scope *recordScope = createScope(tokenList, Scope::ScopeType::eStruct, children, classDef);
+        Scope *recordScope = createScope(tokenList, ScopeType::eStruct, children, classDef);
         mData->mSymbolDatabase->typeList.emplace_back(classDef, recordScope, classDef->scope());
         recordScope->definedType = &mData->mSymbolDatabase->typeList.back();
         if (!recordName.empty()) {
@@ -1253,7 +1253,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         par2->link(par1);
         par1->astOperand1(tok1);
         par1->astOperand2(expr);
-        createScope(tokenList, Scope::ScopeType::eSwitch, children.back(), tok1);
+        createScope(tokenList, ScopeType::eSwitch, children.back(), tok1);
         return nullptr;
     }
     if (nodeType == TypedefDecl) {
@@ -1302,7 +1302,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         Token *par2 = addtoken(tokenList, ")");
         par1->link(par2);
         par2->link(par1);
-        createScope(tokenList, Scope::ScopeType::eWhile, std::move(body), whiletok);
+        createScope(tokenList, ScopeType::eWhile, std::move(body), whiletok);
         return nullptr;
     }
     return addtoken(tokenList, "?" + nodeType + "?");
@@ -1405,7 +1405,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList &tokenList)
         scope->check = symbolDatabase;
         scope->function = function;
         scope->classDef = nameToken;
-        scope->type = Scope::ScopeType::eFunction;
+        scope->type = ScopeType::eFunction;
         scope->className = nameToken->str();
         nestedIn->nestedList.push_back(scope);
         function->hasBody(true);
@@ -1504,7 +1504,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
             child->nodeType == AccessSpecDecl ||
             child->nodeType == TypedefDecl;
         });
-        Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
+        Scope *scope = createScope(tokenList, isStruct ? ScopeType::eStruct : ScopeType::eClass, children2, classToken);
         const std::string addr = mExtTokens[0];
         mData->scopeDecl(addr, scope);
         scope->className = className;
@@ -1617,7 +1617,7 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
     tokenizer.createSymbolDatabase();
     auto *symbolDatabase = const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase());
     symbolDatabase->scopeList.emplace_back(nullptr, nullptr, nullptr);
-    symbolDatabase->scopeList.back().type = Scope::ScopeType::eGlobal;
+    symbolDatabase->scopeList.back().type = ScopeType::eGlobal;
     symbolDatabase->scopeList.back().check = symbolDatabase;
 
     clangimport::Data data;

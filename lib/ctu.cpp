@@ -317,7 +317,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
 
     // Parse all functions in TU
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
+        if (!scope.isExecutable() || scope.type != ScopeType::eFunction || !scope.function)
             continue;
         const Function *const scopeFunction = scope.function;
 
@@ -481,7 +481,7 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer &token
     const SymbolDatabase * const symbolDatabase = tokenizer.getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
+        if (!scope.isExecutable() || scope.type != ScopeType::eFunction || !scope.function)
             continue;
         const Function *const function = scope.function;
 
