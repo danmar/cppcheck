@@ -1125,7 +1125,7 @@ The output screen says:
 
 Example usage:
 
-    ./cppcheck gui/test.cpp --xml 2> err.xml \
+    ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml \
     --report-dir=test1 --source-dir=.
 
