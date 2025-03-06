@@ -827,8 +827,8 @@ Cppcheck can show how it came to that conclusion by showing extra location infor
 You need to use both --template and --template-location at the command line, for example:
 
     cppcheck \
-        --template="{file}:{line}: {severity}: {message}\n{code}" \
-	--template-location="{file}:{line}: note: {info}\n{code}" multiline.c
+    --template="{file}:{line}: {severity}: {message}\n{code}" \
+    --template-location="{file}:{line}: note: {info}\n{code}" multiline.c
 
 The output from Cppcheck is:
 
