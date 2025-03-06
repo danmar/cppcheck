@@ -2385,8 +2385,8 @@ namespace {
         std::set<std::string> recordTypes;
         std::set<std::string> baseTypes;
 
-        ScopeInfo3 *addChild(Type scopeType, const std::string &scopeName, const Token *bodyStartToken, const Token *bodyEndToken) {
-            children.emplace_back(this, scopeType, scopeName, bodyStartToken, bodyEndToken);
+        ScopeInfo3 *addChild(Type scopeType, std::string scopeName, const Token *bodyStartToken, const Token *bodyEndToken) {
+            children.emplace_back(this, scopeType, std::move(scopeName), bodyStartToken, bodyEndToken);
             return &children.back();
         }
 
@@ -2534,19 +2534,19 @@ namespace {
                             scope = tok1->strAt(-3) + " :: " + scope;
                             tok1 = tok1->tokAt(-2);
                         }
-                        scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
+                        scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, std::move(scope), tok, tok->link());
                         added = true;
                     }
                     // inline member function
                     else if ((scopeInfo->type == ScopeInfo3::Record || scopeInfo->type == ScopeInfo3::Namespace) && tok1 && Token::Match(tok1->tokAt(-1), "%name% (")) {
-                        const std::string scope = scopeInfo->name + "::" + tok1->strAt(-1);
-                        scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
+                        std::string scope = scopeInfo->name + "::" + tok1->strAt(-1);
+                        scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, std::move(scope), tok, tok->link());
                         added = true;
                     }
                 }
 
                 if (!added)
-                    scopeInfo = scopeInfo->addChild(ScopeInfo3::Other, emptyString, tok, tok->link());
+                    scopeInfo = scopeInfo->addChild(ScopeInfo3::Other, "", tok, tok->link());
             }
             return;
         }
@@ -2601,7 +2601,7 @@ namespace {
         }
 
         if (tok && tok->str() == "{") {
-            scopeInfo = scopeInfo->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, classname, tok, tok->link());
+            scopeInfo = scopeInfo->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, std::move(classname), tok, tok->link());
             scopeInfo->baseTypes = std::move(baseTypes);
         }
     }
