@@ -1222,6 +1222,10 @@ Command to activate Cert C++ checkers:
 
     cppcheck --premium=cert-c++ ....
 
+Command to activate Misra C 2012 checkers:
+
+    cppcheck --premium=misra-c-2012 ....
+
 Command to activate Misra C 2023 checkers:
 
     cppcheck --premium=misra-c-2023 ....
