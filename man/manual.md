@@ -1187,9 +1187,5 @@ Commands:
 
     cd check-path
 
-    # Calculate lines of code and validate the license
-    premiumaddon --check-loc-license some-path/license-file \
-    > cppcheck-premium-loc
-
     # Run cppcheck analysis
     cppcheck <usual cppcheck parameters>
