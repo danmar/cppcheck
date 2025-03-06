@@ -1180,12 +1180,3 @@ In the GUI:
 - In the "Analysis" tab there are several options.
 
 If you want to use these limitations on the command line also you can import the GUI project file with --project.
-
-#### Running analysis
-
-Commands:
-
-    cd check-path
-
-    # Run cppcheck analysis
-    cppcheck <usual cppcheck parameters>
