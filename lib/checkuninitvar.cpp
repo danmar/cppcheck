@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -251,7 +251,7 @@ void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
                 // is the variable declared in a inner union?
                 bool innerunion = false;
                 for (const Scope *innerScope : scope2->nestedList) {
-                    if (innerScope->type == Scope::eUnion) {
+                    if (innerScope->type == ScopeType::eUnion) {
                         if (var.typeStartToken()->linenr() >= innerScope->bodyStart->linenr() &&
                             var.typeStartToken()->linenr() <= innerScope->bodyEnd->linenr()) {
                             innerunion = true;
@@ -956,7 +956,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
 
         if (tok->str() == "{") {
             // switch => bailout
-            if (tok->scope() && tok->scope()->type == Scope::ScopeType::eSwitch) {
+            if (tok->scope() && tok->scope()->type == ScopeType::eSwitch) {
                 bailout = true;
                 return nullptr;
             }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -693,7 +693,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             bool tryFound = false;
             const Scope* scope = tok->scope();
             while (scope && scope->isExecutable()) {
-                if (scope->type == Scope::eTry)
+                if (scope->type == ScopeType::eTry)
                     tryFound = true;
                 scope = scope->nestedIn;
             }
@@ -1195,10 +1195,10 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
 
             // don't warn when returning after checking return value of outparam allocation
             const Token* outparamFunc{};
-            if ((tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse) &&
+            if ((tok->scope()->type == ScopeType::eIf || tok->scope()->type== ScopeType::eElse) &&
                 (outparamFunc = getOutparamAllocation(it->second.allocTok, *mSettings))) {
                 const Scope* scope = tok->scope();
-                if (scope->type == Scope::ScopeType::eElse) {
+                if (scope->type == ScopeType::eElse) {
                     scope = scope->bodyStart->tokAt(-2)->scope();
                 }
                 const Token* const ifEnd = scope->bodyStart->previous();

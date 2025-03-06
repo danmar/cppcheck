@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -271,7 +271,7 @@ void CheckOther::checkSuspiciousSemicolon()
 
     // Look for "if(); {}", "for(); {}" or "while(); {}"
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type == Scope::eIf || scope.type == Scope::eElse || scope.type == Scope::eWhile || scope.type == Scope::eFor) {
+        if (scope.type == ScopeType::eIf || scope.type == ScopeType::eElse || scope.type == ScopeType::eWhile || scope.type == ScopeType::eFor) {
             // Ensure the semicolon is at the same line number as the if/for/while statement
             // and the {..} block follows it without an extra empty line.
             if (Token::simpleMatch(scope.bodyStart, "{ ; } {") &&
@@ -693,7 +693,7 @@ void CheckOther::redundantBitwiseOperationInSwitchError()
     // Find the beginning of a switch. E.g.:
     //   switch (var) { ...
     for (const Scope &switchScope : symbolDatabase->scopeList) {
-        if (switchScope.type != Scope::eSwitch || !switchScope.bodyStart)
+        if (switchScope.type != ScopeType::eSwitch || !switchScope.bodyStart)
             continue;
 
         // Check the contents of the switch statement
@@ -820,7 +820,7 @@ void CheckOther::checkSuspiciousCaseInSwitch()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope & scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eSwitch)
+        if (scope.type != ScopeType::eSwitch)
             continue;
 
         for (const Token* tok = scope.bodyStart->next(); tok != scope.bodyEnd; tok = tok->next()) {
@@ -854,9 +854,9 @@ void CheckOther::suspiciousCaseInSwitchError(const Token* tok, const std::string
 static bool isNestedInSwitch(const Scope* scope)
 {
     while (scope) {
-        if (scope->type == Scope::ScopeType::eSwitch)
+        if (scope->type == ScopeType::eSwitch)
             return true;
-        if (scope->type == Scope::ScopeType::eUnconditional) {
+        if (scope->type == ScopeType::eUnconditional) {
             scope = scope->nestedIn;
             continue;
         }
@@ -940,11 +940,11 @@ void CheckOther::checkUnreachableCode()
                     continue;
                 }
             }
-            while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+            while (Token::simpleMatch(secondBreak, "}") && secondBreak->scope()->type == ScopeType::eUnconditional)
                 secondBreak = secondBreak->next();
-            if (secondBreak && secondBreak->scope()->nestedIn && secondBreak->scope()->nestedIn->type == Scope::ScopeType::eSwitch &&
+            if (secondBreak && secondBreak->scope()->nestedIn && secondBreak->scope()->nestedIn->type == ScopeType::eSwitch &&
                 tok->str() == "break") {
-                while (Token::simpleMatch(secondBreak, "{") && secondBreak->scope()->type == Scope::ScopeType::eUnconditional)
+                while (Token::simpleMatch(secondBreak, "{") && secondBreak->scope()->type == ScopeType::eUnconditional)
                     secondBreak = secondBreak->next();
             }
             while (Token::simpleMatch(secondBreak, ";"))
@@ -962,7 +962,7 @@ void CheckOther::checkUnreachableCode()
                     if (tok->str() == "break") // If the previous was a break, too: Issue warning
                         duplicateBreakError(secondBreak, inconclusive);
                     else {
-                        if (tok->scope()->type != Scope::eSwitch) // Check, if the enclosing scope is a switch
+                        if (tok->scope()->type != ScopeType::eSwitch) // Check, if the enclosing scope is a switch
                             duplicateBreakError(secondBreak, inconclusive);
                     }
                     tok = Token::findmatch(secondBreak, "[}:]");
@@ -1156,7 +1156,7 @@ void CheckOther::checkVariableScope()
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
         for (; tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && !isWithinScope(tok, var, Scope::ScopeType::eLambda)) {
+            if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && !isWithinScope(tok, var, ScopeType::eLambda)) {
                 if (used) {
                     bool used2 = false;
                     if (!checkInnerScope(tok, var, used2) || used2) {
@@ -1217,14 +1217,14 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
     bool noContinue = true;
     const Token* forHeadEnd = nullptr;
     const Token* end = tok->link();
-    if (scope->type == Scope::eUnconditional && (tok->strAt(-1) == ")" || tok->previous()->isName())) // Might be an unknown macro like BOOST_FOREACH
+    if (scope->type == ScopeType::eUnconditional && (tok->strAt(-1) == ")" || tok->previous()->isName())) // Might be an unknown macro like BOOST_FOREACH
         loopVariable = true;
 
-    if (scope->type == Scope::eDo) {
+    if (scope->type == ScopeType::eDo) {
         end = end->linkAt(2);
     } else if (loopVariable && tok->strAt(-1) == ")") {
         tok = tok->linkAt(-1); // Jump to opening ( of for/while statement
-    } else if (scope->type == Scope::eSwitch) {
+    } else if (scope->type == ScopeType::eSwitch) {
         for (const Scope* innerScope : scope->nestedList) {
             if (used) {
                 bool used2 = false;
@@ -1249,7 +1249,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok == forHeadEnd)
             forHeadEnd = nullptr;
 
-        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
+        if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != ScopeType::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
             std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
             if (range.first)
@@ -1284,7 +1284,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok->varId() == var->declarationId()) {
             used = true;
             if (scope == tok->scope()) {
-                if (scope->type == Scope::eSwitch)
+                if (scope->type == ScopeType::eSwitch)
                     return false; // Used in outer switch scope - unsafe or impossible to reduce scope
 
                 if (scope->bodyStart && scope->bodyStart->isSimplifiedScope())
@@ -2249,7 +2249,7 @@ void CheckOther::checkZeroDivision()
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
             continue;
-        if (tok->scope() && tok->scope()->type == Scope::eEnum) // don't warn for compile-time error
+        if (tok->scope() && tok->scope()->type == ScopeType::eEnum) // don't warn for compile-time error
             continue;
 
         // Value flow..
@@ -2432,7 +2432,7 @@ void CheckOther::checkDuplicateBranch()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope & scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eIf)
+        if (scope.type != ScopeType::eIf)
             continue;
 
         // check all the code in the function for if (..) else
@@ -2759,7 +2759,7 @@ void CheckOther::checkDuplicateExpression()
                         const Token* loopTok = isInLoopCondition(tok);
                         if (!loopTok ||
                             !findExpressionChanged(tok, tok, loopTok->link()->linkAt(1), *mSettings)) {
-                            const bool isEnum = tok->scope()->type == Scope::eEnum;
+                            const bool isEnum = tok->scope()->type == ScopeType::eEnum;
                             const bool assignment = !isEnum && tok->str() == "=";
                             if (assignment)
                                 selfAssignmentError(tok, tok->astOperand1()->expressionString());
@@ -3495,7 +3495,7 @@ void CheckOther::checkUnusedLabel()
             if (Token::Match(tok, "{|}|; %name% :") && !tok->tokAt(1)->isKeyword()) {
                 const std::string tmp("goto " + tok->strAt(1));
                 if (!Token::findsimplematch(scope->bodyStart->next(), tmp.c_str(), tmp.size(), scope->bodyEnd->previous()) && !tok->next()->isExpandedMacro())
-                    unusedLabelError(tok->next(), tok->next()->scope()->type == Scope::eSwitch, hasIfdef);
+                    unusedLabelError(tok->next(), tok->next()->scope()->type == ScopeType::eSwitch, hasIfdef);
             }
         }
     }
@@ -3872,12 +3872,12 @@ static const Token *findShadowed(const Scope *scope, const Variable& var, int li
             return v.nameToken();
     }
     auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) {
-        return f.type == Function::Type::eFunction && f.name() == var.name() && precedes(f.tokenDef, var.nameToken());
+        return f.type == FunctionType::eFunction && f.name() == var.name() && precedes(f.tokenDef, var.nameToken());
     });
     if (it != scope->functionList.end())
         return it->tokenDef;
 
-    if (scope->type == Scope::eLambda)
+    if (scope->type == ScopeType::eLambda)
         return nullptr;
     const Token* shadowed = findShadowed(scope->nestedIn, var, linenr);
     if (!shadowed)
@@ -3892,16 +3892,16 @@ void CheckOther::checkShadowVariables()
     logChecker("CheckOther::checkShadowVariables"); // style
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope & scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable() || scope.type == Scope::eLambda)
+        if (!scope.isExecutable() || scope.type == ScopeType::eLambda)
             continue;
         const Scope *functionScope = &scope;
-        while (functionScope && functionScope->type != Scope::ScopeType::eFunction && functionScope->type != Scope::ScopeType::eLambda)
+        while (functionScope && functionScope->type != ScopeType::eFunction && functionScope->type != ScopeType::eLambda)
             functionScope = functionScope->nestedIn;
         for (const Variable &var : scope.varlist) {
             if (var.nameToken() && var.nameToken()->isExpandedMacro()) // #8903
                 continue;
 
-            if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
+            if (functionScope && functionScope->type == ScopeType::eFunction && functionScope->function) {
                 const auto & argList = functionScope->function->argumentList;
                 auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) {
                     return arg.nameToken() && var.name() == arg.name();
@@ -3917,7 +3917,7 @@ void CheckOther::checkShadowVariables()
                 shadowed = findShadowed(scope.functionOf, var, var.nameToken()->linenr());
             if (!shadowed)
                 continue;
-            if (scope.type == Scope::eFunction && scope.className == var.name())
+            if (scope.type == ScopeType::eFunction && scope.className == var.name())
                 continue;
             if (functionScope->functionOf && functionScope->functionOf->isClassOrStructOrUnion() && functionScope->function && functionScope->function->isStatic() &&
                 shadowed->variable() && !shadowed->variable()->isLocal())
@@ -4271,7 +4271,7 @@ void CheckOther::checkOverlappingWrite()
                 if (!Token::simpleMatch(lhs, ".") || !lhs->isBinaryOp())
                     continue;
                 const Variable * const lhsvar = lhs->astOperand1()->variable();
-                if (!lhsvar || !lhsvar->typeScope() || lhsvar->typeScope()->type != Scope::ScopeType::eUnion)
+                if (!lhsvar || !lhsvar->typeScope() || lhsvar->typeScope()->type != ScopeType::eUnion)
                     continue;
                 const Token* const lhsmember = lhs->astOperand2();
                 if (!lhsmember)

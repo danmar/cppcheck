@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1431,7 +1431,7 @@ bool Library::isNotLibraryFunction(const Token *ftok, const Function **func) con
     if (ftok->isKeyword() || ftok->isStandardType())
         return true;
 
-    if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
+    if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != ScopeType::eGlobal)
         return true;
 
     // variables are not library functions.
@@ -1597,6 +1597,10 @@ const std::string& Library::returnValue(const Token *ftok) const
 
 const std::string& Library::returnValueType(const Token *ftok) const
 {
+    while (Token::simpleMatch(ftok, "::"))
+        ftok = ftok->astOperand2() ? ftok->astOperand2() : ftok->astOperand1();
+    if (!ftok)
+        return mEmptyString;
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
             const Token* contTok = ftok->astParent()->astOperand1();

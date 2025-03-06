@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7158,6 +7158,12 @@ private:
                "    return v[2];\n"
                "}";
         ASSERT(isKnownContainerSizeValue(tokenValues(code, "v ["), 3).empty());
+
+        code = "auto f() {\n" // #13654
+               "    std::array<uint8_t, 6 * sizeof(uint16_t)> a{};\n"
+               "    return a[0];\n"
+               "}";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "a ["), 6).empty());
     }
 
     void valueFlowContainerElement()

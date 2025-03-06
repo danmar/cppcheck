@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -677,7 +677,7 @@ void CheckMemoryLeakInClass::checkPublicFunctions(const Scope *scope, const Toke
     // Parse public functions..
     // If they allocate member variables, they should also deallocate
     for (const Function &func : scope->functionList) {
-        if ((func.type == Function::eFunction || func.type == Function::eOperatorEqual) &&
+        if ((func.type == FunctionType::eFunction || func.type == FunctionType::eOperatorEqual) &&
             func.access == AccessControl::Public && func.hasBody()) {
             const Token *tok2 = func.functionScope->bodyStart->next();
             if (Token::Match(tok2, "%varid% =", varid)) {
@@ -930,7 +930,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                 }
 
                 // Returning from function..
-                else if ((tok3->scope()->type != Scope::ScopeType::eLambda || tok3->scope() == variable->scope()) && tok3->str() == "return") {
+                else if ((tok3->scope()->type != ScopeType::eLambda || tok3->scope() == variable->scope()) && tok3->str() == "return") {
                     // Returning from function without deallocating struct member?
                     if (!Token::Match(tok3, "return %varid% ;", structid) &&
                         !Token::Match(tok3, "return & %varid%", structid) &&

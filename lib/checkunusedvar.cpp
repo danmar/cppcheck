@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -522,7 +522,7 @@ static const Token* doAssignment(Variables &variables, const Token *tok, bool de
                             else {
                                 // no other assignment in this scope
                                 if (var1->_assignments.find(scope) == var1->_assignments.end() ||
-                                    scope->type == Scope::eSwitch) {
+                                    scope->type == ScopeType::eSwitch) {
                                     // nothing to replace
                                     // cppcheck-suppress duplicateBranch - remove when TODO below is address
                                     if (var1->_assignments.empty())
@@ -732,7 +732,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     variables.addVar(&*i, type, true);
                     break;
                 } else if (defValTok->str() == ";" || defValTok->str() == "," || defValTok->str() == ")") {
-                    variables.addVar(&*i, type, i->isStatic() && i->scope()->type != Scope::eFunction);
+                    variables.addVar(&*i, type, i->isStatic() && i->scope()->type != ScopeType::eFunction);
                     break;
                 }
             }
@@ -771,7 +771,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
     // Check variable usage
     const Token *tok;
-    if (scope->type == Scope::eFunction)
+    if (scope->type == ScopeType::eFunction)
         tok = scope->bodyStart->next();
     else
         tok = scope->classDef->next();
@@ -1318,7 +1318,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 expr = tok->previous();
 
             // Is variable in lhs a union member?
-            if (tok->previous() && tok->previous()->variable() && tok->previous()->variable()->nameToken()->scope()->type == Scope::eUnion)
+            if (tok->previous() && tok->previous()->variable() && tok->previous()->variable()->nameToken()->scope()->type == ScopeType::eUnion)
                 continue;
 
             FwdAnalysis fwdAnalysis(*mSettings);
@@ -1473,7 +1473,7 @@ void CheckUnusedVar::checkStructMemberUsage()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eStruct && scope.type != Scope::eClass && scope.type != Scope::eUnion)
+        if (scope.type != ScopeType::eStruct && scope.type != ScopeType::eClass && scope.type != ScopeType::eUnion)
             continue;
 
         if (scope.bodyStart->fileIndex() != 0 || scope.className.empty())
@@ -1600,9 +1600,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             }
             if (!use) {
                 std::string prefix = "struct";
-                if (scope.type == Scope::ScopeType::eClass)
+                if (scope.type == ScopeType::eClass)
                     prefix = "class";
-                else if (scope.type == Scope::ScopeType::eUnion)
+                else if (scope.type == ScopeType::eUnion)
                     prefix = "union";
                 unusedStructMemberError(var.nameToken(), scope.className, var.name(), prefix);
             }

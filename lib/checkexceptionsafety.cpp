@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ void CheckExceptionSafety::destructors()
         if (!function)
             continue;
         // only looking for destructors
-        if (function->type == Function::eDestructor) {
+        if (function->type == FunctionType::eDestructor) {
             // Inspect this destructor.
             for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
                 // Skip try blocks
@@ -178,7 +178,7 @@ void CheckExceptionSafety::checkRethrowCopy()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eCatch)
+        if (scope.type != ScopeType::eCatch)
             continue;
 
         const unsigned int varid = scope.bodyStart->tokAt(-2)->varId();
@@ -222,7 +222,7 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eCatch)
+        if (scope.type != ScopeType::eCatch)
             continue;
 
         // Find a pass-by-value declaration in the catch(), excluding basic types

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -7818,6 +7818,17 @@ private:
               "        t = t->next();\n"
               "    } while (t && t->str() == s);\n"
               "    for (; t && t->str() == s; t = t->next());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::string &out, const std::vector<std::string> &list) {\n" // #13669
+              "    for (int i = 0, size = list.size(); i < size; i++) {\n"
+              "        out += list[i];\n"
+              "        if (size > 0 && i < (size - 2))\n"
+              "            out += \",\";\n"
+              "        else if (i == (size - 1))\n"
+              "            out += \".\";\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@ private:
         TEST_CASE(varid7);
         TEST_CASE(varidReturn1);
         TEST_CASE(varidReturn2);
+        TEST_CASE(varidReturn3);
         TEST_CASE(varid8);
         TEST_CASE(varid9);
         TEST_CASE(varid10);
@@ -106,6 +107,7 @@ private:
         TEST_CASE(varid71); // #12676 - wrong varid in uninstantiated templated constructor
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
+        TEST_CASE(varid_for_3);
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varid_cpp_keywords_in_c_code3);
@@ -513,6 +515,21 @@ private:
                                 "3: unsigned long mask@1 ; mask@1 = ( 1UL << size_ ) - 1 ;\n"
                                 "4: return ( abits_val_ & mask@1 ) ;\n"
                                 "5: }\n";
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidReturn3() {
+        const std::string actual = tokenize(
+            "struct S { int i; };\n"
+            "int f(S s) {\n"
+            "    return (&s)->i;\n"
+            "}\n");
+
+        const char expected[] = "1: struct S { int i@1 ; } ;\n"
+                                "2: int f ( S s@2 ) {\n"
+                                "3: return ( & s@2 ) . i@3 ;\n"
+                                "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -1400,6 +1417,28 @@ private:
                                 "2: for ( int a@3 = f ( x , y , z ) , b@4 = 2 ; ; ) { }\n"
                                 "3: }\n";
         ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid_for_3() {
+        const char code[] = "void f(int w, int h) {\n" // #13670
+                            "    for (int a[2] = { 2, w / 2 }, b = 2; a[1] && a[0] <= h; a[1] /= 2, a[0] *= 2) {}\n"
+                            "}\n";
+        const char expected[] = "1: void f ( int w@1 , int h@2 ) {\n"
+                                "2: for ( int a@3 [ 2 ] = { 2 , w@1 / 2 } , b@4 = 2 ; a@3 [ 1 ] && a@3 [ 0 ] <= h@2 ; a@3 [ 1 ] /= 2 , a@3 [ 0 ] *= 2 ) { }\n"
+                                "3: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+
+        const char code2[] = "void f() {\n"
+                             "    for (int a(1), b{ 2 }, c = 3; a < b + c; ++a) {}\n"
+                             "    for (int a{ 1 }, b(2), c = 3; a < b + c; ++a) {}\n"
+                             "    for (int a = 1, b{ 2 }, c(3); a < b + c; ++a) {}\n"
+                             "}\n";
+        const char expected2[] = "1: void f ( ) {\n"
+                                 "2: for ( int a@1 ( 1 ) , b@2 { 2 } , c@3 = 3 ; a@1 < b@2 + c@3 ; ++ a@1 ) { }\n"
+                                 "3: for ( int a@4 { 1 } , b@5 ( 2 ) , c@6 = 3 ; a@4 < b@5 + c@6 ; ++ a@4 ) { }\n"
+                                 "4: for ( int a@7 = 1 , b@8 { 2 } , c@9 ( 3 ) ; a@7 < b@8 + c@9 ; ++ a@7 ) { }\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected2, tokenize(code2));
     }
 
     void varid_cpp_keywords_in_c_code() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,19 @@ void CheckPostfixOperator::postfixOperator()
                 if (var->isPointer() || var->isArray())
                     continue;
 
-                if (Token::Match(var->nameToken()->previous(), "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
+                const Token* typeEndTok = var->typeStartToken();
+                if (Token::simpleMatch(typeEndTok, "::"))
+                    typeEndTok = typeEndTok->next();
+                while (Token::Match(typeEndTok, "%name% ::|<")) {
+                    if (typeEndTok->linkAt(1)) {
+                        typeEndTok = typeEndTok->linkAt(1)->next();
+                        if (Token::simpleMatch(typeEndTok, "::"))
+                            typeEndTok = typeEndTok->next();
+                    }
+                    else
+                        typeEndTok = typeEndTok->tokAt(2);
+                }
+                if (Token::Match(typeEndTok, "iterator|const_iterator|reverse_iterator|const_reverse_iterator")) {
                     // the variable is an iterator
                     postfixOperatorError(tok);
                 } else if (var->type()) {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cassert>
@@ -270,10 +271,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 // definition may be different than declaration
                 if (tok->isCpp() && tok->str() == "class") {
                     access[new_scope] = AccessControl::Private;
-                    new_scope->type = Scope::eClass;
+                    new_scope->type = ScopeType::eClass;
                 } else if (tok->str() == "struct") {
                     access[new_scope] = AccessControl::Public;
-                    new_scope->type = Scope::eStruct;
+                    new_scope->type = ScopeType::eStruct;
                 }
 
                 new_scope->classDef = tok;
@@ -294,7 +295,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     access[new_scope] = AccessControl::Public;
 
                 // fill typeList...
-                if (new_scope->isClassOrStructOrUnion() || new_scope->type == Scope::eEnum) {
+                if (new_scope->isClassOrStructOrUnion() || new_scope->type == ScopeType::eEnum) {
                     Type* new_type = findType(name, scope);
                     if (!new_type) {
                         typeList.emplace_back(new_scope->classDef, new_scope, scope);
@@ -314,7 +315,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     if (!tok2) {
                         mTokenizer.syntaxError(tok);
                     }
-                } else if (new_scope->type == Scope::eEnum) {
+                } else if (new_scope->type == ScopeType::eEnum) {
                     if (tok2->str() == ":") {
                         tok2 = tok2->tokAt(2);
                         while (Token::Match(tok2, "%name%|::"))
@@ -329,7 +330,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     mTokenizer.syntaxError(tok);
                 }
 
-                if (new_scope->type == Scope::eEnum) {
+                if (new_scope->type == ScopeType::eEnum) {
                     tok2 = new_scope->addEnum(tok);
                     scope->nestedList.push_back(new_scope);
 
@@ -510,7 +511,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             do {
                 access.erase(scope);
                 scope = const_cast<Scope*>(scope->nestedIn);
-            } while (scope->type != Scope::eGlobal && succeeds(tok, scope->bodyEnd));
+            } while (scope->type != ScopeType::eGlobal && succeeds(tok, scope->bodyEnd));
             continue;
         }
         // check for end of init list
@@ -641,7 +642,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
                 scope->definedType->friendList.push_back(friendInfo);
             }
-        } else if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal) {
+        } else if (scope->type == ScopeType::eNamespace || scope->type == ScopeType::eGlobal) {
             const Token *funcStart = nullptr;
             const Token *argStart = nullptr;
             const Token *declEnd = nullptr;
@@ -706,11 +707,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             if (tok->isKeyword() && Token::Match(tok, "else|try|do {")) {
                 const Token* tok1 = tok->next();
                 if (tok->str() == "else")
-                    scopeList.emplace_back(this, tok, scope, Scope::eElse, tok1);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eElse, tok1);
                 else if (tok->str() == "do")
-                    scopeList.emplace_back(this, tok, scope, Scope::eDo, tok1);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eDo, tok1);
                 else //if (tok->str() == "try")
-                    scopeList.emplace_back(this, tok, scope, Scope::eTry, tok1);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eTry, tok1);
 
                 tok = tok1;
                 scope->nestedList.push_back(&scopeList.back());
@@ -718,21 +719,21 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             } else if (tok->isKeyword() && Token::Match(tok, "if|for|while|catch|switch (") && Token::simpleMatch(tok->linkAt(1), ") {")) {
                 const Token *scopeStartTok = tok->linkAt(1)->next();
                 if (tok->str() == "if")
-                    scopeList.emplace_back(this, tok, scope, Scope::eIf, scopeStartTok);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eIf, scopeStartTok);
                 else if (tok->str() == "for") {
-                    scopeList.emplace_back(this, tok, scope, Scope::eFor, scopeStartTok);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eFor, scopeStartTok);
                 } else if (tok->str() == "while")
-                    scopeList.emplace_back(this, tok, scope, Scope::eWhile, scopeStartTok);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eWhile, scopeStartTok);
                 else if (tok->str() == "catch") {
-                    scopeList.emplace_back(this, tok, scope, Scope::eCatch, scopeStartTok);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eCatch, scopeStartTok);
                 } else // if (tok->str() == "switch")
-                    scopeList.emplace_back(this, tok, scope, Scope::eSwitch, scopeStartTok);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eSwitch, scopeStartTok);
 
                 scope->nestedList.push_back(&scopeList.back());
                 scope = &scopeList.back();
-                if (scope->type == Scope::eFor)
+                if (scope->type == ScopeType::eFor)
                     scope->checkVariable(tok->tokAt(2), AccessControl::Local, mSettings); // check for variable declaration and add it to new scope if found
-                else if (scope->type == Scope::eCatch)
+                else if (scope->type == ScopeType::eCatch)
                     scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = tok->next();
                 inIfCondition.push(scopeStartTok);
@@ -747,7 +748,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 } else if (!inIfCondition.empty() && tok == inIfCondition.top()) {
                     inIfCondition.pop();
                 } else if (isExecutableScope(tok)) {
-                    scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
+                    scopeList.emplace_back(this, tok, scope, ScopeType::eUnconditional, tok);
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
                 } else {
@@ -871,13 +872,13 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
             const Variable* firstArg = func->getArgumentVar(0);
             if (firstArg->type() == scope.definedType) {
                 if (firstArg->isRValueReference())
-                    func->type = Function::eMoveConstructor;
+                    func->type = FunctionType::eMoveConstructor;
                 else if (firstArg->isReference() && !firstArg->isPointer())
-                    func->type = Function::eCopyConstructor;
+                    func->type = FunctionType::eCopyConstructor;
             }
 
-            if (func->type == Function::eCopyConstructor ||
-                func->type == Function::eMoveConstructor)
+            if (func->type == FunctionType::eCopyConstructor ||
+                func->type == FunctionType::eMoveConstructor)
                 scope.numCopyOrMoveConstructors++;
         }
     }
@@ -887,7 +888,7 @@ void SymbolDatabase::createSymbolDatabaseFunctionScopes()
 {
     // fill in function scopes
     for (const Scope & scope : scopeList) {
-        if (scope.type == Scope::eFunction)
+        if (scope.type == ScopeType::eFunction)
             functionScopes.push_back(&scope);
     }
 }
@@ -953,7 +954,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     bool hasDefaultConstructor = false;
 
                     for (const Function& func : scope.functionList) {
-                        if (func.type == Function::eConstructor) {
+                        if (func.type == FunctionType::eConstructor) {
                             // check for no arguments: func ( )
                             if (func.argCount() == 0) {
                                 hasDefaultConstructor = true;
@@ -1007,7 +1008,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                                 unknowns++;
                         }
                     }
-                } else if (scope.type == Scope::eUnion && scope.definedType->needInitialization == Type::NeedInitialization::Unknown)
+                } else if (scope.type == ScopeType::eUnion && scope.definedType->needInitialization == Type::NeedInitialization::Unknown)
                     scope.definedType->needInitialization = Type::NeedInitialization::True;
             }
 
@@ -1121,7 +1122,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 
     // Set scope pointers
     for (const Scope& scope: scopeList) {
-        if (scope.type == Scope::eGlobal)
+        if (scope.type == ScopeType::eGlobal)
             setScopePointers(scope, mTokenizer.list.front(), mTokenizer.list.back());
         else {
             for (const Token *bodyStart: scope.bodyStartList)
@@ -1402,7 +1403,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 {
     // fill in enumerators in enum
     for (const Scope &scope : scopeList) {
-        if (scope.type != Scope::eEnum)
+        if (scope.type != ScopeType::eEnum)
             continue;
 
         // add enumerators to enumerator tokens
@@ -1413,7 +1414,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
     std::set<std::string> tokensThatAreNotEnumeratorValues;
 
     for (const Scope &scope : scopeList) {
-        if (scope.type != Scope::eEnum)
+        if (scope.type != ScopeType::eEnum)
             continue;
 
         for (const Enumerator & enumerator : scope.enumeratorList) {
@@ -1519,7 +1520,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 {
     for (const Scope& scope : scopeList) {
-        if (scope.type != Scope::eFunction)
+        if (scope.type != ScopeType::eFunction)
             continue;
         Function * function = scope.function;
         if (!function)
@@ -1687,7 +1688,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
 
     auto exprScopes = functionScopes; // functions + global lambdas + namespaces
     std::copy_if(scopeList.front().nestedList.begin(), scopeList.front().nestedList.end(), std::back_inserter(exprScopes), [](const Scope* scope) {
-        return scope && (scope->type == Scope::eLambda || scope->type == Scope::eNamespace);
+        return scope && (scope->type == ScopeType::eLambda || scope->type == ScopeType::eNamespace);
     });
 
     for (const Scope * scope : exprScopes) {
@@ -2049,7 +2050,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     }
 
     // UNKNOWN_MACRO(a,b) { ... }
-    else if (outerScope->type == Scope::eGlobal &&
+    else if (outerScope->type == ScopeType::eGlobal &&
              Token::Match(tok, "%name% (") &&
              tok->isUpperCaseName() &&
              Token::simpleMatch(tok->linkAt(1), ") {") &&
@@ -2295,7 +2296,9 @@ bool Variable::isUnsigned() const
 const Token * Variable::declEndToken() const
 {
     Token const * declEnd = typeStartToken();
-    while (declEnd && !Token::Match(declEnd, "[;,)={]")) {
+    if (declEnd->tokAt(-1) && Token::simpleMatch(declEnd->tokAt(-2), "for ("))
+        declEnd = nameToken();
+    while (declEnd && !Token::Match(declEnd, "[;:,)={]")) {
         if (declEnd->link() && Token::Match(declEnd,"(|[|<"))
             declEnd = declEnd->link();
         declEnd = declEnd->next();
@@ -2518,11 +2521,11 @@ Function::Function(const Token *tok,
 
         // 'operator =' is special
         if (tokenDef->str() == "operator=")
-            type = Function::eOperatorEqual;
+            type = FunctionType::eOperatorEqual;
     }
 
     else if (tokenDef->str() == "[") {
-        type = Function::eLambda;
+        type = FunctionType::eLambda;
     }
 
     // class constructor/destructor
@@ -2533,12 +2536,12 @@ Function::Function(const Token *tok,
                tokenDef->str()[scope->className.size() + 1] == '<'))) {
         // destructor
         if (tokenDef->strAt(-1) == "~") {
-            type = Function::eDestructor;
+            type = FunctionType::eDestructor;
             isNoExcept(true);
         }
         // constructor of any kind
         else
-            type = Function::eConstructor;
+            type = FunctionType::eConstructor;
 
         isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
     }
@@ -2625,7 +2628,7 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
 
         // 'operator =' is special
         if (tokenDef->str() == "operator=")
-            type = Function::eOperatorEqual;
+            type = FunctionType::eOperatorEqual;
     }
 
     setFlags(tokenDef, tokenDef->scope());
@@ -2662,7 +2665,7 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
         // static function
         else if (tok1->str() == "static") {
             isStatic(true);
-            if (scope->type == Scope::eNamespace || scope->type == Scope::eGlobal)
+            if (scope->type == ScopeType::eNamespace || scope->type == ScopeType::eGlobal)
                 isStaticLocal(true);
         }
 
@@ -3084,7 +3087,7 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
 {
     if (!function)
         return false;
-    if (function->type != Function::eFunction && function->type != Function::eOperatorEqual && function->type != Function::eLambda)
+    if (function->type != FunctionType::eFunction && function->type != FunctionType::eOperatorEqual && function->type != FunctionType::eLambda)
         return false;
     const Token* defStart = function->retDef;
     if (!defStart)
@@ -3172,7 +3175,7 @@ std::vector<const Token*> Function::findReturns(const Function* f)
         return result;
     for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok->scope() &&
-            (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {
+            (tok->scope()->type == ScopeType::eLambda || tok->scope()->type == ScopeType::eClass)) {
             tok = tok->link();
             continue;
         }
@@ -3202,20 +3205,20 @@ const Token * Function::constructorMemberInitialization() const
 bool Function::isSafe(const Settings &settings) const
 {
     if (settings.safeChecks.externalFunctions) {
-        if (nestedIn->type == Scope::ScopeType::eNamespace && token->fileIndex() != 0)
+        if (nestedIn->type == ScopeType::eNamespace && token->fileIndex() != 0)
             return true;
-        if (nestedIn->type == Scope::ScopeType::eGlobal && (token->fileIndex() != 0 || !isStatic()))
+        if (nestedIn->type == ScopeType::eGlobal && (token->fileIndex() != 0 || !isStatic()))
             return true;
     }
 
     if (settings.safeChecks.internalFunctions) {
-        if (nestedIn->type == Scope::ScopeType::eNamespace && token->fileIndex() == 0)
+        if (nestedIn->type == ScopeType::eNamespace && token->fileIndex() == 0)
             return true;
-        if (nestedIn->type == Scope::ScopeType::eGlobal && (token->fileIndex() == 0 || isStatic()))
+        if (nestedIn->type == ScopeType::eGlobal && (token->fileIndex() == 0 || isStatic()))
             return true;
     }
 
-    if (settings.safeChecks.classes && access == AccessControl::Public && (nestedIn->type == Scope::ScopeType::eClass || nestedIn->type == Scope::ScopeType::eStruct))
+    if (settings.safeChecks.classes && access == AccessControl::Public && (nestedIn->type == ScopeType::eClass || nestedIn->type == ScopeType::eStruct))
         return true;
 
     return false;
@@ -3342,8 +3345,8 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
             }
         }
 
-        const bool isAnonymousNamespace = (scope1->type == Scope::eNamespace && scope1->className.empty());
-        if ((scope1->className == tok1->str() && (scope1->type != Scope::eFunction)) || isAnonymousNamespace) {
+        const bool isAnonymousNamespace = (scope1->type == ScopeType::eNamespace && scope1->className.empty());
+        if ((scope1->className == tok1->str() && (scope1->type != ScopeType::eFunction)) || isAnonymousNamespace) {
             // do the scopes match (same scope) or do their names match (multiple namespaces)
             if ((scope == scope1->nestedIn) || (scope &&
                                                 scope->className == scope1->nestedIn->className &&
@@ -3389,7 +3392,7 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
             auto range = scope1->functionMap.equal_range(tok->str());
             for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
                 auto * func = const_cast<Function *>(it->second);
-                if (destructor && func->type != Function::Type::eDestructor)
+                if (destructor && func->type != FunctionType::eDestructor)
                     continue;
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, tok->next(), path, path_length)) {
@@ -3403,9 +3406,9 @@ void SymbolDatabase::addClassFunction(Scope *&scope, const Token *&tok, const To
                                     func->isDelete(true);
                                 return;
                             }
-                            if (func->type == Function::eDestructor && destructor) {
+                            if (func->type == FunctionType::eDestructor && destructor) {
                                 func->hasBody(true);
-                            } else if (func->type != Function::eDestructor && !destructor) {
+                            } else if (func->type != FunctionType::eDestructor && !destructor) {
                                 // normal function?
                                 const bool hasConstKeyword = closeParen->strAt(1) == "const";
                                 if ((func->isConst() == hasConstKeyword) &&
@@ -3477,24 +3480,24 @@ void SymbolDatabase::addNewFunction(Scope *&scope, const Token *&tok)
 
 bool Type::isClassType() const
 {
-    return classScope && classScope->type == Scope::ScopeType::eClass;
+    return classScope && classScope->type == ScopeType::eClass;
 }
 
 bool Type::isEnumType() const
 {
     //We explicitly check for "enum" because a forward declared enum doesn't get its own scope
     return (classDef && classDef->str() == "enum") ||
-           (classScope && classScope->type == Scope::ScopeType::eEnum);
+           (classScope && classScope->type == ScopeType::eEnum);
 }
 
 bool Type::isStructType() const
 {
-    return classScope && classScope->type == Scope::ScopeType::eStruct;
+    return classScope && classScope->type == ScopeType::eStruct;
 }
 
 bool Type::isUnionType() const
 {
-    return classScope && classScope->type == Scope::ScopeType::eUnion;
+    return classScope && classScope->type == ScopeType::eUnion;
 }
 
 const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
@@ -3750,48 +3753,48 @@ bool Variable::arrayDimensions(const Settings& settings, bool& isContainer)
     return arr;
 }
 
-static std::string scopeTypeToString(Scope::ScopeType type)
+static std::string scopeTypeToString(ScopeType type)
 {
     switch (type) {
-    case Scope::ScopeType::eGlobal:
+    case ScopeType::eGlobal:
         return "Global";
-    case Scope::ScopeType::eClass:
+    case ScopeType::eClass:
         return "Class";
-    case Scope::ScopeType::eStruct:
+    case ScopeType::eStruct:
         return "Struct";
-    case Scope::ScopeType::eUnion:
+    case ScopeType::eUnion:
         return "Union";
-    case Scope::ScopeType::eNamespace:
+    case ScopeType::eNamespace:
         return "Namespace";
-    case Scope::ScopeType::eFunction:
+    case ScopeType::eFunction:
         return "Function";
-    case Scope::ScopeType::eIf:
+    case ScopeType::eIf:
         return "If";
-    case Scope::ScopeType::eElse:
+    case ScopeType::eElse:
         return "Else";
-    case Scope::ScopeType::eFor:
+    case ScopeType::eFor:
         return "For";
-    case Scope::ScopeType::eWhile:
+    case ScopeType::eWhile:
         return "While";
-    case Scope::ScopeType::eDo:
+    case ScopeType::eDo:
         return "Do";
-    case Scope::ScopeType::eSwitch:
+    case ScopeType::eSwitch:
         return "Switch";
-    case Scope::ScopeType::eTry:
+    case ScopeType::eTry:
         return "Try";
-    case Scope::ScopeType::eCatch:
+    case ScopeType::eCatch:
         return "Catch";
-    case Scope::ScopeType::eUnconditional:
+    case ScopeType::eUnconditional:
         return "Unconditional";
-    case Scope::ScopeType::eLambda:
+    case ScopeType::eLambda:
         return "Lambda";
-    case Scope::ScopeType::eEnum:
+    case ScopeType::eEnum:
         return "Enum";
     }
     return "Unknown";
 }
 
-static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
+static std::ostream & operator << (std::ostream & s, ScopeType type)
 {
     s << scopeTypeToString(type);
     return s;
@@ -3820,22 +3823,22 @@ static std::string accessControlToString(AccessControl access)
     return "Unknown";
 }
 
-static const char* functionTypeToString(Function::Type type)
+static const char* functionTypeToString(FunctionType type)
 {
     switch (type) {
-    case Function::eConstructor:
+    case FunctionType::eConstructor:
         return "Constructor";
-    case Function::eCopyConstructor:
+    case FunctionType::eCopyConstructor:
         return "CopyConstructor";
-    case Function::eMoveConstructor:
+    case FunctionType::eMoveConstructor:
         return "MoveConstructor";
-    case Function::eOperatorEqual:
+    case FunctionType::eOperatorEqual:
         return "OperatorEqual";
-    case Function::eDestructor:
+    case FunctionType::eDestructor:
         return "Destructor";
-    case Function::eFunction:
+    case FunctionType::eFunction:
         return "Function";
-    case Function::eLambda:
+    case FunctionType::eLambda:
         return "Lambda";
     default:
         return "Unknown";
@@ -4048,7 +4051,7 @@ void SymbolDatabase::printOut(const char *title) const
             printVariable(&*var, "        ");
         }
 
-        if (scope->type == Scope::eEnum) {
+        if (scope->type == ScopeType::eEnum) {
             std::cout << "    enumType: ";
             if (scope->enumType) {
                 std::cout << scope->enumType->stringify(false, true, false);
@@ -4566,7 +4569,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             initArgCount++;
             if (tok->strAt(1) == "[") {
                 const Token* lambdaStart = tok->next();
-                if (type == eLambda)
+                if (type == FunctionType::eLambda)
                     tok = findLambdaEndTokenWithoutAST(lambdaStart);
                 else {
                     tok = findLambdaEndToken(lambdaStart);
@@ -4738,49 +4741,49 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 {
     const Token *nameTok = classDef;
     if (!classDef) {
-        type = Scope::eGlobal;
+        type = ScopeType::eGlobal;
     } else if (classDef->str() == "class" && classDef->isCpp()) {
-        type = Scope::eClass;
+        type = ScopeType::eClass;
         nameTok = nameTok->next();
     } else if (classDef->str() == "struct") {
-        type = Scope::eStruct;
+        type = ScopeType::eStruct;
         nameTok = nameTok->next();
     } else if (classDef->str() == "union") {
-        type = Scope::eUnion;
+        type = ScopeType::eUnion;
         nameTok = nameTok->next();
     } else if (classDef->str() == "namespace") {
-        type = Scope::eNamespace;
+        type = ScopeType::eNamespace;
         nameTok = nameTok->next();
     } else if (classDef->str() == "enum") {
-        type = Scope::eEnum;
+        type = ScopeType::eEnum;
         nameTok = nameTok->next();
         if (nameTok->str() == "class") {
             enumClass = true;
             nameTok = nameTok->next();
         }
     } else if (classDef->str() == "[") {
-        type = Scope::eLambda;
+        type = ScopeType::eLambda;
     } else {
-        type = Scope::eFunction;
+        type = ScopeType::eFunction;
     }
     // skip over qualification if present
     nameTok = skipScopeIdentifiers(nameTok);
-    if (nameTok && ((type == Scope::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
+    if (nameTok && ((type == ScopeType::eEnum && Token::Match(nameTok, ":|{")) || nameTok->str() != "{")) // anonymous and unnamed structs/unions don't have a name
         className = nameTok->str();
 }
 
 AccessControl Scope::defaultAccess() const
 {
     switch (type) {
-    case eGlobal:
+    case ScopeType::eGlobal:
         return AccessControl::Global;
-    case eClass:
+    case ScopeType::eClass:
         return AccessControl::Private;
-    case eStruct:
+    case ScopeType::eStruct:
         return AccessControl::Public;
-    case eUnion:
+    case ScopeType::eUnion:
         return AccessControl::Public;
-    case eNamespace:
+    case ScopeType::eNamespace:
         return AccessControl::Namespace;
     default:
         return AccessControl::Local;
@@ -4805,7 +4808,7 @@ void Scope::getVariableList(const Settings& settings)
     }
 
     // global scope
-    else if (type == Scope::eGlobal)
+    else if (type == ScopeType::eGlobal)
         getVariableList(settings, check->mTokenizer.tokens(), nullptr);
 
     // forward declaration
@@ -4969,6 +4972,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     const Token *typetok = nullptr;
 
     if (tok && isVariableDeclaration(tok, vartok, typetok)) {
+        const Token* const orig = tok;
         // If the vartok was set in the if-blocks above, create a entry for this variable..
         tok = vartok->next();
         while (Token::Match(tok, "[|{"))
@@ -4993,6 +4997,22 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
             typestart = typestart->next();
 
         addVariable(vartok, typestart, vartok->previous(), varaccess, vType, this, settings);
+
+        if (type == ScopeType::eFor && orig->strAt(-2) == "for") {
+            for (const Token* tok2 = tok; tok2 && !Token::Match(tok2, "[;:]"); tok2 = tok2->next()) {
+                if (tok2->link()) {
+                    tok2 = tok2->link();
+                    continue;
+                }
+                if (Token::Match(tok2, ", %name%")) {
+                    if (tok2->next()->varId() == 0) {
+                        check->debugMessage(tok2->next(), "varid0", "Scope::checkVariable found variable \'" + tok2->strAt(1) + "\' with varid 0.");
+                        return tok;
+                    }
+                    addVariable(tok2->next(), typestart, vartok->previous(), varaccess, vType, this, settings);
+                }
+            }
+        }
     }
 
     return tok;
@@ -5110,7 +5130,7 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
                Token::Match(localVarTok->linkAt(1), ")|} ;")) {
         vartok = localVarTok;
         typetok = localTypeTok;
-    } else if (type == eCatch &&
+    } else if (type == ScopeType::eCatch &&
                Token::Match(localVarTok, "%name% )")) {
         vartok = localVarTok;
         typetok = localTypeTok;
@@ -5217,7 +5237,7 @@ static const Enumerator* findEnumeratorInUsingList(const Scope* scope, const std
         if (!u.scope)
             continue;
         for (const Scope* nested : u.scope->nestedList) {
-            if (nested->type != Scope::eEnum)
+            if (nested->type != ScopeType::eEnum)
                 continue;
             const Enumerator* e = nested->findEnumerator(name);
             if (e && !(e->scope && e->scope->enumClass))
@@ -5296,7 +5316,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end())
             return nullptr;
 
-        if (tok->scope()->type == Scope::eGlobal) {
+        if (tok->scope()->type == ScopeType::eGlobal) {
             const Token* astTop = tok->astTop();
             if (Token::simpleMatch(astTop, ":") && Token::simpleMatch(astTop->astOperand1(), "(")) { // ctor init list
                 const Token* ctor = astTop->astOperand1()->previous();
@@ -5343,7 +5363,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         }
 
         while (scope->nestedIn) {
-            if (scope->type == Scope::eFunction && scope->functionOf)
+            if (scope->type == ScopeType::eFunction && scope->functionOf)
                 scope = scope->functionOf;
             else
                 scope = scope->nestedIn;
@@ -5361,9 +5381,9 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
                 if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                     return enumerator;
 
-                if (tok->isCpp() && (*s)->type == Scope::eNamespace && Token::simpleMatch((*s)->classDef, "namespace {")) {
+                if (tok->isCpp() && (*s)->type == ScopeType::eNamespace && Token::simpleMatch((*s)->classDef, "namespace {")) {
                     for (const Scope* nested : (*s)->nestedList) {
-                        if (nested->type != Scope::eEnum)
+                        if (nested->type != ScopeType::eEnum)
                             continue;
                         enumerator = nested->findEnumerator(tokStr);
 
@@ -5432,7 +5452,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
             }
 
             // check if in member function class to see if it's present in class
-            if (scope->type == Scope::eFunction && scope->functionOf) {
+            if (scope->type == ScopeType::eFunction && scope->functionOf) {
                 const Scope *scope1 = scope->functionOf;
 
                 type = scope1->findType(typeTok->str());
@@ -5486,7 +5506,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
                     scope = scope1;
                     break;
                 }
-                if (scope->type == Scope::eFunction && scope->functionOf)
+                if (scope->type == ScopeType::eFunction && scope->functionOf)
                     scope = scope->functionOf;
                 else
                     scope = scope->nestedIn;
@@ -5533,13 +5553,13 @@ bool Scope::hasInlineOrLambdaFunction(const Token** tokStart, bool onlyInline) c
 {
     return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
         // Inline function
-        if (s->type == Scope::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {")) {
+        if (s->type == ScopeType::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {")) {
             if (tokStart)
                 *tokStart = nullptr; // bailout for e.g. loop-like macros
             return true;
         }
         // Lambda function
-        if (!onlyInline && s->type == Scope::eLambda && !hasEmptyCaptureList(s->bodyStart)) {
+        if (!onlyInline && s->type == ScopeType::eLambda && !hasEmptyCaptureList(s->bodyStart)) {
             if (tokStart)
                 *tokStart = s->bodyStart;
             return true;
@@ -5748,7 +5768,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
 
     // check in anonymous namespaces
     for (const Scope *nestedScope : nestedList) {
-        if (nestedScope->type == eNamespace && nestedScope->className.empty())
+        if (nestedScope->type == ScopeType::eNamespace && nestedScope->className.empty())
             addMatchingFunctions(nestedScope);
     }
 
@@ -6173,7 +6193,7 @@ template<class S, class T, REQUIRES("S must be a Scope class", std::is_convertib
 static S* findRecordInNestedListImpl(S& thisScope, const std::string& name, bool isC, std::set<const Scope*>& visited)
 {
     for (S* scope: thisScope.nestedList) {
-        if (scope->className == name && scope->type != Scope::eFunction)
+        if (scope->className == name && scope->type != ScopeType::eFunction)
             return scope;
         if (isC) {
             S* nestedScope = scope->findRecordInNestedList(name, isC);
@@ -6231,7 +6251,7 @@ static T* findTypeImpl(S& thisScope, const std::string & name)
     it = thisScope.definedTypesMap.find(emptyString);
     if (it != thisScope.definedTypesMap.end()) {
         for (S *scope : thisScope.nestedList) {
-            if (scope->className.empty() && (scope->type == thisScope.eNamespace || scope->isClassOrStructOrUnion())) {
+            if (scope->className.empty() && (scope->type == ScopeType::eNamespace || scope->isClassOrStructOrUnion())) {
                 T *t = scope->findType(name);
                 if (t)
                     return t;
@@ -6276,7 +6296,7 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 const Function *Scope::getDestructor() const
 {
     auto it = std::find_if(functionList.cbegin(), functionList.cend(), [](const Function& f) {
-        return f.type == Function::eDestructor;
+        return f.type == FunctionType::eDestructor;
     });
     return it == functionList.end() ? nullptr : &*it;
 }
@@ -6374,7 +6394,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                 type = scope1->definedType;
                 if (type)
                     return type;
-            } else if (lookOutside && scope->type == Scope::ScopeType::eNamespace) {
+            } else if (lookOutside && scope->type == ScopeType::eNamespace) {
                 scope = scope->nestedIn;
                 continue;
             } else
@@ -7198,7 +7218,7 @@ static const Token* parsedecl(const Token* type,
         valuetype->type = ValueType::Type::UNKNOWN_TYPE;
     else if (valuetype->smartPointerType)
         valuetype->type = ValueType::Type::SMART_POINTER;
-    else if (valuetype->typeScope->type == Scope::eEnum) {
+    else if (valuetype->typeScope->type == ScopeType::eEnum) {
         const Token * enum_type = valuetype->typeScope->enumType;
         if (enum_type) {
             if (enum_type->isSigned())
@@ -7279,7 +7299,7 @@ static const Token* parsedecl(const Token* type,
                 const Scope *scope = type->scope();
                 valuetype->typeScope = scope->check->findScope(typeTokens.front(), scope);
                 if (valuetype->typeScope)
-                    valuetype->type = (scope->type == Scope::ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
+                    valuetype->type = (scope->type == ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
         } else if (const Library::Container* container = (cpp ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
             if (isIterator)
@@ -7370,7 +7390,7 @@ static const Token* parsedecl(const Token* type,
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum") && valuetype->type != ValueType::Type::SMART_POINTER)
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope && valuetype->type != ValueType::Type::SMART_POINTER) {
-            if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
+            if (type->type()->classScope->type == ScopeType::eEnum) {
                 valuetype->sign = ValueType::Sign::SIGNED;
                 valuetype->type = getEnumType(type->type()->classScope, settings.platform);
             } else {
@@ -7782,9 +7802,9 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             }
         } else if (tok->str() == "return") {
             const Scope *functionScope = tok->scope();
-            while (functionScope && functionScope->isExecutable() && functionScope->type != Scope::eLambda && functionScope->type != Scope::eFunction)
+            while (functionScope && functionScope->isExecutable() && functionScope->type != ScopeType::eLambda && functionScope->type != ScopeType::eFunction)
                 functionScope = functionScope->nestedIn;
-            if (functionScope && functionScope->type == Scope::eFunction && functionScope->function &&
+            if (functionScope && functionScope->type == ScopeType::eFunction && functionScope->function &&
                 functionScope->function->retDef) {
                 ValueType vt = ValueType::parseDecl(functionScope->function->retDef, mSettings);
                 setValueType(tok, vt);
@@ -8216,8 +8236,8 @@ std::string ValueType::str() const
     else if ((type == ValueType::Type::NONSTD || type == ValueType::Type::RECORD) && typeScope) {
         std::string className(typeScope->className);
         const Scope *scope = typeScope->definedType ? typeScope->definedType->enclosingScope : typeScope->nestedIn;
-        while (scope && scope->type != Scope::eGlobal) {
-            if (scope->type == Scope::eClass || scope->type == Scope::eStruct || scope->type == Scope::eNamespace)
+        while (scope && scope->type != ScopeType::eGlobal) {
+            if (scope->type == ScopeType::eClass || scope->type == ScopeType::eStruct || scope->type == ScopeType::eNamespace)
                 className = scope->className + "::" + className;
             scope = (scope->definedType && scope->definedType->enclosingScope) ? scope->definedType->enclosingScope : scope->nestedIn;
         }

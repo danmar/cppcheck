@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
                 continue;
 
             // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
-            if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
+            if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != FunctionType::eFunction || func->isOperator())
                 continue;
 
             if (func->isAttributeUnused() || func->isAttributeMaybeUnused())
@@ -249,7 +249,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             funcname = tok->next();
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
-        } else if (tok->scope()->type != Scope::ScopeType::eEnum && (Token::Match(tok, "[;{}.,()[=+-/|!?:]") || Token::Match(tok, "return|throw"))) {
+        } else if (tok->scope()->type != ScopeType::eEnum && (Token::Match(tok, "[;{}.,()[=+-/|!?:]") || Token::Match(tok, "return|throw"))) {
             funcname = tok->next();
             if (funcname && funcname->str() == "&")
                 funcname = funcname->next();

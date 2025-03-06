@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -417,16 +417,16 @@ void CheckBool::pointerArithBool()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eIf && !scope.isLoopScope())
+        if (scope.type != ScopeType::eIf && !scope.isLoopScope())
             continue;
         const Token* tok = scope.classDef->next()->astOperand2();
-        if (scope.type == Scope::eFor) {
+        if (scope.type == ScopeType::eFor) {
             tok = Token::findsimplematch(scope.classDef->tokAt(2), ";");
             if (tok)
                 tok = tok->astOperand2();
             if (tok)
                 tok = tok->astOperand1();
-        } else if (scope.type == Scope::eDo)
+        } else if (scope.type == ScopeType::eDo)
             tok = (scope.bodyEnd->tokAt(2)) ? scope.bodyEnd->tokAt(2)->astOperand2() : nullptr;
 
         pointerArithBoolCond(tok);

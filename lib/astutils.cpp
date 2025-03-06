@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -936,8 +936,8 @@ const Token *findNextTokenFromBreak(const Token *breakToken)
 {
     const Scope *scope = breakToken->scope();
     while (scope) {
-        if (scope->isLoopScope() || scope->type == Scope::ScopeType::eSwitch) {
-            if (scope->type == Scope::ScopeType::eDo && Token::simpleMatch(scope->bodyEnd, "} while ("))
+        if (scope->isLoopScope() || scope->type == ScopeType::eSwitch) {
+            if (scope->type == ScopeType::eDo && Token::simpleMatch(scope->bodyEnd, "} while ("))
                 return scope->bodyEnd->linkAt(2)->next();
             return scope->bodyEnd;
         }
@@ -2114,7 +2114,7 @@ bool isUniqueExpression(const Token* tok)
             return true;
         const std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
         if (!std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
-            if (f.type != Function::eFunction)
+            if (f.type != FunctionType::eFunction)
                 return true;
 
             const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.returnDefEnd());
@@ -2266,7 +2266,7 @@ bool isReturnScope(const Token* const endToken, const Library& library, const To
     return false;
 }
 
-bool isWithinScope(const Token* tok, const Variable* var, Scope::ScopeType type)
+bool isWithinScope(const Token* tok, const Variable* var, ScopeType type)
 {
     if (!tok || !var)
         return false;
@@ -2866,7 +2866,7 @@ const Token* findEscapeStatement(const Scope* scope, const Library* library)
             continue;
         const bool isBreak = tok->str()[0] == 'b';
         while (escapeScope && escapeScope != scope) {
-            if (escapeScope->isLoopScope() || (isBreak && escapeScope->type == Scope::ScopeType::eSwitch))
+            if (escapeScope->isLoopScope() || (isBreak && escapeScope->type == ScopeType::eSwitch))
                 return nullptr;
             escapeScope = escapeScope->nestedIn;
         }
@@ -2986,7 +2986,7 @@ bool isVariablesChanged(const Token* start,
     const bool globalvar = std::any_of(vars.cbegin(), vars.cend(), [](const Variable* var) {
         return var->isGlobal();
     });
-    for (const Token* tok = start; tok != end; tok = tok->next()) {
+    for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
         if (tok->varId() == 0 || varids.count(tok->varId()) == 0) {
             if (globalvar && Token::Match(tok, "%name% ("))
                 // TODO: Is global variable really changed by function call?
@@ -3705,7 +3705,7 @@ static std::set<MathLib::bigint> getSwitchValues(const Token *startbrace, bool &
 
     hasDefault = false;
     for (const Token *tok = startbrace->next(); tok && tok != endbrace; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "{") && tok->scope()->type == Scope::ScopeType::eSwitch) {
+        if (Token::simpleMatch(tok, "{") && tok->scope()->type == ScopeType::eSwitch) {
             tok = tok->link();
             continue;
         }
@@ -3726,7 +3726,7 @@ static std::set<MathLib::bigint> getSwitchValues(const Token *startbrace, bool &
 
 bool isExhaustiveSwitch(const Token *startbrace)
 {
-    if (!startbrace || !Token::simpleMatch(startbrace->previous(), ") {") || startbrace->scope()->type != Scope::ScopeType::eSwitch)
+    if (!startbrace || !Token::simpleMatch(startbrace->previous(), ") {") || startbrace->scope()->type != ScopeType::eSwitch)
         return false;
     const Token *rpar = startbrace->previous();
     const Token *lpar = rpar->link();
@@ -3854,11 +3854,11 @@ const Token *skipUnreachableBranch(const Token *tok)
     if (!Token::simpleMatch(tok, "{"))
         return tok;
 
-    if (tok->scope()->type == Scope::ScopeType::eIf) {
+    if (tok->scope()->type == ScopeType::eIf) {
         return skipUnreachableIfBranch(tok);
     }
 
-    if (tok->scope()->type == Scope::ScopeType::eElse) {
+    if (tok->scope()->type == ScopeType::eElse) {
         return skipUnreachableElseBranch(tok);
     }
 

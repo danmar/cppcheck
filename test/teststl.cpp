@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -606,7 +606,7 @@ private:
                     "            return i;\n"
                     "    return 0;\n"
                     "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("test.cpp:8:style:Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
 
         checkNormal("bool g();\n"
                     "int f(int x) {\n"
@@ -619,7 +619,7 @@ private:
                     "            return i;\n"
                     "    return 0;\n"
                     "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("test.cpp:8:style:Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
 
         checkNormal("bool g();\n"
                     "void f(int x) {\n"
@@ -5439,6 +5439,32 @@ private:
               "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(const std::vector<int>& v) {\n" // #11493
+              "    int s = 0;\n"
+              "    for (std::size_t i = 0; i < v.size(); ++i)\n"
+              "        s += v[i];\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
+
+        check("int f(int n) {\n"
+              "    int s = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        s += g(i);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int g(int);\n"
+              "int f(const std::vector<int>&v, int n) {\n"
+              "    int s = 0;\n"
+              "    for (int i = 0; i < n; ++i) {\n"
+              "        s += g(i) + v[i];\n"
+              "    }\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoContainerInsert() {
@@ -5816,6 +5842,35 @@ private:
               "            throw 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("bool f(const std::vector<int>& v, const std::vector<int>& w, int n) {\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        if (v[i] == w[i])\n"
+              "            return true;\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("bool f(int n) {\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        if (g(i))\n"
+              "            return true;\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("bool g(int);\n"
+              "bool f(const std::vector<int>&v, int n) {\n"
+              "    bool b{};\n"
+              "    for (int i = 0; i < n; ++i) {\n"
+              "        if (v[i] > 0 && g(i)) {\n"
+              "            b = true;\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoMinMax() {
@@ -5859,7 +5914,7 @@ private:
               dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout_str());
 
-        check("void f(const std::vector<int>& v) {\n"
+        check("void f(const std::vector<int>& v) {\n" // #9091
               "    int maxY = 0;\n"
               "    for (int y : v) {\n"
               "        if (y > maxY)\n"
@@ -5867,9 +5922,38 @@ private:
               "    }\n"
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
-                           "",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::max_element algorithm instead of a raw loop.\n", errout_str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int minY = 0;\n"
+              "    for (int y : v) {\n"
+              "        if (y < minY)\n"
+              "            minY = y;\n"
+              "    }\n"
+              "    return minY;\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::min_element algorithm instead of a raw loop.\n", errout_str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int max = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        max = v[i] > max ? v[i] : max;\n"
+              "    return max;\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::max_element algorithm instead of a raw loop.\n",
+                      errout_str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int min = 0;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        min = v[i] < min ? v[i] : min;\n"
+              "    return min;\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::min_element algorithm instead of a raw loop.\n",
+                      errout_str());
     }
 
     void loopAlgoMultipleReturn()

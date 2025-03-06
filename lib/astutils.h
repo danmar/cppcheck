@@ -36,10 +36,14 @@
 #include "library.h"
 #include "mathlib.h"
 #include "smallvector.h"
-#include "symboldatabase.h"
 #include "token.h"
 
 class Settings;
+class Variable;
+class ValueType;
+class Function;
+class Scope;
+enum class ScopeType : std::uint8_t;
 
 enum class ChildrenToVisit : std::uint8_t {
     none,
@@ -305,7 +309,7 @@ CPPCHECKLIB bool isReturnScope(const Token* endToken,
 /** Is tok within a scope of the given type, nested within var's scope? */
 bool isWithinScope(const Token* tok,
                    const Variable* var,
-                   Scope::ScopeType type);
+                   ScopeType type);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);

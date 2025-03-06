@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -467,6 +467,9 @@ const Token *Tokenizer::processFunc(const Token *tok2, bool inOperator) const
                 // skip over namespace
                 while (Token::Match(tok2, "%name% ::"))
                     tok2 = tok2->tokAt(2);
+
+                if (Token::simpleMatch(tok2, "const"))
+                    tok2 = tok2->next();
 
                 if (!tok2)
                     return nullptr;
@@ -4351,7 +4354,7 @@ static void setVarIdStructMembers(Token *&tok1,
 
     while (Token::Match(tok->next(), ")| . %name% !!(")) {
         // Don't set varid for trailing return type
-        if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-1), "%name%|]") &&
+        if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-1), "%name%|]") && !tok->linkAt(1)->tokAt(-1)->isKeyword() &&
             TokenList::isFunctionHead(tok->linkAt(1), "{|;")) {
             tok = tok->tokAt(3);
             continue;
@@ -4724,7 +4727,7 @@ void Tokenizer::setVarIdPass1()
                 const Token* prev2 = tok2->previous();
                 if (Token::Match(prev2, "%type% [;[=,)]") && tok2->strAt(-1) != "const")
                     ;
-                else if (Token::Match(prev2, "%type% :") && tok->strAt(-1) == "for")
+                else if (Token::Match(prev2, "%type% [:({]") && tok->strAt(-1) == "for")
                     ;
                 else if (Token::Match(prev2, "%type% ( !!)") && Token::simpleMatch(tok2->link(), ") ;")) {
                     // In C++ , a variable can't be called operator+ or something like that.
@@ -4777,11 +4780,11 @@ void Tokenizer::setVarIdPass1()
                         syntaxErrorC(prev2, prev2->strAt(-2) + prev2->strAt(-1) + " " + prev2->str());
                     variableMap.addVariable(prev2->str(), scopeStack.size() <= 1);
 
-                    if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
+                    if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=[({,]")) {
                         for (const Token *tok3 = prev2->next(); tok3 && tok3->str() != ";"; tok3 = tok3->next()) {
                             if (Token::Match(tok3, "[([]"))
                                 tok3 = tok3->link();
-                            if (Token::Match(tok3, ", %name% [,=;]"))
+                            if (Token::Match(tok3, ", %name% [=[({,;]"))
                                 variableMap.addVariable(tok3->strAt(1), false);
                         }
                     }
@@ -7460,12 +7463,9 @@ void Tokenizer::simplifyStaticConst()
             Token* leftTok = tok;
             bool behindOther = false;
             for (; leftTok; leftTok = leftTok->previous()) {
-                for (std::size_t j = 0; j <= i; j++) {
-                    if (leftTok->str() == qualifiers[j]) {
-                        behindOther = true;
-                        break;
-                    }
-                }
+                behindOther = std::any_of(qualifiers.cbegin(), qualifiers.cbegin() + i + 1, [&](const std::string& q) {
+                    return q == leftTok->str();
+                });
                 if (behindOther)
                     break;
                 if (isCPP() && Token::simpleMatch(leftTok, ">")) {

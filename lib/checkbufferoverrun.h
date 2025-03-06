@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "mathlib.h"
-#include "vfvalue.h"
 
 #include <cstdint>
 #include <list>
@@ -41,6 +39,11 @@ class Tokenizer;
 class Variable;
 struct Dimension;
 enum class Certainty : std::uint8_t;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 /// @addtogroup Checks
 /// @{

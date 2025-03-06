@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -412,6 +412,12 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, const Suppre
                 suppressions.getUnmatchedLocalSuppressions(i->file, unusedFunctionCheckEnabled), errorLogger);
         }
     }
+    if (settings.inlineSuppressions) {
+        // report unmatched unusedFunction suppressions
+        err |= SuppressionList::reportUnmatchedSuppressions(
+            suppressions.getUnmatchedInlineSuppressions(unusedFunctionCheckEnabled), errorLogger);
+    }
+
     err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
     return err;
 }
@@ -532,6 +538,15 @@ void StdLogger::writeCheckersReport(const Suppressions& supprs)
 
     if (xmlReport) {
         reportErr("    </errors>\n");
+        if (mSettings.safety)
+            reportErr("    <safety/>\n");
+        if (mSettings.inlineSuppressions)
+            reportErr("    <inline-suppr/>\n");
+        if (!suppressions.empty()) {
+            std::ostringstream suppressionsXml;
+            supprs.nomsg.dump(suppressionsXml);
+            reportErr(suppressionsXml.str());
+        }
         reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
 }

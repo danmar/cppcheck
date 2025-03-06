@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <list>
 #include <sstream>
@@ -465,9 +466,9 @@ void CheckType::checkFloatToIntegerOverflow()
             if (isUnreachableOperand(tok))
                 continue;
             const Scope *scope = tok->scope();
-            while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
+            while (scope && scope->type != ScopeType::eLambda && scope->type != ScopeType::eFunction)
                 scope = scope->nestedIn;
-            if (scope && scope->type == Scope::ScopeType::eFunction && scope->function && scope->function->retDef) {
+            if (scope && scope->type == ScopeType::eFunction && scope->function && scope->function->retDef) {
                 const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, *mSettings);
                 vtfloat = tok->astOperand1()->valueType();
                 checkFloatToIntegerOverflow(tok, &valueType, vtfloat, tok->astOperand1()->values());

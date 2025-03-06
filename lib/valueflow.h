@@ -24,7 +24,6 @@
 #include "config.h"
 #include "errortypes.h"
 #include "mathlib.h"
-#include "vfvalue.h"
 
 #include <cstdlib>
 #include <functional>
@@ -42,6 +41,11 @@ class TokenList;
 class ValueType;
 class Variable;
 class Scope;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 namespace ValueFlow {
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).

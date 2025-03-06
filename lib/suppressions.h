@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -151,6 +151,7 @@ public:
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched{};
         bool checked{}; // for inline suppressions, checked or not
+        bool isInline{};
 
         enum : std::int8_t { NO_LINE = -1 };
     };
@@ -176,6 +177,13 @@ public:
      * @return empty vector if something wrong.
      */
     static std::vector<Suppression> parseMultiSuppressComment(const std::string &comment, std::string *errorMessage);
+
+    /**
+     * Create a Suppression object from a suppression line
+     * @param line The line to parse.
+     * @return a suppression object
+     */
+    static Suppression parseLine(const std::string &line);
 
     /**
      * @brief Don't show the given error.
@@ -239,13 +247,19 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, bool includeUnusedFunction) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedGlobalSuppressions(bool unusedFunctionChecking) const;
+    std::list<Suppression> getUnmatchedGlobalSuppressions(bool includeUnusedFunction) const;
+
+    /**
+     * @brief Returns list of unmatched inline suppressions.
+     * @return list of unmatched suppressions
+     */
+    std::list<Suppression> getUnmatchedInlineSuppressions(bool includeUnusedFunction) const;
 
     /**
      * @brief Returns list of all suppressions.

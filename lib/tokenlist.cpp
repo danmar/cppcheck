@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,11 +31,13 @@
 #include "standards.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdint>
 #include <exception>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <utility>
 #include <set>
 #include <stack>
@@ -113,9 +115,11 @@ void TokenList::determineCppC()
 int TokenList::appendFileIfNew(std::string fileName)
 {
     // Has this file been tokenized already?
-    for (int i = 0; i < mFiles.size(); ++i)
-        if (Path::sameFileName(mFiles[i], fileName))
-            return i;
+    auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
+        return Path::sameFileName(f, fileName);
+    });
+    if (it != mFiles.cend())
+        return static_cast<int>(std::distance(mFiles.cbegin(), it));
 
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));
@@ -249,7 +253,8 @@ void TokenList::addtoken(const Token *tok)
         mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(tok->str());
-        mTokensFrontBack.back->originalName(tok->originalName());
+        if (!tok->originalName().empty())
+            mTokensFrontBack.back->originalName(tok->originalName());
         mTokensFrontBack.back->setMacroName(tok->getMacroName());
     }
 

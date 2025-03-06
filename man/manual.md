@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 2.16.99
+subtitle: Version 2.17.99
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -992,7 +992,9 @@ Cppcheck is distributed with a few addons which are listed below.
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
 
 The misra rule texts should be downloaded from [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools)
+
 Use the option `--rule-texts` to specify the rules text file that has been downloaded from [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools).
+
 Checkers in open source Cppcheck only cover [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools) rules partially.
 
 ### y2038.py

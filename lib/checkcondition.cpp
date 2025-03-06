@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <initializer_list>
 #include <limits>
 #include <list>
 #include <set>
@@ -282,7 +283,7 @@ static bool inBooleanFunction(const Token *tok)
     const Scope *scope = tok ? tok->scope() : nullptr;
     while (scope && scope->isLocal())
         scope = scope->nestedIn;
-    if (scope && scope->type == Scope::eFunction) {
+    if (scope && scope->type == ScopeType::eFunction) {
         const Function *func = scope->function;
         if (func) {
             const Token *ret = func->retDef;
@@ -483,7 +484,7 @@ void CheckCondition::duplicateCondition()
     const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eIf)
+        if (scope.type != ScopeType::eIf)
             continue;
 
         const Token* tok2 = scope.classDef->next();
@@ -534,7 +535,7 @@ void CheckCondition::multiCondition()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eIf)
+        if (scope.type != ScopeType::eIf)
             continue;
 
         const Token * const cond1 = scope.classDef->next()->astOperand2();
@@ -627,9 +628,9 @@ void CheckCondition::multiCondition2()
 
     for (const Scope &scope : symbolDatabase->scopeList) {
         const Token *condTok = nullptr;
-        if (scope.type == Scope::eIf || scope.type == Scope::eWhile)
+        if (scope.type == ScopeType::eIf || scope.type == ScopeType::eWhile)
             condTok = scope.classDef->next()->astOperand2();
-        else if (scope.type == Scope::eFor) {
+        else if (scope.type == ScopeType::eFor) {
             condTok = scope.classDef->next()->astOperand2();
             if (!condTok || condTok->str() != ";")
                 continue;

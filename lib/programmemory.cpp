@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -369,7 +369,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         return;
     assert(scope != scope->nestedIn);
     fillProgramMemoryFromConditions(pm, scope->nestedIn, endTok, settings);
-    if (scope->type == Scope::eIf || scope->type == Scope::eWhile || scope->type == Scope::eElse || scope->type == Scope::eFor) {
+    if (scope->type == ScopeType::eIf || scope->type == ScopeType::eWhile || scope->type == ScopeType::eElse || scope->type == ScopeType::eFor) {
         const Token* condTok = getCondTokFromEnd(scope->bodyEnd);
         if (!condTok)
             return;
@@ -377,7 +377,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
         bool error = false;
         execute(condTok, pm, &result, &error, settings);
         if (error)
-            programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
+            programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != ScopeType::eElse);
     }
 }
 
