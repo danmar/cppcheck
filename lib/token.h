@@ -101,7 +101,7 @@ struct TokenImpl {
     std::string* mOriginalName{};
 
     // If this token came from a macro replacement list, this is the name of that macro
-    std::string mMacroName;
+    std::string* mMacroName{};
 
     // ValueType
     ValueType* mValueType{};
@@ -480,7 +480,7 @@ public:
         setFlag(fIsStandardType, b);
     }
     bool isExpandedMacro() const {
-        return !mImpl->mMacroName.empty();
+        return !!mImpl->mMacroName;
     }
     bool isCast() const {
         return getFlag(fIsCast);
@@ -805,10 +805,13 @@ public:
     }
 
     const std::string& getMacroName() const {
-        return mImpl->mMacroName;
+        return mImpl->mMacroName ? *mImpl->mMacroName : mEmptyString;
     }
     void setMacroName(std::string name) {
-        mImpl->mMacroName = std::move(name);
+        if (!mImpl->mMacroName)
+            mImpl->mMacroName = new std::string(std::move(name));
+        else
+            *mImpl->mMacroName = std::move(name);
     }
 
     template<size_t count>

@@ -1048,7 +1048,8 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
     newToken->str(tokenStr);
     if (!originalNameStr.empty())
         newToken->originalName(originalNameStr);
-    newToken->setMacroName(macroNameStr);
+    if (!macroNameStr.empty())
+        newToken->setMacroName(macroNameStr);
 
     if (newToken != this) {
         newToken->mImpl->mLineNumber = mImpl->mLineNumber;
@@ -2599,6 +2600,7 @@ const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) 
 
 TokenImpl::~TokenImpl()
 {
+    delete mMacroName;
     delete mOriginalName;
     delete mValueType;
     delete mValues;

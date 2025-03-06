@@ -255,7 +255,8 @@ void TokenList::addtoken(const Token *tok)
         mTokensFrontBack.back->str(tok->str());
         if (!tok->originalName().empty())
             mTokensFrontBack.back->originalName(tok->originalName());
-        mTokensFrontBack.back->setMacroName(tok->getMacroName());
+        if (!tok->getMacroName().empty())
+            mTokensFrontBack.back->setMacroName(tok->getMacroName());
     }
 
     mTokensFrontBack.back->flags(tok->flags());
@@ -332,7 +333,8 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
         dest->varId(src->varId());
         dest->tokType(src->tokType());
         dest->flags(src->flags());
-        dest->setMacroName(src->getMacroName());
+        if (!src->getMacroName().empty())
+            dest->setMacroName(src->getMacroName());
         src  = src->next();
         --n;
     }
@@ -415,7 +417,8 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         mTokensFrontBack.back->fileIndex(tok->location.fileIndex);
         mTokensFrontBack.back->linenr(tok->location.line);
         mTokensFrontBack.back->column(tok->location.col);
-        mTokensFrontBack.back->setMacroName(tok->macro);
+        if (!tok->macro.empty())
+            mTokensFrontBack.back->setMacroName(tok->macro);
 
         tok = tok->next;
         if (tok)
