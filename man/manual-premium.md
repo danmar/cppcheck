@@ -301,7 +301,8 @@ Running Cppcheck on a Visual Studio project:
 Both options will analyze all available configurations in the project(s).
 Limiting on a single configuration:
 
-    cppcheck --project=foobar.sln "--project-configuration=Release|Win32"
+    cppcheck --project=foobar.sln \
+    "--project-configuration=Release|Win32"
 
 In the `Cppcheck GUI` you have the option to only analyze a single debug configuration. If you want to use this option on the command line, then create a `Cppcheck GUI` project with this activated and then import the GUI project file on the command line.
 
@@ -964,9 +965,10 @@ In Cppcheck text output the remarks are not shown by default, you can use `--tem
 
     $ ./cppcheck --enable=style --template="{file}:{line}: \
     {message} [{id}]\\n{remark}" test1.c
+
     Checking test1.c ...
-    test1.c:4: Variable 'x' is assigned a value that is never
-    used. [unreadVariable]
+    test1.c:4: Variable 'x' is assigned a value that is
+    never used. [unreadVariable]
     Initialize x with 0
 
 In xml output the comment text is provided in a "remark" attribute:
@@ -1115,8 +1117,8 @@ The output screen says:
                        read defects from.
                        Default is reading from stdin.
        --report-dir=REPORT_DIR
-                       The directory where the html
-                       report content is written.
+                       The directory where the html report
+                       content is written.
        --source-dir=SOURCE_DIR
                        Base directory where source code
                        files can be found.

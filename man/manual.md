@@ -198,7 +198,9 @@ Example code:
 
 Cppcheck output:
 
-    test.cpp:4:5: information: TemplateSimplifier: max template recursion (100) reached for template 'a<101>'. You might want to limit Cppcheck recursion. [templateRecursion]
+    test.cpp:4:5: information: TemplateSimplifier: max template
+    recursion (100) reached for template 'a<101>'. You might
+    want to limit Cppcheck recursion. [templateRecursion]
         a<i+1>();
         ^
 
@@ -804,7 +806,8 @@ The output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
     samples/arrayIndexOutOfBounds/bad.c,6,error,
-    arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.
+    arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2,
+    which is out of bounds.
 
 ## User defined output format (multi line)
 
@@ -826,7 +829,9 @@ There is a possible null pointer dereference at line 3.
 Cppcheck can show how it came to that conclusion by showing extra location information. 
 You need to use both --template and --template-location at the command line, for example:
 
-    cppcheck --template="{file}:{line}: {severity}: {message}\n{code}" --template-location="{file}:{line}: note: {info}\n{code}" multiline.c
+    cppcheck --template="{file}:{line}: {severity}: \
+    {message}\n{code}" --template-location="{file}:{line}: \
+    note: {info}\n{code}" multiline.c
 
 The output from Cppcheck is:
 
@@ -959,8 +964,9 @@ Example code:
 
 In Cppcheck text output the remarks are not shown by default, you can use `--template` option `{remark}` to show remarks:
 
-    $ ./cppcheck --enable=style --template="{file}:{line}:
+    $ ./cppcheck --enable=style --template="{file}:{line}: \
     {message} [{id}]\\n{remark}" test1.c
+
     Checking test1.c ...
     test1.c:4: Variable 'x' is assigned a value that is
     never used. [unreadVariable]
@@ -985,9 +991,9 @@ Cppcheck is distributed with a few addons which are listed below.
 
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
 
-This standard is proprietary, and open source tools are not allowed to distribute the Misra rule texts. Therefore Cppcheck is not allowed to write the rule texts directly. Cppcheck is allowed to distribute the rules and display the id of each violated rule (for example, [c2012-21.3]). The corresponding rule text can also be written however you need to provide that. To get the rule texts, please buy the PDF from MISRA (https://www.misra.org.uk). If you copy the rule texts from "Appendix A - Summary of guidelines" in the PDF and write those in a text file, then by using that text file Cppcheck can write the proper warning messages. To see how the text file can be formatted, take a look at the files listed here: https://github.com/danmar/cppcheck/blob/main/addons/test/misra/. You can use the option `--rule-texts` to specify your rules text file.
-
-The full list of supported rules is available on [Cppcheck](https://cppcheck.sourceforge.io/misra.php) home page.
+The misra rule texts should be downloaded from [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools)
+Use the option `--rule-texts` to specify the rules text file that has been downloaded from [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools).
+Checkers in open source Cppcheck only cover [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools) rules partially.
 
 ### y2038.py
 
@@ -1035,56 +1041,57 @@ Cppcheck already contains configurations for several libraries. They can be load
 ## Using a .cfg file
 
 To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the currently existing libraries:
-| .cfg file  | Library | Comment |
-| ------------- | ------------- | ------------- |
-| avr.cfg | |
-| bento4.cfg | [Bento4](http://www.bento4.com/) |
-| boost.cfg | [Boost](http://www.boost.org/)|
-| bsd.cfg | [BSD](https://www.freebsd.org/) |
-| cairo.cfg | [cairo](https://www.cairographics.org/) |
-| cppcheck-lib.cfg | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
-| cppunit.cfg | [CppUnit](https://sourceforge.net/projects/cppunit/) |
-| dpdk.cfg | |
-| embedded_sql.cfg | |
-| emscripten.cfg | |
-| ginac.cfg | |
-| gnu.cfg | [GNU](https://www.gnu.org/) |
-| googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
-| gtk.cfg | [GTK](https://www.gtk.org/) |
-| icu.cfg | |
-| kde.cfg | [KDE](https://kde.org/) |
-| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) |
-| libcurl.cfg | [libcurl](https://curl.se/libcurl/) |
-| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) |
-| lua.cfg | |
-| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) |
-| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) |
-| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) |
-| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) |
-| motif.cfg | |
-| nspr.cfg | |
-| ntl.cfg | |
-| opencv2.cfg | [OpenCV](https://opencv.org/) |
-| opengl.cfg | [OpenGL](https://opengl.org/) |
-| openmp.cfg | [OpenMP](https://www.openmp.org/) |
-| openssl.cfg | [OpenSSL](https://www.openssl.org/) |
-| pcre.cfg | [PCRE](https://pcre.org/) |
-| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) |
-| python.cfg | |
-| qt.cfg | [Qt](https://doc.qt.io/qt.html) |
-| ruby.cfg | |
-| sdl.cfg | |
-| sfml.cfg | |
-| sqlite3.cfg | [SQLite](https://www.sqlite.org/) |
+| .cfg file         | Library       | Comment       |
+| ----------------- | ------------- | ------------- |
+| avr.cfg           |               |               |
+| bento4.cfg        | [Bento4](http://www.bento4.com/) | |
+| boost.cfg         | [Boost](http://www.boost.org/) | |
+| bsd.cfg           | [BSD](https://www.freebsd.org/) | |
+| cairo.cfg         | [cairo](https://www.cairographics.org/) | |
+| cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of |
+|                   |               |the Cppcheck code base |
+| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) |
+| dpdk.cfg          |               |               |
+| embedded_sql.cfg  |               |               |
+| emscripten.cfg | | |
+| ginac.cfg | | |
+| gnu.cfg | [GNU](https://www.gnu.org/) | |
+| googletest.cfg | [GoogleTest](https://github.com/google/googletest) | |
+| gtk.cfg | [GTK](https://www.gtk.org/) | |
+| icu.cfg | | |
+| kde.cfg | [KDE](https://kde.org/) | |
+| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) | |
+| libcurl.cfg | [libcurl](https://curl.se/libcurl/) | |
+| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) | |
+| lua.cfg | | |
+| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) | |
+| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) | |
+| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) | |
+| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) | |
+| motif.cfg | | |
+| nspr.cfg | | |
+| ntl.cfg | | |
+| opencv2.cfg | [OpenCV](https://opencv.org/) | |
+| opengl.cfg | [OpenGL](https://opengl.org/) | |
+| openmp.cfg | [OpenMP](https://www.openmp.org/) | |
+| openssl.cfg | [OpenSSL](https://www.openssl.org/) | |
+| pcre.cfg | [PCRE](https://pcre.org/) | |
+| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) | |
+| python.cfg | | |
+| qt.cfg | [Qt](https://doc.qt.io/qt.html) | |
+| ruby.cfg | | |
+| sdl.cfg | | |
+| sfml.cfg | | |
+| sqlite3.cfg | [SQLite](https://www.sqlite.org/) | |
 | std.cfg | C/C++ standard library | Loaded by default
-| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) |
-| vcl.cfg | |
-| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) |
-| wxsqlite3.cfg | |
-| wxsvg.cfg | |
-| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) |
-| zephyr.cfg | |
-| zlib.cfg | [zlib](https://www.zlib.net) |
+| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) | |
+| vcl.cfg | | |
+| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) | |
+| wxsqlite3.cfg | | |
+| wxsvg.cfg | | |
+| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) | |
+| zephyr.cfg | | |
+| zlib.cfg | [zlib](https://www.zlib.net) | |
 
 ## Creating a custom .cfg file
 
@@ -1108,8 +1115,8 @@ The output screen says:
 
     Options:
        -h, --help      show this help message and exit
-       --file=FILE     The cppcheck xml output file to read
-                       defects from.
+       --file=FILE     The cppcheck xml output file to
+                       read defects from.
                        Default is reading from stdin.
        --report-dir=REPORT_DIR
                        The directory where the html report
