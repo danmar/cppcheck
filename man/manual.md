@@ -198,7 +198,9 @@ Example code:
 
 Cppcheck output:
 
-    test.cpp:4:5: information: TemplateSimplifier: max template recursion (100) reached for template 'a<101>'. You might want to limit Cppcheck recursion. [templateRecursion]
+    test.cpp:4:5: information: TemplateSimplifier: max template
+    recursion (100) reached for template 'a<101>'. You might
+    want to limit Cppcheck recursion. [templateRecursion]
         a<i+1>();
         ^
 
@@ -244,8 +246,12 @@ The advantages are;
 On the command line you configure that through `--cppcheck-build-dir=path`. Example:
 
     mkdir b
-    cppcheck --cppcheck-build-dir=b src # <- All files are analyzed
-    cppcheck --cppcheck-build-dir=b src # <- Faster! Results of unchanged files are reused
+
+    # All files are analyzed
+    cppcheck --cppcheck-build-dir=b src
+
+    # Faster! Results of unchanged files are reused
+    cppcheck --cppcheck-build-dir=b src
 
 In the GUI it is configured in the project settings.
 
@@ -359,11 +365,25 @@ Cppcheck will only check 1 configuration unless these are used.
 
 Example:
 
-    cppcheck test.c => test all configurations => all bugs are found
-    cppcheck -DA test.c => only test configuration "-DA" => No bug is found (#error)
-    cppcheck -DA -DC test.c => only test configuration "-DA -DC" => The first bug is found
-    cppcheck -UA test.c => The configuration "-DC" is tested => The last bug is found
-    cppcheck --force -DA test.c => All configurations with "-DA" are tested => The two first bugs are found
+    # test all configurations
+    # all bugs are found
+    cppcheck test.c
+
+    # only test configuration "-DA"
+    # No bug is found (#error)
+    cppcheck -DA test.c
+
+    # only test configuration "-DA -DC"
+    # The first bug is found
+    cppcheck -DA -DC test.c
+
+    # The configuration "-DC" is tested
+    # The last bug is found
+    cppcheck -UA test.c
+
+    # All configurations with "-DA" are tested
+    # The two first bugs are found
+    cppcheck --force -DA test.c
 
 
 ## Include paths
@@ -419,12 +439,16 @@ The available options are:
 
 - c89: C code is C89 compatible
 - c99: C code is C99 compatible
-- c11: C code is C11 compatible (default)
+- c11: C code is C11 compatible
+- c17: C code is C17 compatible
+- c23: C code is C23 compatible (default)
 - c++03: C++ code is C++03 compatible
 - c++11: C++ code is C++11 compatible
 - c++14: C++ code is C++14 compatible
 - c++17: C++ code is C++17 compatible
-- c++20: C++ code is C++20 compatible (default)
+- c++20: C++ code is C++20 compatible
+- c++23: C++ code is C++23 compatible
+- c++26: C++ code is C++26 compatible (default)
 
 # Cppcheck build dir
 
@@ -741,7 +765,8 @@ To get Visual Studio compatible output you can use --template=vs:
 This output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c(6): error: Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c(6): error: Array
+    'a[2]' accessed at index 2, which is out of bounds.
 
 To get gcc compatible output you can use --template=gcc:
 
@@ -750,29 +775,36 @@ To get gcc compatible output you can use --template=gcc:
 The output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c:6:6: warning: Array 'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]
+    samples/arrayIndexOutOfBounds/bad.c:6:6: warning: Array
+    'a[2]' accessed at index 2, which is out of bounds. [arrayIndexOutOfBounds]
     a[2] = 0;
       ^
 
 ## User defined output format (single line)
 
-You can write your own pattern. For instance, to get warning messages that are formatted like traditional gcc, then the following format can be used:
+You can write your own pattern. For instance:
 
-    cppcheck --template="{file}:{line}: {severity}: {message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck \
+    --template="{file}:{line}:{column}: {severity}:{message}" \
+    samples/arrayIndexOutOfBounds/bad.c
 
 The output will then look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c:6: error: Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c:6:6: error: Array
+    'a[2]' accessed at index 2, which is out of bounds.
 
 A comma separated format:
 
-    cppcheck --template="{file},{line},{severity},{id},{message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck \
+    --template="{file},{line},{severity},{id},{message}" \
+    samples/arrayIndexOutOfBounds/bad.c
 
 The output will look like this:
 
     Checking samples/arrayIndexOutOfBounds/bad.c ...
-    samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,Array 'a[2]' accessed at index 2, which is out of bounds.
+    samples/arrayIndexOutOfBounds/bad.c,6,error,arrayIndexOutOfBounds,
+    Array 'a[2]' accessed at index 2, which is out of bounds.
 
 ## User defined output format (multi line)
 
@@ -794,7 +826,9 @@ There is a possible null pointer dereference at line 3.
 Cppcheck can show how it came to that conclusion by showing extra location information. 
 You need to use both --template and --template-location at the command line, for example:
 
-    cppcheck --template="{file}:{line}: {severity}: {message}\n{code}" --template-location="{file}:{line}: note: {info}\n{code}" multiline.c
+    cppcheck \
+        --template="{file}:{line}: {severity}: {message}\n{code}" \
+	--template-location="{file}:{line}: note: {info}\n{code}" multiline.c
 
 The output from Cppcheck is:
 
@@ -914,8 +948,8 @@ You can add remark comments in the source code that justify why there is a warni
 
 Such a remark comment shall:
 
- * start with REMARK.
- * can either be added above the source code that generates the warning, or after the code on the same line.
+- start with REMARK.
+- can either be added above the source code that generates the warning, or after the code on the same line.
 
 Example code:
 
@@ -926,7 +960,9 @@ Example code:
 
 In Cppcheck text output the remarks are not shown by default, you can use `--template` option `{remark}` to show remarks:
 
-    $ ./cppcheck --enable=style --template="{file}:{line}: {message} [{id}]\\n{remark}" test1.c
+    $ ./cppcheck --enable=style \
+    --template="{file}:{line}: {message} [{id}]\\n{remark}" test1.c
+
     Checking test1.c ...
     test1.c:4: Variable 'x' is assigned a value that is never used. [unreadVariable]
     Initialize x with 0
@@ -950,10 +986,9 @@ Cppcheck is distributed with a few addons which are listed below.
 
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
 
-The misra rule texts should be downloaded from MISRA:
-https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools
+The misra rule texts should be downloaded from [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools)
 
-Use the option `--rule-texts` to specify the rules text file that has been downloaded from MISRA.
+Use the option `--rule-texts` to specify the rules text file that has been downloaded from [MISRA](https://gitlab.com/MISRA/MISRA-C/MISRA-C-2012/tools).
 
 Checkers in open source Cppcheck only cover MISRA rules partially.
 
@@ -1002,56 +1037,57 @@ Cppcheck already contains configurations for several libraries. They can be load
 ## Using a .cfg file
 
 To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the currently existing libraries:
-| .cfg file  | Library | Comment |
-| ------------- | ------------- | ------------- |
-| avr.cfg | |
-| bento4.cfg | [Bento4](http://www.bento4.com/) |
-| boost.cfg | [Boost](http://www.boost.org/)|
-| bsd.cfg | [BSD](https://www.freebsd.org/) |
-| cairo.cfg | [cairo](https://www.cairographics.org/) |
-| cppcheck-lib.cfg | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of the Cppcheck code base
-| cppunit.cfg | [CppUnit](https://sourceforge.net/projects/cppunit/) |
-| dpdk.cfg | |
-| embedded_sql.cfg | |
-| emscripten.cfg | |
-| ginac.cfg | |
-| gnu.cfg | [GNU](https://www.gnu.org/) |
-| googletest.cfg | [GoogleTest](https://github.com/google/googletest) |
-| gtk.cfg | [GTK](https://www.gtk.org/) |
-| icu.cfg | |
-| kde.cfg | [KDE](https://kde.org/) |
-| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) |
-| libcurl.cfg | [libcurl](https://curl.se/libcurl/) |
-| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) |
-| lua.cfg | |
-| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) |
-| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) |
-| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) |
-| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) |
-| motif.cfg | |
-| nspr.cfg | |
-| ntl.cfg | |
-| opencv2.cfg | [OpenCV](https://opencv.org/) |
-| opengl.cfg | [OpenGL](https://opengl.org/) |
-| openmp.cfg | [OpenMP](https://www.openmp.org/) |
-| openssl.cfg | [OpenSSL](https://www.openssl.org/) |
-| pcre.cfg | [PCRE](https://pcre.org/) |
-| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) |
-| python.cfg | |
-| qt.cfg | [Qt](https://doc.qt.io/qt.html) |
-| ruby.cfg | |
-| sdl.cfg | |
-| sfml.cfg | |
-| sqlite3.cfg | [SQLite](https://www.sqlite.org/) |
+| .cfg file         | Library       | Comment       |
+| ----------------- | ------------- | ------------- |
+| avr.cfg           |               |               |
+| bento4.cfg        | [Bento4](http://www.bento4.com/) | |
+| boost.cfg         | [Boost](http://www.boost.org/) | |
+| bsd.cfg           | [BSD](https://www.freebsd.org/) | |
+| cairo.cfg         | [cairo](https://www.cairographics.org/) | |
+| cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of |
+|                   |               |the Cppcheck code base |
+| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) |
+| dpdk.cfg          |               |               |
+| embedded_sql.cfg  |               |               |
+| emscripten.cfg | | |
+| ginac.cfg | | |
+| gnu.cfg | [GNU](https://www.gnu.org/) | |
+| googletest.cfg | [GoogleTest](https://github.com/google/googletest) | |
+| gtk.cfg | [GTK](https://www.gtk.org/) | |
+| icu.cfg | | |
+| kde.cfg | [KDE](https://kde.org/) | |
+| libcerror.cfg | [libcerror](https://github.com/libyal/libcerror) | |
+| libcurl.cfg | [libcurl](https://curl.se/libcurl/) | |
+| libsigc++.cfg | [libsigc++](https://github.com/libsigcplusplus/libsigcplusplus) | |
+| lua.cfg | | |
+| mfc.cfg | [MFC](https://learn.microsoft.com/en-us/cpp/mfc/mfc-desktop-applications) | |
+| microsoft_atl.cfg | [ATL](https://learn.microsoft.com/en-us/cpp/atl/active-template-library-atl-concepts) | |
+| microsoft_sal.cfg | [SAL annotations](https://learn.microsoft.com/en-us/cpp/c-runtime-library/sal-annotations) | |
+| microsoft_unittest.cfg | [CppUnitTest](https://learn.microsoft.com/en-us/visualstudio/test/microsoft-visualstudio-testtools-cppunittestframework-api-reference) | |
+| motif.cfg | | |
+| nspr.cfg | | |
+| ntl.cfg | | |
+| opencv2.cfg | [OpenCV](https://opencv.org/) | |
+| opengl.cfg | [OpenGL](https://opengl.org/) | |
+| openmp.cfg | [OpenMP](https://www.openmp.org/) | |
+| openssl.cfg | [OpenSSL](https://www.openssl.org/) | |
+| pcre.cfg | [PCRE](https://pcre.org/) | |
+| posix.cfg | [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/) | |
+| python.cfg | | |
+| qt.cfg | [Qt](https://doc.qt.io/qt.html) | |
+| ruby.cfg | | |
+| sdl.cfg | | |
+| sfml.cfg | | |
+| sqlite3.cfg | [SQLite](https://www.sqlite.org/) | |
 | std.cfg | C/C++ standard library | Loaded by default
-| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) |
-| vcl.cfg | |
-| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) |
-| wxsqlite3.cfg | |
-| wxsvg.cfg | |
-| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) |
-| zephyr.cfg | |
-| zlib.cfg | [zlib](https://www.zlib.net) |
+| tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) | |
+| vcl.cfg | | |
+| windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) | |
+| wxsqlite3.cfg | | |
+| wxsvg.cfg | | |
+| wxwidgets.cfg | [wxWidgets](https://www.wxwidgets.org/) | |
+| zephyr.cfg | | |
+| zlib.cfg | [zlib](https://www.zlib.net) | |
 
 ## Creating a custom .cfg file
 
@@ -1084,8 +1120,8 @@ The output screen says:
 
 Example usage:
 
-    ./cppcheck gui/test.cpp --xml 2> err.xml
-    htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
+    cppcheck gui/test.cpp --xml 2> err.xml
+    cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
 # Check Level
 
@@ -1100,17 +1136,19 @@ than "normal" provides then this reduced checking can be an option.
 The "normal" check level is chosen by default. Our aim is that this checking level will provide an effective checking in "reasonable" time.
 
 The "normal" check level should be useful during active development:
- * checking files while you edit them.
- * block changes to the repo
- * etc
+
+- checking files while you edit them.
+- block changes to the repo
+- etc
 
 ## Exhaustive
 
 When you can wait longer for the results you can enable the "exhaustive" checking, by using the option `--check-level=exhaustive`.
 
 Exhaustive checking level should be useful for scenarios where you can wait for results. For instance:
- * nightly builds
- * etc
+
+- nightly builds
+- etc
 
 # Speeding up analysis
 
@@ -1123,9 +1161,10 @@ For performance reasons it might be a good idea to limit preprocessor configurat
 The command line option `--performance-valueflow-max-if-count` adjusts the max count for number of if in a function.
 
 When that limit is exceeded there is a limitation of data flow in that function. It is not drastic:
- * Analysis of other functions are not affected.
- * It's only for some specific data flow analysis, we have data flow analysis that is always executed.
- * All checks are always executed. There can still be plenty of warnings in the limited function.
+
+- Analysis of other functions are not affected.
+- It's only for some specific data flow analysis, we have data flow analysis that is always executed.
+- All checks are always executed. There can still be plenty of warnings in the limited function.
 
 There is data flow analysis that slows down exponentially when number of if increase. And the limit is intended to avoid that
 analysis time explodes.
@@ -1135,68 +1174,8 @@ analysis time explodes.
 In the GUI there are various options to limit analysis.
 
 In the GUI:
- * Open the project dialog.
- * In the "Analysis" tab there are several options.
+
+- Open the project dialog.
+- In the "Analysis" tab there are several options.
 
 If you want to use these limitations on the command line also you can import the GUI project file with --project.
-
-# Cppcheck Premium
-
-## Bug hunting
-
-This is analysis that is more noisy than normal analysis. Most warnings will be false positives (cppcheck will wrongly claim that there are bugs). The design goal is to not have more than roughly 5 - 10 false positives in each file.
-
-It is not intended to be used in normal CI or regular static analysis by developers. The noise makes it useless for that.
-
-It is intended to be used when you are looking for bugs and you really can accept noise. For example:
- * You have developed a brand new feature and want to ensure that there are no bugs.
- * Maybe as part of release testing your product you can run bug hunting on modified files.
- * Etc
-
-Technically, analysis that is "sound" will detect all bugs. Analysis that is "soundy" has the goal to detect most bugs and it tries to keep the noise at an reasonable level.
-
-The Cppcheck bug hunting analysis is "soundy".
-
-Command:
-
-    cppcheck --premium=bughunting ....
-
-## Coding standards
-
-Command to active Autosar checkers:
-
-    cppcheck --premium=autosar ....
-
-Command to active Cert C checkers:
-
-    cppcheck --premium=cert-c ....
-
-Command to active Cert C++ checkers:
-
-    cppcheck --premium=cert-c++ ....
-
-Command to active Misra C++ 2008 checkers:
-
-    cppcheck --premium=misra-c++-2008 ....
-
-## Licenses
-
-### Individual license
-
-A license that is connected to your computer. You can check any code you want.
-
-### LOC license
-
-A license that allows you to run cppcheck on a limited number of lines of code. It can only be used for certain licensed paths in a repository.
-
-#### Running analysis
-
-Commands:
-
-    cd check-path
-
-    # Calculate lines of code and validate the license
-    premiumaddon --check-loc-license some-path/license-file > cppcheck-premium-loc
-
-    # Run cppcheck analysis
-    cppcheck <usual cppcheck parameters>
