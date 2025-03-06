@@ -244,9 +244,12 @@ The advantages are;
 On the command line you configure that through `--cppcheck-build-dir=path`. Example:
 
     mkdir b
-    cppcheck --cppcheck-build-dir=b src # <- All files are analyzed
-    cppcheck --cppcheck-build-dir=b src # <- Faster! Results of
-    unchanged files are reused
+
+    # All files are analyzed
+    cppcheck --cppcheck-build-dir=b src
+
+    # Faster! Results of unchanged files are reused
+    cppcheck --cppcheck-build-dir=b src
 
 In the GUI it is configured in the project settings.
 
@@ -487,7 +490,8 @@ The `--suppress=` command line option is used to specify suppressions on the com
 
 You can create a suppressions file for example as follows:
 
-    // suppress memleak and exceptNew errors in the file src/file1.cpp
+    // suppress memleak and exceptNew errors
+    // in the file src/file1.cpp
     memleak:src/file1.cpp
     exceptNew:src/file1.cpp
 
@@ -576,7 +580,7 @@ Suppressing warnings `aaaa` where macro is used:
     // cppcheck-suppress-macro aaaa
     #define MACRO ...
     ...
-    x = MACRO; // <- aaaa warnings are suppressed here
+    x = MACRO; // warnings are suppressed here
 
 
 Suppressing multiple ids where macro is used:
@@ -584,7 +588,7 @@ Suppressing multiple ids where macro is used:
     // cppcheck-suppress-macro [aaaa, bbbb]
     #define MACRO ...
     ...
-    x = MACRO; // <- aaaa and bbbb warnings are suppressed here
+    x = MACRO; // warnings are suppressed here
 
 ### Comment before code or on same line
 
@@ -780,8 +784,9 @@ The output will look like this:
 
 You can write your own pattern. For instance:
 
-    cppcheck --template="{file}:{line}:{column}: {severity}:
-    {message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck \
+    --template="{file}:{line}:{column}: {severity}:{message}" \
+    samples/arrayIndexOutOfBounds/bad.c
 
 The output will then look like this:
 
@@ -791,8 +796,9 @@ The output will then look like this:
 
 A comma separated format:
 
-    cppcheck --template="{file},{line},{severity},{id},
-    {message}" samples/arrayIndexOutOfBounds/bad.c
+    cppcheck \
+    --template="{file},{line},{severity},{id},{message}" \
+    samples/arrayIndexOutOfBounds/bad.c
 
 The output will look like this:
 
