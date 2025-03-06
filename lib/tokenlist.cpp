@@ -253,7 +253,8 @@ void TokenList::addtoken(const Token *tok)
         mTokensFrontBack.front = new Token(mTokensFrontBack);
         mTokensFrontBack.back = mTokensFrontBack.front;
         mTokensFrontBack.back->str(tok->str());
-        mTokensFrontBack.back->originalName(tok->originalName());
+        if (!tok->originalName().empty())
+            mTokensFrontBack.back->originalName(tok->originalName());
         mTokensFrontBack.back->setMacroName(tok->getMacroName());
     }
 

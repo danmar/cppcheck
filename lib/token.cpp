@@ -1046,7 +1046,8 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
     else
         newToken = new Token(mTokensFrontBack);
     newToken->str(tokenStr);
-    newToken->originalName(originalNameStr);
+    if (!originalNameStr.empty())
+        newToken->originalName(originalNameStr);
     newToken->setMacroName(macroNameStr);
 
     if (newToken != this) {
