@@ -972,7 +972,7 @@ void TemplateSimplifier::getTemplateInstantiations()
             // parse backwards and add template instantiations
             // TODO
             for (; tok2 && tok2 != tok; tok2 = tok2->previous()) {
-                if (Token::Match(tok2, ",|< %name% <") &&
+                if (Token::Match(tok2, ",|< %name% <") && !tok2->next()->isKeyword() &&
                     (tok2->strAt(3) == ">" || templateParameters(tok2->tokAt(2)))) {
                     addInstantiation(tok2->next(), tok->scopeInfo()->name);
                 } else if (Token::Match(tok2->next(), "class|struct"))
@@ -2611,8 +2611,15 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
         }
 
         for (Token *tok = first->next(); tok && tok != end; tok = tok->next()) {
+            if (endsWith(tok->str(), "_cast")) {
+                Token* tok2 = tok->next()->findClosingBracket();
+                if (!tok2 || !Token::simpleMatch(tok2, "> ("))
+                    syntaxError(tok);
+                tok = tok2->linkAt(1);
+                continue;
+            }
             if (Token::Match(tok, "( %num%|%bool% )") &&
-                (tok->previous() && !tok->previous()->isName())) {
+                (tok->previous() && !tok->previous()->isName() && !tok->previous()->isKeyword())) {
                 tok->deleteThis();
                 tok->deleteNext();
                 again = true;
