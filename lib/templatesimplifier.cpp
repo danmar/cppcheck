@@ -2619,7 +2619,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                 continue;
             }
             if (Token::Match(tok, "( %num%|%bool% )") &&
-                (tok->previous() && !tok->previous()->isName() && !tok->previous()->isKeyword())) {
+                (tok->previous() && !tok->previous()->isName())) {
                 tok->deleteThis();
                 tok->deleteNext();
                 again = true;
