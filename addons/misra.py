@@ -621,6 +621,12 @@ def getEssentialTypeCategory(expr):
         # print('{0}: {1} {2}'.format(expr.str, e1, e2))
         if e1 and e2 and e1 == e2:
             return e1
+        # Addition for char Appendix D.
+        # If one operand is essentially character and the other is essentially signed or essentially unsigned 
+        # then the essential type of the result is char;
+        if e1 and e2 and e1 == 'char' or e2 == 'char':
+            if e1 in ('signed', 'unsigned') or e2 in ('signed', 'unsigned'):
+                return 'char'
         if expr.valueType:
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
@@ -756,6 +762,14 @@ def getEssentialType(expr):
         e2 = getEssentialType(expr.astOperand2)
         if e1 is None or e2 is None:
             return None
+        # Addition for char Appendix D.
+        # If one operand is essentially character and the other is essentially signed or essentially unsigned 
+        # then the essential type of the result is char;
+        if e1 == 'char' or e2 == 'char':
+            sign1 = e1.split(' ')[0]
+            sign2 = e2.split(' ')[0]
+            if sign1 in ('signed', 'unsigned') or sign2 in ('signed', 'unsigned'):
+                return 'char'
         if is_constant_integer_expression(expr):
             sign1 = e1.split(' ')[0]
             sign2 = e2.split(' ')[0]
@@ -772,14 +786,14 @@ def getEssentialType(expr):
         return e1
     elif expr.str == "true" or expr.str == "false":
         return 'bool'
-    elif expr.valueType != None:
+    elif expr.valueType is not None:
         # First try to get smallest essential type based on the known Value of the expression
-        if expr.valueType.sign != None and expr.valueType.type != None: 
+        if expr.valueType.sign is not None and expr.valueType.type is not None: 
             e = get_essential_type_from_value(expr.getKnownIntValue(), expr.valueType.sign == 'signed')
             if e:
                 return e
             return (expr.valueType.sign + ' ' + expr.valueType.type)
-        elif expr.valueType.type != None:
+        elif expr.valueType.type is not None:
             return expr.valueType.type
 
     return None
@@ -2501,7 +2515,7 @@ class MisraChecker:
                         pass
                     # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object
                     # of essentially unsigned type if its value can be represented in that type. Go to Size Check
-                    elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
+                    elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() is not None and tok.astOperand2.getKnownIntValue() >= 0 ): 
                         pass
                     # Backwards compatibility Exception: In C89, an integer constant expression of 0,1 or defines FALSE, TRUE may be assigned to a variable of type bool
                     elif( cfg.standards.c == 'c89' and lhs_category == "bool" and tok.astOperand2.str in ('0','1','FALSE','TRUE')):
@@ -2539,7 +2553,7 @@ class MisraChecker:
                             pass
                         # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object
                         # of essentially unsigned type if its value can be represented in that type. Go to Size Check
-                        elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
+                        elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() is not None and tok.astOperand2.getKnownIntValue() >= 0 ): 
                             pass
                         # Backwards compatibility Exception: In C89, an integer constant expression of 0,1 or defines FALSE, TRUE may be assigned to a variable of type bool
                         elif( cfg.standards.c == 'c89' and lhs_category == "bool" and tok.astOperand2.str in ('0','1','FALSE','TRUE')):
@@ -2551,7 +2565,7 @@ class MisraChecker:
                     if bitsOfEssentialType(lhs) < bitsOfEssentialType(rhs):
                         self.reportError(tok, 10, 3)
                         continue
-            elif tok.str == "return" and tok.astOperand1 != None:
+            elif tok.str == "return" and tok.astOperand1 is not None:
                 lhs = getEssentialType(tok)
                 rhs = getEssentialType(tok.astOperand1)
                 if lhs is None or rhs is None:
