@@ -216,6 +216,7 @@ private:
         TEST_CASE(template177);
         TEST_CASE(template178);
         TEST_CASE(template179);
+        TEST_CASE(template180);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -4574,6 +4575,24 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template180() {
+        const char code[] = "template<int C>\n" // #13680
+                            "int f() {\n"
+                            "    return dostuff(C);\n"
+                            "}\n"
+                            "void g() {\n"
+                            "    f<static_cast<int>(0U)>();\n"
+                            "}\n";
+        const char exp[] = "int f<static_cast<int>(0U)> ( ) ; "
+                           "void g ( ) { "
+                           "f<static_cast<int>(0U)> ( ) ; "
+                           "} "
+                           "int f<static_cast<int>(0U)> ( ) { "
+                           "return dostuff ( static_cast < int > ( 0U ) ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -6433,11 +6452,11 @@ private:
                             "typedef Derived<C<static_cast<int>(-1)> > C_;\n"
                             "class C3 { C_ c; };";
         const char expected[] = "template < int N > class C { } ; "
-                                "class Base<C<static_cast<int>-1>> ; "
-                                "class Derived<C<static_cast<int>-1>> ; "
-                                "class C3 { Derived<C<static_cast<int>-1>> c ; } ; "
-                                "class Derived<C<static_cast<int>-1>> : private Base<C<static_cast<int>-1>> { } ; "
-                                "class Base<C<static_cast<int>-1>> { } ;";
+                                "class Base<C<static_cast<int>(-1)>> ; "
+                                "class Derived<C<static_cast<int>(-1)>> ; "
+                                "class C3 { Derived<C<static_cast<int>(-1)>> c ; } ; "
+                                "class Derived<C<static_cast<int>(-1)>> : private Base<C<static_cast<int>(-1)>> { } ; "
+                                "class Base<C<static_cast<int>(-1)>> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
