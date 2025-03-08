@@ -8,6 +8,7 @@ import sys
 import tempfile
 
 import unittest
+import time
 
 TEST_TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.split(os.path.dirname(os.path.dirname(TEST_TOOLS_DIR)))[0]
@@ -91,6 +92,18 @@ class TestHTMLReport(unittest.TestCase):
 
             self.assertTrue(
                 os.path.exists(os.path.join(output_directory.name, 'checkers.html')))
+
+            output_directory.cleanup()
+
+    def testAddTimestamp(self):
+        with runCheck(
+            xml_filename=os.path.join(TEST_TOOLS_DIR, 'example.xml'),
+        ) as (report, output_directory):
+            xml_file = os.path.join(TEST_TOOLS_DIR, 'example.xml')
+            t = os.path.getmtime(xml_file)
+            t_s = time.ctime(t)
+
+            self.assertIn(t_s, report)
 
             output_directory.cleanup()
 
