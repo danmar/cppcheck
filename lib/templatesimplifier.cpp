@@ -2613,7 +2613,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
         for (Token *tok = first->next(); tok && tok != end; tok = tok->next()) {
             if (tok->isKeyword() && endsWith(tok->str(), "_cast")) {
                 Token* tok2 = tok->next()->findClosingBracket();
-                if (!tok2 || !Token::simpleMatch(tok2, "> ("))
+                if (!Token::simpleMatch(tok2, "> ("))
                     syntaxError(tok);
                 tok = tok2->linkAt(1);
                 continue;
