@@ -27,7 +27,6 @@
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QObject>
-#include <QPair>
 #include <QString>
 #include <QStringList>
 
