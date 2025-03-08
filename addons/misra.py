@@ -2493,11 +2493,13 @@ class MisraChecker:
 
                 if lhs_category and rhs_category and lhs_category != rhs_category:
                     # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
+                    # Exception: Catch enum<> on left hand side and send them to the size Check
                     # This is done to not throw errors while assigning the Enums Values (size then always matches) and
-                    # Anonymous Enum (in Misa Constant Enums) are allowed to be assigned if the size matches
-                    if("enum<Anonymous" in rhs_category or "enum<Anonymous" in lhs_category):
+                    # Exception: Catch enum<Anonymous> on right the right hand side as
+                    # Anonymous Enums (in Misa Constant Enums) are allowed to be assigned if the size matches to a other category
+                    if("enum<Anonymous" in rhs_category or "enum<" in lhs_category):
                         pass
-                    # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object 
+                    # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object
                     # of essentially unsigned type if its value can be represented in that type. Go to Size Check
                     elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
                         pass
@@ -2529,11 +2531,13 @@ class MisraChecker:
 
                     if lhs_category and rhs_category and lhs_category != rhs_category:
                         # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
+                        # Exception: Catch enum<> on left hand side and send them to the size Check
                         # This is done to not throw errors while assigning the Enums Values (size then always matches) and
-                        # Anonymous Enum (in Misa Constant Enums) are allowed to be assigned if the size matches
-                        if("enum<Anonymous" in rhs_category or "enum<Anonymous" in lhs_category):
+                        # Exception: Catch enum<Anonymous> on right the right hand side as
+                        # Anonymous Enums (in Misa Constant Enums) are allowed to be assigned if the size matches to a other category
+                        if("enum<Anonymous" in rhs_category or "enum<" in lhs_category):
                             pass
-                        # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object 
+                        # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object
                         # of essentially unsigned type if its value can be represented in that type. Go to Size Check
                         elif(lhs_category == "unsigned" and rhs_category == "signed" and tok.astOperand2.getKnownIntValue() != None and tok.astOperand2.getKnownIntValue() >= 0 ): 
                             pass
@@ -2557,9 +2561,11 @@ class MisraChecker:
 
                 if lhs_category and rhs_category and lhs_category != rhs_category:
                     # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
+                    # Exception: Catch enum<> on left hand side and send them to the size Check
                     # This is done to not throw errors while assigning the Enums Values (size then always matches) and
-                    # Anonymous Enum (in Misa Constant Enums) are allowed to be assigned if the size matches
-                    if("enum<Anonymous" in rhs_category or "enum<Anonymous" in lhs_category):
+                    # Exception: Catch enum<Anonymous> on right the right hand side as
+                    # Anonymous Enums (in Misa Constant Enums) are allowed to be assigned if the size matches to a other category
+                    if("enum<Anonymous" in rhs_category or "enum<" in lhs_category):
                         pass
                     # MISRA Exception: A non-negative integer constant expression of essentially signed type may be assigned to an object
                     # of essentially unsigned type if its value can be represented in that type. Go to Size Check
