@@ -33,6 +33,8 @@ public:
     TestErrorLogger() : TestFixture("TestErrorLogger") {}
 
 private:
+    const std::string templateFormat{"{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"};
+
     const ErrorMessage::FileLocation fooCpp5{"foo.cpp", 5, 1};
     const ErrorMessage::FileLocation barCpp8{"bar.cpp", 8, 1};
     const ErrorMessage::FileLocation barCpp8_i{"bar.cpp", "ä", 8, 1};
@@ -81,13 +83,13 @@ private:
         ErrorMessage message;
         message.id = id;
 
-        std::string serialized = message.toString(true, idPlaceholder + plainText + idPlaceholder);
+        std::string serialized = message.toString(true, idPlaceholder + plainText + idPlaceholder, "");
         ASSERT_EQUALS(id + plainText + id, serialized);
 
-        serialized = message.toString(true, idPlaceholder + idPlaceholder);
+        serialized = message.toString(true, idPlaceholder + idPlaceholder, "");
         ASSERT_EQUALS(id + id, serialized);
 
-        serialized = message.toString(true, plainText + idPlaceholder + plainText);
+        serialized = message.toString(true, plainText + idPlaceholder + plainText, "");
         ASSERT_EQUALS(plainText + id + plainText, serialized);
     }
 
@@ -133,8 +135,8 @@ private:
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
-        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false));
-        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(true));
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false, templateFormat, ""));
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(true, templateFormat, ""));
     }
 
     void ErrorMessageConstructLocations() const {
@@ -143,8 +145,8 @@ private:
         ASSERT_EQUALS(2, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
-        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false));
-        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(true));
+        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false, templateFormat, ""));
+        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(true, templateFormat, ""));
     }
 
     void ErrorMessageVerbose() const {
@@ -153,8 +155,8 @@ private:
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
-        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false));
-        ASSERT_EQUALS("[foo.cpp:5]: (error) Verbose error", msg.toString(true));
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Programming error.", msg.toString(false, templateFormat, ""));
+        ASSERT_EQUALS("[foo.cpp:5]: (error) Verbose error", msg.toString(true, templateFormat, ""));
     }
 
     void ErrorMessageVerboseLocations() const {
@@ -163,8 +165,8 @@ private:
         ASSERT_EQUALS(2, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
-        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false));
-        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Verbose error", msg.toString(true));
+        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false, templateFormat, ""));
+        ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Verbose error", msg.toString(true, templateFormat, ""));
     }
 
     void ErrorMessageFromInternalError() const {
@@ -179,8 +181,8 @@ private:
             ASSERT_EQUALS(0, loc.column);
             ASSERT_EQUALS("message", msg.shortMessage());
             ASSERT_EQUALS("message", msg.verboseMessage());
-            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(false));
-            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(true));
+            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(false, templateFormat, ""));
+            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(true, templateFormat, ""));
         }
         {
             InternalError internalError(nullptr, "message", "details", InternalError::INTERNAL);
@@ -192,8 +194,8 @@ private:
             ASSERT_EQUALS(0, loc.column);
             ASSERT_EQUALS("msg: message", msg.shortMessage());
             ASSERT_EQUALS("msg: message: details", msg.verboseMessage());
-            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message", msg.toString(false));
-            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message: details", msg.toString(true));
+            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message", msg.toString(false, templateFormat, ""));
+            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message: details", msg.toString(true, templateFormat, ""));
         }
     }
 
@@ -207,7 +209,7 @@ private:
         msg.classification = getClassification(msg.guideline, reportType);
         ASSERT_EQUALS("Advisory", msg.classification);
         ASSERT_EQUALS("2.8", msg.guideline);
-        ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format));
+        ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format, ""));
     }
 
     void ErrorMessageReportTypeCertC() const {
@@ -220,7 +222,7 @@ private:
         msg.classification = getClassification(msg.guideline, reportType);
         ASSERT_EQUALS("L3", msg.classification);
         ASSERT_EQUALS("FIO42-C", msg.guideline);
-        ASSERT_EQUALS("L3 FIO42-C", msg.toString(true, format));
+        ASSERT_EQUALS("L3 FIO42-C", msg.toString(true, format, ""));
     }
 
     void CustomFormat() const {
@@ -229,8 +231,8 @@ private:
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
-        ASSERT_EQUALS("foo.cpp:5,error,errorId,Programming error.", msg.toString(false, "{file}:{line},{severity},{id},{message}"));
-        ASSERT_EQUALS("foo.cpp:5,error,errorId,Verbose error", msg.toString(true, "{file}:{line},{severity},{id},{message}"));
+        ASSERT_EQUALS("foo.cpp:5,error,errorId,Programming error.", msg.toString(false, "{file}:{line},{severity},{id},{message}", ""));
+        ASSERT_EQUALS("foo.cpp:5,error,errorId,Verbose error", msg.toString(true, "{file}:{line},{severity},{id},{message}", ""));
     }
 
     void CustomFormat2() const {
@@ -239,8 +241,8 @@ private:
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
-        ASSERT_EQUALS("Programming error. - foo.cpp(5):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})"));
-        ASSERT_EQUALS("Verbose error - foo.cpp(5):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})"));
+        ASSERT_EQUALS("Programming error. - foo.cpp(5):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})", ""));
+        ASSERT_EQUALS("Verbose error - foo.cpp(5):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})", ""));
     }
 
     void CustomFormatLocations() const {
@@ -250,8 +252,8 @@ private:
         ASSERT_EQUALS(2, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
-        ASSERT_EQUALS("Programming error. - bar.cpp(8):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})"));
-        ASSERT_EQUALS("Verbose error - bar.cpp(8):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})"));
+        ASSERT_EQUALS("Programming error. - bar.cpp(8):(error,errorId)", msg.toString(false, "{message} - {file}({line}):({severity},{id})", ""));
+        ASSERT_EQUALS("Verbose error - bar.cpp(8):(error,errorId)", msg.toString(true, "{message} - {file}({line}):({severity},{id})", ""));
     }
 
     void ToXmlV2() const {
