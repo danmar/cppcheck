@@ -33,6 +33,7 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
+#include <ostream>
 #include <sstream>
 #include <utility>
 

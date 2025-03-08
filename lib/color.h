@@ -22,7 +22,7 @@
 #include "config.h"
 
 #include <cstdint>
-#include <ostream>
+#include <iosfwd>
 #include <string>
 
 enum class Color : std::uint8_t {

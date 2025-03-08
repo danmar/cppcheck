@@ -31,6 +31,7 @@
 #include <fstream>
 #include <list>
 #include <map>
+#include <ostream>
 #include <stdexcept>
 #include <utility>
 #include <vector>

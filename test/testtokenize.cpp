@@ -29,6 +29,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iosfwd>
 #include <list>
 #include <set>
 #include <sstream>

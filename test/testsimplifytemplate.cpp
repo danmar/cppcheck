@@ -26,6 +26,7 @@
 #include "tokenlist.h"
 
 #include <cstring>
+#include <iosfwd>
 #include <sstream>
 #include <string>
 #include <vector>

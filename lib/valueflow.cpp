@@ -118,6 +118,7 @@
 #include <cstring>
 #include <functional>
 #include <initializer_list>
+#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <map>

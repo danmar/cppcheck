@@ -41,6 +41,7 @@
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stack>

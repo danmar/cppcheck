@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <iostream>
+#include <ostream>
 
 #ifndef _WIN32
 #include <unistd.h>

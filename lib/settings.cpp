@@ -26,7 +26,9 @@
 
 #include <cctype>
 #include <fstream>
+#include <iosfwd>
 #include <iostream>
+#include <istream>
 #include <sstream>
 #include <utility>
 

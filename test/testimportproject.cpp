@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "suppressions.h"
 
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <sstream>
