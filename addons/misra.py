@@ -2499,11 +2499,31 @@ class MisraChecker:
         for tok in cfg.tokenlist:
             if tok.isAssignmentOp:
                 lhs = getEssentialType(tok.astOperand1)
-                rhs = getEssentialType(tok.astOperand2)
+                # Handle Operation and Assignment Operators
+                if tok.str in ('+=', '-=', '*=', '/=', '%=', '&=', '|=', '^='):
+                    # The += Token is like the + token and has both operand sides
+                    # of the arithmetic operation
+                    operatorToken = copy.deepcopy(tok)
+                    operatorToken.isArithmeticalOp = True
+                    operatorToken.isAssignmentOp = False
+                    operatorToken.str = operatorToken.str.replace('=', '')
+                    rhs = getEssentialType(operatorToken)
+                else:
+                    rhs = getEssentialType(tok.astOperand2)
                 if lhs is None or rhs is None:
                     continue
                 lhs_category = getEssentialTypeCategory(tok.astOperand1)
-                rhs_category = getEssentialTypeCategory(tok.astOperand2)
+                # Handle Operation and Assignment Operators
+                if tok.str in ('+=', '-=', '*=', '/=', '%=', '&=', '|=', '^='):
+                    # The += Token is like the + token and has both operand sides
+                    # of the arithmetic operation
+                    operatorToken = copy.deepcopy(tok)
+                    operatorToken.str = operatorToken.str.replace('=', '')
+                    operatorToken.isArithmeticalOp = True
+                    operatorToken.isAssignmentOp = False
+                    rhs_category = getEssentialTypeCategory(operatorToken)
+                else:
+                    rhs_category = getEssentialTypeCategory(tok.astOperand2)
 
                 if lhs_category and rhs_category and lhs_category != rhs_category:
                     # Exception: Catch enum<Anonymous> on right and left hand side and send them to the size Check
