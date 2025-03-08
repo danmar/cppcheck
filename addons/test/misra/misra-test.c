@@ -729,6 +729,86 @@ static void misra_10_3(uint32_t u32a, uint32_t u32b) {
     bool b = true; // no-warning
     uint32_t u = UINT32_C(10); // no-warning
 }
+enum       { K1 = 1, K2 = 128 };
+
+static uint8_t foo1 ( uint16_t x )
+{
+    return x;                  /* Non-Compliant - uint16_t to uint8_t */
+}
+
+void R_10_3 ( void ) // 8.4
+{
+    uint8_t u8b = get_uint8 ( ); // no-warning
+    uint8_t u8c = get_uint8 ( ); // no-warning
+    uint8_t u8d = get_uint8 ( ); // no-warning
+    int8_t s8a; // no-warning
+    const uint8_t *pu8a; // no-warning
+    const uint8_t *pu8b = & u8b; // no-warning
+
+    uint16_t u16a = get_uint16 ( ); // no-warning
+    uint32_t u32a; // no-warning 
+    int32_t s32a = get_int32 ( ); // no-warning
+
+    char cha = 'a'; // no-warning
+
+    enum_t ena; // no-warning
+
+    uint8_t u8a  = 0;              // no-warning
+    bool  flag = ( bool_t ) 0; // no-warning
+    bool  set  = true;   // no-warning
+    bool get  = ( u8b > u8c );  // no-warning
+    use_bool ( flag );  // no-warning
+    use_bool ( get );   // no-warning
+    use_bool ( set );   // no-warning
+    use_uint8 ( u8a );  // no-warning
+
+    ena  = ENUM_1;
+    use_enum ( ena );     // no-warning
+    s8a  = K1;            // no-warning
+    use_int8 ( s8a );     // no-warning
+    u8a  = 2;             // no-warning
+    use_uint8( u8a );     // no-warning
+    u8a  = 2 * 24;        // no-warning
+    use_uint8( u8a );     // no-warning
+    cha += 1;             // no-warning
+    use_char( cha );              // no-warning
+
+    pu8a = pu8b;                  // no-warning
+    use_uint8( *pu8a );           // no-warning
+    u8a = u8b + u8c + u8d;        // no-warning
+    use_uint8( u8a );             // no-warning
+    u8a = ( uint8_t ) s8a;        // no-warning
+    use_uint8( u8a );             // no-warning
+
+    u32a = u16a;                  // no-warning
+    use_uint32 ( u32a );          // no-warning
+    u32a = 2U + 125U;             // no-warning
+    use_uint32 ( u32a );          // no-warning
+    use_uint16 ( u8a );           // no-warning
+    use_uint16 ( u8a + u16a );    // no-warning
+
+    u8a = (uint16_t)2U + (uint16_t)3U;  // no-warning
+    use_uint8( u8a );
+
+    uint8_t u8f = 1.0f;           // 10.3
+    bool_t bla = 0;               // 10.3
+    cha = 7;                      // 10.3             
+    u8a = 'a';                    // 10.3
+    u8b = 1 - 2;                  // 10.3
+    u8c += 'a';                   // 10.3
+    use_uint32 ( s32a );          // 10.3
+    s8a = K2;                     // 10.3
+    u16a = u32a;                 // 10.3
+    use_uint16 ( u32a );         // 10.3
+    s8a  = -123L;                // 10.3
+    u8a = 6L;                   // 10.3
+   for(uint16_t i = 0; i < 10; i++)
+   {
+      u8a = (uint16_t)2U + i;  // 10.3
+   }
+    u16a = (uint16_t)50000U + (uint16_t)50000U; // 10.3
+    u8a = (uint16_t)(2U + 3U);  // 10.3
+}
 
 static void misra_10_4(u32 x, s32 y) {
   z = x + 3; // 10.4
