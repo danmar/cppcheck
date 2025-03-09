@@ -22,10 +22,10 @@
 #include "config.h"
 
 #include <cstdint>
+#include <utility>
 
 #include <QList>
 #include <QMap>
-#include <QPair>
 #include <QString>
 #include <QStringList>
 
@@ -171,7 +171,7 @@ public:
         QStringList platforms;  // Keeps "type" attribute of each "platform" element
     };
 
-    using TypeChecks = QList<QPair<QString, QString>>;
+    using TypeChecks = QList<std::pair<QString, QString>>;
 
     struct Reflection {
         struct Call {
