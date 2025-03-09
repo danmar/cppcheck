@@ -96,7 +96,7 @@ static void misra_2_2(int x) {
 
 static void misra_2_7_unused_param (int *param1, int unused_param)  // 2.7
 {
-    *param1 = 42U;
+    *param1 = 42U; // 10.3
 }
 
 static void misra_2_7_used_params (int *param1, int param2, int param3)
@@ -306,8 +306,8 @@ struct misra_7_3_s
 
 static void misra_7_3(void) {
   long misra_7_3_a = 0l; //7.3
-  long misra_7_3_b = 0lU; //7.3
-  long long misra_7_3_c = 0Ull; //7.3
+  long misra_7_3_b = 0lU; //7.3 10.3
+  long long misra_7_3_c = 0Ull; //7.3 10.3
   long long misra_7_3_d = 0ll; //7.3
   long double misra_7_3_e = 7.3l; //7.3
   struct misra_7_3_s misra_7_3_f =
@@ -379,7 +379,7 @@ static int misra_8_2_o(
     const uint32_t a1,
     const uint8_t *const a2
 )
-{ return *a2 + a1; }
+{ return *a2 + a1; } // 10.3
 static int misra_8_2_p(
     const uint32_t a1,
     const uint8_t *const a2
@@ -648,7 +648,7 @@ static void misra_10_1(uint32_t u, char c1, char c2, uint8_t u8) {
   char c;
   enum { E1 = 1 };
   i = 3 << 1; // 10.1
-  i = (u & u) << 4; // no-warning
+  i = (u & u) << 4; // 10.3
   c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
   i = c1 > c2; // 10.3
@@ -679,7 +679,7 @@ static void misra_10_1_ternary(void)
     int8_t i8;
     int16_t i16;
 
-    a = ui16 << ui16; // 10.6
+    a = ui16 << ui16; // 10.6 10.3
     a = ui16 << (get_bool(42) ? ui16 : ui16);
     a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16));
     a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16);
@@ -699,7 +699,7 @@ static void misra_10_1_ternary(void)
 
 static void misra_10_2(void) {
     uint8_t u8a = 0;
-    char cha = 0;
+    char cha = 0; // 10.3
     int8_t s8a = 0;
     int16_t s16a = 0;
     float f32a = 0.0;
@@ -711,7 +711,7 @@ static void misra_10_2(void) {
     res = '0' - s8a;
     res = cha + ':'; // 10.2
 
-    res = s16a - 'a'; // 10.2 10.3 10.4
+    res = s16a - 'a'; // 10.2 10.4
     res = '0' + f32a; // 10.2 10.4
 
     // 10481 - crash
@@ -733,7 +733,7 @@ enum       { K1 = 1, K2 = 128 };
 
 static uint8_t foo1 ( uint16_t x )
 {
-    return x;                  /* Non-Compliant - uint16_t to uint8_t */
+    return x;                  // 10.3
 }
 
 void R_10_3 ( void ) // 8.4
@@ -789,9 +789,11 @@ void R_10_3 ( void ) // 8.4
 
     u8a = (uint16_t)2U + (uint16_t)3U;  // no-warning
     use_uint8( u8a );
+    /** As we test in C89 this is no warning */
+    bool_t bla = 0;               // no-warning
 
     uint8_t u8f = 1.0f;           // 10.3
-    bool_t bla = 0;               // 10.3
+
     cha = 7;                      // 10.3             
     u8a = 'a';                    // 10.3
     u8b = 1 - 2;                  // 10.3
@@ -802,12 +804,12 @@ void R_10_3 ( void ) // 8.4
     use_uint16 ( u32a );         // 10.3
     s8a  = -123L;                // 10.3
     u8a = 6L;                   // 10.3
-   for(uint16_t i = 0; i < 10; i++)
+   for(uint16_t i = 0; i < 10U; i++)
    {
       u8a = (uint16_t)2U + i;  // 10.3
    }
     u16a = (uint16_t)50000U + (uint16_t)50000U; // 10.3
-    u8a = (uint16_t)(2U + 3U);  // 10.3
+    u8a = (uint16_t)(2U + 3U);  // 10.3 10.8
 }
 
 static void misra_10_4(u32 x, s32 y) {
@@ -1057,10 +1059,10 @@ void misra_12_3(int a, int b, int c) {
   {}
 
   // No false positives in local and extern function calls
-  misra_12_3_fn4(misra_12_3_fn5(&a1, 32), &a1);
-  misra_12_3_fn4(misra_12_3_fn7(&a1, 32), &a1);
-  misra_12_3_fn6(misra_12_3_fn5(&a1, 32), &a1);
-  misra_12_3_fn6(misra_12_3_fn7(&a1, 32), &a1);
+  misra_12_3_fn4(misra_12_3_fn5(&a1, 32), &a1); // 10.3
+  misra_12_3_fn4(misra_12_3_fn7(&a1, 32), &a1); // 10.3
+  misra_12_3_fn6(misra_12_3_fn5(&a1, 32), &a1); // 10.3
+  misra_12_3_fn6(misra_12_3_fn7(&a1, 32), &a1); // 10.3
   misra_12_3_fn7(maxlen, fn(va, unsigned long), false);
   misra_12_3_fn8(maxlen, (unsigned long)((uintptr_t)fn(va, void*)), false);
 
@@ -1296,7 +1298,7 @@ static void misra_13_5(void) {
 static void misra_13_6(void) {
   int a = sizeof(x|=42); // 13.6
   a = sizeof(--x); // 13.6 13.3
-  return sizeof(x++); // 13.6
+  return sizeof(x++); // 13.6 10.3
 }
 
 static void misra_14_1(void) {
@@ -1469,7 +1471,7 @@ static void misra_14_2_fn2(void)
         i++; // 14.2
     }
 
-    return 0;
+    return 0; // 10.3
 }
 
 struct {
@@ -1835,10 +1837,10 @@ static void misra_16_6(void) {
 
   // No 16 6 in this switch:
   switch (x) {
-  case A: return 1; // 15.5
-  case B: return 1; // 15.5
-  case C: return 1; // 15.5
-  default: return 2; // 15.5
+  case A: return 1; // 15.5 10.3
+  case B: return 1; // 15.5 10.3
+  case C: return 1; // 15.5 10.3
+  default: return 2; // 15.5 10.3
   }
 }
 
@@ -2086,7 +2088,7 @@ static void misra_21_14(uint8_t *x) {
 }
 
 static void misra_21_15(uint8_t *x, uint16_t *y) {
-    (void)memcpy(x, y, 10); // 21.15
+    (void)memcpy(x, y, 10); // 21.15 10.3
     (void)memmove(x, y, 10); // 21.15
     (void)memcmp(x, y, 10); // 21.15
 }
