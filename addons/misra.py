@@ -2503,7 +2503,7 @@ class MisraChecker:
                 if tok.str in ('+=', '-=', '*=', '/=', '%=', '&=', '|=', '^='):
                     # The += Token is like the + token and has both operand sides
                     # of the arithmetic operation
-                    operatorToken = copy.deepcopy(tok)
+                    operatorToken = cppcheckdata.Token.from_token(tok)
                     operatorToken.isArithmeticalOp = True
                     operatorToken.isAssignmentOp = False
                     operatorToken.str = operatorToken.str.replace('=', '')
@@ -2517,7 +2517,7 @@ class MisraChecker:
                 if tok.str in ('+=', '-=', '*=', '/=', '%=', '&=', '|=', '^='):
                     # The += Token is like the + token and has both operand sides
                     # of the arithmetic operation
-                    operatorToken = copy.deepcopy(tok)
+                    operatorToken = cppcheckdata.Token.from_token(tok)
                     operatorToken.str = operatorToken.str.replace('=', '')
                     operatorToken.isArithmeticalOp = True
                     operatorToken.isAssignmentOp = False
