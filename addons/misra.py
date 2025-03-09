@@ -3501,7 +3501,7 @@ class MisraChecker:
                         # this is a function pointer definition the tokens look like this int16_t ( * misra_8_2_p_a ) ()
                         # and the int16_t causes the detection as the '(' follows
                         continue
-                    if not isKeyword(token.str) and not isStdLibId(token.str,cfg.standards.c):
+                    if not isKeyword(token.str,cfg.standards.c) and not isStdLibId(token.str,cfg.standards.c):
                         self.reportError(token, 17, 3)
 
     def misra_config(self, data):
