@@ -357,7 +357,7 @@ class Token:
         # Create an empty element-like dictionary with minimal required attributes
         element = {'id': other_token.Id, 'str': other_token.str}
         new_token = cls(element)
-        
+
         # Copy basic attributes
         new_token.scopeId = other_token.scopeId
         new_token.scope = other_token.scope
@@ -407,12 +407,12 @@ class Token:
         new_token.astOperand2 = other_token.astOperand2
         new_token.originalName = other_token.originalName
         new_token.astParent = other_token.astParent
-        
+
         # Copy location information
         new_token.file = other_token.file
         new_token.linenr = other_token.linenr
         new_token.column = other_token.column
-        
+ 
         return new_token
 
     def __init__(self, element):
