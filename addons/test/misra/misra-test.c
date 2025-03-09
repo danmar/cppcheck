@@ -1296,8 +1296,8 @@ static void misra_13_5(void) {
 }
 
 static void misra_13_6(void) {
-  int a = sizeof(x|=42); // 13.6
-  a = sizeof(--x); // 13.6 13.3
+  int a = sizeof(x|=42); // 13.6 10.3
+  a = sizeof(--x); // 13.6 13.3 10.3
   return sizeof(x++); // 13.6 10.3
 }
 
@@ -2074,11 +2074,11 @@ static void misra_21_9(void) {
 static void misra_21_12(void) {
     int rc;
     fexcept_t f; // 21.12
-    rc = feclearexcept(1); // 21.12
-    rc = fegetexceptflag(&f, 1); // 21.12
-    rc = feraiseexcept(1); // 21.12
-    rc = fesetexceptflag(&f, 1); // 21.12
-    rc = fetestexcept(1); // 21.12
+    rc = feclearexcept(1); // 21.12 10.3
+    rc = fegetexceptflag(&f, 1); // 21.12 10.3
+    rc = feraiseexcept(1); // 21.12 10.3
+    rc = fesetexceptflag(&f, 1); // 21.12 10.3
+    rc = fetestexcept(1); // 21.12 10.3
 }
 
 static void misra_21_14(uint8_t *x) {
@@ -2136,7 +2136,7 @@ static void misra_21_21(void) {
 }
 
 static void misra_22_5(FILE *f) {
-    int x = *f; // 22.5
+    int x = *f; // 22.5 10.6
     int y = f->pos; // 22.5
 }
 

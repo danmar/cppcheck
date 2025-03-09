@@ -667,6 +667,10 @@ def getEssentialTypeCategory(expr):
                 return 'char'
             castTok = castTok.next
 
+    if expr.str == "~":
+        e1 = getEssentialTypeCategory(expr.astOperand1)
+        return e1
+
     if expr.valueType:
         # For float and bool the sign is None and both are own categories
         if expr.valueType.type == 'bool':
