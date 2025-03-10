@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "errortypes.h"
-#include "color.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -37,6 +36,7 @@
 class Token;
 class TokenList;
 enum class ReportType : std::uint8_t;
+enum class Color : std::uint8_t;
 
 namespace tinyxml2 {
     class XMLElement;
@@ -235,7 +235,7 @@ public:
      *
      * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg, Color c = Color::Reset) = 0;
+    virtual void reportOut(const std::string &outmsg, Color c) = 0;
 
     /**
      * Information about found errors and warnings is directed
