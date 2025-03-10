@@ -478,19 +478,19 @@ C11_STDLIB_IDENTIFIERS = {
     'wctype.h': C99_STDLIB_IDENTIFIERS['wctype.h'],
 }
 
-def isStdLibId(id_, standard='c99'):
-    id_lists = []
+def getStdLib(standard):
     if standard == 'c89':
-        id_lists = C90_STDLIB_IDENTIFIERS.values()
-    elif standard == 'c99':
-        id_lists = C99_STDLIB_IDENTIFIERS.values()
-    else:
-        id_lists = C11_STDLIB_IDENTIFIERS.values()
+        return C90_STDLIB_IDENTIFIERS
+    if standard == 'c99':
+        return C99_STDLIB_IDENTIFIERS
+    return C11_STDLIB_IDENTIFIERS
+
+def isStdLibId(id_, standard='c99'):
+    id_lists = getStdLib(standard).values()
     for l in id_lists:
         if id_ in l:
             return True
     return False
-
 
 # Reserved keywords defined in ISO/IEC9899:1990 -- ch 6.1.1
 C90_KEYWORDS = {
@@ -3964,12 +3964,13 @@ class MisraChecker:
             self.reportError(directive, 21, 5)
 
     def misra_21_6(self, data):
-        dir_stdio = findInclude(data.directives, '<stdio.h>')
-        dir_wchar = findInclude(data.directives, '<wchar.h>')
-        if dir_stdio:
-            self.reportError(dir_stdio, 21, 6)
-        if dir_wchar:
-            self.reportError(dir_wchar, 21, 6)
+        for token in data.tokenlist:
+            if not isFunctionCall(token) or token.previous.function:
+                continue
+            standard_id = getStdLib(data.standards.c)
+            funcname = token.previous.str
+            if funcname in standard_id.get("stdio.h", []) or funcname in standard_id.get("wchar.h", []):
+                self.reportError(token, 21, 6)
 
     def misra_21_7(self, data):
         for token in data.tokenlist:
