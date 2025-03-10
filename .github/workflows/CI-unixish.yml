@@ -22,9 +22,9 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, macos-13]
         include:
-          - use_qt6: On
+          - build_gui: On
           - os: ubuntu-20.04
-            use_qt6: Off
+            build_gui: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -44,16 +44,15 @@ jobs:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils libtinyxml2-dev qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
-
-      - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils libtinyxml2-dev
+
+      - name: Install missing software on ubuntu (Qt6)
+        if: contains(matrix.os, 'ubuntu') && matrix.build_gui
+        run: |
+          sudo apt-get update
           # qt6-tools-dev-tools for lprodump
           # qt6-l10n-tools for lupdate
           sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
@@ -68,13 +67,13 @@ jobs:
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=${{ matrix.build_gui }} -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: CMake build on macos (with GUI / system tinyxml2)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: Run CMake test (system tinyxml2)
@@ -87,9 +86,9 @@ jobs:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04, macos-13]
         include:
-          - use_qt6: On
+          - build_gui: On
           - os: ubuntu-20.04
-            use_qt6: Off
+            build_gui: Off
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -107,12 +106,6 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
-
-      - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'Off'
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
 
       # TODO: move latest compiler to separate step
       # TODO: bail out on warnings with latest GCC
@@ -129,7 +122,7 @@ jobs:
           echo "CXX=g++-13" >> $GITHUB_ENV
 
       - name: Install missing software on ubuntu
-        if: contains(matrix.os, 'ubuntu') && matrix.use_qt6 == 'On'
+        if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
@@ -147,12 +140,14 @@ jobs:
       - name: Run CMake on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=${{ matrix.use_qt6 }} -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=${{ matrix.build_gui }} -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install
+          cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+          cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake build
         run: |
