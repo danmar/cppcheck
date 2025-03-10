@@ -169,12 +169,15 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
 
+    const bool doProgress = (mSettings.reportProgress != -1);
+
     // find all scopes
     for (const Token *tok = mTokenizer.tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // #5593 suggested to add here:
-        mErrorLogger.reportProgress(mTokenizer.list.getSourceFilePath(),
-                                    "SymbolDatabase",
-                                    tok->progressValue());
+        if (doProgress)
+            mErrorLogger.reportProgress(mTokenizer.list.getSourceFilePath(),
+                                        "SymbolDatabase",
+                                        tok->progressValue());
         // Locate next class
         if ((tok->isCpp() && tok->isKeyword() &&
              ((Token::Match(tok, "class|struct|union|namespace ::| %name% final| {|:|::|<") &&
