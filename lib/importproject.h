@@ -93,7 +93,7 @@ public:
         std::string platform;
     } guiProject;
 
-    void ignorePaths(const std::vector<std::string> &ipaths);
+    void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
     Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
