@@ -11,8 +11,10 @@ target_compile_definitions(test-projectfile PRIVATE SRCDIR="${CMAKE_CURRENT_SOUR
 target_link_libraries(test-projectfile ${QT_CORE_LIB} ${QT_TEST_LIB})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # Q_UNUSED() in generated code
-    target_compile_options_safe(test-projectfile -Wno-extra-semi-stmt)
+    if(QT_VERSION VERSION_LESS "6.0.0")
+        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
+        target_compile_options_safe(test-projectfile -Wno-extra-semi-stmt)
+    endif()
 endif()
 
 if (REGISTER_GUI_TESTS)

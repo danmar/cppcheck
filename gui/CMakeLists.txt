@@ -9,12 +9,6 @@ CheckOptions:
   - { key: HeaderFileExtensions,          value: 'x' }
 ")
 
-    # TODO: limit to target
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_WARNING_OUTPUT>)
-    add_compile_definitions($<$<CONFIG:Debug>:QT_DEBUG>)
-
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
     file(GLOB uis  "*.ui")
@@ -73,12 +67,25 @@ CheckOptions:
         endif()
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Q_UNUSED() in generated code
-        target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
-        # caused by Qt generated moc code
-        target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
+        if(QT_VERSION VERSION_LESS "6.0.0")
+            # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
+            target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
+        endif()
+        if(QT_VERSION VERSION_LESS "6.4.0")
+            # caused by Qt generated moc code - see https://bugreports.qt.io/browse/QTBUG-100915
+            target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
+        endif()
     endif()
-    #target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_QPAIR)  # TODO: cannot be completely disabled because QBrush uses QPair
+    if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
+        # QBrush fails to compile before 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-134038
+        target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_QPAIR)
+    endif()
+    target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_FOREACH)
+
+    target_compile_definitions(cppcheck-gui PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
+    target_compile_definitions(cppcheck-gui PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
+    target_compile_definitions(cppcheck-gui PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_WARNING_OUTPUT>)
+    target_compile_definitions(cppcheck-gui PRIVATE $<$<CONFIG:Debug>:QT_DEBUG>)
 
     if (QHELPGENERATOR)
         # TODO: generate in CMAKE_BINARY_DIR folder
