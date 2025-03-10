@@ -251,7 +251,7 @@ private:
             Suppressions supprs;
             ScopedFile file("cppcheck.cfg", "{\"safety\": false}");
             ASSERT_EQUALS("", Settings::loadCppcheckCfg(s, supprs));
-            ASSERT_EQUALS(true, s.safety);
+            ASSERT_EQUALS(false, s.safety);
         }
 
         {
