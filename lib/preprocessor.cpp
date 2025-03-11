@@ -168,6 +168,8 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 }
 
 static std::string getRelativeFilename(const simplecpp::Token* tok, const Settings &settings) {
+    if (!tok)
+        return "";
     std::string relativeFilename(tok->location.file());
     if (settings.relativePaths) {
         for (const std::string & basePath : settings.basePaths) {
@@ -1079,6 +1081,8 @@ void Preprocessor::addRemarkComments(const simplecpp::TokenList &tokens, std::ve
                 remarkedToken = prev;
             break;
         }
+        if (!remarkedToken)
+            continue;
 
         // Relative filename
         const std::string relativeFilename = getRelativeFilename(remarkedToken, mSettings);
