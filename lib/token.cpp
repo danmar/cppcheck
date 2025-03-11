@@ -127,14 +127,18 @@ void Token::update_property_info()
                 tokType(eVariable);
             else if (mTokensFrontBack.list.isKeyword(mStr)) {
                 tokType(eKeyword);
+                update_property_isStandardType();
                 setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
             }
             else if (mStr == "asm") { // TODO: not a keyword
                 tokType(eKeyword);
             }
             // TODO: remove condition? appears to be (no longer necessary) protection for reset of varids in Tokenizer::setVarId()
-            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
+            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword) {
                 tokType(eName);
+                // some types are not being treated as keywords
+                update_property_isStandardType();
+            }
         } else if (simplecpp::Token::isNumberLike(mStr)) {
             if ((MathLib::isInt(mStr) || MathLib::isFloat(mStr)) && mStr.find('_') == std::string::npos)
                 tokType(eNumber);
@@ -175,8 +179,6 @@ void Token::update_property_info()
             tokType(eEllipsis);
         else
             tokType(eOther);
-
-        update_property_isStandardType();
     } else {
         tokType(eNone);
     }
