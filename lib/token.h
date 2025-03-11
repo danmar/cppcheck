@@ -956,9 +956,12 @@ public:
             return;
 
         mImpl->mVarId = id;
+        // TODO: remove special handling?
         if (id != 0) {
             tokType(eVariable);
             isStandardType(false);
+            // TODO: clear fIsLong
+            // TODO: clear fIsControlFlowKeyword
         } else {
             update_property_info();
         }

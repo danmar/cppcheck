@@ -108,6 +108,7 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
 void Token::update_property_info()
 {
     setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+    // TODO: clear fIsLong
     isStandardType(false);
 
     if (!mStr.empty()) {
@@ -148,6 +149,7 @@ void Token::update_property_info()
                   mStr == "||" ||
                   mStr == "!"))
             tokType(eLogicalOp);
+        // TODO: should link check only apply to < and >? Token::link() suggests so
         else if (mStr.size() <= 2 && !mLink &&
                  (mStr == "==" ||
                   mStr == "!=" ||
@@ -173,6 +175,9 @@ void Token::update_property_info()
     } else {
         tokType(eNone);
     }
+    // TODO: make sure varid is only set for eVariable
+    //assert(!mImpl->mVarId || mTokType == eVariable);
+    // TODO: validate type for linked token?
 }
 
 static const std::unordered_set<std::string> stdTypes = { "bool"
