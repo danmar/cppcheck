@@ -952,6 +952,9 @@ public:
         return mImpl->mVarId;
     }
     void varId(nonneg int id) {
+        if (mImpl->mVarId == id)
+            return;
+
         mImpl->mVarId = id;
         // TODO: remove special handling?
         if (id != 0) {

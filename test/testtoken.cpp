@@ -123,6 +123,7 @@ private:
         TEST_CASE(update_property_info_ecomparisonop_link);
         TEST_CASE(update_property_info_etype_c);
         TEST_CASE(update_property_info_etype_cpp);
+        TEST_CASE(varid0);
     }
 
     void nextprevious() const {
@@ -1493,6 +1494,18 @@ private:
             tok.str("size_t");
             assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
         }
+    }
+
+    void varid0() const
+    {
+        TokenList list_c{&settingsDefault};
+        list_c.setLang(Standards::Language::C);
+        TokensFrontBack tokensFrontBack(list_c);
+        Token tok(tokensFrontBack);
+        tok.str("int"); // not treated as keyword in TokenList::isKeyword()
+        assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
+        tok.varId(0);
+        assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
     }
 #undef assert_tok
 };
