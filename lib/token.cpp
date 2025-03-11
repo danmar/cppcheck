@@ -107,7 +107,7 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
 
 void Token::update_property_info()
 {
-    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+    setFlag(fIsControlFlowKeyword, false);
     // TODO: clear fIsLong
     isStandardType(false);
 
@@ -125,8 +125,13 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
-            else if (mTokensFrontBack.list.isKeyword(mStr) || mStr == "asm") // TODO: not a keyword
+            else if (mTokensFrontBack.list.isKeyword(mStr)) {
                 tokType(eKeyword);
+                setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+            }
+            else if (mStr == "asm") { // TODO: not a keyword
+                tokType(eKeyword);
+            }
             // TODO: remove condition? appears to be (no longer necessary) protection for reset of varids in Tokenizer::setVarId()
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
