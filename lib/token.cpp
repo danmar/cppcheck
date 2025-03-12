@@ -128,7 +128,8 @@ void Token::update_property_info()
             else if (mTokensFrontBack.list.isKeyword(mStr)) {
                 tokType(eKeyword);
                 update_property_isStandardType();
-                setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+                if (mTokType != eType) // cannot be a control-flow keyword when it is a type
+                    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
             }
             else if (mStr == "asm") { // TODO: not a keyword
                 tokType(eKeyword);
