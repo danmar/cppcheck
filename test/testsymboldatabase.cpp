@@ -5984,8 +5984,8 @@ private:
     void createSymbolDatabaseFindAllScopes10() {
         {
             GET_SYMBOL_DB("void g() {\n"
-                "    for (int i = 0, r = 1; i < r; ++i) {}\n"
-                "}\n");
+                          "    for (int i = 0, r = 1; i < r; ++i) {}\n"
+                          "}\n");
             ASSERT(db);
             ASSERT_EQUALS(3, db->scopeList.size());
             ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
