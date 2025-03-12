@@ -5000,7 +5000,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
 
         if (type == ScopeType::eFor && orig->strAt(-2) == "for") {
             for (const Token* tok2 = tok; tok2 && !Token::Match(tok2, "[;:]"); tok2 = tok2->next()) {
-                if (tok2->link()) {
+                if (tok2->link() /*&& precedes(tok2, tok2->link())*/) {
                     tok2 = tok2->link();
                     continue;
                 }
