@@ -126,6 +126,7 @@ void Token::update_property_info()
                 tokType(eVariable);
             else if (mTokensFrontBack.list.isKeyword(mStr) || mStr == "asm") // TODO: not a keyword
                 tokType(eKeyword);
+            // TODO: remove condition? appears to be (no longer necessary) protection for reset of varids in Tokenizer::setVarId()
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
         } else if (simplecpp::Token::isNumberLike(mStr)) {

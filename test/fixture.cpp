@@ -162,11 +162,13 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     return ostr.str();
 }
 
-void TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition) const
+void TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition, const std::string& msg) const
 {
     if (!condition) {
         ++fails_counter;
         errmsg << getLocationStr(filename, linenr) << ": Assertion failed." << std::endl << "_____" << std::endl;
+        if (!msg.empty())
+            errmsg << "Hint:" << std::endl << msg << std::endl;
     }
 }
 

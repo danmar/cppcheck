@@ -68,7 +68,7 @@ protected:
     virtual void teardownTestInternal() {}
     std::string getLocationStr(const char * filename, unsigned int linenr) const;
 
-    void assert_(const char * filename, unsigned int linenr, bool condition) const;
+    void assert_(const char * filename, unsigned int linenr, bool condition, const std::string& msg = "") const;
 
     template<typename T>
     void assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = "") const {
@@ -313,14 +313,18 @@ protected:
 // TODO: the asserts do not actually assert i.e. do stop executing the test
 #define ASSERT( CONDITION ) assert_(__FILE__, __LINE__, (CONDITION))
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION))
+#define ASSERT_LOC_MSG( CONDITION, MSG, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION), MSG)
 // *INDENT-OFF*
 #define ASSERT_EQUALS( EXPECTED, ACTUAL ) do { try { assertEquals(__FILE__, __LINE__, (EXPECTED), (ACTUAL)); } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 // *INDENT-ON*
 #define ASSERT_EQUALS_WITHOUT_LINENUMBERS( EXPECTED, ACTUAL ) assertEqualsWithoutLineNumbers(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_DOUBLE( EXPECTED, ACTUAL, TOLERANCE ) assertEqualsDouble(__FILE__, __LINE__, EXPECTED, ACTUAL, TOLERANCE)
+#define ASSERT_EQUALS_LOC( EXPECTED, ACTUAL, FILE_, LINE_ ) assertEquals(FILE_, LINE_, EXPECTED, ACTUAL)
 #define ASSERT_EQUALS_LOC_MSG( EXPECTED, ACTUAL, MSG, FILE_, LINE_ ) assertEquals(FILE_, LINE_, EXPECTED, ACTUAL, MSG)
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_EQUALS_ENUM( EXPECTED, ACTUAL ) assertEqualsEnum(__FILE__, __LINE__, (EXPECTED), (ACTUAL))
+#define ASSERT_EQUALS_ENUM_LOC( EXPECTED, ACTUAL, FILE_, LINE_ ) assertEqualsEnum(FILE_, LINE_, (EXPECTED), (ACTUAL))
+#define ASSERT_EQUALS_ENUM_LOC_MSG( EXPECTED, ACTUAL, MSG, FILE_, LINE_ ) assertEqualsEnum(FILE_, LINE_, (EXPECTED), (ACTUAL), MSG)
 #define TODO_ASSERT_EQUALS_ENUM( WANTED, CURRENT, ACTUAL ) todoAssertEqualsEnum(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 #define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { (void)(CMD); assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
