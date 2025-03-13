@@ -2790,7 +2790,7 @@ bool Tokenizer::isMemberFunction(const Token *openParen)
 {
     return (Token::Match(openParen->tokAt(-2), ":: %name% (") ||
             Token::Match(openParen->tokAt(-3), ":: ~ %name% (")) &&
-           TokenList::isFunctionHead(openParen, "{|:");
+           TokenList::isFunctionHead(openParen, "{:");
 }
 
 static bool scopesMatch(const std::string &scope1, const std::string &scope2, const ScopeInfo3 *globalScope)
@@ -4356,7 +4356,7 @@ static void setVarIdStructMembers(Token *&tok1,
     while (Token::Match(tok->next(), ")| . %name% !!(")) {
         // Don't set varid for trailing return type
         if (tok->strAt(1) == ")" && Token::Match(tok->linkAt(1)->tokAt(-1), "%name%|]") && !tok->linkAt(1)->tokAt(-1)->isKeyword() &&
-            TokenList::isFunctionHead(tok->linkAt(1), "{|;")) {
+            TokenList::isFunctionHead(tok->linkAt(1), "{;")) {
             tok = tok->tokAt(3);
             continue;
         }
@@ -8976,7 +8976,7 @@ void Tokenizer::simplifyFunctionTryCatch()
     for (Token * tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "try {|:"))
             continue;
-        if (!TokenList::isFunctionHead(tok->previous(), "try"))
+        if (!TokenList::isFunctionHead(tok->previous(), "try")) // TODO: this is supposed to a list of characters and not strings
             continue;
 
         Token* tryStartToken = skipInitializerList(tok->next());
@@ -9418,7 +9418,7 @@ void Tokenizer::simplifyCPPAttribute()
                     head = skipCPPOrAlignAttribute(head)->next();
                 while (Token::Match(head, "%name%|::|*|&|<|>|,")) // skip return type
                     head = head->next();
-                if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{|;")) {
+                if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{;")) {
                     head->previous()->isAttributeNoreturn(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {
@@ -9427,7 +9427,7 @@ void Tokenizer::simplifyCPPAttribute()
                     head = skipCPPOrAlignAttribute(head)->next();
                 while (Token::Match(head, "%name%|::|*|&|<|>|,"))
                     head = head->next();
-                if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{|;")) {
+                if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{;")) {
                     head->previous()->isAttributeNodiscard(true);
                 }
             } else if ((hasMaybeUnusedUnderscores && Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()))
@@ -10226,7 +10226,7 @@ void Tokenizer::createSymbolDatabase()
 bool Tokenizer::operatorEnd(const Token * tok)
 {
     if (tok && tok->str() == ")") {
-        if (TokenList::isFunctionHead(tok, "{|;|?|:|["))
+        if (TokenList::isFunctionHead(tok, "{;?:["))
             return true;
 
         tok = tok->next();
