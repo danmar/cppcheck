@@ -1391,7 +1391,11 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
     // bail out on function declarations (without implementation)
     if (typeStart->tokType() == Token::Type::eName &&
         typeStart->previous() &&
-        typeStart->previous()->tokType() == Token::Type::eType) {
+        (typeStart->previous()->tokType() == Token::Type::eType || // return type
+        typeStart->previous()->tokType() == Token::Type::eArithmeticalOp || // *
+        typeStart->previous()->tokType() == Token::Type::eOther || // ::
+        typeStart->previous()->tokType() == Token::Type::eName // qualified return type
+        )) {
         return nullptr;
     }
     // TODO: bail out on standard types
