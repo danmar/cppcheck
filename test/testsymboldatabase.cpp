@@ -5982,18 +5982,32 @@ private:
     }
 
     void createSymbolDatabaseFindAllScopes10() {
-        GET_SYMBOL_DB("void g() {\n"
-                      "    for (int i = 0, r = 1; i < r; ++i) {}\n"
-                      "}\n");
-        ASSERT(db);
-        ASSERT_EQUALS(3, db->scopeList.size());
-        ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
-        const Token* const iTok = Token::findsimplematch(tokenizer.tokens(), "i");
-        const Token* const rTok = Token::findsimplematch(iTok, "r");
-        const Variable* i = iTok->variable(), *r = rTok->variable();
-        ASSERT(i != nullptr && r != nullptr);
-        ASSERT_EQUALS(i->typeStartToken(), r->typeStartToken());
-        ASSERT(i->valueType()->isTypeEqual(r->valueType()));
+        {
+            GET_SYMBOL_DB("void g() {\n"
+                          "    for (int i = 0, r = 1; i < r; ++i) {}\n"
+                          "}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(2, db->scopeList.back().varlist.size());
+            const Token* const iTok = Token::findsimplematch(tokenizer.tokens(), "i");
+            const Token* const rTok = Token::findsimplematch(iTok, "r");
+            const Variable* i = iTok->variable(), * r = rTok->variable();
+            ASSERT(i != nullptr && r != nullptr);
+            ASSERT_EQUALS(i->typeStartToken(), r->typeStartToken());
+            ASSERT(i->valueType()->isTypeEqual(r->valueType()));
+        }
+        {
+            GET_SYMBOL_DB("void f() {\n" // #13697
+                          "    typedef void (*func_t)();\n"
+                          "    func_t a[] = { nullptr };\n"
+                          "    for (func_t* fp = a; *fp; fp++) {}\n"
+                          "}\n");
+            ASSERT(db); // don't hang
+            ASSERT_EQUALS(3, db->scopeList.size());
+            ASSERT_EQUALS(1, db->scopeList.back().varlist.size());
+            const Token* const fp = Token::findsimplematch(tokenizer.tokens(), "fp");
+            ASSERT(fp && fp->variable());
+        }
     }
 
     void createSymbolDatabaseIncompleteVars()
