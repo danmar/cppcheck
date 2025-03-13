@@ -7301,7 +7301,57 @@ static const Token* parsedecl(const Token* type,
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
-        } else if (const Library::Container* container = (cpp ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
+        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong())) {
+            const ValueType::Type t0 = valuetype->type;
+            valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
+            if (t0 == ValueType::Type::LONG) {
+                if (valuetype->type == ValueType::Type::LONG)
+                    valuetype->type = ValueType::Type::LONGLONG;
+                else if (valuetype->type == ValueType::Type::DOUBLE)
+                    valuetype->type = ValueType::Type::LONGDOUBLE;
+            }
+        } else if (type->str() == "auto") {
+            const ValueType *vt = type->valueType();
+            if (!vt)
+                return nullptr;
+            valuetype->type = vt->type;
+            valuetype->pointer = vt->pointer;
+            valuetype->reference = vt->reference;
+            if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
+                valuetype->sign = vt->sign;
+            valuetype->constness = vt->constness;
+            valuetype->volatileness = vt->volatileness;
+            valuetype->originalTypeName = vt->originalTypeName;
+            const bool hasConst = Token::simpleMatch(type->previous(), "const");
+            const bool hasVolatile = Token::simpleMatch(type->previous(), "volatile");
+            while (Token::Match(type, "%name%|*|&|&&|::") && !type->variable()) {
+                if (type->str() == "*") {
+                    valuetype->pointer = 1;
+                    if (hasConst)
+                        valuetype->constness = 1;
+                    if (hasVolatile)
+                        valuetype->volatileness = 1;
+                } else if (type->str() == "&") {
+                    valuetype->reference = Reference::LValue;
+                } else if (type->str() == "&&") {
+                    valuetype->reference = Reference::RValue;
+                }
+                if (type->str() == "const")
+                    valuetype->constness |= (1 << valuetype->pointer);
+                if (type->str() == "volatile")
+                    valuetype->volatileness |= (1 << valuetype->pointer);
+                type = type->next();
+            }
+            break;
+        } else if (type->str() == "*")
+            valuetype->pointer++;
+        else if (type->str() == "&")
+            valuetype->reference = Reference::LValue;
+        else if (type->str() == "&&")
+            valuetype->reference = Reference::RValue;
+        else if (type->isStandardType())
+            valuetype->fromLibraryType(type->str(), settings);
+        else if (const Library::Container* container = (cpp ? settings.library.detectContainerOrIterator(type, &isIterator) : nullptr)) {
             if (isIterator)
                 valuetype->type = ValueType::Type::ITERATOR;
             else
@@ -7345,48 +7395,6 @@ static const Token* parsedecl(const Token* type,
             typestr += end->str();
             if (valuetype->fromLibraryType(typestr, settings))
                 type = end;
-        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong())) {
-            const ValueType::Type t0 = valuetype->type;
-            valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
-            if (t0 == ValueType::Type::LONG) {
-                if (valuetype->type == ValueType::Type::LONG)
-                    valuetype->type = ValueType::Type::LONGLONG;
-                else if (valuetype->type == ValueType::Type::DOUBLE)
-                    valuetype->type = ValueType::Type::LONGDOUBLE;
-            }
-        } else if (type->str() == "auto") {
-            const ValueType *vt = type->valueType();
-            if (!vt)
-                return nullptr;
-            valuetype->type = vt->type;
-            valuetype->pointer = vt->pointer;
-            valuetype->reference = vt->reference;
-            if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
-                valuetype->sign = vt->sign;
-            valuetype->constness = vt->constness;
-            valuetype->volatileness = vt->volatileness;
-            valuetype->originalTypeName = vt->originalTypeName;
-            const bool hasConst = Token::simpleMatch(type->previous(), "const");
-            const bool hasVolatile = Token::simpleMatch(type->previous(), "volatile");
-            while (Token::Match(type, "%name%|*|&|&&|::") && !type->variable()) {
-                if (type->str() == "*") {
-                    valuetype->pointer = 1;
-                    if (hasConst)
-                        valuetype->constness = 1;
-                    if (hasVolatile)
-                        valuetype->volatileness = 1;
-                } else if (type->str() == "&") {
-                    valuetype->reference = Reference::LValue;
-                } else if (type->str() == "&&") {
-                    valuetype->reference = Reference::RValue;
-                }
-                if (type->str() == "const")
-                    valuetype->constness |= (1 << valuetype->pointer);
-                if (type->str() == "volatile")
-                    valuetype->volatileness |= (1 << valuetype->pointer);
-                type = type->next();
-            }
-            break;
         } else if (!valuetype->typeScope && (type->str() == "struct" || type->str() == "enum") && valuetype->type != ValueType::Type::SMART_POINTER)
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope && valuetype->type != ValueType::Type::SMART_POINTER) {
@@ -7399,14 +7407,6 @@ static const Token* parsedecl(const Token* type,
             valuetype->typeScope = type->type()->classScope;
         } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
-        else if (type->str() == "*")
-            valuetype->pointer++;
-        else if (type->str() == "&")
-            valuetype->reference = Reference::LValue;
-        else if (type->str() == "&&")
-            valuetype->reference = Reference::RValue;
-        else if (type->isStandardType())
-            valuetype->fromLibraryType(type->str(), settings);
         else if (Token::Match(type->previous(), "!!:: %name% !!::"))
             valuetype->fromLibraryType(type->str(), settings);
         if (!type->originalName().empty())
