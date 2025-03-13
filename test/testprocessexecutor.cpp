@@ -27,8 +27,10 @@
 #include "timer.h"
 
 #include <cstdlib>
+#include <iosfwd>
 #include <list>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <utility>

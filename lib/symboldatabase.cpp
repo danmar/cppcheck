@@ -42,8 +42,10 @@
 #include <cstring>
 #include <initializer_list>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <iterator>
+#include <ostream>
 #include <sstream>
 #include <stack>
 #include <string>

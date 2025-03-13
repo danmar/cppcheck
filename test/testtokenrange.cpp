@@ -23,8 +23,10 @@
 #include "symboldatabase.h"
 
 #include <algorithm>
+#include <iosfwd>
 #include <iterator>
 #include <list>
+#include <ostream>
 #include <sstream>
 #include <string>
 

@@ -25,7 +25,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <iosfwd>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <unordered_set>
 #include <vector>

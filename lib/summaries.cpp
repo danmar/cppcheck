@@ -27,7 +27,10 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iosfwd>
+#include <istream>
 #include <map>
+#include <ostream>
 #include <sstream>
 #include <utility>
 #include <vector>

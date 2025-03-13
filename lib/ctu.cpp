@@ -32,7 +32,9 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iosfwd>
 #include <iterator>  // back_inserter
+#include <ostream>
 #include <sstream>
 #include <utility>
 

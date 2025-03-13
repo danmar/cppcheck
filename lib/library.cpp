@@ -32,9 +32,11 @@
 #include <cctype>
 #include <climits>
 #include <cstring>
+#include <iosfwd>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>

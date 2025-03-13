@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include <istream>
+#include <iosfwd>
 
 class Tokenizer;
 

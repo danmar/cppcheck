@@ -46,9 +46,11 @@
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <istream>
 #include <iterator>
 #include <exception>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <stack>

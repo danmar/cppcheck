@@ -36,8 +36,10 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <iosfwd>
 #include <iterator>
 #include <list>
+#include <ostream>
 #include <sstream>
 #include <utility>
 #include <vector>

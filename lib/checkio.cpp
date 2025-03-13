@@ -37,6 +37,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <ostream>
 #include <set>
 #include <sstream>
 #include <unordered_set>

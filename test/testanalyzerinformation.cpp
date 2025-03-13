@@ -20,6 +20,7 @@
 #include "analyzerinfo.h"
 #include "fixture.h"
 
+#include <iosfwd>
 #include <sstream>
 
 class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
