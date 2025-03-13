@@ -1324,6 +1324,9 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
 {
     if (!typeStart)
         return nullptr;
+    if (typeStart->tokType() != Token::Type::eType && typeStart->tokType() != Token::Type::eName) {
+        return nullptr;
+    }
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
@@ -1889,6 +1892,11 @@ bool Library::isSmartPointer(const Token* tok) const
 
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
+    if (tok->tokType() != Token::Type::eType && tok->tokType() != Token::Type::eName) {
+        return nullptr;
+    }
+
+    // TODO: this is flawed and might result in lookups like "uint64_tflags_"
     std::string typestr = withoutStd ? "std::" : "";
     while (Token::Match(tok, "%name%|::")) {
         typestr += tok->str();
