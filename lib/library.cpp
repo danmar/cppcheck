@@ -1388,6 +1388,13 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
     if (typeStart->tokType() != Token::Type::eType && typeStart->tokType() != Token::Type::eName) {
         return nullptr;
     }
+    // bail out on function declarations (without implementation)
+    if (typeStart->tokType() == Token::Type::eName &&
+        typeStart->previous() &&
+        typeStart->previous()->tokType() == Token::Type::eType) {
+        return nullptr;
+    }
+    // TODO: bail out on standard types
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
