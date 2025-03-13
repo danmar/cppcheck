@@ -1399,6 +1399,13 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         return nullptr;
     }
     // TODO: bail out on standard types
+    // TODO: stringFromTokenRange in Token::expressionString()
+    // TODO: update_property_info in Token::str()
+    if (typeStart->str() == "stringFromTokenRange")
+    {
+        int i;
+    }
+    std::cout << typeStart->str() << std::endl;
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
