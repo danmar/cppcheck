@@ -42,20 +42,25 @@ public:
     void reportErr(const ErrorMessage& /*msg*/) override {}
     void reportProgress(const std::string& /*filename*/,
                         const char /*stage*/[],
-                        const std::size_t /*value*/) override {} // FN
+                        const std::size_t /*value*/) override {}
 };
 
+static Settings create_settings()
+{
+    // TODO: load std.cfg
+    Settings s;
+    s.addEnabled("all");
+    s.certainty.setEnabled(Certainty::inconclusive, true);
+    return s;
+}
+static const Settings s_settings = create_settings();
 static DummyErrorLogger s_errorLogger;
 static const FileWithDetails s_file("test.cpp");
 
 static void doCheck(const std::string& code)
 {
-    // TODO: create the settings only once
-    Settings s;
-    s.addEnabled("all");
-    s.certainty.setEnabled(Certainty::inconclusive, true);
     Suppressions supprs;
-    CppCheck cppcheck(s, supprs, s_errorLogger, false, nullptr);
+    CppCheck cppcheck(s_settings, supprs, s_errorLogger, false, nullptr);
     cppcheck.check(s_file, code);
 }
 
