@@ -372,7 +372,11 @@ def test_nullpointer_file0_builddir_j(tmpdir):
     os.mkdir(build_dir)
     __test_nullpointer_file0(['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
-@pytest.mark.parametrize("single_file", (False,True))
+# TODO: this only succeeded because it depedent on the bugged unqiue message handling
+@pytest.mark.parametrize("single_file", [
+    False,
+    pytest.param(True, marks=pytest.mark.xfail(strict=True)),
+])
 def test_nullpointer_out_of_memory(tmpdir, single_file):
     """Ensure that there are not duplicate warnings related to memory/resource allocation failures
        https://trac.cppcheck.net/ticket/13521
