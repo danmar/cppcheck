@@ -400,7 +400,7 @@ static void createDumpFile(const Settings& settings,
           << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
           << " wchar_t_bit=\"" << (settings.platform.sizeof_wchar_t * settings.platform.char_bit) << '\"'
           << " size_t_bit=\"" << (settings.platform.sizeof_size_t * settings.platform.char_bit) << '\"'
-          << "/>" << '\n';
+          << "/>\n";
 }
 
 static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
@@ -736,6 +736,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         std::string dumpFile;
         createDumpFile(mSettings, file, fdump, dumpFile);
         if (fdump.is_open()) {
+            fdump << getLibraryDumpData();
             // TODO: use tinyxml2 to create XML
             fdump << "<dump cfg=\"\">\n";
             for (const ErrorMessage& errmsg: compilerWarnings)
@@ -744,7 +745,6 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
             fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>\n";
             fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>\n";
             fdump << "  </standards>\n";
-            fdump << getLibraryDumpData();
             tokenizer.dump(fdump);
             fdump << "</dump>\n";
             fdump << "</dumps>\n";
@@ -1065,6 +1065,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         std::string dumpFile;
         createDumpFile(mSettings, file, fdump, dumpFile);
         if (fdump.is_open()) {
+            fdump << getLibraryDumpData();
             fdump << dumpProlog;
             if (!mSettings.dump)
                 filesDeleter.addFile(dumpFile);
