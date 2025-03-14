@@ -1898,12 +1898,16 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 
     const std::string allDefines = getDefinesFlags(fileSettings.defines);
 
+    std::string exe = mSettings.clangTidyExecutable;
 #ifdef _WIN32
-    constexpr char exe[] = "clang-tidy.exe";
-#else
-    constexpr char exe[] = "clang-tidy";
+    // TODO: is this even necessary?
+    // append .exe if it is not a path
+    if (Path::fromNativeSeparators(mSettings.clangTidyExecutable).find('/') == std::string::npos) {
+        exe += ".exe";
+    }
 #endif
 
+    // TODO: get rid of hard-coded checks
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
     if (const int exitcode = mExecuteCommand(exe, split(args), "", output)) {

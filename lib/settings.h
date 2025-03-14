@@ -137,7 +137,7 @@ public:
     /**
      * Check code in the headers, this is on by default but can
      * be turned off to save CPU */
-    bool checkHeaders = true; // TODO: CLI
+    bool checkHeaders = true;
 
     /** Check for incomplete info in library files? */
     bool checkLibrary{};
@@ -152,7 +152,7 @@ public:
     std::set<std::string> checkUnknownFunctionReturn; // TODO: move to Library?
 
     /** Check unused/uninstantiated templates */
-    bool checkUnusedTemplates = true; // TODO: CLI
+    bool checkUnusedTemplates = true;
 
     /** Use Clang */
     bool clang{};
@@ -161,7 +161,10 @@ public:
     std::string clangExecutable = "clang";
 
     /** Use clang-tidy */
-    bool clangTidy{}; // TODO: CLI
+    bool clangTidy{};
+
+    /** Custom clang-tidy executable */
+    std::string clangTidyExecutable = "clang-tidy";
 
     /** Internal: Clear the simplecpp non-existing include cache */
     bool clearIncludeCache{}; // internal
