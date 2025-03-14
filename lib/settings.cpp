@@ -67,7 +67,6 @@ Settings::Settings()
 
 std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug)
 {
-    // TODO: this always needs to be run *after* the Settings has been filled
     static const std::string cfgFilename = "cppcheck.cfg";
     std::string fileName;
 #ifdef FILESDIR
@@ -163,9 +162,11 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
             const auto& v = it->second;
             if (!v.is<bool>())
                 return "'safety' is not a bool";
-            settings.safety = settings.safety || v.get<bool>();
+            settings.safety = v.get<bool>();
         }
     }
+
+    settings.settingsFiles.emplace_back(std::move(fileName));
 
     return "";
 }

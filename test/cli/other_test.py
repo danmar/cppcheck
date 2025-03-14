@@ -5,8 +5,9 @@ import os
 import sys
 import pytest
 import json
+import shutil
 
-from testutils import cppcheck, assert_cppcheck, cppcheck_ex
+from testutils import cppcheck, assert_cppcheck, cppcheck_ex, __lookup_cppcheck_exe
 from xml.etree import ElementTree
 
 
@@ -1962,25 +1963,27 @@ def test_addon_lookup_ext_notfound(tmpdir):
 
 
 # TODO: test with FILESDIR
-@pytest.mark.skip
 def test_config_lookup(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
+
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
         pass
 
-    # TODO: needs to be in exepath so this is found
     config_file = os.path.join(tmpdir, 'cppcheck.cfg')
-    with open(config_file, 'wt'):
-        pass
+    with open(config_file, 'wt') as f:
+        f.write(json.dumps({}))
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', '--addon=misra', test_file], cwd=tmpdir)
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file], cwd=tmpdir, cppcheck_exe=exe)
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
     assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    assert lines == [
+    assert stdout.splitlines() == [
         "looking for '{}cppcheck.cfg'".format(exepath_sep),
-        'no configuration found',
         'Checking {} ...'.format(test_file)
     ]
 
@@ -2001,6 +2004,51 @@ def test_config_lookup_notfound(tmpdir):
         'no configuration found',
         'Checking {} ...'.format(test_file)
     ]
+
+
+def test_config_invalid(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
+    with open(config_file, 'wt'):
+        pass
+
+    exitcode, stdout, stderr, exe = cppcheck_ex([test_file], cwd=tmpdir, cppcheck_exe=exe)
+    assert exitcode == 1, stdout if stdout else stderr
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: '
+    ]
+
+
+def test_config_override(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
+    with open(config_file, 'wt') as f:
+        f.write(json.dumps({
+            'safety': False
+        }))
+
+    exitcode, stdout, stderr, exe = cppcheck_ex(['-q', '--safety', test_file], cwd=tmpdir, cppcheck_exe=exe, remove_checkers_report=False)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
 
 
 def test_checkers_report(tmpdir):
