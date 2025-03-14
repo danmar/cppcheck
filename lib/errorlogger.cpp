@@ -610,30 +610,9 @@ static void replaceColors(std::string& source) {
     replace(source, substitutionMap);
 }
 
-// TODO: remove default parameters
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
-    // Save this ErrorMessage in plain text.
-
-    // TODO: should never happen - remove this
-    // No template is given
-    // (not 100%) equivalent templateFormat: {callstack} ({severity}{inconclusive:, inconclusive}) {message}
-    if (templateFormat.empty()) {
-        std::string text;
-        if (!callStack.empty()) {
-            text += ErrorLogger::callStackToString(callStack);
-            text += ": ";
-        }
-        if (severity != Severity::none) {
-            text += '(';
-            text += severityToString(severity);
-            if (certainty == Certainty::inconclusive)
-                text += ", inconclusive";
-            text += ") ";
-        }
-        text += (verbose ? mVerboseMessage : mShortMessage);
-        return text;
-    }
+    assert(!templateFormat.empty());
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
