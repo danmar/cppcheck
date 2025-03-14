@@ -2,7 +2,6 @@
 # python -m pytest dumpfile_test.py
 
 import os
-import pytest
 
 from testutils import cppcheck
 
