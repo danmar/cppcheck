@@ -114,6 +114,8 @@ private:
         TEST_CASE(expressionString);
 
         TEST_CASE(hasKnownIntValue);
+
+        TEST_CASE(varid_reset);
     }
 
     void nextprevious() const {
@@ -1224,6 +1226,37 @@ private:
         ASSERT_EQUALS(true, token.addValue(v2));
         ASSERT_EQUALS(false, token.hasKnownIntValue());
     }
+
+#define assert_tok(...) _assert_tok(__FILE__, __LINE__, __VA_ARGS__)
+    void _assert_tok(const char* file, int line, const Token* tok, Token::Type t, bool l = false, bool std = false, bool ctrl = false) const
+    {
+        ASSERT_LOC_MSG(tok, "tok", file, line);
+        ASSERT_EQUALS_ENUM_LOC_MSG(t, tok->tokType(), "tokType", file, line);
+        ASSERT_EQUALS_LOC_MSG(l, tok->isLong(), "isLong", file, line);
+        ASSERT_EQUALS_LOC_MSG(std, tok->isStandardType(), "isStandardType", file, line);
+        ASSERT_EQUALS_LOC_MSG(ctrl, tok->isControlFlowKeyword(), "isControlFlowKeyword", file, line);
+    }
+
+    void _assert_tok(const char* file, int line, const std::string& s, Token::Type t, bool l = false, bool std = false, bool ctrl = false) const
+    {
+        TokensFrontBack tokensFrontBack(list);
+        Token tok(tokensFrontBack);
+        tok.str(s);
+        _assert_tok(file, line, &tok, t, l, std, ctrl);
+    }
+
+    void varid_reset() const
+    {
+        TokenList list_c{&settingsDefault};
+        list_c.setLang(Standards::Language::C);
+        TokensFrontBack tokensFrontBack(list_c);
+        Token tok(tokensFrontBack);
+        tok.str("int"); // not treated as keyword in TokenList::isKeyword()
+        assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
+        tok.varId(0);
+        assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
+    }
+#undef assert_tok
 };
 
 REGISTER_TEST(TestToken)
