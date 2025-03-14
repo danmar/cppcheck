@@ -3161,3 +3161,30 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     assert value_elem[1].attrib['floatvalue'] == '1e-07'
     assert 'floatvalue' in value_elem[2].attrib
     assert value_elem[2].attrib['floatvalue'] == '1e-07'
+
+
+def test_unique_error(tmp_path):  # #6366
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    const long m[9] = {};
+    long a=m[9], b=m[9];
+    (void)a;
+    (void)b;
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        "{}:4:13: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file),
+        "{}:4:21: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file)
+    ]

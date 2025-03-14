@@ -100,6 +100,7 @@ private:
         if (opt.plistOutput)
             s.plistOutput = opt.plistOutput;
         s.clangTidy = opt.clangTidy;
+        s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: remove when we only longer rely on toString() in unique message handling?
 
         Suppressions supprs;
 

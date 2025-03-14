@@ -610,30 +610,9 @@ static void replaceColors(std::string& source) {
     replace(source, substitutionMap);
 }
 
-// TODO: remove default parameters
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
-    // Save this ErrorMessage in plain text.
-
-    // TODO: should never happen - remove this
-    // No template is given
-    // (not 100%) equivalent templateFormat: {callstack} ({severity}{inconclusive:, inconclusive}) {message}
-    if (templateFormat.empty()) {
-        std::string text;
-        if (!callStack.empty()) {
-            text += ErrorLogger::callStackToString(callStack);
-            text += ": ";
-        }
-        if (severity != Severity::none) {
-            text += '(';
-            text += severityToString(severity);
-            if (certainty == Certainty::inconclusive)
-                text += ", inconclusive";
-            text += ") ";
-        }
-        text += (verbose ? mVerboseMessage : mShortMessage);
-        return text;
-    }
+    assert(!templateFormat.empty());
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
@@ -712,12 +691,12 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     return result;
 }
 
-std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
+std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack, bool addcolumn)
 {
     std::string str;
     for (auto tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
         str += (tok == callStack.cbegin() ? "" : " -> ");
-        str += tok->stringify();
+        str += tok->stringify(addcolumn);
     }
     return str;
 }
@@ -750,14 +729,18 @@ void ErrorMessage::FileLocation::setfile(std::string file)
     mFileName = Path::simplifyPath(std::move(file));
 }
 
-std::string ErrorMessage::FileLocation::stringify() const
+std::string ErrorMessage::FileLocation::stringify(bool addcolumn) const
 {
     std::string str;
     str += '[';
     str += Path::toNativeSeparators(mFileName);
-    if (line != SuppressionList::Suppression::NO_LINE) {
+    if (line != SuppressionList::Suppression::NO_LINE) { // TODO: should not depend on Suppression
         str += ':';
         str += std::to_string(line);
+        if (addcolumn) {
+            str += ':';
+            str += std::to_string(column);
+        }
     }
     str += ']';
     return str;
