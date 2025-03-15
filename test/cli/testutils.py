@@ -236,8 +236,8 @@ def cppcheck(*args, **kwargs):
     return return_code, stdout, stderr
 
 
-def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
-    exitcode, stdout, stderr = cppcheck(args, env)
+def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None, cwd=None):
+    exitcode, stdout, stderr = cppcheck(args, env=env, cwd=cwd)
     if ec_exp is not None:
         assert exitcode == ec_exp, stdout
     if out_exp is not None:
