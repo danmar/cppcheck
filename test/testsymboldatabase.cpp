@@ -425,6 +425,7 @@ private:
         TEST_CASE(symboldatabase107);
         TEST_CASE(symboldatabase108);
         TEST_CASE(symboldatabase109); // #13553
+        TEST_CASE(symboldatabase110);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5758,6 +5759,26 @@ private:
         const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "show") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
+    }
+
+    void symboldatabase110() { // #13498
+        GET_SYMBOL_DB("struct A;\n"
+                      "template <typename T, typename C>\n"
+                      "struct B {\n"
+                      "    const A& a;\n"
+                      "    const std::vector<C>& c;\n"
+                      "};\n"
+                      "template <typename T>\n"
+                      "struct B<T, void> {\n"
+                      "    const A& a;\n"
+                      "};\n"
+                      "template <typename T, typename C>\n"
+                      "void f(const A & a, const std::vector<C>&c) {\n"
+                      "    B<T, C>{ a, c };\n"
+                      "}\n");
+        const Token *B = db ? Token::findsimplematch(tokenizer.tokens(), "B < T , C >") : nullptr;
+        ASSERT(B != nullptr);
+        ASSERT(!B->type());
     }
 
     void createSymbolDatabaseFindAllScopes1() {

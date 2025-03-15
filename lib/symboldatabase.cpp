@@ -1213,6 +1213,9 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
         if (!tok->isName() || tok->varId() || tok->function() || tok->type() || tok->enumerator())
             continue;
 
+        if (Token::simpleMatch(tok->next(), "<"))
+            continue;
+
         if (typenames.find(tok->str()) == typenames.end())
             continue;
 
