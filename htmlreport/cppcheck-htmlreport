@@ -11,6 +11,7 @@ import os
 import re
 import sys
 import subprocess
+import time
 
 from collections import Counter
 from pygments import highlight
@@ -470,7 +471,7 @@ def blame_lookup(blame_data, line):
     return next((data for start, end, data in blame_data if line >= start and line < end), {})
 
 
-def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
+def tr_str(td_th, line, id, cwe, severity, message, timestamp, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
     ret = ''
     if htmlfile:
         ret += '<%s><a href="%s#line-%d">%d</a></%s>' % (td_th, htmlfile, line, line, td_th)
@@ -484,6 +485,9 @@ def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, a
     else:
         message_attribute = ''
     ret += '<%s%s>%s</%s>' % (td_th, message_attribute, html_escape(message), td_th)
+
+    if timestamp:
+        ret += '<%s>%s</%s>' % (td_th, timestamp, td_th)
 
     for field in  add_author:
         if field == 'name':
@@ -556,6 +560,7 @@ class CppCheckHandler(XmlContentHandler):
         self.errors = []
         self.version = '1'
         self.versionCppcheck = ''
+        self.timestamp = ''
 
     def startElement(self, name, attributes):
         if name == 'results':
@@ -579,6 +584,7 @@ class CppCheckHandler(XmlContentHandler):
             }],
             'id': attributes['id'],
             'severity': attributes['severity'],
+            'timestamp': self.timestamp,
             'msg': attributes['msg']
         })
 
@@ -592,6 +598,7 @@ class CppCheckHandler(XmlContentHandler):
                 'line': 0,
                 'id': attributes['id'],
                 'severity': attributes['severity'],
+                'timestamp': self.timestamp,
                 'msg': attributes['msg'],
                 'verbose': attributes.get('verbose')
             }
@@ -694,6 +701,13 @@ def main() -> None:
     try:
         contentHandler = CppCheckHandler()
         for fname in options.file or [sys.stdin]:
+            if options.file is not None:
+                t = os.path.getmtime(fname)
+            else:
+                t = time.time()
+            t_s = time.ctime(t)
+            if t_s is not None:
+                contentHandler.timestamp = t_s
             xml_parse(fname, contentHandler)
     except (XmlParseException, ValueError) as msg:
         print('Failed to parse cppcheck xml file: %s' % msg)
@@ -865,7 +879,7 @@ def main() -> None:
         output_file.write('\n       <table class=\"summaryTable\">')
         output_file.write(
             '\n       %s' %
-            tr_str('th', 'Line', 'Id', 'CWE', 'Severity', 'Message', 'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
+            tr_str('th', 'Line', 'Id', 'CWE', 'Severity', 'Message', 'Timestamp', 'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
 
         for filename, data in sorted(files.items()):
             file_error = filename in decode_errors or filename.endswith('*')
@@ -905,7 +919,7 @@ def main() -> None:
 
                 output_file.write(
                     '\n         %s' %
-                    tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"],
+                    tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"], error["timestamp"],
                            git_blame_dict.get('author', 'Unknown'), git_blame_dict.get('author-mail', '---'),
                            git_blame_dict.get('author-time', '---'),
                            tr_class=to_css_selector(error["id"]) + ' sev_' + error["severity"] + ' issue',
