@@ -277,7 +277,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
         if (funcname) {
             if (isRecursiveCall(funcname))
                 continue;
-            const auto baseName = stripTemplateParameters(funcname->str());
+            auto baseName = stripTemplateParameters(funcname->str());
             FunctionUsage &func = mFunctions[baseName];
             const std::string& called_from_file = tokenizer.list.getFiles()[funcname->fileIndex()];
 
@@ -286,7 +286,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
             else
                 func.usedSameFile = true;
 
-            mFunctionCalls.insert(baseName);
+            mFunctionCalls.insert(std::move(baseName));
         }
     }
 }

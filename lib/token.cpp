@@ -1167,7 +1167,7 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                             nameSpace += tok1->str();
                             tok1 = tok1->next();
                         }
-                        mImpl->mScopeInfo->usingNamespaces.insert(nameSpace);
+                        mImpl->mScopeInfo->usingNamespaces.insert(std::move(nameSpace));
                     }
                 }
             }

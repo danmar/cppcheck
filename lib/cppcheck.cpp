@@ -433,8 +433,6 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &premiumArgs,
                                                  const CppCheck::ExecuteCmdFn &executeCommand)
 {
-    const std::string redirect = "2>&1";
-
     std::string pythonExe;
 
     if (!addonInfo.executable.empty())
@@ -463,7 +461,7 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
     args += fileArg;
 
     std::string result;
-    if (const int exitcode = executeCommand(pythonExe, split(args), redirect, result)) {
+    if (const int exitcode = executeCommand(pythonExe, split(args), "2>&1", result)) {
         std::string message("Failed to execute addon '" + addonInfo.name + "' - exitcode is " + std::to_string(exitcode));
         std::string details = pythonExe + " " + args;
         if (result.size() > 2) {
@@ -585,17 +583,17 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         if (pos1 >= pos2 || pos2 >= pos3)
             continue;
 
-        const std::string filename = line.substr(0, pos1);
+        std::string filename = line.substr(0, pos1);
         const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
         const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
         const std::string msg = line.substr(line.find(':', pos3+1) + 2);
 
-        const std::string locFile = Path::toNativeSeparators(filename);
+        std::string locFile = Path::toNativeSeparators(std::move(filename));
         const int line_i = strToInt<int>(linenr);
         const int column = strToInt<unsigned int>(colnr);
         ErrorMessage::FileLocation loc(locFile, line_i, column);
         ErrorMessage errmsg({std::move(loc)},
-                            locFile,
+                            std::move(locFile),
                             Severity::error,
                             msg,
                             "syntaxError",
@@ -1228,10 +1226,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             for (const std::string &s : configurationError)
                 msg += '\n' + s;
 
-            const std::string locFile = Path::toNativeSeparators(file.spath());
+            std::string locFile = Path::toNativeSeparators(file.spath());
             ErrorMessage::FileLocation loc(locFile, 0, 0);
             ErrorMessage errmsg({std::move(loc)},
-                                locFile,
+                                std::move(locFile),
                                 Severity::information,
                                 msg,
                                 "noValidConfiguration",
@@ -1779,13 +1777,13 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
         return;
 
     if (mSettings.buildDir.empty()) {
-        const std::string fileName = std::to_string(mSettings.pid) + ".ctu-info";
+        std::string fileName = std::to_string(mSettings.pid) + ".ctu-info";
         FilesDeleter filesDeleter;
         filesDeleter.addFile(fileName);
         std::ofstream fout(fileName);
         fout << ctuInfo;
         fout.close();
-        executeAddons({fileName}, "");
+        executeAddons({std::move(fileName)}, "");
         return;
     }
 

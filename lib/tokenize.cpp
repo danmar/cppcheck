@@ -5128,9 +5128,9 @@ void Tokenizer::setVarIdPass2()
                 }
                 std::string scopeName3(scopeName2);
                 while (!scopeName3.empty()) {
-                    const std::string name = scopeName3 + baseClassName;
+                    std::string name = scopeName3 + baseClassName;
                     if (varsByClass.find(name) != varsByClass.end()) {
-                        baseClassName = name;
+                        baseClassName = std::move(name);
                         break;
                     }
                     // Remove last scope name

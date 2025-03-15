@@ -293,7 +293,7 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
             while (pos < command.size() && command[pos] == ' ')
                 ++pos;
         }
-        const std::string fval = readUntil(command, &pos, " =");
+        std::string fval = readUntil(command, &pos, " =");
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
@@ -307,7 +307,7 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
         } else if (F=='U')
             fs.undefs.insert(fval);
         else if (F=='I') {
-            std::string i = fval;
+            std::string i = std::move(fval);
             if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
                 i = unescape(i.substr(1, i.size() - 2));
             if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), i) == fs.includePaths.cend())
@@ -397,7 +397,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             continue;
         }
 
-        const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
+        std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         // Accept file?
         if (!Path::acceptFile(file))
@@ -405,7 +405,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         std::string path;
         if (Path::isAbsolute(file))
-            path = Path::simplifyPath(file);
+            path = Path::simplifyPath(std::move(file));
 #ifdef _WIN32
         else if (file[0] == '/' && directory.size() > 2 && std::isalpha(directory[0]) && directory[1] == ':')
             // directory: C:\foo\bar
@@ -1012,7 +1012,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
         }
 
         if (!arg.empty()) {
-            cflags.insert(arg);
+            cflags.insert(std::move(arg));
         }
 
         // cleanup: -t is "An alternate name for the -Wxxx switches; there is no difference"
