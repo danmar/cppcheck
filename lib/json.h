@@ -28,6 +28,7 @@ SUPPRESS_WARNING_CLANG_PUSH("-Wextra-semi-stmt")
 SUPPRESS_WARNING_CLANG_PUSH("-Wzero-as-null-pointer-constant")
 SUPPRESS_WARNING_CLANG_PUSH("-Wformat")
 SUPPRESS_WARNING_CLANG_PUSH("-Wfloat-conversion")
+SUPPRESS_WARNING_CLANG_PUSH("-Wunsafe-buffer-usage")
 
 #define PICOJSON_USE_INT64
 #include <picojson.h>
