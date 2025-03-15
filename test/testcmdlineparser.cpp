@@ -441,6 +441,9 @@ private:
         TEST_CASE(debugXmlMultiple);
         TEST_CASE(debugNormalXmlMultiple);
         TEST_CASE(debugIgnore);
+        TEST_CASE(checkHeaders);
+        TEST_CASE(noCheckHeaders);
+        TEST_CASE(noCheckHeaders2);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2986,6 +2989,27 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-ignore", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugignore);
+    }
+
+    void checkHeaders() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-headers", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings->checkHeaders);
+    }
+
+    void noCheckHeaders() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-check-headers", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, settings->checkHeaders);
+    }
+
+    void noCheckHeaders2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--check-headers", "--no-check-headers", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(false, settings->checkHeaders);
     }
 
     void ignorepaths1() {
