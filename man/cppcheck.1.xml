@@ -94,10 +94,22 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg choice="opt">
+        <option>--addon=&lt;script/config&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--check-config</option>
       </arg>
       <arg choice="opt">
+        <option>--check-level=&lt;level&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--check-library</option>
+      </arg>
+      <arg choice="opt">
+        <option>--clang</option>
+      </arg>
+      <arg choice="opt">
+        <option>--cppcheck-build-dir=&lt;path&gt;</option>
       </arg>
       <arg choice="opt">
         <option>-D&lt;id&gt;</option>
@@ -121,9 +133,13 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--exitcode-suppressions=&lt;file&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--file-filter=&lt;str&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--file-list=&lt;file&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>-f</option>
         <option>--force</option>
       </arg>
       <arg choice="opt">
@@ -133,6 +149,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--funsigned-char</option>
       </arg>
       <arg choice="opt">
+        <option>-h</option>
         <option>--help</option>
       </arg>
       <arg choice="opt">
@@ -178,12 +195,28 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--max-ctu-depth=&lt;limit&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--performance-valueflow-max-if-count=&lt;num&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--platform=&lt;type&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--premium=&lt;type&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--project-configuration=&lt;config&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>--project=&lt;file&gt;</option>
+      </arg>
+      <arg choice="opt">
+        <option>-q</option>
         <option>--quiet</option>
       </arg>
       <arg choice="opt">
+        <option>-rp &lt;paths&gt;</option>
+        <option>-rp=&lt;paths&gt;</option>
+        <option>--relative-paths &lt;paths&gt;</option>
         <option>--relative-paths=&lt;paths&gt;</option>
       </arg>
       <arg choice="opt">
@@ -217,16 +250,20 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--template='&lt;text&gt;'</option>
       </arg>
       <arg choice="opt">
+        <option>--template-location=&lt;format&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--verbose</option>
       </arg>
       <arg choice="opt">
+        <option>-v</option>
         <option>--version</option>
       </arg>
       <arg choice="opt">
         <option>--xml</option>
       </arg>
       <arg choice="opt">
-        <option>--xml-version=&lt;version&gt;]</option>
+        <option>--xml-version=&lt;version&gt;</option>
       </arg>
       <arg choice="opt">
         <option>file or path</option>
@@ -255,6 +292,14 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
            control the term elements. -->
       <varlistentry>
         <term>
+          <option>--addon=&lt;script/config&gt;</option>
+        </term>
+        <listitem>
+          <para>Run additional analysis using specified addon script or configuration file. Built-in addons include misra.py (for MISRA C 2012 checking), y2038.py (for year 2038 problems), and threadsafety.py (for thread safety issues).</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>--check-config</option>
         </term>
         <listitem>
@@ -263,10 +308,48 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       </varlistentry>
       <varlistentry>
         <term>
+          <option>--check-level=&lt;level&gt;</option>
+        </term>
+        <listitem>
+          <para>Set checking level. Available options are:</para>
+          <variablelist>
+            <varlistentry>
+              <term>normal</term>
+              <listitem>
+                <para>Default level providing effective checking in reasonable time</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>exhaustive</term>
+              <listitem>
+                <para>More thorough checking that takes longer to complete</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>--check-library</option>
         </term>
         <listitem>
           <para>Show information messages when library files have incomplete info.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--clang</option>
+        </term>
+        <listitem>
+          <para>Use Clang parser instead of the built-in Cppcheck parser (experimental). Requires Clang to be installed. Can specify custom Clang executable with --clang=&lt;path-to-clang&gt;.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--cppcheck-build-dir=&lt;path&gt;</option>
+        </term>
+        <listitem>
+          <para>Specify a build directory for Cppcheck to save analyzer information. This enables incremental analysis and whole program analysis even with multiple threads.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -370,10 +453,10 @@ default. If used together with --max-configs=, the last option is the one that i
       </varlistentry>
       <varlistentry>
         <term>
-            <option>--fsigned-char</option>
+          <option>--fsigned-char</option>
         </term>
         <listitem>
-            <para>Treat char type as signed. This overrides previous --platform options and is overridden by following ones.</para>
+          <para>Treat char type as signed. This overrides previous --platform options and is overridden by following ones.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -397,7 +480,7 @@ default. If used together with --max-configs=, the last option is the one that i
       </varlistentry>
       <varlistentry>
         <term>
-          <option>-I &lt;dir&gt;</option>
+          <option>-I&lt;dir&gt;</option>
         </term>
         <listitem>
           <para>Give path to search for include files. Give several -I parameters to give several paths. First given path is
@@ -424,10 +507,18 @@ First given path is searched for contained header files first. If paths are rela
       </varlistentry>
       <varlistentry>
         <term>
-          <option>--config-exclude-file=&lt;file&gt;</option>
+          <option>--config-excludes-file=&lt;file&gt;</option>
         </term>
         <listitem>
           <para>A file that contains a list of config-excludes.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--file-filter=&lt;str&gt;</option>
+        </term>
+        <listitem>
+          <para>Filter files to check based on pattern. For example: "--file-filter=src/test*" would only check files in src/ that start with "test". Filter must include the start folder in the pattern.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -441,7 +532,7 @@ where autoconf.h needs to be included for every file compiled. Works the same wa
       </varlistentry>
       <varlistentry>
         <term>
-          <option>-i &lt;dir&gt;</option>
+          <option>-i&lt;dir&gt;</option>
         </term>
         <listitem>
           <para>Give path to ignore. Give several -i parameters to ignore several paths. Give directory name or filename with path as parameter.
@@ -468,7 +559,7 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
-          <option>-j &lt;jobs&gt;</option>
+          <option>-j&lt;jobs&gt;</option>
         </term>
         <listitem>
           <para>Start &lt;jobs&gt; threads to do the checking work.</para>
@@ -476,7 +567,7 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
-          <option>-l &lt;load&gt;</option>
+          <option>-l&lt;load&gt;</option>
         </term>
         <listitem>
           <para>Specifies that no new threads should be started if there are other threads running and the load average is at least
@@ -519,6 +610,14 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
+          <option>--performance-valueflow-max-if-count=&lt;num&gt;</option>
+        </term>
+        <listitem>
+          <para>Limit the maximum number of if statements in a function for ValueFlow analysis. When exceeded, some data flow analysis will be limited in that function to avoid performance issues.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>--platform=&lt;type&gt;</option>
         </term>
         <listitem>
@@ -536,6 +635,62 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
+          <option>--premium=&lt;type&gt;</option>
+        </term>
+        <listitem>
+          <para>Enable premium analysis features. Available types:</para>
+          <variablelist>
+            <varlistentry>
+              <term>bughunting</term>
+              <listitem>
+                <para>Enhanced bug detection with higher false positive rate</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>autosar</term>
+              <listitem>
+                <para>Check AUTOSAR coding guidelines</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>cert-c</term>
+              <listitem>
+                <para>Check CERT C coding standard</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>cert-c++</term>
+              <listitem>
+                <para>Check CERT C++ coding standard</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>misra-c++-2008</term>
+              <listitem>
+                <para>Check MISRA C++ 2008 coding guidelines</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--project=&lt;file&gt;</option>
+        </term>
+        <listitem>
+          <para>Import project file (solution, project, or compile database). This can be used to import Visual Studio solutions, compile databases from CMake, or Cppcheck project files.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--project-configuration=&lt;config&gt;</option>
+        </term>
+        <listitem>
+          <para>Specify a specific project configuration for project file analysis. For example: "--project-configuration=Release|Win32" when analyzing Visual Studio projects.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>-q</option>
         </term>
         <term>
@@ -547,13 +702,13 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
-          <option>-rp</option>
+          <option>-rp &lt;paths&gt;</option>
         </term>
         <term>
           <option>-rp=&lt;paths&gt;</option>
         </term>
         <term>
-          <option>--relative-paths;</option>
+          <option>--relative-paths &lt;paths&gt;</option>
         </term>
         <term>
           <option>--relative-paths=&lt;paths&gt;</option>
@@ -676,6 +831,14 @@ There are false positives with this option. Each result must be carefully invest
         </term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--template-location=&lt;format&gt;</option>
+        </term>
+        <listitem>
+          <para>Customize output format for additional location messages in multi-line warnings. Format specifiers: {file}, {line}, {column}, {info}, {code}. Example: "{file}:{line}: note: {info}\n{code}"</para>
         </listitem>
       </varlistentry>
       <varlistentry>
