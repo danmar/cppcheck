@@ -68,19 +68,19 @@ private:
         std::list<FileWithDetails> filelist;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::string f_s = fprefix() + "_" + std::to_string(i) + ".cpp";
-                filelist.emplace_back(f_s, Standards::Language::CPP, data.size());
+                std::string f_s = fprefix() + "_" + std::to_string(i) + ".c";
+                filelist.emplace_back(f_s, Standards::Language::C, data.size());
                 if (useFS) {
-                    fileSettings.emplace_back(std::move(f_s), Standards::Language::CPP, data.size());
+                    fileSettings.emplace_back(std::move(f_s), Standards::Language::C, data.size());
                 }
             }
         }
         else {
             for (const auto& f : opt.filesList)
             {
-                filelist.emplace_back(f, Standards::Language::CPP, data.size());
+                filelist.emplace_back(f, Standards::Language::C, data.size());
                 if (useFS) {
-                    fileSettings.emplace_back(f, Standards::Language::CPP, data.size());
+                    fileSettings.emplace_back(f, Standards::Language::C, data.size());
                 }
             }
         }
@@ -213,7 +213,7 @@ private:
               "{\n"
               "  (void)(*((int*)0));\n"
               "}");
-        ASSERT_EQUALS("[" + fprefix() + "_1.cpp:3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n", errout_str());
+        ASSERT_EQUALS("[" + fprefix() + "_1.c:3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n", errout_str());
     }
 
     void one_error_several_files() {
@@ -284,14 +284,14 @@ private:
               dinit(CheckOptions,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_1.cpp: ") != std::string::npos);
-        TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_2.cpp: ") != std::string::npos);
+        TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_1.c: ") != std::string::npos);
+        TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_2.c: ") != std::string::npos);
     }
 
     void suppress_error_library() {
         SUPPRESS;
         const Settings settingsOld = settings; // TODO: get rid of this
-        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        const char xmldata[] = R"(<def format="2"><markup ext=".c" reporterrors="false"/></def>)";
         settings = settingsBuilder().libraryxml(xmldata).build();
         check(2, 1, 0,
               "void f()\n"
