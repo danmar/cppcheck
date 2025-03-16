@@ -5777,8 +5777,7 @@ private:
                       "    B<T, C>{ a, c };\n"
                       "}\n");
         const Token *B = db ? Token::findsimplematch(tokenizer.tokens(), "B < T , C >") : nullptr;
-        ASSERT(B != nullptr);
-        ASSERT(!B->type());
+        ASSERT(B && !B->type());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
