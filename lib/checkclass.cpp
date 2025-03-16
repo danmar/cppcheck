@@ -1438,8 +1438,8 @@ void CheckClass::checkMemset()
                     alloc = mSettings->library.getReallocFuncInfo(tok->tokAt(2));
                 if (!alloc || alloc->bufferSize == Library::AllocFunc::BufferSize::none)
                     continue;
-                const std::set<const Scope *> parsedTypes;
-                checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
+                std::set<const Scope *> parsedTypes;
+                checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, std::move(parsedTypes));
 
                 if (printWarnings && tok->variable()->typeScope()->numConstructors > 0)
                     mallocOnClassWarning(tok, tok->strAt(2), tok->variable()->typeScope()->classDef);

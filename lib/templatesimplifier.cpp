@@ -993,9 +993,9 @@ void TemplateSimplifier::getTemplateInstantiations()
             // Add outer template..
             if (templateParameters(tok->next()) || tok->strAt(2) == ">") {
                 while (true) {
-                    const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") +
-                                                 qualification + (qualification.empty()?"":" :: ") + tok->str();
-                    const auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(fullName));
+                    std::string fullName = scopeName + (scopeName.empty()?"":" :: ") +
+                                           qualification + (qualification.empty()?"":" :: ") + tok->str();
+                    const auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(std::move(fullName)));
                     if (it != mTemplateDeclarations.end()) {
                         // full name matches
                         addInstantiation(tok, it->scope());
@@ -3321,9 +3321,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         // New classname/funcname..
         const std::string newName(templateDeclaration.name() + " < " + typeForNewName + " >");
-        const std::string newFullName(templateDeclaration.scope() + (templateDeclaration.scope().empty() ? "" : " :: ") + newName);
+        std::string newFullName(templateDeclaration.scope() + (templateDeclaration.scope().empty() ? "" : " :: ") + newName);
 
-        if (expandedtemplates.insert(newFullName).second) {
+        if (expandedtemplates.insert(std::move(newFullName)).second) {
             expandTemplate(templateDeclaration, templateDeclaration, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
             mChanged = true;

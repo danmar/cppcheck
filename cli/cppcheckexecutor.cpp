@@ -653,7 +653,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)
-        mSarifReport.addFinding(msgCopy);
+        mSarifReport.addFinding(std::move(msgCopy));
     else if (mSettings.outputFormat == Settings::OutputFormat::xml)
         reportErr(msgCopy.toXML());
     else

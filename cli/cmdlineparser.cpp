@@ -1223,7 +1223,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     for (;;) {
                         const std::string::size_type pos = paths.find(';');
                         if (pos == std::string::npos) {
-                            mSettings.basePaths.emplace_back(Path::fromNativeSeparators(paths));
+                            mSettings.basePaths.emplace_back(Path::fromNativeSeparators(std::move(paths)));
                             break;
                         }
                         mSettings.basePaths.emplace_back(Path::fromNativeSeparators(paths.substr(0, pos)));
