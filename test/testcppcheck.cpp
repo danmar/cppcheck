@@ -170,10 +170,9 @@ private:
     {
         REDIRECT;
         ScopedFile file(fname,
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         int called = 0;
@@ -255,10 +254,9 @@ private:
     {
         REDIRECT;
         ScopedFile file(fname,
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         int called = 0;
@@ -339,10 +337,9 @@ private:
     void suppress_error_library() const
     {
         ScopedFile file("suppr_err_lib.cpp",
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
@@ -364,7 +361,7 @@ private:
         ScopedFile file("inc.h",
                         "inline void f()\n"
                         "{\n"
-                        "  (void)*((int*)0);\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
         ScopedFile test_file_a("a.cpp",
                                "#include \"inc.h\"");
