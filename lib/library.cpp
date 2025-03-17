@@ -1892,6 +1892,8 @@ bool Library::isSmartPointer(const Token* tok) const
 
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
+    if (!tok)
+        return nullptr;
     std::string typestr = withoutStd ? "std::" : "";
     if (tok->str() == "::")
         tok = tok->next();

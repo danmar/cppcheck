@@ -612,6 +612,8 @@ private:
         TEST_CASE(testValuetypeOriginalName);
 
         TEST_CASE(dumpFriend); // Check if isFriend added to dump file
+
+        TEST_CASE(smartPointerLookupCtor); // #13719);
     }
 
     void array() {
@@ -11189,6 +11191,14 @@ private:
         std::ostringstream ostr;
         db->printXml(ostr);
         ASSERT(ostr.str().find(" isFriend=\"true\"") != std::string::npos);
+    }
+
+    void smartPointerLookupCtor() { // #13719
+        // do not crash in smartpointer lookup
+        GET_SYMBOL_DB("struct S { int v; S(int i); };\n"
+                      "void f() { S(0).v; }");
+
+        ASSERT(db);
     }
 };
 
