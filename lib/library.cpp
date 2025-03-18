@@ -1327,6 +1327,27 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
 {
     if (!typeStart)
         return nullptr;
+    if (typeStart->tokType() != Token::Type::eType && typeStart->tokType() != Token::Type::eName) {
+        return nullptr;
+    }
+    // bail out on function declarations (without implementation)
+    if (typeStart->tokType() == Token::Type::eName &&
+        typeStart->previous() &&
+        (typeStart->previous()->tokType() == Token::Type::eType || // return type
+        typeStart->previous()->tokType() == Token::Type::eArithmeticalOp || // *
+        typeStart->previous()->tokType() == Token::Type::eOther || // ::
+        typeStart->previous()->tokType() == Token::Type::eName // qualified return type
+        )) {
+        return nullptr;
+    }
+    // TODO: bail out on standard types
+    // TODO: stringFromTokenRange in Token::expressionString()
+    // TODO: update_property_info in Token::str()
+    if (typeStart->str() == "stringFromTokenRange")
+    {
+        int i;
+    }
+    std::cout << typeStart->str() << std::endl;
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
@@ -1892,6 +1913,11 @@ bool Library::isSmartPointer(const Token* tok) const
 
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
+    if (tok->tokType() != Token::Type::eType && tok->tokType() != Token::Type::eName) {
+        return nullptr;
+    }
+
+    // TODO: this is flawed and might result in lookups like "uint64_tflags_"
     std::string typestr = withoutStd ? "std::" : "";
     if (tok->str() == "::")
         tok = tok->next();
