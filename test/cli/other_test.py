@@ -3166,7 +3166,6 @@ def test_dir_ignore(tmp_path):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=str(tmp_path))
 
 
-
 def test_check_headers(tmp_path):
     test_file_h = tmp_path / 'test.h'
     with open(test_file_h, 'wt') as f:
@@ -3199,7 +3198,6 @@ void f() {}
     assert stderr.splitlines() == []  # no error since the header is not checked
 
 
-
 def test_unique_error(tmp_path):  # #6366
     test_file = tmp_path / 'test.c'
     with open(test_file, 'wt') as f:
@@ -3225,3 +3223,150 @@ def test_unique_error(tmp_path):  # #6366
         "{}:4:13: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file),
         "{}:4:21: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file)
     ]
+
+
+def test_check_unused_templates_class(tmp_path):
+    test_file_h = tmp_path / 'test.h'
+    with open(test_file_h, 'wt') as f:
+        f.write(
+"""template<class T>
+class HdrCl1
+{
+    HdrCl1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+class HdrCl2
+{
+    HdrCl2()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<class T>
+struct HdrSt1
+{
+    HdrSt1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+struct HdrSt2
+{
+    HdrSt2()
+    {
+        (void)(*((int*)0));
+    }
+};
+""")
+
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include "test.h"
+
+template<class T>
+class Cl1
+{
+    CL1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+class Cl2
+{
+    Cl2()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<class T>
+struct St1
+{
+    St1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+struct St2
+{
+    St2()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--no-check-unused-templates',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []  # no error since the unused templates are not being checked
+
+
+@pytest.mark.xfail(strict=True)  # TODO: only the first unused templated function is not being checked
+def test_check_unused_templates_func(tmp_path):  # #13714
+    test_file_h = tmp_path / 'test.h'
+    with open(test_file_h, 'wt') as f:
+        f.write(
+"""template<class T>
+void f_t_hdr_1()
+{
+    (void)(*((int*)0));
+}
+
+template<typename T>
+void f_t_hdr_2()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include "test.h"
+
+template<class T>
+void f_t_1()
+{
+    (void)(*((int*)0));
+}
+
+template<typename T>
+void f_t_2()
+{
+    (void)(*((int*)0));
+}
+
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--no-check-unused-templates',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []  # no error since the unused templates are not being checked
