@@ -1656,11 +1656,11 @@ bool isSameExpression(bool macro, const Token *tok1, const Token *tok2, const Se
             const Token* varTok1 = nullptr;
             const Token* varTok2 = exprTok;
             const ValueFlow::Value* value = nullptr;
-            if (const ValueFlow::Value* v_int = condTok->astOperand1()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
-                value = v_int;
+            if (const ValueFlow::Value* vi1 = condTok->astOperand1()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                value = vi1;
                 varTok1 = condTok->astOperand2();
-            } else if (const ValueFlow::Value* v_int = condTok->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
-                value = v_int;
+            } else if (const ValueFlow::Value* vi2 = condTok->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                value = vi2;
                 varTok1 = condTok->astOperand1();
             }
             const bool exprIsNot = Token::simpleMatch(exprTok, "!");
