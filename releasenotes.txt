@@ -13,6 +13,7 @@ Changed interface:
 -
 
 Deprecations:
+- Support for building with Qt 5 will be removed in Cppcheck 2.19.
 -
 
 Other:
