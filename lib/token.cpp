@@ -107,7 +107,8 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
 
 void Token::update_property_info()
 {
-    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+    setFlag(fIsControlFlowKeyword, false);
+    // TODO: clear fIsLong
     isStandardType(false);
 
     if (!mStr.empty()) {
@@ -124,11 +125,21 @@ void Token::update_property_info()
         else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
-            else if (mTokensFrontBack.list.isKeyword(mStr) || mStr == "asm") // TODO: not a keyword
+            else if (mTokensFrontBack.list.isKeyword(mStr)) {
                 tokType(eKeyword);
+                update_property_isStandardType();
+                if (mTokType != eType) // cannot be a control-flow keyword when it is a type
+                    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+            }
+            else if (mStr == "asm") { // TODO: not a keyword
+                tokType(eKeyword);
+            }
             // TODO: remove condition? appears to be (no longer necessary) protection for reset of varids in Tokenizer::setVarId()
-            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
+            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword) {
                 tokType(eName);
+                // some types are not being treated as keywords
+                update_property_isStandardType();
+            }
         } else if (simplecpp::Token::isNumberLike(mStr)) {
             if ((MathLib::isInt(mStr) || MathLib::isFloat(mStr)) && mStr.find('_') == std::string::npos)
                 tokType(eNumber);
@@ -148,6 +159,7 @@ void Token::update_property_info()
                   mStr == "||" ||
                   mStr == "!"))
             tokType(eLogicalOp);
+        // TODO: should link check only apply to < and >? Token::link() suggests so
         else if (mStr.size() <= 2 && !mLink &&
                  (mStr == "==" ||
                   mStr == "!=" ||
@@ -168,11 +180,12 @@ void Token::update_property_info()
             tokType(eEllipsis);
         else
             tokType(eOther);
-
-        update_property_isStandardType();
     } else {
         tokType(eNone);
     }
+    // TODO: make sure varid is only set for eVariable
+    //assert(!mImpl->mVarId || mTokType == eVariable);
+    // TODO: validate type for linked token?
 }
 
 static const std::unordered_set<std::string> stdTypes = { "bool"
