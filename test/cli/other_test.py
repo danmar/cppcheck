@@ -3405,7 +3405,7 @@ def __test_clang_tidy(tmpdir, use_compdb):
     ]
     assert stderr.splitlines() == [
         '{}:3:14: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file),
-        '{}:3:14: style:  C-style casts are discouraged; use static_cast/const_cast/reinterpret_cast  [clang-tidy-google-readability-casting]'.format(test_file)  # TODO: get rid of extra whitespaces
+        '{}:3:14: style: C-style casts are discouraged; use static_cast/const_cast/reinterpret_cast [clang-tidy-google-readability-casting]'.format(test_file)
     ]
 
 

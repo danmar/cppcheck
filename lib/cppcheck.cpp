@@ -1965,7 +1965,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
             errmsg.severity = Severity::style;
 
         errmsg.file0 = std::move(fixedpath);
-        errmsg.setmsg(messageString);
+        errmsg.setmsg(trim(messageString));
         mErrorLogger.reportErr(errmsg);
     }
 }
