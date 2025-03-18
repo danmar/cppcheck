@@ -1909,7 +1909,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     // TODO: get rid of hard-coded checks
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (const int exitcode = mExecuteCommand(exe, split(args), "", output)) {
+    if (const int exitcode = mExecuteCommand(exe, split(args), "2>&1", output)) {
         std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
         return;
     }

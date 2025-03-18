@@ -3405,14 +3405,13 @@ def __test_clang_tidy(tmpdir, use_compdb):
     ]
     assert stderr.splitlines() == [
         '{}:3:14: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file),
-        '1 warning generated.',  # TODO: get rid of this
         '{}:3:14: style:  C-style casts are discouraged; use static_cast/const_cast/reinterpret_cast  [clang-tidy-google-readability-casting]'.format(test_file)  # TODO: get rid of extra whitespaces
     ]
 
 
 @pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
 @pytest.mark.xfail(strict=True)  # TODO: clang-tidy is only invoked with FileSettings - see #12053
-def test_clang_tidy(tmpdir):
+def test_clang_tidy(tmpdir):  # #12053
     __test_clang_tidy(tmpdir, False)
 
 
