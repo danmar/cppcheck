@@ -188,7 +188,7 @@ jobs:
       - name: Install libc++
         if: matrix.stdlib == 'libc++'
         run: |
-          sudo apt-get install -y libc++-19-dev
+          sudo apt-get install -y libc++-20-dev
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
