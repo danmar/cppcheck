@@ -267,8 +267,8 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
                                                    ? ValueFlow::isOutOfBounds(makeSizeValue(size, path), indexTokens[i])
                                                    : std::vector<ValueFlow::Value>{};
         if (values.empty()) {
-            if (indexTokens[i]->hasKnownIntValue())
-                indexValues.push_back(*indexTokens[i]->getKnownValue(ValueFlow::Value::ValueType::INT));
+            if (const ValueFlow::Value* v = indexTokens[i]->getKnownValue(ValueFlow::Value::ValueType::INT))
+                indexValues.push_back(*v);
             else
                 indexValues.push_back(ValueFlow::Value::unknown());
             continue;

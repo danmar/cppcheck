@@ -317,8 +317,8 @@ static void parseCompareEachInt(
     const std::function<void(const Token* varTok, ValueFlow::Value true_value, ValueFlow::Value false_value)>& each)
 {
     parseCompareEachInt(tok, each, [](const Token* t) -> std::vector<ValueFlow::Value> {
-        if (t->hasKnownIntValue())
-            return {*t->getKnownValue(ValueFlow::Value::ValueType::INT)};
+        if (const ValueFlow::Value* v = t->getKnownValue(ValueFlow::Value::ValueType::INT))
+            return {*v};
         std::vector<ValueFlow::Value> result;
         std::copy_if(t->values().cbegin(), t->values().cend(), std::back_inserter(result), [&](const ValueFlow::Value& v) {
             if (v.path < 1)
@@ -767,12 +767,12 @@ static void valueFlowArrayElement(TokenList& tokenlist, const Settings& settings
                     if (index < 0 || index >= args.size())
                         continue;
                     const Token* arg = args[static_cast<std::size_t>(index)];
-                    if (!arg->hasKnownIntValue())
-                        continue;
                     const ValueFlow::Value* v = arg->getKnownValue(ValueFlow::Value::ValueType::INT);
-                    result.intvalue = v->intvalue;
-                    result.errorPath.insert(result.errorPath.end(), v->errorPath.cbegin(), v->errorPath.cend());
-                    setTokenValue(tok, std::move(result), settings);
+                    if (v) {
+                        result.intvalue = v->intvalue;
+                        result.errorPath.insert(result.errorPath.end(), v->errorPath.cbegin(), v->errorPath.cend());
+                        setTokenValue(tok, std::move(result), settings);
+                    }
                 }
             }
         }
@@ -1065,8 +1065,8 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
                 continue;
             std::vector<ValueFlow::Value> values;
             for (const Token* tok2 : tokens) {
-                if (tok2->hasKnownIntValue()) {
-                    values.emplace_back(*tok2->getKnownValue(ValueFlow::Value::ValueType::INT));
+                if (const ValueFlow::Value* v = tok2->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                    values.emplace_back(*v);
                 } else {
                     ValueFlow::Value symValue{};
                     symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
@@ -3606,12 +3606,12 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     continue;
                 const ValueFlow::Value* constant = nullptr;
                 const Token* vartok = nullptr;
-                if (tok->astOperand1()->hasKnownIntValue()) {
-                    constant = tok->astOperand1()->getKnownValue(ValueFlow::Value::ValueType::INT);
+                if (const ValueFlow::Value* v = tok->astOperand1()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                    constant = v;
                     vartok = tok->astOperand2();
                 }
-                if (tok->astOperand2()->hasKnownIntValue()) {
-                    constant = tok->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
+                if (const ValueFlow::Value* v = tok->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                    constant = v;
                     vartok = tok->astOperand1();
                 }
                 if (!constant)
