@@ -3171,21 +3171,21 @@ def test_check_headers(tmp_path):
     test_file_h = tmp_path / 'test.h'
     with open(test_file_h, 'wt') as f:
         f.write(
-            """
-            inline void hdr()
-            {
-                (void)(*((int*)0));
-            }
-            """)
+"""
+inline void hdr()
+{
+    (void)(*((int*)0));
+}
+""")
 
     test_file_c = tmp_path / 'test.c'
     with open(test_file_c, 'wt') as f:
         f.write(
-            """
-            #include "test.h"
-            
-            void f() {}
-            """)
+"""
+#include "test.h"
+
+void f() {}
+""")
 
     args = [
         '-q',
@@ -3197,3 +3197,31 @@ def test_check_headers(tmp_path):
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
     assert stderr.splitlines() == []  # no error since the header is not checked
+
+
+
+def test_unique_error(tmp_path):  # #6366
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    const long m[9] = {};
+    long a=m[9], b=m[9];
+    (void)a;
+    (void)b;
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        "{}:4:13: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file),
+        "{}:4:21: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file)
+    ]

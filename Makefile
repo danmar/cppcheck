@@ -286,6 +286,7 @@ TESTOBJ =     test/fixture.o \
               test/testcppcheck.o \
               test/testerrorlogger.o \
               test/testexceptionsafety.o \
+              test/testexecutor.o \
               test/testfilelister.o \
               test/testfilesettings.o \
               test/testfunctions.o \
@@ -750,6 +751,9 @@ test/testerrorlogger.o: test/testerrorlogger.cpp externals/tinyxml2/tinyxml2.h l
 
 test/testexceptionsafety.o: test/testexceptionsafety.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/checkers.h lib/checkexceptionsafety.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testexceptionsafety.cpp
+
+test/testexecutor.o: test/testexecutor.cpp cli/executor.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testexecutor.cpp
 
 test/testfilelister.o: test/testfilelister.cpp cli/filelister.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h test/fixture.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testfilelister.cpp
