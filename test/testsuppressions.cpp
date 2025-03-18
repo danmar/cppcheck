@@ -1708,7 +1708,7 @@ private:
     }
 
     void suppressionWildcard() const {
-        const std::string supprLine = "id:test*.cpp";
+        //const std::string supprLine = "id:test*.cpp";
 
         {
             SuppressionList suppressions;
