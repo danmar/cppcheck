@@ -27,7 +27,10 @@ functionStatic:*/ui_fileview.h
 # --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-autoNoType
+autoNoType:cli/*
+autoNoType:lib/*
+autoNoType:gui/*
+autoNoType:test/*
 # ticket 11631
 templateInstantiation:test/testutils.cpp
 
