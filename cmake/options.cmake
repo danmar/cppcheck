@@ -20,6 +20,7 @@ endif()
 option(ANALYZE_ADDRESS      "Build with AddressSanitzer to detect memory error"             OFF)
 option(ANALYZE_THREAD       "Build with ThreadSanitizer to detect data races"               OFF)
 option(ANALYZE_UNDEFINED    "Build with UndefinedBehaviorSanitizer to detect undefined behavior" OFF)
+option(ANALYZE_TYPE         "Build with TypeSanitizer to detect aliasing issues"            OFF)
 
 option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                                      OFF)
 if(WARNINGS_ARE_ERRORS)
