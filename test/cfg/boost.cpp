@@ -9,15 +9,19 @@
 
 // cppcheck-suppress-file valueFlowBailout
 
-#include <boost/config.hpp>
+#include <cstdio>
+#include <new>
+#include <tuple>
+
+#include <boost/config.hpp> // IWYU pragma: keep
 #include <boost/math/special_functions/round.hpp>
-#include <boost/endian/conversion.hpp>
+#include <boost/endian/conversion.hpp> // IWYU pragma: keep
 #include <boost/bind/bind.hpp>
-#include <boost/function.hpp>
+#include <boost/function.hpp> // IWYU pragma: keep
 #include <boost/smart_ptr/scoped_array.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/mutex.hpp> // IWYU pragma: keep
 #include <boost/thread/lock_guard.hpp>
-#include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp> // IWYU pragma: keep
 #include <boost/core/scoped_enum.hpp>
 #include <boost/foreach.hpp>
 
