@@ -69,6 +69,7 @@ private:
         TEST_CASE(version);
         TEST_CASE(loadLibErrors);
         TEST_CASE(loadLibCombinations);
+        TEST_CASE(smartpointer);
     }
 
     void isCompliantValidationExpression() const {
@@ -868,6 +869,8 @@ private:
         ASSERT_EQUALS(F.endPattern, "");
         ASSERT_EQUALS(F.itEndPattern, ":: iterator");
 
+        ASSERT(!library.detectContainerOrIterator(nullptr));
+
         {
             const SimpleTokenizer var(*this, "std::A<int> a;");
             ASSERT_EQUALS(&A, library.detectContainer(var.tokens()));
@@ -1139,6 +1142,15 @@ private:
             const Settings s = settingsBuilder().library("std.cfg").library("windows.cfg").library("mfc.cfg").build();
             ASSERT_EQUALS(s.library.defines().empty(), false);
         }
+    }
+
+    void smartpointer() const {
+        const Settings s = settingsBuilder().library("std.cfg").build();
+        const Library& library = s.library;
+
+        ASSERT(!library.detectSmartPointer(nullptr));
+
+        // TODO: add more tests
     }
 };
 
