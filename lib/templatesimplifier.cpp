@@ -284,9 +284,8 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
     for (const Token *tok = mTokenList.front(); tok; tok = tok->next()) {
         // skip executing scopes (ticket #3183)..
         if (Token::simpleMatch(tok, "( {")) {
-            tok = tok->link();
-            if (!tok)
-                syntaxError(nullptr);
+            if (!tok->link())
+                syntaxError(tok, "Missing closing bracket");
         }
         // skip executing scopes..
         const Token *start = Tokenizer::startOfExecutableScope(tok);
@@ -296,16 +295,21 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
 
         // skip executing scopes (ticket #1985)..
         else if (Token::simpleMatch(tok, "try {")) {
+            if (!tok->linkAt(1))
+                syntaxError(tok, "Missing closing bracket");
             tok = tok->linkAt(1);
             while (Token::simpleMatch(tok, "} catch (")) {
+                if (!tok->linkAt(2))
+                    syntaxError(tok, "Missing closing bracket");
                 tok = tok->linkAt(2);
-                if (Token::simpleMatch(tok, ") {"))
+                if (Token::simpleMatch(tok, ") {")) {
+                    if (!tok->linkAt(1))
+                        syntaxError(tok, "Missing closing bracket");
                     tok = tok->linkAt(1);
+                }
             }
         }
 
-        if (!tok)
-            syntaxError(nullptr);
         // not start of statement?
         if (tok->previous() && !Token::Match(tok, "[;{}]"))
             continue;
@@ -406,9 +410,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             if (closing) {
                 if (closing->str() == ">>")
                     return numberOfParameters;
+                if (!closing->next())
+                    syntaxError(closing, "Missing expected token after '>'.");
                 tok = closing->next();
-                if (!tok)
-                    syntaxError(tok);
                 if (Token::Match(tok, ">|>>|>>="))
                     return numberOfParameters;
                 if (tok->str() == ",") {
@@ -509,7 +513,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         // Function pointer or prototype..
         while (Token::Match(tok, "(|[")) {
             if (!tok->link())
-                syntaxError(tok);
+                syntaxError(tok, "Missing closing bracket");
 
             tok = tok->link()->next();
             while (Token::Match(tok, "const|volatile")) // Ticket #5786: Skip function cv-qualifiers
@@ -1666,6 +1670,8 @@ void TemplateSimplifier::expandTemplate(
             dst = it->second;
             dstStart = dst->previous();
             const Token * temp1 = dst->tokAt(1)->findClosingBracket();
+            if (!temp1)
+                syntaxError(dst->tokAt(1), "Missing closing bracket");
             const Token * temp2 = temp1->tokAt(getTemplateNamePosition(temp1));
             start = temp1->next();
             end = temp2->linkAt(1)->next();
@@ -4059,7 +4065,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
     }
 }
 
-void TemplateSimplifier::syntaxError(const Token *tok)
+void TemplateSimplifier::syntaxError(const Token *tok, const std::string &msg)
 {
-    throw InternalError(tok, "syntax error", InternalError::SYNTAX);
+    throw InternalError(tok, "Syntax error. " + msg, InternalError::SYNTAX);
 }
