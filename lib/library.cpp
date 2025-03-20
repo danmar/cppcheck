@@ -366,6 +366,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     AllocFunc temp;
                     temp.groupId = allocationId;
 
+                    temp.noFail = memorynode->BoolAttribute("no-fail", false);
                     temp.initData = memorynode->BoolAttribute("init", true);
                     temp.arg = memorynode->IntAttribute("arg", -1);
 

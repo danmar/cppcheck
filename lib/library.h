@@ -88,6 +88,7 @@ public:
         int bufferSizeArg2{};
         int reallocArg{};
         bool initData{};
+        bool noFail{};
     };
 
     /** get allocation info for function */
