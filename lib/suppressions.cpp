@@ -391,7 +391,8 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
         }
         if (hash > 0 && hash != errmsg.hash)
             return Result::Checked;
-        if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
+        // the empty check is a hack to allow wildcard suppressions on IDs to be marked as checked
+        if (!errorId.empty() && (errmsg.errorId.empty() || !matchglob(errorId, errmsg.errorId)))
             return Result::Checked;
         if ((SuppressionList::Type::block == type) && ((errmsg.lineNumber < lineBegin) || (errmsg.lineNumber > lineEnd)))
             return Result::Checked;

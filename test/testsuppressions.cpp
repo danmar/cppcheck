@@ -1783,6 +1783,20 @@ private:
             }
             ASSERT(suppressions.getUnmatchedGlobalSuppressions(true).empty());
         }
+
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("*:test*.cpp"));
+            // the empty ID should be disallowed but it is use as a hack to mark wildcards on error IDs as checked
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("", "test.cpp", 1)));
+            {
+                const auto supprs = suppressions.getSuppressions();
+                const auto suppr = supprs.cbegin();
+                ASSERT(suppr->checked);
+                ASSERT(!suppr->matched);
+            }
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions(true).empty());
+        }
     }
 };
 
