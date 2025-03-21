@@ -142,6 +142,7 @@ public:
         struct Alloc {
             bool isRealloc{};
             bool init{};
+            bool noFail{};
             int arg = -1; // -1: Has no optional "realloc-arg" attribute
             int reallocArg = -1; // -1: Has no optional "arg" attribute
             QString bufferSize;
