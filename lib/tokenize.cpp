@@ -9921,10 +9921,10 @@ void Tokenizer::simplifyBitfields()
             }
         }
 
-        if (Token::Match(tok->next(), "const| %type% %name% :") &&
+        if (Token::Match(tok->next(), "const|volatile| %type% %name% :") &&
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
-            Token *tok1 = (tok->strAt(1) == "const") ? tok->tokAt(3) : tok->tokAt(2);
+            Token *tok1 = Token::Match(tok->next(), "const|volatile") ? tok->tokAt(3) : tok->tokAt(2);
             if (Token::Match(tok1, "%name% : %num% [;=]"))
                 tok1->setBits(static_cast<unsigned char>(MathLib::toBigNumber(tok1->tokAt(2))));
             if (tok1 && tok1->tokAt(2) &&
@@ -9945,7 +9945,7 @@ void Tokenizer::simplifyBitfields()
             } else {
                 tok->next()->deleteNext(2);
             }
-        } else if (Token::Match(tok->next(), "const| %type% : %num%|%bool% ;") &&
+        } else if (Token::Match(tok->next(), "const|volatile| %type% : %num%|%bool% ;") &&
                    tok->strAt(1) != "default") {
             const int offset = (tok->strAt(1) == "const") ? 1 : 0;
             if (!Token::Match(tok->tokAt(3 + offset), "[{};()]")) {
