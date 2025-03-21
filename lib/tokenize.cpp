@@ -110,7 +110,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
     const Token * tok2 = tok->previous();
     while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|;"))
         tok2 = tok2->previous();
-    return Token::Match(tok2, "class|struct|union|enum");
+    return tok2 && tok2->isKeyword() && Token::Match(tok2, "class|struct|union|enum");
 }
 
 //---------------------------------------------------------------------------
@@ -4422,6 +4422,10 @@ static bool setVarIdClassDeclaration(Token* const startToken,
         }
         if (tok->str() == "{") {
             inEnum = isEnumStart(tok);
+            if (!inEnum && isClassStructUnionEnumStart(tok)) { // nested type
+                tok = tok->link();
+                continue;
+            }
             if (initList && !initListArgLastToken)
                 initList = false;
             ++indentlevel;
