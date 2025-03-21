@@ -88,6 +88,7 @@ private:
         TEST_CASE(oppositeInnerConditionOr);
         TEST_CASE(oppositeInnerConditionEmpty);
         TEST_CASE(oppositeInnerConditionFollowVar);
+        TEST_CASE(oppositeInnerConditionLambda);
 
         TEST_CASE(identicalInnerCondition);
 
@@ -2729,6 +2730,22 @@ private:
               "    if (d != 0) {\n"
               "        int i = d;\n"
               "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void oppositeInnerConditionLambda() {
+        check("void f() {\n" // #13728
+              "    for (int i = 0; i < 2;) {\n"
+              "        auto inc = [&]() {\n"
+              "            if (i >= 2)\n"
+              "                throw 0;\n"
+              "            return i++;\n"
+              "        };\n"
+              "        inc();\n"
+              "        inc();\n"
+              "        inc();\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());

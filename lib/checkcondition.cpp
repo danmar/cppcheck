@@ -709,6 +709,8 @@ void CheckCondition::multiCondition2()
             const Token * const endToken = tok->scope()->bodyEnd;
 
             for (; tok && tok != endToken; tok = tok->next()) {
+                if (tok->scope() != cond1->scope() && tok->scope()->type == ScopeType::eLambda)
+                    continue;
                 if (isExpressionChangedAt(cond1, tok, 0, false, *mSettings))
                     break;
                 if (Token::Match(tok, "if|return")) {
