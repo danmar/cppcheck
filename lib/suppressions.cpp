@@ -311,9 +311,13 @@ bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression&
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
                                          std::bind(&Suppression::isSameParameters, &suppression, std::placeholders::_1));
     if (foundSuppression != mSuppressions.end()) {
-        // Update matched state of existing global suppression
-        if (!suppression.isLocal() && suppression.matched)
-            foundSuppression->matched = suppression.matched;
+        // Update state of existing global suppression
+        if (!suppression.isLocal()) {
+            if (suppression.checked)
+                foundSuppression->checked = true;
+            if (suppression.matched)
+                foundSuppression->matched = true;
+        }
         return true;
     }
 
