@@ -103,6 +103,8 @@ private:
         TEST_CASE(suppressionsParseXmlFile);
 
         TEST_CASE(toString);
+
+        TEST_CASE(suppressionFromErrorMessage);
     }
 
     void suppressionsBadId1() const {
@@ -1659,6 +1661,41 @@ private:
             s.errorId = "unitvar";
             s.symbolName = "sym";
             ASSERT_EQUALS("unitvar:sym", s.toString());
+        }
+    }
+
+    void suppressionFromErrorMessage() const {
+        {
+            const ErrorMessage msg({}, "test1.cpp", Severity::information, "msg", "id", Certainty::inconclusive);
+            const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {"m1", "m2"});
+            ASSERT_EQUALS("test1.cpp", msg_s.getFileName());
+            ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, msg_s.lineNumber);
+            ASSERT_EQUALS("id", msg_s.errorId);
+            ASSERT_EQUALS_ENUM(Certainty::inconclusive, msg_s.certainty);
+            ASSERT_EQUALS("", msg_s.symbolNames);
+            ASSERT_EQUALS(2, msg_s.macroNames.size());
+            auto it = msg_s.macroNames.cbegin();
+            ASSERT_EQUALS("m1", *it);
+            ++it;
+            ASSERT_EQUALS("m2", *it);
+        }
+        {
+            std::list<ErrorMessage::FileLocation> loc;
+            loc.emplace_back("test1.cpp", 1, 1);
+            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "msg", "id", Certainty::normal);
+            const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {});
+            ASSERT_EQUALS("test1.cpp", msg_s.getFileName());
+            ASSERT_EQUALS(1, msg_s.lineNumber);
+        }
+        {
+            std::list<ErrorMessage::FileLocation> loc;
+            loc.emplace_back("test1.cpp", 1, 1);
+            loc.emplace_back("test2.cpp", 2, 2);
+            loc.emplace_back("test3.cpp", 3, 3);
+            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "msg", "id", Certainty::normal);
+            const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {});
+            ASSERT_EQUALS("test3.cpp", msg_s.getFileName());
+            ASSERT_EQUALS(3, msg_s.lineNumber);
         }
     }
 };

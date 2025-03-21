@@ -48,6 +48,7 @@ SuppressionList::ErrorMessage SuppressionList::ErrorMessage::fromErrorMessage(co
         ret.setFileName(msg.callStack.back().getfile(false));
         ret.lineNumber = msg.callStack.back().line;
     } else {
+        ret.setFileName(msg.file0);
         ret.lineNumber = SuppressionList::Suppression::NO_LINE;
     }
     ret.certainty = msg.certainty;
