@@ -130,8 +130,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include <iostream>
-
 static void bailoutInternal(const std::string& type,
                             const TokenList& tokenlist,
                             ErrorLogger& errorLogger,
