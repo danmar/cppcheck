@@ -46,12 +46,10 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     g_printerr("err");
 
     GString * pGStr1 = g_string_new("test");
-    // cppcheck-suppress nullPointerOutOfMemory
     g_string_append(pGStr1, "a");
     g_string_free(pGStr1, TRUE);
 
     gchar * pGchar1 = g_strconcat("a", "b", NULL);
-    // cppcheck-suppress nullPointerOutOfMemory
     printf("%s", pGchar1);
     g_free(pGchar1);
 
