@@ -30,7 +30,7 @@ noExplicitConstructor:externals/tinyxml2/tinyxml2.h
 missingOverride:externals/tinyxml2/tinyxml2.h
 invalidPrintfArgType_sint:externals/tinyxml2/tinyxml2.h
 naming-privateMemberVariable:externals/tinyxml2/tinyxml2.h
-functionStatic:externals/tinyxml2/tinyxml2.h
+functionStatic:externals/tinyxml2/tinyxml2.cpp
 invalidPrintfArgType_uint:externals/tinyxml2/tinyxml2.cpp
 funcArgNamesDifferent:externals/tinyxml2/tinyxml2.cpp
 nullPointerRedundantCheck:externals/tinyxml2/tinyxml2.cpp
