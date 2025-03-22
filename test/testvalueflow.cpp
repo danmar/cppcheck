@@ -534,7 +534,14 @@ private:
     }
 
 #define testKnownValueOfTok(...) testKnownValueOfTok_(__FILE__, __LINE__, __VA_ARGS__)
-    bool testKnownValueOfTok_(const char* file, int line, const char code[], const char tokstr[], int value, const Settings *s = nullptr, bool cpp = true) {
+    bool testKnownValueOfTok_(const char* file,
+                              int line,
+                              const char code[],
+                              const char tokstr[],
+                              int value,
+                              const Settings* s = nullptr,
+                              bool cpp = true)
+    {
         std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr, s, cpp));
         return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& v) {
             return v.isKnown() && v.isIntValue() && v.intvalue == value;
@@ -605,7 +612,8 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 2, "\"abc\"", ValueFlow::Value::ValueType::TOK));
     }
 
-    void valueFlowTypeTraits() {
+    void valueFlowTypeTraits()
+    {
         ASSERT_EQUALS(true, testKnownValueOfTok("std::is_void<void>{};", "{", 1));
         ASSERT_EQUALS(true, testKnownValueOfTok("std::is_void<void>::value;", ":: value", 1));
         ASSERT_EQUALS(true, testKnownValueOfTok("std::is_void_v<void>;", "::", 1));
@@ -632,53 +640,53 @@ private:
         ASSERT_EQUALS(true, testKnownValueOfTok("std::is_reference<int&&>{};", "{", 1));
 
         {
-            const char *code;
+            const char* code;
             code = "void bar();\n"
-                                "void foo() { std::is_void<decltype(bar())>::value; }";
+                   "void foo() { std::is_void<decltype(bar())>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 1));
 
             code = "int bar();\n"
-                                "void foo() { std::is_void<decltype(bar())>::value; }";
+                   "void foo() { std::is_void<decltype(bar())>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "void bar();\n"
-                                "void foo() { std::is_void<decltype(bar)>::value; }";
+                   "void foo() { std::is_void<decltype(bar)>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "class A;\n"
-                                "void foo() { std::is_lvalue_reference<A>::value; }";
+                   "void foo() { std::is_lvalue_reference<A>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "class A;\n"
-                                "void foo() { std::is_lvalue_reference<A&>::value; }";
+                   "void foo() { std::is_lvalue_reference<A&>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 1));
 
             code = "class A;\n"
-                                "void foo() { std::is_lvalue_reference<A&&>::value; }";
+                   "void foo() { std::is_lvalue_reference<A&&>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "class A;\n"
-                                "void foo() { std::is_rvalue_reference<A>::value; }";
+                   "void foo() { std::is_rvalue_reference<A>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "class A;\n"
-                                "void foo() { std::is_rvalue_reference<A&>::value; }";
+                   "void foo() { std::is_rvalue_reference<A&>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "class A;\n"
-                                "void foo() { std::is_rvalue_reference<A&&>::value; }";
+                   "void foo() { std::is_rvalue_reference<A&&>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 1));
 
             code = "class A;\n"
-                                "void foo() { std::is_reference<A>::value; }";
+                   "void foo() { std::is_reference<A>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 0));
 
             code = "class A;\n"
-                                "void foo() { std::is_reference<A&>::value; }";
+                   "void foo() { std::is_reference<A&>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 1));
 
             code = "class A;\n"
-                                "void foo() { std::is_reference<A&&>::value; }";
+                   "void foo() { std::is_reference<A&&>::value; }";
             ASSERT_EQUALS(true, testKnownValueOfTok(code, ":: value", 1));
 
             code = "void foo() {\n"
