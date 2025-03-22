@@ -2820,7 +2820,7 @@ static bool scopesMatch(const std::string &scope1, const std::string &scope2, co
     return false;
 }
 
-static unsigned int tokDistance(const Token* tok1, const Token* tok2) { // TODO: use index()
+static unsigned int tokDistance(const Token* tok1, const Token* tok2) {
     unsigned int dist = 0;
     const Token* tok = tok1;
     while (tok != tok2) {
@@ -9950,7 +9950,7 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(typeTok, "%type% : %num%|%bool% ;") &&
                    typeTok->str() != "default") {
-            tok->deleteNext(4 + typeTok->index() - tok->index() + 1);
+            tok->deleteNext(4 + tokDistance(tok, typeTok) - 1);
             goback = true;
         }
 
