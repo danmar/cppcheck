@@ -1309,6 +1309,9 @@ public:
 
     const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
+        assert(!mImpl->mValues->empty());
+        assert(mImpl->mValues->front().isKnown());
+        assert(mImpl->mValues->front().valueType == ValueFlow::Value::ValueType::INT);
         return mImpl->mValues->front().intvalue;
     }
 

@@ -617,7 +617,7 @@ namespace {
                         if (!condTok->hasKnownIntValue() || inLoop) {
                             if (!analyzer->lowerToPossible())
                                 return Break(Analyzer::Terminate::Bail);
-                        } else if (condTok->values().front().intvalue == inElse) {
+                        } else if (condTok->getKnownIntValue() == inElse) {
                             return Break();
                         }
                         // Handle loop

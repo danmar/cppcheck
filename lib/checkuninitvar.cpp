@@ -292,8 +292,8 @@ static void conditionAlwaysTrueOrFalse(const Token *tok, const std::map<nonneg i
     if (!tok)
         return;
 
-    if (tok->hasKnownIntValue()) {
-        if (tok->getKnownIntValue() == 0)
+    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+        if (v->intvalue == 0)
             *alwaysFalse = true;
         else
             *alwaysTrue = true;

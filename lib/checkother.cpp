@@ -347,7 +347,7 @@ void CheckOther::warningOldStylePointerCast()
                 tok = tok->next();
 
             const Token *p = tok->tokAt(4);
-            if (p->hasKnownIntValue() && p->values().front().intvalue==0) // Casting nullpointers is safe
+            if (p->hasKnownIntValue() && p->getKnownIntValue()==0) // Casting nullpointers is safe
                 continue;
 
             if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
@@ -1399,8 +1399,8 @@ static bool isLargeContainer(const Variable* var, const Settings* settings)
     const std::size_t maxByValueSize = 2 * settings->platform.sizeof_pointer;
     if (var->dimensions().empty()) {
         if (vt->container->startPattern == "std :: bitset <") {
-            if (vt->containerTypeToken->hasKnownIntValue())
-                return vt->containerTypeToken->getKnownIntValue() / 8 > maxByValueSize;
+            if (const ValueFlow::Value* v = vt->containerTypeToken->getKnownValue(ValueFlow::Value::ValueType::INT))
+                return v->intvalue / 8 > maxByValueSize;
         }
         return false;
     }

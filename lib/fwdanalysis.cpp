@@ -223,8 +223,8 @@ FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *
             const Token *bodyStart = tok->linkAt(1)->next();
             const Token *conditionStart = tok->next();
             const Token *condTok = conditionStart->astOperand2();
-            if (condTok->hasKnownIntValue()) {
-                const bool cond = !!condTok->values().front().intvalue;
+            if (const ValueFlow::Value* v = condTok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                const bool cond = !!v->intvalue;
                 if (cond) {
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)

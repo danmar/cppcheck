@@ -267,8 +267,8 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
                                                    ? ValueFlow::isOutOfBounds(makeSizeValue(size, path), indexTokens[i])
                                                    : std::vector<ValueFlow::Value>{};
         if (values.empty()) {
-            if (indexTokens[i]->hasKnownIntValue())
-                indexValues.push_back(indexTokens[i]->values().front());
+            if (const ValueFlow::Value* v = indexTokens[i]->getKnownValue(ValueFlow::Value::ValueType::INT))
+                indexValues.push_back(*v);
             else
                 indexValues.push_back(ValueFlow::Value::unknown());
             continue;
@@ -1065,12 +1065,10 @@ void CheckBufferOverrun::objectIndex()
             const Token *idx = tok->astOperand2();
             if (!idx || !obj)
                 continue;
-            if (idx->hasKnownIntValue()) {
-                if (idx->getKnownIntValue() == 0)
+            if (const ValueFlow::Value* v = idx->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                if (v->intvalue == 0)
                     continue;
             }
-            if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
-                continue;
 
             std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(obj, false, -1);
             for (const ValueFlow::Value& v:values) {
