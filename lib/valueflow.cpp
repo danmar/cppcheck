@@ -130,6 +130,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include <iostream>
+
 static void bailoutInternal(const std::string& type,
                             const TokenList& tokenlist,
                             ErrorLogger& errorLogger,
@@ -589,6 +591,176 @@ static void valueFlowString(TokenList& tokenlist, const Settings& settings)
             strvalue.setKnown();
             setTokenValue(tok, std::move(strvalue), settings);
         }
+    }
+}
+
+static const Token* findTypeEnd(const Token* tok)
+{
+    while(Token::Match(tok, "%name%|::|<|(|*|&|&&") && !tok->isVariable()) {
+        if(tok->link()) 
+            tok = tok->link();
+        tok = tok->next();
+    }
+    return tok;
+}
+
+static std::vector<const Token*> evaluateType(const Token* start, const Token* end)
+{
+    std::vector<const Token*> result;
+    if(!start)
+        return result;
+    if(!end)
+        return result;
+    for(const Token* tok=start;tok != end;tok = tok->next()) {
+        if(!Token::Match(tok, "%name%|::|<|(|*|&|&&"))
+            return {};
+        if(Token::simpleMatch(tok, "decltype (")) {
+            if(Token::Match(tok->next(), "( %name% )")) {
+                const Token* vartok = tok->tokAt(2);
+                if(vartok->function() && !vartok->variable()) {
+                    result.push_back(vartok);
+                } else {
+                    auto t = Token::typeDecl(vartok);
+                    if(!t.first || !t.second)
+                        return {};
+                    auto inner = evaluateType(t.first, t.second);
+                    if(inner.empty())
+                        return {};
+                    result.insert(result.end(), inner.begin(), inner.end());
+                }
+            } else if (Token::Match(tok->next(), "( %name% (|{") && Token::Match(tok->linkAt(3), "}|) )")) {
+                const Token* ftok = tok->tokAt(3);
+                auto t = Token::typeDecl(ftok);
+                if(!t.first || !t.second)
+                    return {};
+                auto inner = evaluateType(t.first, t.second);
+                if(inner.empty())
+                    return {};
+                result.insert(result.end(), inner.begin(), inner.end());
+            } else {
+                // We cant evaluate the decltype so bail
+                return {};
+            }
+            tok = tok->linkAt(1);
+
+        } else {
+            if(tok->link()) {
+                auto inner = evaluateType(tok->next(), tok->link());
+                if(inner.empty())
+                    return {};
+                result.push_back(tok);
+                result.insert(result.end(), inner.begin(), inner.end());
+                tok = tok->link();
+            }
+            result.push_back(tok);
+        }
+    }
+    return result;
+}
+
+static bool hasUnknownType(const std::vector<const Token*>& toks)
+{
+    if(toks.empty())
+        return true;
+    return std::any_of(toks.begin(), toks.end(), [&](const Token* tok) {
+        if(!tok)
+            return true;
+        if(Token::Match(tok, "const|volatile|&|*|&&|%type%|::"))
+            return false;
+        if(Token::Match(tok, "%name% :: %name%"))
+            return false;
+        if(tok->type())
+            return false;
+        return true;
+    });
+}
+
+static void stripCV(std::vector<const Token*>& toks)
+{
+    auto it = std::find_if(toks.begin(), toks.end(), [&](const Token* tok) {
+        return !Token::Match(tok, "const|volatile");
+    });
+    if(it == toks.begin())
+        return;
+    toks.erase(toks.begin(), it);
+}
+
+static std::vector<std::vector<const Token*>> evaluateTemplateArgs(const Token* tok)
+{
+    std::vector<std::vector<const Token*>> result;
+    while(tok) {
+        const Token* next = tok->nextTemplateArgument();
+        const Token* end = next ? next->previous() : findTypeEnd(tok);
+        result.push_back(evaluateType(tok, end));
+        tok = next;
+    }
+    return result;
+}
+
+static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
+{
+    std::unordered_map<std::string, std::function<ValueFlow::Value(std::vector<std::vector<const Token*>> args)>> eval;
+    eval["is_void"] = [&](std::vector<std::vector<const Token*>> args) {
+        if(args.size() != 1)
+            return ValueFlow::Value::unknown();
+        stripCV(args[0]);
+        if(args[0].size() == 1 && args[0][0]->str() == "void")
+            return ValueFlow::Value(1);
+        else if(!hasUnknownType(args[0]))
+            return ValueFlow::Value(0);
+        return ValueFlow::Value::unknown();
+    };
+    eval["is_lvalue_reference"] = [&](std::vector<std::vector<const Token*>> args) {
+        if(args.size() != 1)
+            return ValueFlow::Value::unknown();
+        if(args[0].back()->str() == "&")
+            return ValueFlow::Value(1);
+        else if(!hasUnknownType(args[0]))
+            return ValueFlow::Value(0);
+        return ValueFlow::Value::unknown();
+    };
+    eval["is_rvalue_reference"] = [&](std::vector<std::vector<const Token*>> args) {
+        if(args.size() != 1)
+            return ValueFlow::Value::unknown();
+        if(args[0].back()->str() == "&&")
+            return ValueFlow::Value(1);
+        else if(!hasUnknownType(args[0]))
+            return ValueFlow::Value(0);
+        return ValueFlow::Value::unknown();
+    };
+    eval["is_reference"] = [&](std::vector<std::vector<const Token*>> args) {
+        if(args.size() != 1)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value isRValue = eval["is_rvalue_reference"](args);
+        if(isRValue.isUninitValue() || isRValue.intvalue == 1)
+            return isRValue;
+        return eval["is_lvalue_reference"](args);
+    };
+    for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
+
+        if (!Token::Match(tok, "std :: %name% <"))
+            continue;
+        Token* templateTok = tok->tokAt(3);
+        Token* updateTok = nullptr;
+        std::string traitName = tok->strAt(2);
+        if(endsWith(traitName, "_v")) {
+            traitName.pop_back();
+            traitName.pop_back();
+            updateTok = tok->next();
+        } else if(Token::simpleMatch(templateTok->link(), "> { }") || Token::simpleMatch(templateTok->link(), "> :: value")) {
+            updateTok = templateTok->link()->next();
+        }
+        if(!updateTok)
+            continue;
+        if(updateTok->hasKnownIntValue())
+            continue;
+        if(eval.count(traitName) == 0)
+            continue;
+        ValueFlow::Value value = eval[traitName](evaluateTemplateArgs(templateTok->next()));
+        if(value.isUninitValue())
+            continue;
+        value.setKnown();
+        ValueFlow::setTokenValue(updateTok, std::move(value), settings);
     }
 }
 
@@ -7254,6 +7426,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowEnumValue(symboldatabase, settings)),
         VFA(valueFlowNumber(tokenlist, settings)),
         VFA(valueFlowString(tokenlist, settings)),
+        VFA(valueFlowTypeTraits(tokenlist, settings)),
         VFA(valueFlowArray(tokenlist, settings)),
         VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
         VFA(valueFlowGlobalConstVar(tokenlist, settings)),
