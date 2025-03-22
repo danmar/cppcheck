@@ -63,7 +63,7 @@ static QString unquote(QString s) {
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress [passedByValue,passedByValueCallback]
+int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValueCallback
 {
     output.clear();
 
@@ -440,8 +440,8 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const
 {
-    return std::any_of(mSuppressionsUi.cbegin(), mSuppressionsUi.cend(), [&](const SuppressionList::Suppression& s) {
-        return s.isSuppressed(errorMessage);
+    return std::any_of(mSuppressionsUi.cbegin(), mSuppressionsUi.cend(), [&](const SuppressionList::Suppression& s) -> bool {
+        return s.isSuppressed(errorMessage) == SuppressionList::Suppression::Result::Matched;
     });
 }
 

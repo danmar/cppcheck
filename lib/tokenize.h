@@ -133,7 +133,7 @@ private:
 
     /** Insert array size where it isn't given */
     void arraySize();
-    void arraySizeAfterValueFlow(); // cppcheck-suppress functionConst
+    void arraySizeAfterValueFlow();
 
     /** Simplify labels and 'case|default' syntaxes.
      */
@@ -165,7 +165,7 @@ private:
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
     void simplifyVarDecl( bool only_k_r_fpar);
-    void simplifyVarDecl(Token * tokBegin, const Token * tokEnd, bool only_k_r_fpar); // cppcheck-suppress functionConst // has side effects
+    void simplifyVarDecl(Token * tokBegin, const Token * tokEnd, bool only_k_r_fpar);
 
     /**
      * Simplify variable initialization
