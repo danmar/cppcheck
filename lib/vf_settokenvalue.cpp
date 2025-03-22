@@ -393,6 +393,7 @@ namespace ValueFlow
             // is condition always true/false?
             if (parent->astOperand1()->hasKnownValue()) {
                 const Value &condvalue = parent->astOperand1()->values().front();
+                assert(condvalue.isKnown());
                 const bool cond(condvalue.isTokValue() || (condvalue.isIntValue() && condvalue.intvalue != 0));
                 if (cond && !tok->astOperand1()) { // true condition, no second operator
                     setTokenValue(parent, condvalue, settings);
