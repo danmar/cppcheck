@@ -1069,8 +1069,6 @@ void CheckBufferOverrun::objectIndex()
                 if (idx->getKnownIntValue() == 0)
                     continue;
             }
-            if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
-                continue;
 
             std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(obj, false, -1);
             for (const ValueFlow::Value& v:values) {
