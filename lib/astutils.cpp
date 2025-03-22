@@ -3715,8 +3715,8 @@ static std::set<MathLib::bigint> getSwitchValues(const Token *startbrace, bool &
         }
         if (Token::simpleMatch(tok, "case")) {
             const Token *valueTok = tok->astOperand1();
-            if (valueTok->hasKnownIntValue())
-                values.insert(valueTok->getKnownIntValue());
+            if (const ValueFlow::Value* v = valueTok->getKnownValue(ValueFlow::Value::ValueType::INT))
+                values.insert(v->intvalue);
             continue;
         }
     }

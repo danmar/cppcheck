@@ -361,8 +361,8 @@ const Token* ValueFlow::parseCompareInt(const Token* tok,
 const Token *ValueFlow::parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
 {
     return parseCompareInt(tok, true_value, false_value, [](const Token* t) -> std::vector<MathLib::bigint> {
-        if (t->hasKnownIntValue())
-            return {t->getKnownIntValue()};
+        if (const ValueFlow::Value* v = t->getKnownValue(Value::ValueType::INT))
+            return {v->intvalue};
         return std::vector<MathLib::bigint>{};
     });
 }
@@ -878,11 +878,11 @@ static void valueFlowSameExpressions(TokenList& tokenlist, const Settings& setti
 
 static bool getExpressionRange(const Token* expr, MathLib::bigint* minvalue, MathLib::bigint* maxvalue)
 {
-    if (expr->hasKnownIntValue()) {
+    if (const ValueFlow::Value* v = expr->getKnownValue(ValueFlow::Value::ValueType::INT)) {
         if (minvalue)
-            *minvalue = expr->getKnownIntValue();
+            *minvalue = v->intvalue;
         if (maxvalue)
-            *maxvalue = expr->getKnownIntValue();
+            *maxvalue = v->intvalue;
         return true;
     }
 
@@ -988,8 +988,8 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
         return result;
     if (depth < 0)
         return result;
-    if (tok->hasKnownIntValue()) {
-        result = {tok->getKnownIntValue()};
+    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+        result = {v->intvalue};
     } else if (!Token::Match(tok, "-|%|&|^") && tok->isConstOp() && tok->astOperand1() && tok->astOperand2()) {
         std::vector<MathLib::bigint> op1 = minUnsignedValue(tok->astOperand1(), depth - 1);
         if (!op1.empty()) {
@@ -6366,8 +6366,8 @@ static ValueFlow::Value makeContainerSizeValue(MathLib::bigint s, bool known = t
 
 static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bool known = true)
 {
-    if (tok->hasKnownIntValue())
-        return {makeContainerSizeValue(tok->getKnownIntValue(), known)};
+    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT))
+        return {makeContainerSizeValue(v->intvalue, known)};
     return {};
 }
 

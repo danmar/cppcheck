@@ -1399,8 +1399,8 @@ static bool isLargeContainer(const Variable* var, const Settings* settings)
     const std::size_t maxByValueSize = 2 * settings->platform.sizeof_pointer;
     if (var->dimensions().empty()) {
         if (vt->container->startPattern == "std :: bitset <") {
-            if (vt->containerTypeToken->hasKnownIntValue())
-                return vt->containerTypeToken->getKnownIntValue() / 8 > maxByValueSize;
+            if (const ValueFlow::Value* v = vt->containerTypeToken->getKnownValue(ValueFlow::Value::ValueType::INT))
+                return v->intvalue / 8 > maxByValueSize;
         }
         return false;
     }

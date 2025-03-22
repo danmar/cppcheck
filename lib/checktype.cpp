@@ -344,8 +344,8 @@ void CheckType::checkLongCast()
         if (tok->str() != "=" || !Token::Match(tok->astOperand2(), "*|<<") || tok->astOperand2()->isUnaryOp("*"))
             continue;
 
-        if (tok->astOperand2()->hasKnownIntValue()) {
-            if (mSettings->platform.isIntValue(tok->astOperand2()->getKnownIntValue()))
+        if (const ValueFlow::Value* v = tok->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+            if (mSettings->platform.isIntValue(v->intvalue))
                 continue;
         }
 

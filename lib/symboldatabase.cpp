@@ -1815,8 +1815,8 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                     if (!tok->isName())
                         tokenList.addtoken(tok->str(), 0, 0, 0, false);
 
-                    else if (tok->hasKnownIntValue())
-                        tokenList.addtoken(MathLib::toString(tok->getKnownIntValue()), 0, 0, 0, false);
+                    else if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT))
+                        tokenList.addtoken(MathLib::toString(v->intvalue), 0, 0, 0, false);
 
                     else {
                         fail = true;
@@ -1848,9 +1848,9 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             dimension.known = false;
 
             // check for a single token dimension
-            if (dimension.tok->hasKnownIntValue()) {
+            if (const ValueFlow::Value* v = dimension.tok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
                 dimension.known = true;
-                dimension.num = dimension.tok->getKnownIntValue();
+                dimension.num = v->intvalue;
                 continue;
             }
 
@@ -3747,8 +3747,8 @@ bool Variable::arrayDimensions(const Settings& settings, bool& isContainer)
             // TODO: collect timing information for this call?
             ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
             if (dimension_.tok) {
-                if (dimension_.tok->hasKnownIntValue())
-                    dimension_.num = dimension_.tok->getKnownIntValue();
+                if (const ValueFlow::Value* v = dimension_.tok->getKnownValue(ValueFlow::Value::ValueType::INT))
+                    dimension_.num = v->intvalue;
                 else if (dimension_.tok->isTemplateArg() && !dimension_.tok->values().empty()) {
                     assert(dimension_.tok->values().size() == 1);
                     dimension_.num = dimension_.tok->values().front().intvalue;

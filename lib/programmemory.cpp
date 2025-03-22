@@ -64,8 +64,8 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     const Token* subexpr = solveExprValue(
         expr,
         [&](const Token* tok) -> std::vector<MathLib::bigint> {
-        if (tok->hasKnownIntValue())
-            return {tok->getKnownIntValue()};
+        if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::INT))
+            return {v->intvalue};
         MathLib::bigint result = 0;
         if (getIntValue(tok->exprId(), result))
             return {result};
@@ -305,8 +305,8 @@ static void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, con
     auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
         if (!t)
             return std::vector<MathLib::bigint>{};
-        if (t->hasKnownIntValue())
-            return {t->getKnownIntValue()};
+        if (const ValueFlow::Value* v = t->getKnownValue(ValueFlow::Value::ValueType::INT))
+            return {v->intvalue};
         MathLib::bigint result = 0;
         bool error = false;
         execute(t, pm, &result, &error, settings);
