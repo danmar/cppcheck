@@ -3546,8 +3546,17 @@ void Tokenizer::combineOperators()
                 tok->deleteNext();
             }
         } else if (tok->str() == "->") {
-            tok->str(".");
-            tok->originalName("->");
+            // If the preceding sequence is "( & %name% )", replace it by "%name%"
+            Token *t = tok->tokAt(-4);
+            if (Token::Match(t, "( & %name% )") && !Token::simpleMatch(t->previous(), ">")) {
+                t->deleteThis();
+                t->deleteThis();
+                t->deleteNext();
+                tok->str(".");
+            } else {
+                tok->str(".");
+                tok->originalName("->");
+            }
         }
     }
 }
