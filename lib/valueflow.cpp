@@ -709,7 +709,7 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             return ValueFlow::Value(0);
         return ValueFlow::Value::unknown();
     };
-    eval["is_lvalue_reference"] = [&](std::vector<std::vector<const Token*>> args) {
+    eval["is_lvalue_reference"] = [&](const std::vector<std::vector<const Token*>>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
         if (args[0].back()->str() == "&")
@@ -718,7 +718,7 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             return ValueFlow::Value(0);
         return ValueFlow::Value::unknown();
     };
-    eval["is_rvalue_reference"] = [&](std::vector<std::vector<const Token*>> args) {
+    eval["is_rvalue_reference"] = [&](const std::vector<std::vector<const Token*>>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
         if (args[0].back()->str() == "&&")
@@ -727,7 +727,7 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             return ValueFlow::Value(0);
         return ValueFlow::Value::unknown();
     };
-    eval["is_reference"] = [&](std::vector<std::vector<const Token*>> args) {
+    eval["is_reference"] = [&](const std::vector<std::vector<const Token*>>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
         ValueFlow::Value isRValue = eval["is_rvalue_reference"](args);
