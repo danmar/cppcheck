@@ -30,7 +30,6 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueptr.h"
-#include "vfvalue.h"
 
 #include <algorithm>
 #include <cassert>

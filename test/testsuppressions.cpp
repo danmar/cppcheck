@@ -18,6 +18,7 @@
 
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
 #include "fixture.h"
