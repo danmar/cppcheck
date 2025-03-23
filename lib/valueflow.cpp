@@ -705,7 +705,7 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
         stripCV(args[0]);
         if (args[0].size() == 1 && args[0][0]->str() == "void")
             return ValueFlow::Value(1);
-        else if (!hasUnknownType(args[0]))
+        if (!hasUnknownType(args[0]))
             return ValueFlow::Value(0);
         return ValueFlow::Value::unknown();
     };
@@ -714,7 +714,7 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             return ValueFlow::Value::unknown();
         if (args[0].back()->str() == "&")
             return ValueFlow::Value(1);
-        else if (!hasUnknownType(args[0]))
+        if (!hasUnknownType(args[0]))
             return ValueFlow::Value(0);
         return ValueFlow::Value::unknown();
     };
@@ -723,7 +723,7 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             return ValueFlow::Value::unknown();
         if (args[0].back()->str() == "&&")
             return ValueFlow::Value(1);
-        else if (!hasUnknownType(args[0]))
+        if (!hasUnknownType(args[0]))
             return ValueFlow::Value(0);
         return ValueFlow::Value::unknown();
     };
