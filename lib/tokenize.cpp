@@ -3547,7 +3547,7 @@ void Tokenizer::combineOperators()
             }
         } else if (tok->str() == "->") {
             // If the preceding sequence is "( & %name% )", replace it by "%name%"
-            Token *t = tok->tokAt(-4);
+            Token* t = tok->tokAt(-4);
             if (Token::Match(t, "( & %name% )") && !Token::simpleMatch(t->previous(), ">")) {
                 t->deleteThis();
                 t->deleteThis();
