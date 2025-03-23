@@ -30,7 +30,7 @@ SUPPRESS_WARNING_CLANG_PUSH("-Wformat")
 SUPPRESS_WARNING_CLANG_PUSH("-Wfloat-conversion")
 
 #define PICOJSON_USE_INT64
-#include <picojson.h>
+#include <picojson.h> // IWYU pragma: export
 
 SUPPRESS_WARNING_CLANG_POP
 SUPPRESS_WARNING_CLANG_POP
