@@ -17,7 +17,6 @@ disable=
         unused-wildcard-import,
         wildcard-import,
         unused-argument,
-        deprecated-module,
         pointless-string-statement,
         arguments-renamed,
         duplicate-string-formatting-argument,
