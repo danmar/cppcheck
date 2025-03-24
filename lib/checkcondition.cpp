@@ -717,10 +717,10 @@ void CheckCondition::multiCondition2()
                 tok = scope.bodyStart;
             }
             const Token * const endToken = tok->scope()->bodyEnd;
-            if (isNestedInLambda(tok->scope(), cond1->scope()))
-                continue;
 
             for (; tok && tok != endToken; tok = tok->next()) {
+                if (isNestedInLambda(tok->scope(), cond1->scope()))
+                    continue;
                 if (isExpressionChangedAt(cond1, tok, 0, false, *mSettings))
                     break;
                 if (Token::Match(tok, "if|return")) {
