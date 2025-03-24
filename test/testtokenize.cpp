@@ -299,6 +299,7 @@ private:
         TEST_CASE(bitfields13); // ticket #3502 (segmentation fault)
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
         TEST_CASE(bitfields16); // Save bitfield bit count
+        TEST_CASE(bitfields17);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -4755,6 +4756,32 @@ private:
         ASSERT(tokenizer.tokenize(code));
         const Token *x = Token::findsimplematch(tokenizer.tokens(), "x");
         ASSERT_EQUALS(1, x->bits());
+    }
+
+    void bitfields17() {
+        const char code[] = "struct S {\n" // #13722
+                            "    volatile uint32_t a : 10;\n"
+                            "    volatile uint32_t   : 6;\n"
+                            "    volatile uint32_t b : 10;\n"
+                            "    volatile uint32_t   : 6;\n"
+                            "};\n";
+        const char expected[] = "struct S {\n"
+                                "volatile uint32_t a ;\n"
+                                "\n"
+                                "volatile uint32_t b ;\n"
+                                "\n"
+                                "} ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+
+        const char code2[] = "struct S {\n"
+                             "    const volatile uint32_t a : 10;\n"
+                             "    const volatile uint32_t   : 6;\n"
+                             "};\n";
+        const char expected2[] = "struct S {\n"
+                                 "const volatile uint32_t a ;\n"
+                                 "\n"
+                                 "} ;";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
 
     void simplifyNamespaceStd() {

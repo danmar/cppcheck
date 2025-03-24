@@ -2821,7 +2821,7 @@ static bool scopesMatch(const std::string &scope1, const std::string &scope2, co
     return false;
 }
 
-static unsigned int tokDistance(const Token* tok1, const Token* tok2) { // TODO: use index()
+static unsigned int tokDistance(const Token* tok1, const Token* tok2) { // use when index() is not available yet
     unsigned int dist = 0;
     const Token* tok = tok1;
     while (tok != tok2) {
@@ -9924,10 +9924,13 @@ void Tokenizer::simplifyBitfields()
             }
         }
 
-        if (Token::Match(tok->next(), "const| %type% %name% :") &&
+        Token* typeTok = tok->next();
+        while (Token::Match(typeTok, "const|volatile"))
+            typeTok = typeTok->next();
+        if (Token::Match(typeTok, "%type% %name% :") &&
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
-            Token *tok1 = (tok->strAt(1) == "const") ? tok->tokAt(3) : tok->tokAt(2);
+            Token *tok1 = typeTok->next();
             if (Token::Match(tok1, "%name% : %num% [;=]"))
                 tok1->setBits(static_cast<unsigned char>(MathLib::toBigNumber(tok1->tokAt(2))));
             if (tok1 && tok1->tokAt(2) &&
@@ -9948,13 +9951,10 @@ void Tokenizer::simplifyBitfields()
             } else {
                 tok->next()->deleteNext(2);
             }
-        } else if (Token::Match(tok->next(), "const| %type% : %num%|%bool% ;") &&
-                   tok->strAt(1) != "default") {
-            const int offset = (tok->strAt(1) == "const") ? 1 : 0;
-            if (!Token::Match(tok->tokAt(3 + offset), "[{};()]")) {
-                tok->deleteNext(4 + offset);
-                goback = true;
-            }
+        } else if (Token::Match(typeTok, "%type% : %num%|%bool% ;") &&
+                   typeTok->str() != "default") {
+            tok->deleteNext(4 + tokDistance(tok, typeTok) - 1);
+            goback = true;
         }
 
         if (last && last->str() == ",") {
