@@ -1576,10 +1576,10 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             const Token* contTok = ftok->astParent()->astOperand1();
             using Yield = Library::Container::Yield;
-            const Yield yield = astContainerYield(contTok);
+            const Yield yield = astContainerYield(contTok, *this);
             if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
                 yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok) == Library::Container::Action::NO_ACTION))
+                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok, *this) == Library::Container::Action::NO_ACTION))
                 return Library::UseRetValType::DEFAULT;
         }
         return Library::UseRetValType::NONE;
@@ -1713,7 +1713,7 @@ bool Library::isFunctionConst(const Token *ftok) const
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             using Yield = Library::Container::Yield;
-            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            const Yield yield = astContainerYield(ftok->astParent()->astOperand1(), *this);
             if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
                 return true;
         }
@@ -1732,8 +1732,8 @@ bool Library::isnoreturn(const Token *ftok) const
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             const Token* contTok = ftok->astParent()->astOperand1();
-            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION ||
-                astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
+            if (astContainerAction(contTok, *this) != Library::Container::Action::NO_ACTION ||
+                astContainerYield(contTok, *this) != Library::Container::Yield::NO_YIELD)
                 return false;
         }
         return false;

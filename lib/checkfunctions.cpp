@@ -646,9 +646,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
 
         if (Token::simpleMatch(tok->astParent(), ".")) {
             const Token* contTok = tok->astParent()->astOperand1();
-            if (astContainerAction(contTok, nullptr, mSettings) != Library::Container::Action::NO_ACTION)
+            if (astContainerAction(contTok, mSettings->library) != Library::Container::Action::NO_ACTION)
                 continue;
-            if (astContainerYield(contTok, nullptr, mSettings) != Library::Container::Yield::NO_YIELD)
+            if (astContainerYield(contTok, mSettings->library) != Library::Container::Yield::NO_YIELD)
                 continue;
         }
 
