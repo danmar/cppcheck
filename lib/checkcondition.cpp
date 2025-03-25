@@ -615,6 +615,16 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
     return true;
 }
 
+static bool isNestedInLambda(const Scope* inner, const Scope* outer)
+{
+    while (inner && inner != outer) {
+        if (inner->type == ScopeType::eLambda)
+            return true;
+        inner = inner->nestedIn;
+    }
+    return false;
+}
+
 void CheckCondition::multiCondition2()
 {
     if (!mSettings->severity.isEnabled(Severity::warning) &&
@@ -709,6 +719,8 @@ void CheckCondition::multiCondition2()
             const Token * const endToken = tok->scope()->bodyEnd;
 
             for (; tok && tok != endToken; tok = tok->next()) {
+                if (isNestedInLambda(tok->scope(), cond1->scope()))
+                    continue;
                 if (isExpressionChangedAt(cond1, tok, 0, false, *mSettings))
                     break;
                 if (Token::Match(tok, "if|return")) {
