@@ -174,7 +174,6 @@ def test_cmd_cpp(tmp_path):
 
 
 # files with unknown extensions are treated as C++
-@pytest.mark.xfail(strict=True)
 def test_cmd_unk(tmp_path):
     __test_cmd(tmp_path, 'test.cplusplus', [], '-x c++')
 
