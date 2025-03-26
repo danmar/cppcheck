@@ -198,6 +198,8 @@ private:
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok, const std::string& funcname);
 
+    void checkSuspiciousComma();
+
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
@@ -257,6 +259,7 @@ private:
     void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
+    void checkSuspiciousCommaError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
@@ -322,7 +325,8 @@ private:
                "- shadow variable.\n"
                "- variable can be declared const.\n"
                "- calculating modulo of one.\n"
-               "- known function argument, suspicious calculation.\n";
+               "- known function argument, suspicious calculation.\n"
+               "- suspicious comma immediately after function call in if/while condition statement.\n";
     }
 
     bool diag(const Token* tok) {

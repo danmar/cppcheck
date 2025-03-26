@@ -4,6 +4,7 @@ New checks:
 -
 
 Improved checking:
+- Check the suspicious comma expression directly after a function call in an if/while condition statement.
 -
 
 GUI:
