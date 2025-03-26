@@ -2642,7 +2642,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
 {
     std::list<const Token *> toks{ tok1 };
     if (tok2)
-        toks.push_back(tok2);
+        toks.push_front(tok2);
     if (!suggestStatic) {
         const std::string msg = foundAllBaseClasses ?
                                 "Technically the member function '$symbol' can be const.\nThe member function '$symbol' can be made a const " :
@@ -3131,7 +3131,6 @@ void CheckClass::checkCopyCtorAndEqOperator()
 {
     // This is disabled because of #8388
     // The message must be clarified. How is the behaviour different?
-    // cppcheck-suppress unreachableCode - remove when code is enabled again
     if ((true) || !mSettings->severity.isEnabled(Severity::warning)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
