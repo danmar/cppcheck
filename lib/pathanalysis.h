@@ -34,18 +34,16 @@ struct PathAnalysis {
         Continue,
         Break
     };
+
     explicit PathAnalysis(const Token* start)
         : start(start)
     {}
-    const Token * start;
 
     struct Info {
         const Token* tok;
         ErrorPath errorPath;
         bool known;
     };
-
-    void forward(const std::function<Progress(const Info&)>& f) const;
 
     Info forwardFind(std::function<bool(const Info&)> pred) const {
         Info result{};
@@ -59,6 +57,9 @@ struct PathAnalysis {
         return result;
     }
 private:
+    const Token * start;
+
+    void forward(const std::function<Progress(const Info&)>& f) const;
 
     static Progress forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f);
     Progress forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<Progress(const Info&)>& f) const;
