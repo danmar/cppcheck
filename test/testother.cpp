@@ -305,6 +305,8 @@ private:
 
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
+
+        TEST_CASE(suspiciousComma);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -13068,6 +13070,43 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:2:13] -> [test.cpp:3:11]: (style) The comparison 'i > +1' is always false. [knownConditionTrueFalse]\n",
+            errout_str());
+    }
+
+    void suspiciousComma()
+    {
+        check("void f(int a, int b = 0);\n"
+              "void foo() {\n"
+              "    if (f(100), 100) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3:15]: (style) There is a suspicious comma expression directly after a function call "
+            "in an if/while condition statement, is there a misplaced paranthesis? [suspiciousComma]\n",
+            errout_str());
+
+        check("void f(int a, int b = 0);\n"
+              "void foo() {\n"
+              "    while (f(100), 100) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3:18]: (style) There is a suspicious comma expression directly after a function call "
+            "in an if/while condition statement, is there a misplaced paranthesis? [suspiciousComma]\n",
+            errout_str());
+
+        check("void f(int a);\n"
+              "void foo() {\n"
+              "    if (f(100), 100) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "",
+            errout_str());
+
+        check("void foo() {\n"
+              "    int x = 0;"
+              "    while (x, 100) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "",
             errout_str());
     }
 };
