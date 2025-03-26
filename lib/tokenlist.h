@@ -32,6 +32,7 @@
 class Token;
 class TokenList;
 class Settings;
+class FileWithDetails;
 
 namespace simplecpp {
     class TokenList;
@@ -105,7 +106,7 @@ public:
      * @param code input stream for code
      * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0);
+    bool createTokens(std::istream &code, const FileWithDetails& file0);
     bool createTokens(std::istream &code, Standards::Language lang);
 
     void createTokens(simplecpp::TokenList&& tokenList);
@@ -114,7 +115,7 @@ public:
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    int appendFileIfNew(std::string fileName);
+    int appendFileIfNew(const FileWithDetails& file);
 
     /** get first token of list */
     const Token *front() const {
