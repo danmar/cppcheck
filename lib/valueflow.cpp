@@ -4647,7 +4647,7 @@ struct ConditionHandler {
                     if (!Token::Match(tok, "%assign%|++|--") &&
                         findExpression(cond.vartok->exprId(), start, end, [&](const Token* tok2) {
                         return Token::Match(tok2->astParent(), "%assign%") && astIsLHS(tok2);
-                    }) && !findEscapeStatement(block->scope(), &settings.library)) {
+                    }) && !findEscapeStatement(block->scope(), settings.library)) {
                         // Start at the end of the loop body
                         Token* bodyTok = top->link()->next();
                         reverse(bodyTok->link(), bodyTok, cond.vartok, values, tokenlist, errorLogger, settings);
@@ -5322,7 +5322,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     if (isVariableChanged(bodyStart, bodyEnd, expr->varId(), globalvar, settings))
         return;
 
-    if (const Token* escape = findEscapeStatement(bodyStart->scope(), &settings.library)) {
+    if (const Token* escape = findEscapeStatement(bodyStart->scope(), settings.library)) {
         if (settings.debugwarnings)
             bailout(tokenlist, errorLogger, escape, "For loop variable bailout on escape statement");
         return;
