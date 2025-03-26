@@ -23,7 +23,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <list>
 #include <utility>
 
 class Scope;
