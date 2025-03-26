@@ -26,7 +26,6 @@
 #include <list>
 #include <utility>
 
-class Library;
 class Scope;
 class Token;
 
@@ -35,11 +34,10 @@ struct PathAnalysis {
         Continue,
         Break
     };
-    PathAnalysis(const Token* start, const Library& library)
-        : start(start), library(&library)
+    explicit PathAnalysis(const Token* start)
+        : start(start)
     {}
     const Token * start;
-    const Library * library;
 
     struct Info {
         const Token* tok;
@@ -77,7 +75,7 @@ private:
  * @param dest The path destination
  * @param errorPath Adds the path traversal to the errorPath
  */
-bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath);
+bool reaches(const Token * start, const Token * dest, ErrorPath* errorPath);
 
 #endif
 

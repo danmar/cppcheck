@@ -182,9 +182,9 @@ void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
     forwardRange(start, endToken, std::move(info), f);
 }
 
-bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
+bool reaches(const Token * start, const Token * dest, ErrorPath* errorPath)
 {
-    PathAnalysis::Info info = PathAnalysis{start, library}.forwardFind([&](const PathAnalysis::Info& i) {
+    PathAnalysis::Info info = PathAnalysis{start}.forwardFind([&](const PathAnalysis::Info& i) {
         return (i.tok == dest);
     });
     if (!info.tok)
