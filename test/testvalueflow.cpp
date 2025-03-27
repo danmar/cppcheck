@@ -7896,8 +7896,8 @@ private:
         (void)valueOfTok(code, "0");
 
         code = "bool f() {\n"
-                "    return (!std::is_reference<decltype(a)>::value);\n"
-                "}\n";
+               "    return (!std::is_reference<decltype(a)>::value);\n"
+               "}\n";
         (void)valueOfTok(code, "0");
     }
 
