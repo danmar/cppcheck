@@ -4356,6 +4356,35 @@ private:
               "    *p = ret;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct A {\n"
+              "    int val=42;\n"
+              "    const A& Get() const & {\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n"
+              "const A *ptr;\n"
+              "int main() {\n"
+              "    ptr = &A().Get();\n"
+              "    return ptr->val;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using pointer that is a temporary.\n",
+            errout_str());
+
+        check("struct A {\n"
+              "    int val = 42;\n"
+              "    const A& Get() const {\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n"
+              "int main() {\n"
+              "    const A& r = A().Get();\n"
+              "    return r.val;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:4] -> [test.cpp:8] -> [test.cpp:9]: (error) Using reference to dangling temporary.\n",
+            errout_str());
     }
 
     void invalidLifetime() {

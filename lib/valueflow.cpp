@@ -1712,10 +1712,8 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                 for (ValueFlow::LifetimeToken& lt : getLifetimeTokens(returnTok, escape, errorPath, pred, settings, depth - returns.size())) {
                     const Token* argvarTok = lt.token;
                     const Variable* argvar = argvarTok->variable();
-                    if (!argvar)
-                        continue;
                     const Token* argTok = nullptr;
-                    if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                    if (argvar && argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                         const int n = getArgumentPos(argvar, f);
                         if (n < 0)
                             return std::vector<ValueFlow::LifetimeToken> {};
