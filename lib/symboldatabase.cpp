@@ -3747,13 +3747,15 @@ bool Variable::arrayDimensions(const Settings& settings, bool& isContainer)
             // TODO: collect timing information for this call?
             ValueFlow::valueFlowConstantFoldAST(const_cast<Token *>(dimension_.tok), settings);
             if (dimension_.tok) {
-                if (const ValueFlow::Value* v = dimension_.tok->getKnownValue(ValueFlow::Value::ValueType::INT))
+                if (const ValueFlow::Value* v = dimension_.tok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
                     dimension_.num = v->intvalue;
+                    dimension_.known = true;
+                }
                 else if (dimension_.tok->isTemplateArg() && !dimension_.tok->values().empty()) {
                     assert(dimension_.tok->values().size() == 1);
                     dimension_.num = dimension_.tok->values().front().intvalue;
+                    dimension_.known = true;
                 }
-                dimension_.known = true;
             }
         }
         mDimensions.push_back(dimension_);
