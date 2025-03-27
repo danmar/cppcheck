@@ -983,7 +983,7 @@ private:
             ASSERT(!library.detectContainer(var.tokens()));
             TODO_ASSERT(library.detectIterator(var.tokens()));
             bool isIterator = false;
-            TODO_ASSERT_EQUALS((intptr_t)&F, 0, (intptr_t)library.detectContainerOrIterator(var.tokens(), &isIterator));
+            TODO_ASSERT_EQUALS(reinterpret_cast<intptr_t>(&F), 0, reinterpret_cast<intptr_t>(library.detectContainerOrIterator(var.tokens(), &isIterator)));
             TODO_ASSERT(isIterator);
         }
 
@@ -993,7 +993,7 @@ private:
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
             bool isIterator = false;
-            TODO_ASSERT_EQUALS((intptr_t)&F, 0, (intptr_t)library.detectContainerOrIterator(var.tokens(), &isIterator, true));
+            TODO_ASSERT_EQUALS(reinterpret_cast<intptr_t>(&F), 0, reinterpret_cast<intptr_t>(library.detectContainerOrIterator(var.tokens(), &isIterator, true)));
             TODO_ASSERT(isIterator);
         }
     }

@@ -6198,7 +6198,7 @@ private:
         ASSERT_EQUALS(4U, scope->enumeratorList.size());
 
         ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[0].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[0].name->tokType());
         ASSERT(scope->enumeratorList[0].scope == &*scope);
         ASSERT_EQUALS("O1", scope->enumeratorList[0].name->str());
         ASSERT(scope->enumeratorList[0].start == nullptr);
@@ -6207,7 +6207,7 @@ private:
         ASSERT_EQUALS(0, scope->enumeratorList[0].value);
 
         ASSERT(scope->enumeratorList[1].name->enumerator() == &scope->enumeratorList[1]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[1].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[1].name->tokType());
         ASSERT(scope->enumeratorList[1].scope == &*scope);
         ASSERT_EQUALS("O2", scope->enumeratorList[1].name->str());
         ASSERT(scope->enumeratorList[1].start == nullptr);
@@ -6216,7 +6216,7 @@ private:
         ASSERT_EQUALS(1, scope->enumeratorList[1].value);
 
         ASSERT(scope->enumeratorList[2].name->enumerator() == &scope->enumeratorList[2]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[2].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[2].name->tokType());
         ASSERT(scope->enumeratorList[2].scope == &*scope);
         ASSERT_EQUALS("O3", scope->enumeratorList[2].name->str());
         ASSERT(scope->enumeratorList[2].start != nullptr);
@@ -6225,7 +6225,7 @@ private:
         ASSERT_EQUALS(5, scope->enumeratorList[2].value);
 
         ASSERT(scope->enumeratorList[3].name->enumerator() == &scope->enumeratorList[3]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[3].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[3].name->tokType());
         ASSERT(scope->enumeratorList[3].scope == &*scope);
         ASSERT_EQUALS("O4", scope->enumeratorList[3].name->str());
         ASSERT(scope->enumeratorList[3].start == nullptr);
@@ -6239,7 +6239,7 @@ private:
         ASSERT_EQUALS(3U, scope->enumeratorList.size());
 
         ASSERT(scope->enumeratorList[0].name->enumerator() == &scope->enumeratorList[0]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[0].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[0].name->tokType());
         ASSERT(scope->enumeratorList[0].scope == &*scope);
         ASSERT_EQUALS("E1", scope->enumeratorList[0].name->str());
         ASSERT(scope->enumeratorList[0].start != nullptr);
@@ -6248,7 +6248,7 @@ private:
         ASSERT_EQUALS(1, scope->enumeratorList[0].value);
 
         ASSERT(scope->enumeratorList[1].name->enumerator() == &scope->enumeratorList[1]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[1].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[1].name->tokType());
         ASSERT(scope->enumeratorList[1].scope == &*scope);
         ASSERT_EQUALS("E2", scope->enumeratorList[1].name->str());
         ASSERT(scope->enumeratorList[1].start == nullptr);
@@ -6257,7 +6257,7 @@ private:
         ASSERT_EQUALS(2, scope->enumeratorList[1].value);
 
         ASSERT(scope->enumeratorList[2].name->enumerator() == &scope->enumeratorList[2]);
-        ASSERT_EQUALS((unsigned int)Token::eEnumerator, (unsigned int)scope->enumeratorList[2].name->tokType());
+        ASSERT_EQUALS_ENUM(Token::eEnumerator, scope->enumeratorList[2].name->tokType());
         ASSERT(scope->enumeratorList[2].scope == &*scope);
         ASSERT_EQUALS("E3", scope->enumeratorList[2].name->str());
         ASSERT(scope->enumeratorList[2].start != nullptr);
@@ -8677,22 +8677,22 @@ private:
     void valueTypeMatchParameter() const {
         ValueType vt_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0);
         ValueType vt_const_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0, 1);
-        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
-        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_const_int, &vt_int));
-        ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_const_int));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::SAME, ValueType::matchParameter(&vt_int, &vt_int));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::SAME, ValueType::matchParameter(&vt_const_int, &vt_int));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::SAME, ValueType::matchParameter(&vt_int, &vt_const_int));
 
         ValueType vt_char_pointer(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 1);
         ValueType vt_void_pointer(ValueType::Sign::SIGNED, ValueType::Type::VOID, 1); // compatible
         ValueType vt_int_pointer(ValueType::Sign::SIGNED, ValueType::Type::INT, 1); // not compatible
-        ASSERT_EQUALS((int)ValueType::MatchResult::FALLBACK1, (int)ValueType::matchParameter(&vt_char_pointer, &vt_void_pointer));
-        ASSERT_EQUALS((int)ValueType::MatchResult::NOMATCH, (int)ValueType::matchParameter(&vt_char_pointer, &vt_int_pointer));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::FALLBACK1, ValueType::matchParameter(&vt_char_pointer, &vt_void_pointer));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::NOMATCH, ValueType::matchParameter(&vt_char_pointer, &vt_int_pointer));
 
         ValueType vt_char_pointer2(ValueType::Sign::SIGNED, ValueType::Type::CHAR, 2);
-        ASSERT_EQUALS((int)ValueType::MatchResult::FALLBACK1, (int)ValueType::matchParameter(&vt_char_pointer2, &vt_void_pointer));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::FALLBACK1, ValueType::matchParameter(&vt_char_pointer2, &vt_void_pointer));
 
         ValueType vt_const_float_pointer(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::FLOAT, 1, 1);
         ValueType vt_long_long(ValueType::Sign::SIGNED, ValueType::Type::LONGLONG, 0, 0);
-        ASSERT_EQUALS((int)ValueType::MatchResult::NOMATCH, (int)ValueType::matchParameter(&vt_const_float_pointer, &vt_long_long));
+        ASSERT_EQUALS_ENUM(ValueType::MatchResult::NOMATCH, ValueType::matchParameter(&vt_const_float_pointer, &vt_long_long));
     }
 
 #define FUNC(x) do { \

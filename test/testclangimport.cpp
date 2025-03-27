@@ -1138,8 +1138,8 @@ private:
         const Scope *scope = db->functionScopes[0];
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
-        ASSERT_EQUALS(0, (long long)func->getArgumentVar(0)->nameToken());
-        ASSERT_EQUALS(0, (long long)func->getArgumentVar(1)->nameToken());
+        ASSERT(!func->getArgumentVar(0)->nameToken());
+        ASSERT(!func->getArgumentVar(1)->nameToken());
     }
 
     void symbolDatabaseFunction3() { // #9640

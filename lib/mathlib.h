@@ -70,7 +70,7 @@ public:
         }
 
         double getDoubleValue() const {
-            return isFloat() ? mDoubleValue : (double)mIntValue;
+            return isFloat() ? mDoubleValue : static_cast<double>(mIntValue);
         }
 
         static value calc(char op, const value &v1, const value &v2);
