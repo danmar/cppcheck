@@ -756,7 +756,10 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             continue;
         if (eval.count(traitName) == 0)
             continue;
-        ValueFlow::Value value = eval[traitName](evaluateTemplateArgs(templateTok->next()));
+        auto args = evaluateTemplateArgs(templateTok->next());
+        if(std::any_of(args.begin(), args.end(), [](const std::vector<const Token*>& arg) { return arg.empty(); }))
+            continue;
+        ValueFlow::Value value = eval[traitName](std::move(args));
         if (value.isUninitValue())
             continue;
         value.setKnown();
