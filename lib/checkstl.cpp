@@ -713,7 +713,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (isSameExpression(false, tok1, tok2, settings, false, false)) {
         return !astIsContainerOwned(tok1) || !isTemporary(tok1, &settings.library);
     }
-    if (astContainerYield(tok2) == Library::Container::Yield::ITEM)
+    if (astContainerYield(tok2, settings.library) == Library::Container::Yield::ITEM)
         return true;
     if (kind == ValueFlow::Value::LifetimeKind::Address || kind == ValueFlow::Value::LifetimeKind::Iterator) {
         const auto address1 = getAddressContainer(tok1);

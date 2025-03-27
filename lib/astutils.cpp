@@ -289,10 +289,10 @@ bool astIsContainerString(const Token* tok)
     return container->stdStringLike;
 }
 
-static std::pair<const Token*, const Library::Container*> getContainerFunction(const Token* tok, const Settings* settings)
+static std::pair<const Token*, const Library::Container*> getContainerFunction(const Token* tok, const Library& library)
 {
     const Library::Container* cont{};
-    if (!tok || !tok->valueType() || (!tok->valueType()->container && (!settings || !(cont = settings->library.detectContainerOrIterator(tok->valueType()->smartPointerTypeToken)))))
+    if (!tok || !tok->valueType() || (!tok->valueType()->container && (!(cont = library.detectContainerOrIterator(tok->valueType()->smartPointerTypeToken)))))
         return {};
     const Token* parent = tok->astParent();
     if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
@@ -301,9 +301,9 @@ static std::pair<const Token*, const Library::Container*> getContainerFunction(c
     return {};
 }
 
-Library::Container::Action astContainerAction(const Token* tok, const Token** ftok, const Settings* settings)
+Library::Container::Action astContainerAction(const Token* tok, const Library& library, const Token** ftok)
 {
-    const auto ftokCont = getContainerFunction(tok, settings);
+    const auto ftokCont = getContainerFunction(tok, library);
     if (ftok)
         *ftok = ftokCont.first;
     if (!ftokCont.first)
@@ -311,9 +311,9 @@ Library::Container::Action astContainerAction(const Token* tok, const Token** ft
     return ftokCont.second->getAction(ftokCont.first->str());
 }
 
-Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok, const Settings* settings)
+Library::Container::Yield astContainerYield(const Token* tok, const Library& library, const Token** ftok)
 {
-    const auto ftokCont = getContainerFunction(tok, settings);
+    const auto ftokCont = getContainerFunction(tok, library);
     if (ftok)
         *ftok = ftokCont.first;
     if (!ftokCont.first)
@@ -2895,7 +2895,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
             (!(tok->function() && (tok->function()->isAttributePure() || tok->function()->isAttributeConst())))) {
             if (!Token::simpleMatch(tok->astParent(), "."))
                 return true;
-            const auto yield = astContainerYield(tok->astParent()->astOperand1());
+            const auto yield = astContainerYield(tok->astParent()->astOperand1(), settings.library);
             if (yield != Library::Container::Yield::SIZE && yield != Library::Container::Yield::EMPTY &&
                 yield != Library::Container::Yield::BUFFER && yield != Library::Container::Yield::BUFFER_NT)
                 // TODO: Is global variable really changed by function call?

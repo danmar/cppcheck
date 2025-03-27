@@ -6288,7 +6288,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
         return true;
     if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
         return tok->valueType()->container->stdAssociativeLike;
-    const Library::Container::Action action = astContainerAction(tok);
+    const Library::Container::Action action = astContainerAction(tok, settings.library);
     switch (action) {
     case Library::Container::Action::RESIZE:
     case Library::Container::Action::CLEAR:
@@ -6302,7 +6302,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     case Library::Container::Action::NO_ACTION:
         // Is this an unknown member function call?
         if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
-            const Library::Container::Yield yield = astContainerYield(tok);
+            const Library::Container::Yield yield = astContainerYield(tok, settings.library);
             return yield == Library::Container::Yield::NO_YIELD;
         }
         break;
@@ -6408,7 +6408,7 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger & errorLogge
 
 static Library::Container::Yield findIteratorYield(Token* tok, const Token*& ftok, const Settings& settings)
 {
-    auto yield = astContainerYield(tok, &ftok);
+    auto yield = astContainerYield(tok, settings.library, &ftok);
     if (ftok)
         return yield;
 

@@ -203,7 +203,7 @@ struct ValueFlowAnalyzer : Analyzer {
                           Library::Container::Action::INSERT,
                           Library::Container::Action::APPEND,
                           Library::Container::Action::CHANGE_INTERNAL},
-                         astContainerAction(tok)))
+                         astContainerAction(tok, getSettings().library)))
                 return read;
         }
         bool inconclusive = false;
