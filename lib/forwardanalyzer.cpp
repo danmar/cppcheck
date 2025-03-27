@@ -143,7 +143,7 @@ namespace {
                 traverseRecursive(tok->astOperand2(), f, traverseUnknown);
                 traverseRecursive(tok->astOperand1(), f, traverseUnknown);
                 return Break(Analyzer::Terminate::Escape);
-            } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings.library)) {
+            } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, settings.library)) {
                 // Traverse the parameters of the function before escaping
                 traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
                 return Break(Analyzer::Terminate::Escape);

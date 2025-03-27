@@ -2171,7 +2171,7 @@ static bool isEscapedOrJump(const Token* tok, bool functionsScope, const Library
     return Token::Match(tok, "return|goto|throw|continue|break");
 }
 
-bool isEscapeFunction(const Token* ftok, const Library* library)
+bool isEscapeFunction(const Token* ftok, const Library& library)
 {
     if (!Token::Match(ftok, "%name% ("))
         return false;
@@ -2181,8 +2181,8 @@ bool isEscapeFunction(const Token* ftok, const Library* library)
             return true;
         if (function->isAttributeNoreturn())
             return true;
-    } else if (library) {
-        if (library->isnoreturn(ftok))
+    } else {
+        if (library.isnoreturn(ftok))
             return true;
     }
     return false;
@@ -2840,7 +2840,7 @@ const Token* findExpression(const Token* start, const nonneg int exprid)
     return nullptr;
 }
 
-const Token* findEscapeStatement(const Scope* scope, const Library* library)
+const Token* findEscapeStatement(const Scope* scope, const Library& library)
 {
     if (!scope)
         return nullptr;
