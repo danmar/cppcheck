@@ -35,7 +35,7 @@ struct PathAnalysis {
     };
 
     explicit PathAnalysis(const Token* start)
-        : start(start)
+        : mStart(start)
     {}
 
     struct Info {
@@ -56,7 +56,7 @@ struct PathAnalysis {
         return result;
     }
 private:
-    const Token * start;
+    const Token * mStart;
 
     void forward(const std::function<Progress(const Info&)>& f) const;
 

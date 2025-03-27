@@ -166,7 +166,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
                 return Progress::Break;
         }
         // Prevent infinite recursion
-        if (tok->next() == start)
+        if (tok->next() == mStart)
             break;
     }
     return Progress::Continue;
@@ -174,12 +174,12 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
 
 void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
 {
-    const Scope * endScope = findOuterScope(start->scope());
+    const Scope * endScope = findOuterScope(mStart->scope());
     if (!endScope)
         return;
     const Token * endToken = endScope->bodyEnd;
-    Info info{start, ErrorPath{}, true};
-    forwardRange(start, endToken, std::move(info), f);
+    Info info{mStart, ErrorPath{}, true};
+    forwardRange(mStart, endToken, std::move(info), f);
 }
 
 bool reaches(const Token * start, const Token * dest, ErrorPath* errorPath)
