@@ -821,7 +821,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                 // Don't ignore user specialization but don't consider it an instantiation.
                 // Instantiations in return type, function parameters, and executable code
                 // are not ignored.
-                const unsigned int pos = getTemplateNamePosition(tok);
+                const int pos = getTemplateNamePosition(tok);
                 if (pos > 0)
                     skip = tok->tokAt(pos);
             } else {
