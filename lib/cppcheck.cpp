@@ -1861,6 +1861,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 {
     Settings settings;
+    settings.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: get rid of this
     Suppressions supprs;
 
     CppCheck cppcheck(settings, supprs, errorlogger, true, nullptr);
