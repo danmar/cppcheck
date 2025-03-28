@@ -603,6 +603,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.clangExecutable = argv[i] + 8;
         }
 
+        else if (std::strcmp(argv[i], "--clang-tidy") == 0) {
+            mSettings.clangTidy = true;
+        }
+
+        else if (std::strncmp(argv[i], "--clang-tidy=", 13) == 0) {
+            mSettings.clangTidy = true;
+            mSettings.clangTidyExecutable = argv[i] + 13;
+        }
+
         else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
             mSettings.configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
         }

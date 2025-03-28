@@ -162,7 +162,10 @@ public:
     std::string clangExecutable = "clang";
 
     /** Use clang-tidy */
-    bool clangTidy{}; // TODO: CLI
+    bool clangTidy{};
+
+    /** Custom clang-tidy executable */
+    std::string clangTidyExecutable = "clang-tidy";
 
     /** Internal: Clear the simplecpp non-existing include cache */
     bool clearIncludeCache{}; // internal
