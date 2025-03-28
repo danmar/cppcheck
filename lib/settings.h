@@ -97,6 +97,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
+// NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)
 class CPPCHECKLIB WARN_UNUSED Settings {
 private:
 

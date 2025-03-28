@@ -11,6 +11,8 @@ on:
     tags:
       - '2.*'
   pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
 
 permissions:
   contents: read
@@ -73,5 +75,11 @@ jobs:
           make -C cmake.output/test cmake_pch.hxx.pch
 
       - name: Clang-Tidy
+        if: github.event.schedule == ''
         run: |
           cmake --build cmake.output --target run-clang-tidy 2> /dev/null
+
+      - name: Clang Static Analyzer
+        if: github.event.schedule != ''
+        run: |
+          cmake --build cmake.output --target run-clang-tidy-csa 2> /dev/null
