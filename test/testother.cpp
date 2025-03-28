@@ -8852,6 +8852,13 @@ private:
               "    f<uint32_t>(0);\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        // #13734
+        check("void f() {\n"
+              "    uint8_t a[N + 1];\n"
+              "    for (unsigned p = 0; p < (sizeof(a) / sizeof((a)[0])); ++p) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkSignOfPointer() {
