@@ -32,10 +32,9 @@ if(RUN_CLANG_TIDY_NAMES)
         # clang-analyzer-cplusplus.NewDelete
         # clang-analyzer-core.NullDereference
         # clang-analyzer-unix.Stream
-        # clang-analyzer-optin.cplusplus.UninitializedObject - false positives with unnamed fields - see https://github.com/llvm/llvm-project/issues/132001
         # clang-analyzer-alpha.clone.CloneChecker
         # clang-analyzer-alpha.webkit.* - we are not interested in these
-        set(CLANG_TIDY_CSA_CONFIG "-config={InheritParentConfig: true, Checks: '-*,clang-analyzer-*,-clang-analyzer-core.CallAndMessage,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-core.NullDereference,-clang-analyzer-unix.Stream,-clang-analyzer-optin.cplusplus.UninitializedObject,-clang-analyzer-alpha.clone.CloneChecker,-clang-analyzer-alpha.webkit.*'}")
+        set(CLANG_TIDY_CSA_CONFIG "-config={InheritParentConfig: true, Checks: '-*,clang-analyzer-*,-clang-analyzer-core.CallAndMessage,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-core.NullDereference,-clang-analyzer-unix.Stream,-clang-analyzer-alpha.clone.CloneChecker,-clang-analyzer-alpha.webkit.*'}")
         if (ENABLE_CSA_ALPHA)
             set(CLANG_TIDY_CSA_ALPHA_OPTS "-allow-enabling-alpha-checkers" "-extra-arg=-Xclang" "-extra-arg=-analyzer-config" "-extra-arg=-Xclang" "-extra-arg=aggressive-binary-operation-simplification=true")
         endif()
