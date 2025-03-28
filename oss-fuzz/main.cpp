@@ -49,6 +49,8 @@ static Settings create_settings()
 {
     // TODO: load std.cfg
     Settings s;
+    s.templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
+    s.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     s.addEnabled("all");
     s.certainty.setEnabled(Certainty::inconclusive, true);
     return s;
