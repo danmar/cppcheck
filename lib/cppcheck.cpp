@@ -366,9 +366,11 @@ static void createDumpFile(const Settings& settings,
         std::ofstream fout(getCtuInfoFileName(dumpFile));
     }
 
-    // TODO: enforcedLang should be already applied in FileWithDetails object
     std::string language;
-    switch (settings.enforcedLang) {
+
+    assert(file.lang() != Standards::Language::None);
+
+    switch (file.lang()) {
     case Standards::Language::C:
         language = " language=\"c\"";
         break;
@@ -376,16 +378,7 @@ static void createDumpFile(const Settings& settings,
         language = " language=\"cpp\"";
         break;
     case Standards::Language::None:
-    {
-        // TODO: get language from FileWithDetails object
-        // TODO: error out on unknown language?
-        const Standards::Language lang = Path::identify(file.spath(), settings.cppHeaderProbe);
-        if (lang == Standards::Language::CPP)
-            language = " language=\"cpp\"";
-        else if (lang == Standards::Language::C)
-            language = " language=\"c\"";
         break;
-    }
     }
 
     fdump << "<?xml version=\"1.0\"?>\n";
@@ -619,13 +612,12 @@ std::string CppCheck::getLibraryDumpData() const {
     return out;
 }
 
-std::string CppCheck::getClangFlags(Standards::Language fileLang) const {
+std::string CppCheck::getClangFlags(Standards::Language lang) const {
     std::string flags;
 
-    const Standards::Language lang = mSettings.enforcedLang != Standards::None ? mSettings.enforcedLang : fileLang;
+    assert(lang != Standards::Language::None);
 
     switch (lang) {
-    case Standards::Language::None:
     case Standards::Language::C:
         flags = "-x c ";
         if (!mSettings.standards.stdValueC.empty())
@@ -635,6 +627,8 @@ std::string CppCheck::getClangFlags(Standards::Language fileLang) const {
         flags += "-x c++ ";
         if (!mSettings.standards.stdValueCPP.empty())
             flags += "-std=" + mSettings.standards.stdValueCPP + " ";
+        break;
+    case Standards::Language::None:
         break;
     }
 
@@ -674,7 +668,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 #endif
 
     const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
-                              getClangFlags(Path::identify(file.spath(), mSettings.cppHeaderProbe)) +
+                              getClangFlags(file.lang()) +
                               file.spath();
     const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
     if (mSettings.verbose && !mSettings.quiet) {

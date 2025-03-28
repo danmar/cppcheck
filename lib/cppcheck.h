@@ -153,10 +153,10 @@ public:
 
     /**
      * @brief Get the clang command line flags using the Settings
-     * @param fileLang language guessed from filename
+     * @param lang language guessed from filename
      * @return Clang command line flags
      */
-    std::string getClangFlags(Standards::Language fileLang) const;
+    std::string getClangFlags(Standards::Language lang) const;
 
 private:
 #ifdef HAVE_RULES
