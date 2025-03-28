@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "standards.h"
 
 #include <cstdint>
 #include <fstream>
@@ -150,13 +149,6 @@ public:
     std::string getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const;
 
     std::string getLibraryDumpData() const;
-
-    /**
-     * @brief Get the clang command line flags using the Settings
-     * @param lang language guessed from filename
-     * @return Clang command line flags
-     */
-    std::string getClangFlags(Standards::Language lang) const;
 
 private:
 #ifdef HAVE_RULES

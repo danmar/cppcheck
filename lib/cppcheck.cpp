@@ -612,7 +612,12 @@ std::string CppCheck::getLibraryDumpData() const {
     return out;
 }
 
-std::string CppCheck::getClangFlags(Standards::Language lang) const {
+/**
+ * @brief Get the clang command line flags using the Settings
+ * @param lang language guessed from filename
+ * @return Clang command line flags
+ */
+static std::string getClangFlags(const Settings& setting, Standards::Language lang) {
     std::string flags;
 
     assert(lang != Standards::Language::None);
@@ -620,24 +625,24 @@ std::string CppCheck::getClangFlags(Standards::Language lang) const {
     switch (lang) {
     case Standards::Language::C:
         flags = "-x c ";
-        if (!mSettings.standards.stdValueC.empty())
-            flags += "-std=" + mSettings.standards.stdValueC + " ";
+        if (!setting.standards.stdValueC.empty())
+            flags += "-std=" + setting.standards.stdValueC + " ";
         break;
     case Standards::Language::CPP:
         flags += "-x c++ ";
-        if (!mSettings.standards.stdValueCPP.empty())
-            flags += "-std=" + mSettings.standards.stdValueCPP + " ";
+        if (!setting.standards.stdValueCPP.empty())
+            flags += "-std=" + setting.standards.stdValueCPP + " ";
         break;
     case Standards::Language::None:
         break;
     }
 
-    for (const std::string &i: mSettings.includePaths)
+    for (const std::string &i: setting.includePaths)
         flags += "-I" + i + " ";
 
-    flags += getDefinesFlags(mSettings.userDefines);
+    flags += getDefinesFlags(setting.userDefines);
 
-    for (const std::string &i: mSettings.userIncludes)
+    for (const std::string &i: setting.userIncludes)
         flags += "--include " + cmdFileName(i) + " ";
 
     return flags;
@@ -668,7 +673,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 #endif
 
     const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
-                              getClangFlags(file.lang()) +
+                              getClangFlags(mSettings, file.lang()) +
                               file.spath();
     const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
     if (mSettings.verbose && !mSettings.quiet) {
