@@ -3839,6 +3839,7 @@ void Tokenizer::arraySize()
     }
 }
 
+// cppcheck-suppress functionConst
 void Tokenizer::arraySizeAfterValueFlow()
 {
     // After ValueFlow, adjust array sizes.
@@ -7087,6 +7088,7 @@ void Tokenizer::simplifyVarDecl(const bool only_k_r_fpar)
     simplifyVarDecl(list.front(), nullptr, only_k_r_fpar);
 }
 
+// cppcheck-suppress functionConst - has side effects
 void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar)
 {
     const bool cpp = isCPP();
