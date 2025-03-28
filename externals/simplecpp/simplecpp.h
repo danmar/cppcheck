@@ -366,6 +366,16 @@ namespace simplecpp {
     SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = nullptr, std::list<MacroUsage> *macroUsage = nullptr, std::list<IfCond> *ifCond = nullptr);
 
     /**
+     * Precompile header
+     * @param rawtokens Raw tokenlist for top sourcefile
+     * @param files internal data of simplecpp
+     * @param dui defines, undefs, and include paths
+     * @param outputList output: list that will receive output messages
+     * @return precompiled header data
+     */
+    SIMPLECPP_LIB std::string precompileHeader(const TokenList &rawtokens, std::vector<std::string> &files, const DUI &dui, OutputList *outputList = nullptr);
+
+    /**
      * Deallocate data
      */
     SIMPLECPP_LIB void cleanup(std::map<std::string, TokenList*> &filedata);
