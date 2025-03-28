@@ -57,6 +57,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checkleakautovar.o \
               $(libcppdir)/checkmemoryleak.o \
               $(libcppdir)/checknullpointer.o \
+              $(libcppdir)/checkoperatorcomma.o \
               $(libcppdir)/checkother.o \
               $(libcppdir)/checkpostfixoperator.o \
               $(libcppdir)/checksizeof.o \
@@ -215,6 +216,9 @@ $(libcppdir)/checkmemoryleak.o: ../lib/checkmemoryleak.cpp ../lib/addoninfo.h ..
 
 $(libcppdir)/checknullpointer.o: ../lib/checknullpointer.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkers.h ../lib/checknullpointer.h ../lib/config.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/findtoken.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checknullpointer.cpp
+
+$(libcppdir)/checkoperatorcomma.o: ../lib/checkoperatorcomma.cpp ../lib/addoninfo.h ../lib/check.h ../lib/checkers.h ../lib/checkoperatorcomma.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkoperatorcomma.cpp
 
 $(libcppdir)/checkother.o: ../lib/checkother.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkers.h ../lib/checkother.h ../lib/config.h ../lib/errortypes.h ../lib/fwdanalysis.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkother.cpp
