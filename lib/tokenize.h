@@ -54,7 +54,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestTokenizer;
 
 public:
-    explicit Tokenizer(const Settings & settings, ErrorLogger &errorLogger);
+    Tokenizer(TokenList tokenList, const Settings & settings, ErrorLogger &errorLogger);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {

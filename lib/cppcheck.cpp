@@ -715,8 +715,9 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     }
 
     try {
-        Tokenizer tokenizer(mSettings, mErrorLogger);
-        tokenizer.list.appendFileIfNew(file.spath());
+        TokenList tokenlist{&mSettings};
+        tokenlist.appendFileIfNew(file.spath());
+        Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
@@ -902,10 +903,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
             if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || analyzerInformation)) {
                 std::size_t hash = 0;
-                // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
-                Tokenizer tokenizer(mSettings, mErrorLogger);
+                TokenList tokenlist{&mSettings};
                 // enforce the language since markup files are special and do not adhere to the enforced language
-                tokenizer.list.setLang(Standards::Language::C, true);
+                tokenlist.setLang(Standards::Language::C, true);
                 if (fileStream) {
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
@@ -913,7 +913,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
-                    tokenizer.list.createTokens(std::move(tokens));
+                    tokenlist.createTokens(std::move(tokens));
                 }
                 else {
                     std::vector<std::string> files;
@@ -922,8 +922,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
-                    tokenizer.list.createTokens(std::move(tokens));
+                    tokenlist.createTokens(std::move(tokens));
                 }
+                // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
+                Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
 
                 if (analyzerInformation) {
@@ -1123,18 +1125,20 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(mSettings, mErrorLogger);
-            if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
-                tokenizer.setTimerResults(&s_timerResults);
-            tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
+            TokenList tokenlist{&mSettings};
 
             try {
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
                     simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
-                    tokenizer.list.createTokens(std::move(tokensP));
+                    tokenlist.createTokens(std::move(tokensP));
                 });
                 hasValidConfig = true;
+
+                Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
+                if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
+                    tokenizer.setTimerResults(&s_timerResults);
+                tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
                 // locations macros
                 mLogger->setLocationMacros(tokenizer.tokens(), files);
@@ -1221,7 +1225,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     mLogger->setAnalyzerInfo(nullptr);
                 return mLogger->exitcode();
             } catch (const InternalError &e) {
-                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
+                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenlist, file.spath());
                 mErrorLogger.reportErr(errmsg);
             }
         }
