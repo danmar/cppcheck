@@ -4425,6 +4425,10 @@ static bool setVarIdClassDeclaration(Token* const startToken,
         }
         if (tok->str() == "{") {
             inEnum = isEnumStart(tok);
+            if (!inEnum && isClassStructUnionEnumStart(tok)) { // nested type
+                tok = tok->link();
+                continue;
+            }
             if (initList && !initListArgLastToken)
                 initList = false;
             ++indentlevel;

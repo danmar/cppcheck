@@ -150,6 +150,7 @@ private:
         TEST_CASE(varid_in_class25);
         TEST_CASE(varid_in_class26);
         TEST_CASE(varid_in_class27);
+        TEST_CASE(varid_in_class28);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -2343,6 +2344,22 @@ private:
                                 "2: int * * pp@1 ;\n"
                                 "3: void f ( ) { int x@2 ( * pp@1 [ 0 ] ) ; }\n"
                                 "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid_in_class28() {
+        const char code[] = "struct S {\n" // 13725
+                            "    struct T {\n"
+                            "        bool b();\n"
+                            "    };\n"
+                            "    bool b = false;\n"
+                            "};\n";
+        const char expected[] = "1: struct S {\n"
+                                "2: struct T {\n"
+                                "3: bool b ( ) ;\n"
+                                "4: } ;\n"
+                                "5: bool b@1 ; b@1 = false ;\n"
+                                "6: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
