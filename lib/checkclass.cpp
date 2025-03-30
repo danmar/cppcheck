@@ -2371,7 +2371,7 @@ const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "uno
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
-        return false;
+        return false; // TODO: log bailout?
 
     auto getFuncTok = [](const Token* tok) -> const Token* {
         if (Token::simpleMatch(tok, "this"))
