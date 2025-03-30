@@ -217,6 +217,7 @@ private:
         TEST_CASE(template178);
         TEST_CASE(template179);
         TEST_CASE(template180);
+        TEST_CASE(template181);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -4589,6 +4590,26 @@ private:
                            "} "
                            "int f<static_cast<int>(0U)> ( ) { "
                            "return dostuff ( static_cast < int > ( 0U ) ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template181() {
+        const char code[] = "struct K { bool b; };\n"
+                            "template<bool b>\n"
+                            "void f(struct K* k) {\n"
+                            "    assert(b == k->b);\n"
+                            "}\n"
+                            "void g(struct K* k) {\n"
+                            "    f<false>(k);\n"
+                            "}\n";
+        const char exp[] = "struct K { bool b ; } ; "
+                           "void f<false> ( struct K * k ) ; "
+                           "void g ( struct K * k ) { "
+                           "f<false> ( k ) ; "
+                           "} "
+                           "void f<false> ( struct K * k ) { "
+                           "assert ( false == k . b ) ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
     }
