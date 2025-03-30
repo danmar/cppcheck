@@ -1817,6 +1817,15 @@ private:
                                            "  };\n"
                                            "} catch (long) {\n"
                                            "}"));
+
+        ASSERT_EQUALS("struct S { void func ( ) const ; } ;\n"
+                      "void S :: func ( ) const {\n"
+                      "try { f ( ) ; }\n"
+                      "catch ( ... ) { g ( ) ; } }",
+                      tokenizeAndStringify("struct S { void func() const; };\n"
+                                           "void S::func() const\n"
+                                           "try { f(); }\n"
+                                           "catch (...) { g(); }\n"));
     }
 
     // Simplify "((..))" into "(..)"

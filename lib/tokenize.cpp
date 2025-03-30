@@ -8983,7 +8983,10 @@ void Tokenizer::simplifyFunctionTryCatch()
     for (Token * tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "try {|:"))
             continue;
-        if (!TokenList::isFunctionHead(tok->previous(), "try")) // TODO: this is supposed to a list of characters and not strings
+        const Token* par = tok->previous();
+        while (par && par->isKeyword())
+            par = par->previous();
+        if (!TokenList::isFunctionHead(par, "try")) // TODO: this is supposed to a list of characters and not strings
             continue;
 
         Token* tryStartToken = skipInitializerList(tok->next());
