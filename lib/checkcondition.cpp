@@ -338,7 +338,7 @@ void CheckCondition::checkBadBitmaskCheck()
             // If there are #ifdef in the expression don't warn about redundant | to avoid FP
             const auto& startStop = tok->findExpressionStartEndTokens();
             if (mTokenizer->hasIfdef(startStop.first, startStop.second))
-                continue;
+                continue; // TODO: log bailout?
 
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->getKnownIntValue() == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->getKnownIntValue() == 0);
@@ -772,6 +772,7 @@ void CheckCondition::multiCondition2()
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                                     return ChildrenToVisit::done;
                                 }
+                                // TODO: log bailout?
                             }
                             return ChildrenToVisit::none;
                         });

@@ -1005,6 +1005,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.cppHeaderProbe = false;
         }
 
+        else if (std::strcmp(argv[i], "--no-ifdef-bailout") == 0) {
+            mSettings.ifdefBailout = false;
+        }
+
         // Write results in file
         else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
             mSettings.outputFile = Path::simplifyPath(argv[i] + 14);

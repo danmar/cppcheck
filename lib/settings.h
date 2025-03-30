@@ -272,6 +272,9 @@ public:
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force{};
 
+    /** @brief Perform bailouts when #if blocks are encountered in checks. */
+    bool ifdefBailout{true};
+
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;

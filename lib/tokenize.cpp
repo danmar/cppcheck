@@ -10978,6 +10978,9 @@ void Tokenizer::setDirectives(std::list<Directive> directives)
 
 bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
+    if (!mSettings.ifdefBailout)
+        return false;
+
     const auto& directives = mDirectives;
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return startsWith(d.str, "#if") &&

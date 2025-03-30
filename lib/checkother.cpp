@@ -1219,7 +1219,7 @@ void CheckOther::checkVariableScope()
             continue;
 
         if (mTokenizer->hasIfdef(var->nameToken(), var->scope()->bodyEnd))
-            continue;
+            continue; // TODO: log bailout?
 
         // reference of range for loop variable..
         if (Token::Match(var->nameToken()->previous(), "& %var% = %var% .")) {
