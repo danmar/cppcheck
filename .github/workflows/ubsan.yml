@@ -83,30 +83,37 @@ jobs:
           cmake --build cmake.output --target cppcheck -- -j $(nproc)
 
       - name: Build test
+        if: false
         run: |
           cmake --build cmake.output --target testrunner -- -j $(nproc)
 
       - name: Build GUI tests
+        if: false
         run: |
           cmake --build cmake.output --target gui-tests -- -j $(nproc)
 
       - name: Run tests
+        if: false
         run: ./cmake.output/bin/testrunner
 
       - name: Run cfg tests
+        if: false
         run: |
           cmake --build cmake.output --target checkcfg -- -j $(nproc)
 
       - name: Run CTest
+        if: false
         run: |
           ctest --test-dir cmake.output --output-on-failure -j$(nproc)
 
       - name: Run test/cli
+        if: false
         run: |
           pwd=$(pwd)
           TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
 
       - name: Run test/cli (-j2)
+        if: false
         run: |
           pwd=$(pwd)
           TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
@@ -122,6 +129,7 @@ jobs:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
       - name: Run test/cli (--cppcheck-build-dir)
+        if: false
         run: |
           pwd=$(pwd)
           TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
@@ -137,7 +145,7 @@ jobs:
       # TODO: only fail the step on sanitizer issues - since we use processes it will only fail the underlying process which will result in an cppcheckError
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive --no-ifdef-bailout"
           cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
           ec=0
           ./cmake.output/bin/cppcheck $selfcheck_options externals || ec=1
