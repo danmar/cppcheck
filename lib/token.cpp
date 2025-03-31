@@ -134,8 +134,7 @@ void Token::update_property_info()
             else if (mStr == "asm") { // TODO: not a keyword
                 tokType(eKeyword);
             }
-            // TODO: remove condition? appears to be (no longer necessary) protection for reset of varids in Tokenizer::setVarId()
-            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword) {
+            else {
                 tokType(eName);
                 // some types are not being treated as keywords
                 update_property_isStandardType();
@@ -183,8 +182,7 @@ void Token::update_property_info()
     } else {
         tokType(eNone);
     }
-    // TODO: make sure varid is only set for eVariable
-    //assert(!mImpl->mVarId || mTokType == eVariable);
+    assert(!mImpl->mVarId || mTokType == eVariable);
     // TODO: validate type for linked token?
 }
 

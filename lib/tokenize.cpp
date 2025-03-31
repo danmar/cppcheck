@@ -3543,6 +3543,7 @@ void Tokenizer::combineOperators()
             }
             if (simplify) {
                 tok->str(tok->str() + ":");
+                tok->tokType(Token::Type::eKeyword); // we need to preserve the keyword type after setting a non-keyword string
                 tok->deleteNext();
             }
         } else if (tok->str() == "->") {
@@ -10278,6 +10279,8 @@ void Tokenizer::simplifyOperatorName()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "using|:: operator %op%|%name% ;")) {
             tok->next()->str("operator" + tok->strAt(2));
+            tok->next()->tokType(Token::Type::eKeyword); // we need to preserve the keyword type after setting a non-keyword string
+            // TODO: tok->next()->isOperatorKeyword(true);
             tok->next()->deleteNext();
             continue;
         }
@@ -10287,6 +10290,8 @@ void Tokenizer::simplifyOperatorName()
         // operator op
         if (Token::Match(tok, "operator %op% (") && !operatorEnd(tok->linkAt(2))) {
             tok->str(tok->str() + tok->strAt(1));
+            tok->tokType(Token::Type::eKeyword); // we need to preserve the keyword type after setting a non-keyword string
+            // TODO: tok->isOperatorKeyword(true);
             tok->deleteNext();
             continue;
         }
@@ -10359,11 +10364,15 @@ void Tokenizer::simplifyOperatorName()
         const bool returnsRef = Token::simpleMatch(par, "( & (") && tok->next()->isName();
         if (par && !op.empty()) {
             if (returnsRef) {
-                par->next()->insertToken("operator" + op)->isOperatorKeyword(true);
+                Token* tok_op = par->next()->insertToken("operator" + op);
+                // TODO: tok_op->tokType(Token::Type::eKeyword); // the given token is not a keyword but should be treated as such
+                tok_op->isOperatorKeyword(true);
                 tok->deleteThis();
             }
             else {
                 tok->str("operator" + op);
+                tok->tokType(Token::Type::eKeyword); // we need to preserve the keyword type after setting a non-keyword string
+                // TODO: tok->isOperatorKeyword(true);
                 Token::eraseTokens(tok, par);
             }
         }
