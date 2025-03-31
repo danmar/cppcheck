@@ -1096,6 +1096,9 @@ public:
      * to.
      */
     void link(Token *linkToToken) {
+        if (mLink == linkToToken)
+            return;
+
         mLink = linkToToken;
         if (mStr == "<" || mStr == ">")
             update_property_info();
