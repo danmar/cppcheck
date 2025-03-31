@@ -107,6 +107,8 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
 
 void Token::update_property_info()
 {
+    assert(mImpl);
+
     setFlag(fIsControlFlowKeyword, false);
     // TODO: clear fIsLong
     isStandardType(false);
