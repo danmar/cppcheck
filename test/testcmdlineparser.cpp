@@ -1214,7 +1214,7 @@ private:
         ASSERT_EQUALS(1U, files.size());
     }
 
-    void fileFilterFileWithDetailsCase() {
+    void fileFilterFileWithDetailsCase() const {
         // in windows, paths are case insensitive
         const std::vector<std::string> fileFilters{"m1.c"};
         const std::list<FileWithDetails> filesResolved{ FileWithDetails("M1.C", Standards::Language::C, 123) };

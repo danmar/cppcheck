@@ -59,7 +59,7 @@ private:
      * @param nchildren - count of currently ran children
      * @return true - if new process can be started
      */
-    bool checkLoadAverage(size_t nchildren);
+    bool checkLoadAverage(size_t nchildren) const;
 
     /**
      * @brief Reports internal errors related to child processes
