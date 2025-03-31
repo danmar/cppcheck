@@ -261,7 +261,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     return res;
 }
 
-bool ProcessExecutor::checkLoadAverage(size_t nchildren)
+bool ProcessExecutor::checkLoadAverage(size_t nchildren) const
 {
 #if defined(__QNX__) || defined(__HAIKU__)  // getloadavg() is unsupported on Qnx, Haiku.
     (void)nchildren;
