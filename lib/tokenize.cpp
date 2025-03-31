@@ -8108,6 +8108,19 @@ void Tokenizer::unknownMacroError(const Token *tok1) const
     throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::UNKNOWN_MACRO);
 }
 
+void Tokenizer::unknownMacroSyntaxError(const Token *tok, const std::string &description,
+                                        const Token *errTok, const std::string &code) const
+{
+    if (tok->isExpandedMacro() && mSettings.userDefines.empty()) {
+        throw InternalError(tok, description + ". Macro '" + tok->getMacroName() +
+                            "' expands to '" + tok->str() + +"'. Use -D" + tok->getMacroName() +
+                            "=... to specify a value, or -U" + tok->getMacroName()
+                            + " to undefine it.", InternalError::UNKNOWN_MACRO);
+    }
+    errTok = errTok ? errTok : tok;
+    syntaxError(errTok, code);
+}
+
 void Tokenizer::unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const
 {
     reportError(tok,
@@ -8744,7 +8757,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% {|(")) {
             if (tok->strAt(1) == "(")
-                syntaxError(tok);
+                unknownMacroSyntaxError(tok, "literal used as function");
             else if (!(tok->tokType() == Token::Type::eString && Token::simpleMatch(tok->tokAt(-1), "extern")) &&
                      !(tok->tokType() == Token::Type::eBoolean && cpp && Token::simpleMatch(tok->tokAt(-1), "requires")))
                 syntaxError(tok);
@@ -8782,7 +8795,7 @@ void Tokenizer::findGarbageCode() const
             !Token::Match(tok->previous(), "{|, . %name% =|.|[|{") &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
-                syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
+                unknownMacroSyntaxError(tok->previous(), "member access on literal", tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
             if (!Token::Match(tok->next(), "%name%|*|~"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
         }
