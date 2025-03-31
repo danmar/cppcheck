@@ -2032,10 +2032,10 @@ void TokenList::simplifyPlatformTypes()
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
-        type = isLong;
-    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
+    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
         type = isLongLong;
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
+        type = isLong;
     else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_int)
         type = isInt;
     else
