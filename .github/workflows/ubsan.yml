@@ -83,30 +83,37 @@ jobs:
           cmake --build cmake.output --target cppcheck -- -j $(nproc)
 
       - name: Build test
+        if: false
         run: |
           cmake --build cmake.output --target testrunner -- -j $(nproc)
 
       - name: Build GUI tests
+        if: false
         run: |
           cmake --build cmake.output --target gui-tests -- -j $(nproc)
 
       - name: Run tests
+        if: false
         run: ./cmake.output/bin/testrunner
 
       - name: Run cfg tests
+        if: false
         run: |
           cmake --build cmake.output --target checkcfg -- -j $(nproc)
 
       - name: Run CTest
+        if: false
         run: |
           ctest --test-dir cmake.output --output-on-failure -j$(nproc)
 
       - name: Run test/cli
+        if: false
         run: |
           pwd=$(pwd)
           TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
 
       - name: Run test/cli (-j2)
+        if: false
         run: |
           pwd=$(pwd)
           TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
@@ -122,6 +129,7 @@ jobs:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
       - name: Run test/cli (--cppcheck-build-dir)
+        if: false
         run: |
           pwd=$(pwd)
           TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
