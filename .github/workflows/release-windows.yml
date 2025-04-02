@@ -37,22 +37,11 @@ jobs:
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Cache PCRE
-        id: cache-pcre
-        uses: actions/cache@v4
-        with:
-          path: |
-            externals\pcre.h
-            externals\pcre64.lib
-          key: pcre-${{ env.PCRE_VERSION }}-bin-x64-win-release-job
-
       - name: Download PCRE
-        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
-        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           @echo on
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
@@ -71,7 +60,6 @@ jobs:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
           tools: 'tools_opensslv3_x64'
-          cache: true
 
       # TODO: build with multiple threads
       - name: Build x64 release GUI
