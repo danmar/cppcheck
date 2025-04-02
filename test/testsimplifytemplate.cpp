@@ -5428,10 +5428,10 @@ private:
     }
 
     unsigned int templateParameters(const char code[]) {
-        TokenList tokenlist{&settings};
+        TokenList tokenlist{&settings, Standards::Language::CPP};
         std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr, Path::identify("test.cpp", false)))
+        if (!tokenlist.createTokens(istr))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.createLinks();
@@ -5497,11 +5497,11 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
     int templateNamePositionHelper(const char code[], unsigned offset = 0) {
-        TokenList tokenlist{&settings};
+        TokenList tokenlist{&settings, Standards::Language::CPP};
 
         std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr, Path::identify("test.cpp", false)))
+        if (!tokenlist.createTokens(istr))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.createLinks();
@@ -5570,7 +5570,7 @@ private:
 
     // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
     bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
-        TokenList tokenlist{&settings};
+        TokenList tokenlist{&settings, Standards::Language::CPP};
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
             return false;
@@ -5600,7 +5600,7 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
     bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
-        TokenList tokenlist{&settings};
+        TokenList tokenlist{&settings, Standards::Language::CPP};
 
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))

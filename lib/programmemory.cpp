@@ -1750,11 +1750,11 @@ static std::shared_ptr<Token> createTokenFromExpression(const std::string& retur
                                                         bool cpp,
                                                         std::unordered_map<nonneg int, const Token*>& lookupVarId)
 {
-    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings);
+    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(&settings, cpp ? Standards::Language::CPP : Standards::Language::C);
     {
         const std::string code = "return " + returnValue + ";";
         std::istringstream istr(code);
-        if (!tokenList->createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
+        if (!tokenList->createTokens(istr))
             return nullptr;
     }
 

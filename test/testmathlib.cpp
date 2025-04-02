@@ -410,7 +410,7 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1 invalid");
 
         {
-            TokenList list{&settingsDefault};
+            TokenList list{&settingsDefault, Standards::Language::C};
             list.appendFileIfNew("test.c");
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             auto *tok = new Token(list, std::move(tokensFrontBack));
@@ -586,7 +586,7 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("1 invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: 1 invalid");
 
         {
-            TokenList list{&settingsDefault};
+            TokenList list{&settingsDefault, Standards::Language::C};
             list.appendFileIfNew("test.c");
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             auto *tok = new Token(list, std::move(tokensFrontBack));
@@ -716,7 +716,7 @@ private:
         //ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.0LL"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
 
         {
-            TokenList list{&settingsDefault};
+            TokenList list{&settingsDefault, Standards::Language::C};
             list.appendFileIfNew("test.c");
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             auto *tok = new Token(list, std::move(tokensFrontBack));
