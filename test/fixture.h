@@ -335,7 +335,9 @@ protected:
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
 #define TODO_ASSERT_EQUALS( WANTED, CURRENT, ACTUAL ) todoAssertEquals(__FILE__, __LINE__, WANTED, CURRENT, ACTUAL)
 
+// *INDENT-OFF*
 #define REGISTER_TEST( CLASSNAME ) namespace { class CLASSNAME ## Instance : public TestInstance { public: CLASSNAME ## Instance() : TestInstance(#CLASSNAME) {} TestFixture* create() override { impl.reset(new CLASSNAME); return impl.get(); } }; CLASSNAME ## Instance instance_ ## CLASSNAME; }
+// *INDENT-ON*
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(Platform::toString(T), errstr, {exename}), errstr); } while (false)
 

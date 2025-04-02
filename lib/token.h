@@ -1426,7 +1426,7 @@ private:
         fIsInitBracket          = (1ULL << 43), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
     };
 
-    enum : std::uint8_t  {
+    enum : std::uint8_t {
         efMaxSize = sizeof(nonneg int) * 8,
         efIsUnique = efMaxSize - 2,
     };

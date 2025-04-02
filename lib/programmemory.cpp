@@ -669,7 +669,7 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     return result;
 }
 
-using BuiltinLibraryFunction = std::function<ValueFlow::Value(const std::vector<ValueFlow::Value>&)>;
+using BuiltinLibraryFunction = std::function<ValueFlow::Value (const std::vector<ValueFlow::Value>&)>;
 static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibraryFunctions()
 {
     std::unordered_map<std::string, BuiltinLibraryFunction> functions;
