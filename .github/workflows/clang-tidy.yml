@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.8.2
+      QT_VERSION: 6.9.0
 
     steps:
       - uses: actions/checkout@v4
