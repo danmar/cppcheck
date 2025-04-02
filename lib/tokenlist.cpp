@@ -23,6 +23,7 @@
 #include "astutils.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filesettings.h"
 #include "keywords.h"
 #include "library.h"
 #include "path.h"
@@ -112,17 +113,17 @@ void TokenList::determineCppC()
     }
 }
 
-int TokenList::appendFileIfNew(std::string fileName)
+int TokenList::appendFileIfNew(const FileWithDetails& file)
 {
     // Has this file been tokenized already?
     auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
-        return Path::sameFileName(f, fileName);
+        return Path::sameFileName(f, file.spath());
     });
     if (it != mFiles.cend())
         return static_cast<int>(std::distance(mFiles.cbegin(), it));
 
     // The "mFiles" vector remembers what files have been tokenized..
-    mFiles.push_back(std::move(fileName));
+    mFiles.push_back(file.spath());
 
     // Update mIsC and mIsCpp properties
     if (mFiles.size() == 1) { // Update only useful if first file added to _files
@@ -344,13 +345,13 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(std::istream &code, const std::string& file0)
+bool TokenList::createTokens(std::istream &code, const FileWithDetails& file0)
 {
-    ASSERT_LANG(!file0.empty());
+    ASSERT_LANG(!file0.spath().empty());
 
     appendFileIfNew(file0);
 
-    return createTokensInternal(code, file0);
+    return createTokensInternal(code, file0.spath());
 }
 
 //---------------------------------------------------------------------------

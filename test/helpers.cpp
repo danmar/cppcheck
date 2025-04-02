@@ -233,3 +233,8 @@ Library::Error LibraryHelper::loadxmldoc(Library &lib, const tinyxml2::XMLDocume
 {
     return lib.load(doc);
 }
+
+FileWithDetails createFileWithDetails(std::string filename)
+{
+    return FileWithDetails(std::move(filename));
+}

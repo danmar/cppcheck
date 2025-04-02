@@ -19,6 +19,7 @@
 #ifndef helpersH
 #define helpersH
 
+#include "filesettings.h"
 #include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -43,6 +44,8 @@ namespace simplecpp {
 namespace tinyxml2 {
     class XMLDocument;
 }
+
+FileWithDetails createFileWithDetails(std::string filename);
 
 // TODO: make Tokenizer private
 class SimpleTokenizer : public Tokenizer {
@@ -82,7 +85,7 @@ public:
                   const std::string &configuration = "")
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokens(istr, createFileWithDetails(cpp ? "test.cpp" : "test.c")))
             return false;
 
         return simplifyTokens1(configuration);
@@ -94,7 +97,7 @@ public:
                   const std::string &configuration = "")
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+        if (!list.createTokens(istr, createFileWithDetails(cpp ? "test.cpp" : "test.c")))
             return false;
 
         return simplifyTokens1(configuration);
