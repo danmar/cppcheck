@@ -475,6 +475,8 @@ private:
 
         TEST_CASE(atomicCast); // #12605
         TEST_CASE(constFunctionPtrTypedef); // #12135
+
+        TEST_CASE(simplifyPlatformTypes);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8494,6 +8496,24 @@ private:
                             "}\n";
         ASSERT_NO_THROW(tokenizeAndStringify(code));
         ASSERT_EQUALS("void ( * const f ) ( ) ;", tokenizeAndStringify("typedef void (*fp_t)(); fp_t const f;"));
+    }
+
+    void simplifyPlatformTypes() {
+        {
+            const char code[] = "size_t f();";
+            ASSERT_EQUALS("unsigned long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix32));
+            ASSERT_EQUALS("unsigned long long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix64));
+        }
+        {
+            const char code[] = "ssize_t f();";
+            ASSERT_EQUALS("long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix32));
+            ASSERT_EQUALS("long long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix64));
+        }
+        {
+            const char code[] = "std::ptrdiff_t f();";
+            ASSERT_EQUALS("long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix32));
+            ASSERT_EQUALS("long long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix64));
+        }
     }
 };
 

@@ -2787,7 +2787,7 @@ private:
     void varid_using() {
         // #3648
         const char code[] = "using std::size_t;";
-        const char expected[] = "1: using unsigned long ;\n";
+        const char expected[] = "1: using unsigned long long ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 

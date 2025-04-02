@@ -472,7 +472,7 @@ private:
         check("size_t f(int x, int y) {\n"
               "  return x * y;\n"
               "}\n", settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout_str());
     }
 
     // This function ensure that test works with different compilers. Floats can
