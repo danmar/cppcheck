@@ -34,7 +34,7 @@ jobs:
         with:
           path: |
             ~/uncrustify
-          key: ${{ runner.os }}-uncrustify
+          key: ${{ runner.os }}-uncrustify-${{ env.UNCRUSTIFY_VERSION }}
 
       - name: build uncrustify
         if: steps.cache-uncrustify.outputs.cache-hit != 'true'
