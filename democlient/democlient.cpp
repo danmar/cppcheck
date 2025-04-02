@@ -72,7 +72,9 @@ public:
 
     void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}
     void reportErr(const ErrorMessage &msg) override {
-        const std::string s = msg.toString(true);
+        static const std::string templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
+        static const std::string templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
+        const std::string s = msg.toString(true, templateFormat, templateLocation);
 
         std::cout << s << std::endl;
 

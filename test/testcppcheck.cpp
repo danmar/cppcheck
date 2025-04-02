@@ -38,6 +38,7 @@ public:
     TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
+    const std::string templateFormat{"{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]"};
 
     class ErrorLogger2 : public ErrorLogger {
     public:
@@ -113,7 +114,8 @@ private:
                         "  return 0;\n"
                         "}");
 
-        const Settings s;
+        /*const*/ Settings s;
+        s.templateFormat = templateFormat;
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -135,7 +137,8 @@ private:
                         "  return 0;\n"
                         "}");
 
-        const Settings s;
+        /*const*/ Settings s;
+        s.templateFormat = templateFormat;
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -184,7 +187,9 @@ private:
         ScopedFile test_file_b("b.cpp",
                                "#include \"inc.h\"");
 
-        const Settings s;
+        /*const*/ Settings s;
+        // this is the "simple" format
+        s.templateFormat = templateFormat; // TODO: remove when we only longer rely on toString() in unique message handling
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -215,9 +220,9 @@ private:
                              "(void)b;\n"
                              "}");
 
-        Settings s;
+        /*const*/ Settings s;
         // this is the "simple" format
-        s.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        s.templateFormat = templateFormat; // TODO: remove when we only longer rely on toString() in unique message handling?
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});

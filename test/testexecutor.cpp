@@ -47,32 +47,7 @@ public:
 
 private:
     void run() override {
-        TEST_CASE(hasToLogDefault);
         TEST_CASE(hasToLogSimple);
-    }
-
-    void hasToLogDefault() {
-        const std::list<FileWithDetails> files{FileWithDetails{"test.c"}};
-        const std::list<FileSettings> fileSettings;
-        Suppressions supprs;
-        DummyExecutor executor(files, fileSettings, settingsDefault, supprs, *this);
-
-        ErrorMessage::FileLocation loc1("test.c", 1, 2);
-        ErrorMessage msg({std::move(loc1)}, "test.c", Severity::error, "error", "id", Certainty::normal);
-
-        ASSERT(executor.hasToLog_(msg));
-        ASSERT(!executor.hasToLog_(msg));
-
-        ErrorMessage::FileLocation loc2("test.c", 1, 12);
-        msg.callStack = {std::move(loc2)};
-
-        // TODO: the default message does not include the column
-        TODO_ASSERT(executor.hasToLog_(msg));
-
-        msg.id = "id2";
-
-        // TODO: the default message does not include the id
-        TODO_ASSERT(executor.hasToLog_(msg));
     }
 
     void hasToLogSimple() {

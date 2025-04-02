@@ -95,6 +95,7 @@ private:
         s.quiet = opt.quiet;
         if (opt.plistOutput)
             s.plistOutput = opt.plistOutput;
+        s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}";
         Suppressions supprs;
 
         bool executeCommandCalled = false;
