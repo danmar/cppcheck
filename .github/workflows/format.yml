@@ -29,6 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: Cache uncrustify
+        if: false
         uses: actions/cache@v4
         id: cache-uncrustify
         with:
@@ -37,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-uncrustify-${{ env.UNCRUSTIFY_VERSION }}
 
       - name: build uncrustify
-        if: steps.cache-uncrustify.outputs.cache-hit != 'true'
+        if: true # steps.cache-uncrustify.outputs.cache-hit != 'true'
         run: |
           set -x
           wget https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-${{ env.UNCRUSTIFY_VERSION }}.tar.gz
