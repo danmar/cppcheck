@@ -67,6 +67,9 @@ private:
     /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
     void checkWrongPrintfScanfArguments();
 
+    bool findFormat(nonneg int arg, const Token *firstArg,
+                    const Token *&formatStringTok, const Token *&formatArgTok);
+
     class ArgumentInfo {
     public:
         ArgumentInfo(const Token *arg, const Settings &settings, bool _isCPP);
@@ -108,6 +111,7 @@ private:
     void seekOnAppendedFileError(const Token *tok);
     void incompatibleFileOpenError(const Token *tok, const std::string &filename);
     void invalidScanfError(const Token *tok);
+    void nonConstantFormatStringError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &functionName,
                                         nonneg int numFormat,

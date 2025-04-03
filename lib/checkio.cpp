@@ -43,6 +43,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 //---------------------------------------------------------------------------
 
 // Register CheckIO..
@@ -52,6 +54,7 @@ namespace {
 
 // CVE ID used:
 static const CWE CWE119(119U);  // Improper Restriction of Operations within the Bounds of a Memory Buffer
+static const CWE CWE134(134U);  // Uncontrolled Format String
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE664(664U);  // Improper Control of a Resource Through its Lifetime
 static const CWE CWE685(685U);  // Function Call With Incorrect Number of Arguments
@@ -487,8 +490,8 @@ void CheckIO::invalidScanfError(const Token *tok)
 //    printf("", 1); // Too much arguments
 //---------------------------------------------------------------------------
 
-static bool findFormat(nonneg int arg, const Token *firstArg,
-                       const Token *&formatStringTok, const Token *&formatArgTok)
+bool CheckIO::findFormat(nonneg int arg, const Token *firstArg,
+                         const Token *&formatStringTok, const Token *&formatArgTok)
 {
     const Token* argTok = firstArg;
 
@@ -514,10 +517,17 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
             if (value != argTok->values().cend() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
                 formatStringTok = value->tokvalue;
+            } else {
+                nonConstantFormatStringError(argTok);
             }
         }
         return true;
     }
+
+    if (argTok->variable()) {
+        nonConstantFormatStringError(argTok);
+    }
+
     return false;
 }
 
@@ -1703,6 +1713,10 @@ bool CheckIO::ArgumentInfo::isKnownType() const
 bool CheckIO::ArgumentInfo::isLibraryType(const Settings &settings) const
 {
     return typeToken && typeToken->isStandardType() && settings.library.podtype(typeToken->str());
+}
+
+void CheckIO::nonConstantFormatStringError(const Token* tok) {
+    reportError(tok, Severity::error, "nonConstantString", "format string must be a string literal", CWE134, Certainty::normal);
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
