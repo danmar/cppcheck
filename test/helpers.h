@@ -188,8 +188,6 @@ public:
     static std::string getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
     static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
-
     /** get remark comments */
     static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger);
 
@@ -268,15 +266,18 @@ public:
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], std::vector<std::string> &files)
         : Tokenizer{settings, errorlogger}
     {
-        PreprocessorHelper::preprocess(code, files, *this, errorlogger);
+        preprocess(code, files, *this, errorlogger);
     }
 
     // TODO: get rid of this
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], std::vector<std::string> &files)
         : Tokenizer{settings, errorlogger}
     {
-        PreprocessorHelper::preprocess(code, files, *this, errorlogger);
+        preprocess(code, files, *this, errorlogger);
     }
+
+private:
+    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
 };
 
 #endif // helpersH

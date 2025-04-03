@@ -162,7 +162,7 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     return cfgcode;
 }
 
-void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
+void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
     // TODO: make sure the given Tokenizer has not been used yet
 
