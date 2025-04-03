@@ -298,8 +298,8 @@ private:
 
 #define tokenizeExpr(...) tokenizeExpr_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tokenizeExpr_(const char* file, int line, const char (&code)[size], const char filename[] = "test.cpp") {
-        std::vector<std::string> files(1, filename);
+    std::string tokenizeExpr_(const char* file, int line, const char (&code)[size]) {
+        std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 

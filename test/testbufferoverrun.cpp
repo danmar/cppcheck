@@ -72,11 +72,11 @@ private:
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], const char* filename = "test.cpp")
+    void checkP_(const char* file, int line, const char code[])
     {
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
-        std::vector<std::string> files(1, filename);
+        std::vector<std::string> files(1, "test.cpp");
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 

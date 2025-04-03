@@ -64,12 +64,12 @@ private:
     struct CheckOptions
     {
         CheckOptions() = default;
-        const char* filename = "test.cpp";
+        bool cpp = true;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
-        std::vector<std::string> files(1, options.filename);
+        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
         Tokenizer tokenizer(settings, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -337,7 +337,7 @@ private:
 
         check("bool foo(char* c) {\n"
               "    return \"x\" == c+foo;\n"
-              "}", dinit(CheckOptions, $.filename = "test.c"));
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c+foo'. Did you intend to use strcmp() instead?\n", errout_str());
 
         check("bool foo(Foo c) {\n"
@@ -347,7 +347,7 @@ private:
 
         check("bool foo(Foo c) {\n"
               "    return \"x\" == c.foo;\n"
-              "}", dinit(CheckOptions, $.filename = "test.c"));
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:2]: (warning) String literal compared with variable 'c.foo'. Did you intend to use strcmp() instead?\n", errout_str());
 
         check("bool foo(const std::string& c) {\n"
@@ -363,7 +363,7 @@ private:
         // Ticket #4257
         check("bool foo() {\n"
               "MyString *str=Getter();\n"
-              "return *str==\"bug\"; }\n", dinit(CheckOptions, $.filename = "test.c"));
+              "return *str==\"bug\"; }\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '*str'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // Ticket #4257
@@ -375,13 +375,13 @@ private:
         // Ticket #4257
         check("bool foo() {\n"
               "MyString **str=OtherGetter();\n"
-              "return *str==\"bug\"; }", dinit(CheckOptions, $.filename = "test.c"));
+              "return *str==\"bug\"; }", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '*str'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // Ticket #4257
         check("bool foo() {\n"
               "MyString str=OtherGetter2();\n"
-              "return &str==\"bug\"; }", dinit(CheckOptions, $.filename = "test.c"));
+              "return &str==\"bug\"; }", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3]: (warning) String literal compared with variable '&str'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // Ticket #5734
@@ -389,13 +389,13 @@ private:
               "return c == '4';}");
         ASSERT_EQUALS("", errout_str());
         check("int foo(char c) {\n"
-              "return c == '4';}", dinit(CheckOptions, $.filename = "test.c"));
+              "return c == '4';}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
         check("int foo(char c) {\n"
               "return c == \"42\"[0];}");
         ASSERT_EQUALS("", errout_str());
         check("int foo(char c) {\n"
-              "return c == \"42\"[0];}", dinit(CheckOptions, $.filename = "test.c"));
+              "return c == \"42\"[0];}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         // 5639 String literal compared with char buffer in a struct
@@ -413,7 +413,7 @@ private:
               "void foo() {\n"
               "   struct Example example;\n"
               "   if (example.buffer == \"test\") ;\n"
-              "}\n", dinit(CheckOptions, $.filename = "test.c"));
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:6]: (warning) String literal compared with variable 'example.buffer'. Did you intend to use strcmp() instead?\n", errout_str());
 
         // #9726
@@ -467,7 +467,7 @@ private:
 
         check("bool foo(char* c) {\n"
               "    return *c == 0;\n"
-              "}", dinit(CheckOptions, $.filename = "test.c"));
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("bool foo(char* c) {\n"
