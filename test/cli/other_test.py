@@ -3654,3 +3654,130 @@ void f()
     assert stderr.splitlines() == [
         "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
     ]
+
+
+def test_defined_configs(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+            """
+int main() {
+#ifdef A1
+#endif
+#ifdef A2
+#endif
+#ifdef A3
+#endif
+return 0;
+}
+""")
+    args = [
+        '-DAAA',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: AAA=1...\n' % (test_file, test_file))
+    args = [
+        '--max-configs=2',
+        '-DAAA',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: AAA=1...\n'
+                      'Checking %s: AAA=1;A1...\n' % (test_file, test_file, test_file))
+
+    args = [
+        '--force',
+        '-DAAA',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: AAA=1...\n'
+                      'Checking %s: AAA=1;A1...\n'
+                      'Checking %s: AAA=1;A2...\n'
+                      'Checking %s: AAA=1;A3...\n' % (test_file, test_file, test_file, test_file, test_file))
+
+    args = [
+        '--force',
+        '--max-configs=2',
+        '-DAAA',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: AAA=1...\n'
+                      'Checking %s: AAA=1;A1...\n' % (test_file, test_file, test_file))
+
+    project_file = tmp_path / 'compile_commands.json'
+    define = ' -DBBB'
+    project_code = "[\r\n{\r\n" + \
+           "\"directory\":\"" + str(tmp_path) + "\",\r\n" + \
+           "\"command\":\"" + "/usr/bin/c++ -o ./out.o -c " + str(test_file) + define + "\",\r\n" + \
+           "\"file\":\"" + str(test_file) + "\",\r\n" + \
+           "\"output\":\"./out\"" + \
+           "\r\n}\r\n]"
+    with open(project_file, "w") as f:
+        f.write(project_code)
+    args = [
+        '--project=' + str(project_file),
+        '--force',
+        '--max-configs=2',
+        '-DAAA',
+        '--template=simple'
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: AAA=1;BBB=1...\n'
+                      'Checking %s: AAA=1;BBB=1;A1...\n' % (test_file, test_file, test_file))
+
+    args = [
+        '--project=' + str(project_file),
+        '--force',
+        '-DAAA',
+        '--template=simple'
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: AAA=1;BBB=1...\n'
+                      'Checking %s: AAA=1;BBB=1;A1...\n'
+                      'Checking %s: AAA=1;BBB=1;A2...\n'
+                      'Checking %s: AAA=1;BBB=1;A3...\n' % (test_file, test_file, test_file, test_file, test_file))
+
+    args = [
+        '--project=' + str(project_file),
+        '--template=simple'
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n'
+                      'Checking %s: BBB=1...\n' % (test_file, test_file))
+
+    define = ''
+    project_code = "[\r\n{\r\n" + \
+           "\"directory\":\"" + str(tmp_path) + "\",\r\n" + \
+           "\"command\":\"" + "/usr/bin/c++ -o ./out.o -c " + str(test_file) + define + "\",\r\n" + \
+           "\"file\":\"" + str(test_file) + "\",\r\n" + \
+           "\"output\":\"./out\"" + \
+           "\r\n}\r\n]"
+    with open(project_file, "w") as f:
+        f.write(project_code)
+    args = [
+        '--project=' + str(project_file),
+        '--template=simple'
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr
+    assert stdout == ('Checking %s ...\n' % (test_file))

@@ -489,19 +489,19 @@ Parametri: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.ui" line="685"/>
-        <location filename="mainwindow.cpp" line="452"/>
-        <location filename="mainwindow.cpp" line="639"/>
-        <location filename="mainwindow.cpp" line="718"/>
-        <location filename="mainwindow.cpp" line="823"/>
-        <location filename="mainwindow.cpp" line="845"/>
-        <location filename="mainwindow.cpp" line="1430"/>
-        <location filename="mainwindow.cpp" line="1559"/>
-        <location filename="mainwindow.cpp" line="1891"/>
-        <location filename="mainwindow.cpp" line="1899"/>
-        <location filename="mainwindow.cpp" line="1947"/>
-        <location filename="mainwindow.cpp" line="1956"/>
-        <location filename="mainwindow.cpp" line="2028"/>
-        <location filename="mainwindow.cpp" line="2102"/>
+        <location filename="mainwindow.cpp" line="458"/>
+        <location filename="mainwindow.cpp" line="657"/>
+        <location filename="mainwindow.cpp" line="739"/>
+        <location filename="mainwindow.cpp" line="844"/>
+        <location filename="mainwindow.cpp" line="866"/>
+        <location filename="mainwindow.cpp" line="1449"/>
+        <location filename="mainwindow.cpp" line="1578"/>
+        <location filename="mainwindow.cpp" line="1910"/>
+        <location filename="mainwindow.cpp" line="1918"/>
+        <location filename="mainwindow.cpp" line="1966"/>
+        <location filename="mainwindow.cpp" line="1975"/>
+        <location filename="mainwindow.cpp" line="2047"/>
+        <location filename="mainwindow.cpp" line="2121"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -645,14 +645,14 @@ Parametri: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="468"/>
         <location filename="mainwindow.ui" line="471"/>
-        <location filename="mainwindow.cpp" line="2326"/>
+        <location filename="mainwindow.cpp" line="2345"/>
         <source>Show errors</source>
         <translation>Mostra gli errori</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="614"/>
         <location filename="mainwindow.ui" line="617"/>
-        <location filename="mainwindow.cpp" line="2327"/>
+        <location filename="mainwindow.cpp" line="2346"/>
         <source>Show warnings</source>
         <translation>Mostra gli avvisi</translation>
     </message>
@@ -668,8 +668,8 @@ Parametri: -l(line) (file)
         <translation>Mostra &amp;i nascosti</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="949"/>
-        <location filename="mainwindow.cpp" line="990"/>
+        <location filename="mainwindow.cpp" line="970"/>
+        <location filename="mainwindow.cpp" line="1011"/>
         <source>Information</source>
         <translation>Informazione</translation>
     </message>
@@ -1077,18 +1077,18 @@ Parametri: -l(line) (file)
         <translation>&amp;Aiuto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="149"/>
-        <location filename="mainwindow.cpp" line="1737"/>
+        <location filename="mainwindow.cpp" line="153"/>
+        <location filename="mainwindow.cpp" line="1756"/>
         <source>Quick Filter:</source>
         <translation>Rapido filtro:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="794"/>
+        <location filename="mainwindow.cpp" line="815"/>
         <source>Select configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="824"/>
+        <location filename="mainwindow.cpp" line="845"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -1097,96 +1097,96 @@ Do you want to load this project file instead?</source>
 Vuoi piuttosto caricare questo file di progetto?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="958"/>
+        <location filename="mainwindow.cpp" line="979"/>
         <source>File not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="961"/>
+        <location filename="mainwindow.cpp" line="982"/>
         <source>Bad XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="964"/>
+        <location filename="mainwindow.cpp" line="985"/>
         <source>Missing attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="967"/>
+        <location filename="mainwindow.cpp" line="988"/>
         <source>Bad attribute value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="970"/>
+        <location filename="mainwindow.cpp" line="991"/>
         <source>Unsupported format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="979"/>
+        <location filename="mainwindow.cpp" line="1000"/>
         <source>Duplicate define</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="990"/>
+        <location filename="mainwindow.cpp" line="1011"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1001"/>
+        <location filename="mainwindow.cpp" line="1022"/>
         <source>File not found: &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1024"/>
+        <location filename="mainwindow.cpp" line="1045"/>
         <source>Failed to load/setup addon %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
+        <location filename="mainwindow.cpp" line="1067"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1056"/>
+        <location filename="mainwindow.cpp" line="1077"/>
         <source>Failed to load %1 - %2
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1162"/>
+        <location filename="mainwindow.cpp" line="1087"/>
+        <location filename="mainwindow.cpp" line="1180"/>
         <source>%1
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1611"/>
+        <location filename="mainwindow.cpp" line="1630"/>
         <source>License</source>
         <translation>Licenza</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1618"/>
+        <location filename="mainwindow.cpp" line="1637"/>
         <source>Authors</source>
         <translation>Autori</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1633"/>
+        <location filename="mainwindow.cpp" line="1652"/>
         <source>Save the report file</source>
         <translation>Salva il file di rapporto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1446"/>
-        <location filename="mainwindow.cpp" line="1640"/>
+        <location filename="mainwindow.cpp" line="1465"/>
+        <location filename="mainwindow.cpp" line="1659"/>
         <source>XML files (*.xml)</source>
         <translation>File XML (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="447"/>
+        <location filename="mainwindow.cpp" line="453"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
@@ -1195,126 +1195,126 @@ This is probably because the settings were changed between the Cppcheck versions
 Probabilmente ciò è avvenuto perché le impostazioni sono state modificate tra le versioni di Cppcheck. Per favore controlla (e sistema) le impostazioni delle applicazioni editor, altrimenti il programma editor può non partire correttamente.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="719"/>
+        <location filename="mainwindow.cpp" line="740"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Devi chiudere il file di progetto prima di selezionare nuovi file o cartelle!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="949"/>
+        <location filename="mainwindow.cpp" line="970"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="973"/>
+        <location filename="mainwindow.cpp" line="994"/>
         <source>Duplicate platform type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="976"/>
+        <location filename="mainwindow.cpp" line="997"/>
         <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="982"/>
+        <location filename="mainwindow.cpp" line="1003"/>
         <source>Unknown element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="985"/>
+        <location filename="mainwindow.cpp" line="1006"/>
         <source>Unknown issue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
-        <location filename="mainwindow.cpp" line="1056"/>
-        <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1162"/>
+        <location filename="mainwindow.cpp" line="1067"/>
+        <location filename="mainwindow.cpp" line="1077"/>
+        <location filename="mainwindow.cpp" line="1087"/>
+        <location filename="mainwindow.cpp" line="1180"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1467"/>
         <source>Open the report file</source>
         <translation>Apri il file di rapporto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1644"/>
+        <location filename="mainwindow.cpp" line="1663"/>
         <source>Text files (*.txt)</source>
         <translation>File di testo (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1648"/>
+        <location filename="mainwindow.cpp" line="1667"/>
         <source>CSV files (*.csv)</source>
         <translation>Files CSV (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1776"/>
+        <location filename="mainwindow.cpp" line="1795"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Files di progetto (*.cppcheck);;Tutti i files(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1778"/>
+        <location filename="mainwindow.cpp" line="1797"/>
         <source>Select Project File</source>
         <translation>Seleziona il file di progetto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="230"/>
-        <location filename="mainwindow.cpp" line="1739"/>
-        <location filename="mainwindow.cpp" line="1806"/>
-        <location filename="mainwindow.cpp" line="1996"/>
+        <location filename="mainwindow.cpp" line="234"/>
+        <location filename="mainwindow.cpp" line="1758"/>
+        <location filename="mainwindow.cpp" line="1825"/>
+        <location filename="mainwindow.cpp" line="2015"/>
         <source>Project:</source>
         <translation>Progetto:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="640"/>
+        <location filename="mainwindow.cpp" line="658"/>
         <source>No suitable files found to analyze!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="733"/>
+        <location filename="mainwindow.cpp" line="754"/>
         <source>C/C++ Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="734"/>
+        <location filename="mainwindow.cpp" line="755"/>
         <source>Compile database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="735"/>
+        <location filename="mainwindow.cpp" line="756"/>
         <source>Visual Studio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="736"/>
+        <location filename="mainwindow.cpp" line="757"/>
         <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="739"/>
+        <location filename="mainwindow.cpp" line="760"/>
         <source>Select files to analyze</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="754"/>
+        <location filename="mainwindow.cpp" line="775"/>
         <source>Select directory to analyze</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="794"/>
+        <location filename="mainwindow.cpp" line="815"/>
         <source>Select the configuration that will be analyzed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="846"/>
+        <location filename="mainwindow.cpp" line="867"/>
         <source>Found project files from the directory.
 
 Do you want to proceed analysis without using any of these project files?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1431"/>
+        <location filename="mainwindow.cpp" line="1450"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1322,81 +1322,81 @@ Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1555"/>
+        <location filename="mainwindow.cpp" line="1574"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1597"/>
+        <location filename="mainwindow.cpp" line="1616"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1650"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1671"/>
+        <location filename="mainwindow.cpp" line="1690"/>
         <source>Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1892"/>
+        <location filename="mainwindow.cpp" line="1911"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1900"/>
+        <location filename="mainwindow.cpp" line="1919"/>
         <source>To check the project using addons, you need a build directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1932"/>
+        <location filename="mainwindow.cpp" line="1951"/>
         <source>Failed to open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1935"/>
+        <location filename="mainwindow.cpp" line="1954"/>
         <source>Unknown project file format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1938"/>
+        <location filename="mainwindow.cpp" line="1957"/>
         <source>Failed to import project file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1948"/>
+        <location filename="mainwindow.cpp" line="1967"/>
         <source>Failed to import &apos;%1&apos;: %2
 
 Analysis is stopped.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1957"/>
+        <location filename="mainwindow.cpp" line="1976"/>
         <source>Failed to import &apos;%1&apos; (%2), analysis is stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1981"/>
+        <location filename="mainwindow.cpp" line="2000"/>
         <source>Project files (*.cppcheck)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1983"/>
+        <location filename="mainwindow.cpp" line="2002"/>
         <source>Select Project Filename</source>
         <translation>Seleziona il nome del file di progetto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2029"/>
+        <location filename="mainwindow.cpp" line="2048"/>
         <source>No project file loaded</source>
         <translation>Nessun file di progetto caricato</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2097"/>
+        <location filename="mainwindow.cpp" line="2116"/>
         <source>The project file
 
 %1
@@ -1413,67 +1413,67 @@ Do you want to remove the file from the recently used projects -list?</source>
 Vuoi rimuovere il file dalla lista dei progetti recentemente usati?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2257"/>
+        <location filename="mainwindow.cpp" line="2276"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2261"/>
+        <location filename="mainwindow.cpp" line="2280"/>
         <source>New version available: %1. %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2299"/>
+        <location filename="mainwindow.cpp" line="2318"/>
         <source>Show Mandatory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2300"/>
+        <location filename="mainwindow.cpp" line="2319"/>
         <source>Show Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2301"/>
+        <location filename="mainwindow.cpp" line="2320"/>
         <source>Show Advisory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2302"/>
+        <location filename="mainwindow.cpp" line="2321"/>
         <source>Show Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2319"/>
+        <location filename="mainwindow.cpp" line="2338"/>
         <source>Show L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2320"/>
+        <location filename="mainwindow.cpp" line="2339"/>
         <source>Show L2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2321"/>
+        <location filename="mainwindow.cpp" line="2340"/>
         <source>Show L3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2328"/>
+        <location filename="mainwindow.cpp" line="2347"/>
         <source>Show style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2329"/>
+        <location filename="mainwindow.cpp" line="2348"/>
         <source>Show portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2330"/>
+        <location filename="mainwindow.cpp" line="2349"/>
         <source>Show performance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2331"/>
+        <location filename="mainwindow.cpp" line="2350"/>
         <source>Show information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3149,7 +3149,7 @@ Per vedere il tipo di errori che sono mostrati, apri il menu Visualizza.</transl
 <context>
     <name>ThreadResult</name>
     <message>
-        <location filename="threadresult.cpp" line="45"/>
+        <location filename="threadresult.cpp" line="50"/>
         <source>%1 of %2 files checked</source>
         <translation>%1 su %2 file scansionati</translation>
     </message>

@@ -1049,12 +1049,12 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         // Get configurations..
         std::set<std::string> configurations;
-        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
+        if (!mSettings.userDefines.empty() && mSettings.maxConfigs == 0 && !mSettings.force) {
+            configurations.insert(mSettings.userDefines);
+        } else {
             Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
                 configurations = preprocessor.getConfigs(tokens1);
             });
-        } else {
-            configurations.insert(mSettings.userDefines);
         }
 
         if (mSettings.checkConfiguration) {
@@ -1081,7 +1081,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         }
 #endif
 
-        if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
+        if ((mSettings.maxConfigs > 0 && configurations.size() > mSettings.maxConfigs) ||
+            (!mSettings.force && configurations.size() > Settings::Default::max_configs_default)) {
             if (mSettings.severity.isEnabled(Severity::information)) {
                 tooManyConfigsError(Path::toNativeSeparators(file.spath()),configurations.size());
             } else {
@@ -1113,12 +1114,23 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!mSettings.force && ++checkCount > mSettings.maxConfigs)
+            ++checkCount;
+
+            if (checkCount > 1 && !mSettings.importCompileDBFile.empty() && mSettings.maxConfigs == 0 && !mSettings.force) {
                 break;
+            }
+
+            if (mSettings.maxConfigs > 0) {
+                if (checkCount > mSettings.maxConfigs) {
+                    break;
+                }
+            } else if (!mSettings.force && checkCount > Settings::Default::max_configs_default) {
+                break;
+            }
 
             std::string currentConfig;
 
-            if (!mSettings.userDefines.empty()) {
+            if (!mSettings.userDefines.empty() && (mSettings.maxConfigs > 0 || mSettings.force)) {
                 currentConfig = mSettings.userDefines;
                 const std::vector<std::string> v1(split(mSettings.userDefines, ";"));
                 for (const std::string &cfg: split(currCfg, ";")) {
