@@ -105,9 +105,15 @@ private:
 public:
     Settings();
 
+    enum Default : std::uint8_t {
+        max_configs_default = 12
+    };
+
     static std::string loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug = false);
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
+
+    std::string importCompileDBFile;
 
     /** @brief Report type */
     ReportType reportType = ReportType::normal;
@@ -129,9 +135,6 @@ public:
 
     /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
-
-    /** @brief check all configurations (false if -D or --max-configs is used */
-    bool checkAllConfigurations = true;
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration{};
@@ -264,7 +267,7 @@ public:
     std::vector<std::string> fileFilters;
 
     /** @brief Force checking the files with "too many" configurations (--force). */
-    bool force{};
+    bool force = false;
 
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
@@ -290,7 +293,7 @@ public:
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
-    int maxConfigs = 12;
+    int maxConfigs = 0;
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth = 2;
