@@ -25,7 +25,6 @@
 #include "library.h"
 #include "settings.h"
 #include "token.h"
-#include "tokenize.h"
 
 #include <cstddef>
 #include <list>
@@ -202,8 +201,7 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings1, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+        SimpleTokenizer2 tokenizer(settings1, *this, code, files);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

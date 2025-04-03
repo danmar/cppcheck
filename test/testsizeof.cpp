@@ -21,7 +21,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
-#include "tokenize.h"
 
 #include <cstddef>
 #include <string>
@@ -63,8 +62,7 @@ private:
     template<size_t size>
     void checkP_(const char* file, int line, const char (&code)[size]) {
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+        SimpleTokenizer2 tokenizer(settings, *this, code, files);
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

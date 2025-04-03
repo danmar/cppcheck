@@ -300,8 +300,7 @@ private:
     template<size_t size>
     std::string tokenizeExpr_(const char* file, int line, const char (&code)[size]) {
         std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+        SimpleTokenizer2 tokenizer(settings, *this, code, files);
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 

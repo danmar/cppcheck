@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    // TODO. find a better solution
+    // TODO: find a better solution
     static const Settings s_settings;
 };
 
@@ -244,6 +244,23 @@ struct LibraryHelper
     static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len);
     static bool loadxmldata(Library &lib, Library::Error& liberr, const char xmldata[], std::size_t len);
     static Library::Error loadxmldoc(Library &lib, const tinyxml2::XMLDocument& doc);
+};
+
+class SimpleTokenizer2 : public Tokenizer {
+public:
+    template<size_t size>
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], std::vector<std::string> &files)
+        : Tokenizer{settings, errorlogger}
+    {
+        PreprocessorHelper::preprocess(code, files, *this, errorlogger);
+    }
+
+    // TODO: get rid of this
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], std::vector<std::string> &files)
+        : Tokenizer{settings, errorlogger}
+    {
+        PreprocessorHelper::preprocess(code, files, *this, errorlogger);
+    }
 };
 
 #endif // helpersH

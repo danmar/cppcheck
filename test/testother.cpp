@@ -23,7 +23,6 @@
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
-#include "tokenize.h"
 
 #include <cstddef>
 #include <string>
@@ -355,8 +354,7 @@ private:
         settings->certainty.enable(Certainty::inconclusive);
 
         std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
-        Tokenizer tokenizer(*settings, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+        SimpleTokenizer2 tokenizer(*settings, *this, code, files);
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
