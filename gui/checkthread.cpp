@@ -90,7 +90,10 @@ int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, 
     }
 
     process.start(e, args2);
-    process.waitForFinished();
+    while (!Settings::terminated() && !process.waitForFinished(1000)) {
+        if (process.state() == QProcess::ProcessState::NotRunning)
+            break;
+    }
 
     if (redirect == "2>&1") {
         QString s1 = process.readAllStandardOutput();
