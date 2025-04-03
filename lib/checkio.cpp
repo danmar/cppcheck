@@ -1714,7 +1714,9 @@ bool CheckIO::ArgumentInfo::isLibraryType(const Settings &settings) const
 }
 
 void CheckIO::nonConstantFormatStringError(const Token* tok) {
-    reportError(tok, Severity::error, "nonConstantString", "format string must be a string literal", CWE134, Certainty::normal);
+    if (mSettings->severity.isEnabled(Severity::warning)) {
+        reportError(tok, Severity::warning, "nonConstantString", "format string must be a string literal", CWE134, Certainty::normal);
+    }
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
