@@ -26,7 +26,6 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 #include "fixture.h"
 #include "helpers.h"
@@ -36,6 +35,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -61,9 +61,10 @@ private:
         return tokens2.stringify();
     }
 
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui)
+    static void preprocess(const char code[], std::vector<std::string> &files, TokenList& tokenlist, const simplecpp::DUI& dui)
     {
-        // TODO: make sure the given Tokenizer has not been used yet
+        if (tokenlist.front())
+            throw std::runtime_error("token list not empty");
 
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, files[0]);
@@ -75,11 +76,7 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, dui);
 
         // Tokenizer..
-        tokenizer.list.createTokens(std::move(tokens2));
-
-        const Preprocessor preprocessor(tokenizer.getSettings(), errorlogger);
-        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
-        tokenizer.setDirectives(std::move(directives));
+        tokenlist.createTokens(std::move(tokens2));
     }
 
     const Settings settings0 = settingsBuilder().severity(Severity::information).build();
@@ -2568,38 +2565,38 @@ private:
         simplecpp::DUI dui;
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "c89";
-            preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "gnu23";
-            preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "c++98";
-            preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "gnu++26";
-            preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "gnu77";
-            preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(!tokenizer.list.front()); // nothing is tokenized when an unknown standard is provided
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
     }
 };
