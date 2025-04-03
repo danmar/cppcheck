@@ -7150,7 +7150,9 @@ static void valueFlowUnknownFunctionReturn(TokenList& tokenlist, const Settings&
             continue;
 
         if (const auto* f = settings.library.getAllocFuncInfo(tok->astOperand1())) {
-            if (settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
+            if (f->noFail) {
+                // Allocation function that cannot fail
+            } else if (settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
                 // Allocation function that returns a pointer
                 ValueFlow::Value value(0);
                 value.setPossible();
