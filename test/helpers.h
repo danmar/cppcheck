@@ -66,38 +66,58 @@ public:
         }
      */
 
-    /**
-     * Tokenize code
-     * @param code The code
-     * @param cpp Indicates if the code is C++
-     * @param configuration E.g. "A" for code where "#ifdef A" is true
-     * @return false if source code contains syntax errors
-     */
+    template<size_t size>
+    bool tokenize(const char (&code)[size],
+                  const std::string& filename,
+                  const std::string &configuration = "")
+    {
+        std::istringstream istr(code);
+        return tokenize(istr, filename, configuration);
+    }
+
     template<size_t size>
     bool tokenize(const char (&code)[size],
                   bool cpp = true,
                   const std::string &configuration = "")
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
-            return false;
-
-        return simplifyTokens1(configuration);
+        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
     }
 
-    // TODO: get rid of this
+    bool tokenize(const std::string& code,
+                  const std::string& filename,
+                  const std::string &configuration = "")
+    {
+        std::istringstream istr(code);
+        return tokenize(istr, filename, configuration);
+    }
+
     bool tokenize(const std::string& code,
                   bool cpp = true,
                   const std::string &configuration = "")
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
+    }
+
+private:
+    /**
+     * Tokenize code
+     * @param istr The code as stream
+     * @param filename Indicates if the code is C++
+     * @param configuration E.g. "A" for code where "#ifdef A" is true
+     * @return false if source code contains syntax errors
+     */
+    bool tokenize(std::istream& istr,
+                  const std::string& filename,
+                  const std::string &configuration = "")
+    {
+        if (!list.createTokens(istr, filename))
             return false;
 
         return simplifyTokens1(configuration);
     }
 
-private:
     // TODO: find a better solution
     static const Settings s_settings;
 };

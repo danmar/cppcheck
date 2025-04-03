@@ -22,11 +22,8 @@
 #include "helpers.h"
 #include "platform.h"
 #include "settings.h"
-#include "tokenize.h"
-#include "tokenlist.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
@@ -598,10 +595,8 @@ private:
         for (int i = 1; i <= 2; ++i) {
             const std::string fname = "test" + std::to_string(i) + ".cpp";
 
-            Tokenizer tokenizer(settings, *this);
-            std::istringstream istr(code);
-            ASSERT(tokenizer.list.createTokens(istr, fname));
-            ASSERT(tokenizer.simplifyTokens1(""));
+            SimpleTokenizer tokenizer{settings, *this};
+            ASSERT(tokenizer.tokenize(code, fname));
 
             c.parseTokens(tokenizer, settings);
         }

@@ -23,12 +23,9 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
-#include "tokenize.h"
-#include "tokenlist.h"
 
 #include <cstddef>
 #include <list>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -9084,11 +9081,9 @@ private:
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
         for (const std::string& c: code) {
-            Tokenizer tokenizer(settingsDefault, *this);
-            std::istringstream istr(c);
+            SimpleTokenizer tokenizer{settingsDefault, *this};
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
-            ASSERT(tokenizer.list.createTokens(istr, filename));
-            ASSERT(tokenizer.simplifyTokens1(""));
+            ASSERT(tokenizer.tokenize(c, filename));
             fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
         }
 
