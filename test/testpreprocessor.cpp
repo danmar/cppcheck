@@ -2569,7 +2569,7 @@ private:
         ASSERT(getHash(code2) != getHash(code3));
     }
 
-    void standard() {
+    void standard() const {
         std::vector<std::string> files = {"test.cpp"};
 
         const char code[] = "int a;";
