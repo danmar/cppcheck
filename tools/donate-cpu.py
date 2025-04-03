@@ -273,6 +273,7 @@ while True:
         else:
             count += ' ' + str(c)
         elapsed_time += " {:.1f}".format(t)
+        errout = errout.replace(work_path, '[...]')
         results_to_diff.append(errout)
         if ver == 'head':
             head_info_msg = info
