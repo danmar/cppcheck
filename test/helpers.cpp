@@ -180,28 +180,6 @@ void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> 
     tokenizer.setDirectives(std::move(directives));
 }
 
-// TODO: get rid of this
-void PreprocessorHelper::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui)
-{
-    // TODO: make sure the given Tokenizer has not been used yet
-
-    std::istringstream istr(code);
-    const simplecpp::TokenList tokens1(istr, files, files[0]);
-
-    // Preprocess..
-    simplecpp::TokenList tokens2(files);
-    std::map<std::string, simplecpp::TokenList*> filedata;
-    // TODO: provide and handle outputList
-    simplecpp::preprocess(tokens2, tokens1, files, filedata, dui);
-
-    // Tokenizer..
-    tokenizer.list.createTokens(std::move(tokens2));
-
-    const Preprocessor preprocessor(tokenizer.getSettings(), errorlogger);
-    std::list<Directive> directives = preprocessor.createDirectives(tokens1);
-    tokenizer.setDirectives(std::move(directives));
-}
-
 std::vector<RemarkComment> PreprocessorHelper::getRemarkComments(const char code[], ErrorLogger& errorLogger)
 {
     std::vector<std::string> files{"test.cpp"};
