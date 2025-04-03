@@ -81,7 +81,7 @@ private:
     struct CheckPOptions
     {
         CheckPOptions() = default;
-        const char* filename = "test.cpp";
+        bool cpp = true;
     };
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
@@ -89,7 +89,7 @@ private:
     void checkP_(const char* file, int line, const char (&code)[size], const Settings& settings, const CheckPOptions& options = make_default_obj()) {
         const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
 
-        std::vector<std::string> files(1, options.filename);
+        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
         Tokenizer tokenizer(settings1, *this);
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
@@ -566,14 +566,14 @@ private:
                "void f()\n"
                "{\n"
                "    unsigned short u = TEST(true, 75000.0);\n"
-               "}\n", settingsDefault, dinit(CheckPOptions, $.filename = "test.c"));
+               "}\n", settingsDefault, dinit(CheckPOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n"
                "void f()\n"
                "{\n"
                "    unsigned short u = TEST(false, 75000.0);\n"
-               "}\n", settingsDefault, dinit(CheckPOptions, $.filename = "test.c"));
+               "}\n", settingsDefault, dinit(CheckPOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
 
     }
