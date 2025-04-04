@@ -6364,6 +6364,14 @@ private:
                "    return false;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
+
+        code = "bool f(bool b1, bool b2) {\n"
+                "    if (b1 && b2)\n"
+                "        return;\n"
+                "    int x = b1 && b2;\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
     }
 
     static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,

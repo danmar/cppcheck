@@ -202,7 +202,8 @@ namespace {
 
         template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
         Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
-            if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
+            Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
+            if (action.isNone() && Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
                 const T* condTok = tok->astOperand1();
                 T* childTok = tok->astOperand2();
                 bool checkThen, checkElse;
@@ -227,12 +228,18 @@ namespace {
                     if (traverseRecursive(childTok, f, traverseUnknown) == Progress::Break)
                         return Break();
                 }
+            } else {
+                return f(tok, action);
             }
             return Progress::Continue;
         }
 
         Progress update(Token* tok) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
+            return update(tok, action);
+        }
+
+        Progress update(Token* tok, Analyzer::Action action) {
             actions |= action;
             if (!action.isNone() && !analyzeOnly)
                 analyzer->update(tok, action, Analyzer::Direction::Forward);
@@ -245,30 +252,52 @@ namespace {
                 return Break(Analyzer::Terminate::Modified);
             return Progress::Continue;
         }
+        
+        struct AsUpdate {
+            ForwardTraversal* self = nullptr;
+
+            AsUpdate(ForwardTraversal* self) : self(self) {}
+
+            template<class... Ts>
+            Progress operator()(Ts... xs) const {
+                assert(self);
+                return self->update(xs...);
+            }
+        };
 
         Progress updateTok(Token* tok, Token** out = nullptr) {
-            auto f = [this](Token* tok2) {
-                return update(tok2);
-            };
-            return traverseTok(tok, f, false, out);
+            return traverseTok(tok, AsUpdate{this}, false, out);
         }
 
         Progress updateRecursive(Token* tok) {
-            auto f = [this](Token* tok2) {
-                return update(tok2);
-            };
-            return traverseRecursive(tok, f, false);
+            return traverseRecursive(tok, AsUpdate{this}, false);
         }
+
+        struct AsAnalyze {
+            ForwardTraversal* self = nullptr;
+            Analyzer::Action * result = nullptr;
+
+            AsAnalyze(ForwardTraversal* self, Analyzer::Action* result) : self(self), result(result) {}
+
+            Progress operator()(const Token* tok) const {
+                assert(self);
+                assert(result);
+                return (*this)(tok, self->analyzer->analyze(tok, Analyzer::Direction::Forward));
+            }
+
+            Progress operator()(const Token*, Analyzer::Action action) const {
+                assert(self);
+                assert(result);
+                *result = action;
+                if (result->isModified() || result->isInconclusive())
+                    return self->Break();
+                return Progress::Continue;
+            }
+        };
 
         Analyzer::Action analyzeRecursive(const Token* start) {
             Analyzer::Action result = Analyzer::Action::None;
-            auto f = [&](const Token* tok) {
-                result = analyzer->analyze(tok, Analyzer::Direction::Forward);
-                if (result.isModified() || result.isInconclusive())
-                    return Break();
-                return Progress::Continue;
-            };
-            traverseRecursive(start, f, true);
+            traverseRecursive(start, AsAnalyze{this, &result}, true);
             return result;
         }
 
