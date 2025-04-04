@@ -1315,8 +1315,9 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return !local;
     }
 
-    bool isClassVariable() const override {
-        if(expr->variable()) {
+    bool isClassVariable() const override
+    {
+        if (expr->variable()) {
             const Variable* var = expr->variable();
             return !var->isLocal() && !var->isArgument() && !var->isStatic() && !var->isGlobal();
         }
