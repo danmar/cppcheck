@@ -164,8 +164,6 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
 
 void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
-    assert(files.empty());
-
     // TODO: make sure the given Tokenizer has not been used yet
 
     // TODO: get rid of stream

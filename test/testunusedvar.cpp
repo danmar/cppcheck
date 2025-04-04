@@ -301,8 +301,7 @@ private:
 
 #define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
-        std::vector<std::string> files;
-        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
+        SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -314,8 +313,7 @@ private:
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
     void checkFunctionVariableUsageP_(const char* file, int line, const char code[]) {
-        std::vector<std::string> files;
-        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
+        SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

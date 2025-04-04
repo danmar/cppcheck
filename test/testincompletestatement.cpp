@@ -43,8 +43,7 @@ private:
     void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
 
-        std::vector<std::string> files;
-        SimpleTokenizer2 tokenizer(settings1, *this, code, files, options.cpp ? "test.cpp" : "test.c");
+        SimpleTokenizer2 tokenizer(settings1, *this, code, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

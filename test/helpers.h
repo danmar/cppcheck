@@ -259,21 +259,23 @@ struct LibraryHelper
 class SimpleTokenizer2 : public Tokenizer {
 public:
     template<size_t size>
-    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], std::vector<std::string> &files, const std::string& file0)
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)
         : Tokenizer{settings, errorlogger}
     {
-        preprocess(code, files, file0, *this, errorlogger);
+        preprocess(code, mFiles, file0, *this, errorlogger);
     }
 
     // TODO: get rid of this
-    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], std::vector<std::string> &files, const std::string& file0)
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], const std::string& file0)
         : Tokenizer{settings, errorlogger}
     {
-        preprocess(code, files, file0, *this, errorlogger);
+        preprocess(code, mFiles, file0, *this, errorlogger);
     }
 
 private:
     static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
+
+    std::vector<std::string> mFiles;
 };
 
 #endif // helpersH

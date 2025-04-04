@@ -483,8 +483,7 @@ private:
     void bailout_(const char* file, int line, const char (&code)[size]) {
         const Settings s = settingsBuilder().debugwarnings().build();
 
-        std::vector<std::string> files;
-        SimpleTokenizer2 tokenizer(s, *this, code, files, "test.cpp");
+        SimpleTokenizer2 tokenizer(s, *this, code, "test.cpp");
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
