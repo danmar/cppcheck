@@ -472,7 +472,7 @@ std::string ErrorMessage::fixInvalidChars(const std::string& raw)
         } else {
             std::ostringstream es;
             // straight cast to (unsigned) doesn't work out.
-            const unsigned uFrom = (unsigned char)*from;
+            const unsigned uFrom = static_cast<unsigned char>(*from);
             es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << uFrom;
             result += es.str();
         }

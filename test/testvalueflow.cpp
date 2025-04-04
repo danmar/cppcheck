@@ -570,8 +570,8 @@ private:
         ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
         ASSERT_EQUALS(1, valueOfTok("x=true;", "true").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x(NULL);", "NULL").intvalue);
-        ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
-        ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
+        ASSERT_EQUALS(static_cast<int>('a'), valueOfTok("x='a';", "'a'").intvalue);
+        ASSERT_EQUALS(static_cast<int>('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
         TODO_ASSERT_EQUALS(0xFFFFFFFF00000000, 0, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
         ASSERT_EQUALS_DOUBLE(16, valueOfTok("x=(double)16;", "(").floatValue, 1e-5);
         ASSERT_EQUALS_DOUBLE(0.0625, valueOfTok("x=1/(double)16;", "/").floatValue, 1e-5);
@@ -934,7 +934,7 @@ private:
                 "    const char *x = \"abcd\";\n"
                 "    return x[0];\n"
                 "}";
-        ASSERT_EQUALS((int)('a'), valueOfTok(code, "[").intvalue);
+        ASSERT_EQUALS(static_cast<int>('a'), valueOfTok(code, "[").intvalue);
 
         code  = "char f() {\n"
                 "    const char *x = \"\";\n"
@@ -3884,7 +3884,7 @@ private:
                "    x += 67;\n"
                "    return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, (double)123.45f + 67, 0.01));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, static_cast<double>(123.45f) + 67, 0.01));
 
         code = "double f() {\n"
                "    double x = 123.45;\n"

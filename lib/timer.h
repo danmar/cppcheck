@@ -51,7 +51,7 @@ struct TimerResultsData {
     long mNumberOfResults{};
 
     double seconds() const {
-        const double ret = (double)((unsigned long)mClocks) / (double)CLOCKS_PER_SEC;
+        const double ret = static_cast<double>(static_cast<unsigned long>(mClocks)) / static_cast<double>(CLOCKS_PER_SEC);
         return ret;
     }
 };

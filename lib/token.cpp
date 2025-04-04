@@ -124,7 +124,7 @@ void Token::update_property_info()
             tokType(eChar);
             isLong(isPrefixStringCharLiteral(mStr, '\'', "L"));
         }
-        else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
+        else if (std::isalpha(static_cast<unsigned char>(mStr[0])) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
             else if (mTokensFrontBack.list.isKeyword(mStr)) {
@@ -761,7 +761,7 @@ nonneg int Token::getStrArraySize(const Token *tok)
     // cppcheck-suppress shadowFunction - TODO: fix this
     const std::string str(getStringLiteral(tok->str()));
     int sizeofstring = 1;
-    for (int i = 0; i < (int)str.size(); i++) {
+    for (int i = 0; i < static_cast<int>(str.size()); i++) {
         if (str[i] == '\\')
             ++i;
         ++sizeofstring;
