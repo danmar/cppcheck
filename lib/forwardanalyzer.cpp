@@ -239,7 +239,8 @@ namespace {
             return update(tok, action);
         }
 
-        Progress update(Token* tok, Analyzer::Action action) {
+        Progress update(Token* tok, Analyzer::Action action)
+        {
             actions |= action;
             if (!action.isNone() && !analyzeOnly)
                 analyzer->update(tok, action, Analyzer::Direction::Forward);
@@ -252,16 +253,17 @@ namespace {
                 return Break(Analyzer::Terminate::Modified);
             return Progress::Continue;
         }
-        
+
         struct AsUpdate {
             ForwardTraversal* self = nullptr;
 
             AsUpdate(ForwardTraversal* self) : self(self) {}
 
             template<class... Ts>
-            Progress operator()(Ts... xs) const {
+            Progress operator()(Ts... xs) const
+            {
                 assert(self);
-                return self->update(xs...);
+                return self->update(xs ...);
             }
         };
 
@@ -275,17 +277,19 @@ namespace {
 
         struct AsAnalyze {
             ForwardTraversal* self = nullptr;
-            Analyzer::Action * result = nullptr;
+            Analyzer::Action* result = nullptr;
 
             AsAnalyze(ForwardTraversal* self, Analyzer::Action* result) : self(self), result(result) {}
 
-            Progress operator()(const Token* tok) const {
+            Progress operator()(const Token* tok) const
+            {
                 assert(self);
                 assert(result);
                 return (*this)(tok, self->analyzer->analyze(tok, Analyzer::Direction::Forward));
             }
 
-            Progress operator()(const Token*, Analyzer::Action action) const {
+            Progress operator()(const Token*, Analyzer::Action action) const
+            {
                 assert(self);
                 assert(result);
                 *result = action;
