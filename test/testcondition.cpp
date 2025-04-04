@@ -4759,6 +4759,21 @@ private:
               "    return b ? 1 : 0;\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n"
+              "    void f(int i);\n"
+              "    bool g() const { return !m.empty(); }\n"
+              "    std::set<int> m;\n"
+              "};\n"
+              "void S::f(int i) {\n"
+              "    bool b = g();\n"
+              "    auto it = m.find(i);\n"
+              "    if (it != m.end()) {\n"
+              "        m.erase(it);\n"
+              "        if (g() != b) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueSymbolic()
