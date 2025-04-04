@@ -551,7 +551,7 @@ private:
         Preprocessor preprocessor(settings, *this);
         std::istringstream istr(filedata);
         simplecpp::OutputList outputList;
-        std::vector<std::string> files{filename};
+        std::vector<std::string> files;
         const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
