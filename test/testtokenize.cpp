@@ -7950,8 +7950,8 @@ private:
     std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

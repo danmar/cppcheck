@@ -8700,8 +8700,8 @@ private:
     void checkUselessOverride_(const char* file, int line, const char code[]) {
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
@@ -9145,8 +9145,8 @@ private:
     void checkReturnByReference_(const char* file, int line, const char (&code)[size]) {
         const Settings settings = settingsBuilder().severity(Severity::performance).library("std.cfg").build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 

@@ -68,8 +68,8 @@ private:
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
-        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

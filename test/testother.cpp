@@ -353,8 +353,8 @@ private:
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
 
-        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
-        SimpleTokenizer2 tokenizer(*settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(*settings, *this, code, files, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

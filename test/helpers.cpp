@@ -162,13 +162,15 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     return cfgcode;
 }
 
-void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger)
+void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
+    assert(files.empty());
+
     // TODO: make sure the given Tokenizer has not been used yet
 
     // TODO: get rid of stream
     std::istringstream istr(code);
-    const simplecpp::TokenList tokens1(istr, files, files[0]);
+    const simplecpp::TokenList tokens1(istr, files, file0);
 
     Preprocessor preprocessor(tokenizer.getSettings(), errorlogger);
     simplecpp::TokenList tokens2 = preprocessor.preprocess(tokens1, "", files, true);

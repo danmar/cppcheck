@@ -113,8 +113,8 @@ private:
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(options.debugwarnings).platform(options.type).build();
 
         if (options.preprocess) {
-            std::vector<std::string> files(1, "test.cpp");
-            SimpleTokenizer2 tokenizer(settings, *this, code, files);
+            std::vector<std::string> files;
+            SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
 
             std::istringstream istr(code);
             ASSERT_LOC(tokenizer.list.createTokens(istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time

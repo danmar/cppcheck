@@ -75,8 +75,8 @@ private:
     {
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

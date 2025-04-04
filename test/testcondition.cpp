@@ -139,8 +139,8 @@ private:
     void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
         const Settings settings = settingsBuilder(options.s ? *options.s : settings0).certainty(Certainty::inconclusive, options.inconclusive).build();
 
-        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -154,8 +154,8 @@ private:
     {
         const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings, *this, code, files, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

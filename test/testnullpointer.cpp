@@ -200,8 +200,8 @@ private:
     void checkP_(const char* file, int line, const char (&code)[size]) {
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings1, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings1, *this, code, files, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

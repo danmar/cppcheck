@@ -286,8 +286,8 @@ private:
 
 
     std::string simplifyTypedefP(const char code[]) {
-        std::vector<std::string> files(1, "test.cpp");
-        SimpleTokenizer2 tokenizer(settings0, *this, code, files);
+        std::vector<std::string> files;
+        SimpleTokenizer2 tokenizer(settings0, *this, code, files, "test.cpp");
 
         // Tokenize..
         tokenizer.createLinks();
