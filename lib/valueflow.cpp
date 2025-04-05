@@ -756,7 +756,12 @@ static void valueFlowTypeTraits(TokenList& tokenlist, const Settings& settings)
             continue;
         if (eval.count(traitName) == 0)
             continue;
-        ValueFlow::Value value = eval[traitName](evaluateTemplateArgs(templateTok->next()));
+        auto args = evaluateTemplateArgs(templateTok->next());
+        if (std::any_of(args.begin(), args.end(), [](const std::vector<const Token*>& arg) {
+            return arg.empty();
+        }))
+            continue;
+        ValueFlow::Value value = eval[traitName](std::move(args));
         if (value.isUninitValue())
             continue;
         value.setKnown();
@@ -1003,10 +1008,10 @@ static void valueFlowBitAnd(TokenList& tokenlist, const Settings& settings)
             continue;
 
         int bit = 0;
-        while (bit <= (MathLib::bigint_bits - 2) && ((((MathLib::bigint)1) << bit) < number))
+        while (bit <= (MathLib::bigint_bits - 2) && ((static_cast<MathLib::bigint>(1) << bit) < number))
             ++bit;
 
-        if ((((MathLib::bigint)1) << bit) == number) {
+        if ((static_cast<MathLib::bigint>(1) << bit) == number) {
             setTokenValue(tok, ValueFlow::Value(0), settings);
             setTokenValue(tok, ValueFlow::Value(number), settings);
         }
@@ -6302,7 +6307,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
         return true;
     if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
         return tok->valueType()->container->stdAssociativeLike;
-    const Library::Container::Action action = astContainerAction(tok);
+    const Library::Container::Action action = astContainerAction(tok, settings.library);
     switch (action) {
     case Library::Container::Action::RESIZE:
     case Library::Container::Action::CLEAR:
@@ -6316,7 +6321,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     case Library::Container::Action::NO_ACTION:
         // Is this an unknown member function call?
         if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
-            const Library::Container::Yield yield = astContainerYield(tok);
+            const Library::Container::Yield yield = astContainerYield(tok, settings.library);
             return yield == Library::Container::Yield::NO_YIELD;
         }
         break;
@@ -6422,7 +6427,7 @@ static void valueFlowSmartPointer(TokenList &tokenlist, ErrorLogger & errorLogge
 
 static Library::Container::Yield findIteratorYield(Token* tok, const Token*& ftok, const Settings& settings)
 {
-    auto yield = astContainerYield(tok, &ftok);
+    auto yield = astContainerYield(tok, settings.library, &ftok);
     if (ftok)
         return yield;
 
@@ -7164,7 +7169,9 @@ static void valueFlowUnknownFunctionReturn(TokenList& tokenlist, const Settings&
             continue;
 
         if (const auto* f = settings.library.getAllocFuncInfo(tok->astOperand1())) {
-            if (settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
+            if (f->noFail) {
+                // Allocation function that cannot fail
+            } else if (settings.library.returnValueType(tok->astOperand1()).find('*') != std::string::npos) {
                 // Allocation function that returns a pointer
                 ValueFlow::Value value(0);
                 value.setPossible();

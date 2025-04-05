@@ -472,7 +472,7 @@ std::string ErrorMessage::fixInvalidChars(const std::string& raw)
         } else {
             std::ostringstream es;
             // straight cast to (unsigned) doesn't work out.
-            const unsigned uFrom = (unsigned char)*from;
+            const unsigned uFrom = static_cast<unsigned char>(*from);
             es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << uFrom;
             result += es.str();
         }
@@ -610,30 +610,9 @@ static void replaceColors(std::string& source) {
     replace(source, substitutionMap);
 }
 
-// TODO: remove default parameters
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
-    // Save this ErrorMessage in plain text.
-
-    // TODO: should never happen - remove this
-    // No template is given
-    // (not 100%) equivalent templateFormat: {callstack} ({severity}{inconclusive:, inconclusive}) {message}
-    if (templateFormat.empty()) {
-        std::string text;
-        if (!callStack.empty()) {
-            text += ErrorLogger::callStackToString(callStack);
-            text += ": ";
-        }
-        if (severity != Severity::none) {
-            text += '(';
-            text += severityToString(severity);
-            if (certainty == Certainty::inconclusive)
-                text += ", inconclusive";
-            text += ") ";
-        }
-        text += (verbose ? mVerboseMessage : mShortMessage);
-        return text;
-    }
+    assert(!templateFormat.empty());
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;

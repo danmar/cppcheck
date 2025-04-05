@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "settings.h"
-#include "standards.h"
 #include "suppressions.h"
 
 #include "simplecpp.h"
@@ -38,6 +37,7 @@ public:
     TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
+    const std::string templateFormat{"{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]"};
 
     class ErrorLogger2 : public ErrorLogger {
     public:
@@ -63,7 +63,6 @@ private:
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
-        TEST_CASE(getClangFlagsIncludeFile);
     }
 
     void getErrorMessages() const {
@@ -113,7 +112,8 @@ private:
                         "  return 0;\n"
                         "}");
 
-        const Settings s;
+        /*const*/ Settings s;
+        s.templateFormat = templateFormat;
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -135,7 +135,8 @@ private:
                         "  return 0;\n"
                         "}");
 
-        const Settings s;
+        /*const*/ Settings s;
+        s.templateFormat = templateFormat;
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -184,7 +185,9 @@ private:
         ScopedFile test_file_b("b.cpp",
                                "#include \"inc.h\"");
 
-        const Settings s;
+        /*const*/ Settings s;
+        // this is the "simple" format
+        s.templateFormat = templateFormat; // TODO: remove when we only longer rely on toString() in unique message handling
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -215,9 +218,9 @@ private:
                              "(void)b;\n"
                              "}");
 
-        Settings s;
+        /*const*/ Settings s;
         // this is the "simple" format
-        s.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        s.templateFormat = templateFormat; // TODO: remove when we only longer rely on toString() in unique message handling?
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -320,15 +323,6 @@ private:
             const std::string expected = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
         }
-    }
-
-    void getClangFlagsIncludeFile() const {
-        Settings s;
-        s.userIncludes.emplace_back("1.h");
-        Suppressions supprs;
-        ErrorLogger2 errorLogger;
-        CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        ASSERT_EQUALS("-x c --include 1.h ", cppcheck.getClangFlags(Standards::Language::C));
     }
 
     // TODO: test suppressions

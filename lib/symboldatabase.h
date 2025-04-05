@@ -1412,7 +1412,7 @@ public:
     nonneg int sizeOfType(const Token *type) const;
 
     /** Set array dimensions when valueflow analysis is completed */
-    void setArrayDimensionsUsingValueFlow(); // cppcheck-suppress functionConst // has side effects
+    void setArrayDimensionsUsingValueFlow();
 
     void clangSetVariables(const std::vector<const Variable *> &variableList);
     void createSymbolDatabaseExprIds();
@@ -1435,14 +1435,12 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers(bool firstPass); // cppcheck-suppress functionConst // has side effects
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
-    // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
-    void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
-    void createSymbolDatabaseEscapeFunctions(); // cppcheck-suppress functionConst // has side effects
-    // cppcheck-suppress functionConst
+    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();
 
     void debugSymbolDatabase() const;

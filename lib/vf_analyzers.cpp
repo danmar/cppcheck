@@ -85,7 +85,7 @@ struct ValueFlowAnalyzer : Analyzer {
     virtual bool dependsOnThis() const {
         return false;
     }
-    virtual bool isVariable() const {
+    virtual bool isClassVariable() const {
         return false;
     }
 
@@ -203,7 +203,7 @@ struct ValueFlowAnalyzer : Analyzer {
                           Library::Container::Action::INSERT,
                           Library::Container::Action::APPEND,
                           Library::Container::Action::CHANGE_INTERNAL},
-                         astContainerAction(tok)))
+                         astContainerAction(tok, getSettings().library)))
                 return read;
         }
         bool inconclusive = false;
@@ -643,7 +643,7 @@ private:
             if (a != Action::None)
                 return a;
         }
-        if (dependsOnThis() && exprDependsOnThis(tok, !isVariable()))
+        if (dependsOnThis() && exprDependsOnThis(tok, !isClassVariable()))
             return isThisModified(tok);
 
         // bailout: global non-const variables
@@ -1315,7 +1315,12 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         return !local;
     }
 
-    bool isVariable() const override {
+    bool isClassVariable() const override
+    {
+        if (expr->variable()) {
+            const Variable* var = expr->variable();
+            return !var->isLocal() && !var->isArgument() && !var->isStatic() && !var->isGlobal();
+        }
         return expr->varId() > 0;
     }
 

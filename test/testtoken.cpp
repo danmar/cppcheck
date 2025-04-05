@@ -123,6 +123,8 @@ private:
         TEST_CASE(update_property_info_ecomparisonop_link);
         TEST_CASE(update_property_info_etype_c);
         TEST_CASE(update_property_info_etype_cpp);
+        TEST_CASE(update_property_info_replace); // #13743
+
         TEST_CASE(varid_reset);
     }
 
@@ -1341,13 +1343,6 @@ private:
             tok.varId(17);
             assert_tok(&tok, Token::Type::eVariable);
         }
-        {
-            TokensFrontBack tokensFrontBack(list);
-            Token tok(tokensFrontBack);
-            tok.varId(17);
-            tok.str("var1");
-            assert_tok(&tok, Token::Type::eVariable);
-        }
     }
 
     void update_property_info_ekeyword_c() const
@@ -1494,6 +1489,16 @@ private:
             tok.str("size_t");
             assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
         }
+    }
+
+    void update_property_info_replace() const // #13743
+    {
+        TokensFrontBack tokensFrontBack(list);
+        Token tok(tokensFrontBack);
+        tok.str("size_t");
+        assert_tok(&tok, Token::Type::eType, false, true);
+        tok.str("long");
+        assert_tok(&tok, Token::Type::eType, false, true);
     }
 
     void varid_reset() const

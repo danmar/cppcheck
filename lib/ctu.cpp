@@ -104,7 +104,7 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
         << " " << ATTR_CALL_ARGEXPR << "=\"" << ErrorLogger::toxml(callArgumentExpression) << "\""
         << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << static_cast<int>(callValueType) << "\""
         << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue.value << "\""
-        << " " << ATTR_CALL_UNKNOWN_FUNCTION_RETURN << "=\"" << (int)callArgValue.unknownFunctionReturn << "\"";
+        << " " << ATTR_CALL_UNKNOWN_FUNCTION_RETURN << "=\"" << static_cast<int>(callArgValue.unknownFunctionReturn) << "\"";
     if (warning)
         out << " " << ATTR_WARNING << "=\"true\"";
     if (callValuePath.empty())
@@ -202,10 +202,11 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
         return false;
     bool error=false;
     callArgumentExpression = readAttrString(xmlElement, ATTR_CALL_ARGEXPR, &error);
-    callValueType = (ValueFlow::Value::ValueType)readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error);
+    callValueType = static_cast<ValueFlow::Value::ValueType>(readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error));
     callArgValue.value = readAttrInt(xmlElement, ATTR_CALL_ARGVALUE, &error);
     const auto ufr = readAttrInt(xmlElement, ATTR_CALL_UNKNOWN_FUNCTION_RETURN, &error);
-    callArgValue.unknownFunctionReturn = (ValueFlow::Value::UnknownFunctionReturn)(ufr>=0 && ufr <=0xff ? ufr : 0xff);
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) - TODO: fix this - #13726
+    callArgValue.unknownFunctionReturn = static_cast<ValueFlow::Value::UnknownFunctionReturn>(ufr>=0 && ufr <=0xff ? ufr : 0xff);
     const char *w = xmlElement->Attribute(ATTR_WARNING);
     warning = w && std::strcmp(w, "true") == 0;
     for (const tinyxml2::XMLElement *e2 = xmlElement->FirstChildElement(); !error && e2; e2 = e2->NextSiblingElement()) {

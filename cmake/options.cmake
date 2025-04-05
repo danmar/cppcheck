@@ -101,6 +101,8 @@ option(NO_UNIX_SIGNAL_HANDLING "Disable usage of Unix Signal Handling"          
 option(NO_UNIX_BACKTRACE_SUPPORT "Disable usage of Unix Backtrace support"                  OFF)
 option(NO_WINDOWS_SEH       "Disable usage of Windows SEH"                                  OFF)
 
+option(ENABLE_CSA_ALPHA     "Enable Clang Static Analyzer alpha checkers for run-clang-tidy-csa target"  OFF)
+
 # TODO: disable by default like make build?
 option(FILESDIR "Hard-coded directory for files to load from"                               OFF)
 

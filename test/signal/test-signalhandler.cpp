@@ -49,7 +49,7 @@
 /*static*/ void my_segv() // NOLINT(misc-use-internal-linkage)
 {
     // cppcheck-suppress nullPointer
-    ++*(int*)nullptr;
+    ++*static_cast<int*>(nullptr); // NOLINT(clang-analyzer-core.NullDereference)
 }
 
 #if !defined(__APPLE__)

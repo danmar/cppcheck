@@ -429,7 +429,26 @@ void TestFixture::reportErr(const ErrorMessage &msg)
         return;
     if (msg.severity == Severity::information && msg.id == "normalCheckLevelMaxBranches")
         return;
-    const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
+    std::string errormessage;
+    if (!mTemplateFormat.empty()) {
+        errormessage = msg.toString(mVerbose, mTemplateFormat, mTemplateLocation);
+    }
+    else {
+        if (!msg.callStack.empty()) {
+            // TODO: add column
+            errormessage += ErrorLogger::callStackToString(msg.callStack);
+            errormessage += ": ";
+        }
+        if (msg.severity != Severity::none) {
+            errormessage += '(';
+            errormessage += severityToString(msg.severity);
+            if (msg.certainty == Certainty::inconclusive)
+                errormessage += ", inconclusive";
+            errormessage += ") ";
+        }
+        errormessage += msg.shortMessage();
+        // TODO: add ID
+    }
     mErrout << errormessage << std::endl;
 }
 

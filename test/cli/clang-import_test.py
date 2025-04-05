@@ -174,7 +174,6 @@ def test_cmd_cpp(tmp_path):
 
 
 # files with unknown extensions are treated as C++
-@pytest.mark.xfail(strict=True)
 def test_cmd_unk(tmp_path):
     __test_cmd(tmp_path, 'test.cplusplus', [], '-x c++')
 
@@ -196,6 +195,13 @@ def test_cmd_inc(tmp_path):
 
 def test_cmd_def(tmp_path):
     __test_cmd(tmp_path, 'test.cpp',['-DDEF'], '-x c++ -DDEF=1')
+
+
+def test_cmd_include(tmp_path):
+    inc_file = tmp_path / 'inc.h'
+    with open(inc_file, 'wt'):
+        pass
+    __test_cmd(tmp_path, 'test.cpp',['--include=inc.h'], '-x c++ --include inc.h')
 
 
 def test_cmd_enforce_c(tmp_path):  # #13128

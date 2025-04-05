@@ -956,15 +956,7 @@ public:
             return;
 
         mImpl->mVarId = id;
-        // TODO: remove special handling?
-        if (id != 0) {
-            tokType(eVariable);
-            isStandardType(false);
-            // TODO: clear fIsLong
-            // TODO: clear fIsControlFlowKeyword
-        } else {
-            update_property_info();
-        }
+        update_property_info();
     }
 
     nonneg int exprId() const {
@@ -1104,6 +1096,9 @@ public:
      * to.
      */
     void link(Token *linkToToken) {
+        if (mLink == linkToToken)
+            return;
+
         mLink = linkToToken;
         if (mStr == "<" || mStr == ">")
             update_property_info();

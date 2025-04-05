@@ -272,6 +272,7 @@ static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &
         if (elementName == "alloc" || elementName == "realloc") {
             CppcheckLibraryData::MemoryResource::Alloc alloc;
             alloc.isRealloc = (elementName == "realloc");
+            alloc.noFail = (xmlReader.attributes().value("no-fail").toString() == "true");
             alloc.init = (xmlReader.attributes().value("init").toString() == "true");
             if (xmlReader.attributes().hasAttribute("arg")) {
                 alloc.arg = xmlReader.attributes().value("arg").toInt();
@@ -723,6 +724,8 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
             xmlWriter.writeStartElement("alloc");
         }
         xmlWriter.writeAttribute("init", bool_to_string(alloc.init));
+        if (alloc.noFail)
+            xmlWriter.writeAttribute("no-fail", bool_to_string(alloc.noFail));
         if (alloc.arg != -1) {
             xmlWriter.writeAttribute("arg", QString("%1").arg(alloc.arg));
         }

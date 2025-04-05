@@ -132,7 +132,7 @@ private:
     {
         CheckOptions() = default;
         const Settings* s = nullptr;
-        const char* filename = "test.cpp";
+        bool cpp = true;
         bool inconclusive = false;
     };
 
@@ -140,7 +140,7 @@ private:
     void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
         const Settings settings = settingsBuilder(options.s ? *options.s : settings0).certainty(Certainty::inconclusive, options.inconclusive).build();
         Tokenizer tokenizer(settings, *this);
-        std::vector<std::string> files(1, options.filename);
+        std::vector<std::string> files(1, options.cpp ? "test.cpp" : "test.c");
         PreprocessorHelper::preprocess(code, files, tokenizer, *this);
 
         // Tokenizer..
@@ -3162,7 +3162,7 @@ private:
         check("void f() { A<x &> a; }");
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { a(x<y|z,0); }", dinit(CheckOptions, $.filename = "test.c"));  // filename is c => there are never templates
+        check("void f() { a(x<y|z,0); }", dinit(CheckOptions, $.cpp = false));  // language is c => there are never templates
         ASSERT_EQUALS("[test.c:1]: (style) Boolean result is used in bitwise operation. Clarify expression with parentheses.\n", errout_str());
 
         check("class A<B&,C>;");
@@ -4774,6 +4774,21 @@ private:
               "    if (sp2) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (style) Condition 'sp2' is always true\n", errout_str());
+        
+        check("struct S {\n"
+              "    void f(int i);\n"
+              "    bool g() const { return !m.empty(); }\n"
+              "    std::set<int> m;\n"
+              "};\n"
+              "void S::f(int i) {\n"
+              "    bool b = g();\n"
+              "    auto it = m.find(i);\n"
+              "    if (it != m.end()) {\n"
+              "        m.erase(it);\n"
+              "        if (g() != b) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void alwaysTrueSymbolic()

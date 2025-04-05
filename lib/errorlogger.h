@@ -158,8 +158,8 @@ public:
      * @return formatted string
      */
     std::string toString(bool verbose,
-                         const std::string &templateFormat = emptyString,
-                         const std::string &templateLocation = emptyString) const;
+                         const std::string &templateFormat,
+                         const std::string &templateLocation) const;
 
     std::string serialize() const;
     void deserialize(const std::string &data);

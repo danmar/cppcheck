@@ -445,7 +445,7 @@ void CheckIO::invalidScanf()
                     format = false;
                 }
 
-                else if (std::isalpha((unsigned char)formatstr[i]) || formatstr[i] == '[') {
+                else if (std::isalpha(static_cast<unsigned char>(formatstr[i])) || formatstr[i] == '[') {
                     if (formatstr[i] == 's' || formatstr[i] == '[' || formatstr[i] == 'S' || (formatstr[i] == 'l' && formatstr[i+1] == 's'))  // #3490 - field width limits are only necessary for string input
                         invalidScanfError(tok);
                     format = false;
@@ -645,7 +645,7 @@ void CheckIO::checkFormatString(const Token * const tok,
             std::string width;
             int parameterPosition = 0;
             bool hasParameterPosition = false;
-            while (i != formatString.cend() && *i != '[' && !std::isalpha((unsigned char)*i)) {
+            while (i != formatString.cend() && *i != '[' && !std::isalpha(static_cast<unsigned char>(*i))) {
                 if (*i == '*') {
                     skip = true;
                     if (scan)

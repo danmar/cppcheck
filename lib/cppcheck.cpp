@@ -366,9 +366,11 @@ static void createDumpFile(const Settings& settings,
         std::ofstream fout(getCtuInfoFileName(dumpFile));
     }
 
-    // TODO: enforcedLang should be already applied in FileWithDetails object
     std::string language;
-    switch (settings.enforcedLang) {
+
+    assert(file.lang() != Standards::Language::None);
+
+    switch (file.lang()) {
     case Standards::Language::C:
         language = " language=\"c\"";
         break;
@@ -376,16 +378,7 @@ static void createDumpFile(const Settings& settings,
         language = " language=\"cpp\"";
         break;
     case Standards::Language::None:
-    {
-        // TODO: get language from FileWithDetails object
-        // TODO: error out on unknown language?
-        const Standards::Language lang = Path::identify(file.spath(), settings.cppHeaderProbe);
-        if (lang == Standards::Language::CPP)
-            language = " language=\"cpp\"";
-        else if (lang == Standards::Language::C)
-            language = " language=\"c\"";
         break;
-    }
     }
 
     fdump << "<?xml version=\"1.0\"?>\n";
@@ -619,31 +612,37 @@ std::string CppCheck::getLibraryDumpData() const {
     return out;
 }
 
-std::string CppCheck::getClangFlags(Standards::Language fileLang) const {
+/**
+ * @brief Get the clang command line flags using the Settings
+ * @param lang language guessed from filename
+ * @return Clang command line flags
+ */
+static std::string getClangFlags(const Settings& setting, Standards::Language lang) {
     std::string flags;
 
-    const Standards::Language lang = mSettings.enforcedLang != Standards::None ? mSettings.enforcedLang : fileLang;
+    assert(lang != Standards::Language::None);
 
     switch (lang) {
-    case Standards::Language::None:
     case Standards::Language::C:
         flags = "-x c ";
-        if (!mSettings.standards.stdValueC.empty())
-            flags += "-std=" + mSettings.standards.stdValueC + " ";
+        if (!setting.standards.stdValueC.empty())
+            flags += "-std=" + setting.standards.stdValueC + " ";
         break;
     case Standards::Language::CPP:
         flags += "-x c++ ";
-        if (!mSettings.standards.stdValueCPP.empty())
-            flags += "-std=" + mSettings.standards.stdValueCPP + " ";
+        if (!setting.standards.stdValueCPP.empty())
+            flags += "-std=" + setting.standards.stdValueCPP + " ";
+        break;
+    case Standards::Language::None:
         break;
     }
 
-    for (const std::string &i: mSettings.includePaths)
+    for (const std::string &i: setting.includePaths)
         flags += "-I" + i + " ";
 
-    flags += getDefinesFlags(mSettings.userDefines);
+    flags += getDefinesFlags(setting.userDefines);
 
-    for (const std::string &i: mSettings.userIncludes)
+    for (const std::string &i: setting.userIncludes)
         flags += "--include " + cmdFileName(i) + " ";
 
     return flags;
@@ -674,7 +673,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 #endif
 
     const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
-                              getClangFlags(Path::identify(file.spath(), mSettings.cppHeaderProbe)) +
+                              getClangFlags(mSettings, file.lang()) +
                               file.spath();
     const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
     if (mSettings.verbose && !mSettings.quiet) {
@@ -1265,7 +1264,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // collected after all files are processed
         if (!mSettings.useSingleJob()) {
             // TODO: check result?
-            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, (bool)mUnusedFunctionsCheck), mErrorLogger);
+            SuppressionList::reportUnmatchedSuppressions(mSuppressions.nomsg.getUnmatchedLocalSuppressions(file, static_cast<bool>(mUnusedFunctionsCheck)), mErrorLogger);
         }
     }
 
@@ -1595,8 +1594,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
 
         int pos = 0;
         int ovector[30]= {0};
-        while (pos < (int)str.size()) {
-            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), (int)str.size(), pos, 0, ovector, 30);
+        while (pos < static_cast<int>(str.size())) {
+            const int pcreExecRet = pcre_exec(re, pcreExtra, str.c_str(), static_cast<int>(str.size()), pos, 0, ovector, 30);
             if (pcreExecRet < 0) {
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
@@ -1611,11 +1610,11 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
                 }
                 break;
             }
-            const auto pos1 = (unsigned int)ovector[0];
-            const auto pos2 = (unsigned int)ovector[1];
+            const auto pos1 = static_cast<unsigned int>(ovector[0]);
+            const auto pos2 = static_cast<unsigned int>(ovector[1]);
 
             // jump to the end of the match for the next pcre_exec
-            pos = (int)pos2;
+            pos = static_cast<int>(pos2);
 
             // determine location..
             int fileIndex = 0;
@@ -1867,6 +1866,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 {
     Settings settings;
+    settings.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: get rid of this
     Suppressions supprs;
 
     CppCheck cppcheck(settings, supprs, errorlogger, true, nullptr);
