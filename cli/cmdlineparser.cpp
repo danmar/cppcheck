@@ -1102,6 +1102,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.plistOutput = std::move(path);
         }
 
+        else if (std::strcmp(argv[i], "-pch") == 0)
+            mSettings.precompileHeader = true;
+
         // Special Cppcheck Premium options
         else if ((std::strncmp(argv[i], "--premium=", 10) == 0 || std::strncmp(argv[i], "--premium-", 10) == 0) && isCppcheckPremium()) {
             // valid options --premium=..
