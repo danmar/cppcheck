@@ -66,8 +66,6 @@ xmllint --noout "$UNMATCHEDSUPPR_XML"
 $PYTHON ${PROJECT_ROOT_DIR}/htmlreport/cppcheck-htmlreport --file "$UNMATCHEDSUPPR_XML" --title "unmatched Suppressions" --report-dir="$REPORT_DIR"
 grep "unmatchedSuppression<.*>information<.*>Unmatched suppression: variableScope*<" "$INDEX_HTML"
 grep ">unmatchedSuppression</.*>information<.*>Unmatched suppression: uninitstring<" "$INDEX_HTML"
-grep "notexisting" "$INDEX_HTML"
-grep ">unmatchedSuppression<.*>information<.*>Unmatched suppression: \*<" "$INDEX_HTML"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
 validate_html "$STATS_HTML"

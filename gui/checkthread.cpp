@@ -443,8 +443,8 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const
 {
-    return std::any_of(mSuppressionsUi.cbegin(), mSuppressionsUi.cend(), [&](const SuppressionList::Suppression& s) {
-        return s.isSuppressed(errorMessage);
+    return std::any_of(mSuppressionsUi.cbegin(), mSuppressionsUi.cend(), [&](const SuppressionList::Suppression& s) -> bool {
+        return s.isSuppressed(errorMessage) == SuppressionList::Suppression::Result::Matched;
     });
 }
 
