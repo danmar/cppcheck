@@ -174,9 +174,6 @@ public:
     static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
     static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui);
 
-    /** get remark comments */
-    static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger);
-
 private:
     static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 };
