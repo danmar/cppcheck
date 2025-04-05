@@ -35,7 +35,7 @@ public:
     }
 
 private:
-    /*const*/ TokenList list{&settingsDefault};
+    /*const*/ TokenList list{settingsDefault};
 
     std::vector<std::string> arithmeticalOps;
     std::vector<std::string> logicalOps;
@@ -1349,7 +1349,7 @@ private:
     {
         {
             const Settings s = settingsBuilder().c(Standards::cstd_t::C89).build();
-            TokenList list_c{&s};
+            TokenList list_c{s};
             list_c.setLang(Standards::Language::C);
             TokensFrontBack tokensFrontBack(list_c);
             Token tok(tokensFrontBack);
@@ -1357,7 +1357,7 @@ private:
             assert_tok(&tok, Token::Type::eName);
         }
         {
-            TokenList list_c{&settingsDefault};
+            TokenList list_c{settingsDefault};
             list_c.setLang(Standards::Language::C);
             TokensFrontBack tokensFrontBack(list_c);
             Token tok(tokensFrontBack);
@@ -1365,7 +1365,7 @@ private:
             assert_tok(&tok, Token::Type::eKeyword);
         }
         {
-            TokenList list_c{&settingsDefault};
+            TokenList list_c{settingsDefault};
             list_c.setLang(Standards::Language::C);
             TokensFrontBack tokensFrontBack(list_c);
             Token tok(tokensFrontBack);
@@ -1378,7 +1378,7 @@ private:
     {
         {
             const Settings s = settingsBuilder().cpp(Standards::cppstd_t::CPP03).build();
-            TokenList list_cpp{&s};
+            TokenList list_cpp{s};
             list_cpp.setLang(Standards::Language::CPP);
             TokensFrontBack tokensFrontBack(list_cpp);
             Token tok(tokensFrontBack);
@@ -1386,7 +1386,7 @@ private:
             assert_tok(&tok, Token::Type::eName);
         }
         {
-            TokenList list_cpp{&settingsDefault};
+            TokenList list_cpp{settingsDefault};
             list_cpp.setLang(Standards::Language::CPP);
             TokensFrontBack tokensFrontBack(list_cpp);
             Token tok(tokensFrontBack);
@@ -1394,7 +1394,7 @@ private:
             assert_tok(&tok, Token::Type::eKeyword);
         }
         {
-            TokenList list_cpp{&settingsDefault};
+            TokenList list_cpp{settingsDefault};
             list_cpp.setLang(Standards::Language::CPP);
             TokensFrontBack tokensFrontBack(list_cpp);
             Token tok(tokensFrontBack);
@@ -1454,7 +1454,7 @@ private:
     void update_property_info_etype_c() const
     {
         {
-            TokenList list_c{&settingsDefault};
+            TokenList list_c{settingsDefault};
             list_c.setLang(Standards::Language::C);
             TokensFrontBack tokensFrontBack(list_c);
             Token tok(tokensFrontBack);
@@ -1462,7 +1462,7 @@ private:
             assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
         }
         {
-            TokenList list_c{&settingsDefault};
+            TokenList list_c{settingsDefault};
             list_c.setLang(Standards::Language::C);
             TokensFrontBack tokensFrontBack(list_c);
             Token tok(tokensFrontBack);
@@ -1474,7 +1474,7 @@ private:
     void update_property_info_etype_cpp() const
     {
         {
-            TokenList list_cpp{&settingsDefault};
+            TokenList list_cpp{settingsDefault};
             list_cpp.setLang(Standards::Language::CPP);
             TokensFrontBack tokensFrontBack(list_cpp);
             Token tok(tokensFrontBack);
@@ -1482,7 +1482,7 @@ private:
             assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
         }
         {
-            TokenList list_cpp{&settingsDefault};
+            TokenList list_cpp{settingsDefault};
             list_cpp.setLang(Standards::Language::CPP);
             TokensFrontBack tokensFrontBack(list_cpp);
             Token tok(tokensFrontBack);
@@ -1503,7 +1503,7 @@ private:
 
     void varid_reset() const
     {
-        TokenList list_c{&settingsDefault};
+        TokenList list_c{settingsDefault};
         list_c.setLang(Standards::Language::C);
         TokensFrontBack tokensFrontBack(list_c);
         Token tok(tokensFrontBack);
