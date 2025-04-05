@@ -5853,22 +5853,6 @@ static const ValueFlow::Value* getKnownValueFromToken(const Token* tok)
     return std::addressof(*it);
 }
 
-static const ValueFlow::Value* getKnownValueFromTokens(const std::vector<const Token*>& toks)
-{
-    if (toks.empty())
-        return nullptr;
-    const ValueFlow::Value* result = getKnownValueFromToken(toks.front());
-    if (!result)
-        return nullptr;
-    if (!std::all_of(std::next(toks.begin()), toks.end(), [&](const Token* tok) {
-        return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
-            return v.equalValue(*result) && v.valueKind == result->valueKind;
-        });
-    }))
-        return nullptr;
-    return result;
-}
-
 static std::vector<ValueFlow::Value> getCommonValuesFromTokens(const std::vector<const Token*>& toks)
 {
     if (toks.empty())
