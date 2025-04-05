@@ -630,16 +630,25 @@ private:
         if (invalid())
             return Action::Invalid;
         // Follow references
-        auto refs = followAllReferences(tok);
+        const auto& refs = tok->refs();
         const bool inconclusiveRefs = refs.size() != 1;
-        if (std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
+        const bool analyzeTok = std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
             return tok == ref.token;
-        }))
-            refs.emplace_back(ReferenceToken{tok, {}});
-        for (const ReferenceToken& ref:refs) {
-            Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
-            if (internalMatch(ref.token))
+        });
+        auto analyze_f = [&](const Token* ref_token) -> Action
+        {
+            Action a = analyzeToken(ref_token, tok, d, inconclusiveRefs && ref_token != tok);
+            if (internalMatch(ref_token))
                 a |= Action::Internal;
+            return a;
+        };
+        for (const ReferenceToken& ref:refs) {
+            auto a = analyze_f(ref.token);
+            if (a != Action::None)
+                return a;
+        }
+        if (analyzeTok) {
+            auto a = analyze_f(tok);
             if (a != Action::None)
                 return a;
         }
