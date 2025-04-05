@@ -257,7 +257,7 @@ namespace {
         struct AsUpdate {
             ForwardTraversal* self = nullptr;
 
-            AsUpdate(ForwardTraversal* self) : self(self) {}
+            explicit AsUpdate(ForwardTraversal* self) : self(self) {}
 
             template<class... Ts>
             Progress operator()(Ts... xs) const
