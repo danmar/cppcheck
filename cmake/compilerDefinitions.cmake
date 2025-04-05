@@ -22,12 +22,15 @@ if(CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
                 add_definitions(-D_LIBCPP_ENABLE_ASSERTIONS=1)
             endif()
             # TODO: also add _LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS?
-            add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
         endif()
     else()
         # TODO: check if this can be enabled again for Clang - also done in Makefile
         add_definitions(-D_GLIBCXX_DEBUG)
     endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND USE_LIBCXX)
+    add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
 endif()
 
 if(HAVE_RULES)
