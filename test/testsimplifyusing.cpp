@@ -22,7 +22,6 @@
 #include "platform.h"
 #include "settings.h"
 #include "token.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
 
@@ -114,9 +113,8 @@ private:
         const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(options.debugwarnings).platform(options.type).build();
 
         if (options.preprocess) {
-            Tokenizer tokenizer(settings, *this);
-            std::vector<std::string> files(1, "test.cpp");
-            PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+            SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
+
             std::istringstream istr(code);
             ASSERT_LOC(tokenizer.list.createTokens(istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time
             ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

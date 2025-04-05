@@ -24,7 +24,6 @@
 #include "settings.h"
 #include "standards.h"
 #include "token.h"
-#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <algorithm>
@@ -484,9 +483,7 @@ private:
     void bailout_(const char* file, int line, const char (&code)[size]) {
         const Settings s = settingsBuilder().debugwarnings().build();
 
-        std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(s, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+        SimpleTokenizer2 tokenizer(s, *this, code, "test.cpp");
 
         // Tokenize..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

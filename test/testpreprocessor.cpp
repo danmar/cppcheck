@@ -26,7 +26,6 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
-#include "tokenize.h"
 #include "tokenlist.h"
 #include "fixture.h"
 #include "helpers.h"
@@ -36,7 +35,9 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <simplecpp.h>
@@ -58,6 +59,36 @@ private:
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
         p.reportOutput(outputList, true);
         return tokens2.stringify();
+    }
+
+    static void preprocess(const char code[], std::vector<std::string> &files, TokenList& tokenlist, const simplecpp::DUI& dui)
+    {
+        if (tokenlist.front())
+            throw std::runtime_error("token list not empty");
+
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        // TODO: provide and handle outputList
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, dui);
+
+        // Tokenizer..
+        tokenlist.createTokens(std::move(tokens2));
+    }
+
+    static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger)
+    {
+        std::vector<std::string> files{"test.cpp"};
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        const Settings settings;
+
+        const Preprocessor preprocessor(settings, errorLogger);
+        return preprocessor.getRemarkComments(tokens1);
     }
 
     const Settings settings0 = settingsBuilder().severity(Severity::information).build();
@@ -1918,7 +1949,7 @@ private:
     void remarkComment1() {
         const char code[] = "// REMARK: assignment with 1\n"
                             "x=1;\n";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(1, remarkComments.size());
         ASSERT_EQUALS(2, remarkComments[0].lineNumber);
         ASSERT_EQUALS("assignment with 1", remarkComments[0].str);
@@ -1926,7 +1957,7 @@ private:
 
     void remarkComment2() {
         const char code[] = "x=1; ///REMARK assignment with 1\n";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(1, remarkComments.size());
         ASSERT_EQUALS(1, remarkComments[0].lineNumber);
         ASSERT_EQUALS("assignment with 1", remarkComments[0].str);
@@ -1935,7 +1966,7 @@ private:
     void remarkComment3() {
         const char code[] = "/**   REMARK: assignment with 1 */\n"
                             "x=1;\n";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(1, remarkComments.size());
         ASSERT_EQUALS(2, remarkComments[0].lineNumber);
         ASSERT_EQUALS("assignment with 1 ", remarkComments[0].str);
@@ -1943,7 +1974,7 @@ private:
 
     void remarkComment4() {
         const char code[] = "//REMARK /";
-        const auto remarkComments = PreprocessorHelper::getRemarkComments(code, *this);
+        const auto remarkComments = getRemarkComments(code, *this);
         ASSERT_EQUALS(0, remarkComments.size());
     }
 
@@ -2538,7 +2569,7 @@ private:
         ASSERT(getHash(code2) != getHash(code3));
     }
 
-    void standard() {
+    void standard() const {
         std::vector<std::string> files = {"test.cpp"};
 
         const char code[] = "int a;";
@@ -2546,38 +2577,38 @@ private:
         simplecpp::DUI dui;
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "c89";
-            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "gnu23";
-            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "c++98";
-            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "gnu++26";
-            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(tokenizer.list.front());
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(tokenlist.front());
         }
 
         {
-            Tokenizer tokenizer(settingsDefault, *this);
             dui.std = "gnu77";
-            PreprocessorHelper::preprocess(code, files, tokenizer, *this, dui);
-            ASSERT(!tokenizer.list.front()); // nothing is tokenized when an unknown standard is provided
+            TokenList tokenlist{&settingsDefault};
+            preprocess(code, files, tokenlist, dui);
+            ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
     }
 };
