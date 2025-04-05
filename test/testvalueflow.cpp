@@ -3682,10 +3682,10 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
 
         code = "int f(int a, int b) {\n"
-                "    if (a > 0 && b > 0) {}\n"
-                "    int x = a * b;\n"
-                "    return x;\n"
-                "}\n";
+               "    if (a > 0 && b > 0) {}\n"
+               "    int x = a * b;\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
     }
 

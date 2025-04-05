@@ -457,7 +457,10 @@ namespace ValueFlow
             if (noninvertible && value.isImpossible())
                 return;
 
-            if(!value.isImpossible() && value.isIntValue() && ((Token::Match(parent, "[&*]") && astIsIntegral(parent, true) && value.intvalue == 0) || (Token::simpleMatch(parent, "&&") && value.intvalue==0) || (Token::simpleMatch(parent, "||") && value.intvalue!=0))) {
+            if (!value.isImpossible() && value.isIntValue() &&
+                ((Token::Match(parent, "[&*]") && astIsIntegral(parent, true) && value.intvalue == 0) ||
+                 (Token::simpleMatch(parent, "&&") && value.intvalue == 0) ||
+                 (Token::simpleMatch(parent, "||") && value.intvalue != 0))) {
                 value.bound = Value::Bound::Point;
                 setTokenValue(parent, std::move(value), settings);
                 return;
