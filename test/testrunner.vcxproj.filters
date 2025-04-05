@@ -76,6 +76,9 @@
     <ClCompile Include="testother.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testoperatorcomma.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="testpath.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
