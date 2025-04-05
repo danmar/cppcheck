@@ -4759,6 +4759,21 @@ private:
               "    return b ? 1 : 0;\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n"
+              "    const S* get2() const {\n"
+              "        if (mS)\n"
+              "            return mS;\n"
+              "        return this;\n"
+              "    }\n"
+              "    S* mS = nullptr;\n"
+              "};\n"
+              "void f2() {\n"
+              "    const S s;\n"
+              "    const S* sp2 = s.get2();\n"
+              "    if (sp2) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (style) Condition 'sp2' is always true\n", errout_str());
     }
 
     void alwaysTrueSymbolic()

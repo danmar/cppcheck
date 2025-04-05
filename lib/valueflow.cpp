@@ -5869,13 +5869,32 @@ static const ValueFlow::Value* getKnownValueFromTokens(const std::vector<const T
     return result;
 }
 
-static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Value v, const Settings& settings)
+static std::vector<ValueFlow::Value> getCommonValuesFromTokens(const std::vector<const Token*>& toks)
+{
+    if(toks.empty())
+        return {};
+    std::vector<ValueFlow::Value> result;
+    std::copy_if(toks.front()->values().begin(), toks.front()->values().end(), std::back_inserter(result), [&](const ValueFlow::Value& v) {
+        return (v.isIntValue() || v.isContainerSizeValue() || v.isFloatValue());
+    });
+    std::for_each(toks.begin()+1, toks.end(), [&](const Token* tok) {
+        auto it = std::remove_if(result.begin(), result.end(), [&](const ValueFlow::Value& v) {
+            return std::none_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v2) {
+                return v.equalValue(v2) && v.valueKind == v2.valueKind;
+            });
+        });
+        result.erase(it, result.end());
+    });
+    return result;
+}
+
+static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Value v, const Settings& settings, bool known = true)
 {
     if (f->hasVirtualSpecifier()) {
         if (v.isImpossible())
             return;
         v.setPossible();
-    } else if (!v.isImpossible()) {
+    } else if (!v.isImpossible() && known) {
         v.setKnown();
     }
     v.errorPath.emplace_back(tok, "Calling function '" + f->name() + "' returns " + v.toString());
@@ -5906,10 +5925,16 @@ static void valueFlowFunctionReturn(TokenList& tokenlist, ErrorLogger& errorLogg
         if (returns.empty())
             continue;
 
-        if (const ValueFlow::Value* v = getKnownValueFromTokens(returns)) {
-            setFunctionReturnValue(function, tok, *v, settings);
-            continue;
+        bool hasKnownValue = false;
+
+        for(const ValueFlow::Value& v:getCommonValuesFromTokens(returns)) {
+            setFunctionReturnValue(function, tok, v, settings, false);
+            if (v.isKnown())
+                hasKnownValue = true;
         }
+
+        if(hasKnownValue)
+            continue;
 
         // Arguments..
         std::vector<const Token*> arguments = getArguments(tok);
