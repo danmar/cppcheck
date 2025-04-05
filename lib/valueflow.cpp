@@ -5863,11 +5863,10 @@ static std::vector<ValueFlow::Value> getCommonValuesFromTokens(const std::vector
     if (toks.empty())
         return {};
     std::vector<ValueFlow::Value> result;
-    std::copy_if(
-        toks.front()->values().begin(),
-        toks.front()->values().end(),
-        std::back_inserter(result),
-        [&](const ValueFlow::Value& v) {
+    std::copy_if(toks.front()->values().begin(),
+                 toks.front()->values().end(),
+                 std::back_inserter(result),
+                 [&](const ValueFlow::Value& v) {
         if (!v.isKnown() && !v.isImpossible())
             return false;
         return (v.isIntValue() || v.isContainerSizeValue() || v.isFloatValue());

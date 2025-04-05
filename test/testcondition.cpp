@@ -4774,7 +4774,7 @@ private:
               "    if (sp2) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:12]: (style) Condition 'sp2' is always true\n", errout_str());
-        
+
         check("struct S {\n"
               "    void f(int i);\n"
               "    bool g() const { return !m.empty(); }\n"
