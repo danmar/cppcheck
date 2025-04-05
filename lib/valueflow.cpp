@@ -5863,6 +5863,8 @@ static std::vector<ValueFlow::Value> getCommonValuesFromTokens(const std::vector
         toks.front()->values().end(),
         std::back_inserter(result),
         [&](const ValueFlow::Value& v) {
+        if (!v.isKnown() && !v.isImpossible())
+            return false;
         return (v.isIntValue() || v.isContainerSizeValue() || v.isFloatValue());
     });
     std::for_each(toks.begin() + 1, toks.end(), [&](const Token* tok) {
