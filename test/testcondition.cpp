@@ -4761,6 +4761,21 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
+              "    const S* get2() const {\n"
+              "        if (mS)\n"
+              "            return mS;\n"
+              "        return this;\n"
+              "    }\n"
+              "    S* mS = nullptr;\n"
+              "};\n"
+              "void f2() {\n"
+              "    const S s;\n"
+              "    const S* sp2 = s.get2();\n"
+              "    if (sp2) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (style) Condition 'sp2' is always true\n", errout_str());
+
+        check("struct S {\n"
               "    void f(int i);\n"
               "    bool g() const { return !m.empty(); }\n"
               "    std::set<int> m;\n"
