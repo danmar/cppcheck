@@ -18,6 +18,7 @@
 
 #include "fixture.h"
 #include "helpers.h"
+#include "settings.h"
 #include "standards.h"
 #include "token.h"
 #include "tokenlist.h"

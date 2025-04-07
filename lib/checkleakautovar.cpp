@@ -34,7 +34,6 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include "vfvalue.h"
 
 #include <algorithm>
 #include <array>
