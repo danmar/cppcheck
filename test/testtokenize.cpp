@@ -19,6 +19,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include "settings.h"
@@ -865,7 +866,8 @@ private:
             Tokenizer tokenizer(settings1, *this);
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             std::istringstream istr(code);
-            ASSERT(tokenizer.list.createTokens(istr, "test.h"));
+            tokenizer.list.appendFileIfNew("test.h");
+            ASSERT(tokenizer.list.createTokens(istr, Path::identify("test.h", false)));
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
     }
@@ -6133,7 +6135,8 @@ private:
         // tokenize given code..
         Tokenizer tokenizer(settings0, *this);
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr,"test.cpp"))
+        tokenizer.list.appendFileIfNew("test.cpp");
+        if (!tokenizer.list.createTokens(istr,Path::identify("test.cpp", false)))
             return "ERROR";
 
         tokenizer.combineStringAndCharLiterals();

@@ -19,6 +19,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "token.h"
@@ -28,7 +29,6 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
-#include <vector>
 
 class TestSimplifyTypedef : public TestFixture {
 public:
@@ -310,7 +310,8 @@ private:
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        tokenizer.list.appendFileIfNew("file.c");
+        if (!tokenizer.list.createTokens(istr, Path::identify("file.c", false)))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -326,7 +327,8 @@ private:
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        tokenizer.list.appendFileIfNew("file.c");
+        if (!tokenizer.list.createTokens(istr, Path::identify("file.c", false)))
             return {};
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -4454,7 +4456,8 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        tokenizer.list.appendFileIfNew("file.c");
+        ASSERT(tokenizer.list.createTokens(istr, Path::identify("file.c", false)));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4496,7 +4499,8 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        tokenizer.list.appendFileIfNew("file.c");
+        ASSERT(tokenizer.list.createTokens(istr, Path::identify("file.c", false)));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4514,7 +4518,8 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        tokenizer.list.appendFileIfNew("file.c");
+        ASSERT(tokenizer.list.createTokens(istr, Path::identify("file.c", false)));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 

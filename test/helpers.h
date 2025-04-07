@@ -20,6 +20,7 @@
 #define helpersH
 
 #include "library.h"
+#include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -111,7 +112,8 @@ private:
                   const std::string& filename,
                   const std::string &configuration = "")
     {
-        if (!list.createTokens(istr, filename))
+        list.appendFileIfNew(filename);
+        if (!list.createTokens(istr, Path::identify(filename, false)))
             return false;
 
         return simplifyTokens1(configuration);

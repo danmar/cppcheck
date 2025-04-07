@@ -114,6 +114,8 @@ void TokenList::determineCppC()
 
 int TokenList::appendFileIfNew(std::string fileName)
 {
+    ASSERT_LANG(!fileName.empty());
+
     // Has this file been tokenized already?
     auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
         return Path::sameFileName(f, fileName);
@@ -341,19 +343,6 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 }
 
 //---------------------------------------------------------------------------
-// Tokenize - tokenizes a given file.
-//---------------------------------------------------------------------------
-
-bool TokenList::createTokens(std::istream &code, const std::string& file0)
-{
-    ASSERT_LANG(!file0.empty());
-
-    appendFileIfNew(file0);
-
-    return createTokensInternal(code, file0);
-}
-
-//---------------------------------------------------------------------------
 
 bool TokenList::createTokens(std::istream &code, Standards::Language lang)
 {
@@ -364,7 +353,7 @@ bool TokenList::createTokens(std::istream &code, Standards::Language lang)
         ASSERT_LANG(lang == mLang);
     }
 
-    return createTokensInternal(code, "");
+    return createTokensInternal(code, mFiles.empty() ? "" : *mFiles.cbegin());
 }
 
 //---------------------------------------------------------------------------

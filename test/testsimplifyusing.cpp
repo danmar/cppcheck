@@ -19,6 +19,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "platform.h"
 #include "settings.h"
 #include "token.h"
@@ -28,7 +29,6 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
-#include <vector>
 
 class TestSimplifyUsing : public TestFixture {
 public:
@@ -116,7 +116,8 @@ private:
             SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
             std::istringstream istr(code);
-            ASSERT_LOC(tokenizer.list.createTokens(istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time
+            tokenizer.list.appendFileIfNew("test.cpp");
+            ASSERT_LOC(tokenizer.list.createTokens(istr, Path::identify("test.cpp", false)), file, line); // TODO: this creates the tokens a second time
             ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
             return tokenizer.tokens()->stringifyList(nullptr);
         }
