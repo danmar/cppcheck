@@ -89,7 +89,7 @@ public:
         /**
          * @return the location as a string. Format: [file:line]
          */
-        std::string stringify() const;
+        std::string stringify(bool addcolumn = false) const;
 
         unsigned int fileIndex;
         int line; // negative value means "no line"
@@ -257,7 +257,7 @@ public:
         (void)value;
     }
 
-    static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack);
+    static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack, bool addcolumn = false);
 
     /**
      * Convert XML-sensitive characters into XML entities
