@@ -1,4 +1,6 @@
 missingIncludeSystem
+# should not be reported - see #13387
+checkersReport
 
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
