@@ -765,6 +765,14 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
 
 unsigned int CppCheck::check(const FileWithDetails &file)
 {
+    // TODO: handle differently?
+    // dummy call to make sure wildcards are being flagged as checked in case isSuppressed() is never called
+    {
+        // the empty ID is intentional for now - although it should not be allowed
+        ErrorMessage msg({}, file.spath(), Severity::information, "", "", Certainty::normal);
+        (void)mSuppressions.nomsg.isSuppressed(SuppressionList::ErrorMessage::fromErrorMessage(msg, {}), true);
+    }
+
     if (mSettings.clang)
         return checkClang(file);
 

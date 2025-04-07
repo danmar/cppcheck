@@ -118,14 +118,24 @@ public:
          */
         bool parseComment(std::string comment, std::string *errorMessage);
 
-        bool isSuppressed(const ErrorMessage &errmsg) const;
+        enum class Result : std::uint8_t {
+            None,
+            Checked,
+            Matched
+        };
+
+        Result isSuppressed(const ErrorMessage &errmsg) const;
 
         bool isMatch(const ErrorMessage &errmsg);
 
         std::string getText() const;
 
+        bool isWildcard() const {
+            return fileName.find_first_of("?*") != std::string::npos;
+        }
+
         bool isLocal() const {
-            return !fileName.empty() && fileName.find_first_of("?*") == std::string::npos;
+            return !fileName.empty() && !isWildcard();
         }
 
         bool isSameParameters(const Suppression &other) const {
@@ -149,8 +159,8 @@ public:
         std::string macroName;
         std::size_t hash{};
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
-        bool matched{};
-        bool checked{}; // for inline suppressions, checked or not
+        bool matched{}; /** This suppression was fully matched in an isSuppressed() call */
+        bool checked{}; /** This suppression applied to code which was being analyzed but did not match the error in an isSuppressed() call */
         bool isInline{};
 
         enum : std::int8_t { NO_LINE = -1 };
