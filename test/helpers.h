@@ -20,7 +20,6 @@
 #define helpersH
 
 #include "library.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -37,9 +36,6 @@
 class Token;
 class SuppressionList;
 class ErrorLogger;
-namespace simplecpp {
-    struct DUI;
-}
 namespace tinyxml2 {
     class XMLDocument;
 }
@@ -69,39 +65,59 @@ public:
         }
      */
 
-    /**
-     * Tokenize code
-     * @param code The code
-     * @param cpp Indicates if the code is C++
-     * @param configuration E.g. "A" for code where "#ifdef A" is true
-     * @return false if source code contains syntax errors
-     */
+    template<size_t size>
+    bool tokenize(const char (&code)[size],
+                  const std::string& filename,
+                  const std::string &configuration = "")
+    {
+        std::istringstream istr(code);
+        return tokenize(istr, filename, configuration);
+    }
+
     template<size_t size>
     bool tokenize(const char (&code)[size],
                   bool cpp = true,
                   const std::string &configuration = "")
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
-            return false;
-
-        return simplifyTokens1(configuration);
+        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
     }
 
-    // TODO: get rid of this
+    bool tokenize(const std::string& code,
+                  const std::string& filename,
+                  const std::string &configuration = "")
+    {
+        std::istringstream istr(code);
+        return tokenize(istr, filename, configuration);
+    }
+
     bool tokenize(const std::string& code,
                   bool cpp = true,
                   const std::string &configuration = "")
     {
         std::istringstream istr(code);
-        if (!list.createTokens(istr, cpp ? "test.cpp" : "test.c"))
+        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
+    }
+
+private:
+    /**
+     * Tokenize code
+     * @param istr The code as stream
+     * @param filename Indicates if the code is C++
+     * @param configuration E.g. "A" for code where "#ifdef A" is true
+     * @return false if source code contains syntax errors
+     */
+    bool tokenize(std::istream& istr,
+                  const std::string& filename,
+                  const std::string &configuration = "")
+    {
+        if (!list.createTokens(istr, filename))
             return false;
 
         return simplifyTokens1(configuration);
     }
 
-private:
-    // TODO. find a better solution
+    // TODO: find a better solution
     static const Settings s_settings;
 };
 
@@ -171,12 +187,6 @@ public:
     static std::string getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
     static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger);
-    static void preprocess(const char code[], std::vector<std::string> &files, Tokenizer& tokenizer, ErrorLogger& errorlogger, const simplecpp::DUI& dui);
-
-    /** get remark comments */
-    static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger);
-
 private:
     static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename = "file.c", SuppressionList *inlineSuppression = nullptr);
 };
@@ -244,6 +254,28 @@ struct LibraryHelper
     static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len);
     static bool loadxmldata(Library &lib, Library::Error& liberr, const char xmldata[], std::size_t len);
     static Library::Error loadxmldoc(Library &lib, const tinyxml2::XMLDocument& doc);
+};
+
+class SimpleTokenizer2 : public Tokenizer {
+public:
+    template<size_t size>
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)
+        : Tokenizer{settings, errorlogger}
+    {
+        preprocess(code, mFiles, file0, *this, errorlogger);
+    }
+
+    // TODO: get rid of this
+    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], const std::string& file0)
+        : Tokenizer{settings, errorlogger}
+    {
+        preprocess(code, mFiles, file0, *this, errorlogger);
+    }
+
+private:
+    static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
+
+    std::vector<std::string> mFiles;
 };
 
 #endif // helpersH

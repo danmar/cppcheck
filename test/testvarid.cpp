@@ -22,11 +22,8 @@
 #include "standards.h"
 #include "fixture.h"
 #include "token.h"
-#include "tokenize.h"
-#include "tokenlist.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -285,10 +282,8 @@ private:
 #define tokenizeHeader(...) tokenizeHeader_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeHeader_(const char* file, int line, const char (&code)[size], const char filename[]) {
-        Tokenizer tokenizer(settings, *this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.list.createTokens(istr, filename), file, line);
-        ASSERT_EQUALS(true, tokenizer.simplifyTokens1(""));
+        SimpleTokenizer tokenizer{settings, *this};
+        ASSERT_LOC((tokenizer.tokenize)(code, std::string(filename)), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugVarId();
@@ -299,9 +294,7 @@ private:
 #define tokenizeExpr(...) tokenizeExpr_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeExpr_(const char* file, int line, const char (&code)[size]) {
-        std::vector<std::string> files(1, "test.cpp");
-        Tokenizer tokenizer(settings, *this);
-        PreprocessorHelper::preprocess(code, files, tokenizer, *this);
+        SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
