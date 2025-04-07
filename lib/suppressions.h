@@ -159,8 +159,8 @@ public:
         std::string macroName;
         std::size_t hash{};
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
-        bool matched{};
-        bool checked{};
+        bool matched{}; /** This suppression was fully matched in an isSuppressed() call */
+        bool checked{}; /** This suppression applied to code which was being analyzed but did not match the error in an isSuppressed() call */
         bool isInline{};
 
         enum : std::int8_t { NO_LINE = -1 };
