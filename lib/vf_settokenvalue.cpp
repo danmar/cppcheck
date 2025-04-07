@@ -457,21 +457,11 @@ namespace ValueFlow
             if (noninvertible && value.isImpossible())
                 return;
 
-            // known result when a operand is 0.
-            if (Token::Match(parent, "[&*]") && astIsIntegral(parent, true) && value.isKnown() && value.isIntValue() &&
-                value.intvalue == 0) {
-                setTokenValue(parent, std::move(value), settings);
-                return;
-            }
-
-            // known result when a operand is true.
-            if (Token::simpleMatch(parent, "&&") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
-                setTokenValue(parent, std::move(value), settings);
-                return;
-            }
-
-            // known result when a operand is false.
-            if (Token::simpleMatch(parent, "||") && value.isKnown() && value.isIntValue() && value.intvalue!=0) {
+            if (!value.isImpossible() && value.isIntValue() &&
+                ((Token::Match(parent, "[&*]") && astIsIntegral(parent, true) && value.intvalue == 0) ||
+                 (Token::simpleMatch(parent, "&&") && value.intvalue == 0) ||
+                 (Token::simpleMatch(parent, "||") && value.intvalue != 0))) {
+                value.bound = Value::Bound::Point;
                 setTokenValue(parent, std::move(value), settings);
                 return;
             }
