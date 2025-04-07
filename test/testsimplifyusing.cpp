@@ -19,11 +19,9 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "path.h"
 #include "platform.h"
 #include "settings.h"
 #include "token.h"
-#include "tokenlist.h"
 #include "utils.h"
 
 #include <cstddef>
@@ -116,8 +114,7 @@ private:
             SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
             std::istringstream istr(code);
-            tokenizer.list.appendFileIfNew("test.cpp");
-            ASSERT_LOC(tokenizer.list.createTokens(istr, Path::identify("test.cpp", false)), file, line); // TODO: this creates the tokens a second time
+            ASSERT_LOC(TokenListHelper::createTokens(tokenizer.list, istr, "test.cpp"), file, line); // TODO: this creates the tokens a second time
             ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
             return tokenizer.tokens()->stringifyList(nullptr);
         }

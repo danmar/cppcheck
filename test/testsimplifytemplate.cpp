@@ -5571,8 +5571,7 @@ private:
         Tokenizer tokenizer(settings, *this);
 
         std::istringstream istr(code);
-        tokenizer.list.appendFileIfNew("test.cpp");
-        if (!tokenizer.list.createTokens(istr, Path::identify("test.cpp", false)))
+        if (!TokenListHelper::createTokens(tokenizer.list, istr, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5602,8 +5601,7 @@ private:
         Tokenizer tokenizer(settings, *this);
 
         std::istringstream istr(code);
-        tokenizer.list.appendFileIfNew("test.cpp");
-        if (!tokenizer.list.createTokens(istr, Path::identify("test.cpp", false)))
+        if (!TokenListHelper::createTokens(tokenizer.list, istr, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);

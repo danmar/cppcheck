@@ -280,4 +280,13 @@ private:
     std::vector<std::string> mFiles;
 };
 
+struct TokenListHelper
+{
+    static bool createTokens(TokenList& tokenlist, std::istream& istr, const std::string& file)
+    {
+        tokenlist.appendFileIfNew(file);
+        return tokenlist.createTokens(istr, Path::identify(file, false));
+    }
+};
+
 #endif // helpersH
