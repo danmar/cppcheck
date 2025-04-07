@@ -4441,6 +4441,8 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.cstyleCastError(nullptr);
     c.suspiciousFloatingPointCastError(nullptr);
     c.passedByValueError(nullptr, false);
+    // TODO: iterateByValue
+    // TODO: passedByValueCallback
     c.constVariableError(nullptr, nullptr);
     c.constStatementError(nullptr, "type", false);
     c.signedCharArrayIndexError(nullptr);
@@ -4484,8 +4486,10 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.knownArgumentError(nullptr, nullptr, nullptr, "x", false);
     c.knownPointerToBoolError(nullptr, nullptr);
     c.comparePointersError(nullptr, nullptr, nullptr);
+    // TODO: subtractPointers
     c.redundantAssignmentError(nullptr, nullptr, "var", false);
     c.redundantInitializationError(nullptr, nullptr, "var", false);
+    c.redundantContinueError(nullptr);
 
     const std::vector<const Token *> nullvec;
     c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
