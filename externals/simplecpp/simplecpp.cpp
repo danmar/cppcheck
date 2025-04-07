@@ -40,11 +40,15 @@
 #include <utility>
 #include <vector>
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 #ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
 #undef ERROR
-#else
-#include <unistd.h>
 #endif
 
 #if __cplusplus >= 201103L
@@ -2686,24 +2690,17 @@ static bool isCpp17OrLater(const simplecpp::DUI &dui)
 
 
 static std::string currentDirectoryOSCalc() {
-#ifdef SIMPLECPP_WINDOWS
-    TCHAR NPath[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, NPath);
-#ifdef _UNICODE
-    // convert the result from TCHAR* to char*
-    char NPathA[MAX_PATH];
-    ::WideCharToMultiByte(CP_ACP, 0, NPath, lstrlen(NPath), NPathA, MAX_PATH, NULL, NULL);
-    return NPathA;
+    const std::size_t size = 4096;
+    char currentPath[size];
+
+#ifndef _WIN32
+    if (getcwd(currentPath, size) != nullptr)
 #else
-    // in this case, TCHAR* is just defined to be a char*
-    return NPath;
+    if (_getcwd(currentPath, size) != nullptr)
 #endif
-#else
-    const std::size_t size = 1024;
-    char the_path[size];
-    getcwd(the_path, size);
-    return the_path;
-#endif
+        return std::string(currentPath);
+
+    return "";
 }
 
 static const std::string& currentDirectory() {
