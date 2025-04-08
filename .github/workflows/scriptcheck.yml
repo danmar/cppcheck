@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, '3.10', '3.11', '3.12', '3.13']
+        python-version: [3.7, 3.8, 3.9, '3.10', '3.11', '3.12', '3.13']
         include:
           - python-version: '3.13'
             python-latest: true
@@ -105,7 +105,7 @@ jobs:
         if: matrix.python-latest
         run: |
           shopt -s globstar
-          pylint --jobs $(nproc) --py-version 3.6 addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
+          pylint --jobs $(nproc) --py-version 3.7 addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
 
       - name: check .json files
         if: matrix.python-latest
@@ -156,9 +156,7 @@ jobs:
           test/tools/htmlreport/test_htmlreport.py
           test/tools/htmlreport/check.sh
 
-      # Python 3.6 is excluded as it is not supported by setuptools-scm package for getting package version
       - name: test htmlreport (pip)
-        if: matrix.python-version != '3.6'
         run: |
           python -m venv venv
           source venv/bin/activate
