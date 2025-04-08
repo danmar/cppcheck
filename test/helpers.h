@@ -112,6 +112,8 @@ private:
                   const std::string& filename,
                   const std::string &configuration = "")
     {
+        if (list.front())
+            throw std::runtime_error("token list is not empty");
         list.appendFileIfNew(filename);
         if (!list.createTokens(istr, Path::identify(filename, false)))
             return false;
@@ -284,6 +286,8 @@ struct TokenListHelper
 {
     static bool createTokens(TokenList& tokenlist, std::istream& istr, const std::string& file)
     {
+        if (tokenlist.front())
+            throw std::runtime_error("token list is not empty");
         tokenlist.appendFileIfNew(file);
         return tokenlist.createTokens(istr, Path::identify(file, false));
     }
