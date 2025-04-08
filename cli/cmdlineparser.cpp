@@ -240,11 +240,27 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             }
         }
 
-        // enforce the language since markup files are special and do not adhere to the enforced language
         for (auto& fs : fileSettings)
         {
             if (mSettings.library.markupFile(fs.filename())) {
+                // enforce the language since markup files are special and do not adhere to the enforced language
                 fs.file.setLang(Standards::Language::C);
+            }
+
+            fs.computeHash();
+        }
+
+        {
+            auto it = fileSettings.begin();
+            while (it != fileSettings.end()) {
+                fileSettings.erase(std::remove_if(std::next(it), fileSettings.end(), [&](const FileSettings& fs) {
+                    if (fs.hash == it->hash) {
+                        mLogger.printMessage("removing duplicate file " + fs.filename());
+                        return true;
+                    }
+                    return false;
+                }), fileSettings.end());
+                ++it;
             }
         }
 

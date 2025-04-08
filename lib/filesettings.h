@@ -23,6 +23,7 @@
 #include "path.h"
 #include "platform.h"
 #include "standards.h"
+#include "utils.h"
 
 #include <list>
 #include <set>
@@ -88,6 +89,24 @@ struct CPPCHECKLIB FileSettings {
         : file(std::move(path), lang, size)
     {}
 
+    void computeHash() {
+        hash = std::hash<std::string>{}(file.path());
+
+        hash ^= std::hash<std::string>{}(standard);
+
+        for (const auto &undef : undefs)
+            hash ^= std::hash<std::string>{}(undef);
+
+        for (const auto &includePath : includePaths)
+            hash ^= std::hash<std::string>{}(includePath);
+
+        for (const auto &systemIncludePath : systemIncludePaths)
+            hash ^= std::hash<std::string>{}(systemIncludePath);
+
+        for (const auto &define : splitString(defines, ';'))
+            hash ^= std::hash<std::string>{}(define);
+    }
+
     std::string cfg;
     FileWithDetails file;
     const std::string& filename() const
@@ -110,6 +129,7 @@ struct CPPCHECKLIB FileSettings {
     std::list<std::string> systemIncludePaths;
     std::string standard;
     Platform::Type platformType = Platform::Type::Unspecified;
+    std::size_t hash;
     // TODO: get rid of these
     bool msc{};
     bool useMfc{};
