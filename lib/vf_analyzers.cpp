@@ -49,11 +49,11 @@
 
 static bool isDereferenceOp(const Token* tok)
 {
-    if(!tok)
+    if (!tok)
         return false;
-    if(!tok->astOperand1())
+    if (!tok->astOperand1())
         return false;
-    if(tok->str() == "*")
+    if (tok->str() == "*")
         return true;
     return tok->str() == "." && tok->originalName() == "->";
 }

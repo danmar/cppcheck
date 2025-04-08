@@ -12118,11 +12118,11 @@ private:
     void movePointerAlias()
     {
         check("void f() {\n"
-                "    std::string s;\n"
-                "    std::string s1 = std::move(s);\n"
-                "    const std::string* s_p = &s;\n"
-                "    s_p->size();\n"
-                "}\n");
+              "    std::string s;\n"
+              "    std::string s1 = std::move(s);\n"
+              "    const std::string* s_p = &s;\n"
+              "    s_p->size();\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable '.'.\n", errout_str());
     }
 
