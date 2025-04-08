@@ -76,8 +76,9 @@ CheckOptions:
             target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
         endif()
     endif()
-    if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
+    if(QT_VERSION VERSION_GREATER_EQUAL "6.9.1")
         # QBrush fails to compile before 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-134038
+        # QtCharts/qxyseries.h fails to compile in 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135637
         target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_QPAIR)
     endif()
     target_compile_definitions(cppcheck-gui PRIVATE -DQT_NO_FOREACH)
