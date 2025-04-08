@@ -279,22 +279,19 @@ private:
     {
         CheckStructMemberUsageOptions() = default;
         const std::list<Directive>* directives = nullptr;
-        const Settings *s = nullptr;
         bool cpp = true;
     };
 
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
-        const Settings *settings1 = options.s ? options.s : &settings;
-
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings1, *this);
+        SimpleTokenizer tokenizer(settings, *this);
         if (options.directives)
             tokenizer.setDirectives(*options.directives);
         ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
 
         // Check for unused variables..
-        CheckUnusedVar checkUnusedVar(&tokenizer, settings1, this);
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
