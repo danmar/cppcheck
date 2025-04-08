@@ -47,6 +47,17 @@
 #include <set>
 #include <type_traits>
 
+static bool isDereferenceOp(const Token* tok)
+{
+    if(!tok)
+        return false;
+    if(!tok->astOperand1())
+        return false;
+    if(tok->str() == "*")
+        return true;
+    return tok->str() == "." && tok->originalName() == "->";
+}
+
 struct ValueFlowAnalyzer : Analyzer {
     const Settings& settings;
     ProgramMemoryState pms;
@@ -586,7 +597,7 @@ private:
             } else {
                 return analyzeMatch(tok, d) | Action::Match;
             }
-        } else if (ref->isUnaryOp("*") && !match(ref->astOperand1())) {
+        } else if (isDereferenceOp(ref) && !match(ref->astOperand1())) {
             const Token* lifeTok = nullptr;
             for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())

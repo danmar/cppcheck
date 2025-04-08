@@ -278,6 +278,7 @@ private:
         TEST_CASE(moveAndReference);
         TEST_CASE(moveForRange);
         TEST_CASE(moveTernary);
+        TEST_CASE(movePointerAlias);
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
@@ -12112,6 +12113,17 @@ private:
               "    h(b ? h(gA(5, std::move(s))) : h(gB(7, std::move(s))));\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void movePointerAlias()
+    {
+        check("void f() {\n"
+                "    std::string s;\n"
+                "    std::string s1 = std::move(s);\n"
+                "    const std::string* s_p = &s;\n"
+                "    s_p->size();\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable '.'.\n", errout_str());
     }
 
     void funcArgNamesDifferent() {
