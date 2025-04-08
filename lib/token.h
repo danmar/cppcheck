@@ -560,6 +560,12 @@ public:
     void isAttributeMaybeUnused(const bool value) {
         setFlag(fIsAttributeMaybeUnused, value);
     }
+    bool isAttributeFallthrough() const {
+        return getFlag(fIsAttributeFallthrough);
+    }
+    void isAttributeFallthrough(const bool value) {
+        setFlag(fIsAttributeFallthrough, value);
+    }
     std::vector<std::string> getAttributeAlignas() const {
         return mImpl->mAttributeAlignas ? *mImpl->mAttributeAlignas : std::vector<std::string>();
     }
@@ -1394,31 +1400,32 @@ private:
         fIsAttributeExport      = (1ULL << 16), // __attribute__((__visibility__("default"))), __declspec(dllexport)
         fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unused]]
         fIsAttributeNodiscard   = (1ULL << 18), // __attribute__ ((warn_unused_result)), [[nodiscard]]
-        fIsControlFlowKeyword   = (1ULL << 19), // if/switch/while/...
-        fIsOperatorKeyword      = (1ULL << 20), // operator=, etc
-        fIsComplex              = (1ULL << 21), // complex/_Complex type
-        fIsEnumType             = (1ULL << 22), // enumeration type
-        fIsName                 = (1ULL << 23),
-        fIsLiteral              = (1ULL << 24),
-        fIsTemplateArg          = (1ULL << 25),
-        fAtAddress              = (1ULL << 26), // @ 0x4000
-        fIncompleteVar          = (1ULL << 27),
-        fConstexpr              = (1ULL << 28),
-        fExternC                = (1ULL << 29),
-        fIsSplitVarDeclComma    = (1ULL << 30), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
-        fIsSplitVarDeclEq       = (1ULL << 31), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
-        fIsImplicitInt          = (1ULL << 32), // Is "int" token implicitly added?
-        fIsInline               = (1ULL << 33), // Is this a inline type
-        fIsTemplate             = (1ULL << 34),
-        fIsSimplifedScope       = (1ULL << 35), // scope added when simplifying e.g. if (int i = ...; ...)
-        fIsRemovedVoidParameter = (1ULL << 36), // A void function parameter has been removed
-        fIsIncompleteConstant   = (1ULL << 37),
-        fIsRestrict             = (1ULL << 38), // Is this a restrict pointer type
-        fIsAtomic               = (1ULL << 39), // Is this a _Atomic declaration
-        fIsSimplifiedTypedef    = (1ULL << 40),
-        fIsFinalType            = (1ULL << 41), // Is this a type with final specifier
-        fIsInitComma            = (1ULL << 42), // Is this comma located inside some {..}. i.e: {1,2,3,4}
-        fIsInitBracket          = (1ULL << 43), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
+        fIsAttributeFallthrough = (1ULL << 19), // [[__fallthrough__]], [[fallthrough]]
+        fIsControlFlowKeyword   = (1ULL << 20), // if/switch/while/...
+        fIsOperatorKeyword      = (1ULL << 21), // operator=, etc
+        fIsComplex              = (1ULL << 22), // complex/_Complex type
+        fIsEnumType             = (1ULL << 23), // enumeration type
+        fIsName                 = (1ULL << 24),
+        fIsLiteral              = (1ULL << 25),
+        fIsTemplateArg          = (1ULL << 26),
+        fAtAddress              = (1ULL << 27), // @ 0x4000
+        fIncompleteVar          = (1ULL << 28),
+        fConstexpr              = (1ULL << 29),
+        fExternC                = (1ULL << 30),
+        fIsSplitVarDeclComma    = (1ULL << 31), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
+        fIsSplitVarDeclEq       = (1ULL << 32), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsImplicitInt          = (1ULL << 33), // Is "int" token implicitly added?
+        fIsInline               = (1ULL << 34), // Is this a inline type
+        fIsTemplate             = (1ULL << 35),
+        fIsSimplifedScope       = (1ULL << 36), // scope added when simplifying e.g. if (int i = ...; ...)
+        fIsRemovedVoidParameter = (1ULL << 37), // A void function parameter has been removed
+        fIsIncompleteConstant   = (1ULL << 38),
+        fIsRestrict             = (1ULL << 39), // Is this a restrict pointer type
+        fIsAtomic               = (1ULL << 40), // Is this a _Atomic declaration
+        fIsSimplifiedTypedef    = (1ULL << 41),
+        fIsFinalType            = (1ULL << 42), // Is this a type with final specifier
+        fIsInitComma            = (1ULL << 43), // Is this comma located inside some {..}. i.e: {1,2,3,4}
+        fIsInitBracket          = (1ULL << 44), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
     };
 
     enum : std::uint8_t  {

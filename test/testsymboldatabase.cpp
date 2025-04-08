@@ -426,6 +426,7 @@ private:
         TEST_CASE(symboldatabase108);
         TEST_CASE(symboldatabase109); // #13553
         TEST_CASE(symboldatabase110);
+        TEST_CASE(symboldatabase111); // [[fallthrough]]
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5780,6 +5781,29 @@ private:
                       "}\n");
         const Token *B = db ? Token::findsimplematch(tokenizer.tokens(), "B < T , C >") : nullptr;
         ASSERT(B && !B->type());
+    }
+
+    void symboldatabase111() {
+        GET_SYMBOL_DB("void f(int n) {\n"
+                      "    void g(), h(), i();\n"
+                      "    switch (n) {\n"
+                      "        case 1:\n"
+                      "        case 2:\n"
+                      "            g();\n"
+                      "            [[fallthrough]];\n"
+                      "        case 3:\n"
+                      "            h();\n"
+                      "            break;\n"
+                      "        default:\n"
+                      "            i();\n"
+                      "            break;\n"
+                      "    }\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout_str());
+        const Token *case1 = Token::findsimplematch(tokenizer.tokens(), "case 2");
+        ASSERT(case1);
+        ASSERT(case1->isAttributeFallthrough());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
