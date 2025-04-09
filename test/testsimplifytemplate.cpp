@@ -3712,7 +3712,7 @@ private:
                                "class GenericConfigurationHandler<int,std::allocator,std::list> ; "
                                "class TargetConfigurationHandler : public GenericConfigurationHandler<int,std::allocator,std::list> { } ; "
                                "class GenericConfigurationHandler<int,std::allocator,std::list> { "
-                               "std :: list < int , std :: std :: allocator < int > > m_target_configurations ; "
+                               "std :: list < int , std :: allocator < int > > m_target_configurations ; "
                                "} ;";
             ASSERT_EQUALS(exp, tok(code));
         }
