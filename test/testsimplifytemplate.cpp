@@ -4619,7 +4619,7 @@ private:
 	                     "    assert(b == N::b);\n"
                              "}\n"
                              "void g() {\n"
-	                     "    f<false>();
+	                     "    f<false>();\n"
                              "}\n";
         const char exp2[] = "namespace N { bool b ; b = false ; } ; "
                             "void f<false> ( ) ; "
