@@ -217,6 +217,7 @@ private:
         TEST_CASE(template178);
         TEST_CASE(template179);
         TEST_CASE(template180);
+        TEST_CASE(template181);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -3711,7 +3712,7 @@ private:
                                "class GenericConfigurationHandler<int,std::allocator,std::list> ; "
                                "class TargetConfigurationHandler : public GenericConfigurationHandler<int,std::allocator,std::list> { } ; "
                                "class GenericConfigurationHandler<int,std::allocator,std::list> { "
-                               "std :: list < int , std :: std :: allocator < int > > m_target_configurations ; "
+                               "std :: list < int , std :: allocator < int > > m_target_configurations ; "
                                "} ;";
             ASSERT_EQUALS(exp, tok(code));
         }
@@ -4591,6 +4592,44 @@ private:
                            "return dostuff ( static_cast < int > ( 0U ) ) ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template181() {
+        const char code[] = "struct K { bool b; };\n" // #13747
+                            "template<bool b>\n"
+                            "void f(struct K* k) {\n"
+                            "    assert(b == k->b);\n"
+                            "}\n"
+                            "void g(struct K* k) {\n"
+                            "    f<false>(k);\n"
+                            "}\n";
+        const char exp[] = "struct K { bool b ; } ; "
+                           "void f<false> ( struct K * k ) ; "
+                           "void g ( struct K * k ) { "
+                           "f<false> ( k ) ; "
+                           "} "
+                           "void f<false> ( struct K * k ) { "
+                           "assert ( false == k . b ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "namespace N { bool b = false; }\n" // #13759
+                             "template<bool b>\n"
+                             "void f() {\n"
+                             "    assert(b == N::b);\n"
+                             "}\n"
+                             "void g() {\n"
+                             "    f<false>();\n"
+                             "}\n";
+        const char exp2[] = "namespace N { bool b ; b = false ; } "
+                            "void f<false> ( ) ; "
+                            "void g ( ) { "
+                            "f<false> ( ) ; "
+                            "} "
+                            "void f<false> ( ) { "
+                            "assert ( false == N :: b ) ; "
+                            "}";
+        ASSERT_EQUALS(exp2, tok(code2));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
