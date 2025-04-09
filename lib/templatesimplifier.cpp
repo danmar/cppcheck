@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU General Public Licensef
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -2080,7 +2080,7 @@ void TemplateSimplifier::expandTemplate(
                 --scopeCount;
             if (scopeCount < 0)
                 break;
-            if (tok3->isName() && !Token::Match(tok3, "class|typename|struct") && !tok3->isStandardType() && !Token::simpleMatch(tok3->previous(), ".")) {
+            if (tok3->isName() && !Token::Match(tok3, "class|typename|struct") && !tok3->isStandardType() && !Token::Match(tok3->previous(), ".|::")) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
                 while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok3->str())
