@@ -9454,7 +9454,7 @@ void Tokenizer::simplifyCPPAttribute()
                     continue;
                 while (head && !Token::Match(head, "case|default")) {
                     if (!head->scope() || (scope->type != ScopeType::eSwitch && scope->type != ScopeType::eUnconditional
-                        && scope->type == ScopeType::eElse && scope->type == ScopeType::eIf))
+                                           && scope->type == ScopeType::eElse && scope->type == ScopeType::eIf))
                         break;
                     head = head->previous();
                 }
