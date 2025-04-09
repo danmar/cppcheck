@@ -4616,12 +4616,12 @@ private:
         const char code2[] = "namespace N { bool b = false; }\n" // #13759
                              "template<bool b>\n"
                              "void f() {\n"
-	                     "    assert(b == N::b);\n"
+                             "    assert(b == N::b);\n"
                              "}\n"
                              "void g() {\n"
-	                     "    f<false>();\n"
+                             "    f<false>();\n"
                              "}\n";
-        const char exp2[] = "namespace N { bool b ; b = false ; } ; "
+        const char exp2[] = "namespace N { bool b ; b = false ; } "
                             "void f<false> ( ) ; "
                             "void g ( ) { "
                             "f<false> ( ) ; "
