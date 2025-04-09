@@ -4595,7 +4595,7 @@ private:
     }
 
     void template181() {
-        const char code[] = "struct K { bool b; };\n"
+        const char code[] = "struct K { bool b; };\n" // #13747
                             "template<bool b>\n"
                             "void f(struct K* k) {\n"
                             "    assert(b == k->b);\n"
@@ -4612,6 +4612,24 @@ private:
                            "assert ( false == k . b ) ; "
                            "}";
         ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "namespace N { bool b = false; }\n"
+                             "template<bool b>\n"
+                             "void f() {\n"
+	                         "    assert(b == N::b);\n"
+                             "}\n"
+                             "void g() {\n"
+	                         "    f<false>();
+                            "}\n";
+        const char exp2[] = "namespace N { bool b ; b = false ; } ; "
+                            "void f<false> ( ) ; "
+                            "void g ( ) { "
+                            "f<false> ( ) ; "
+                            "} "
+                            "void f<false> ( ) { "
+                            "assert ( false == N :: b ) ; "
+                            "}";
+        ASSERT_EQUALS(exp2, tok(code2));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
