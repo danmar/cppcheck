@@ -6161,7 +6161,7 @@ private:
                         "    A* p = &a;\n"
                         "    g(p->x);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (error) Uninitialized variable: p->x\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: p->x\n", errout_str());
 
         valueFlowUninit("void f() {\n"
                         "    int a;\n"
