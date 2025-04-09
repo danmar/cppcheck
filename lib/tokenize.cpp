@@ -9447,9 +9447,18 @@ void Tokenizer::simplifyCPPAttribute()
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "fallthrough", tok->link()) || Token::findsimplematch(tok->tokAt(2), "__fallthrough__", tok->link())) {
                 Token * head = tok;
-                while (head && !Token::Match(head, "case|default"))
+                const Scope * scope = head->scope();
+                while (scope && (scope->type == ScopeType::eElse || scope->type == ScopeType::eIf))
+                    scope = scope->nestedIn;
+                if (!scope || (scope->type != ScopeType::eSwitch && scope->type != ScopeType::eUnconditional))
+                    continue;
+                while (head && !Token::Match(head, "case|default")) {
+                    if (!head->scope() || (scope->type != ScopeType::eSwitch && scope->type != ScopeType::eUnconditional
+                        && scope->type == ScopeType::eElse && scope->type == ScopeType::eIf))
+                        break;
                     head = head->previous();
-                if (head && Token::Match(head, "case|default |%num% :"))
+                }
+                if (head && head->scope() == scope)
                     head->isAttributeFallthrough(true);
             } else if ((hasMaybeUnusedUnderscores && Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()))
                        || (hasMaybeUnused && Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link()))) {
