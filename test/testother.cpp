@@ -250,6 +250,7 @@ private:
 
         TEST_CASE(testUnsignedLessThanZero);
 
+        mNewTemplate = true;
         TEST_CASE(doubleMove1);
         TEST_CASE(doubleMoveMemberInitialization1);
         TEST_CASE(doubleMoveMemberInitialization2);
