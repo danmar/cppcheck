@@ -5801,9 +5801,8 @@ private:
                       "}");
         ASSERT(db != nullptr);
         ASSERT_EQUALS("", errout_str());
-        const Token *case1 = Token::findsimplematch(tokenizer.tokens(), "case 2");
-        ASSERT(case1);
-        ASSERT(case1->isAttributeFallthrough());
+        const Token *case3 = Token::findsimplematch(tokenizer.tokens(), "case 3");
+        ASSERT(case3 && case3->isAttributeFallthrough());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
