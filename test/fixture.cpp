@@ -194,11 +194,13 @@ void TestFixture::assertEquals(const char * const filename, const unsigned int l
     }
 }
 
+// TODO: handle multiple lines
 std::string TestFixture::deleteLineNumber(const std::string &message)
 {
     std::string result(message);
+    // skip location
+    std::string::size_type pos = result.find("]:") + 2;
     // delete line number in "...:NUMBER:..."
-    std::string::size_type pos = 0;
     while ((pos = result.find(':', pos)) != std::string::npos) {
         // get number
         if (pos + 1 == result.find_first_of("0123456789", pos + 1)) {
