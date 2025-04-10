@@ -37,6 +37,7 @@ private:
 
     void run() override {
         TEST_CASE(checkTooBigShift_Unix32);
+        mNewTemplate = true;
         TEST_CASE(checkIntegerOverflow);
         TEST_CASE(signConversion);
         TEST_CASE(longCastAssign);
@@ -274,16 +275,16 @@ private:
         const Settings settings = settingsBuilder().severity(Severity::warning).platform(Platform::Type::Unix32).build();
 
         check("x = (int)0x10000 * (int)0x10000;", settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:18]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'. [integerOverflow]\n", errout_str());
 
         check("x = (long)0x10000 * (long)0x10000;", settings);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(long)0x10000*(long)0x10000'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:19]: (error) Signed integer overflow for expression '(long)0x10000*(long)0x10000'. [integerOverflow]\n", errout_str());
 
         check("void foo() {\n"
               "    int intmax = 0x7fffffff;\n"
               "    return intmax + 1;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression 'intmax+1'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:19]: (error) Signed integer overflow for expression 'intmax+1'. [integerOverflow]\n", errout_str());
 
         check("void foo() {\n"
               "    int intmax = 0x7fffffff;\n"
@@ -295,13 +296,13 @@ private:
               "   if (x==123456) {}\n"
               "   return x * x;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression 'x*x'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:3:13]: (warning) Either the condition 'x==123456' is redundant or there is signed integer overflow for expression 'x*x'. [integerOverflowCond]\n", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
               "   return -123456 * x;\n"
               "}",settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==123456' is redundant or there is signed integer underflow for expression '-123456*x'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:3:19]: (warning) Either the condition 'x==123456' is redundant or there is signed integer underflow for expression '-123456*x'. [integerOverflowCond]\n", errout_str());
 
         check("int foo(signed int x) {\n"
               "   if (x==123456) {}\n"
@@ -312,7 +313,7 @@ private:
         check("int f(int i) {\n" // #12117
               "    return (i == 31) ? 1 << i : 0;\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:15] -> [test.cpp:2:26]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 2. [shiftTooManyBitsSigned]\n", errout_str());
 
         check("void f() {\n" // #13092
               "    int n = 0;\n"
@@ -320,31 +321,31 @@ private:
               "        n = n * 47163 - 57412;\n"
               "    }\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer underflow for expression 'n*47163'.\n"
-                      "[test.cpp:4]: (error) Signed integer underflow for expression 'n*47163-57412'.\n",
+        ASSERT_EQUALS("[test.cpp:4:15]: (error) Signed integer underflow for expression 'n*47163'. [integerOverflow]\n"
+                      "[test.cpp:4:23]: (error) Signed integer underflow for expression 'n*47163-57412'. [integerOverflow]\n",
                       errout_str());
     }
 
     void signConversion() {
         const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
         check("x = -4 * (unsigned)y;", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:6]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation. [signConversion]\n", errout_str());
 
         check("x = (unsigned)y * -4;", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:20]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation. [signConversion]\n", errout_str());
 
         check("unsigned int dostuff(int x) {\n" // x is signed
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
               "}", settings);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:8] -> [test.cpp:3:12]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation. [signConversionCond]\n", errout_str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
               "  return x * y;\n"
               "}\n"
               "void f2() { f1(-4,4); }", settingsDefault);
         ASSERT_EQUALS(
-            "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
+            "[test.cpp:1:57]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation. [signConversion]\n",
             errout_str());
 
         check("unsigned int f1(int x) {"
@@ -352,7 +353,7 @@ private:
               "}\n"
               "void f2() { f1(-4); }", settingsDefault);
         ASSERT_EQUALS(
-            "[test.cpp:1]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n",
+            "[test.cpp:1:34]: (warning) Expression 'x' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation. [signConversion]\n",
             errout_str());
 
         check("unsigned int f1(int x) {" // #6168: FP for inner calculation
@@ -371,7 +372,7 @@ private:
         check("size_t foo(size_t x) {\n"
               " return -2 * x;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:10]: (warning) Expression '-2' has a negative value. That is converted to an unsigned value and used in an unsigned calculation. [signConversion]\n", errout_str());
 
         checkP("void f() {\n" // #12110 FP signConversion with integer overflow
                "    if (LLONG_MIN / (-1)) {}\n"
@@ -388,7 +389,7 @@ private:
                             "  return ret;\n"
                             "}\n";
         check(code, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:18]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information. [truncLongCastAssignment]\n", errout_str());
         check(code, settingsWin);
         ASSERT_EQUALS("", errout_str());
 
@@ -396,7 +397,7 @@ private:
               "  long ret = x * y;\n"
               "  return ret;\n"
               "}\n", settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:12]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information. [truncLongCastAssignment]\n", errout_str());
 
         check("long f() {\n"
               "  const long long ret = 256 * (1 << 10);\n"
@@ -421,7 +422,7 @@ private:
         check("double g(float f) {\n"
               "    return f * f;\n"
               "}\n", settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) float result is returned as double value. If the return value is double to avoid loss of information, then you have loss of information.\n",
+        ASSERT_EQUALS("[test.cpp:2:5]: (style) float result is returned as double value. If the return value is double to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n",
                       errout_str());
 
         check("void f(int* p) {\n" // #11862
@@ -453,7 +454,7 @@ private:
                             "  return x * y;\n"
                             "}\n";
         check(code, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
         check(code, settingsWin);
         ASSERT_EQUALS("", errout_str());
 
@@ -461,15 +462,15 @@ private:
                              "  return x * y;\n"
                              "}\n";
         check(code2, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
         check(code2, settingsWin);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
               "  return x * y;\n"
               "}\n", settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information. [truncLongCastReturn]\n", errout_str());
     }
 
     // This function ensure that test works with different compilers. Floats can
@@ -484,27 +485,27 @@ private:
 
     void checkFloatToIntegerOverflow() {
         check("x = (int)1E100;", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:1]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:1:5]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (int)1E100;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:2:10]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (int)-1E100;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:2:10]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (short)1E6;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:2:10]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)256.0;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:2:10]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)255.5;\n"
@@ -514,12 +515,12 @@ private:
         check("void f(void) {\n"
               "  char c = 1234.5;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:2:10]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check("char f(void) {\n"
               "  return 1234.5;\n"
               "}", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:2:3]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n" // #11685
                "void f()\n"
@@ -533,7 +534,7 @@ private:
                "{\n"
                "    unsigned short u = TEST(false, 75000.0);\n"
                "}\n", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:4:24]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check( "bool f(unsigned short x);\n"
                "bool g() {\n"
@@ -545,7 +546,7 @@ private:
                "bool g() {\n"
                "    return true && f((unsigned short)75000.0);\n"
                "}\n", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3:22]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         check( "bool f(unsigned short x);\n"
                "bool g() {\n"
@@ -557,7 +558,7 @@ private:
                "bool g() {\n"
                "    return false || f((unsigned short)75000.0);\n"
                "}\n", settingsDefault);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.cpp:3:23]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
         checkP("#define TEST(b, f) b ? 5000 : (unsigned short)f\n" // #11685
                "void f()\n"
@@ -571,7 +572,7 @@ private:
                "{\n"
                "    unsigned short u = TEST(false, 75000.0);\n"
                "}\n", settingsDefault, dinit(CheckPOptions, $.cpp = false));
-        ASSERT_EQUALS("[test.c:4]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout_str()));
+        ASSERT_EQUALS("[test.c:4:24]: (error) Undefined behaviour: float () to integer conversion overflow. [floatConversionOverflow]\n", removeFloat(errout_str()));
 
     }
 
@@ -589,14 +590,14 @@ private:
                "{\n"
                "    fun(INT_MIN);\n"
                "}", s);
-        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:17]: (error) Signed integer overflow for expression '-x'. [integerOverflow]\n", errout_str());
 
         checkP("void f() {\n" // #8399
                "    int32_t i = INT32_MAX;\n"
                "    i << 1;\n"
                "    i << 2;\n"
                "}", s);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Signed integer overflow for expression 'i<<2'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: (error) Signed integer overflow for expression 'i<<2'. [integerOverflow]\n", errout_str());
     }
 
     void shiftTooManyBits() { // #11496
