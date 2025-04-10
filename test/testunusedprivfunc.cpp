@@ -121,7 +121,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }");
 
-        ASSERT_EQUALS("[test.cpp:4:18]: (style) Unused private function: 'Fred::f' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:18] -> [test.cpp:12:20]: (style) Unused private function: 'Fred::f' [unusedPrivateFunction]\n", errout_str());
 
         check("#line 1 \"p.h\"\n"
               "class Fred\n"
@@ -139,7 +139,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }");
 
-        ASSERT_EQUALS("[p.h:4:18]: (style) Unused private function: 'Fred::f' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[p.h:4:18] -> [p.cpp:4:20]: (style) Unused private function: 'Fred::f' [unusedPrivateFunction]\n", errout_str());
 
         check("#line 1 \"p.h\"\n"
               "class Fred\n"
@@ -154,7 +154,7 @@ private:
               "void Fred::f()\n"
               "{\n"
               "}");
-        ASSERT_EQUALS("[p.h:4:6]: (style) Unused private function: 'Fred::f' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[p.h:4:6] -> [p.cpp:2:12]: (style) Unused private function: 'Fred::f' [unusedPrivateFunction]\n", errout_str());
 
         // Don't warn about include files which implementation we don't see
         check("#line 1 \"p.h\"\n"
@@ -274,7 +274,7 @@ private:
               "Fred::Fred()\n"
               "{}");
 
-        ASSERT_EQUALS("[test.cpp:6:12]: (style) Unused private function: 'Fred::get' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:12] -> [test.cpp:6:12]: (style) Unused private function: 'Fred::get' [unusedPrivateFunction]\n", errout_str());
     }
 
 
@@ -416,7 +416,7 @@ private:
               "    static void f()\n"
               "    { }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:10:17]: (style) Unused private function: 'A::f' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:10:17] -> [test.cpp:10:17]: (style) Unused private function: 'A::f' [unusedPrivateFunction]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -505,7 +505,7 @@ private:
               "    void foo() {}\n" // Skip for overrides of virtual functions of base
               "    void bar() {}\n" // Don't skip if no function is overridden
               "};");
-        ASSERT_EQUALS("[test.cpp:9:10]: (style) Unused private function: 'derived::bar' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:9:10] -> [test.cpp:9:10]: (style) Unused private function: 'derived::bar' [unusedPrivateFunction]\n", errout_str());
 
         check("class Base {\n"
               "private:\n"
@@ -580,7 +580,7 @@ private:
               "    friend Bar;\n"
               "    void f() { }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:5:10]: (style) Unused private function: 'Foo::f' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:10] -> [test.cpp:5:10]: (style) Unused private function: 'Foo::f' [unusedPrivateFunction]\n", errout_str());
 
         check("struct F;\n" // #10265
               "struct S {\n"
@@ -667,7 +667,7 @@ private:
               "    void startListening() {\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:8:10]: (style) Unused private function: 'Fred::startListening' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:10] -> [test.cpp:8:10]: (style) Unused private function: 'Fred::startListening' [unusedPrivateFunction]\n", errout_str());
 
         // #5059
         check("class Fred {\n"
@@ -836,7 +836,7 @@ private:
               "};\n"
               "int Foo::i = sth();"
               "int i = F();");
-        ASSERT_EQUALS("[test.cpp:3:16]: (style) Unused private function: 'Foo::F' [unusedPrivateFunction]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:16] -> [test.cpp:3:16]: (style) Unused private function: 'Foo::F' [unusedPrivateFunction]\n", errout_str());
     }
 
     void templateSimplification() { //ticket #6183
