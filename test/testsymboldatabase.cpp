@@ -8577,7 +8577,7 @@ private:
     void findFunction60() { // #12910
         GET_SYMBOL_DB("template <class T>\n"
                       "void fun(T& t, bool x = false) {\n"
-	                  "    t.push_back(0);\n"
+                      "    t.push_back(0);\n"
                       "}\n"
                       "template <class T>\n"
                       "void fun(bool x = false) {\n"
