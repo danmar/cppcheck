@@ -8,14 +8,14 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 set -e
 
 echo testleakautovar
-$DIR/run_more_tests.sh $DIR/../test/testleakautovar.cpp
+$DIR/run_more_tests.sh $DIR/../testleakautovar.cpp
 
 echo testmemleak
-$DIR/run_more_tests.sh $DIR/../test/testmemleak.cpp
+$DIR/run_more_tests.sh $DIR/../testmemleak.cpp
 
 echo testnullpointer
-$DIR/run_more_tests.sh $DIR/../test/testnullpointer.cpp
+$DIR/run_more_tests.sh $DIR/../testnullpointer.cpp
 
 echo testuninitvar
-$DIR/run_more_tests.sh $DIR/../test/testuninitvar.cpp
+$DIR/run_more_tests.sh $DIR/../testuninitvar.cpp
 

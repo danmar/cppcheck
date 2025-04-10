@@ -132,7 +132,9 @@ jobs:
 
       - name: test matchcompiler
         run: |
-          python tools/test_matchcompiler.py
+          python test/tools/test_matchcompiler.py
+        env:
+          PYTHONPATH: ./tools
 
       # TODO: run with "-n auto" when misra_test.py can be run in parallel
       # we cannot specify -Werror since xml/etree/ElementTree.py in Python 3.9/3.10 contains an unclosed file
@@ -169,21 +171,21 @@ jobs:
 
       - name: test reduce
         run: |
-          python -m pytest -Werror --strict-markers -vv tools/reduce_test.py
+          python -m pytest -Werror --strict-markers -vv test/tools/reduce_test.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_lib
         run: |
-          python -m pytest -Werror --strict-markers -vv tools/donate_cpu_lib_test.py
+          python -m pytest -Werror --strict-markers -vv test/tools/donate_cpu_lib_test.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_server
         run: |
-          python -m pytest -Werror --strict-markers -vv tools/donate_cpu_server_test.py
+          python -m pytest -Werror --strict-markers -vv test/tools/donate_cpu_server_test.py
           # TODO: why is this file generated? also should be in a temporary folder if possible
-          rm -f tools/donate-cpu-server.log
+          rm -f test/tools/donate-cpu-server.log
         env:
           PYTHONPATH: ./tools
 
