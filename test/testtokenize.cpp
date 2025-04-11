@@ -477,6 +477,8 @@ private:
         TEST_CASE(constFunctionPtrTypedef); // #12135
 
         TEST_CASE(simplifyPlatformTypes);
+
+        TEST_CASE(dumpFallthrough);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8512,6 +8514,31 @@ private:
             ASSERT_EQUALS("long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix32));
             ASSERT_EQUALS("long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix64));
         }
+    }
+
+    void dumpFallthrough() {
+        Settings settings;
+        SimpleTokenizer tokenizer(settings, *this);
+        const char * code = "void f(int n) {\n"
+                            "    void g(), h(), i();\n"
+                            "    switch (n) {\n"
+                            "        case 1:\n"
+                            "        case 2:\n"
+                            "            g();\n"
+                            "            [[fallthrough]];\n"
+                            "        case 3:\n"
+                            "            h();\n"
+                            "            break;\n"
+                            "        default:\n"
+                            "            i();\n"
+                            "            break;\n"
+                            "    }\n"
+                            "}";
+        ASSERT(tokenizer.tokenize(code, false));
+        std::ostringstream ostr;
+        tokenizer.dump(ostr);
+        const std::string dump = ostr.str();
+        ASSERT(dump.find(" isAttributeFallthrough=\"true\"") != std::string::npos);
     }
 };
 

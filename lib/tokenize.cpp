@@ -6060,6 +6060,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeMaybeUnused=\"true\"";
         if (tok->isAttributeUnused())
             outs += " isAttributeUnused=\"true\"";
+        if (tok->isAttributeFallthrough())
+            outs += " isAttributeFallthrough=\"true\"";
         if (tok->isInitBracket())
             outs += " isInitBracket=\"true\"";
         if (tok->hasAttributeAlignas()) {
@@ -9443,6 +9445,14 @@ void Tokenizer::simplifyCPPAttribute()
                 if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{;")) {
                     head->previous()->isAttributeNodiscard(true);
                 }
+            } else if (Token::findsimplematch(tok->tokAt(2), "fallthrough", tok->link()) || Token::findsimplematch(tok->tokAt(2), "__fallthrough__", tok->link())) {
+                Token * head = skipCPPOrAlignAttribute(tok)->next();
+                while (isCPPAttribute(head) || isAlignAttribute(head))
+                    head = skipCPPOrAlignAttribute(head)->next();
+                while (head && head->str() == ";") // we have semicollon after the attribute which would be removed in 'removeRedundantSemicolons()' so we skip it
+                    head = head->next();
+                if (head)
+                    head->isAttributeFallthrough(true);
             } else if ((hasMaybeUnusedUnderscores && Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()))
                        || (hasMaybeUnused && Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link()))) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
