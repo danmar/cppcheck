@@ -907,8 +907,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 // enforce the language since markup files are special and do not adhere to the enforced language
                 tokenizer.list.setLang(Standards::Language::C, true);
                 if (fileStream) {
-                    std::vector<std::string> files{file.spath()};
-                    simplecpp::TokenList tokens(*fileStream, files);
+                    std::vector<std::string> files;
+                    simplecpp::TokenList tokens(*fileStream, files, file.spath());
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
@@ -916,7 +916,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     tokenizer.list.createTokens(std::move(tokens));
                 }
                 else {
-                    std::vector<std::string> files{file.spath()};
+                    std::vector<std::string> files;
                     simplecpp::TokenList tokens(file.spath(), files);
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
