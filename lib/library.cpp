@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"
@@ -178,6 +179,7 @@ static std::vector<std::string> getnames(const char *names)
 static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList& tokenList)
 {
     std::istringstream istr(valid + ',');
+    // TODO: this will override the enforced language
     tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
@@ -1055,14 +1057,14 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(ErrorCode::OK);
 }
 
-bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
+bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue, const Settings& settings) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
     if (ac->valid.find('.') != std::string::npos)
-        return isFloatArgValid(ftok, argnr, static_cast<double>(argvalue));
-    TokenList tokenList(nullptr);
+        return isFloatArgValid(ftok, argnr, static_cast<double>(argvalue), settings);
+    TokenList tokenList(settings);
     gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->isNumber() && argvalue == MathLib::toBigNumber(tok))
@@ -1077,12 +1079,12 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
     return false;
 }
 
-bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) const
+bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue, const Settings& settings) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
-    TokenList tokenList(nullptr);
+    TokenList tokenList(settings);
     gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok) && argvalue <= MathLib::toDoubleNumber(tok->tokAt(2)))
