@@ -2194,7 +2194,7 @@ private:
 
     void passedByValue() {
         check("void f(const std::string str) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void f(std::unique_ptr<std::string> ptr) {}");
         ASSERT_EQUALS("", errout_str());
@@ -2217,16 +2217,16 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("class Foo;\nvoid f(const Foo foo) {}"); // Unknown class
-        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Function parameter 'foo' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Function parameter 'foo' is passed by value.\n", errout_str());
 
         check("class Foo { std::vector<int> v; };\nvoid f(const Foo foo) {}"); // Large class (STL member)
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' is passed by value.\n", errout_str());
 
         check("class Foo { int i; };\nvoid f(const Foo foo) {}"); // Small class
         ASSERT_EQUALS("", errout_str());
 
         check("class Foo { int i[6]; };\nvoid f(const Foo foo) {}"); // Large class (array)
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' is passed by value.\n", errout_str());
 
         check("class Foo { std::string* s; };\nvoid f(const Foo foo) {}"); // Small class (pointer)
         ASSERT_EQUALS("", errout_str());
@@ -2235,10 +2235,10 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("class X { std::string s; }; class Foo : X { };\nvoid f(const Foo foo) {}"); // Large class (inherited)
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' is passed by value.\n", errout_str());
 
         check("class X { std::string s; }; class Foo { X x; };\nvoid f(const Foo foo) {}"); // Large class (inherited)
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' is passed by value.\n", errout_str());
 
         check("void f(const std::string &str) {}");
         ASSERT_EQUALS("", errout_str());
@@ -2254,10 +2254,10 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::vector<int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::vector<std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::vector<std::string>::size_type s) {}");
         ASSERT_EQUALS("", errout_str());
@@ -2269,16 +2269,16 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::map<int,int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::map<std::string,std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::map<int,std::string> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::map<std::string,int> v) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::streamoff pos) {}");
         ASSERT_EQUALS("", errout_str());
@@ -2302,7 +2302,7 @@ private:
         check("class X {\n"
               "    virtual void func(const std::string str) {}\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("enum X;\n"
               "void foo(X x1){}\n");
@@ -2332,7 +2332,7 @@ private:
 
         check("struct S { char A[8][8]; };\n"
               "void f(S s) {}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' is passed by value.\n", errout_str());
 
         check("union U {\n" // don't crash
               "    int a;\n"
@@ -2375,9 +2375,9 @@ private:
               "    for (int i = 0; i < v.size(); ++i)\n"
               "        v[i][0] = x(i);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference.\n"
-                      "[test.cpp:10]: (performance) Function parameter 'v' should be passed by const reference.\n"
-                      "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'v' is passed by value.\n"
+                      "[test.cpp:10]: (performance) Function parameter 'v' is passed by value.\n"
+                      "[test.cpp:18]: (performance) Function parameter 'v' is passed by value.\n",
                       errout_str());
 
         check("struct S {\n" // #11995
@@ -2398,12 +2398,12 @@ private:
               "void f(std::vector<int> v) {\n"
               "    N::g(v[0]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("void f(const std::string& s, std::string t) {\n" // #12083
               "    const std::string& v = !s.empty() ? s : t;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 't' is passed by value.\n", errout_str());
 
         /*const*/ Settings settings0 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
         check("struct S {\n" // #12138
@@ -2433,15 +2433,15 @@ private:
               "bool f(C c) {\n"
               "    return c.l.empty();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Function parameter 's' should be passed by const reference.\n"
-                      "[test.cpp:6]: (performance) Function parameter 'c' should be passed by const reference.\n",
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Function parameter 's' is passed by value.\n"
+                      "[test.cpp:6]: (performance) Function parameter 'c' is passed by value.\n",
                       errout_str());
 
         check("struct S { std::list<int> a[1][1]; };\n"
               "bool f(S s) {\n"
               "    return s.a[0][0].empty();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n",
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' is passed by value.\n",
                       errout_str());
 
         check("struct S {\n"
@@ -2457,7 +2457,7 @@ private:
               "void g(const std::vector<int> v[2]);\n"
               "void g(const std::vector<int> v[2]) {}\n"
               "int h(const std::array<std::vector<int>, 2> a) { return a[0][0]; }\n");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'a' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Function parameter 'a' is passed by value.\n", errout_str());
 
         check("void f(const std::array<int, 10> a[]) {}\n"); // #13524
         ASSERT_EQUALS("", errout_str());
@@ -2471,17 +2471,17 @@ private:
 
     void passedByValue_nonConst() {
         check("void f(std::string str) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void f(std::string str) {\n"
               "    return str + x;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void f(std::string str) {\n"
               "    std::cout << str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void f(std::string str) {\n"
               "    std::cin >> str;\n"
@@ -2491,19 +2491,19 @@ private:
         check("void f(std::string str) {\n"
               "    std::string s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void f(std::string str) {\n"
               "    std::string& s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n"
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n"
                       "[test.cpp:2]: (style) Variable 's2' can be declared as reference to const\n",
                       errout_str());
 
         check("void f(std::string str) {\n"
               "    const std::string& s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void f(std::string str) {\n"
               "    str = \"\";\n"
@@ -2519,13 +2519,13 @@ private:
               "void f(std::string str) {\n"
               "    foo(str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void foo(std::string str);\n"
               "void f(std::string str) {\n"
               "    foo(str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("void foo(std::string& str);\n"
               "void f(std::string str) {\n"
@@ -2543,7 +2543,7 @@ private:
               "void f(std::string str) {\n"
               "    foo((a+b)*c, str, x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("std::string f(std::string str) {\n"
               "    str += x;\n"
@@ -2558,7 +2558,7 @@ private:
               "Y f(X x) {\n"
               "    x.func();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' is passed by value.\n", errout_str());
 
         check("class X {\n"
               "    void func();\n"
@@ -2571,7 +2571,7 @@ private:
         check("class X {\n"
               "    void func(std::string str) {}\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'str' is passed by value.\n", errout_str());
 
         check("class X {\n"
               "    virtual void func(std::string str) {}\n" // Do not warn about virtual functions, if 'str' is not declared as const
@@ -2586,7 +2586,7 @@ private:
               "};\n"
               "void f(Y y) {\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (performance) Function parameter 'y' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Function parameter 'y' is passed by value.\n", errout_str());
 
         check("class X {\n"
               "    void* a;\n"
@@ -2599,7 +2599,7 @@ private:
               "};\n"
               "void f(X x, Y y) {\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (performance) Function parameter 'y' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:10]: (performance) Function parameter 'y' is passed by value.\n", errout_str());
 
         {
             // 8-byte data should be passed by const reference on 32-bit platform but not on 64-bit platform
@@ -2611,7 +2611,7 @@ private:
 
             /*const*/ Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
             check(code, &s32);
-            ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout_str());
+            ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' is passed by value.\n", errout_str());
 
             /*const*/ Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
             check(code, &s64);
@@ -2628,7 +2628,7 @@ private:
 
     void passedByValue_externC() {
         check("struct X { int a[5]; }; void f(X v) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("extern \"C\" { struct X { int a[5]; }; void f(X v) { } }");
         ASSERT_EQUALS("", errout_str());
@@ -2637,7 +2637,7 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("struct X { int a[5]; }; void f(const X v);");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' is passed by value.\n", errout_str());
 
         check("extern \"C\" { struct X { int a[5]; }; void f(const X v); }");
         ASSERT_EQUALS("", errout_str());
@@ -2651,7 +2651,7 @@ private:
               "    int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n"
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' is passed by value.\n"
                       "[test.cpp:2]: (style) Variable 'i' can be declared as reference to const\n",
                       errout_str());
 
@@ -2664,13 +2664,13 @@ private:
               "    const int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' is passed by value.\n", errout_str());
 
         check("int f(std::vector<int> x) {\n"
               "    static int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' is passed by value.\n", errout_str());
 
         check("int f(std::vector<int> x) {\n"
               "    int& i = x[0];\n"
@@ -11071,7 +11071,7 @@ private:
               "    A a;"
               "    A a2;"
               "};", true, false, true);
-        ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' is passed by value.\n", errout_str());
 
         check("struct A\n"
               "{\n"
@@ -11085,7 +11085,7 @@ private:
               "    A a;"
               "    A a2;"
               "};", true, false, true);
-        ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' should be passed by const reference.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' is passed by value.\n", errout_str());
 
         check("std::map<int, int> m;\n" // #10817
               "void f(const decltype(m)::const_iterator i) {}");
@@ -11098,7 +11098,7 @@ private:
               "void g() {\n"
               "    pf = f;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference. However it seems that 'f' is a callback function.\n",
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (performance) Function parameter 'v' is passed by value. However it seems that 'f' is a callback function.\n",
                       errout_str());
 
         check("template<typename T> struct A;\n" // #12621
@@ -12918,7 +12918,7 @@ private:
               "    for (auto s : ss)\n"
               "        (void)s.size();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Range variable 's' should be declared as const reference.\n",
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Range variable 's' is declared as value.\n",
                       errout_str());
     }
 

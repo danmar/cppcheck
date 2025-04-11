@@ -1479,8 +1479,8 @@ void CheckOther::passedByValueError(const Variable* var, bool inconclusive, bool
     std::string id = isRangeBasedFor ? "iterateByValue" : "passedByValue";
     const std::string action = isRangeBasedFor ? "declared as": "passed by";
     const std::string type = isRangeBasedFor ? "Range variable" : "Function parameter";
-    std::string msg = "$symbol:" + (var ? var->name() : "") + "\n" +
-                      type + " '$symbol' should be " + action + " const reference.";
+    std::string msg = "$symbol:" + (var ? var->name() : "") + "\n";
+    msg += type + " '$symbol' is " + action + " value.";
     ErrorPath errorPath;
     if (var && var->scope() && var->scope()->function && var->scope()->function->functionPointerUsage) {
         id += "Callback";
@@ -1489,10 +1489,6 @@ void CheckOther::passedByValueError(const Variable* var, bool inconclusive, bool
     }
     if (var)
         errorPath.emplace_back(var->nameToken(), msg);
-    if (isRangeBasedFor)
-        msg += "\nVariable '$symbol' is used to iterate by value. It could be declared as a const reference which is usually faster and recommended in C++.";
-    else
-        msg += "\nParameter '$symbol' is passed by value. It could be passed as a const reference which is usually faster and recommended in C++.";
     reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
