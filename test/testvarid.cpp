@@ -108,6 +108,7 @@ private:
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varid_cpp_keywords_in_c_code3);
+        TEST_CASE(varid_cpp_keywords_in_c_code4);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -1466,6 +1467,17 @@ private:
         const char code[] = "const struct class *p;";
         const char expected[] = "1: const struct class * p@1 ;\n";
         ASSERT_EQUALS(expected, tokenize(code, dinit(TokenizeOptions, $.cpp = false)));
+    }
+
+    void varid_cpp_keywords_in_c_code4() { // #12120
+        {
+            const char code[] = "int false = 0;";
+            ASSERT_THROW_INTERNAL(tokenize(code, dinit(TokenizeOptions, $.cpp = true)), INTERNAL);
+        }
+        {
+            const char code[] = "int false = 0;";
+            ASSERT_EQUALS("1: int false@1 ; false@1 = 0 ;\n", tokenize(code, dinit(TokenizeOptions, $.cpp = false)));
+        }
     }
 
     void varidFunctionCall1() {
