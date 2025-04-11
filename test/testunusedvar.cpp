@@ -22,11 +22,9 @@
 #include "helpers.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "standards.h"
 
 #include <list>
 #include <string>
-#include <vector>
 
 class TestUnusedVar : public TestFixture {
 public:
@@ -281,21 +279,19 @@ private:
     {
         CheckStructMemberUsageOptions() = default;
         const std::list<Directive>* directives = nullptr;
-        const Settings *s = nullptr;
+        bool cpp = true;
     };
 
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
-        const Settings *settings1 = options.s ? options.s : &settings;
-
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings1, *this);
+        SimpleTokenizer tokenizer(settings, *this);
         if (options.directives)
             tokenizer.setDirectives(*options.directives);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
 
         // Check for unused variables..
-        CheckUnusedVar checkUnusedVar(&tokenizer, settings1, this);
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
@@ -1831,8 +1827,6 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout_str());
 
-        /*const*/ Settings s = settings;
-        s.enforcedLang = Standards::Language::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
                                "        int x;\n"
@@ -1841,7 +1835,7 @@ private:
                                "void f() {\n"
                                "    struct B* pb = &a.b;\n"
                                "    pb->x = 1;\n"
-                               "}\n", dinit(CheckStructMemberUsageOptions, $.s = &s));
+                               "}\n", dinit(CheckStructMemberUsageOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         checkStructMemberUsage("union U {\n"
@@ -1859,7 +1853,7 @@ private:
                                "    pb->x = 1;\n"
                                "    struct C* pc = &u.c;\n"
                                "    pc->s[0] = 1;\n"
-                               "}\n", dinit(CheckStructMemberUsageOptions, $.s = &s));
+                               "}\n", dinit(CheckStructMemberUsageOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
     }
 

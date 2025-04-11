@@ -19,6 +19,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "settings.h"
 #include "templatesimplifier.h"
 #include "token.h"
@@ -5429,7 +5430,8 @@ private:
         Tokenizer tokenizer(settings, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        tokenizer.list.appendFileIfNew("test.cpp");
+        if (!tokenizer.list.createTokens(istr, Path::identify("test.cpp", false)))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5497,7 +5499,8 @@ private:
         Tokenizer tokenizer(settings, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        tokenizer.list.appendFileIfNew("test.cpp");
+        if (!tokenizer.list.createTokens(istr, Path::identify("test.cpp", false)))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5568,7 +5571,7 @@ private:
         Tokenizer tokenizer(settings, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!TokenListHelper::createTokens(tokenizer.list, istr, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
@@ -5598,7 +5601,7 @@ private:
         Tokenizer tokenizer(settings, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!TokenListHelper::createTokens(tokenizer.list, istr, "test.cpp"))
             return false;
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);

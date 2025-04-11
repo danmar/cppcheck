@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "platform.h"
 #include "preprocessor.h"
 #include "standards.h"
@@ -129,7 +130,8 @@ private:
             const Settings s = settingsBuilder().c(Standards::C89).build();
             TokenList tokenlist(&s);
             std::istringstream istr(code2);
-            ASSERT(tokenlist.createTokens(istr, "a.c"));
+            tokenlist.appendFileIfNew("a.c");
+            ASSERT(tokenlist.createTokens(istr, Path::identify("a.c", false)));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -150,7 +152,8 @@ private:
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
             TokenList tokenlist(&s);
             std::istringstream istr(code2);
-            ASSERT(tokenlist.createTokens(istr, "a.cpp"));
+            tokenlist.appendFileIfNew("a.cpp");
+            ASSERT(tokenlist.createTokens(istr, Path::identify("a.cpp", false)));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }

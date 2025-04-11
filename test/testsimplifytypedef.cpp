@@ -28,7 +28,6 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
-#include <vector>
 
 class TestSimplifyTypedef : public TestFixture {
 public:
@@ -310,7 +309,7 @@ private:
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!TokenListHelper::createTokens(tokenizer.list, istr, "file.c"))
             return "";
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -326,7 +325,7 @@ private:
         Tokenizer tokenizer(settings1, *this);
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!TokenListHelper::createTokens(tokenizer.list, istr, "file.c"))
             return {};
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
@@ -4454,7 +4453,7 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(TokenListHelper::createTokens(tokenizer.list, istr, "file.c"));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4496,7 +4495,7 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(TokenListHelper::createTokens(tokenizer.list, istr, "file.c"));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4514,7 +4513,7 @@ private:
 
         Tokenizer tokenizer(settings1, *this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(TokenListHelper::createTokens(tokenizer.list, istr, "file.c"));
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
