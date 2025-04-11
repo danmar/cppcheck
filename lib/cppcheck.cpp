@@ -1022,16 +1022,37 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         // Get configurations..
         std::set<std::string> configurations;
-        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
-            Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
-                configurations = preprocessor.getConfigs(tokens1);
-            });
+        Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
+            configurations = preprocessor.getConfigs(tokens1);
+        });
+
+        std::list<std::string> configs_total;
+        if (!mSettings.userDefines.empty()) {
+            configs_total.push_back(mSettings.userDefines);
+        }
+
+        int max_config_tmp;
+        if (mSettings.force && mSettings.maxConfigs <= 0) {
+            max_config_tmp = configurations.size();
+        } else if (mSettings.maxConfigs > 0) {
+            if (mSettings.preprocessOnly) {
+                max_config_tmp = 1;
+            } else {
+                max_config_tmp = mSettings.maxConfigs;
+            }
+            max_config_tmp = max_config_tmp - configs_total.size();
+        } else if (!mSettings.checkAllConfigurations) {
+            max_config_tmp = 1;
         } else {
-            configurations.insert(mSettings.userDefines);
+            max_config_tmp = mSettings.maxConfigsDefault - configs_total.size();
+        }
+
+        for (auto it = configurations.begin(); it != configurations.end() && max_config_tmp > 0; ++it, max_config_tmp--) {
+            configs_total.push_back(*it);
         }
 
         if (mSettings.checkConfiguration) {
-            for (const std::string &config : configurations)
+            for (const std::string &config : configs_total)
                 (void)preprocessor.getcode(tokens1, config, files, true);
 
             if (analyzerInformation)
@@ -1054,10 +1075,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             executeRules("define", tokenlist);
         }
 #endif
-
-        if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
+        int max_total = configurations.size() + (mSettings.userDefines.empty() ? 0 : 1);
+        if (!mSettings.force && max_total > mSettings.maxConfigsDefault) {
             if (mSettings.severity.isEnabled(Severity::information)) {
-                tooManyConfigsError(Path::toNativeSeparators(file.spath()),configurations.size());
+                tooManyConfigsError(Path::toNativeSeparators(file.spath()), max_total);
             } else {
                 mTooManyConfigs = true;
             }
@@ -1077,30 +1098,14 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         }
 
         std::set<unsigned long long> hashes;
-        int checkCount = 0;
         bool hasValidConfig = false;
         std::list<std::string> configurationError;
-        for (const std::string &currCfg : configurations) {
+        for (const std::string &currCfg : configs_total) {
             // bail out if terminated
             if (Settings::terminated())
                 break;
 
-            // Check only a few configurations (default 12), after that bail out, unless --force
-            // was used.
-            if (!mSettings.force && ++checkCount > mSettings.maxConfigs)
-                break;
-
-            if (!mSettings.userDefines.empty()) {
-                mCurrentConfig = mSettings.userDefines;
-                const std::vector<std::string> v1(split(mSettings.userDefines, ";"));
-                for (const std::string &cfg: split(currCfg, ";")) {
-                    if (std::find(v1.cbegin(), v1.cend(), cfg) == v1.cend()) {
-                        mCurrentConfig += ";" + cfg;
-                    }
-                }
-            } else {
-                mCurrentConfig = currCfg;
-            }
+            mCurrentConfig = currCfg;
 
             if (mSettings.preprocessOnly) {
                 std::string codeWithoutCfg;
@@ -1140,7 +1145,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 mLogger->setLocationMacros(tokenizer.tokens(), files);
 
                 // If only errors are printed, print filename after the check
-                if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
+                if (!mSettings.quiet && (!mCurrentConfig.empty())) {
                     std::string fixedpath = Path::toNativeSeparators(file.spath());
                     mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
                 }
@@ -1195,9 +1200,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
                 configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
-                --checkCount; // don't count invalid configurations
 
-                if (!hasValidConfig && currCfg == *configurations.rbegin()) {
+                if (!hasValidConfig && currCfg == *configs_total.rbegin()) {
                     // If there is no valid configuration then report error..
                     std::string locfile = Path::fromNativeSeparators(o.location.file());
                     if (mSettings.relativePaths)
@@ -1226,7 +1230,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             }
         }
 
-        if (!hasValidConfig && configurations.size() > 1 && mSettings.severity.isEnabled(Severity::information)) {
+        if (!hasValidConfig && configs_total.size() > 1 && mSettings.severity.isEnabled(Severity::information)) {
             std::string msg;
             msg = "This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details.";
             msg += "\nThis file is not analyzed. Cppcheck failed to extract a valid configuration. The tested configurations have these preprocessor errors:";

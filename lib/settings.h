@@ -281,9 +281,11 @@ public:
     int loadAverage{};
 #endif
 
+    const static int maxConfigsDefault = 12;
+
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
-    int maxConfigs = 12;
+    int maxConfigs = 0;
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth = 2;
