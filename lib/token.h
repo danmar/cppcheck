@@ -52,6 +52,7 @@ class Variable;
 class ConstTokenRange;
 class Token;
 struct TokensFrontBack;
+class TokenList;
 
 struct ScopeInfo2 {
     ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
@@ -165,6 +166,7 @@ class CPPCHECKLIB Token {
     friend class TestToken;
 
 private:
+    const TokenList& mList;
     TokensFrontBack& mTokensFrontBack;
 
     static const std::string mEmptyString;
@@ -184,7 +186,7 @@ public:
         eNone
     };
 
-    explicit Token(TokensFrontBack &tokensFrontBack);
+    Token(const TokenList& tokenlist, TokensFrontBack &tokensFrontBack);
     // for usage in CheckIO::ArgumentInfo only
     explicit Token(const Token *tok);
     ~Token();
