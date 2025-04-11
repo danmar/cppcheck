@@ -9449,7 +9449,7 @@ void Tokenizer::simplifyCPPAttribute()
                 Token * head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head)->next();
-                while(head && head->str() == ";") // we have semicollon after the attribute which would be removed in 'removeRedundantSemicolons()' so we skip it
+                while (head && head->str() == ";") // we have semicollon after the attribute which would be removed in 'removeRedundantSemicolons()' so we skip it
                     head = head->next();
                 if (head)
                     head->isAttributeFallthrough(true);
