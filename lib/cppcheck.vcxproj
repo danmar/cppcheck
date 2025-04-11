@@ -49,6 +49,7 @@
     <ClCompile Include="checkleakautovar.cpp" />
     <ClCompile Include="checkmemoryleak.cpp" />
     <ClCompile Include="checknullpointer.cpp" />
+    <ClCompile Include="checkoperatorcomma.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkpostfixoperator.cpp" />
     <ClCompile Include="checksizeof.cpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="checkleakautovar.h" />
     <ClInclude Include="checkmemoryleak.h" />
     <ClInclude Include="checknullpointer.h" />
+    <ClInclude Include="checkoperatorcomma.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkpostfixoperator.h" />
     <ClInclude Include="checksizeof.h" />

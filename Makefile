@@ -204,6 +204,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checkleakautovar.o \
               $(libcppdir)/checkmemoryleak.o \
               $(libcppdir)/checknullpointer.o \
+              $(libcppdir)/checkoperatorcomma.o \
               $(libcppdir)/checkother.o \
               $(libcppdir)/checkpostfixoperator.o \
               $(libcppdir)/checksizeof.o \
@@ -300,6 +301,7 @@ TESTOBJ =     test/fixture.o \
               test/testmathlib.o \
               test/testmemleak.o \
               test/testnullpointer.o \
+              test/testoperatorcomma.o \
               test/testoptions.o \
               test/testother.o \
               test/testpath.o \
@@ -520,6 +522,9 @@ $(libcppdir)/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/addoninfo.h lib/astu
 
 $(libcppdir)/checknullpointer.o: lib/checknullpointer.cpp lib/addoninfo.h lib/astutils.h lib/check.h lib/checkers.h lib/checknullpointer.h lib/config.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/findtoken.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checknullpointer.cpp
+
+$(libcppdir)/checkoperatorcomma.o: lib/checkoperatorcomma.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/checkoperatorcomma.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkoperatorcomma.cpp
 
 $(libcppdir)/checkother.o: lib/checkother.cpp lib/addoninfo.h lib/astutils.h lib/check.h lib/checkers.h lib/checkother.h lib/config.h lib/errortypes.h lib/fwdanalysis.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkother.cpp
@@ -793,6 +798,9 @@ test/testmemleak.o: test/testmemleak.cpp lib/addoninfo.h lib/check.h lib/checker
 
 test/testnullpointer.o: test/testnullpointer.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/checknullpointer.h lib/color.h lib/config.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testnullpointer.cpp
+
+test/testoperatorcomma.o: test/testoperatorcomma.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/check.h lib/checkers.h lib/checkoperatorcomma.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testoperatorcomma.cpp
 
 test/testoptions.o: test/testoptions.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h test/fixture.h test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testoptions.cpp

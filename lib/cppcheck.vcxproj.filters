@@ -38,6 +38,9 @@
     <ClCompile Include="checkother.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkoperatorcomma.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="checkpostfixoperator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -314,6 +317,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkother.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkoperatorcomma.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="checkpostfixoperator.h">
