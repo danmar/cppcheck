@@ -5909,7 +5909,7 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         if (mSettings.verbose)
             list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
 
-        list.front()->printValueFlow(xml, out);
+        list.front()->printValueFlow(list.getFiles(), xml, out);
 
         if (xml)
             out << "</debug>" << std::endl;
@@ -6169,7 +6169,7 @@ void Tokenizer::dump(std::ostream &out) const
     }
 
     if (list.front())
-        list.front()->printValueFlow(true, out);
+        list.front()->printValueFlow(list.getFiles(), true, out);
 
     outs += dumpTypedefInfo();
 
