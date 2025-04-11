@@ -311,7 +311,7 @@ jobs:
       # requires "gnu-sed" installed on macos
       - name: Run extra tests
         run: |
-          tools/generate_and_run_more_tests.sh
+          test/scripts/generate_and_run_more_tests.sh
 
       - name: Run test/cli
         run: |
