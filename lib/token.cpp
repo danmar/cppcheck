@@ -114,8 +114,15 @@ void Token::update_property_info()
     isStandardType(false);
 
     if (!mStr.empty()) {
-        if (mStr == "true" || mStr == "false")
-            tokType(eBoolean);
+        if (mStr == "true" || mStr == "false") {
+            if (mImpl->mVarId) {
+                if (mIsCpp)
+                    throw InternalError(this, "Internal error. VarId set for bool literal.");
+                tokType(eVariable);
+            }
+            else
+                tokType(eBoolean);
+        }
         else if (isStringLiteral(mStr)) {
             tokType(eString);
             isLong(isPrefixStringCharLiteral(mStr, '"', "L"));
