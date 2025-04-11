@@ -1208,7 +1208,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
     for (Token* tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        if (Token::Match(tok, "true|false"))
+        if (tok->tokType() == Token::Type::eBoolean)
             continue;
         if (astIsBool(tok) || Token::Match(tok, "%comp%")) {
             ValueFlow::Value lower{-1};
