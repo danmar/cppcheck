@@ -887,8 +887,6 @@ private:
     static int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
 
 public:
-    const std::string& fileName() const;
-
     nonneg int fileIndex() const {
         return mImpl->mFileIndex;
     }

@@ -2714,7 +2714,3 @@ Token* findLambdaEndScope(Token* tok)
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
 }
-
-const std::string& Token::fileName() const {
-    return mList.getFiles()[mImpl->mFileIndex];
-}
