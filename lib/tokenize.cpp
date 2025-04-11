@@ -8525,7 +8525,7 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok->linkAt(1)->previous());
 
         // UNKNOWN_MACRO(return)
-        else if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
+        else if (!tok->isKeyword() && Token::Match(tok, "%name% throw|return"))
             unknownMacroError(tok);
 
         // Assign/increment/decrement literal

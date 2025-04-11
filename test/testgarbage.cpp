@@ -1338,9 +1338,9 @@ private:
 
         // #8352
         ASSERT_THROW_INTERNAL(checkCode("else return % name5 name2 - =name1 return enum | { - name3 1 enum != >= 1 >= ++ { { || "
-                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { name6 | ; ++}}}}}}}"), SYNTAX);
+                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { name6 | ; ++}}}}}}}"), UNKNOWN_MACRO);
         ASSERT_THROW_INTERNAL(checkCode("else return % name5 name2 - =name1 return enum | { - name3 1 enum != >= 1 >= ++ { { || "
-                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { { || ; ++}}}}}}}}"), SYNTAX);
+                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { { || ; ++}}}}}}}}"), UNKNOWN_MACRO);
     }
 
     void templateSimplifierCrashes() {
@@ -1424,7 +1424,7 @@ private:
 
     void garbageCode162() {
         //7208
-        ASSERT_THROW_INTERNAL(checkCode("return <<  >>  x return <<  >>  x ", false), SYNTAX);
+        ASSERT_THROW_INTERNAL(checkCode("return <<  >>  x return <<  >>  x ", false), UNKNOWN_MACRO);
     }
 
     void garbageCode163() {
