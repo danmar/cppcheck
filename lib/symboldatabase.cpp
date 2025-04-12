@@ -1803,8 +1803,6 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
             if (Token::Match(dimension.tok->previous(), "[<,]")) {
                 if (dimension.known)
                     continue;
-                if (!Token::Match(dimension.tok->previous(), "[<,]"))
-                    continue;
 
                 // In template arguments, there might not be AST
                 // Determine size by using the "raw tokens"
@@ -3703,8 +3701,10 @@ bool Variable::arrayDimensions(const Settings& settings, bool& isContainer)
     isContainer = false;
     const Library::Container* container = (mTypeStartToken && mTypeStartToken->isCpp()) ? settings.library.detectContainer(mTypeStartToken) : nullptr;
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
-        const Token* tok = Token::findsimplematch(mTypeStartToken, "<");
-        if (tok) {
+        const Token* tok = mTypeStartToken;
+        while (Token::Match(tok, "%name%|::"))
+            tok = tok->next();
+        if (tok && tok->str() == "<") {
             isContainer = true;
             Dimension dimension_;
             tok = tok->next();
