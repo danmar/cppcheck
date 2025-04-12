@@ -76,6 +76,7 @@ ssize_t nullPointer_pwritev(int fd, const struct iovec *iov, int iovcnt, off_t o
 void uninitvar_timercmp(struct timeval t)
 {
     struct timeval uninit;
+    // cppcheck-suppress uninitvar
     (void)timercmp(&t, &uninit, <);
     (void)timercmp(&uninit, &t, <=);
     (void)timercmp(&uninit, &uninit, ==);
