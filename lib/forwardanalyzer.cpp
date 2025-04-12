@@ -288,7 +288,7 @@ namespace {
                 return (*this)(tok, self->analyzer->analyze(tok, Analyzer::Direction::Forward));
             }
 
-            Progress operator()(const Token*, Analyzer::Action action) const
+            Progress operator()(const Token* /*unused*/, Analyzer::Action action) const
             {
                 assert(self);
                 assert(result);
