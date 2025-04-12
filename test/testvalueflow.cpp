@@ -587,6 +587,8 @@ private:
                                 "void foo() { x = N::e1; }";
             ASSERT_EQUALS(1, valueOfTok(code, "::").intvalue);
         }
+
+        ASSERT_EQUALS(63, valueOfTok("x = 3 * uint32_t{21};", "*").intvalue);
     }
 
     void valueFlowString() {
