@@ -1389,7 +1389,7 @@ void uninitvar_types(void)
     b + 1;
 
     struct dirent d;
-    // cppcheck-suppress constStatement - TODO: uninitvar
+    // cppcheck-suppress [uninitvar,constStatement]
     d.d_ino + 1;
 }
 

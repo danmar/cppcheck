@@ -524,7 +524,7 @@ private:
 
         const char expected[] = "1: struct S { int i@1 ; } ;\n"
                                 "2: int f ( S s@2 ) {\n"
-                                "3: return ( & s@2 ) . i@3 ;\n"
+                                "3: return s@2 . i@3 ;\n"
                                 "4: }\n";
 
         ASSERT_EQUALS(expected, actual);

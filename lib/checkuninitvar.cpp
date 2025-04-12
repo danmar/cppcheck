@@ -1667,7 +1667,8 @@ void CheckUninitVar::valueFlowUninit()
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings);
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
-                    if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
+                    if (!isleaf && Token::Match(tok->astParent(), ". %name%") &&
+                        (tok->astParent()->next()->variable() || tok->astParent()->next()->isEnumerator()))
                         continue;
                 }
                 const ExprUsage usage = getExprUsage(tok, v->indirect, *mSettings);
