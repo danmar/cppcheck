@@ -2295,6 +2295,7 @@ void TokenList::setLang(Standards::Language lang, bool force)
     ASSERT_LANG(lang != Standards::Language::None);
     if (!force)
     {
+        // cppcheck-suppress premium-misra-cpp-2023-19.3.3; this is a false positive, will be fixed
         ASSERT_LANG(mLang == Standards::Language::None);
     }
 
