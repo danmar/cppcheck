@@ -6475,6 +6475,20 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout_str());
+
+        // #9834
+        check("struct CJ {\n"
+                "    std::string m_string1 = \"hello\";\n"
+                "};\n"
+                "void f() {\n"
+                "    std::vector<CJ> vec1;\n"
+                "    vec1.push_back(CJ());\n"
+                "    auto& a_ref = vec1.at(0).m_string1;\n"
+                "    vec1.clear();\n"
+                "    std::cout << a_ref << std::endl;\n"
+                "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:9]: (error) Reference to vec1 that may be invalid.\n", errout_str());
     }
 
     void invalidContainerLoop() {
