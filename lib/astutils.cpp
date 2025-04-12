@@ -440,6 +440,8 @@ bool isTemporary(const Token* tok, const Library* library, bool unknown)
         return isTemporary(tok->astOperand2(), library);
     if (tok->isCast() || (tok->isCpp() && isCPPCast(tok)))
         return isTemporary(tok->astOperand2(), library);
+    if(findLambdaEndToken(tok) != nullptr)
+        return true;
     if (Token::Match(tok, ".|[|++|--|%name%|%assign%"))
         return false;
     if (tok->isUnaryOp("*"))
