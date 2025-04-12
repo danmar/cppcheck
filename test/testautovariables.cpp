@@ -4221,7 +4221,9 @@ private:
               "    auto y = f([](auto x) { return 1; });\n"
               "    return y();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3:12] -> [test.cpp:2:13] -> [test.cpp:4:16] -> [test.cpp:8:16] -> [test.cpp:8:16] -> [test.cpp:9:12]: (error) Using object that is a temporary. [danglingTemporaryLifetime]\n", errout_str());
+        ASSERT_EQUALS(
+            "[test.cpp:3:12] -> [test.cpp:2:13] -> [test.cpp:4:16] -> [test.cpp:8:16] -> [test.cpp:8:16] -> [test.cpp:9:12]: (error) Using object that is a temporary. [danglingTemporaryLifetime]\n",
+            errout_str());
     }
 
     void danglingLifetimeBorrowedMembers()
