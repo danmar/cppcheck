@@ -1789,8 +1789,8 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                     false);
             }
         } else {
-            return ValueFlow::LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, settings, depth - 1),
-                                                          false);
+            return ValueFlow::LifetimeToken::setAddressOf(
+                getLifetimeTokens(vartok, escape, std::move(errorPath), pred, settings, depth - 1), false);
         }
     } else if (Token::simpleMatch(tok, "{") && getArgumentStart(tok) &&
                !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
