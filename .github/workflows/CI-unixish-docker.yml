@@ -127,7 +127,7 @@ jobs:
       # requires python3
       - name: Run extra tests
         run: |
-          tools/generate_and_run_more_tests.sh
+          test/scripts/generate_and_run_more_tests.sh
 
       # requires which
       - name: Validate
