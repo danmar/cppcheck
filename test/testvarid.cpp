@@ -1479,7 +1479,7 @@ private:
     void varid_cpp_keywords_in_c_code4() { // #12120
         {
             const char code[] = "int false = 0;";
-            ASSERT_THROW_INTERNAL_EQUALS(tokenize(code, dinit(TokenizeOptions, $.cpp = true)), INTERNAL, "Internal error. VarId set for bool literal.");
+            ASSERT_EQUALS("1: int false ; false = 0 ;\n", tokenize(code, dinit(TokenizeOptions, $.cpp = true)));
         }
         {
             const char code[] = "int false = 0;";
