@@ -60,7 +60,7 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
 
     for (const FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename());
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(fs.filename()) << std::endl;
+        fout << afile << ".a" << (++fileCount[afile]) << ":" << std::hex << fs.hash << ":" << Path::simplifyPath(fs.filename()) << std::endl;
     }
 }
 
@@ -73,7 +73,7 @@ void AnalyzerInformation::close()
     }
 }
 
-static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, std::list<ErrorMessage> &errors)
+static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t filehash, std::list<ErrorMessage> &errors)
 {
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
@@ -85,7 +85,7 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
         return false;
 
     const char *attr = rootNode->Attribute("hash");
-    if (!attr || attr != std::to_string(hash))
+    if (!attr || attr != std::to_string(filehash))
         return false;
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -96,10 +96,10 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
     return true;
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg)
+std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfghash)
 {
     std::string line;
-    const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
+    const std::string end(':' + cfghash + ':' + Path::simplifyPath(sourcefile));
     while (std::getline(filesTxt,line)) {
         if (line.size() <= end.size() + 2U)
             continue;
@@ -110,11 +110,11 @@ std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& f
     return "";
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
+std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfghash)
 {
     std::ifstream fin(Path::join(buildDir, "files.txt"));
     if (fin.is_open()) {
-        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg);
+        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfghash);
         if (!ret.empty())
             return Path::join(buildDir, ret);
     }
@@ -128,21 +128,21 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     return Path::join(buildDir, filename) + ".analyzerinfo";
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t hash, std::list<ErrorMessage> &errors)
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfgHash, std::size_t fileHash, std::list<ErrorMessage> &errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
     close();
 
-    mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg);
+    mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfgHash);
 
-    if (skipAnalysis(mAnalyzerInfoFile, hash, errors))
+    if (skipAnalysis(mAnalyzerInfoFile, fileHash, errors))
         return false;
 
     mOutputStream.open(mAnalyzerInfoFile);
     if (mOutputStream.is_open()) {
         mOutputStream << "<?xml version=\"1.0\"?>\n";
-        mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
+        mOutputStream << "<analyzerinfo hash=\"" << fileHash << "\">\n";
     } else {
         mAnalyzerInfoFile.clear();
     }

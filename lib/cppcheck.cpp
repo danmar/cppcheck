@@ -775,7 +775,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
 unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(file, "", &iss);
+    return checkFile(file, "", "", &iss);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -811,7 +811,9 @@ unsigned int CppCheck::check(const FileSettings &fs)
     }
     // need to pass the externally provided ErrorLogger instead of our internal wrapper
     CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
-    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
+    std::stringstream hash;
+    hash << std::hex << fs.hash;
+    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg, hash.str());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     while (!temp.mFileInfo.empty()) {
@@ -846,7 +848,7 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
-unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream)
+unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::string cfgHash, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -995,9 +997,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
+            const std::size_t fileHash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
             std::list<ErrorMessage> errors;
-            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
+            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgHash, fileHash, errors)) {
                 while (!errors.empty()) {
                     mErrorLogger.reportErr(errors.front());
                     errors.pop_front();
@@ -1794,7 +1796,9 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
     }
 
     for (const auto &f: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename());
+        std::stringstream hash;
+        hash << std::hex << f.hash;
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename(), hash.str());
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
