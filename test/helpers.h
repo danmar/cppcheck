@@ -20,6 +20,7 @@
 #define helpersH
 
 #include "library.h"
+#include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "tokenize.h"
@@ -111,7 +112,10 @@ private:
                   const std::string& filename,
                   const std::string &configuration = "")
     {
-        if (!list.createTokens(istr, filename))
+        if (list.front())
+            throw std::runtime_error("token list is not empty");
+        list.appendFileIfNew(filename);
+        if (!list.createTokens(istr, Path::identify(filename, false)))
             return false;
 
         return simplifyTokens1(configuration);
@@ -276,6 +280,17 @@ private:
     static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
 
     std::vector<std::string> mFiles;
+};
+
+struct TokenListHelper
+{
+    static bool createTokens(TokenList& tokenlist, std::istream& istr, const std::string& file)
+    {
+        if (tokenlist.front())
+            throw std::runtime_error("token list is not empty");
+        tokenlist.appendFileIfNew(file);
+        return tokenlist.createTokens(istr, Path::identify(file, false));
+    }
 };
 
 #endif // helpersH

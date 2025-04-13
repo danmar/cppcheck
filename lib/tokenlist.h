@@ -103,9 +103,8 @@ public:
      * - UTF in the code are not handled.
      * - comments are not handled.
      * @param code input stream for code
-     * @param file0 source file name
+     * @param lang the language of the code
      */
-    bool createTokens(std::istream &code, const std::string& file0);
     bool createTokens(std::istream &code, Standards::Language lang);
 
     void createTokens(simplecpp::TokenList&& tokenList);
