@@ -102,6 +102,7 @@ private:
         TEST_CASE(varid69);
         TEST_CASE(varid70); // #12660 - function
         TEST_CASE(varid71); // #12676 - wrong varid in uninstantiated templated constructor
+        TEST_CASE(varid72);
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_for_3);
@@ -1390,6 +1391,12 @@ private:
                                 "20: myspace :: CounterTest<int> :: CounterTest<int> ( const myspace :: CounterTest < T2 > & p@9 ) : obj@6 ( 0 ) {\n"
                                 "21: count@7 = p@9 . count@10 ;\n"
                                 "22: }\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid72() {
+        const char code[] = "static_assert(true && false);\n";
+        const char expected[] = "1: static_assert ( true && false ) ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
