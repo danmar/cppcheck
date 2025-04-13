@@ -507,7 +507,7 @@ function check_file {
         kde.cpp)
             # TODO: "kde-4config" is no longer commonly available in recent distros
             #kde_fn
-            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" "${DIR}""$f"
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --library="$lib" --library=qt "${DIR}""$f"
             ;;
         libcurl.c)
             libcurl_fn
