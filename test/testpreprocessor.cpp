@@ -61,13 +61,16 @@ private:
         return tokens2.stringify();
     }
 
-    static void preprocess(const char code[], std::vector<std::string> &files, TokenList& tokenlist, const simplecpp::DUI& dui)
+    static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
     {
+        if (!files.empty())
+            throw std::runtime_error("file list not empty");
+
         if (tokenlist.front())
             throw std::runtime_error("token list not empty");
 
         std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
+        const simplecpp::TokenList tokens1(istr, files, file0);
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
@@ -81,9 +84,9 @@ private:
 
     static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger)
     {
-        std::vector<std::string> files{"test.cpp"};
+        std::vector<std::string> files;
         std::istringstream istr(code);
-        const simplecpp::TokenList tokens1(istr, files, files[0]);
+        const simplecpp::TokenList tokens1(istr, files, "test.cpp");
 
         const Settings settings;
 
@@ -2570,7 +2573,6 @@ private:
     }
 
     void standard() const {
-        std::vector<std::string> files = {"test.cpp"};
 
         const char code[] = "int a;";
         // TODO: this bypasses the standard determined from the settings - the parameter should not be exposed
@@ -2578,36 +2580,41 @@ private:
 
         {
             dui.std = "c89";
+            std::vector<std::string> files;
             TokenList tokenlist{&settingsDefault};
-            preprocess(code, files, tokenlist, dui);
+            preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
 
         {
             dui.std = "gnu23";
+            std::vector<std::string> files;
             TokenList tokenlist{&settingsDefault};
-            preprocess(code, files, tokenlist, dui);
+            preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
 
         {
             dui.std = "c++98";
+            std::vector<std::string> files;
             TokenList tokenlist{&settingsDefault};
-            preprocess(code, files, tokenlist, dui);
+            preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
 
         {
             dui.std = "gnu++26";
+            std::vector<std::string> files;
             TokenList tokenlist{&settingsDefault};
-            preprocess(code, files, tokenlist, dui);
+            preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
 
         {
             dui.std = "gnu77";
+            std::vector<std::string> files;
             TokenList tokenlist{&settingsDefault};
-            preprocess(code, files, tokenlist, dui);
+            preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
     }
