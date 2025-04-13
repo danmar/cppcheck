@@ -4209,6 +4209,21 @@ private:
               "	if (!p) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        // #13760
+        check("template<class T>\n"
+              "auto f(T&& x) {\n"
+              "    return [&] {\n"
+              "        return x();\n"
+              "    };\n"
+              "}\n"
+              "auto g() {\n"
+              "    auto y = f([](auto x) { return 1; });\n"
+              "    return y();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3:12] -> [test.cpp:2:13] -> [test.cpp:4:16] -> [test.cpp:8:16] -> [test.cpp:8:16] -> [test.cpp:9:12]: (error) Using object that is a temporary. [danglingTemporaryLifetime]\n",
+            errout_str());
     }
 
     void danglingLifetimeBorrowedMembers()
