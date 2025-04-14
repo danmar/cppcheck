@@ -84,3 +84,9 @@ jobs:
         if: ${{ github.event.schedule != '' || github.event_name == 'workflow_dispatch' }}
         run: |
           cmake --build cmake.output --target run-clang-tidy-csa 2> /dev/null
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: Compilation Database
+          path: ./cmake.output/compile_commands.json
