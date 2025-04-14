@@ -47,6 +47,7 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
+          setup-python: 'false'
           cache: true
 
       - name: Run CMake for GUI release (Qt 5)
