@@ -4708,6 +4708,10 @@ void Tokenizer::setVarIdPass1()
 
             if (!isC() && Token::simpleMatch(tok2, "const new"))
                 continue;
+            if (!isC() && Token::simpleMatch(tok, "static_assert (")) {
+                tok = tok->linkAt(1);
+                continue;
+            }
 
             bool decl;
             if (cpp && mSettings.standards.cpp >= Standards::CPP17 && Token::Match(tok, "[(;{}] const| auto &|&&| [")) {
