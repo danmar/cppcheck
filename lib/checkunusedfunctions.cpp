@@ -417,15 +417,15 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
-    : functionName(f->name()), fileName(f->token->fileName()), lineNumber(f->token->linenr())
+    : functionName(f->name()), fileIndex(f->token->fileIndex()), lineNumber(f->token->linenr())
 {}
 
-std::string CheckUnusedFunctions::analyzerInfo() const
+std::string CheckUnusedFunctions::analyzerInfo(const Tokenizer &tokenizer) const
 {
     std::ostringstream ret;
     for (const FunctionDecl &functionDecl : mFunctionDecl) {
         ret << "    <functiondecl"
-            << " file=\"" << ErrorLogger::toxml(functionDecl.fileName) << '\"'
+            << " file=\"" << ErrorLogger::toxml(tokenizer.list.getFiles()[functionDecl.fileIndex]) << '\"'
             << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
             << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
     }
