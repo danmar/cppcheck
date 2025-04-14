@@ -38,15 +38,6 @@ if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
     target_link_libraries(test-resultstree ${tinyxml2_LIBRARIES})
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(QT_VERSION VERSION_LESS "6.0.0")
-        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
-        target_compile_options_safe(test-resultstree -Wno-extra-semi-stmt)
-    endif()
-    # caused by mocks
-    target_compile_options_safe(test-resultstree -Wno-missing-noreturn)
-endif()
-
 if (REGISTER_GUI_TESTS)
     # TODO: might crash - see #13223
     #add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree> -platform offscreen)
