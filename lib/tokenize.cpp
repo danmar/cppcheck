@@ -4708,7 +4708,8 @@ void Tokenizer::setVarIdPass1()
 
             if (!isC() && Token::simpleMatch(tok2, "const new"))
                 continue;
-            if (!isC() && Token::simpleMatch(tok, "static_assert (")) {
+
+            if (tok->isKeyword() && Token::simpleMatch(tok, "static_assert (")) {
                 tok = tok->linkAt(1);
                 continue;
             }
