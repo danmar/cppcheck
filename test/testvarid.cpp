@@ -1473,7 +1473,7 @@ private:
     void varid_cpp_keywords_in_c_code3() { // #12120
         const char code[] = "const struct class *p;";
         const char expected[] = "1: const struct class * p@1 ;\n";
-        ASSERT_EQUALS(expected, tokenize(code, dinit(TokenizeOptions, $.cpp = false)));
+        ASSERT_THROW_INTERNAL_EQUALS(tokenize(code, dinit(TokenizeOptions, $.cpp = true)), INTERNAL, "Internal error. VarId set for bool literal.");
     }
 
     void varid_cpp_keywords_in_c_code4() { // #12120
