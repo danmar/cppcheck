@@ -433,7 +433,7 @@ int multiComparePercent(const Token *tok, const char*& haystack, nonneg int vari
         // Type (%type%)
     {
         haystack += 5;
-        if (tok->isName() && !tok->isLiteral() && tok->varId() == 0)
+        if (tok->isName() && tok->varId() == 0)
             return 1;
     }
     break;
