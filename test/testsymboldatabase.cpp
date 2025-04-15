@@ -846,7 +846,8 @@ private:
         }
         {
             reset();
-            const SimpleTokenizer constpointer(*this, "const int* p;");
+            SimpleTokenizer constpointer(*this);
+            ASSERT(constpointer.tokenize("const int* p;"));
             Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v2.isArray());
             ASSERT(true == v2.isPointer());

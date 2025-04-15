@@ -301,7 +301,8 @@ private:
     }
 
     void multiCompare4() {
-        const SimpleTokenizer var(*this, "std :: queue < int > foo ;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("std :: queue < int > foo ;"));
 
         ASSERT_EQUALS(Token::eBracket, var.tokens()->tokAt(3)->tokType());
         ASSERT_EQUALS(Token::eBracket, var.tokens()->tokAt(5)->tokType());
@@ -581,17 +582,21 @@ private:
     }
 
     void nextArgument() {
-        const SimpleTokenizer example1(*this, "foo(1, 2, 3, 4);");
+        SimpleTokenizer example1(*this);
+        ASSERT(example1.tokenize("foo(1, 2, 3, 4);"));
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
         ASSERT_EQUALS(true, Token::simpleMatch(example1.tokens()->tokAt(4)->nextArgument(), "3 , 4"));
 
-        const SimpleTokenizer example2(*this, "foo();");
+        SimpleTokenizer example2(*this);
+        ASSERT(example2.tokenize("foo();"));
         ASSERT_EQUALS(true, example2.tokens()->tokAt(2)->nextArgument() == nullptr);
 
-        const SimpleTokenizer example3(*this, "foo(bar(a, b), 2, 3);");
+        SimpleTokenizer example3(*this);
+        ASSERT(example3.tokenize("foo(bar(a, b), 2, 3);"));
         ASSERT_EQUALS(true, Token::simpleMatch(example3.tokens()->tokAt(2)->nextArgument(), "2 , 3"));
 
-        const SimpleTokenizer example4(*this, "foo(x.i[1], \"\", 3);");
+        SimpleTokenizer example4(*this);
+        ASSERT(example4.tokenize("foo(x.i[1], \"\", 3);"));
         ASSERT_EQUALS(true, Token::simpleMatch(example4.tokens()->tokAt(2)->nextArgument(), "\"\" , 3"));
     }
 
@@ -643,7 +648,8 @@ private:
         const SimpleTokenList type("abc");
         ASSERT_EQUALS(true, Token::Match(type.front(), "%type%"));
 
-        const SimpleTokenizer isVar(*this, "int a = 3 ;");
+        SimpleTokenizer isVar(*this);
+        ASSERT(isVar.tokenize("int a = 3 ;"));
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type%"));
         ASSERT_EQUALS(true, Token::Match(isVar.tokens(), "%type% %name%"));
         ASSERT_EQUALS(false, Token::Match(isVar.tokens(), "%type% %type%"));
@@ -697,7 +703,8 @@ private:
     }
 
     void matchVarid() {
-        const SimpleTokenizer var(*this, "int a ; int b ;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("int a ; int b ;"));
 
         // Varid == 0 should throw exception
         ASSERT_THROW_INTERNAL_EQUALS((void)Token::Match(var.tokens(), "%type% %varid% ; %type% %name%", 0),INTERNAL,"Internal error. Token::Match called with varid 0. Please report this to Cppcheck developers");
@@ -1128,14 +1135,16 @@ private:
     }
 
     void canFindMatchingBracketsNeedsOpen() {
-        const SimpleTokenizer var(*this, "std::deque<std::set<int> > intsets;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("std::deque<std::set<int> > intsets;"));
 
         const Token* const t = var.tokens()->findClosingBracket();
         ASSERT(t == nullptr);
     }
 
     void canFindMatchingBracketsInnerPair() {
-        const SimpleTokenizer var(*this, "std::deque<std::set<int> > intsets;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("std::deque<std::set<int> > intsets;"));
 
         const Token * const t = var.tokens()->tokAt(7)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
@@ -1143,7 +1152,8 @@ private:
     }
 
     void canFindMatchingBracketsOuterPair() {
-        const SimpleTokenizer var(*this, "std::deque<std::set<int> > intsets;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("std::deque<std::set<int> > intsets;"));
 
         const Token* const t = var.tokens()->tokAt(3)->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
@@ -1151,7 +1161,8 @@ private:
     }
 
     void canFindMatchingBracketsWithTooManyClosing() {
-        const SimpleTokenizer var(*this, "X< 1>2 > x1;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("X< 1>2 > x1;"));
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT_EQUALS(">", t->str());
@@ -1159,7 +1170,8 @@ private:
     }
 
     void canFindMatchingBracketsWithTooManyOpening() {
-        const SimpleTokenizer var(*this, "X < (2 < 1) > x1;");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("X < (2 < 1) > x1;"));
 
         const Token* t = var.tokens()->next()->findClosingBracket();
         ASSERT(t != nullptr && t->str() == ">");
@@ -1169,31 +1181,33 @@ private:
     }
 
     void findClosingBracket() {
-        const SimpleTokenizer var(*this, "template<typename X, typename...Y> struct S : public Fred<Wilma<Y...>> {}");
+        SimpleTokenizer var(*this);
+        ASSERT(var.tokenize("template<typename X, typename...Y> struct S : public Fred<Wilma<Y...>> {}"));
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT(Token::simpleMatch(t, "> struct"));
     }
 
     void findClosingBracket2() {
-        const SimpleTokenizer var(*this, "const auto g = []<typename T>() {};\n"); // #11275
+        SimpleTokenizer var(*this); // #11275
+        ASSERT(var.tokenize("const auto g = []<typename T>() {};\n"));
 
         const Token* const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }
 
     void findClosingBracket3() {
-        const SimpleTokenizer var(*this, // #12789
-                                  "template <size_t I = 0, typename... ArgsT, std::enable_if_t<I < sizeof...(ArgsT)>* = nullptr>\n"
-                                  "void f();\n");
+        SimpleTokenizer var(*this); // #12789
+        ASSERT(var.tokenize("template <size_t I = 0, typename... ArgsT, std::enable_if_t<I < sizeof...(ArgsT)>* = nullptr>\n"
+                            "void f();\n"));
         const Token* const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t && Token::simpleMatch(t->findClosingBracket(), ">"));
     }
 
     void findClosingBracket4() {
-        const SimpleTokenizer var(*this, // #12923
-                                  "template<template<class E> class T = std::vector, class U = std::vector<int>, class V = void>\n"
-                                  "class C;\n");
+        SimpleTokenizer var(*this); // #12923
+        ASSERT(var.tokenize("template<template<class E> class T = std::vector, class U = std::vector<int>, class V = void>\n"
+                            "class C;\n"));
         const Token *const t = Token::findsimplematch(var.tokens(), "<");
         ASSERT(t);
         const Token *const closing = t->findClosingBracket();
@@ -1201,24 +1215,30 @@ private:
     }
 
     void expressionString() {
-        const SimpleTokenizer var1(*this, "void f() { *((unsigned long long *)x) = 0; }");
+        SimpleTokenizer var1(*this);
+        ASSERT(var1.tokenize("void f() { *((unsigned long long *)x) = 0; }"));
         const Token *const tok1 = Token::findsimplematch(var1.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok1->expressionString());
 
-        const SimpleTokenizer var2(*this, "typedef unsigned long long u64; void f() { *((u64 *)x) = 0; }");
+        SimpleTokenizer var2(*this);
+        ASSERT(var2.tokenize("typedef unsigned long long u64; void f() { *((u64 *)x) = 0; }"));
         const Token *const tok2 = Token::findsimplematch(var2.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok2->expressionString());
 
-        const SimpleTokenizer data3(*this, "void f() { return (t){1,2}; }");
+        SimpleTokenizer data3(*this);
+        ASSERT(data3.tokenize("void f() { return (t){1,2}; }"));
         ASSERT_EQUALS("return(t){1,2}", data3.tokens()->tokAt(5)->expressionString());
 
-        const SimpleTokenizer data4(*this, "void f() { return L\"a\"; }");
+        SimpleTokenizer data4(*this);
+        ASSERT(data4.tokenize("void f() { return L\"a\"; }"));
         ASSERT_EQUALS("returnL\"a\"", data4.tokens()->tokAt(5)->expressionString());
 
-        const SimpleTokenizer data5(*this, "void f() { return U\"a\"; }");
+        SimpleTokenizer data5(*this);
+        ASSERT(data5.tokenize("void f() { return U\"a\"; }"));
         ASSERT_EQUALS("returnU\"a\"", data5.tokens()->tokAt(5)->expressionString());
 
-        const SimpleTokenizer data6(*this, "x = \"\\0\\x1\\x2\\x3\\x4\\x5\\x6\\x7\";");
+        SimpleTokenizer data6(*this);
+        ASSERT(data6.tokenize("x = \"\\0\\x1\\x2\\x3\\x4\\x5\\x6\\x7\";"));
         ASSERT_EQUALS("x=\"\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\"", data6.tokens()->next()->expressionString());
     }
 
