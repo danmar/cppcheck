@@ -174,7 +174,7 @@ private:
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::string cfgHash = "", std::istream* fileStream = nullptr);
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, const std::string &cfgHash = "", std::istream* fileStream = nullptr);
 
     /**
      * @brief Check normal tokens

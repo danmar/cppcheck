@@ -331,7 +331,7 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename, std::string cfgHash = "")
+static std::string getDumpFileName(const Settings& settings, const std::string& filename, const std::string &cfgHash = "")
 {
     std::string extension;
     if ((settings.dump || !settings.buildDir.empty()) && !cfgHash.empty())
@@ -353,7 +353,7 @@ static void createDumpFile(const Settings& settings,
                            const FileWithDetails& file,
                            std::ofstream& fdump,
                            std::string& dumpFile,
-                           std::string cfgHash = "")
+                           const std::string &cfgHash = "")
 {
     if (!settings.dump && settings.addons.empty())
         return;
@@ -849,7 +849,7 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
-unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::string cfgHash, std::istream* fileStream)
+unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, const std::string &cfgHash, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)

@@ -83,10 +83,12 @@ private:
 struct CPPCHECKLIB FileSettings {
     explicit FileSettings(std::string path)
         : file(std::move(path))
+        , hash(0)
     {}
 
     FileSettings(std::string path, Standards::Language lang, std::size_t size)
         : file(std::move(path), lang, size)
+        , hash(0)
     {}
 
     void computeHash() {
