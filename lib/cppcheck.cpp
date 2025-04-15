@@ -331,13 +331,13 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename)
+static std::string getDumpFileName(const Settings& settings, const std::string& filename, std::string cfgHash = "")
 {
     std::string extension;
-    if (settings.dump || !settings.buildDir.empty())
+    if ((settings.dump || !settings.buildDir.empty()) && !cfgHash.empty())
         extension = ".dump";
     else
-        extension = "." + std::to_string(settings.pid) + ".dump";
+        extension = "." + cfgHash + ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + extension;
@@ -352,11 +352,12 @@ static std::string getCtuInfoFileName(const std::string &dumpFile)
 static void createDumpFile(const Settings& settings,
                            const FileWithDetails& file,
                            std::ofstream& fdump,
-                           std::string& dumpFile)
+                           std::string& dumpFile,
+                           std::string cfgHash = "")
 {
     if (!settings.dump && settings.addons.empty())
         return;
-    dumpFile = getDumpFileName(settings, file.spath());
+    dumpFile = getDumpFileName(settings, file.spath(), cfgHash);
 
     fdump.open(dumpFile);
     if (!fdump.is_open())
@@ -1063,7 +1064,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // write dump file xml prolog
         std::ofstream fdump;
         std::string dumpFile;
-        createDumpFile(mSettings, file, fdump, dumpFile);
+        createDumpFile(mSettings, file, fdump, dumpFile, cfgHash);
         if (fdump.is_open()) {
             fdump << getLibraryDumpData();
             fdump << dumpProlog;
