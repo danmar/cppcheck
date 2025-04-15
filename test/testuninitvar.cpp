@@ -118,8 +118,8 @@ private:
         const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).debugwarnings(options.debugwarnings).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
@@ -5464,8 +5464,8 @@ private:
         // Tokenize..
         const Settings s = settingsBuilder(settings).debugwarnings(false).build();
 
-        SimpleTokenizer tokenizer(s, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(s, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &s, this);

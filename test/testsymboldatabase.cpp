@@ -43,18 +43,18 @@ class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB(code) \
     SimpleTokenizer tokenizer(settings1, *this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, true); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
     ASSERT(db); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_C(code) \
-    SimpleTokenizer tokenizer(settings1, *this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, false); \
+    SimpleTokenizer tokenizer(settings1, *this, false); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_DBG(code) \
     SimpleTokenizer tokenizer(settingsDbg, *this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, true); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
     ASSERT(db); \
     do {} while (false)
 
@@ -75,8 +75,8 @@ private:
     }
 
     template<size_t size>
-    static const SymbolDatabase* getSymbolDB_inner(SimpleTokenizer& tokenizer, const char (&code)[size], bool cpp) {
-        return tokenizer.tokenize(code, cpp) ? tokenizer.getSymbolDatabase() : nullptr;
+    static const SymbolDatabase* getSymbolDB_inner(SimpleTokenizer& tokenizer, const char (&code)[size]) {
+        return tokenizer.tokenize(code) ? tokenizer.getSymbolDatabase() : nullptr;
     }
 
     static const Token* findToken(Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
@@ -2634,8 +2634,8 @@ private:
         const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
@@ -9251,8 +9251,8 @@ private:
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string typeOf_(const char* file, int line, const char (&code)[size], const char pattern[], bool cpp = true, const Settings *settings = nullptr) {
-        SimpleTokenizer tokenizer(settings ? *settings : settings2, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings ? *settings : settings2, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token* tok;
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
             if (Token::simpleMatch(tok, pattern, strlen(pattern)))

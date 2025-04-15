@@ -489,8 +489,8 @@ private:
         const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(cppstd).c(cstd).platform(platform).build();
 
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
@@ -516,8 +516,8 @@ private:
         const Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).platform(platform).build();
 
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
@@ -527,8 +527,8 @@ private:
     template<size_t size>
     std::string tokenizeAndStringify_(const char* file, int line, const char (&code)[size], const Settings &settings, bool cpp = true) {
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         if (!tokenizer.tokens())
             return "";
         return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
@@ -539,8 +539,8 @@ private:
     std::string tokenizeDebugListing_(const char* file, int line, const char (&code)[size], bool cpp = true) {
         const Settings settings = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
 
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // result..
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
@@ -8026,8 +8026,8 @@ private:
 
     void dumpAlignas() {
         Settings settings;
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT(tokenizer.tokenize("int alignas(8) alignas(16) x;", false));
+        SimpleTokenizer tokenizer(settings, *this, false);
+        ASSERT(tokenizer.tokenize("int alignas(8) alignas(16) x;"));
         ASSERT(Token::simpleMatch(tokenizer.tokens(), "int x ;"));
         std::ostringstream ostr;
         tokenizer.dump(ostr);
@@ -8425,8 +8425,8 @@ private:
         const char code[] = "void f(void) {\n"
                             "  double result = (strtod)(\"NAN\", NULL);\n"
                             "}\n";
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, false), __FILE__, __LINE__);
+        SimpleTokenizer tokenizer(settings1, *this, false);
+        ASSERT_LOC(tokenizer.tokenize(code), __FILE__, __LINE__);
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "strtod");
         ASSERT(f);
         ASSERT(!f->previous()->isCast());
@@ -8437,7 +8437,7 @@ private:
                             "    return static_cast<int>(std::ceil((std::min)(a, (std::min)(b, c))));\n"
                             "}\n";
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, true), __FILE__, __LINE__);
+        ASSERT_LOC(tokenizer.tokenize(code), __FILE__, __LINE__);
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "min");
         ASSERT(f);
         const Token *par = f->next();
@@ -8452,7 +8452,7 @@ private:
                             "    return (a != 0) ? 1 : (std::min)(1, b);\n"
                             "}\n";
         SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, true), __FILE__, __LINE__);
+        ASSERT_LOC(tokenizer.tokenize(code), __FILE__, __LINE__);
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "min");
         ASSERT(f);
         const Token *par = f->next();
@@ -8523,8 +8523,6 @@ private:
     }
 
     void dumpFallthrough() {
-        Settings settings;
-        SimpleTokenizer tokenizer(settings, *this);
         const char * code = "void f(int n) {\n"
                             "    void g(), h(), i();\n"
                             "    switch (n) {\n"
@@ -8540,7 +8538,9 @@ private:
                             "            break;\n"
                             "    }\n"
                             "}";
-        ASSERT(tokenizer.tokenize(code, false));
+        Settings settings;
+        SimpleTokenizer tokenizer(settings, *this, false);
+        ASSERT(tokenizer.tokenize(code));
         std::ostringstream ostr;
         tokenizer.dump(ostr);
         const std::string dump = ostr.str();

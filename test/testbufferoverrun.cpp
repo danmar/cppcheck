@@ -51,8 +51,8 @@ private:
         const Settings settings = options.s ? *options.s : settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);

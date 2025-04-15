@@ -271,8 +271,8 @@ private:
     std::string tokenize_(const char* file, int line, const char (&code)[size], const TokenizeOptions& options = make_default_obj()) {
         const Settings *settings1 = options.s ? options.s : &settings;
 
-        SimpleTokenizer tokenizer(*settings1, *this);
-        ASSERT_LOC((tokenizer.tokenize)(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(*settings1, *this, options.cpp);
+        ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         // result..
         Token::stringifyOptions str_options = Token::stringifyOptions::forDebugVarId();
@@ -308,8 +308,8 @@ private:
 #define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string compareVaridsForVariable_(const char* file, int line, const char (&code)[size], const char varname[], bool cpp = true) {
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC((tokenizer.tokenize)(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         unsigned int varid = ~0U;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {

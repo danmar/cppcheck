@@ -189,8 +189,8 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for null pointer dereferences..
         runChecks<CheckNullPointer>(tokenizer, this);
@@ -4212,9 +4212,9 @@ private:
     }
 
     void functioncalllibrary() {
-        SimpleTokenizer tokenizer(settingsDefault,*this);
+        SimpleTokenizer tokenizer(settingsDefault,*this,false);
         const char code[] = "void f() { int a,b,c; x(a,b,c); }";
-        ASSERT_EQUALS(true, tokenizer.tokenize(code, false));
+        ASSERT_EQUALS(true, tokenizer.tokenize(code));
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
 
         // nothing bad..
