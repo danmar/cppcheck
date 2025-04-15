@@ -56,48 +56,34 @@ public:
         : Tokenizer{settings, errorlogger}
     {}
 
-    /*
-        Token* tokens() {
-        return Tokenizer::tokens();
-        }
-
-        const Token* tokens() const {
-        return Tokenizer::tokens();
-        }
-     */
-
     template<size_t size>
     bool tokenize(const char (&code)[size],
-                  const std::string& filename,
-                  const std::string &configuration = "")
+                  const std::string& filename)
     {
         std::istringstream istr(code);
-        return tokenize(istr, filename, configuration);
+        return tokenize(istr, filename);
     }
 
     template<size_t size>
     bool tokenize(const char (&code)[size],
-                  bool cpp = true,
-                  const std::string &configuration = "")
+                  bool cpp = true)
     {
         std::istringstream istr(code);
-        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
+        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"));
     }
 
     bool tokenize(const std::string& code,
-                  const std::string& filename,
-                  const std::string &configuration = "")
+                  const std::string& filename)
     {
         std::istringstream istr(code);
-        return tokenize(istr, filename, configuration);
+        return tokenize(istr, filename);
     }
 
     bool tokenize(const std::string& code,
-                  bool cpp = true,
-                  const std::string &configuration = "")
+                  bool cpp = true)
     {
         std::istringstream istr(code);
-        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
+        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"));
     }
 
 private:
@@ -105,12 +91,10 @@ private:
      * Tokenize code
      * @param istr The code as stream
      * @param filename Indicates if the code is C++
-     * @param configuration E.g. "A" for code where "#ifdef A" is true
      * @return false if source code contains syntax errors
      */
     bool tokenize(std::istream& istr,
-                  const std::string& filename,
-                  const std::string &configuration = "")
+                  const std::string& filename)
     {
         if (list.front())
             throw std::runtime_error("token list is not empty");
@@ -118,7 +102,7 @@ private:
         if (!list.createTokens(istr, Path::identify(filename, false)))
             return false;
 
-        return simplifyTokens1(configuration);
+        return simplifyTokens1("");
     }
 
     // TODO: find a better solution
