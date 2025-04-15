@@ -9081,9 +9081,9 @@ private:
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
         for (const std::string& c: code) {
-            SimpleTokenizer tokenizer{settingsDefault, *this};
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
-            ASSERT(tokenizer.tokenize(c, filename));
+            SimpleTokenizer tokenizer{settingsDefault, *this, filename};
+            ASSERT(tokenizer.tokenize(c));
             fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
         }
 

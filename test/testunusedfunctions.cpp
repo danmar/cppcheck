@@ -596,8 +596,8 @@ private:
         for (int i = 1; i <= 2; ++i) {
             const std::string fname = "test" + std::to_string(i) + ".cpp";
 
-            SimpleTokenizer tokenizer{settings, *this};
-            ASSERT(tokenizer.tokenize(code, fname));
+            SimpleTokenizer tokenizer{settings, *this, fname};
+            ASSERT(tokenizer.tokenize(code));
 
             c.parseTokens(tokenizer, settings);
         }

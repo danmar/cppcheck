@@ -283,8 +283,8 @@ private:
 #define tokenizeHeader(...) tokenizeHeader_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeHeader_(const char* file, int line, const char (&code)[size], const char filename[]) {
-        SimpleTokenizer tokenizer{settings, *this};
-        ASSERT_LOC((tokenizer.tokenize)(code, std::string(filename)), file, line);
+        SimpleTokenizer tokenizer{settings, *this, std::string(filename)};
+        ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugVarId();
