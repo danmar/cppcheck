@@ -86,8 +86,8 @@ private:
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check...
         runChecks<CheckBool>(tokenizer, this);

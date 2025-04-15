@@ -126,8 +126,8 @@ private:
         const Settings& s = options.s ? *options.s : settings;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(s, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(s, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         runChecks<CheckFunctions>(tokenizer, this);
     }

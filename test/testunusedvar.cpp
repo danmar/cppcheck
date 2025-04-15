@@ -267,8 +267,8 @@ private:
 #define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void functionVariableUsage_(const char* file, int line, const char code[], const FunctionVariableUsageOptions& options = make_default_obj()) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
@@ -285,10 +285,10 @@ private:
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
     void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
         if (options.directives)
             tokenizer.setDirectives(*options.directives);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);

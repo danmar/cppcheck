@@ -491,8 +491,8 @@ private:
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
     std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr, bool cpp = true) {
-        SimpleTokenizer tokenizer(s ? *s : settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(s ? *s : settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }

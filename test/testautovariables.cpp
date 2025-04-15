@@ -44,8 +44,8 @@ private:
         const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         runChecks<CheckAutoVariables>(tokenizer, this);
     }

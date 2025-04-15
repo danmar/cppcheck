@@ -44,60 +44,36 @@ namespace tinyxml2 {
 // TODO: make Tokenizer private
 class SimpleTokenizer : public Tokenizer {
 public:
-    template<size_t size>
-    SimpleTokenizer(ErrorLogger& errorlogger, const char (&code)[size], bool cpp = true)
+    explicit SimpleTokenizer(ErrorLogger& errorlogger, bool cpp = true)
         : Tokenizer{s_settings, errorlogger}
     {
-        if (!tokenize(code, cpp))
-            throw std::runtime_error("creating tokens failed");
+        list.setLang(cpp ? Standards::Language::CPP : Standards::Language::C, true);
     }
 
-    SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger)
+    SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, bool cpp = true)
         : Tokenizer{settings, errorlogger}
-    {}
-
-    /*
-        Token* tokens() {
-        return Tokenizer::tokens();
-        }
-
-        const Token* tokens() const {
-        return Tokenizer::tokens();
-        }
-     */
-
-    template<size_t size>
-    bool tokenize(const char (&code)[size],
-                  const std::string& filename,
-                  const std::string &configuration = "")
     {
-        std::istringstream istr(code);
-        return tokenize(istr, filename, configuration);
+        list.setLang(cpp ? Standards::Language::CPP : Standards::Language::C, true);
+    }
+
+    SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, const std::string& filename)
+        : Tokenizer{settings, errorlogger}
+    {
+        list.setLang(Path::identify(filename, false));
+        list.appendFileIfNew(filename);
     }
 
     template<size_t size>
-    bool tokenize(const char (&code)[size],
-                  bool cpp = true,
-                  const std::string &configuration = "")
+    bool tokenize(const char (&code)[size])
     {
         std::istringstream istr(code);
-        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
+        return tokenize(istr, std::string(list.isCPP() ? "test.cpp" : "test.c"));
     }
 
-    bool tokenize(const std::string& code,
-                  const std::string& filename,
-                  const std::string &configuration = "")
+    bool tokenize(const std::string& code)
     {
         std::istringstream istr(code);
-        return tokenize(istr, filename, configuration);
-    }
-
-    bool tokenize(const std::string& code,
-                  bool cpp = true,
-                  const std::string &configuration = "")
-    {
-        std::istringstream istr(code);
-        return tokenize(istr, std::string(cpp ? "test.cpp" : "test.c"), configuration);
+        return tokenize(istr, std::string(list.isCPP() ? "test.cpp" : "test.c"));
     }
 
 private:
@@ -105,12 +81,10 @@ private:
      * Tokenize code
      * @param istr The code as stream
      * @param filename Indicates if the code is C++
-     * @param configuration E.g. "A" for code where "#ifdef A" is true
      * @return false if source code contains syntax errors
      */
     bool tokenize(std::istream& istr,
-                  const std::string& filename,
-                  const std::string &configuration = "")
+                  const std::string& filename)
     {
         if (list.front())
             throw std::runtime_error("token list is not empty");
@@ -118,7 +92,7 @@ private:
         if (!list.createTokens(istr, Path::identify(filename, false)))
             return false;
 
-        return simplifyTokens1(configuration);
+        return simplifyTokens1("");
     }
 
     // TODO: find a better solution

@@ -46,8 +46,8 @@ private:
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], bool cpp = true) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check char variable usage..
         Check64BitPortability check64BitPortability(&tokenizer, &settings, this);

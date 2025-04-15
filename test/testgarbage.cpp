@@ -288,8 +288,8 @@ private:
     template<size_t size>
     std::string checkCodeInternal_(const char* file, int line, const char (&code)[size], bool cpp) {
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // call all "runChecks" in all registered Check classes
         for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
@@ -396,8 +396,8 @@ private:
         const char code[] = "class x y { };";
 
         {
-            SimpleTokenizer tokenizer(settings, *this);
-            ASSERT(tokenizer.tokenize(code, false));
+            SimpleTokenizer tokenizer(settings, *this, false);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT_EQUALS("", errout_str());
         }
         {

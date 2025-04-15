@@ -323,8 +323,8 @@ private:
         settings->verbose = verbose;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(*settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckOther>(tokenizer, this);
@@ -11580,8 +11580,8 @@ private:
         settings->verbose = verbose;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(*settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckOther>(tokenizer, this);
