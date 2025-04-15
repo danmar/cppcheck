@@ -61,7 +61,7 @@ static constexpr int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings)
-    : mTokensFrontBack()
+    : mTokensFrontBack(new TokensFrontBack)
     , mSettings(settings)
 {
     if (mSettings && (mSettings->enforcedLang != Standards::Language::None)) {
@@ -90,9 +90,11 @@ const std::string& TokenList::getSourceFilePath() const
 // Deallocate lists..
 void TokenList::deallocateTokens()
 {
-    deleteTokens(mTokensFrontBack.front);
-    mTokensFrontBack.front = nullptr;
-    mTokensFrontBack.back = nullptr;
+    if (mTokensFrontBack) {
+        deleteTokens(mTokensFrontBack->front);
+        mTokensFrontBack->front = nullptr;
+        mTokensFrontBack->back = nullptr;
+    }
     mFiles.clear();
 }
 
@@ -171,17 +173,17 @@ void TokenList::addtoken(const std::string& str, const nonneg int lineno, const 
         }
     }
 
-    if (mTokensFrontBack.back) {
-        mTokensFrontBack.back->insertToken(str);
+    if (mTokensFrontBack->back) {
+        mTokensFrontBack->back->insertToken(str);
     } else {
-        mTokensFrontBack.front = new Token(*this, mTokensFrontBack);
-        mTokensFrontBack.back = mTokensFrontBack.front;
-        mTokensFrontBack.back->str(str);
+        mTokensFrontBack->front = new Token(*this, mTokensFrontBack);
+        mTokensFrontBack->back = mTokensFrontBack->front;
+        mTokensFrontBack->back->str(str);
     }
 
-    mTokensFrontBack.back->linenr(lineno);
-    mTokensFrontBack.back->column(column);
-    mTokensFrontBack.back->fileIndex(fileno);
+    mTokensFrontBack->back->linenr(lineno);
+    mTokensFrontBack->back->column(column);
+    mTokensFrontBack->back->fileIndex(fileno);
 }
 
 void TokenList::addtoken(const std::string& str, const Token *locationTok)
@@ -189,17 +191,17 @@ void TokenList::addtoken(const std::string& str, const Token *locationTok)
     if (str.empty())
         return;
 
-    if (mTokensFrontBack.back) {
-        mTokensFrontBack.back->insertToken(str);
+    if (mTokensFrontBack->back) {
+        mTokensFrontBack->back->insertToken(str);
     } else {
-        mTokensFrontBack.front = new Token(*this, mTokensFrontBack);
-        mTokensFrontBack.back = mTokensFrontBack.front;
-        mTokensFrontBack.back->str(str);
+        mTokensFrontBack->front = new Token(*this, mTokensFrontBack);
+        mTokensFrontBack->back = mTokensFrontBack->front;
+        mTokensFrontBack->back->str(str);
     }
 
-    mTokensFrontBack.back->linenr(locationTok->linenr());
-    mTokensFrontBack.back->column(locationTok->column());
-    mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
+    mTokensFrontBack->back->linenr(locationTok->linenr());
+    mTokensFrontBack->back->column(locationTok->column());
+    mTokensFrontBack->back->fileIndex(locationTok->fileIndex());
 }
 
 void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno)
@@ -207,20 +209,20 @@ void TokenList::addtoken(const Token * tok, const nonneg int lineno, const nonne
     if (tok == nullptr)
         return;
 
-    if (mTokensFrontBack.back) {
-        mTokensFrontBack.back->insertToken(tok->str(), tok->originalName());
+    if (mTokensFrontBack->back) {
+        mTokensFrontBack->back->insertToken(tok->str(), tok->originalName());
     } else {
-        mTokensFrontBack.front = new Token(*this, mTokensFrontBack);
-        mTokensFrontBack.back = mTokensFrontBack.front;
-        mTokensFrontBack.back->str(tok->str());
+        mTokensFrontBack->front = new Token(*this, mTokensFrontBack);
+        mTokensFrontBack->back = mTokensFrontBack->front;
+        mTokensFrontBack->back->str(tok->str());
         if (!tok->originalName().empty())
-            mTokensFrontBack.back->originalName(tok->originalName());
+            mTokensFrontBack->back->originalName(tok->originalName());
     }
 
-    mTokensFrontBack.back->linenr(lineno);
-    mTokensFrontBack.back->column(column);
-    mTokensFrontBack.back->fileIndex(fileno);
-    mTokensFrontBack.back->flags(tok->flags());
+    mTokensFrontBack->back->linenr(lineno);
+    mTokensFrontBack->back->column(column);
+    mTokensFrontBack->back->fileIndex(fileno);
+    mTokensFrontBack->back->flags(tok->flags());
 }
 
 void TokenList::addtoken(const Token *tok, const Token *locationTok)
@@ -228,20 +230,20 @@ void TokenList::addtoken(const Token *tok, const Token *locationTok)
     if (tok == nullptr || locationTok == nullptr)
         return;
 
-    if (mTokensFrontBack.back) {
-        mTokensFrontBack.back->insertToken(tok->str(), tok->originalName());
+    if (mTokensFrontBack->back) {
+        mTokensFrontBack->back->insertToken(tok->str(), tok->originalName());
     } else {
-        mTokensFrontBack.front = new Token(*this, mTokensFrontBack);
-        mTokensFrontBack.back = mTokensFrontBack.front;
-        mTokensFrontBack.back->str(tok->str());
+        mTokensFrontBack->front = new Token(*this, mTokensFrontBack);
+        mTokensFrontBack->back = mTokensFrontBack->front;
+        mTokensFrontBack->back->str(tok->str());
         if (!tok->originalName().empty())
-            mTokensFrontBack.back->originalName(tok->originalName());
+            mTokensFrontBack->back->originalName(tok->originalName());
     }
 
-    mTokensFrontBack.back->flags(tok->flags());
-    mTokensFrontBack.back->linenr(locationTok->linenr());
-    mTokensFrontBack.back->column(locationTok->column());
-    mTokensFrontBack.back->fileIndex(locationTok->fileIndex());
+    mTokensFrontBack->back->flags(tok->flags());
+    mTokensFrontBack->back->linenr(locationTok->linenr());
+    mTokensFrontBack->back->column(locationTok->column());
+    mTokensFrontBack->back->fileIndex(locationTok->fileIndex());
 }
 
 void TokenList::addtoken(const Token *tok)
@@ -249,22 +251,22 @@ void TokenList::addtoken(const Token *tok)
     if (tok == nullptr)
         return;
 
-    if (mTokensFrontBack.back) {
-        mTokensFrontBack.back->insertToken(tok->str(), tok->originalName(), tok->getMacroName());
+    if (mTokensFrontBack->back) {
+        mTokensFrontBack->back->insertToken(tok->str(), tok->originalName(), tok->getMacroName());
     } else {
-        mTokensFrontBack.front = new Token(*this, mTokensFrontBack);
-        mTokensFrontBack.back = mTokensFrontBack.front;
-        mTokensFrontBack.back->str(tok->str());
+        mTokensFrontBack->front = new Token(*this, mTokensFrontBack);
+        mTokensFrontBack->back = mTokensFrontBack->front;
+        mTokensFrontBack->back->str(tok->str());
         if (!tok->originalName().empty())
-            mTokensFrontBack.back->originalName(tok->originalName());
+            mTokensFrontBack->back->originalName(tok->originalName());
         if (!tok->getMacroName().empty())
-            mTokensFrontBack.back->setMacroName(tok->getMacroName());
+            mTokensFrontBack->back->setMacroName(tok->getMacroName());
     }
 
-    mTokensFrontBack.back->flags(tok->flags());
-    mTokensFrontBack.back->linenr(tok->linenr());
-    mTokensFrontBack.back->column(tok->column());
-    mTokensFrontBack.back->fileIndex(tok->fileIndex());
+    mTokensFrontBack->back->flags(tok->flags());
+    mTokensFrontBack->back->linenr(tok->linenr());
+    mTokensFrontBack->back->column(tok->column());
+    mTokensFrontBack->back->fileIndex(tok->fileIndex());
 }
 
 
@@ -395,19 +397,19 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         if (str.size() > 1 && str[0] == '.' && std::isdigit(str[1]))
             str = '0' + str;
 
-        if (mTokensFrontBack.back) {
-            mTokensFrontBack.back->insertToken(str);
+        if (mTokensFrontBack->back) {
+            mTokensFrontBack->back->insertToken(str);
         } else {
-            mTokensFrontBack.front = new Token(*this, mTokensFrontBack);
-            mTokensFrontBack.back = mTokensFrontBack.front;
-            mTokensFrontBack.back->str(str);
+            mTokensFrontBack->front = new Token(*this, mTokensFrontBack);
+            mTokensFrontBack->back = mTokensFrontBack->front;
+            mTokensFrontBack->back->str(str);
         }
 
-        mTokensFrontBack.back->fileIndex(tok->location.fileIndex);
-        mTokensFrontBack.back->linenr(tok->location.line);
-        mTokensFrontBack.back->column(tok->location.col);
+        mTokensFrontBack->back->fileIndex(tok->location.fileIndex);
+        mTokensFrontBack->back->linenr(tok->location.line);
+        mTokensFrontBack->back->column(tok->location.col);
         if (!tok->macro.empty())
-            mTokensFrontBack.back->setMacroName(tok->macro);
+            mTokensFrontBack->back->setMacroName(tok->macro);
 
         tok = tok->next;
         if (tok)
@@ -419,7 +421,7 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
             mFile = Path::getRelativePath(mFile, mSettings->basePaths);
     }
 
-    Token::assignProgressValues(mTokensFrontBack.front);
+    Token::assignProgressValues(mTokensFrontBack->front);
 }
 
 //---------------------------------------------------------------------------
@@ -1849,7 +1851,7 @@ static Token * createAstAtToken(Token *tok)
 
 void TokenList::createAst() const
 {
-    for (Token *tok = mTokensFrontBack.front; tok; tok = tok ? tok->next() : nullptr) {
+    for (Token *tok = mTokensFrontBack->front; tok; tok = tok ? tok->next() : nullptr) {
         Token* const nextTok = createAstAtToken(tok);
         if (precedes(nextTok, tok))
             throw InternalError(tok, "Syntax Error: Infinite loop when creating AST.", InternalError::AST);
@@ -1874,11 +1876,11 @@ void TokenList::validateAst(bool print) const
 {
     OnException oe{[&] {
             if (print)
-                mTokensFrontBack.front->printOut(std::cout);
+                mTokensFrontBack->front->printOut(std::cout);
         }};
     // Check for some known issues in AST to avoid crash/hang later on
     std::set<const Token*> safeAstTokens;    // list of "safe" AST tokens without endless recursion
-    for (const Token *tok = mTokensFrontBack.front; tok; tok = tok->next()) {
+    for (const Token *tok = mTokensFrontBack->front; tok; tok = tok->next()) {
         // Syntax error if binary operator only has 1 operand
         if ((tok->isAssignmentOp() || tok->isComparisonOp() || Token::Match(tok,"[|^/%]")) && tok->astOperand1() && !tok->astOperand2())
             throw InternalError(tok, "Syntax Error: AST broken, binary operator has only one operand.", InternalError::AST);
@@ -2003,7 +2005,7 @@ bool TokenList::validateToken(const Token* tok) const
 {
     if (!tok)
         return true;
-    for (const Token *t = mTokensFrontBack.front; t; t = t->next()) {
+    for (const Token *t = mTokensFrontBack->front; t; t = t->next()) {
         if (tok==t)
             return true;
     }

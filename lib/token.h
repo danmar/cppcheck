@@ -167,7 +167,7 @@ class CPPCHECKLIB Token {
 
 private:
     const TokenList& mList;
-    TokensFrontBack& mTokensFrontBack;
+    std::shared_ptr<TokensFrontBack> mTokensFrontBack;
 
     static const std::string mEmptyString;
 
@@ -186,7 +186,7 @@ public:
         eNone
     };
 
-    Token(const TokenList& tokenlist, TokensFrontBack &tokensFrontBack);
+    Token(const TokenList& tokenlist, std::shared_ptr<TokensFrontBack> tokensFrontBack);
     // for usage in CheckIO::ArgumentInfo only
     explicit Token(const Token *tok);
     ~Token();
