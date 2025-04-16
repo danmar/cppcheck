@@ -397,6 +397,12 @@ static inline T* empty_if_null(T* p)
     return default_if_null(p, "");
 }
 
+template<typename T>
+static inline T rotateLeft(T value, std::size_t amount)
+{
+    return (value << amount) | (value >> (8 * sizeof(T) - amount % (8 * sizeof(T))));
+}
+
 /**
  * Split string by given sperator.
  * @param str The string to split

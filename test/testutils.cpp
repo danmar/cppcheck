@@ -44,6 +44,7 @@ private:
         TEST_CASE(splitString);
         TEST_CASE(as_const);
         TEST_CASE(memoize);
+        TEST_CASE(rotateLeft);
     }
 
     void isValidGlobPattern() const {
@@ -534,6 +535,14 @@ private:
         ASSERT_EQUALS(1, count);
         ASSERT_EQUALS(1, callF());
         ASSERT_EQUALS(1, count);
+    }
+
+    void rotateLeft() const {
+        uint8_t value_u8 = 0b01010101;
+        ASSERT_EQUALS(::rotateLeft(value_u8, 1), 0b10101010);
+
+        uint64_t value_u64 = 0xABCDEF0123456789;
+        ASSERT_EQUALS(::rotateLeft(value_u64, 8), 0xCDEF0123456789AB);
     }
 };
 

@@ -96,17 +96,25 @@ struct CPPCHECKLIB FileSettings {
 
         hash ^= std::hash<std::string>{}(standard);
 
-        for (const auto &undef : undefs)
+        for (const auto &undef : undefs) {
+            hash = rotateLeft(hash, 1);
             hash ^= std::hash<std::string>{}(undef);
+        }
 
-        for (const auto &includePath : includePaths)
+        for (const auto &includePath : includePaths) {
+            hash = rotateLeft(hash, 1);
             hash ^= std::hash<std::string>{}(includePath);
+        }
 
-        for (const auto &systemIncludePath : systemIncludePaths)
+        for (const auto &systemIncludePath : systemIncludePaths) {
+            hash = rotateLeft(hash, 1);
             hash ^= std::hash<std::string>{}(systemIncludePath);
+        }
 
-        for (const auto &define : splitString(defines, ';'))
+        for (const auto &define : splitString(defines, ';')) {
+            hash = rotateLeft(hash, 1);
             hash ^= std::hash<std::string>{}(define);
+        }
     }
 
     std::string cfg;
