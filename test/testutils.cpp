@@ -538,8 +538,8 @@ private:
     }
 
     void rotateLeft() const {
-        uint8_t value_u8 = 0b01010101;
-        ASSERT_EQUALS(::rotateLeft(value_u8, 1), 0b10101010);
+        uint8_t value_u8 = 0x55;
+        ASSERT_EQUALS(::rotateLeft(value_u8, 1), 0xAA);
 
         uint64_t value_u64 = 0xABCDEF0123456789;
         ASSERT_EQUALS(::rotateLeft(value_u64, 8), 0xCDEF0123456789AB);
