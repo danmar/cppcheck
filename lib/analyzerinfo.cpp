@@ -58,10 +58,13 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
             fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(f) << '\n';
     }
 
+    std::ios savedFlags(0);
+    savedFlags.copyfmt(fout);
     for (const FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename());
         fout << afile << ".a" << (++fileCount[afile]) << ":" << std::hex << fs.hash << ":" << Path::simplifyPath(fs.filename()) << std::endl;
     }
+    fout.copyfmt(savedFlags);
 }
 
 void AnalyzerInformation::close()
