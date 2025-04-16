@@ -62,7 +62,7 @@ const std::string Token::mEmptyString;
 
 Token::Token(const TokenList& tokenlist, std::shared_ptr<TokensFrontBack> tokensFrontBack)
     : mList(tokenlist)
-    , mTokensFrontBack(tokensFrontBack)
+    , mTokensFrontBack(std::move(tokensFrontBack))
     , mIsC(mList.isC())
     , mIsCpp(mList.isCPP())
 {
