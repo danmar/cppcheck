@@ -6018,7 +6018,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
         matches.erase(itPure);
 
     // Only one candidate left
-    if (matches.size() == 1)
+    if (matches.size() == 1 && std::none_of(functionList.begin(), functionList.end(), [tok](const Function& f) {
+        return startsWith(f.name(), tok->str() + " <");
+    }))
         return matches[0];
 
     // Prioritize matches in derived scopes
