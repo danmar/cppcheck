@@ -334,10 +334,14 @@ static std::vector<std::string> split(const std::string &str, const std::string 
 static std::string getDumpFileName(const Settings& settings, const std::string& filename, const std::string &cfgHash = "")
 {
     std::string extension;
-    if ((settings.dump || !settings.buildDir.empty()) && !cfgHash.empty())
-        extension = ".dump";
-    else
-        extension = "." + cfgHash + ".dump";
+
+    if (!settings.dump && settings.buildDir.empty())
+        extension += "." + std::to_string(settings.pid);
+
+    if (!cfgHash.empty())
+        extension += "." + cfgHash;
+
+    extension += ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + extension;
