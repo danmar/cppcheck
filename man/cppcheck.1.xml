@@ -151,6 +151,9 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>--config-excludes-file=&lt;file&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--deduplicate</option>
+      </arg>
+      <arg choice="opt">
         <option>--include=&lt;file&gt;</option>
       </arg>
       <arg choice="opt">
@@ -439,6 +442,14 @@ First given path is searched for contained header files first. If paths are rela
         </term>
         <listitem>
           <para>A file that contains a list of config-excludes.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
+          <option>--deduplicate</option>
+        </term>
+        <listitem>
+          <para>Remove duplicate entries when reading project files. Takes both compilation flags and filenames in to account.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

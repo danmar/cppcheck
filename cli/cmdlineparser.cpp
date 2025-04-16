@@ -250,7 +250,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             fs.computeHash();
         }
 
-        {
+        if (mSettings.deduplicate) {
             auto it = fileSettings.begin();
             while (it != fileSettings.end()) {
                 fileSettings.erase(std::remove_if(std::next(it), fileSettings.end(), [&](const FileSettings& fs) {
@@ -650,6 +650,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         // Show debug warnings for lookup for configuration files
         else if (std::strcmp(argv[i], "--debug-clang-output") == 0)
             mSettings.debugClangOutput = true;
+
+        else if (std::strcmp(argv[i], "--deduplicate") == 0)
+            mSettings.deduplicate = true;
 
         // Show debug messages for ignored files
         else if (std::strcmp(argv[i], "--debug-ignore") == 0)
@@ -1718,6 +1721,8 @@ void CmdLineParser::printHelp() const
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
+        "    --deduplicate        Remove duplicate entries when reading project files.\n"
+        "                         Takes both compilation flags and filenames in to account.\n"
         "    --disable=<id>       Disable individual checks.\n"
         "                         Please refer to the documentation of --enable=<id>\n"
         "                         for further details.\n"
