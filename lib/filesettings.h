@@ -115,6 +115,8 @@ struct CPPCHECKLIB FileSettings {
             hash = rotateLeft(hash, 1);
             hash ^= std::hash<std::string>{}(define);
         }
+
+        hash ^= std::hash<std::string>{}(cfg);
     }
 
     std::string cfg;
