@@ -165,6 +165,7 @@ private:
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
         TEST_CASE(splitNamespaceAuto); // crash #10473
+        TEST_CASE(incompleteTypeArray);
     }
 
 
@@ -4679,6 +4680,14 @@ private:
               "    int i;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void incompleteTypeArray() { // #13787
+        check("struct S (*a[10]);\n"
+              "void f(int i, struct S* p) {\n"
+              "    a[i] = &p[i];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str()); // don't crash
     }
 
 };

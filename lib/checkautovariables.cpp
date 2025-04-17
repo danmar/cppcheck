@@ -58,7 +58,7 @@ static bool isPtrArg(const Token *tok)
 static bool isArrayArg(const Token *tok, const Settings& settings)
 {
     const Variable *var = tok->variable();
-    return (var && var->isArgument() && var->isArray() && !settings.library.isentrypoint(var->scope()->className));
+    return (var && var->isArgument() && var->isArray() && (!var->scope() || !settings.library.isentrypoint(var->scope()->className)));
 }
 
 static bool isArrayVar(const Token *tok)
