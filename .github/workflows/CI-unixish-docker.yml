@@ -20,11 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["ubuntu:24.04"]
-        include:
-          - build_gui: false
-          - image: "ubuntu:24.04"
-            build_gui: true
+        image: ["ubuntu:24.04", "ubuntu:25.10"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
@@ -49,7 +45,6 @@ jobs:
           apt-get install -y cmake g++ make libxml2-utils libpcre3-dev
 
       - name: Install missing software (gui) on latest ubuntu
-        if: matrix.build_gui
         run: |
           apt-get install -y qt6-base-dev qt6-charts-dev qt6-tools-dev
 
@@ -60,18 +55,12 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
-      - name: CMake build
-        if: ${{ !matrix.build_gui }}
-        run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
-          cmake --build . -- -j$(nproc)
-
-      - name: CMake build (with GUI)
-        if: matrix.build_gui
+      - name: Run CMake
         run: |
           cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: CMake build (with GUI)
+        run: |
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -82,7 +71,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["ubuntu:24.04"]
+        image: ["ubuntu:24.04", "ubuntu:25.10"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
