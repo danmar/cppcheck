@@ -254,6 +254,7 @@ private:
     static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
 
     std::vector<std::string> mFiles;
+    std::string ms;
 };
 
 struct TokenListHelper
