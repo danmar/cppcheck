@@ -73,6 +73,8 @@ jobs:
           dnf install -y cmake clang pcre-devel
           dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
           dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
+          dnf install -y python3-pip  # fixes missing pip module in jurplel/install-qt-action
+          dnf install -y python3-devel  # fixes building of wheels for jurplel/install-qt-action
           dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
