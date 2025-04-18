@@ -469,6 +469,7 @@ private:
         TEST_CASE(isFunction1); // UNKNOWN_MACRO(a,b) { .. }
         TEST_CASE(isFunction2);
         TEST_CASE(isFunction3);
+        TEST_CASE(isFunction4);
 
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
@@ -6990,6 +6991,19 @@ private:
         const Token* ret = Token::findsimplematch(tokenizer.tokens(), "return");
         ASSERT(ret != nullptr);
         ASSERT(ret->scope() && ret->scope()->type == ScopeType::eFunction);
+    }
+
+    void isFunction4() {
+        GET_SYMBOL_DB("struct S (*a[10]);\n" // #13787
+                      "void f(int i, struct S* p) {\n"
+                      "    a[i] = &p[i];\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(2, db->scopeList.size());
+        ASSERT_EQUALS(1, db->scopeList.front().functionList.size());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "a [ i");
+        ASSERT(a && a->variable());
+        ASSERT(a->variable()->scope() && a->variable()->scope()->type == ScopeType::eGlobal);
     }
 
 
