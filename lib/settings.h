@@ -220,8 +220,8 @@ public:
     /** @brief Do not filter duplicated errors. */
     bool emitDuplicates{};
 
-    /** @brief De-duplicate files with identical path and config. */
-    bool deduplicate{};
+    /** @brief Recheck project files with identical path and config. */
+    bool recheckProjectDuplicates{};
 
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language enforcedLang{};

@@ -250,7 +250,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             fs.computeHash();
         }
 
-        if (mSettings.deduplicate) {
+        if (!mSettings.recheckProjectDuplicates) {
             auto it = fileSettings.begin();
             while (it != fileSettings.end()) {
                 fileSettings.erase(std::remove_if(std::next(it), fileSettings.end(), [&](const FileSettings& fs) {
@@ -651,8 +651,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         else if (std::strcmp(argv[i], "--debug-clang-output") == 0)
             mSettings.debugClangOutput = true;
 
-        else if (std::strcmp(argv[i], "--deduplicate") == 0)
-            mSettings.deduplicate = true;
+        else if (std::strcmp(argv[i], "--recheck-project-duplicates") == 0)
+            mSettings.recheckProjectDuplicates = true;
 
         // Show debug messages for ignored files
         else if (std::strcmp(argv[i], "--debug-ignore") == 0)
@@ -1721,8 +1721,10 @@ void CmdLineParser::printHelp() const
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
-        "    --deduplicate        Remove duplicate entries when reading project files.\n"
-        "                         Takes both compilation flags and filenames in to account.\n"
+        "    --recheck-project-duplicates\n"
+        "                         When using the --project option, files with identical\n"
+        "                         names and compiler flags are deduplicated by default.\n"
+        "                         This option forces cppcheck to check all imported files.\n"
         "    --disable=<id>       Disable individual checks.\n"
         "                         Please refer to the documentation of --enable=<id>\n"
         "                         for further details.\n"
