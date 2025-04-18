@@ -254,11 +254,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             auto it = fileSettings.begin();
             while (it != fileSettings.end()) {
                 fileSettings.erase(std::remove_if(std::next(it), fileSettings.end(), [&](const FileSettings& fs) {
-                    if (fs.hash == it->hash) {
-                        mLogger.printMessage("removing duplicate file " + fs.filename());
-                        return true;
-                    }
-                    return false;
+                    return fs.hash == it->hash;
                 }), fileSettings.end());
                 ++it;
             }
