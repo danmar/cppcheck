@@ -1202,7 +1202,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
             }
             if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_VCXPROJ) {
-                if (project.guiProject.analyzeAllVsConfigs == "false")
+                if (!project.guiProject.analyzeAllVsConfigs)
                     project.selectOneVsConfig(mSettings.platform.type);
                 mSettings.libraries.emplace_back("windows");
             }
