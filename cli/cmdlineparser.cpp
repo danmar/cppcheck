@@ -1222,9 +1222,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         // --project-configuration
         else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
             mVSConfig = argv[i] + 24;
-            // TODO: provide error when this does nothing
-            if (!mVSConfig.empty() && (project.projectType == ImportProject::Type::VS_SLN || project.projectType == ImportProject::Type::VS_VCXPROJ))
-                project.ignoreOtherConfigs(mVSConfig);
+            if (mVSConfig.empty()) {
+                mLogger.printError("--project-configuration parameter is empty.");
+                return Result::Fail;
+            }
+            if (project.projectType != ImportProject::Type::VS_SLN && project.projectType != ImportProject::Type::VS_VCXPROJ) {
+                mLogger.printError("--project-configuration has no effect - no Visual Studio project provided.");
+                return Result::Fail;
+            }
+            project.ignoreOtherConfigs(mVSConfig);
         }
 
         // Only print something when there are errors
