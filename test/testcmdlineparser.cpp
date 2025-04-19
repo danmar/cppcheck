@@ -478,6 +478,7 @@ private:
         TEST_CASE(debugNormalVerbose);
         TEST_CASE(debug);
         TEST_CASE(debugVerbose);
+        TEST_CASE(noIfdefBailout);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3336,6 +3337,13 @@ private:
         ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(true, settings->debugast);
         ASSERT_EQUALS(true, settings->debugsymdb);
+    }
+
+    void noIfdefBailout() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-ifdef-bailout", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(false, settings->ifdefBailout);
     }
 
     void ignorepaths1() {
