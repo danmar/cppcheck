@@ -165,6 +165,9 @@ def test_vs_project_local_path():
 def test_vs_project_local_path_select_one():
     __test_vs_project_local_path(['--project-configuration=Release|Win32'], 'Release|Win32')
 
+def test_vs_project_local_path_select_one_multiple():
+    __test_vs_project_local_path(['--project-configuration=Debug|Win32', '--project-configuration=Release|Win32'], 'Release|Win32')
+
 def test_vs_project_relative_path():
     args = [
         '--template=cppcheck1',
@@ -203,9 +206,13 @@ def __test_cppcheck_project_local_path(extra_args=None, exp_vs_cfg='Debug|x64'):
 def test_cppcheck_project_local_path():
     __test_cppcheck_project_local_path()
 
-@pytest.mark.xfail
+@pytest.mark.xfail  # TODO: no source files found
 def test_cppcheck_project_local_path_select_one():
     __test_cppcheck_project_local_path(['--project-configuration=Release|Win32'], 'Release|Win32')
+
+@pytest.mark.xfail  # TODO: no source files found
+def test_cppcheck_project_local_path_select_one_multiple():
+    __test_cppcheck_project_local_path(['--project-configuration=Debug|Win32', '--project-configuration=Release|Win32'], 'Release|Win32')
 
 def test_cppcheck_project_relative_path():
     args = [

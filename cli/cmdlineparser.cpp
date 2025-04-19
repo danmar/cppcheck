@@ -441,7 +441,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     bool def = false;
     bool maxconfigs = false;
 
+    ImportProject::Type projectType = ImportProject::Type::NONE;
     ImportProject project;
+    std::string vsConfig;
 
     bool executorAuto = true;
 
@@ -1160,7 +1162,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // --project
         else if (std::strncmp(argv[i], "--project=", 10) == 0) {
-            if (project.projectType != ImportProject::Type::NONE)
+            if (projectType != ImportProject::Type::NONE)
             {
                 mLogger.printError("multiple --project options are not supported.");
                 return Result::Fail;
@@ -1168,9 +1170,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
-            ImportProject::Type projType = project.import(projectFile, &mSettings, &mSuppressions);
-            project.projectType = projType;
-            if (projType == ImportProject::Type::CPPCHECK_GUI) {
+            projectType = project.import(projectFile, &mSettings, &mSuppressions);
+            if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                 for (const std::string &lib : project.guiProject.libraries)
                     mSettings.libraries.emplace_back(lib);
 
@@ -1193,27 +1194,27 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 if (!projectFileGui.empty()) {
                     // read underlying project
                     projectFile = projectFileGui;
-                    projType = project.import(projectFileGui, &mSettings, &mSuppressions);
-                    if (projType == ImportProject::Type::CPPCHECK_GUI) {
+                    projectType = project.import(projectFileGui, &mSettings, &mSuppressions);
+                    if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                         mLogger.printError("nested Cppcheck GUI projects are not supported.");
                         return Result::Fail;
                     }
                 }
             }
-            if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
+            if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_VCXPROJ) {
                 if (project.guiProject.analyzeAllVsConfigs == "false")
                     project.selectOneVsConfig(mSettings.platform.type);
                 mSettings.libraries.emplace_back("windows");
             }
-            if (projType == ImportProject::Type::MISSING) {
+            if (projectType == ImportProject::Type::MISSING) {
                 mLogger.printError("failed to open project '" + projectFile + "'. The file does not exist.");
                 return Result::Fail;
             }
-            if (projType == ImportProject::Type::UNKNOWN) {
+            if (projectType == ImportProject::Type::UNKNOWN) {
                 mLogger.printError("failed to load project '" + projectFile + "'. The format is unknown.");
                 return Result::Fail;
             }
-            if (projType == ImportProject::Type::FAILURE) {
+            if (projectType == ImportProject::Type::FAILURE) {
                 mLogger.printError("failed to load project '" + projectFile + "'. An error occurred.");
                 return Result::Fail;
             }
@@ -1221,16 +1222,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // --project-configuration
         else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
-            mVSConfig = argv[i] + 24;
-            if (mVSConfig.empty()) {
+            vsConfig = argv[i] + 24;
+            if (vsConfig.empty()) {
                 mLogger.printError("--project-configuration parameter is empty.");
                 return Result::Fail;
             }
-            if (project.projectType != ImportProject::Type::VS_SLN && project.projectType != ImportProject::Type::VS_VCXPROJ) {
+            if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
                 mLogger.printError("--project-configuration has no effect - no Visual Studio project provided.");
                 return Result::Fail;
             }
-            project.ignoreOtherConfigs(mVSConfig);
         }
 
         // Only print something when there are errors
@@ -1600,9 +1600,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         //mLogger.printMessage("whole program analysis requires --cppcheck-build-dir to be active with -j.");
     }
 
-    if (!mPathNames.empty() && project.projectType != ImportProject::Type::NONE) {
+    if (!mPathNames.empty() && projectType != ImportProject::Type::NONE) {
         mLogger.printError("--project cannot be used in conjunction with source files.");
         return Result::Fail;
+    }
+
+    if (!vsConfig.empty()) {
+        project.ignoreOtherConfigs(vsConfig);
     }
 
     if (!mSettings.buildDir.empty() && !Path::isDirectory(mSettings.buildDir)) {

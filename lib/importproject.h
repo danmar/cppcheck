@@ -70,7 +70,6 @@ public:
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
     std::list<FileSettings> fileSettings;
-    Type projectType{Type::NONE};
 
     ImportProject() = default;
     virtual ~ImportProject() = default;

@@ -164,7 +164,6 @@ private:
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;
-    std::string mVSConfig;
 };
 
 /// @}
