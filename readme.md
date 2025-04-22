@@ -271,6 +271,7 @@ Unofficial packages *not* maintained by the Cppcheck team but their respective p
 - (Windows / Outdated) A package is available via https://community.chocolatey.org/packages/cppcheck.
 - (Windows / Outdated) A package is available via https://winget.run/pkg/Cppcheck/Cppcheck.
 - (Windows / Outdated) A package is available via https://osdn.net/projects/sfnet_cppcheck/.
+- (Windows) A package is available via https://scoop.sh/#/apps?q=cppcheck.
 - (Linux/Unix) Many major distros offer Cppcheck packages via their integrated package managers (`yum`, `apt`, `pacman`, etc.). See https://pkgs.org/search/?q=cppcheck for an overview.
 - (Linux/Unix) Unless you are using a "rolling" distro, it is likely that they are not carrying the latest version. There are several external (mainly unsupported) repositories like AUR (ArchLinux), PPA (ubuntu), EPEL (CentOS/Fedora) etc. which might provide up-to-date packages. 
 - (Linux/Unix / Outdated) The Canonical Snapcraft packages (https://snapcraft.io/cppcheck / https://snapcraft.io/cppcheckgui) are unmaintained and contain very old (development) versions. Please refrain from using them! See https://trac.cppcheck.net/ticket/11641 for more details.
