@@ -40,11 +40,11 @@ namespace internal
  * Has to be clean for using with SEH on windows, i.e. no construction of C++ object instances is allowed!
  */
 #define CALL_WITH_SEH_WRAPPER(f) \
-    __try {                      \
-        return (f);              \
-    } __except (internal::filter_seh_exeception(GetExceptionCode(), GetExceptionInformation())) { \
-        return -1; \
-    }
+        __try {                      \
+            return (f);              \
+        } __except (internal::filter_seh_exeception(GetExceptionCode(), GetExceptionInformation())) { \
+            return -1; \
+        }
 
 #endif
 

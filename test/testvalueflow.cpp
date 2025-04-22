@@ -1385,14 +1385,14 @@ private:
         ASSERT_EQUALS(4, values.back().intvalue);
 
 #define CHECK3(A, B, C)                          \
-    do {                                     \
-        code = "void f() {\n"                    \
-               "    x = sizeof(" A ");\n"        \
-               "}";                              \
-        values = tokenValues(code,"( " C " )");  \
-        ASSERT_EQUALS(1U, values.size());        \
-        ASSERT_EQUALS(B, values.back().intvalue); \
-    } while (false)
+        do {                                     \
+            code = "void f() {\n"                    \
+                   "    x = sizeof(" A ");\n"        \
+                   "}";                              \
+            values = tokenValues(code,"( " C " )");  \
+            ASSERT_EQUALS(1U, values.size());        \
+            ASSERT_EQUALS(B, values.back().intvalue); \
+        } while (false)
 #define CHECK(A, B) CHECK3(A, B, A)
 
         // standard types
@@ -1441,15 +1441,15 @@ private:
         ASSERT_EQUALS(2, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
-    do {                                      \
-        code = "enum " A " E " B " { E0, E1 };\n" \
-               "void f() {\n"                     \
-               "    x = sizeof(" C ");\n"         \
-               "}";                               \
-        values = tokenValues(code,"( " C " )");   \
-        ASSERT_EQUALS(1U, values.size());         \
-        ASSERT_EQUALS(D, values.back().intvalue); \
-    } while (false)
+        do {                                      \
+            code = "enum " A " E " B " { E0, E1 };\n" \
+                   "void f() {\n"                     \
+                   "    x = sizeof(" C ");\n"         \
+                   "}";                               \
+            values = tokenValues(code,"( " C " )");   \
+            ASSERT_EQUALS(1U, values.size());         \
+            ASSERT_EQUALS(D, values.back().intvalue); \
+        } while (false)
 
         // enums
         CHECK("", "", "E", settings.platform.sizeof_int);
@@ -1516,16 +1516,16 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
-    do {                                          \
-        code = "enum E " A " { E0, E1 };\n"           \
-               "void f() {\n"                         \
-               "    E arrE[] = { E0, E1 };\n"         \
-               "    x = sizeof(arrE);\n"              \
-               "}";                                   \
-        values = tokenValues(code,"( arrE )");        \
-        ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2ULL, values.back().intvalue); \
-    } while (false)
+        do {                                          \
+            code = "enum E " A " { E0, E1 };\n"           \
+                   "void f() {\n"                         \
+                   "    E arrE[] = { E0, E1 };\n"         \
+                   "    x = sizeof(arrE);\n"              \
+                   "}";                                   \
+            values = tokenValues(code,"( arrE )");        \
+            ASSERT_EQUALS(1U, values.size());             \
+            ASSERT_EQUALS(B * 2ULL, values.back().intvalue); \
+        } while (false)
 
         // enum array
         CHECK("", settings.platform.sizeof_int);
@@ -1551,16 +1551,16 @@ private:
 #undef CHECK
 
 #define CHECK(A, B)                                   \
-    do {                                          \
-        code = "enum class E " A " { E0, E1 };\n"     \
-               "void f() {\n"                         \
-               "    E arrE[] = { E::E0, E::E1 };\n"   \
-               "    x = sizeof(arrE);\n"              \
-               "}";                                   \
-        values = tokenValues(code,"( arrE )");        \
-        ASSERT_EQUALS(1U, values.size());             \
-        ASSERT_EQUALS(B * 2ULL, values.back().intvalue); \
-    } while (false)
+        do {                                          \
+            code = "enum class E " A " { E0, E1 };\n"     \
+                   "void f() {\n"                         \
+                   "    E arrE[] = { E::E0, E::E1 };\n"   \
+                   "    x = sizeof(arrE);\n"              \
+                   "}";                                   \
+            values = tokenValues(code,"( arrE )");        \
+            ASSERT_EQUALS(1U, values.size());             \
+            ASSERT_EQUALS(B * 2ULL, values.back().intvalue); \
+        } while (false)
 
         // enum array
         CHECK("", settings.platform.sizeof_int);

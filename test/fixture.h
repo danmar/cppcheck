@@ -66,9 +66,11 @@ protected:
     virtual void run() = 0;
 
     bool prepareTest(const char testname[]);
-    virtual void prepareTestInternal() {}
+    virtual void prepareTestInternal() {
+    }
     void teardownTest();
-    virtual void teardownTestInternal() {}
+    virtual void teardownTestInternal() {
+    }
     std::string getLocationStr(const char * filename, unsigned int linenr) const;
 
     class AssertFailedError : public std::exception {};

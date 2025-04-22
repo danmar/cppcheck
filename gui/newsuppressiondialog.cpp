@@ -41,7 +41,8 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
 
     class QErrorLogger : public ErrorLogger {
     public:
-        void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}
+        void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {
+        }
         void reportErr(const ErrorMessage &msg) override {
             errorIds << QString::fromStdString(msg.id);
         }

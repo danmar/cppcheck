@@ -153,13 +153,13 @@ static void bailoutInternal(const std::string& type,
 }
 
 #define bailout2(type, tokenlist, errorLogger, tok, what)                                                              \
-    bailoutInternal((type), (tokenlist), (errorLogger), (tok), (what), __FILE__, __LINE__, __func__)
+        bailoutInternal((type), (tokenlist), (errorLogger), (tok), (what), __FILE__, __LINE__, __func__)
 
 #define bailout(tokenlist, errorLogger, tok, what)                                                                     \
-    bailout2("valueFlowBailout", (tokenlist), (errorLogger), (tok), (what))
+        bailout2("valueFlowBailout", (tokenlist), (errorLogger), (tok), (what))
 
 #define bailoutIncompleteVar(tokenlist, errorLogger, tok, what)                                                        \
-    bailoutInternal("valueFlowBailoutIncompleteVar", (tokenlist), (errorLogger), (tok), (what), "", 0, __func__)
+        bailoutInternal("valueFlowBailoutIncompleteVar", (tokenlist), (errorLogger), (tok), (what), "", 0, __func__)
 
 static void changeKnownToPossible(std::list<ValueFlow::Value>& values, int indirect = -1)
 {
@@ -7405,13 +7405,13 @@ static ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool c
 }
 
 #define VALUEFLOW_ADAPTOR(cpp, ...)                                                                                    \
-    makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
-                             (cpp),                                                                                      \
-                             [](TokenList& tokenlist,                                                                  \
-                                SymbolDatabase& symboldatabase,                                                        \
-                                ErrorLogger& errorLogger,                                                              \
-                                const Settings& settings,                                                              \
-                                const std::set<const Scope*>& skippedFunctions) {                                      \
+        makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
+                                 (cpp),                                                                                      \
+                                 [](TokenList& tokenlist,                                                                  \
+                                    SymbolDatabase& symboldatabase,                                                        \
+                                    ErrorLogger& errorLogger,                                                              \
+                                    const Settings& settings,                                                              \
+                                    const std::set<const Scope*>& skippedFunctions) {                                      \
         (void)tokenlist;                                                                      \
         (void)symboldatabase;                                                                 \
         (void)errorLogger;                                                                    \

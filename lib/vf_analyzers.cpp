@@ -467,7 +467,8 @@ private:
 
     template<class T, class U>
     static void assignValueIfMutable(const T& /*unused*/, const U& /*unused*/)
-    {}
+    {
+    }
 
     static std::string removeAssign(const std::string& assign) {
         return std::string{assign.cbegin(), assign.cend() - 1};

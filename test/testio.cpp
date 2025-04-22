@@ -802,34 +802,34 @@ private:
 
 
 #define TEST_SCANF_CODE(format, type) \
-    "void f(){" type " x; scanf(\"" format "\", &x);}"
+        "void f(){" type " x; scanf(\"" format "\", &x);}"
 
 #define TEST_SCANF_ERR(format, formatStr, type) \
-    "[test.c:1]: (warning) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " *'.\n"
+        "[test.c:1]: (warning) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " *'.\n"
 
 #define TEST_SCANF_ERR_AKA_(file, format, formatStr, type, akaType) \
-    "[" file ":1]: (portability) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " * {aka " akaType " *}'.\n"
+        "[" file ":1]: (portability) " format " in format string (no. 1) requires '" formatStr " *' but the argument type is '" type " * {aka " akaType " *}'.\n"
 
 #define TEST_SCANF_ERR_AKA(format, formatStr, type, akaType) \
-    TEST_SCANF_ERR_AKA_("test.c", format, formatStr, type, akaType)
+        TEST_SCANF_ERR_AKA_("test.c", format, formatStr, type, akaType)
 
 #define TEST_SCANF_ERR_AKA_CPP(format, formatStr, type, akaType) \
-    TEST_SCANF_ERR_AKA_("test.cpp", format, formatStr, type, akaType)
+        TEST_SCANF_ERR_AKA_("test.cpp", format, formatStr, type, akaType)
 
 #define TEST_PRINTF_CODE(format, type) \
-    "void f(" type " x){printf(\"" format "\", x);}"
+        "void f(" type " x){printf(\"" format "\", x);}"
 
 #define TEST_PRINTF_ERR(format, requiredType, actualType) \
-    "[test.c:1]: (warning) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType "'.\n"
+        "[test.c:1]: (warning) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType "'.\n"
 
 #define TEST_PRINTF_ERR_AKA_(file, format, requiredType, actualType, akaType) \
-    "[" file ":1]: (portability) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType " {aka " akaType "}'.\n"
+        "[" file ":1]: (portability) " format " in format string (no. 1) requires '" requiredType "' but the argument type is '" actualType " {aka " akaType "}'.\n"
 
 #define TEST_PRINTF_ERR_AKA(format, requiredType, actualType, akaType) \
-    TEST_PRINTF_ERR_AKA_("test.c", format, requiredType, actualType, akaType)
+        TEST_PRINTF_ERR_AKA_("test.c", format, requiredType, actualType, akaType)
 
 #define TEST_PRINTF_ERR_AKA_CPP(format, requiredType, actualType, akaType) \
-    TEST_PRINTF_ERR_AKA_("test.cpp", format, requiredType, actualType, akaType)
+        TEST_PRINTF_ERR_AKA_("test.cpp", format, requiredType, actualType, akaType)
 
     template<size_t size>
     void testFormatStrNoWarn(const char *filename, unsigned int linenr, const char (&code)[size],
@@ -911,42 +911,42 @@ private:
     }
 
 #define TEST_SCANF_NOWARN(FORMAT, FORMATSTR, TYPE) \
-    testFormatStrNoWarn(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE))
+        testFormatStrNoWarn(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE))
 #define TEST_SCANF_NOWARN_CPP(FORMAT, FORMATSTR, TYPE) \
-    testFormatStrNoWarn(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), true)
+        testFormatStrNoWarn(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), true)
 #define TEST_SCANF_WARN(FORMAT, FORMATSTR, TYPE) \
-    testFormatStrWarn(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR(FORMAT, FORMATSTR, TYPE))
+        testFormatStrWarn(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR(FORMAT, FORMATSTR, TYPE))
 #define TEST_SCANF_WARN_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAka(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
+        testFormatStrWarnAka(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
 #define TEST_SCANF_WARN_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAka(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
+        testFormatStrWarnAka(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
 #define TEST_SCANF_WARN_AKA_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
+        testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
 #define TEST_SCANF_WARN_AKA_CPP_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
+        testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
 #define TEST_SCANF_WARN_AKA_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32) \
-    testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32))
+        testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32))
 #define TEST_SCANF_WARN_AKA_CPP_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32) \
-    testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32), true)
+        testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_SCANF_CODE(FORMAT, TYPE), TEST_SCANF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32), true)
 
 #define TEST_PRINTF_NOWARN(FORMAT, FORMATSTR, TYPE) \
-    testFormatStrNoWarn(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE))
+        testFormatStrNoWarn(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE))
 #define TEST_PRINTF_NOWARN_CPP(FORMAT, FORMATSTR, TYPE) \
-    testFormatStrNoWarn(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), true)
+        testFormatStrNoWarn(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), true)
 #define TEST_PRINTF_WARN(FORMAT, FORMATSTR, TYPE) \
-    testFormatStrWarn(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR(FORMAT, FORMATSTR, TYPE))
+        testFormatStrWarn(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR(FORMAT, FORMATSTR, TYPE))
 #define TEST_PRINTF_WARN_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAka(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
+        testFormatStrWarnAka(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
 #define TEST_PRINTF_WARN_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAka(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
+        testFormatStrWarnAka(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
 #define TEST_PRINTF_WARN_AKA_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
+        testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64))
 #define TEST_PRINTF_WARN_AKA_CPP_WIN64(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64) \
-    testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
+        testFormatStrWarnAkaWin64(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN64), true)
 #define TEST_PRINTF_WARN_AKA_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32) \
-    testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32))
+        testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32))
 #define TEST_PRINTF_WARN_AKA_CPP_WIN32(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32) \
-    testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32), true)
+        testFormatStrWarnAkaWin32(__FILE__, __LINE__, TEST_PRINTF_CODE(FORMAT, TYPE), TEST_PRINTF_ERR_AKA_CPP(FORMAT, FORMATSTR, TYPE, AKATYPE_WIN32), true)
 
     void testScanfArgument() {
         check("void foo() {\n"

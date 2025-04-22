@@ -129,7 +129,8 @@ namespace {
         }
 
         void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
-        {}
+        {
+        }
     };
 }
 

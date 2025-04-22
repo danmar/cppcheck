@@ -3293,12 +3293,12 @@ static const ValueFlow::Value* getOOBIterValue(const Token* tok, const ValueFlow
     auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
         if (v.isPossible() || v.isKnown()) {
             switch (v.valueType) {
-                case ValueFlow::Value::ValueType::ITERATOR_END:
-                    return v.intvalue >= 0;
-                case ValueFlow::Value::ValueType::ITERATOR_START:
-                    return (v.intvalue < 0) || (sizeVal && v.intvalue >= sizeVal->intvalue);
-                default:
-                    break;
+            case ValueFlow::Value::ValueType::ITERATOR_END:
+                return v.intvalue >= 0;
+            case ValueFlow::Value::ValueType::ITERATOR_START:
+                return (v.intvalue < 0) || (sizeVal && v.intvalue >= sizeVal->intvalue);
+            default:
+                break;
             }
         }
         return false;

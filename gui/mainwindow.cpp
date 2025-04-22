@@ -1687,7 +1687,8 @@ void MainWindow::complianceReport()
 }
 
 void MainWindow::resultsAdded()
-{}
+{
+}
 
 void MainWindow::toggleMainToolBar()
 {
