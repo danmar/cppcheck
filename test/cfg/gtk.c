@@ -457,3 +457,47 @@ gchar* g_strchug_string_free_test(GString* t) // #12301
     gchar* p = g_strchug(g_string_free(t, FALSE));
     return p;
 }
+
+void g_gvariant_test() {
+    // valid
+    GVariant *pGvariant = g_variant_new("i", 1);
+    printf("%p\n", pGvariant);
+    g_variant_unref(pGvariant);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    g_variant_new("i", 1);
+
+    const GVariant *pGvariant1 = g_variant_new("i", 1);
+    printf("%p\n", pGvariant1);
+    // cppcheck-suppress memleak
+
+    GVariant *pGvariant2 = g_variant_parse(
+        NULL, "{'Test': <{'Test1': <uint32 1>}>}", NULL, NULL, NULL);
+    printf("%p\n", pGvariant2);
+    g_variant_unref(pGvariant2);
+
+    GVariantBuilder builder;
+    g_variant_builder_init(&builder, G_VARIANT_TYPE_VARDICT);
+    g_variant_builder_add(&builder, "{sv}", "String",
+                            g_variant_new_string("String"));
+    g_variant_builder_add(&builder, "{sv}", "Int16", g_variant_new_int16(-16));
+    g_variant_builder_add(&builder, "{sv}", "Int32", g_variant_new_int32(-32));
+    g_variant_builder_add(&builder, "{sv}", "Int64", g_variant_new_int64(-64));
+    g_variant_builder_add(&builder, "{sv}", "Double", g_variant_new_double(1.0));
+    g_variant_builder_add(&builder, "{sv}", "UInt16", g_variant_new_uint16(16));
+    g_variant_builder_add(&builder, "{sv}", "UInt32", g_variant_new_uint32(32));
+    g_variant_builder_add(&builder, "{sv}", "UInt64", g_variant_new_uint64(64));
+    g_variant_builder_add(&builder, "{sv}", "Boolean",
+                            g_variant_new_boolean(TRUE));
+    g_variant_builder_add(&builder, "{sv}", "TakenString",
+                            g_variant_new_take_string(g_strdup("Owned string")));
+    g_variant_builder_add(&builder, "{sv}", "PrintfString",
+                            g_variant_new_printf("Formatted %d", 1));
+    GVariant *pGvariant3 =
+        g_variant_new("{sv}", "String", g_variant_new_string("Owned string 2"));
+    g_variant_builder_add_value(&builder, pGvariant3);
+    g_variant_builder_add_parsed(&builder, "{'String', <'Owned string 3'>}");
+    GVariant *variant_dict = g_variant_builder_end(&builder);
+    printf("%p\n", variant_dict);
+    g_variant_unref(variant_dict);
+}
