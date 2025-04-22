@@ -3169,21 +3169,21 @@ private:
     void checkHeaders() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--check-headers", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->checkHeaders);
     }
 
     void noCheckHeaders() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--no-check-headers", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(false, settings->checkHeaders);
     }
 
     void noCheckHeaders2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--check-headers", "--no-check-headers", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(false, settings->checkHeaders);
     }
 
@@ -3201,28 +3201,28 @@ private:
     void checkUnusedTemplates() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--check-unused-templates", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->checkUnusedTemplates);
     }
 
     void noCheckUnusedTemplates() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--no-check-unused-templates", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs( argv));
         ASSERT_EQUALS(false, settings->checkUnusedTemplates);
     }
 
     void noCheckUnusedTemplates2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--check-unused-templates", "--no-check-unused-templates", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(false, settings->checkUnusedTemplates);
     }
 
     void clangTidy() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--clang-tidy", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->clangTidy);
         ASSERT_EQUALS("clang-tidy", settings->clangTidyExecutable);
     }
@@ -3230,7 +3230,7 @@ private:
     void clangTidyCustom() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--clang-tidy=clang-tidy-14", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->clangTidy);
         ASSERT_EQUALS("clang-tidy-14", settings->clangTidyExecutable);
     }
