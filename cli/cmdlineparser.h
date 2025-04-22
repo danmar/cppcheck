@@ -81,19 +81,6 @@ public:
                                                   const std::list<FileWithDetails>& filesResolved);
 
     /**
-     * Parse given command line.
-     * @return true if command line was ok, false if there was an error.
-     */
-    Result parseFromArgs(int argc, const char* const argv[]);
-
-    /**
-     * Return the path names user gave to command line.
-     */
-    const std::vector<std::string>& getPathNames() const {
-        return mPathNames;
-    }
-
-    /**
      * Return the files user gave to command line.
      */
     const std::list<FileWithDetails>& getFiles() const {
@@ -105,6 +92,14 @@ public:
      */
     const std::list<FileSettings>& getFileSettings() const {
         return mFileSettings;
+    }
+
+private:
+    /**
+     * Return the path names user gave to command line.
+     */
+    const std::vector<std::string>& getPathNames() const {
+        return mPathNames;
     }
 
     /**
@@ -119,14 +114,17 @@ public:
      */
     std::string getVersion() const;
 
-protected:
-
     /**
      * Print help text to the console.
      */
     void printHelp() const;
 
-private:
+    /**
+     * Parse given command line.
+     * @return true if command line was ok, false if there was an error.
+     */
+    Result parseFromArgs(int argc, const char* const argv[]);
+
     bool isCppcheckPremium() const;
 
     template<typename T>
