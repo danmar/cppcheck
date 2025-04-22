@@ -8025,8 +8025,7 @@ private:
     }
 
     void dumpAlignas() {
-        Settings settings;
-        SimpleTokenizer tokenizer(settings, *this, false);
+        SimpleTokenizer tokenizer(settingsDefault, *this, false);
         ASSERT(tokenizer.tokenize("int alignas(8) alignas(16) x;"));
         ASSERT(Token::simpleMatch(tokenizer.tokens(), "int x ;"));
         std::ostringstream ostr;
@@ -8414,7 +8413,7 @@ private:
                                 "  <tokenlist>\n"
                                 "  </tokenlist>\n";
         std::ostringstream ostr;
-        Settings s(settingsDefault);
+        Settings s;
         s.relativePaths = true;
         s.basePaths.emplace_back("/some/path");
         directiveDump(filedata, "/some/path/test.c", s, ostr);
@@ -8538,8 +8537,7 @@ private:
                             "            break;\n"
                             "    }\n"
                             "}";
-        Settings settings;
-        SimpleTokenizer tokenizer(settings, *this, false);
+        SimpleTokenizer tokenizer(settingsDefault, *this, false);
         ASSERT(tokenizer.tokenize(code));
         std::ostringstream ostr;
         tokenizer.dump(ostr);
@@ -8563,10 +8561,8 @@ private:
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeAndStringify_(const char* file, int linenr, const std::string& code) {
-        const Settings settings;
-
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
 
         if (tokenizer.tokens())
@@ -8593,8 +8589,7 @@ private:
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(fin, files, "", &outputList);
         const std::string filedata = tokens1.stringify();
-        const Settings settings;
-        const std::string code = PreprocessorHelper::getcode(settings, *this, filedata, "", "");
+        const std::string code = PreprocessorHelper::getcode(settingsDefault, *this, filedata, "", "");
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
     }

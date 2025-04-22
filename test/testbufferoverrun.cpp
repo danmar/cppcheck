@@ -3497,7 +3497,7 @@ private:
 
     void buffer_overrun_errorpath() {
         setMultiline();
-        const Settings settingsOld = settings0;
+        const Settings settingsOld = settings0; // TODO: get rid of this
         settings0.templateLocation = "{file}:{line}:note:{info}";
 
         check("void f() {\n"

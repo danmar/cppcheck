@@ -52,8 +52,7 @@ private:
 #define findLambdaEndToken(...) findLambdaEndToken_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     bool findLambdaEndToken_(const char* file, int line, const char (&code)[size], const char pattern[] = nullptr, bool checkNext = true) {
-        const Settings settings;
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token* const tokStart = pattern ? Token::findsimplematch(tokenizer.tokens(), pattern, strlen(pattern)) : tokenizer.tokens();
         const Token * const tokEnd = (::findLambdaEndToken)(tokStart);

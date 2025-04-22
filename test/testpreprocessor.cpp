@@ -49,13 +49,12 @@ public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {}
 
 private:
-    static std::string expandMacros(const char code[], ErrorLogger &errorLogger) {
+    std::string expandMacros(const char code[], ErrorLogger &errorLogger) const {
         std::istringstream istr(code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, files, "file.cpp", &outputList);
-        const Settings settings;
-        Preprocessor p(settings, errorLogger);
+        Preprocessor p(settingsDefault, errorLogger);
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
         p.reportOutput(outputList, true);
         return tokens2.stringify();
@@ -82,15 +81,13 @@ private:
         tokenlist.createTokens(std::move(tokens2));
     }
 
-    static std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger)
+    std::vector<RemarkComment> getRemarkComments(const char code[], ErrorLogger& errorLogger) const
     {
         std::vector<std::string> files;
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, "test.cpp");
 
-        const Settings settings;
-
-        const Preprocessor preprocessor(settings, errorLogger);
+        const Preprocessor preprocessor(settingsDefault, errorLogger);
         return preprocessor.getRemarkComments(tokens1);
     }
 
@@ -316,8 +313,7 @@ private:
     }
 
     std::size_t getHash(const char filedata[]) {
-        Settings settings;
-        Preprocessor preprocessor(settings, *this);
+        Preprocessor preprocessor(settingsDefault, *this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
         simplecpp::TokenList tokens(istr,files);

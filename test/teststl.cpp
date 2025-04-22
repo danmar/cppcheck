@@ -2635,7 +2635,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        const auto oldSettings = settings;
+        const auto oldSettings = settings; // TODO: get rid of this
         settings.daca = true;
 
         check("void f() {\n"
@@ -2648,7 +2648,7 @@ private:
 
     void negativeIndexMultiline() {
         setMultiline();
-        const auto oldSettings = settings;
+        const auto oldSettings = settings; // TODO: get rid of this
         settings.verbose = true;
 
         check("bool valid(int);\n" // #11697

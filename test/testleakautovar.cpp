@@ -30,11 +30,9 @@ public:
     TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
-        settings = settingsBuilder(settings).library("std.cfg").build();
-
         // Assign
         TEST_CASE(assign1);
         TEST_CASE(assign2);
