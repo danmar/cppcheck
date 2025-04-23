@@ -2088,7 +2088,7 @@ static bool isConstStatement(const Token *tok, const Library& library, bool isNe
         tok2 = tok2->next();
     while (Token::Match(tok2, "%name% ::"))
         tok2 = tok2->tokAt(2);
-    if (Token::Match(tok2, "%name% ;") && (tok2->function() || library.functions().count(tok2->str()) > 0))
+    if (Token::Match(tok2, "%name% ;") && (tok2->function() || library.functions().count(tok2->str()) > 0)) // NOLINT(readability-simplify-boolean-expr)
         return true;
     return false;
 }
