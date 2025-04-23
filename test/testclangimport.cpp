@@ -1060,15 +1060,15 @@ private:
 
 
 #define GET_SYMBOL_DB(AST) \
-        const Settings settings = settingsBuilder().clang().platform(Platform::Type::Unix64).build(); \
+    const Settings settings = settingsBuilder().clang().platform(Platform::Type::Unix64).build(); \
     TokenList tokenlist{&settings}; \
     Tokenizer tokenizer(std::move(tokenlist), settings, *this); \
-        { \
-            std::istringstream istr(AST); \
-            clangimport::parseClangAstDump(tokenizer, istr); \
-        } \
-        const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
-        ASSERT(db)
+    { \
+        std::istringstream istr(AST); \
+        clangimport::parseClangAstDump(tokenizer, istr); \
+    } \
+    const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
+    ASSERT(db)
 
     void tokenIndex() {
         const char clang[] = "`-FunctionDecl 0x1e07dd0 <67.cpp:1:1, col:13> col:6 foo 'void ()'\n"

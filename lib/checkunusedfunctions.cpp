@@ -357,10 +357,10 @@ static void staticFunctionError(ErrorLogger& errorLogger,
 
 
 #define logChecker(id) \
-        do { \
-            const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
-            errorLogger.reportErr(errmsg); \
-        } while (false)
+    do { \
+        const ErrorMessage errmsg({}, nullptr, Severity::internal, "logChecker", (id), CWE(0U), Certainty::normal); \
+        errorLogger.reportErr(errmsg); \
+    } while (false)
 
 bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLogger) const
 {

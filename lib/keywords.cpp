@@ -23,20 +23,20 @@
 // see https://en.cppreference.com/w/c/keyword
 
 #define C90_KEYWORDS \
-        "auto", "break", "case", "char", "const", "continue", "default", \
-        "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", \
-        "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", \
-        "union", "unsigned", "void", "volatile", "while"
+    "auto", "break", "case", "char", "const", "continue", "default", \
+    "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", \
+    "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", \
+    "union", "unsigned", "void", "volatile", "while"
 
 #define C99_KEYWORDS \
-        "inline", "restrict", "_Bool", "_Complex", "_Imaginary"
+    "inline", "restrict", "_Bool", "_Complex", "_Imaginary"
 
 #define C11_KEYWORDS \
-        "_Alignas", "_Alignof", "_Atomic", "_Generic", "_Noreturn", "_Static_assert", "_Thread_local"
+    "_Alignas", "_Alignof", "_Atomic", "_Generic", "_Noreturn", "_Static_assert", "_Thread_local"
 
 #define C23_KEYWORDS \
-        "alignas", "alignof", "bool", "constexpr", "false", "nullptr", "static_assert", "thread_local", "true", "typeof", "typeof_unqual", \
-        "_BitInt", "_Decimal128", "_Decimal32", "_Decimal64"
+    "alignas", "alignof", "bool", "constexpr", "false", "nullptr", "static_assert", "thread_local", "true", "typeof", "typeof_unqual", \
+    "_BitInt", "_Decimal128", "_Decimal32", "_Decimal64"
 
 static const std::unordered_set<std::string> c89_keywords_all = {
     C90_KEYWORDS
@@ -80,24 +80,24 @@ static const std::unordered_set<std::string> c23_keywords = {
 // see https://en.cppreference.com/w/cpp/keyword
 
 #define CPP03_KEYWORDS \
-        "and", "and_eq", "asm", "auto", "bitand", "bitor", "bool", "break", "case", "catch", "char", \
-        "class", "compl", "const", "const_cast", "continue", "default", \
-        "delete", "do", "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern", "false", \
-        "float", "for", "friend", "goto", "if", "inline", "int", "long", \
-        "mutable", "namespace", "new", "not", "not_eq",  "operator", \
-        "or", "or_eq", "private", "protected", "public", "register", "reinterpret_cast", \
-        "return", "short", "signed", "sizeof", "static", \
-        "static_cast", "struct", "switch", "template", "this", "throw", \
-        "true", "try", "typedef", "typeid", "typename", "union", "unsigned", "using", \
-        "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
+    "and", "and_eq", "asm", "auto", "bitand", "bitor", "bool", "break", "case", "catch", "char", \
+    "class", "compl", "const", "const_cast", "continue", "default", \
+    "delete", "do", "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern", "false", \
+    "float", "for", "friend", "goto", "if", "inline", "int", "long", \
+    "mutable", "namespace", "new", "not", "not_eq",  "operator", \
+    "or", "or_eq", "private", "protected", "public", "register", "reinterpret_cast", \
+    "return", "short", "signed", "sizeof", "static", \
+    "static_cast", "struct", "switch", "template", "this", "throw", \
+    "true", "try", "typedef", "typeid", "typename", "union", "unsigned", "using", \
+    "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
 
 #define CPP11_KEYWORDS \
-        "alignas", "alignof", "char16_t", "char32_t", "constexpr", "decltype", \
-        "noexcept", "nullptr", "static_assert", "thread_local"
+    "alignas", "alignof", "char16_t", "char32_t", "constexpr", "decltype", \
+    "noexcept", "nullptr", "static_assert", "thread_local"
 
 #define CPP20_KEYWORDS \
-        "char8_t", "concept", "consteval", "constinit", "co_await", \
-        "co_return", "co_yield", "requires"
+    "char8_t", "concept", "consteval", "constinit", "co_await", \
+    "co_return", "co_yield", "requires"
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -105,10 +105,10 @@ static const std::unordered_set<std::string> c23_keywords = {
 #endif
 
 #define CPP_TMTS_KEYWORDS \
-        "atomic_cancel", "atomic_commit", "atomic_noexcept", "synchronized"
+    "atomic_cancel", "atomic_commit", "atomic_noexcept", "synchronized"
 
 #define CPP_REFL_TS_KEYWORDS \
-        "reflexpr"
+    "reflexpr"
 
 #ifdef __clang__
 #pragma clang diagnostic pop

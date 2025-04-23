@@ -42,21 +42,21 @@
 class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB(code) \
-        SimpleTokenizer tokenizer(settings1, *this); \
-        const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
-        ASSERT(db); \
-        do {} while (false)
+    SimpleTokenizer tokenizer(settings1, *this); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
+    ASSERT(db); \
+    do {} while (false)
 
 #define GET_SYMBOL_DB_C(code) \
-        SimpleTokenizer tokenizer(settings1, *this, false); \
-        const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
-        do {} while (false)
+    SimpleTokenizer tokenizer(settings1, *this, false); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
+    do {} while (false)
 
 #define GET_SYMBOL_DB_DBG(code) \
-        SimpleTokenizer tokenizer(settingsDbg, *this); \
-        const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
-        ASSERT(db); \
-        do {} while (false)
+    SimpleTokenizer tokenizer(settingsDbg, *this); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
+    ASSERT(db); \
+    do {} while (false)
 
 class TestSymbolDatabase : public TestFixture {
 public:
@@ -6368,11 +6368,11 @@ private:
     }
 
 #define TEST(S) \
-        v = db->getVariableFromVarId(id++); \
-        ASSERT(v != nullptr); \
-        ASSERT(v->isArray()); \
-        ASSERT_EQUALS(1U, v->dimensions().size()); \
-        ASSERT_EQUALS(S, v->dimension(0))
+    v = db->getVariableFromVarId(id++); \
+    ASSERT(v != nullptr); \
+    ASSERT(v->isArray()); \
+    ASSERT_EQUALS(1U, v->dimensions().size()); \
+    ASSERT_EQUALS(S, v->dimension(0))
 
     void enum7() {
         GET_SYMBOL_DB("enum E { X };\n"
@@ -8755,9 +8755,9 @@ private:
     }
 
 #define FUNC(x) do { \
-            const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
-            ASSERT_EQUALS(true, x != nullptr);                                  \
-            ASSERT_EQUALS(true, x->isNoExcept()); \
+        const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+        ASSERT_EQUALS(true, x != nullptr);                                  \
+        ASSERT_EQUALS(true, x->isNoExcept()); \
 } while (false)
 
     void noexceptFunction1() {
@@ -8784,9 +8784,9 @@ private:
     }
 
 #define CLASS_FUNC(x, y, z) do { \
-            const Function *x = findFunctionByName(#x, y); \
-            ASSERT_EQUALS(true, x != nullptr);             \
-            ASSERT_EQUALS(z, x->isNoExcept()); \
+        const Function *x = findFunctionByName(#x, y); \
+        ASSERT_EQUALS(true, x != nullptr);             \
+        ASSERT_EQUALS(z, x->isNoExcept()); \
 } while (false)
 
     void noexceptFunction3() {
@@ -8845,9 +8845,9 @@ private:
     }
 
 #define FUNC_THROW(x) do { \
-            const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
-            ASSERT_EQUALS(true, x != nullptr);                                  \
-            ASSERT_EQUALS(true, x->isThrow()); \
+        const Function *x = findFunctionByName(#x, &db->scopeList.front()); \
+        ASSERT_EQUALS(true, x != nullptr);                                  \
+        ASSERT_EQUALS(true, x->isThrow()); \
 } while (false)
 
     void throwFunction1() {
@@ -8865,9 +8865,9 @@ private:
     }
 
 #define CLASS_FUNC_THROW(x, y) do { \
-            const Function *x = findFunctionByName(#x, y); \
-            ASSERT_EQUALS(true, x != nullptr);             \
-            ASSERT_EQUALS(true, x->isThrow()); \
+        const Function *x = findFunctionByName(#x, y); \
+        ASSERT_EQUALS(true, x != nullptr);             \
+        ASSERT_EQUALS(true, x->isThrow()); \
 } while (false)
     void throwFunction2() {
         GET_SYMBOL_DB("struct Fred {\n"
@@ -9539,14 +9539,14 @@ private:
         ASSERT_EQUALS("unsigned long long", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
 
 #define CHECK_LIBRARY_FUNCTION_RETURN_TYPE(type) do { \
-            const char xmldata[] = "<?xml version=\"1.0\"?>\n" \
-                                   "<def>\n" \
-                                   "<function name=\"g\">\n" \
-                                   "<returnValue type=\"" #type "\"/>\n" \
-                                   "</function>\n" \
-                                   "</def>";              \
-            const Settings sF = settingsBuilder().libraryxml(xmldata).build(); \
-            ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", true, &sF)); \
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n" \
+                               "<def>\n" \
+                               "<function name=\"g\">\n" \
+                               "<returnValue type=\"" #type "\"/>\n" \
+                               "</function>\n" \
+                               "</def>";              \
+        const Settings sF = settingsBuilder().libraryxml(xmldata).build(); \
+        ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", true, &sF)); \
 } while (false)
         // *INDENT-OFF*
         CHECK_LIBRARY_FUNCTION_RETURN_TYPE(bool);
