@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      UNCRUSTIFY_VERSION: 0.76.0
+      UNCRUSTIFY_VERSION: 0.77.0
 
     steps:
       - uses: actions/checkout@v4
