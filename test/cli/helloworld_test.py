@@ -7,6 +7,8 @@ import glob
 import json
 import xml.etree.ElementTree as ET
 
+import pytest
+
 from testutils import create_gui_project_file, cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -145,15 +147,26 @@ def test_basepath_absolute_path():
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
-def test_vs_project_local_path():
+def __test_vs_project_local_path(extra_args=None, exp_vs_cfg='Debug|Win32 Debug|x64 Release|Win32 Release|x64'):
     args = [
         '--template=cppcheck1',
         '--project=helloworld.vcxproj'
     ]
+    if extra_args:
+        args += extra_args
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
-    assert __getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert __getVsConfigs(stdout, 'main.c') == exp_vs_cfg
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
+
+def test_vs_project_local_path():
+    __test_vs_project_local_path()
+
+def test_vs_project_local_path_select_one():
+    __test_vs_project_local_path(['--project-configuration=Release|Win32'], 'Release|Win32')
+
+def test_vs_project_local_path_select_one_multiple():
+    __test_vs_project_local_path(['--project-configuration=Debug|Win32', '--project-configuration=Release|Win32'], 'Release|Win32')
 
 def test_vs_project_relative_path():
     args = [
@@ -177,16 +190,29 @@ def test_vs_project_absolute_path():
     assert __getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
-def test_cppcheck_project_local_path():
+def __test_cppcheck_project_local_path(extra_args=None, exp_vs_cfg='Debug|x64'):
     args = [
         '--template=cppcheck1',
         '--platform=win64',
         '--project=helloworld.cppcheck'
     ]
+    if extra_args:
+        args += extra_args
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
-    assert __getVsConfigs(stdout, 'main.c') == 'Debug|x64'
+    assert __getVsConfigs(stdout, 'main.c') == exp_vs_cfg
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
+
+def test_cppcheck_project_local_path():
+    __test_cppcheck_project_local_path()
+
+@pytest.mark.xfail  # TODO: no source files found
+def test_cppcheck_project_local_path_select_one():
+    __test_cppcheck_project_local_path(['--project-configuration=Release|Win32'], 'Release|Win32')
+
+@pytest.mark.xfail  # TODO: no source files found
+def test_cppcheck_project_local_path_select_one_multiple():
+    __test_cppcheck_project_local_path(['--project-configuration=Debug|Win32', '--project-configuration=Release|Win32'], 'Release|Win32')
 
 def test_cppcheck_project_relative_path():
     args = [
