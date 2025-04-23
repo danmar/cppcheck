@@ -260,23 +260,23 @@ mv cppcheck cppcheck.exe
 Besides building yourself on the platform of your choice there are also several ways to obtain pre-built packages.<br/>
 
 Official packages maintained by the Cppcheck team:
-- (Windows) An official Windows installer is available via the official Cppcheck SourceForge page: https://cppcheck.sourceforge.io/.
+- (Windows) An official Windows installer is available via the official Cppcheck SourceForge page: https://cppcheck.sourceforge.io.
 - (Windows) Official builds of the current development versions are available via the [release-windows](https://github.com/danmar/cppcheck/actions/workflows/release-windows.yml) workflow. They are built nightly for the `main` branch and for each commit for release branches. As these are development versions please refrain from using these in production environments!
   - A portable package (i.e. does not require installation) is available as the `portable` artifact. This is still a work-in-progress - see https://trac.cppcheck.net/ticket/10771 for details.
   - An installer is available via the `installer` artifact.
-- (Multi-Platform) A premium version with additional features provided by the original author of Cppcheck is available for purchase via https://www.cppcheck.com/.
+- (Multi-Platform) A premium version with additional features provided by the original author of Cppcheck is available for purchase via https://www.cppcheck.com.
 
 Unofficial packages *not* maintained by the Cppcheck team but their respective packagers:
-- (Windows) An portable package is available via https://portableapps.com/apps/development/cppcheck-portable.
+- (Windows / Outdated) A portable package is available via https://portableapps.com/apps/development/cppcheck-portable.
 - (Windows / Outdated) A package is available via https://community.chocolatey.org/packages/cppcheck.
 - (Windows / Outdated) A package is available via https://winget.run/pkg/Cppcheck/Cppcheck.
-- (Windows / Outdated) A package is available via https://osdn.net/projects/sfnet_cppcheck/.
+- (Windows / Outdated) A package is available via https://osdn.net/projects/sfnet_cppcheck.
 - (Windows) A package is available via https://scoop.sh/#/apps?q=cppcheck.
 - (Linux/Unix) Many major distros offer Cppcheck packages via their integrated package managers (`yum`, `apt`, `pacman`, etc.). See https://pkgs.org/search/?q=cppcheck or https://repology.org/project/cppcheck for an overview.
 - (Linux/Unix) Unless you are using a "rolling" distro, it is likely that they are not carrying the latest version. There are several external (mainly unsupported) repositories like AUR (ArchLinux), PPA (ubuntu), EPEL (CentOS/Fedora) etc. which might provide up-to-date packages. 
 - (Linux/Unix / Outdated) The Canonical Snapcraft packages (https://snapcraft.io/cppcheck / https://snapcraft.io/cppcheckgui) are unmaintained and contain very old (development) versions. Please refrain from using them! See https://trac.cppcheck.net/ticket/11641 for more details.
 - (MacOS) A package is available via Homebrew (`brew`). See https://formulae.brew.sh/formula/cppcheck.
-- (MacOS) A package is available via https://ports.macports.org/port/cppcheck/
+- (MacOS) A package is available via https://ports.macports.org/port/cppcheck
 - (Multi-Platform) A package is available via https://anaconda.org/conda-forge/cppcheck.
 - Packages are also available from various download portals (mainly the Windows installer - sometimes re-packaged).
 
