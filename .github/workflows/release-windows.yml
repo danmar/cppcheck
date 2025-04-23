@@ -61,6 +61,7 @@ jobs:
           modules: 'qtcharts'
           setup-python: 'false'
           tools: 'tools_opensslv3_x64'
+          aqtversion: '==3.1.*'  # TODO: remove when aqtinstall 3.2.2 is available
 
       # TODO: build with multiple threads
       - name: Build x64 release GUI
