@@ -800,7 +800,7 @@ private:
               "    g;\n"
               "    exit;\n"
               "    std::free;\n"
-              "    ::std::free;\n"
+              "    ::std::terminate;\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Redundant code: Found unused function. [constStatement]\n"
                       "[test.cpp:4:5]: (warning) Redundant code: Found unused function. [constStatement]\n"

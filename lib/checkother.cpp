@@ -2083,13 +2083,21 @@ static bool isConstStatement(const Token *tok, const Library& library, bool isNe
     }
     if (!tok->astParent() && findLambdaEndToken(tok))
         return true;
+
     tok2 = tok;
     if (tok2->str() == "::")
         tok2 = tok2->next();
-    while (Token::Match(tok2, "%name% ::"))
-        tok2 = tok2->tokAt(2);
-    if (Token::Match(tok2, "%name% ;") && (tok2->function() || library.functions().count(tok2->str()) > 0)) // NOLINT(readability-simplify-boolean-expr)
-        return true;
+    if (Token::Match(tok2, "%name% ;")) {
+        if (tok2->function())
+            return true;
+        std::string funcStr = tok2->str();
+        while (tok2->index() > 1 && Token::Match(tok2->tokAt(-2), "%name% ::")) {
+            funcStr.insert(0, tok2->strAt(-2) + "::");
+            tok2 = tok2->tokAt(-2);
+        }
+        if (library.functions().count(funcStr) > 0)
+            return true;
+    }
     return false;
 }
 
