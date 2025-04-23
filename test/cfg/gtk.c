@@ -458,7 +458,7 @@ gchar* g_strchug_string_free_test(GString* t) // #12301
     return p;
 }
 
-void g_gvariant_test() {
+void g_variant_test() {
     // valid
     GVariant *pGvariant = g_variant_new("i", 1);
     printf("%p\n", pGvariant);
@@ -469,7 +469,6 @@ void g_gvariant_test() {
 
     const GVariant *pGvariant1 = g_variant_new("i", 1);
     printf("%p\n", pGvariant1);
-    // cppcheck-suppress memleak
 
     GVariant *pGvariant2 = g_variant_parse(
         NULL, "{'Test': <{'Test1': <uint32 1>}>}", NULL, NULL, NULL);
@@ -500,4 +499,7 @@ void g_gvariant_test() {
     GVariant *variant_dict = g_variant_builder_end(&builder);
     printf("%p\n", variant_dict);
     g_variant_unref(variant_dict);
+
+    // leak from pGvariant1
+    // cppcheck-suppress memleak
 }
