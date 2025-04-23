@@ -493,8 +493,7 @@ private:
                 written = true;
             }
             // cppcheck-suppress functionStatic - needs to be const
-            void f() const {
-            }
+            void f() const {}
         };
 
         {

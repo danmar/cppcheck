@@ -969,8 +969,7 @@ void CheckMemoryLeakStructMember::runChecks(const Tokenizer &tokenizer, ErrorLog
 }
 
 void CheckMemoryLeakStructMember::getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const
-{
-}
+{}
 
 
 void CheckMemoryLeakNoVar::check()

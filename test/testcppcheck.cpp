@@ -46,8 +46,7 @@ private:
         std::list<ErrorMessage> errmsgs;
 
     private:
-        void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {
-        }
+        void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
 
         void reportErr(const ErrorMessage &msg) override {
             ids.push_back(msg.id);

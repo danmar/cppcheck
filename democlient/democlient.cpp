@@ -70,8 +70,7 @@ public:
         cppcheck.check(FileWithDetails("test.cpp", Standards::Language::CPP, 0), code);
     }
 
-    void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {
-    }
+    void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}
     void reportErr(const ErrorMessage &msg) override {
         static const std::string templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
         static const std::string templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
