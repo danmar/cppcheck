@@ -43,7 +43,7 @@ jobs:
           wget https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-${{ env.UNCRUSTIFY_VERSION }}.tar.gz
           tar xzvf uncrustify-${{ env.UNCRUSTIFY_VERSION }}.tar.gz
           cd uncrustify-uncrustify-${{ env.UNCRUSTIFY_VERSION }}
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j$(nproc) -s
           mkdir ~/uncrustify 
           cp build/uncrustify ~/uncrustify/
