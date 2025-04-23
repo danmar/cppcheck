@@ -54,6 +54,7 @@ private:
 
         TEST_CASE(ctor);
         TEST_CASE(ctor2);
+        TEST_CASE(ctor3);
 
         TEST_CASE(classInClass);
         TEST_CASE(sameFunctionNames);
@@ -402,6 +403,14 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void ctor3() {
+        check("class C {\n"
+              "    C() = default;\n"
+              "    void f() const { (void)this; }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:3:10]: (style) Unused private function: 'C::f' [unusedPrivateFunction]\n", errout_str());
+    }
+
 
     void classInClass() {
         check("class A\n"
@@ -442,11 +451,17 @@ private:
               "  class B;\n"
               "private:\n"
               "  void f() {}\n"
-              "}\n"
+              "};\n"
               "class A::B {"
               "  B() { A a; a.f(); }\n"
-              "}");
+              "};");
         ASSERT_EQUALS("", errout_str());
+
+        check("class C {\n" // #13790
+              "    class I { I() = default; };\n"
+              "    void f() const { (void)this; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:3:10]: (style) Unused private function: 'C::f' [unusedPrivateFunction]\n", errout_str());
     }
 
 

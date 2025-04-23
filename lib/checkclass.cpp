@@ -1249,7 +1249,8 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
                     return true;
             }
         } else if ((func->type != FunctionType::eCopyConstructor &&
-                    func->type != FunctionType::eOperatorEqual) ||
+                    func->type != FunctionType::eOperatorEqual &&
+                    !func->isDefault() && !func->isDelete()) ||
                    func->access != AccessControl::Private) // Assume it is used, if a function implementation isn't seen, but empty private copy constructors and assignment operators are OK
             return true;
     }
