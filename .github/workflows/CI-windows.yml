@@ -49,6 +49,7 @@ jobs:
           modules: 'qtcharts'
           setup-python: 'false'
           cache: true
+          aqtversion: '==3.1.*'  # TODO: remove when aqtinstall 3.2.2 is available
 
       - name: Run CMake for GUI release (Qt 5)
         if: startsWith(matrix.qt_ver, '5')
