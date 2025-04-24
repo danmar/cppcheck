@@ -111,7 +111,8 @@ jobs:
           install-deps: false
           cache: true
 
-      - name: Build macOS mappings
+      - name: Generate macOS mappings
+        if: contains(matrix.os, 'macos')
         run: |
           set -x
 
