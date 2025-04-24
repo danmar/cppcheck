@@ -30,7 +30,7 @@ public:
     TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::warning).build();
+    const Settings settings = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
 
     struct CheckOptions
     {
@@ -84,6 +84,7 @@ private:
         TEST_CASE(archive);             // ar & x
         TEST_CASE(ast);
         TEST_CASE(oror);                // dostuff() || x=32;
+        TEST_CASE(functioncall);
     }
 
     void test1() {
@@ -791,6 +792,21 @@ private:
               "    (file >> a) && (file >> b);\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void functioncall() {
+        check("void g();\n" // #13794
+              "void f() {\n"
+              "    g;\n"
+              "    exit;\n"
+              "    std::free;\n"
+              "    ::std::terminate;\n"
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("[test.cpp:3:5]: (warning) Redundant code: Found unused function. [constStatement]\n"
+                      "[test.cpp:4:5]: (warning) Redundant code: Found unused function. [constStatement]\n"
+                      "[test.cpp:5:8]: (warning) Redundant code: Found unused function. [constStatement]\n"
+                      "[test.cpp:6:10]: (warning) Redundant code: Found unused function. [constStatement]\n",
+                      errout_str());
     }
 };
 
