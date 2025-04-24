@@ -9,6 +9,7 @@ endif()
 # TODO: needs to be fixed upstream
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tinyxml2_objs PRIVATE -Wno-suggest-attribute=format)
+    target_compile_options(tinyxml2_objs PRIVATE -Wno-useless-cast)
 endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(tinyxml2_objs -Wno-implicit-fallthrough)
