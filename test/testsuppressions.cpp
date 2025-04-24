@@ -1220,10 +1220,10 @@ private:
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
-        Settings settings;
-        settings.quiet = true;
-        settings.exitCode = 1;
-        settings.templateFormat = templateFormat;
+        const auto settings = dinit(Settings,
+                                    $.quiet = true,
+                                        $.exitCode = 1,
+                                        $.templateFormat = templateFormat);
 
         Suppressions supprs;
         ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine("uninitvar"));

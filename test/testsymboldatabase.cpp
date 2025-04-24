@@ -9300,15 +9300,15 @@ private:
         // stringification
         ASSERT_EQUALS("", ValueType().str());
 
-        /*const*/ Settings s;
-        s.platform.int_bit = 16;
-        s.platform.long_bit = 32;
-        s.platform.long_long_bit = 64;
+        const auto s = dinit(Settings,
+                             $.platform.int_bit = 16,
+                                 $.platform.long_bit = 32,
+                                 $.platform.long_long_bit = 64);
 
-        /*const*/ Settings sSameSize;
-        sSameSize.platform.int_bit = 32;
-        sSameSize.platform.long_bit = 64;
-        sSameSize.platform.long_long_bit = 64;
+        const auto sSameSize = dinit(Settings,
+                                     $.platform.int_bit = 32,
+                                         $.platform.long_bit = 64,
+                                         $.platform.long_long_bit = 64);
 
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1;", "1", false, &s));

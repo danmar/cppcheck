@@ -32,8 +32,6 @@ public:
     TestMemleak() : TestFixture("TestMemleak") {}
 
 private:
-    const Settings settings;
-
     void run() override {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
@@ -43,10 +41,10 @@ private:
     template<size_t size>
     CheckMemoryLeak::AllocType functionReturnType_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        const CheckMemoryLeak c(&tokenizer, this, &settings);
+        const CheckMemoryLeak c(&tokenizer, this, &settingsDefault);
 
         return (c.functionReturnType)(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
@@ -91,12 +89,12 @@ private:
                             "  }\n"
                             "};\n";
 
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT(tokenizer.tokenize(code));
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
-        const CheckMemoryLeak check(&tokenizer, nullptr, &settings);
+        const CheckMemoryLeak check(&tokenizer, nullptr, &settingsDefault);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };

@@ -112,8 +112,7 @@ private:
                         "  return 0;\n"
                         "}");
 
-        /*const*/ Settings s;
-        s.templateFormat = templateFormat;
+        const auto s = dinit(Settings, $.templateFormat = templateFormat);
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -135,8 +134,7 @@ private:
                         "  return 0;\n"
                         "}");
 
-        /*const*/ Settings s;
-        s.templateFormat = templateFormat;
+        const auto s = dinit(Settings, $.templateFormat = templateFormat);
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -185,9 +183,8 @@ private:
         ScopedFile test_file_b("b.cpp",
                                "#include \"inc.h\"");
 
-        /*const*/ Settings s;
         // this is the "simple" format
-        s.templateFormat = templateFormat; // TODO: remove when we only longer rely on toString() in unique message handling
+        const auto s = dinit(Settings, $.templateFormat = templateFormat); // TODO: remove when we only longer rely on toString() in unique message handling
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -218,9 +215,8 @@ private:
                              "(void)b;\n"
                              "}");
 
-        /*const*/ Settings s;
         // this is the "simple" format
-        s.templateFormat = templateFormat; // TODO: remove when we only longer rely on toString() in unique message handling?
+        const auto s = dinit(Settings, $.templateFormat = templateFormat); // TODO: remove when we only longer rely on toString() in unique message handling?
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
@@ -256,8 +252,7 @@ private:
         ErrorLogger2 errorLogger;
 
         {
-            Settings s;
-            s.premiumArgs = "";
+            const auto s = dinit(Settings, $.premiumArgs = "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
 
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
@@ -271,8 +266,7 @@ private:
         }
 
         {
-            Settings s;
-            s.premiumArgs = "--misra-c-2012 --cert-c++-2016 --autosar";
+            const auto s = dinit(Settings, $.premiumArgs = "--misra-c-2012 --cert-c++-2016 --autosar");
 
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
 
@@ -288,7 +282,7 @@ private:
     }
 
     void getDumpFileContentsRawTokens() const {
-        Settings s = settingsBuilder().build();
+        Settings s;
         s.relativePaths = true;
         s.basePaths.emplace_back("/some/path");
         Suppressions supprs;

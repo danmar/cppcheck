@@ -340,7 +340,7 @@ private:
 
     void suppress_error_library() {
         SUPPRESS;
-        const Settings settingsOld = settings;
+        const Settings settingsOld = settings; // TODO: get rid of this
         const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
         settings = settingsBuilder().libraryxml(xmldata).build();
         check(2, 1, 0,

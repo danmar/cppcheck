@@ -7365,7 +7365,7 @@ private:
     void valueFlowDynamicBufferSize() {
         const char *code;
 
-        const Settings settingsOld = settings;
+        const Settings settingsOld = settings; // TODO: get rid of this
         settings = settingsBuilder(settings).library("posix.cfg").library("bsd.cfg").build();
 
         code = "void* f() {\n"
