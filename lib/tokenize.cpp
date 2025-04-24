@@ -3441,8 +3441,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
     }
 
-    validateTypes();
-
     printDebugOutput(1, std::cout);
 
     return true;
@@ -5924,31 +5922,6 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
 
         if (xml)
             out << "</debug>" << std::endl;
-    }
-}
-
-void Tokenizer::validateTypes() const
-{
-    if (!mSymbolDatabase || !mSettings.debugwarnings)
-        return;
-
-    printUnknownTypes();
-
-    // the typeStartToken() should come before typeEndToken()
-    for (const Variable *var : mSymbolDatabase->variableList()) {
-        if (!var)
-            continue;
-
-        const Token * typetok = var->typeStartToken();
-        while (typetok && typetok != var->typeEndToken())
-            typetok = typetok->next();
-
-        if (typetok != var->typeEndToken()) {
-            reportError(var->typeStartToken(),
-                        Severity::debug,
-                        "debug",
-                        "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
-        }
     }
 }
 
@@ -10575,84 +10548,6 @@ void Tokenizer::removeUnnecessaryQualification()
                         // this is a function call which can have all the qualifiers just fine - skip.
                         continue;
                     }
-                }
-            }
-        }
-    }
-}
-
-void Tokenizer::printUnknownTypes() const
-{
-    if (!mSymbolDatabase)
-        return;
-
-    std::vector<std::pair<std::string, const Token *>> unknowns;
-
-    for (int i = 1; i <= mVarId; ++i) {
-        const Variable *var = mSymbolDatabase->getVariableFromVarId(i);
-        if (!var)
-            continue;
-        // is unknown type?
-        if (var->type() || var->typeStartToken()->isStandardType())
-            continue;
-
-        std::string name;
-        const Token * nameTok;
-
-        // single token type?
-        if (var->typeStartToken() == var->typeEndToken()) {
-            nameTok = var->typeStartToken();
-            name = nameTok->str();
-        }
-
-        // complicated type
-        else {
-            const Token *tok = var->typeStartToken();
-            int level = 0;
-
-            nameTok =  tok;
-
-            while (tok) {
-                // skip pointer and reference part of type
-                if (level == 0 && Token::Match(tok, "*|&"))
-                    break;
-
-                name += tok->str();
-
-                if (Token::Match(tok, "struct|union|enum"))
-                    name += " ";
-
-                // pointers and references are OK in template
-                else if (tok->str() == "<")
-                    ++level;
-                else if (tok->str() == ">")
-                    --level;
-
-                if (tok == var->typeEndToken())
-                    break;
-
-                tok = tok->next();
-            }
-        }
-
-        unknowns.emplace_back(std::move(name), nameTok);
-    }
-
-    if (!unknowns.empty()) {
-        std::string last;
-        int count = 0;
-
-        for (auto it = unknowns.cbegin(); it != unknowns.cend(); ++it) {
-            // skip types is std namespace because they are not interesting
-            if (it->first.find("std::") != 0) {
-                if (it->first != last) {
-                    last = it->first;
-                    count = 1;
-                    reportError(it->second, Severity::debug, "debug", "Unknown type \'" + it->first + "\'.");
-                } else {
-                    if (count < 3) // limit same type to 3
-                        reportError(it->second, Severity::debug, "debug", "Unknown type \'" + it->first + "\'.");
-                    count++;
                 }
             }
         }
