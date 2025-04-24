@@ -221,9 +221,9 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
             cfgfolders.emplace_back(FILESDIR "/cfg");
     #endif
             if (exename) {
-                const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
+                std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
                 cfgfolders.push_back(exepath + "cfg");
-                cfgfolders.push_back(exepath);
+                cfgfolders.push_back(std::move(exepath));
             }
 
             while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {

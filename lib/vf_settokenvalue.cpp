@@ -303,9 +303,8 @@ namespace ValueFlow
             Token* next = nullptr;
             const Library::Container::Yield yields = getContainerYield(parent, settings, next);
             if (yields == Library::Container::Yield::SIZE) {
-                Value v(value);
-                v.valueType = Value::ValueType::INT;
-                setTokenValue(next, std::move(v), settings);
+                value.valueType = Value::ValueType::INT;
+                setTokenValue(next, std::move(value), settings);
             } else if (yields == Library::Container::Yield::EMPTY) {
                 Value v(value);
                 v.valueType = Value::ValueType::INT;

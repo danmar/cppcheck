@@ -1433,8 +1433,7 @@ void CheckClass::checkMemset()
                     type = typeTok->type()->classScope;
 
                 if (type) {
-                    const std::set<const Scope *> parsedTypes;
-                    checkMemsetType(scope, tok, type, false, parsedTypes);
+                    checkMemsetType(scope, tok, type, false, {});
                 }
             } else if (tok->variable() && tok->variable()->isPointer() && tok->variable()->typeScope() && Token::Match(tok, "%var% = %name% (")) {
                 const Library::AllocFunc* alloc = mSettings->library.getAllocFuncInfo(tok->tokAt(2));

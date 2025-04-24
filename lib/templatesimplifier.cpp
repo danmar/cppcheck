@@ -3246,9 +3246,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         // New classname/funcname..
         const std::string newName(templateDeclaration.name() + " < " + typeForNewName + " >");
-        const std::string newFullName(templateDeclaration.scope() + (templateDeclaration.scope().empty() ? "" : " :: ") + newName);
+        std::string newFullName(templateDeclaration.scope() + (templateDeclaration.scope().empty() ? "" : " :: ") + newName);
 
-        if (expandedtemplates.insert(newFullName).second) {
+        if (expandedtemplates.insert(std::move(newFullName)).second) {
             expandTemplate(templateDeclaration, instantiation, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
             mChanged = true;

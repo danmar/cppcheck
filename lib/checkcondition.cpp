@@ -1261,7 +1261,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (!isfloat && isOppositeCond(isLogicalOr, tok->astOperand1(), tok->astOperand2(), *mSettings, true, true, &errorPath)) {
                 if (!isIfConstexpr(tok)) {
                     const bool alwaysTrue(isLogicalOr);
-                    incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
+                    incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, std::move(errorPath));
                 }
                 continue;
             }
