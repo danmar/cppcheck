@@ -482,7 +482,7 @@ private:
     }
 
     void noFunctionCall() {
-        check("void f() {\n"
+        check("void f() {\n" // #13803
               "    throw \"error\";\n"
               "}\n"
               "void g() noexcept {\n"
