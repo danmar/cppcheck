@@ -732,6 +732,8 @@ void CheckCondition::multiCondition2()
 
                     // Condition..
                     const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
+                    if (Token::simpleMatch(cond2, ","))
+                        cond2 = cond2->astOperand2();
                     const bool isReturnVar = (tok->str() == "return" && (!Token::Match(cond2, "%cop%") || (cond2 && cond2->isUnaryOp("!"))));
 
                     ErrorPath errorPath;
