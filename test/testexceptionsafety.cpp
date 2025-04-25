@@ -56,6 +56,7 @@ private:
         TEST_CASE(rethrowNoCurrentException1);
         TEST_CASE(rethrowNoCurrentException2);
         TEST_CASE(rethrowNoCurrentException3);
+        TEST_CASE(noFunctionCall);
     }
 
     struct CheckOptions
@@ -477,6 +478,16 @@ private:
         check("void on_error() { try { throw; } catch (const int &) { ; } catch (...) { ; } }\n"      // exception dispatcher idiom
               "void func2() { try{ ; } catch (const int&) { throw; } ; }\n"
               "void func3() { throw 0; }");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void noFunctionCall() {
+        check("void f() {\n"
+              "    throw \"error\";\n"
+              "}\n"
+              "void g() noexcept {\n"
+              "    auto pF = &f;\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 };
