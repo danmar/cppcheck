@@ -2817,6 +2817,14 @@ private:
                "    }\n"
                "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("void g(int);\n" // #13800
+              "void f(int i) {\n"
+              "    if (i) {\n"
+              "        if (g(0), i) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Identical inner 'if' condition is always true.\n", errout_str());
     }
 
     void identicalConditionAfterEarlyExit() {
