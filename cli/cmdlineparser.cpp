@@ -1627,8 +1627,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         path = Path::simplifyPath(std::move(path));
 
         bool isdir = false;
-        if (!Path::exists(path, &isdir) && mSettings.debugignore)
-            std::cout << "path to ignore does not exist: " << path << std::endl;
+        if (!Path::exists(path, &isdir) && mSettings.debugignore) {
+            // FIXME: this is misleading because we match from the end of the path so it does not require to exist
+            //std::cout << "path to ignore does not exist: " << path << std::endl;
+        }
         // TODO: this only works when it exists
         if (isdir) {
             // If directory name doesn't end with / or \, add it

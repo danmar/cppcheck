@@ -2028,7 +2028,7 @@ def test_checkers_report_misra_json(tmpdir):
     assert '<checker id="Misra C 2012: 8.1"/>' in stderr
 
 
-def test_ignore(tmpdir):
+def __test_ignore_file(tmpdir, ign, append=False, inject_path=False):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
     with open(test_file, 'wt'):
@@ -2036,73 +2036,90 @@ def test_ignore(tmpdir):
 
     # TODO: this should say that all paths are ignored
     lines_exp = [
+        'ignored path: {}'.format(test_file),
         'cppcheck: error: could not find or open any of the paths given.',
         'cppcheck: Maybe all paths were ignored?'
     ]
 
     args = [
-        '-itest.cpp',
+        '--debug-ignore',
         test_file
     ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
+    if inject_path:
+        ign = ign.replace('$path', str(test_file))
+
+    if append:
+        args += ['-i{}'.format(ign)]
+    else:
+        args = ['-i{}'.format(ign)] + args
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout if stdout else stderr
     assert stdout.splitlines() == lines_exp
 
-    # make sure it also matches when specified after the file
-    args = [
-        test_file,
-        '-itest.cpp'
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file(tmpdir):
+    __test_ignore_file(tmpdir, 'test.cpp')
 
-    args = [
-        '-isrc/test.cpp',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_append(tmpdir):
+    __test_ignore_file(tmpdir, 'test.cpp', append=True)
 
-    args = [
-        '-isrc\\test.cpp',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_file_wildcard_back(tmpdir):
+    __test_ignore_file(tmpdir, 'test.c*')
 
-    args = [
-        '-isrc/',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_file_wildcard_front(tmpdir):
+    __test_ignore_file(tmpdir, '*test.cpp')
 
-    args = [
-        '-isrc\\',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_file_placeholder(tmpdir):
+    __test_ignore_file(tmpdir, 't?st.cpp')
 
-    args = [
-        '-i{}'.format(test_file),
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_relative(tmpdir):
+    __test_ignore_file(tmpdir, 'src/test.cpp')
+
+
+def test_ignore_file_relative_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src\\test.cpp')
+
+
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_file_relative_wildcard(tmpdir):
+    __test_ignore_file(tmpdir, 'src/test.c*')
+
+
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_file_relative_wildcard_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src\\test.c*')
+
+
+def test_ignore_path_relative(tmpdir):
+    __test_ignore_file(tmpdir, 'src/')
+
+
+def test_ignore_path_relative_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src\\')
+
+
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_path_relative_wildcard(tmpdir):
+    __test_ignore_file(tmpdir, 'src*/')
+
+
+@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
+def test_ignore_path_relative_wildcard_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src*\\')
+
+
+def test_ignore_abspath(tmpdir):
+    __test_ignore_file(tmpdir, '$path', inject_path=True)
 
 
 def __write_gui_project(tmpdir, test_file, ignore):
@@ -2122,92 +2139,83 @@ def __write_gui_project(tmpdir, test_file, ignore):
     return project_file
 
 
-def test_ignore_project(tmpdir):
+def __test_ignore_project(tmpdir, ign_proj, ign_cli=None, append_cli=False, inject_path_proj=False):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
     with open(test_file, 'wt'):
         pass
 
+    # TODO: this should say that all paths were ignored
     lines_exp = [
+        'ignored path: {}'.format(test_file),
         'cppcheck: error: could not find or open any of the paths given.',
         'cppcheck: Maybe all paths were ignored?'
     ]
 
-    project_file = __write_gui_project(tmpdir, test_file, 'test.cpp')
+    if inject_path_proj:
+        ign_proj = ign_proj.replace('$path', str(test_file))
+
+    project_file = __write_gui_project(tmpdir, test_file, ign_proj)
     args = [
+        '--debug-ignore',
         '--project={}'.format(project_file)
     ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
-
-    # make sure -i works when specified before project
-    project_file = __write_gui_project(tmpdir, test_file, 'test2.cpp')
-    args = [
-        '-itest.cpp',
-        '--project={}'.format(project_file)
-    ]
+    if append_cli:
+        args += ['-i{}'.format(ign_cli)]
+    else:
+        args = ['-i{}'.format(ign_cli)] + args
 
     exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
     assert exitcode == 1, stdout
     assert stdout.splitlines() == lines_exp
 
-    # make sure -i works when specified after project
-    project_file = __write_gui_project(tmpdir, test_file, 'test2.cpp')
-    args = [
-        '--project={}'.format(project_file),
-        '-itest.cpp'
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file(tmpdir):
+    __test_ignore_project(tmpdir, 'test.cpp')
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src/test.cpp')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_cli_prepend(tmpdir):
+    __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp')
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src\\test.cpp')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_cli_append(tmpdir):
+    __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp', append_cli=True)
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src/')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+@pytest.mark.xfail(strict=True)  # TODO: ?
+def test_ignore_project_file_wildcard_back(tmpdir):
+    __test_ignore_project(tmpdir, 'test.c*')
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src\\')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+@pytest.mark.xfail(strict=True)  # TODO: ?
+def test_ignore_project_file_wildcard_front(tmpdir):
+    __test_ignore_project(tmpdir, '*test.cpp')
 
-    project_file = __write_gui_project(tmpdir, test_file, test_file)
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+@pytest.mark.xfail(strict=True)  # TODO: ?
+def test_ignore_project_file_placeholder(tmpdir):
+    __test_ignore_project(tmpdir, 't?st.cpp')
+
+
+def test_ignore_project_file_relative(tmpdir):
+    __test_ignore_project(tmpdir, 'src/test.cpp')
+
+
+def test_ignore_project_file_relative_backslash(tmpdir):
+    __test_ignore_project(tmpdir, 'src\\test.cpp')
+
+
+def test_ignore_project_path_relative(tmpdir):
+    __test_ignore_project(tmpdir, 'src/')
+
+
+def test_ignore_project_path_relative_backslash(tmpdir):
+    __test_ignore_project(tmpdir, 'src\\')
+
+
+def test_ignore_project_abspath(tmpdir):
+    __test_ignore_project(tmpdir, '$path', inject_path_proj=True)
 
 
 def __write_compdb(tmpdir, test_file):
@@ -2231,12 +2239,13 @@ def __test_ignore_project_2(tmpdir, extra_args, append=False, inject_path=False)
         pass
 
     lines_exp = [
+        'ignored path: {}'.format(str(test_file).replace('\\', '/')),
         'cppcheck: error: no C or C++ source files found.',
         'cppcheck: all paths were ignored'
     ]
     project_file = __write_compdb(tmpdir, test_file)
     args = [
-        '-q',
+        '--debug-ignore',
         '--project={}'.format(project_file)
     ]
 
@@ -2264,6 +2273,20 @@ def test_ignore_project_2_file_append(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.cpp'], append=True)
 
 
+@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
+def test_ignore_project_2_file_wildcard_back(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-itest.c*'])
+
+
+def test_ignore_project_2_file_wildcard_front(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-i*test.cpp'])
+
+
+@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
+def test_ignore_project_2_file_placeholder(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-it?st.cpp'])
+
+
 @pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.cpp'])
@@ -2274,12 +2297,32 @@ def test_ignore_project_2_file_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.cpp'])
 
 
+@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
+def test_ignore_project_2_file_relative_wildcard(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc/test.c*'])
+
+
+@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
+def test_ignore_project_2_file_relative_wildcard_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc\\test.c*'])
+
+
 def test_ignore_project_2_path_relative(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/'])
 
 
 def test_ignore_project_2_path_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\'])
+
+
+@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
+def test_ignore_project_2_path_relative_wildcard(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc*/'])
+
+
+@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
+def test_ignore_project_2_path_relative_wildcard_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc*\\'])
 
 
 def test_ignore_project_2_abspath(tmpdir):
