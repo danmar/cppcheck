@@ -459,6 +459,10 @@ std::string SuppressionList::Suppression::getText() const
     return ret;
 }
 
+bool SuppressionList::Suppression::isWildcard() const {
+    return utils::isWildcard(fileName);
+}
+
 bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, bool global)
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);

@@ -67,6 +67,7 @@ private:
         TEST_CASE(filemaskpath3);
         TEST_CASE(filemaskpath4);
         TEST_CASE(mixedallmatch);
+        TEST_CASE(glob);
     }
 
     // Test empty PathMatch
@@ -223,6 +224,17 @@ private:
         PathMatch match(std::move(masks));
         ASSERT(match.match("tests/"));
         ASSERT(match.match("lib/file.c"));
+    }
+
+    void glob() const { // #????
+        std::vector<std::string> mask = { "test?.cpp" };
+        PathMatch match(std::move(mask));
+        ASSERT(match.match("test1.cpp", true));
+        ASSERT(match.match("src/test1.cpp", true));
+
+        ASSERT(!match.match("test1.c", true));
+        ASSERT(!match.match("test.cpp", true));
+        ASSERT(!match.match("test1.cpp/src", true));
     }
 };
 

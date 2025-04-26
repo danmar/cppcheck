@@ -44,6 +44,7 @@ private:
         TEST_CASE(splitString);
         TEST_CASE(as_const);
         TEST_CASE(memoize);
+        TEST_CASE(isWildcard);
     }
 
     void isValidGlobPattern() const {
@@ -534,6 +535,22 @@ private:
         ASSERT_EQUALS(1, count);
         ASSERT_EQUALS(1, callF());
         ASSERT_EQUALS(1, count);
+    }
+
+    void isWildcard() const {
+        ASSERT_EQUALS(true, utils::isWildcard("*"));
+        ASSERT_EQUALS(true, utils::isWildcard("?"));
+        ASSERT_EQUALS(true, utils::isWildcard("*test"));
+        ASSERT_EQUALS(true, utils::isWildcard("test*"));
+        ASSERT_EQUALS(true, utils::isWildcard("t*t"));
+        ASSERT_EQUALS(true, utils::isWildcard("t?st"));
+        ASSERT_EQUALS(true, utils::isWildcard("?est"));
+        ASSERT_EQUALS(true, utils::isWildcard("tes?"));
+        ASSERT_EQUALS(true, utils::isWildcard("?es?"));
+
+        ASSERT_EQUALS(false, utils::isWildcard(""));
+        ASSERT_EQUALS(false, utils::isWildcard(" "));
+        ASSERT_EQUALS(false, utils::isWildcard("test"));
     }
 };
 

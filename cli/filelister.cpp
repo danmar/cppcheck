@@ -109,7 +109,7 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
                 // File
                 Standards::Language lang = Standards::Language::None;
                 if ((!checkAllFilesInDir || Path::acceptFile(fname, extra, &lang))) {
-                    if (!ignored.match(fname)) {
+                    if (!ignored.match(fname, true)) {
                         std::string nativename = Path::fromNativeSeparators(fname);
 
                         // Limitation: file sizes are assumed to fit in a 'size_t'
@@ -200,7 +200,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
                              const PathMatch& ignored,
                              bool debug)
 {
-    if (ignored.match(path))
+    if (ignored.match(path, true))
     {
         if (debug)
             std::cout << "ignored path: " << path << std::endl;
@@ -245,7 +245,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
             if (recursive) {
                 // append a slash if it is a directory since that is what we are doing for mIgnoredPaths directory entries.
                 // otherwise we would ignore all its contents individually instead as a whole.
-                if (!ignored.match(new_path + '/')) {
+                if (!ignored.match(new_path + '/', true)) {
                     std::string err = addFiles2(files, new_path, extra, recursive, ignored, debug);
                     if (!err.empty()) {
                         return err;
@@ -259,7 +259,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         } else {
             Standards::Language lang = Standards::Language::None;
             if (Path::acceptFile(new_path, extra, &lang)) {
-                if (!ignored.match(new_path))
+                if (!ignored.match(new_path, true))
                 {
                     if (stat(new_path.c_str(), &file_stat) == -1) {
                         const int err = errno;
