@@ -5167,6 +5167,18 @@ std::streampos constParameterPointer_istream_tellg(std::istream* p) { // #13801
     return p->tellg();
 }
 
+void constParameterPointer_unique_ptr_reset(std::unique_ptr<int>& u, int* p) {
+    u.reset(p);
+}
+
+bool constParameterPointer_map_contains(const std::map<int*, int>& m, int* p) {
+#if __cplusplus >= 202002L
+    return m.contains(p);
+#else
+    return m.count(p) > 0;
+#endif
+}
+
 // cppcheck-suppress constParameterReference
 void constParameterReference_push_back(std::vector<std::string>& v, std::string& s) { // #12661
     v.push_back(s);
