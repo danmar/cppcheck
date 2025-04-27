@@ -34,6 +34,7 @@ private:
     const Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
+        // TODO: mNewTemplate = true;
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_warn_once); // only write 1 warning at a time
         TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files

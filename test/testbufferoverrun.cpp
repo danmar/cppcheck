@@ -85,6 +85,7 @@ private:
     }
 
     void run() override {
+        // TODO: mNewTemplate = true;
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);

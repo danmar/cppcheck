@@ -94,6 +94,7 @@ private:
     const Settings settings0 = settingsBuilder().severity(Severity::information).build();
 
     void run() override {
+        // TODO: mNewTemplate = true;
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
