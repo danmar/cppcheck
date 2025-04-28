@@ -94,7 +94,7 @@ private:
     const Settings settings0 = settingsBuilder().severity(Severity::information).build();
 
     void run() override {
-        // TODO: mNewTemplate = true;
+        mNewTemplate = true;
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);
@@ -374,7 +374,7 @@ private:
         const auto settings = dinit(Settings, $.userDefines = "__cplusplus");
         const std::string code("#error hello world!\n");
         (void)PreprocessorHelper::getcode(settings, *this, code, "X", "test.c");
-        ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
+        ASSERT_EQUALS("[test.c:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
     }
 
     // Ticket #2919 - wrong filename reported for #error
@@ -384,7 +384,7 @@ private:
             const auto settings = dinit(Settings, $.userDefines = "TEST");
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
             (void)PreprocessorHelper::getcode(settings, *this, code, "TEST", "test.c");
-            ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout_str());
+            ASSERT_EQUALS("[ab.h:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
         }
 
         // After including a file
@@ -392,7 +392,7 @@ private:
             const auto settings = dinit(Settings, $.userDefines = "TEST");
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
             (void)PreprocessorHelper::getcode(settings, *this, code, "TEST", "test.c");
-            ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout_str());
+            ASSERT_EQUALS("[test.c:2:0]: (error) #error aaa [preprocessorErrorDirective]\n", errout_str());
         }
     }
 
@@ -1465,7 +1465,7 @@ private:
             const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, filedata);
 
             ASSERT_EQUALS(0, actual.size());
-            ASSERT_EQUALS("[file.c:2]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
+            ASSERT_EQUALS("[file.c:2:0]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported. [preprocessorErrorDirective]\n", errout_str());
         }
     }
 
@@ -1480,7 +1480,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[file.cpp:3]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:3:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [preprocessorErrorDirective]\n", errout_str());
         }
 
         {
@@ -1493,7 +1493,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[abc.h:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
+            ASSERT_EQUALS("[abc.h:2:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [preprocessorErrorDirective]\n", errout_str());
         }
 
         {
@@ -1506,7 +1506,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[file.cpp:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:2:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [preprocessorErrorDirective]\n", errout_str());
         }
 
         {
@@ -1518,7 +1518,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[file.cpp:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:2:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [preprocessorErrorDirective]\n", errout_str());
         }
 
         {
@@ -1534,7 +1534,7 @@ private:
             // expand macros..
             (void)expandMacros(filedata, *this);
 
-            ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:7:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [preprocessorErrorDirective]\n", errout_str());
         }
     }
 
@@ -1587,7 +1587,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("", actual.at(""));
-        ASSERT_EQUALS("[file.c:6]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'.\n", errout_str());
+        ASSERT_EQUALS("[file.c:6:0]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'. [preprocessorErrorDirective]\n", errout_str());
     }
 
     void newline_in_macro() {
@@ -1904,12 +1904,12 @@ private:
 
     void invalid_define_1() {
         (void)PreprocessorHelper::getcode(settings0, *this, "#define =\n");
-        ASSERT_EQUALS("[file.c:1]: (error) Failed to parse #define\n", errout_str());
+        ASSERT_EQUALS("[file.c:1:0]: (error) Failed to parse #define [preprocessorErrorDirective]\n", errout_str());
     }
 
     void invalid_define_2() {  // #4036
         (void)PreprocessorHelper::getcode(settings0, *this, "#define () {(int f(x) }\n");
-        ASSERT_EQUALS("[file.c:1]: (error) Failed to parse #define\n", errout_str());
+        ASSERT_EQUALS("[file.c:1:0]: (error) Failed to parse #define [preprocessorErrorDirective]\n", errout_str());
     }
 
     void inline_suppressions() {
@@ -2038,7 +2038,7 @@ private:
         const char code[] = "#elif (){\n";
         const std::string actual = PreprocessorHelper::getcode(settings0, *this, code, "TEST", "test.c");
         ASSERT_EQUALS("", actual);
-        ASSERT_EQUALS("[test.c:1]: (error) #elif without #if\n", errout_str());
+        ASSERT_EQUALS("[test.c:1:0]: (error) #elif without #if [preprocessorErrorDirective]\n", errout_str());
     }
 
     void getConfigs1() {
@@ -2287,8 +2287,8 @@ private:
         // Preprocess => don't crash..
         (void)PreprocessorHelper::getcode(settings0, *this, filedata);
         ASSERT_EQUALS(
-            "[file.c:1]: (error) Syntax error in #ifdef\n"
-            "[file.c:1]: (error) Syntax error in #ifdef\n", errout_str());
+            "[file.c:1:0]: (error) Syntax error in #ifdef [preprocessorErrorDirective]\n"
+            "[file.c:1:0]: (error) Syntax error in #ifdef [preprocessorErrorDirective]\n", errout_str());
     }
 
     void garbage() {
@@ -2304,7 +2304,7 @@ private:
         const auto settings = dinit(Settings, $.userDefines = "foo");
         const std::string code("#error hello world!\n");
         (void)PreprocessorHelper::getcode(settings, *this, code, "X", "./././test.c");
-        ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout_str());
+        ASSERT_EQUALS("[test.c:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
     }
 
     // test for existing local include
