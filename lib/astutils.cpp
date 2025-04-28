@@ -295,7 +295,7 @@ static std::pair<const Token*, const Library::Container*> getContainerFunction(c
     if (!tok || !tok->valueType() || (!tok->valueType()->container && (!(cont = library.detectContainerOrIterator(tok->valueType()->smartPointerTypeToken)))))
         return {};
     const Token* parent = tok->astParent();
-    if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
+    if (Token::Match(parent, ". %name% [(<]") && astIsLHS(tok)) {
         return { parent->next(), cont ? cont : tok->valueType()->container };
     }
     return {};
