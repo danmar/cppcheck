@@ -6956,6 +6956,13 @@ private:
               "        s += \'a\';\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::vector<int>::iterator it) {\n" // #13727
+              "    std::vector<int> v;\n"
+              "    v.insert<std::vector<int>::iterator>(v.end(), it, it + 1);\n"
+              "    for (auto i : v) {}\n"
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkMutexes() {
