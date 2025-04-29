@@ -85,6 +85,10 @@ endif()
 find_package(Threads REQUIRED)
 
 if(USE_BOOST)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
+        # avoid legacy warning about Boost lookup in CMake
+        cmake_policy(SET CMP0167 NEW)
+    endif()
     # we are using the header-only "container" component
     find_package(Boost QUIET)
 endif()
