@@ -22,6 +22,7 @@
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "settings.h"
 #include "suppressions.h"
 
@@ -116,7 +117,7 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path())));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path(), Path::identify(file.path(), false), 0)));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
             return id == "logChecker";
@@ -138,7 +139,7 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        FileSettings fs{file.path()};
+        FileSettings fs{file.path(), Path::identify(file.path(), false), 0};
         ASSERT_EQUALS(1, cppcheck.check(fs));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
@@ -162,7 +163,7 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        ASSERT_EQUALS(0, cppcheck.check(FileWithDetails(file.path())));
+        ASSERT_EQUALS(0, cppcheck.check(FileWithDetails(file.path(), Path::identify(file.path(), false), 0)));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
             return id == "logChecker";
@@ -188,8 +189,8 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_a.path())));
-        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_b.path())));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_a.path(), Path::identify(test_file_a.path(), false), 0)));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_b.path(), Path::identify(test_file_b.path(), false), 0)));
         // TODO: how to properly disable these warnings?
         errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
             return msg.id == "logChecker";
@@ -220,7 +221,7 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file.path())));
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file.path(), Path::identify(test_file.path(), false), 0)));
         // TODO: how to properly disable these warnings?
         errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
             return msg.id == "logChecker";

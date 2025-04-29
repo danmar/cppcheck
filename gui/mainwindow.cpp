@@ -35,6 +35,7 @@
 #include "helpdialog.h"
 #include "importproject.h"
 #include "librarydialog.h"
+#include "path.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
@@ -702,7 +703,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    cppcheck.check(FileWithDetails(filename.toStdString()), code.toStdString());
+    cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
     analysisDone();
 
     // Expand results

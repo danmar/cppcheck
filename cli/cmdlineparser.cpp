@@ -232,6 +232,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             {
                 if (mSettings.library.markupFile(fs.filename()))
                     continue;
+                assert(fs.file.lang() == Standards::Language::None);
                 bool header = false;
                 fs.file.setLang(Path::identify(fs.filename(), mSettings.cppHeaderProbe, &header));
                 // unknown extensions default to C++
@@ -244,6 +245,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         for (auto& fs : fileSettings)
         {
             if (mSettings.library.markupFile(fs.filename())) {
+                assert(fs.file.lang() == Standards::Language::None);
                 fs.file.setLang(Standards::Language::C);
             }
         }

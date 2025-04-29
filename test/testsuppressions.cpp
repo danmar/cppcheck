@@ -1232,7 +1232,7 @@ private:
         CppCheck cppCheck(settings, supprs, *this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
 
         const char code[] = "int f() { int a; return a; }";
-        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("test.c"), code)); // <- no unsuppressed error is seen
+        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("test.c", Standards::Language::C, 0), code)); // <- no unsuppressed error is seen
         ASSERT_EQUALS("[test.c:1:25]: (error) Uninitialized variable: a [uninitvar]\n", errout_str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
     }
 
@@ -1241,9 +1241,9 @@ private:
         SuppressionList::Suppression suppression("unusedFunction", "test.c", 3);
         suppression.checked = true; // have to do this because fixes for #5704
         ASSERT_EQUALS("", suppressions.addSuppression(std::move(suppression)));
-        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), true).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), false).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), false).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
     }
 
@@ -1251,9 +1251,9 @@ private:
         SuppressionList suppressions;
         ASSERT_EQUALS("", suppressions.addSuppressionLine("unusedFunction:*"));
         ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid")));
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), true).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), true).empty());
         ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), false).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0), false).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
     }
 
@@ -1276,7 +1276,7 @@ private:
             "    int y;\n"
             "};";
         CppCheck cppCheck(settings, supprs, *this, true, nullptr);
-        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("/somewhere/test.cpp"), code));
+        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("/somewhere/test.cpp", Standards::Language::CPP, 0), code));
         ASSERT_EQUALS("",errout_str());
     }
 

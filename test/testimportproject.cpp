@@ -71,7 +71,7 @@ private:
     }
 
     void setDefines() const {
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
 
         ImportProject::fsSetDefines(fs, "A");
         ASSERT_EQUALS("A=1", fs.defines);
@@ -87,7 +87,7 @@ private:
     }
 
     void setIncludePaths1() const {
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         ImportProject::fsSetIncludePaths(fs, "abc/def/", in, variables);
@@ -96,7 +96,7 @@ private:
     }
 
     void setIncludePaths2() const {
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -106,7 +106,7 @@ private:
     }
 
     void setIncludePaths3() const { // macro names are case insensitive
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -393,8 +393,8 @@ private:
     }
 
     void ignorePaths() const {
-        FileSettings fs1{"foo/bar"};
-        FileSettings fs2{"qwe/rty"};
+        FileSettings fs1{"foo/bar", Standards::Language::CPP, 0};
+        FileSettings fs2{"qwe/rty", Standards::Language::CPP, 0};
         TestImporter project;
         project.fileSettings = {std::move(fs1), std::move(fs2)};
 

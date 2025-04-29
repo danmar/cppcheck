@@ -33,10 +33,6 @@
 class FileWithDetails
 {
 public:
-    explicit FileWithDetails(std::string path)
-        : FileWithDetails(std::move(path), Standards::Language::None, 0)
-    {}
-
     FileWithDetails(std::string path, Standards::Language lang, std::size_t size)
         : mPath(std::move(path))
         , mPathSimplified(Path::simplifyPath(mPath))
@@ -80,10 +76,6 @@ private:
 
 /** File settings. Multiple configurations for a file is allowed. */
 struct CPPCHECKLIB FileSettings {
-    explicit FileSettings(std::string path)
-        : file(std::move(path))
-    {}
-
     FileSettings(std::string path, Standards::Language lang, std::size_t size)
         : file(std::move(path), lang, size)
     {}

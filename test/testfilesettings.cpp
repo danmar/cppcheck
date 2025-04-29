@@ -31,46 +31,46 @@ private:
 
     void test() const {
         {
-            const FileWithDetails p{"file.cpp"};
-            ASSERT_EQUALS("file.cpp", p.path());
-            ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS_ENUM(Standards::Language::None, p.lang());
-            ASSERT_EQUALS(0, p.size());
+            const FileWithDetails p{"file.c", Standards::Language::C, 456};
+            ASSERT_EQUALS("file.c", p.path());
+            ASSERT_EQUALS("file.c", p.spath());
+            ASSERT_EQUALS_ENUM(Standards::Language::C, p.lang());
+            ASSERT_EQUALS(456, p.size());
         }
         {
-            const FileWithDetails p{"file.cpp", Standards::Language::C, 123};
+            const FileWithDetails p{"file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("file.cpp", p.path());
             ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS_ENUM(Standards::Language::C, p.lang());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
             ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in/file.cpp"};
+            const FileWithDetails p{"in/file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in/file.cpp", p.path());
             ASSERT_EQUALS("in/file.cpp", p.spath());
-            ASSERT_EQUALS_ENUM(Standards::Language::None, p.lang());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in\\file.cpp"};
+            const FileWithDetails p{"in\\file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in\\file.cpp", p.path());
             ASSERT_EQUALS("in/file.cpp", p.spath());
-            ASSERT_EQUALS_ENUM(Standards::Language::None, p.lang());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in/../file.cpp"};
+            const FileWithDetails p{"in/../file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in/../file.cpp", p.path());
             ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS_ENUM(Standards::Language::None, p.lang());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in\\..\\file.cpp"};
+            const FileWithDetails p{"in\\..\\file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in\\..\\file.cpp", p.path());
             ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS_ENUM(Standards::Language::None, p.lang());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
     }
 };
