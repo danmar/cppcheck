@@ -975,7 +975,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         Preprocessor preprocessor(mSettings, mErrorLogger);
 
-        if (!preprocessor.loadFiles(tokens1, files))
+        if (!preprocessor.loadFiles(tokens1, files, file.lang()))
             return mLogger->exitcode();
 
         if (!mSettings.plistOutput.empty()) {
@@ -1041,7 +1041,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (mSettings.checkConfiguration) {
             for (const std::string &config : configurations)
-                (void)preprocessor.getcode(tokens1, config, files, true);
+                (void)preprocessor.getcode(tokens1, config, files, file.lang(), true);
 
             if (analyzerInformation)
                 mLogger->setAnalyzerInfo(nullptr);
@@ -1116,7 +1116,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             if (mSettings.preprocessOnly) {
                 std::string codeWithoutCfg;
                 Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
-                    codeWithoutCfg = preprocessor.getcode(tokens1, currentConfig, files, true);
+                    codeWithoutCfg = preprocessor.getcode(tokens1, currentConfig, files, file.lang(), true);
                 });
 
                 if (startsWith(codeWithoutCfg,"#file"))
@@ -1139,7 +1139,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
-                    simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, currentConfig, files, true);
+                    simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, currentConfig, files, file.lang(), true);
                     tokenlist.createTokens(std::move(tokensP));
                 });
                 hasValidConfig = true;

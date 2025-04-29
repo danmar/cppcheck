@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "standards.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -119,15 +120,15 @@ public:
 
     std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
 
-    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
+    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, Standards::Language lang);
 
     void removeComments(simplecpp::TokenList &tokens);
 
     static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
 
-    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
+    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, Standards::Language lang, bool throwError = false);
 
-    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool writeLocations);
+    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, Standards::Language lang, bool writeLocations);
 
     /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
