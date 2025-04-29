@@ -8573,7 +8573,7 @@ private:
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(fin, files, "", &outputList);
         const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcode(settingsDefault, *this, filedata, "", "");
+        const std::string code = PreprocessorHelper::getcode(settingsDefault, *this, filedata, "", "test.c");
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
     }
