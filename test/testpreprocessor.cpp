@@ -54,7 +54,7 @@ private:
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, files, "file.cpp", &outputList);
-        Preprocessor p(settingsDefault, errorLogger);
+        Preprocessor p(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
         p.reportOutput(outputList, true);
         return tokens2.stringify();
@@ -87,7 +87,7 @@ private:
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, "test.cpp");
 
-        const Preprocessor preprocessor(settingsDefault, errorLogger);
+        const Preprocessor preprocessor(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         return preprocessor.getRemarkComments(tokens1);
     }
 
@@ -301,11 +301,11 @@ private:
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
-        Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
         simplecpp::TokenList tokens(istr,files);
         tokens.removeComments();
+        Preprocessor preprocessor(settings, *this, Path::identify(tokens.getFiles()[0], false));
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
         std::string ret;
         for (const std::string & config : configs)
@@ -314,11 +314,11 @@ private:
     }
 
     std::size_t getHash(const char filedata[]) {
-        Preprocessor preprocessor(settingsDefault, *this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
         simplecpp::TokenList tokens(istr,files);
         tokens.removeComments();
+        Preprocessor preprocessor(settingsDefault, *this, Path::identify(tokens.getFiles()[0], false));
         return preprocessor.calculateHash(tokens, "");
     }
 
@@ -478,7 +478,7 @@ private:
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
             Preprocessor::setPlatformInfo(tokens, settings);
-            Preprocessor preprocessor(settings, *this);
+            Preprocessor preprocessor(settings, *this, Path::identify(tokens.getFiles()[0], false));
             ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
         }
 
@@ -486,7 +486,7 @@ private:
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
             Preprocessor::setPlatformInfo(tokens, settings);
-            Preprocessor preprocessor(settings, *this);
+            Preprocessor preprocessor(settings, *this, Path::identify(tokens.getFiles()[0], false));
             ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
         }
     }

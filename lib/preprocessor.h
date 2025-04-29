@@ -109,7 +109,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger);
+    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang);
     virtual ~Preprocessor();
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
@@ -120,15 +120,15 @@ public:
 
     std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
 
-    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, Standards::Language lang);
+    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
     void removeComments(simplecpp::TokenList &tokens);
 
     static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
 
-    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, Standards::Language lang, bool throwError = false);
+    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 
-    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, Standards::Language lang, bool writeLocations);
+    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool writeLocations);
 
     /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
@@ -181,6 +181,7 @@ private:
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string mFile0;
+    Standards::Language mLang{Standards::Language::None};
 
     /** simplecpp tracking info */
     std::list<simplecpp::MacroUsage> mMacroUsage;

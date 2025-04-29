@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <sstream>
@@ -63,8 +64,13 @@ Directive::DirectiveToken::DirectiveToken(const simplecpp::Token & _tok) :
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
-{}
+Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang)
+    : mSettings(settings)
+    , mErrorLogger(errorLogger)
+    , mLang(lang)
+{
+    assert(mLang != Standards::Language::None);
+}
 
 Preprocessor::~Preprocessor()
 {
@@ -716,7 +722,6 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
     // TODO: use mSettings.standards.stdValue instead
-    assert(lang != Standards::Language::None);
     if (lang == Standards::Language::CPP) {
         dui.std = mSettings.standards.getCPP();
         splitcfg(mSettings.platform.getLimitsDefines(Standards::getCPP(dui.std)), dui.defines, "");
@@ -770,9 +775,9 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     }
 }
 
-bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, Standards::Language lang)
+bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
 {
-    const simplecpp::DUI dui = createDUI(mSettings, "", lang);
+    const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
 
     simplecpp::OutputList outputList;
     mTokenLists = simplecpp::load(rawtokens, files, dui, &outputList);
@@ -809,9 +814,9 @@ void Preprocessor::setPlatformInfo(simplecpp::TokenList &tokens, const Settings&
     tokens.sizeOfType["long double *"] = settings.platform.sizeof_pointer;
 }
 
-simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, Standards::Language lang, bool throwError)
+simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
 {
-    const simplecpp::DUI dui = createDUI(mSettings, cfg, lang);
+    const simplecpp::DUI dui = createDUI(mSettings, cfg, mLang);
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
@@ -828,9 +833,9 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     return tokens2;
 }
 
-std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, Standards::Language lang, const bool writeLocations)
+std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
-    simplecpp::TokenList tokens2 = preprocess(tokens1, cfg, files, lang, false);
+    simplecpp::TokenList tokens2 = preprocess(tokens1, cfg, files, false);
     unsigned int prevfile = 0;
     unsigned int line = 1;
     std::ostringstream ret;
@@ -926,7 +931,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
 void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
-    Preprocessor preprocessor(settings, errorLogger);
+    Preprocessor preprocessor(settings, errorLogger, Standards::Language::CPP);
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
     preprocessor.error("", 1, "#error message");   // #error ..

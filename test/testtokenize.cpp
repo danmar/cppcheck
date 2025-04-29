@@ -550,11 +550,11 @@ private:
     }
 
     void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
-        Preprocessor preprocessor(settings, *this);
         std::istringstream istr(filedata);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
+        Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
         TokenList tokenlist{&settings};
