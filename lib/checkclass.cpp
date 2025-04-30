@@ -174,13 +174,13 @@ void CheckClass::constructors()
 
         // #3196 => bailout if there are nested unions
         // TODO: handle union variables better
-        {
-            const bool bailout = std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [](const Scope* nestedScope) {
-                return nestedScope->type == ScopeType::eUnion;
-            });
-            if (bailout)
-                continue;
-        }
+        // {
+        //     const bool bailout = std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [](const Scope* nestedScope) {
+        //         return nestedScope->type == ScopeType::eUnion;
+        //     });
+        //     if (bailout)
+        //         continue;
+        // }
 
 
         std::vector<Usage> usageList = createUsageList(scope);
@@ -311,7 +311,7 @@ void CheckClass::constructors()
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
                     const Scope *varType = var.typeScope();
-                    if (!varType || varType->type != ScopeType::eUnion) {
+                     {
                         const bool derived = scope != var.scope();
                         if (func.type == FunctionType::eConstructor &&
                             func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
