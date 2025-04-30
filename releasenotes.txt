@@ -22,4 +22,5 @@ Other:
 - added CMake option `ENABLE_CSA_ALPHA` to enable the Clang Static Analyzer alpha checkers
 - Updated TinyXML-2 to v11.0.0
 - The minimum supported Python version has been bumped to 3.7.
+- CMake will now unconditionally use Boost.Containers if available. If CMake option `USE_BOOST` is specified it will now bail out when it is not found.
 -
