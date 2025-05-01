@@ -715,8 +715,9 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     }
 
     try {
-        Tokenizer tokenizer(mSettings, mErrorLogger);
-        tokenizer.list.appendFileIfNew(file.spath());
+        TokenList tokenlist{&mSettings};
+        tokenlist.appendFileIfNew(file.spath());
+        Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
@@ -902,10 +903,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
             if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || analyzerInformation)) {
                 std::size_t hash = 0;
-                // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
-                Tokenizer tokenizer(mSettings, mErrorLogger);
+                TokenList tokenlist{&mSettings};
                 // enforce the language since markup files are special and do not adhere to the enforced language
-                tokenizer.list.setLang(Standards::Language::C, true);
+                tokenlist.setLang(Standards::Language::C, true);
                 if (fileStream) {
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
@@ -913,7 +913,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
-                    tokenizer.list.createTokens(std::move(tokens));
+                    tokenlist.createTokens(std::move(tokens));
                 }
                 else {
                     std::vector<std::string> files;
@@ -922,8 +922,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                         const Preprocessor preprocessor(mSettings, mErrorLogger);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
-                    tokenizer.list.createTokens(std::move(tokens));
+                    tokenlist.createTokens(std::move(tokens));
                 }
+                // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
+                Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
 
                 if (analyzerInformation) {
@@ -1123,75 +1125,82 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(mSettings, mErrorLogger);
-            if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
-                tokenizer.setTimerResults(&s_timerResults);
-            tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
-
             try {
+                TokenList tokenlist{&mSettings};
+
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
                     simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
-                    tokenizer.list.createTokens(std::move(tokensP));
+                    tokenlist.createTokens(std::move(tokensP));
                 });
                 hasValidConfig = true;
 
-                // locations macros
-                mLogger->setLocationMacros(tokenizer.tokens(), files);
+                Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
+                try {
+                    if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
+                        tokenizer.setTimerResults(&s_timerResults);
+                    tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
-                // If only errors are printed, print filename after the check
-                if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
-                    std::string fixedpath = Path::toNativeSeparators(file.spath());
-                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
-                }
+                    // locations macros
+                    mLogger->setLocationMacros(tokenizer.tokens(), files);
 
-                if (!tokenizer.tokens())
-                    continue;
+                    // If only errors are printed, print filename after the check
+                    if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
+                        std::string fixedpath = Path::toNativeSeparators(file.spath());
+                        mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
+                    }
 
-                // skip rest of iteration if just checking configuration
-                if (mSettings.checkConfiguration)
-                    continue;
+                    if (!tokenizer.tokens())
+                        continue;
+
+                    // skip rest of iteration if just checking configuration
+                    if (mSettings.checkConfiguration)
+                        continue;
 
 #ifdef HAVE_RULES
-                // Execute rules for "raw" code
-                executeRules("raw", tokenizer.list);
+                    // Execute rules for "raw" code
+                    executeRules("raw", tokenizer.list);
 #endif
 
-                // Simplify tokens into normal form, skip rest of iteration if failed
-                if (!tokenizer.simplifyTokens1(mCurrentConfig))
-                    continue;
-
-                // dump xml if --dump
-                if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
-                    fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
-                    fdump << "  <standards>" << std::endl;
-                    fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
-                    fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
-                    fdump << "  </standards>" << std::endl;
-                    fdump << getLibraryDumpData();
-                    preprocessor.dump(fdump);
-                    tokenizer.dump(fdump);
-                    fdump << "</dump>" << std::endl;
-                }
-
-                if (mSettings.inlineSuppressions) {
-                    // Need to call this even if the hash will skip this configuration
-                    mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
-                }
-
-                // Skip if we already met the same simplified token list
-                if (mSettings.force || mSettings.maxConfigs > 1) {
-                    const std::size_t hash = tokenizer.list.calculateHash();
-                    if (hashes.find(hash) != hashes.end()) {
-                        if (mSettings.debugwarnings)
-                            purgedConfigurationMessage(file.spath(), mCurrentConfig);
+                    // Simplify tokens into normal form, skip rest of iteration if failed
+                    if (!tokenizer.simplifyTokens1(mCurrentConfig))
                         continue;
-                    }
-                    hashes.insert(hash);
-                }
 
-                // Check normal tokens
-                checkNormalTokens(tokenizer, analyzerInformation.get());
+                    // dump xml if --dump
+                    if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
+                        fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
+                        fdump << "  <standards>" << std::endl;
+                        fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                        fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                        fdump << "  </standards>" << std::endl;
+                        fdump << getLibraryDumpData();
+                        preprocessor.dump(fdump);
+                        tokenizer.dump(fdump);
+                        fdump << "</dump>" << std::endl;
+                    }
+
+                    if (mSettings.inlineSuppressions) {
+                        // Need to call this even if the hash will skip this configuration
+                        mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                    }
+
+                    // Skip if we already met the same simplified token list
+                    if (mSettings.force || mSettings.maxConfigs > 1) {
+                        const std::size_t hash = tokenizer.list.calculateHash();
+                        if (hashes.find(hash) != hashes.end()) {
+                            if (mSettings.debugwarnings)
+                                purgedConfigurationMessage(file.spath(), mCurrentConfig);
+                            continue;
+                        }
+                        hashes.insert(hash);
+                    }
+
+                    // Check normal tokens
+                    checkNormalTokens(tokenizer, analyzerInformation.get());
+                } catch (const InternalError &e) {
+                    ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
+                    mErrorLogger.reportErr(errmsg);
+                }
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
                 configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
@@ -1221,7 +1230,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     mLogger->setAnalyzerInfo(nullptr);
                 return mLogger->exitcode();
             } catch (const InternalError &e) {
-                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
+                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, file.spath());
                 mErrorLogger.reportErr(errmsg);
             }
         }

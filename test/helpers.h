@@ -45,19 +45,19 @@ namespace tinyxml2 {
 class SimpleTokenizer : public Tokenizer {
 public:
     explicit SimpleTokenizer(ErrorLogger& errorlogger, bool cpp = true)
-        : Tokenizer{s_settings, errorlogger}
+        : Tokenizer{TokenList{&s_settings}, s_settings, errorlogger}
     {
         list.setLang(cpp ? Standards::Language::CPP : Standards::Language::C, true);
     }
 
     SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, bool cpp = true)
-        : Tokenizer{settings, errorlogger}
+        : Tokenizer{TokenList{&settings}, settings, errorlogger}
     {
         list.setLang(cpp ? Standards::Language::CPP : Standards::Language::C, true);
     }
 
     SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, const std::string& filename)
-        : Tokenizer{settings, errorlogger}
+        : Tokenizer{TokenList{&settings}, settings, errorlogger}
     {
         list.setLang(Path::identify(filename, false));
         list.appendFileIfNew(filename);
@@ -238,14 +238,14 @@ class SimpleTokenizer2 : public Tokenizer {
 public:
     template<size_t size>
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)
-        : Tokenizer{settings, errorlogger}
+        : Tokenizer{TokenList{&settings}, settings, errorlogger}
     {
         preprocess(code, mFiles, file0, *this, errorlogger);
     }
 
     // TODO: get rid of this
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], const std::string& file0)
-        : Tokenizer{settings, errorlogger}
+        : Tokenizer{TokenList{&settings}, settings, errorlogger}
     {
         preprocess(code, mFiles, file0, *this, errorlogger);
     }
