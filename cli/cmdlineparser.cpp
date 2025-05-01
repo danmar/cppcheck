@@ -439,7 +439,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     }
 
     bool def = false;
-    bool maxconfigs = false;
 
     ImportProject::Type projectType = ImportProject::Type::NONE;
     ImportProject project;
@@ -995,10 +994,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mLogger.printError("argument to '--max-configs=' must be greater than 0.");
                 return Result::Fail;
             }
-
             mSettings.maxConfigs = tmp;
-            mSettings.force = false;
-            maxconfigs = true;
         }
 
         // max ctu depth
@@ -1566,6 +1562,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
     }
 
+    if (mSettings.maxConfigs > 0) {
+        mSettings.force = false;
+    }
+
     if (!loadCppcheckCfg())
         return Result::Fail;
 
@@ -1582,15 +1582,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     // replace static parts of the templates
     substituteTemplateFormatStatic(mSettings.templateFormat);
     substituteTemplateLocationStatic(mSettings.templateLocation);
-
-    if (mSettings.force || maxconfigs)
-        mSettings.checkAllConfigurations = true;
-
-    if (mSettings.force)
-        mSettings.maxConfigs = INT_MAX;
-
-    else if ((def || mSettings.preprocessOnly) && !maxconfigs)
-        mSettings.maxConfigs = 1U;
 
     if (mSettings.jobs > 1 && mSettings.buildDir.empty()) {
         // TODO: bail out instead?
