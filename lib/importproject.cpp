@@ -42,6 +42,7 @@
 #include "json.h"
 
 // TODO: align the exclusion logic with PathMatch
+// TODO: PathMatch lacks glob support
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
