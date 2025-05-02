@@ -2469,7 +2469,7 @@ bool isMutableExpression(const Token* tok)
         return false;
     if (tok->isLiteral() || tok->isKeyword() || tok->isStandardType() || tok->isEnumerator())
         return false;
-    if (Token::Match(tok, ",|;|:|]|)|}"))
+    if (Token::Match(tok, ",|;|:|]|)|}|::"))
         return false;
     if (Token::simpleMatch(tok, "[ ]"))
         return false;
@@ -2877,6 +2877,8 @@ const Token* findEscapeStatement(const Scope* scope, const Library& library)
     return nullptr;
 }
 
+#include <iostream>
+
 template<class F,
          REQUIRES("F must be a function that returns a Token class",
                   std::is_convertible<decltype(std::declval<F>()()), const Token*> )>
@@ -2910,7 +2912,10 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (!expr && !(tok->valueType() && tok->valueType()->pointer == 0 && tok->valueType()->reference == Reference::None))
             aliased = true;
         if (!aliased)
+        {
+            std::cout << tok->str() << " " << tok->exprId() << " " << exprid << " " << indirect << std::endl;
             aliased = isAliasOf(tok, expr, &i);
+        }
         if (!aliased)
             return false;
         if (isVariableChanged(tok, indirect + i, settings, depth))
