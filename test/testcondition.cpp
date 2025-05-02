@@ -43,6 +43,7 @@ private:
                            "</def>";
         settings1 = settingsBuilder(settings1).libraryxml(cfg).build();
 
+        // TODO: mNewTemplate = true;
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
         TEST_CASE(comparison);         // CheckCondition::comparison test cases

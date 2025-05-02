@@ -33,6 +33,7 @@ private:
     const Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
+        // TODO: mNewTemplate = true;
         // Assign
         TEST_CASE(assign1);
         TEST_CASE(assign2);
