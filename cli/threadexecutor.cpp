@@ -119,12 +119,9 @@ public:
         if (fs) {
             // file settings..
             result = fileChecker.check(*fs);
-            if (mSettings.clangTidy)
-                fileChecker.analyseClangTidy(*fs);
         } else {
             // Read file from a file
             result = fileChecker.check(*file);
-            // TODO: call analyseClangTidy()?
         }
         for (const auto& suppr : mSuppressions.nomsg.getSuppressions()) {
             // need to transfer all inline suppressions because these are used later on

@@ -336,12 +336,9 @@ unsigned int ProcessExecutor::check()
 
                 if (iFileSettings != mFileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                    if (mSettings.clangTidy)
-                        fileChecker.analyseClangTidy(*iFileSettings);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(*iFile);
-                    // TODO: call analyseClangTidy()?
                 }
 
                 pipewriter.writeSuppr(mSuppressions.nomsg);

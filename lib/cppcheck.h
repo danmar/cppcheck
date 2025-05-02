@@ -132,9 +132,6 @@ public:
      */
     bool analyseWholeProgram();
 
-    /** Analyze all files using clang-tidy */
-    void analyseClangTidy(const FileSettings &fileSettings);
-
     /** analyse whole program use .analyzeinfo files or ctuinfo string */
     unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
 
@@ -151,6 +148,9 @@ public:
     std::string getLibraryDumpData() const;
 
 private:
+    /** Analyze all files using clang-tidy */
+    void analyseClangTidy(const FileSettings &fileSettings);
+
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
