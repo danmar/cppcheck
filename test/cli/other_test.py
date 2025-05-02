@@ -3464,7 +3464,7 @@ def test_clang_tidy_project(tmpdir):
 
 
 @pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
-def test_clang_tidy_error_exit(tmp_path):  # #13828
+def test_clang_tidy_error_exit(tmp_path):  # #13828 / #13829
     test_file = tmp_path / 'test.cpp'
     with open(test_file, 'wt') as f:
         f.write(
@@ -3495,7 +3495,7 @@ static bool f() // NOLINT(misc-use-anonymous-namespace)
     exitcode, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}:10:12: style: 'str' used after it was moved [clang-tidy-bugprone-use-after-move]".format(test_file),
+        "{}:10:12: warning: 'str' used after it was moved [clang-tidy-bugprone-use-after-move]".format(test_file),
         "{}:10:12: style: 'str' used after it was moved [clang-tidy-hicpp-invalid-access-moved]".format(test_file)
     ]
     assert exitcode == 0, stdout

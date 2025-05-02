@@ -1989,7 +1989,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
                 errmsg.severity = Severity::performance;
             else if (startsWith(id, "portability-"))
                 errmsg.severity = Severity::portability;
-            else if (startsWith(id, "cert-") || startsWith(id, "misc-") || startsWith(id, "unused-"))
+            else if (startsWith(id, "cert-") || startsWith(id, "misc-") || startsWith(id, "bugprone-") || (id.find("-unused-") != std::string::npos))
                 errmsg.severity = Severity::warning;
             else
                 errmsg.severity = Severity::style;
