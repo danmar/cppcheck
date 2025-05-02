@@ -207,9 +207,6 @@ private:
     /** the ErrorLogger provided to this instance */
     ErrorLogger& mErrorLoggerDirect;
 
-    /** @brief Current preprocessor configuration */
-    std::string mCurrentConfig;
-
     bool mUseGlobalSuppressions;
 
     /** Are there too many configs? */

@@ -1092,22 +1092,24 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             if (!mSettings.force && ++checkCount > mSettings.maxConfigs)
                 break;
 
+            std::string currentConfig;
+
             if (!mSettings.userDefines.empty()) {
-                mCurrentConfig = mSettings.userDefines;
+                currentConfig = mSettings.userDefines;
                 const std::vector<std::string> v1(split(mSettings.userDefines, ";"));
                 for (const std::string &cfg: split(currCfg, ";")) {
                     if (std::find(v1.cbegin(), v1.cend(), cfg) == v1.cend()) {
-                        mCurrentConfig += ";" + cfg;
+                        currentConfig += ";" + cfg;
                     }
                 }
             } else {
-                mCurrentConfig = currCfg;
+                currentConfig = currCfg;
             }
 
             if (mSettings.preprocessOnly) {
                 std::string codeWithoutCfg;
                 Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
-                    codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
+                    codeWithoutCfg = preprocessor.getcode(tokens1, currentConfig, files, true);
                 });
 
                 if (startsWith(codeWithoutCfg,"#file"))
@@ -1130,7 +1132,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
-                    simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
+                    simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, currentConfig, files, true);
                     tokenlist.createTokens(std::move(tokensP));
                 });
                 hasValidConfig = true;
@@ -1145,9 +1147,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     mLogger->setLocationMacros(tokenizer.tokens(), files);
 
                     // If only errors are printed, print filename after the check
-                    if (!mSettings.quiet && (!mCurrentConfig.empty() || checkCount > 1)) {
+                    if (!mSettings.quiet && (!currentConfig.empty() || checkCount > 1)) {
                         std::string fixedpath = Path::toNativeSeparators(file.spath());
-                        mErrorLogger.reportOut("Checking " + fixedpath + ": " + mCurrentConfig + "...", Color::FgGreen);
+                        mErrorLogger.reportOut("Checking " + fixedpath + ": " + currentConfig + "...", Color::FgGreen);
                     }
 
                     if (!tokenizer.tokens())
@@ -1163,12 +1165,12 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 #endif
 
                     // Simplify tokens into normal form, skip rest of iteration if failed
-                    if (!tokenizer.simplifyTokens1(mCurrentConfig))
+                    if (!tokenizer.simplifyTokens1(currentConfig))
                         continue;
 
                     // dump xml if --dump
                     if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
-                        fdump << "<dump cfg=\"" << ErrorLogger::toxml(mCurrentConfig) << "\">" << std::endl;
+                        fdump << "<dump cfg=\"" << ErrorLogger::toxml(currentConfig) << "\">" << std::endl;
                         fdump << "  <standards>" << std::endl;
                         fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
                         fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
@@ -1189,7 +1191,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                         const std::size_t hash = tokenizer.list.calculateHash();
                         if (hashes.find(hash) != hashes.end()) {
                             if (mSettings.debugwarnings)
-                                purgedConfigurationMessage(file.spath(), mCurrentConfig);
+                                purgedConfigurationMessage(file.spath(), currentConfig);
                             continue;
                         }
                         hashes.insert(hash);
@@ -1203,7 +1205,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 }
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
-                configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
+                configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
 
                 if (!hasValidConfig && currCfg == *configurations.rbegin()) {
