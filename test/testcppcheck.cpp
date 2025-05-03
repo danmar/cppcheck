@@ -52,6 +52,10 @@ private:
             ids.push_back(msg.id);
             errmsgs.push_back(msg);
         }
+
+        void reportMetric(const std::string &metric) override {
+            (void) metric;
+        }
     };
 
     void run() override {

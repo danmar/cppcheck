@@ -257,6 +257,11 @@ private:
         mErrorLogger.reportOut(outmsg, c);
     }
 
+    void reportMetric(const std::string &metric) override
+    {
+        mErrorLogger.reportMetric(metric);
+    }
+
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override
     {
         mErrorLogger.reportProgress(filename, stage, value);
@@ -1762,6 +1767,29 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                     std::string info = loc["info"].get<std::string>();
                     errmsg.callStack.emplace_back(std::move(fileName), std::move(info), lineNumber, column);
                 }
+            }
+
+            if (obj.count("metric") > 0) {
+                picojson::object metric_json = obj["metric"].get<picojson::object>();
+
+                std::stringstream ss;
+                ss << "<";
+
+                bool isFirst = true;
+                for (auto pair : metric_json) {
+                    std::string sep = isFirst ? "" : " ";
+                    isFirst = false;
+                    const std::string id = pair.first;
+                    if (pair.second.is<std::int64_t>())
+                        ss << sep << id << "=\"" << pair.second.get<std::int64_t>() << "\"";
+                    else if (pair.second.is<std::string>())
+                        ss << sep << id << "=\"" << pair.second.get<std::string>() << "\"";
+                }
+
+                ss << "/>";
+                mErrorLogger.reportMetric(ss.str());
+
+                continue;
             }
 
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();

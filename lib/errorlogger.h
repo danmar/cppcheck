@@ -246,6 +246,13 @@ public:
     virtual void reportErr(const ErrorMessage &msg) = 0;
 
     /**
+     * Information about file metrics reported by addons.
+     *
+     * @param metric The file metric to report, as an XML object.
+     */
+    virtual void reportMetric(const std::string &metric) = 0;
+
+    /**
      * Report progress to client
      * @param filename main file that is checked
      * @param stage for example preprocess / tokenize / simplify / check
