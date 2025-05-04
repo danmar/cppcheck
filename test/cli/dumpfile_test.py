@@ -1,5 +1,6 @@
 # python -m pytest dumpfile_test.py
 
+import json
 import os
 import pathlib
 
@@ -93,3 +94,28 @@ def test_language_unk_force_c(tmp_path):
 
 def test_language_unk_force_cpp(tmp_path):
     __test_language(tmp_path, 'src', force_lang='c++', exp_lang='cpp')
+
+
+def test_duplicate_file_entries(tmpdir):  #13333
+    test_file = str(tmpdir / 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('x=1;\n')
+
+    project_file = str(tmpdir / 'compile_commands.json')
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps([{
+               "file": test_file,
+               "directory": str(tmpdir),
+               "command": "cc -c test.c"
+            },{
+               "file": test_file,
+               "directory": str(tmpdir),
+               "command": "cc -c test.c"
+            }]))
+
+    args = ['--project=compile_commands.json', '--dump']
+    _, _, _ = cppcheck(args, cwd=str(tmpdir))
+
+    assert os.path.isfile(test_file + '.dump')
+    assert os.path.isfile(test_file + '.1.dump')
+

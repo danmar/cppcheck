@@ -169,7 +169,7 @@ private:
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream = nullptr);
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream* fileStream = nullptr);
 
     /**
      * @brief Check normal tokens
@@ -198,7 +198,7 @@ private:
     void executeRules(const std::string &tokenlist, const TokenList &list);
 #endif
 
-    unsigned int checkClang(const FileWithDetails &file);
+    unsigned int checkClang(const FileWithDetails &file, int fileIndex);
 
     const Settings& mSettings;
     Suppressions& mSuppressions;
