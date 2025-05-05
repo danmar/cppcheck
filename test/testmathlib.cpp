@@ -23,7 +23,9 @@
 #include "tokenlist.h"
 
 #include <limits>
+#include <memory>
 #include <string>
+#include <utility>
 
 class TestMathLib : public TestFixture {
 public:
@@ -410,8 +412,8 @@ private:
         {
             TokenList list{&settingsDefault};
             list.appendFileIfNew("test.c");
-            TokensFrontBack tokensFrontBack(list);
-            auto *tok = new Token(tokensFrontBack);
+            auto tokensFrontBack = std::make_shared<TokensFrontBack>();
+            auto *tok = new Token(list, std::move(tokensFrontBack));
             tok->str("invalid");
             ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber(tok), INTERNAL, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
             ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("invalid", tok), INTERNAL, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
@@ -586,8 +588,8 @@ private:
         {
             TokenList list{&settingsDefault};
             list.appendFileIfNew("test.c");
-            TokensFrontBack tokensFrontBack(list);
-            auto *tok = new Token(tokensFrontBack);
+            auto tokensFrontBack = std::make_shared<TokensFrontBack>();
+            auto *tok = new Token(list, std::move(tokensFrontBack));
             tok->str("invalid");
             ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber(tok), INTERNAL, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");
             ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("invalid", tok), INTERNAL, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");
@@ -716,8 +718,8 @@ private:
         {
             TokenList list{&settingsDefault};
             list.appendFileIfNew("test.c");
-            TokensFrontBack tokensFrontBack(list);
-            auto *tok = new Token(tokensFrontBack);
+            auto tokensFrontBack = std::make_shared<TokensFrontBack>();
+            auto *tok = new Token(list, std::move(tokensFrontBack));
             tok->str("invalid");
             ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber(tok), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
             ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("invalid", tok), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");

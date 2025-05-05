@@ -295,7 +295,7 @@ static std::pair<const Token*, const Library::Container*> getContainerFunction(c
     if (!tok || !tok->valueType() || (!tok->valueType()->container && (!(cont = library.detectContainerOrIterator(tok->valueType()->smartPointerTypeToken)))))
         return {};
     const Token* parent = tok->astParent();
-    if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
+    if (Token::Match(parent, ". %name% [(<]") && astIsLHS(tok)) {
         return { parent->next(), cont ? cont : tok->valueType()->container };
     }
     return {};
@@ -440,6 +440,8 @@ bool isTemporary(const Token* tok, const Library* library, bool unknown)
         return isTemporary(tok->astOperand2(), library);
     if (tok->isCast() || (tok->isCpp() && isCPPCast(tok)))
         return isTemporary(tok->astOperand2(), library);
+    if (findLambdaEndToken(tok) != nullptr)
+        return true;
     if (Token::Match(tok, ".|[|++|--|%name%|%assign%"))
         return false;
     if (tok->isUnaryOp("*"))

@@ -562,7 +562,7 @@ static void valueFlowNumber(TokenList &tokenlist, const Settings& settings)
 
     if (tokenlist.isCPP() || settings.standards.c >= Standards::C23) {
         for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-            if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
+            if (tok->isName() && !tok->varId() && Token::Match(tok, "%bool%")) {
                 ValueFlow::Value value(tok->str() == "true");
                 if (!tok->isTemplateArg())
                     value.setKnown();
@@ -1208,7 +1208,7 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings& sett
     for (Token* tok = tokenList.front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        if (Token::Match(tok, "true|false"))
+        if (Token::Match(tok, "%bool%"))
             continue;
         if (astIsBool(tok) || Token::Match(tok, "%comp%")) {
             ValueFlow::Value lower{-1};
@@ -1789,8 +1789,8 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                     false);
             }
         } else {
-            return ValueFlow::LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, settings, depth - 1),
-                                                          !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
+            return ValueFlow::LifetimeToken::setAddressOf(
+                getLifetimeTokens(vartok, escape, std::move(errorPath), pred, settings, depth - 1), false);
         }
     } else if (Token::simpleMatch(tok, "{") && getArgumentStart(tok) &&
                !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
@@ -6805,7 +6805,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     value.valueType = ValueFlow::Value::ValueType::TOK;
                     value.tokvalue = tok;
                     value.setKnown();
-                    values.push_back(value);
+                    values.push_back(std::move(value));
                 } else if (Token::simpleMatch(tok, "(")) {
                     const Token* constructorArgs = tok;
                     values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);

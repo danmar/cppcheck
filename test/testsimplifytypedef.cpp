@@ -28,7 +28,7 @@
 #include <cstddef>
 #include <sstream>
 #include <string>
-#include <vector>
+#include <utility>
 
 class TestSimplifyTypedef : public TestFixture {
 public:
@@ -273,11 +273,11 @@ private:
     }
 
     std::string simplifyTypedef(const char code[]) {
-        Tokenizer tokenizer(settings1, *this);
-
+        TokenList tokenlist{&settings1};
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, Standards::Language::CPP))
+        if (!tokenlist.createTokens(istr, Standards::Language::CPP))
             return "";
+        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -307,11 +307,12 @@ private:
 
 
     std::string simplifyTypedefC(const char code[]) {
-        Tokenizer tokenizer(settings1, *this);
+        TokenList tokenlist{&settings1};
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!TokenListHelper::createTokens(tokenlist, istr, "file.c"))
             return "";
+        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
         try {
@@ -323,11 +324,11 @@ private:
     }
 
     std::string dumpTypedefInfo(const char code[]) {
-        Tokenizer tokenizer(settings1, *this);
-
+        TokenList tokenlist{&settings1};
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "file.c"))
+        if (!TokenListHelper::createTokens(tokenlist, istr, "file.c"))
             return {};
+        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
         try {
@@ -4452,9 +4453,10 @@ private:
                             "uint8_t t;"
                             "void test(rFunctionPointer_fp functionPointer);";
 
-        Tokenizer tokenizer(settings1, *this);
+        TokenList tokenlist{&settings1};
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
+        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4494,9 +4496,10 @@ private:
                             "    MY_INT x = 0;\n"
                             "}";
 
-        Tokenizer tokenizer(settings1, *this);
+        TokenList tokenlist{&settings1};
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
+        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4512,9 +4515,10 @@ private:
                             "    F x = 0;\n"
                             "}";
 
-        Tokenizer tokenizer(settings1, *this);
+        TokenList tokenlist{&settings1};
         std::istringstream istr(code);
-        ASSERT(tokenizer.list.createTokens(istr, "file.c"));
+        ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
+        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 

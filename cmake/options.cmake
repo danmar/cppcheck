@@ -89,7 +89,7 @@ option(DISALLOW_THREAD_EXECUTOR "Disallow usage of ThreadExecutor for -j"       
 if(DISALLOW_THREAD_EXECUTOR AND WIN32)
     message(FATAL_ERROR "Cannot disable usage of ThreadExecutor on Windows as no other executor implementation is currently available")
 endif()
-option(USE_BOOST            "Usage of Boost"                                                OFF)
+option(USE_BOOST            "Force usage of Boost"                                          OFF)
 option(USE_BOOST_INT128     "Usage of Boost.Multiprecision 128-bit integer for Mathlib"     OFF)
 if (NOT USE_BOOST AND USE_BOOST_INT128)
     message(FATAL_ERROR "USE_BOOST_INT128 requires USE_BOOST to be enabled")

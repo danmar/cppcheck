@@ -30,11 +30,10 @@ public:
     TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
-        settings = settingsBuilder(settings).library("std.cfg").build();
-
+        // TODO: mNewTemplate = true;
         // Assign
         TEST_CASE(assign1);
         TEST_CASE(assign2);
@@ -226,8 +225,8 @@ private:
         const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).checkLibrary().build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(tokenizer, this);
@@ -3346,8 +3345,8 @@ private:
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, false), file, line);
+        SimpleTokenizer tokenizer(settings, *this, false);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(tokenizer, this);

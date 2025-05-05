@@ -54,6 +54,7 @@ private:
                                "</def>";
         settings = settingsBuilder(settings).libraryxml(cfg).build();
 
+        mNewTemplate = true;
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
         TEST_CASE(valueFlowTypeTraits);
@@ -76,10 +77,14 @@ private:
         TEST_CASE(valueFlowBeforeConditionAssignIncDec);
         TEST_CASE(valueFlowBeforeConditionFunctionCall);
         TEST_CASE(valueFlowBeforeConditionGlobalVariables);
+        mNewTemplate = false;
         TEST_CASE(valueFlowBeforeConditionGoto);
+        mNewTemplate = true;
         TEST_CASE(valueFlowBeforeConditionIfElse);
         TEST_CASE(valueFlowBeforeConditionLoop);
+        mNewTemplate = false;
         TEST_CASE(valueFlowBeforeConditionMacro);
+        mNewTemplate = true;
         TEST_CASE(valueFlowBeforeConditionSizeof);
         TEST_CASE(valueFlowBeforeConditionSwitch);
         TEST_CASE(valueFlowBeforeConditionTernaryOp);
@@ -165,7 +170,9 @@ private:
         TEST_CASE(valueFlowImpossibleUnknownConstant);
         TEST_CASE(valueFlowContainerEqual);
 
+        mNewTemplate = false;
         TEST_CASE(valueFlowBailoutIncompleteVar);
+        mNewTemplate = true;
 
         TEST_CASE(performanceIfCount);
     }
@@ -491,8 +498,8 @@ private:
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
     std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr, bool cpp = true) {
-        SimpleTokenizer tokenizer(s ? *s : settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(s ? *s : settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
@@ -587,6 +594,8 @@ private:
                                 "void foo() { x = N::e1; }";
             ASSERT_EQUALS(1, valueOfTok(code, "::").intvalue);
         }
+
+        ASSERT_EQUALS(63, valueOfTok("x = 3 * uint32_t{21};", "*").intvalue);
     }
 
     void valueFlowString() {
@@ -1891,7 +1900,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2:9]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2032,7 +2041,7 @@ private:
                 "    y = ((x<0) ? x : ((x==2)?3:4));\n"
                 "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+            "[test.cpp:2:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y [valueFlowBailoutIncompleteVar]\n",
             errout_str());
 
         bailout("int f(int x) {\n"
@@ -2097,7 +2106,7 @@ private:
                 "    if (x == 123) {}\n"
                 "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b\n",
+            "[test.cpp:2:21]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable b [valueFlowBailoutIncompleteVar]\n",
             errout_str());
 
         code = "void f(int x, bool abc) {\n"
@@ -2146,7 +2155,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3:13]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a [valueFlowBailoutIncompleteVar]\n",
             errout_str());
 
         bailout("void f(int x, int y) {\n"
@@ -2156,7 +2165,7 @@ private:
                 "    };\n"
                 "}");
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a\n",
+            "[test.cpp:3:13]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable a [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -6378,6 +6387,14 @@ private:
                "    return false;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
+
+        code = "bool f(bool b1, bool b2) {\n"
+               "    if (b1 && b2)\n"
+               "        return;\n"
+               "    int x = b1 && b2;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
     }
 
     static std::string isPossibleContainerSizeValue(std::list<ValueFlow::Value> values,
@@ -7355,7 +7372,7 @@ private:
     void valueFlowDynamicBufferSize() {
         const char *code;
 
-        const Settings settingsOld = settings;
+        const Settings settingsOld = settings; // TODO: get rid of this
         settings = settingsBuilder(settings).library("posix.cfg").library("bsd.cfg").build();
 
         code = "void* f() {\n"

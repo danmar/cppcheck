@@ -52,8 +52,7 @@ private:
 #define findLambdaEndToken(...) findLambdaEndToken_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     bool findLambdaEndToken_(const char* file, int line, const char (&code)[size], const char pattern[] = nullptr, bool checkNext = true) {
-        const Settings settings;
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token* const tokStart = pattern ? Token::findsimplematch(tokenizer.tokens(), pattern, strlen(pattern)) : tokenizer.tokens();
         const Token * const tokEnd = (::findLambdaEndToken)(tokStart);
@@ -174,8 +173,8 @@ private:
 #define isSameExpression(...) isSameExpression_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     bool isSameExpression_(const char* file, int line, const char (&code)[size], const char tokStr1[], const char tokStr2[], bool cpp) {
-        SimpleTokenizer tokenizer(settingsDefault, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
         return (isSameExpression)(false, tok1, tok2, settingsDefault, false, true);

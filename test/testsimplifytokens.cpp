@@ -174,9 +174,9 @@ private:
     template<size_t size>
     std::string tok_(const char* file, int line, const char (&code)[size], const TokOptions& options = make_default_obj()) {
         const Settings settings = settingsBuilder(settings0).platform(options.type).build();
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
 
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
@@ -194,8 +194,8 @@ private:
         const Settings settings = settingsBuilder(settings1).debugwarnings().platform(options.platform).cpp(Standards::CPP03).build();
 
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);

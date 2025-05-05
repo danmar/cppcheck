@@ -46,6 +46,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
           install-deps: false
           cache: true
 

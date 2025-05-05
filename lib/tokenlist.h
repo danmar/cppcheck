@@ -26,11 +26,11 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <memory>
 #include <string>
 #include <vector>
 
 class Token;
-class TokenList;
 class Settings;
 
 namespace simplecpp {
@@ -44,10 +44,8 @@ namespace simplecpp {
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
 struct TokensFrontBack {
-    explicit TokensFrontBack(const TokenList& list) : list(list) {}
     Token *front{};
     Token* back{};
-    const TokenList& list;
 };
 
 class CPPCHECKLIB TokenList {
@@ -58,6 +56,8 @@ public:
 
     TokenList(const TokenList &) = delete;
     TokenList &operator=(const TokenList &) = delete;
+
+    TokenList(TokenList&& other) NOEXCEPT = default;
 
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
@@ -103,9 +103,8 @@ public:
      * - UTF in the code are not handled.
      * - comments are not handled.
      * @param code input stream for code
-     * @param file0 source file name
+     * @param lang the language of the code
      */
-    bool createTokens(std::istream &code, const std::string& file0);
     bool createTokens(std::istream &code, Standards::Language lang);
 
     void createTokens(simplecpp::TokenList&& tokenList);
@@ -118,20 +117,20 @@ public:
 
     /** get first token of list */
     const Token *front() const {
-        return mTokensFrontBack.front;
+        return mTokensFrontBack->front;
     }
     // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *front() {
-        return mTokensFrontBack.front;
+        return mTokensFrontBack->front;
     }
 
     /** get last token of list */
     const Token *back() const {
-        return mTokensFrontBack.back;
+        return mTokensFrontBack->back;
     }
     // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *back() {
-        return mTokensFrontBack.back;
+        return mTokensFrontBack->back;
     }
 
     /**
@@ -215,7 +214,7 @@ private:
     bool createTokensInternal(std::istream &code, const std::string& file0);
 
     /** Token list */
-    TokensFrontBack mTokensFrontBack;
+    std::shared_ptr<TokensFrontBack> mTokensFrontBack;
 
     /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> mFiles;

@@ -1944,7 +1944,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         return false;
 
     // regular function?
-    else if (Token::Match(tok, "%name% (") && !isReservedName(tok) && tok->previous() &&
+    else if (Token::Match(tok, "%name% ( !!*") && !isReservedName(tok) && tok->previous() &&
              (Token::Match(tok->previous(), "%name%|>|&|&&|*|::|~") || // Either a return type or scope qualifier in front of tok
               outerScope->isClassOrStructOrUnion())) { // or a ctor/dtor
         const Token* tok1 = tok->previous();
@@ -5130,6 +5130,8 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     if (!localVarTok)
         return false;
 
+    if (Token::simpleMatch(localVarTok, "( *") && Token::Match(localTypeTok->previous(), "class|struct|union|enum")) // not a function call
+        localVarTok = localVarTok->next();
     while (Token::Match(localVarTok, "const|*|&"))
         localVarTok = localVarTok->next();
 
@@ -6018,7 +6020,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
         matches.erase(itPure);
 
     // Only one candidate left
-    if (matches.size() == 1)
+    if (matches.size() == 1 && std::none_of(functionList.begin(), functionList.end(), [tok](const Function& f) {
+        return startsWith(f.name(), tok->str() + " <");
+    }))
         return matches[0];
 
     // Prioritize matches in derived scopes

@@ -36,6 +36,7 @@ private:
                               certainty(Certainty::inconclusive).c(Standards::C11).cpp(Standards::CPP11).library("std.cfg").library("posix.cfg").build();
 
     void run() override {
+        // TODO: mNewTemplate = true;
         // Prohibited functions
         TEST_CASE(prohibitedFunctions_posix);
         TEST_CASE(prohibitedFunctions_index);
@@ -126,8 +127,8 @@ private:
         const Settings& s = options.s ? *options.s : settings;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(s, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(s, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         runChecks<CheckFunctions>(tokenizer, this);
     }

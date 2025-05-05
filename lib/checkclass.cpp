@@ -1249,7 +1249,8 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
                     return true;
             }
         } else if ((func->type != FunctionType::eCopyConstructor &&
-                    func->type != FunctionType::eOperatorEqual) ||
+                    func->type != FunctionType::eOperatorEqual &&
+                    !func->isDefault() && !func->isDelete()) ||
                    func->access != AccessControl::Private) // Assume it is used, if a function implementation isn't seen, but empty private copy constructors and assignment operators are OK
             return true;
     }
@@ -1325,16 +1326,19 @@ void CheckClass::privateFunctions()
             }
 
             if (!used)
-                unusedPrivateFunctionError(pf->tokenDef, scope->className, pf->name());
+                unusedPrivateFunctionError(pf->token, pf->tokenDef, scope->className, pf->name());
 
             privateFuncs.pop_front();
         }
     }
 }
 
-void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
+void CheckClass::unusedPrivateFunctionError(const Token* tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, Severity::style, "unusedPrivateFunction", "$symbol:" + classname + "::" + funcname + "\nUnused private function: '$symbol'", CWE398, Certainty::normal);
+    std::list<const Token *> toks{ tok1 };
+    if (tok2)
+        toks.push_front(tok2);
+    reportError(toks, Severity::style, "unusedPrivateFunction", "$symbol:" + classname + "::" + funcname + "\nUnused private function: '$symbol'", CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -1429,8 +1433,7 @@ void CheckClass::checkMemset()
                     type = typeTok->type()->classScope;
 
                 if (type) {
-                    const std::set<const Scope *> parsedTypes;
-                    checkMemsetType(scope, tok, type, false, parsedTypes);
+                    checkMemsetType(scope, tok, type, false, {});
                 }
             } else if (tok->variable() && tok->variable()->isPointer() && tok->variable()->typeScope() && Token::Match(tok, "%var% = %name% (")) {
                 const Library::AllocFunc* alloc = mSettings->library.getAllocFuncInfo(tok->tokAt(2));
@@ -3796,7 +3799,7 @@ void CheckClass::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.uninitVarError(nullptr, true, FunctionType::eConstructor, "classname", "varnamepriv", true, false);
     c.missingMemberCopyError(nullptr, FunctionType::eConstructor, "classname", "varnamepriv");
     c.operatorEqVarError(nullptr, "classname", "", false);
-    c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
+    c.unusedPrivateFunctionError(nullptr, nullptr, "classname", "funcname");
     c.memsetError(nullptr, "memfunc", "classname", "class");
     c.memsetErrorReference(nullptr, "memfunc", "class");
     c.memsetErrorFloat(nullptr, "class");

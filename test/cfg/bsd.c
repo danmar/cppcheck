@@ -72,7 +72,7 @@ ssize_t nullPointer_pwritev(int fd, const struct iovec *iov, int iovcnt, off_t o
     return pwritev(fd,iov,iovcnt,offset);
 }
 
-// #9346
+// False negative: #9346
 void uninitvar_timercmp(struct timeval t)
 {
     struct timeval uninit;

@@ -42,6 +42,7 @@
 #include "json.h"
 
 // TODO: align the exclusion logic with PathMatch
+// TODO: PathMatch lacks glob support
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
@@ -305,7 +306,7 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
                 defs += defval;
             defs += ';';
         } else if (F=='U')
-            fs.undefs.insert(fval);
+            fs.undefs.insert(std::move(fval));
         else if (F=='I') {
             std::string i = std::move(fval);
             if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')

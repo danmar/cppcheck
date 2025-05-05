@@ -2080,7 +2080,7 @@ void TemplateSimplifier::expandTemplate(
                 --scopeCount;
             if (scopeCount < 0)
                 break;
-            if (tok3->isName() && !Token::Match(tok3, "class|typename|struct") && !tok3->isStandardType()) {
+            if (tok3->isName() && !Token::Match(tok3, "class|typename|struct") && !tok3->isStandardType() && !Token::Match(tok3->previous(), ".|::")) {
                 // search for this token in the type vector
                 unsigned int itype = 0;
                 while (itype < typeParametersInDeclaration.size() && typeParametersInDeclaration[itype]->str() != tok3->str())
@@ -3246,9 +3246,9 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         // New classname/funcname..
         const std::string newName(templateDeclaration.name() + " < " + typeForNewName + " >");
-        const std::string newFullName(templateDeclaration.scope() + (templateDeclaration.scope().empty() ? "" : " :: ") + newName);
+        std::string newFullName(templateDeclaration.scope() + (templateDeclaration.scope().empty() ? "" : " :: ") + newName);
 
-        if (expandedtemplates.insert(newFullName).second) {
+        if (expandedtemplates.insert(std::move(newFullName)).second) {
             expandTemplate(templateDeclaration, instantiation, typeParametersInDeclaration, newName, !specialized && !isVar);
             instantiated = true;
             mChanged = true;

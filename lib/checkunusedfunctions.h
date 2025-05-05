@@ -52,7 +52,7 @@ public:
     // * What functions are declared
     void parseTokens(const Tokenizer &tokenizer, const Settings &settings);
 
-    std::string analyzerInfo() const;
+    std::string analyzerInfo(const Tokenizer &tokenizer) const;
 
     static void analyseWholeProgram(const Settings &settings, ErrorLogger& errorLogger, const std::string &buildDir);
 
@@ -86,7 +86,7 @@ private:
     public:
         explicit FunctionDecl(const Function *f);
         std::string functionName;
-        std::string fileName;
+        nonneg int fileIndex;
         unsigned int lineNumber;
     };
     std::list<FunctionDecl> mFunctionDecl;

@@ -40,8 +40,6 @@ public:
     TestLibrary() : TestFixture("TestLibrary") {}
 
 private:
-    const Settings settings;
-
     void run() override {
         TEST_CASE(isCompliantValidationExpression);
         TEST_CASE(empty);
@@ -153,7 +151,7 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(&settings);
+        TokenList tokenList(&settingsDefault);
         std::istringstream istr("foo();"); // <- too few arguments, not library function
         ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
         Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
@@ -177,7 +175,7 @@ private:
         ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            TokenList tokenList(&settings);
+            TokenList tokenList(&settingsDefault);
             std::istringstream istr("foo();"); // <- too few arguments, not library function
             ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
@@ -186,7 +184,7 @@ private:
             ASSERT(library.isNotLibraryFunction(tokenList.front()));
         }
         {
-            TokenList tokenList(&settings);
+            TokenList tokenList(&settingsDefault);
             std::istringstream istr("foo(a);"); // <- library function
             ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
@@ -197,7 +195,7 @@ private:
             ASSERT(func);
         }
         {
-            TokenList tokenList(&settings);
+            TokenList tokenList(&settingsDefault);
             std::istringstream istr("foo(a, b);"); // <- library function
             ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
@@ -208,7 +206,7 @@ private:
             ASSERT(func);
         }
         {
-            TokenList tokenList(&settings);
+            TokenList tokenList(&settingsDefault);
             std::istringstream istr("foo(a, b, c);"); // <- too much arguments, not library function
             ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
@@ -569,14 +567,14 @@ private:
         ASSERT_EQUALS(library.functions().size(), 1U);
 
         {
-            SimpleTokenizer tokenizer(settings, *this);
+            SimpleTokenizer tokenizer(settingsDefault, *this);
             const char code[] = "CString str; str.Format();";
             ASSERT(tokenizer.tokenize(code));
             ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
 
         {
-            SimpleTokenizer tokenizer(settings, *this);
+            SimpleTokenizer tokenizer(settingsDefault, *this);
             const char code[] = "HardDrive hd; hd.Format();";
             ASSERT(tokenizer.tokenize(code));
             ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
@@ -595,14 +593,14 @@ private:
         ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            SimpleTokenizer tokenizer(settings, *this);
+            SimpleTokenizer tokenizer(settingsDefault, *this);
             const char code[] = "struct X : public Base { void dostuff() { f(0); } };";
             ASSERT(tokenizer.tokenize(code));
             ASSERT(library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
 
         {
-            SimpleTokenizer tokenizer(settings, *this);
+            SimpleTokenizer tokenizer(settingsDefault, *this);
             const char code[] = "struct X : public Base { void dostuff() { f(1,2); } };";
             ASSERT(tokenizer.tokenize(code));
             ASSERT(!library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
@@ -872,7 +870,8 @@ private:
         ASSERT(!library.detectContainerOrIterator(nullptr));
 
         {
-            const SimpleTokenizer var(*this, "std::A<int> a;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::A<int> a;"));
             ASSERT_EQUALS(&A, library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -881,14 +880,16 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::A<int>::size_type a_s;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::A<int>::size_type a_s;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            const SimpleTokenizer var(*this, "std::A<int>::iterator a_it;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::A<int>::iterator a_it;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT_EQUALS(&A, library.detectIterator(var.tokens()));
             bool isIterator;
@@ -897,7 +898,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::B<int> b;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::B<int> b;"));
             ASSERT_EQUALS(&B, library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -906,14 +908,16 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::B<int>::size_type b_s;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::B<int>::size_type b_s;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            const SimpleTokenizer var(*this, "std::B<int>::iterator b_it;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::B<int>::iterator b_it;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT_EQUALS(&B, library.detectIterator(var.tokens()));
             bool isIterator;
@@ -922,21 +926,24 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "C c;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("C c;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            const SimpleTokenizer var(*this, "D d;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("D d;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
         }
 
         {
-            const SimpleTokenizer var(*this, "std::E e;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::E e;"));
             ASSERT(library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -946,7 +953,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "E e;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("E e;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
@@ -954,7 +962,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::E::iterator I;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::E::iterator I;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
@@ -962,7 +971,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::E::size_type p;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::E::size_type p;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));
@@ -970,7 +980,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::F f;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::F f;"));
             ASSERT(library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             bool isIterator;
@@ -979,7 +990,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "std::F::iterator I;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("std::F::iterator I;"));
             ASSERT(!library.detectContainer(var.tokens()));
             TODO_ASSERT(library.detectIterator(var.tokens()));
             bool isIterator = false;
@@ -988,7 +1000,8 @@ private:
         }
 
         {
-            const SimpleTokenizer var(*this, "F::iterator I;");
+            SimpleTokenizer var(*this);
+            ASSERT(var.tokenize("F::iterator I;"));
             ASSERT(!library.detectContainer(var.tokens()));
             ASSERT(!library.detectIterator(var.tokens()));
             ASSERT(!library.detectContainerOrIterator(var.tokens()));

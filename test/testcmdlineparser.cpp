@@ -450,6 +450,8 @@ private:
         TEST_CASE(noCheckUnusedTemplates);
         TEST_CASE(clangTidy);
         TEST_CASE(clangTidyCustom);
+        TEST_CASE(projectConfigurationNoProject);
+        TEST_CASE(projectConfigurationEmpty);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3064,6 +3066,20 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT(settings->clangTidy);
         ASSERT_EQUALS("clang-tidy-14", settings->clangTidyExecutable);
+    }
+
+    void projectConfigurationNoProject() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--project-configuration=Debug|Win32", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: --project-configuration has no effect - no Visual Studio project provided.\n", logger->str());
+    }
+
+    void projectConfigurationEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--project-configuration=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: --project-configuration parameter is empty.\n", logger->str());
     }
 
     void ignorepaths1() {

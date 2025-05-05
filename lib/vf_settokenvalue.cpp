@@ -303,9 +303,8 @@ namespace ValueFlow
             Token* next = nullptr;
             const Library::Container::Yield yields = getContainerYield(parent, settings, next);
             if (yields == Library::Container::Yield::SIZE) {
-                Value v(value);
-                v.valueType = Value::ValueType::INT;
-                setTokenValue(next, std::move(v), settings);
+                value.valueType = Value::ValueType::INT;
+                setTokenValue(next, std::move(value), settings);
             } else if (yields == Library::Container::Yield::EMPTY) {
                 Value v(value);
                 v.valueType = Value::ValueType::INT;
@@ -706,6 +705,7 @@ namespace ValueFlow
         else if (Token::Match(parent, ":: %name%") && parent->astOperand2() == tok) {
             setTokenValue(parent, std::move(value), settings);
         }
+
         // Calling std::size or std::empty on an array
         else if (value.isTokValue() && Token::simpleMatch(value.tokvalue, "{") && tok->variable() &&
                  tok->variable()->isArray() && Token::Match(parent->previous(), "%name% (") && astIsRHS(tok)) {
@@ -723,6 +723,11 @@ namespace ValueFlow
                     setTokenValue(parent, std::move(v), settings);
                 }
             }
+        }
+
+        // C++ constructor
+        else if (value.isIntValue() && parent->str() == "{" && parent->valueType() && (parent->valueType()->isIntegral() || parent->valueType()->pointer > 0)) {
+            setTokenValue(parent, std::move(value), settings);
         }
     }
 }

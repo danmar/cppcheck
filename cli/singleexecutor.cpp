@@ -65,8 +65,6 @@ unsigned int SingleExecutor::check()
         ++c;
         if (!mSettings.quiet)
             reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
-        if (mSettings.clangTidy)
-            mCppcheck.analyseClangTidy(fs);
     }
 
     if (mCppcheck.analyseWholeProgram())

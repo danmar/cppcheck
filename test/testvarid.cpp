@@ -108,6 +108,7 @@ private:
         TEST_CASE(varid_cpp_keywords_in_c_code);
         TEST_CASE(varid_cpp_keywords_in_c_code2); // #5373: varid=0 for argument called "delete"
         TEST_CASE(varid_cpp_keywords_in_c_code3);
+        TEST_CASE(varid_cpp_keywords_in_c_code4);
         TEST_CASE(varidFunctionCall1);
         TEST_CASE(varidFunctionCall2);
         TEST_CASE(varidFunctionCall3);
@@ -270,8 +271,8 @@ private:
     std::string tokenize_(const char* file, int line, const char (&code)[size], const TokenizeOptions& options = make_default_obj()) {
         const Settings *settings1 = options.s ? options.s : &settings;
 
-        SimpleTokenizer tokenizer(*settings1, *this);
-        ASSERT_LOC((tokenizer.tokenize)(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(*settings1, *this, options.cpp);
+        ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         // result..
         Token::stringifyOptions str_options = Token::stringifyOptions::forDebugVarId();
@@ -282,8 +283,8 @@ private:
 #define tokenizeHeader(...) tokenizeHeader_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeHeader_(const char* file, int line, const char (&code)[size], const char filename[]) {
-        SimpleTokenizer tokenizer{settings, *this};
-        ASSERT_LOC((tokenizer.tokenize)(code, std::string(filename)), file, line);
+        SimpleTokenizer tokenizer{settings, *this, std::string(filename)};
+        ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         // result..
         Token::stringifyOptions options = Token::stringifyOptions::forDebugVarId();
@@ -307,8 +308,8 @@ private:
 #define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string compareVaridsForVariable_(const char* file, int line, const char (&code)[size], const char varname[], bool cpp = true) {
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC((tokenizer.tokenize)(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         unsigned int varid = ~0U;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
@@ -522,7 +523,7 @@ private:
 
         const char expected[] = "1: struct S { int i@1 ; } ;\n"
                                 "2: int f ( S s@2 ) {\n"
-                                "3: return ( & s@2 ) . i@3 ;\n"
+                                "3: return s@2 . i@3 ;\n"
                                 "4: }\n";
 
         ASSERT_EQUALS(expected, actual);
@@ -1466,6 +1467,17 @@ private:
         const char code[] = "const struct class *p;";
         const char expected[] = "1: const struct class * p@1 ;\n";
         ASSERT_EQUALS(expected, tokenize(code, dinit(TokenizeOptions, $.cpp = false)));
+    }
+
+    void varid_cpp_keywords_in_c_code4() { // #12120
+        {
+            const char code[] = "int false = 0;";
+            ASSERT_THROW_INTERNAL_EQUALS(tokenize(code, dinit(TokenizeOptions, $.cpp = true)), INTERNAL, "Internal error. VarId set for bool literal.");
+        }
+        {
+            const char code[] = "int false = 0;";
+            ASSERT_EQUALS("1: int false@1 ; false@1 = 0 ;\n", tokenize(code, dinit(TokenizeOptions, $.cpp = false)));
+        }
     }
 
     void varidFunctionCall1() {

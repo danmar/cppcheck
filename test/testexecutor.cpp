@@ -21,6 +21,7 @@
 #include "executor.h"
 #include "filesettings.h"
 #include "fixture.h"
+#include "helpers.h"
 #include "settings.h"
 #include "suppressions.h"
 
@@ -59,9 +60,9 @@ private:
     void hasToLogSimple() {
         const std::list<FileWithDetails> files{FileWithDetails{"test.c"}};
         const std::list<FileSettings> fileSettings;
-        Settings settings;
         // this is the "simple" format
-        settings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        const auto settings = dinit(Settings,
+                                    $.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]");
         Suppressions supprs;
         DummyExecutor executor(files, fileSettings, settings, supprs, *this);
 

@@ -43,18 +43,18 @@ class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB(code) \
     SimpleTokenizer tokenizer(settings1, *this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, true); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
     ASSERT(db); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_C(code) \
-    SimpleTokenizer tokenizer(settings1, *this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, false); \
+    SimpleTokenizer tokenizer(settings1, *this, false); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
     do {} while (false)
 
 #define GET_SYMBOL_DB_DBG(code) \
     SimpleTokenizer tokenizer(settingsDbg, *this); \
-    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code, true); \
+    const SymbolDatabase *db = getSymbolDB_inner(tokenizer, code); \
     ASSERT(db); \
     do {} while (false)
 
@@ -75,8 +75,8 @@ private:
     }
 
     template<size_t size>
-    static const SymbolDatabase* getSymbolDB_inner(SimpleTokenizer& tokenizer, const char (&code)[size], bool cpp) {
-        return tokenizer.tokenize(code, cpp) ? tokenizer.getSymbolDatabase() : nullptr;
+    static const SymbolDatabase* getSymbolDB_inner(SimpleTokenizer& tokenizer, const char (&code)[size]) {
+        return tokenizer.tokenize(code) ? tokenizer.getSymbolDatabase() : nullptr;
     }
 
     static const Token* findToken(Tokenizer& tokenizer, const std::string& expr, unsigned int exprline)
@@ -426,6 +426,7 @@ private:
         TEST_CASE(symboldatabase108);
         TEST_CASE(symboldatabase109); // #13553
         TEST_CASE(symboldatabase110);
+        TEST_CASE(symboldatabase111); // [[fallthrough]]
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -468,6 +469,7 @@ private:
         TEST_CASE(isFunction1); // UNKNOWN_MACRO(a,b) { .. }
         TEST_CASE(isFunction2);
         TEST_CASE(isFunction3);
+        TEST_CASE(isFunction4);
 
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
@@ -527,6 +529,7 @@ private:
         TEST_CASE(findFunction57);
         TEST_CASE(findFunction58); // #13310
         TEST_CASE(findFunction59);
+        TEST_CASE(findFunction60);
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
@@ -845,7 +848,8 @@ private:
         }
         {
             reset();
-            const SimpleTokenizer constpointer(*this, "const int* p;");
+            SimpleTokenizer constpointer(*this);
+            ASSERT(constpointer.tokenize("const int* p;"));
             Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, settings1);
             ASSERT(false == v2.isArray());
             ASSERT(true == v2.isPointer());
@@ -2633,8 +2637,8 @@ private:
         const Settings settings = settingsBuilder(pSettings ? *pSettings : settings1).debugwarnings(debug).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
@@ -5782,6 +5786,28 @@ private:
         ASSERT(B && !B->type());
     }
 
+    void symboldatabase111() {
+        GET_SYMBOL_DB("void f(int n) {\n"
+                      "    void g(), h(), i();\n"
+                      "    switch (n) {\n"
+                      "        case 1:\n"
+                      "        case 2:\n"
+                      "            g();\n"
+                      "            [[fallthrough]];\n"
+                      "        case 3:\n"
+                      "            h();\n"
+                      "            break;\n"
+                      "        default:\n"
+                      "            i();\n"
+                      "            break;\n"
+                      "    }\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout_str());
+        const Token *case3 = Token::findsimplematch(tokenizer.tokens(), "case 3");
+        ASSERT(case3 && case3->isAttributeFallthrough());
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -6965,6 +6991,19 @@ private:
         const Token* ret = Token::findsimplematch(tokenizer.tokens(), "return");
         ASSERT(ret != nullptr);
         ASSERT(ret->scope() && ret->scope()->type == ScopeType::eFunction);
+    }
+
+    void isFunction4() {
+        GET_SYMBOL_DB("struct S (*a[10]);\n" // #13787
+                      "void f(int i, struct S* p) {\n"
+                      "    a[i] = &p[i];\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(2, db->scopeList.size());
+        ASSERT_EQUALS(1, db->scopeList.front().functionList.size());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "a [ i");
+        ASSERT(a && a->variable());
+        ASSERT(a->variable()->scope() && a->variable()->scope()->type == ScopeType::eGlobal);
     }
 
 
@@ -8573,6 +8612,26 @@ private:
         ASSERT_EQUALS(foo->function()->tokenDef->linenr(), 1);
     }
 
+    void findFunction60() { // #12910
+        GET_SYMBOL_DB("template <class T>\n"
+                      "void fun(T& t, bool x = false) {\n"
+                      "    t.push_back(0);\n"
+                      "}\n"
+                      "template <class T>\n"
+                      "void fun(bool x = false) {\n"
+                      "    T t;\n"
+                      "    fun(t, x);\n"
+                      "}\n"
+                      "int f() {\n"
+                      "    fun<std::vector<int>>(true);\n"
+                      "    std::vector<int> v;\n"
+                      "    fun(v);\n"
+                      "    return v.back();\n"
+                      "}\n");
+        const Token* fun = Token::findsimplematch(tokenizer.tokens(), "fun ( v");
+        ASSERT(fun && !fun->function());
+    }
+
     void findFunctionRef1() {
         GET_SYMBOL_DB("struct X {\n"
                       "    const std::vector<int> getInts() const & { return mInts; }\n"
@@ -9228,8 +9287,8 @@ private:
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string typeOf_(const char* file, int line, const char (&code)[size], const char pattern[], bool cpp = true, const Settings *settings = nullptr) {
-        SimpleTokenizer tokenizer(settings ? *settings : settings2, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(settings ? *settings : settings2, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token* tok;
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
             if (Token::simpleMatch(tok, pattern, strlen(pattern)))
@@ -9241,15 +9300,15 @@ private:
         // stringification
         ASSERT_EQUALS("", ValueType().str());
 
-        /*const*/ Settings s;
-        s.platform.int_bit = 16;
-        s.platform.long_bit = 32;
-        s.platform.long_long_bit = 64;
+        const auto s = dinit(Settings,
+                             $.platform.int_bit = 16,
+                                 $.platform.long_bit = 32,
+                                 $.platform.long_long_bit = 64);
 
-        /*const*/ Settings sSameSize;
-        sSameSize.platform.int_bit = 32;
-        sSameSize.platform.long_bit = 64;
-        sSameSize.platform.long_long_bit = 64;
+        const auto sSameSize = dinit(Settings,
+                                     $.platform.int_bit = 32,
+                                         $.platform.long_bit = 64,
+                                         $.platform.long_long_bit = 64);
 
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1;", "1", false, &s));

@@ -35,6 +35,7 @@ private:
     /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).severity(Severity::performance).library("std.cfg").build();
 
     void run() override {
+        // TODO: mNewTemplate = true;
         TEST_CASE(outOfBounds);
         TEST_CASE(outOfBoundsSymbolic);
         TEST_CASE(outOfBoundsIndexExpression);
@@ -2635,7 +2636,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        const auto oldSettings = settings;
+        const auto oldSettings = settings; // TODO: get rid of this
         settings.daca = true;
 
         check("void f() {\n"
@@ -2648,7 +2649,7 @@ private:
 
     void negativeIndexMultiline() {
         setMultiline();
-        const auto oldSettings = settings;
+        const auto oldSettings = settings; // TODO: get rid of this
         settings.verbose = true;
 
         check("bool valid(int);\n" // #11697
@@ -6475,6 +6476,22 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:1] -> [test.cpp:2] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout_str());
+
+        // #9834
+        check("struct CJ {\n"
+              "    std::string m_string1 = \"hello\";\n"
+              "};\n"
+              "void f() {\n"
+              "    std::vector<CJ> vec1;\n"
+              "    vec1.push_back(CJ());\n"
+              "    auto& a_ref = vec1.at(0).m_string1;\n"
+              "    vec1.clear();\n"
+              "    std::cout << a_ref << std::endl;\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:9]: (error) Reference to vec1 that may be invalid.\n",
+            errout_str());
     }
 
     void invalidContainerLoop() {
@@ -6938,6 +6955,13 @@ private:
               "    for (auto c : s) {}\n"
               "    if (b)\n"
               "        s += \'a\';\n"
+              "}\n", dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::vector<int>::iterator it) {\n" // #13727
+              "    std::vector<int> v;\n"
+              "    v.insert<std::vector<int>::iterator>(v.end(), it, it + 1);\n"
+              "    for (auto i : v) {}\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
     }

@@ -103,8 +103,8 @@ private:
         const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).platform(options.platform).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions;
@@ -596,8 +596,8 @@ private:
         for (int i = 1; i <= 2; ++i) {
             const std::string fname = "test" + std::to_string(i) + ".cpp";
 
-            SimpleTokenizer tokenizer{settings, *this};
-            ASSERT(tokenizer.tokenize(code, fname));
+            SimpleTokenizer tokenizer{settings, *this, fname};
+            ASSERT(tokenizer.tokenize(code));
 
             c.parseTokens(tokenizer, settings);
         }

@@ -115,8 +115,8 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer(const Settings &settings, ErrorLogger &errorLogger) :
-    list(&settings),
+Tokenizer::Tokenizer(TokenList tokenList, const Settings &settings, ErrorLogger &errorLogger) :
+    list(std::move(tokenList)),
     mSettings(settings),
     mErrorLogger(errorLogger),
     mTemplateSimplifier(new TemplateSimplifier(*this))
@@ -3547,8 +3547,17 @@ void Tokenizer::combineOperators()
                 tok->deleteNext();
             }
         } else if (tok->str() == "->") {
-            tok->str(".");
-            tok->originalName("->");
+            // If the preceding sequence is "( & %name% )", replace it by "%name%"
+            Token* t = tok->tokAt(-4);
+            if (Token::Match(t, "( & %name% )") && !Token::simpleMatch(t->previous(), ">")) {
+                t->deleteThis();
+                t->deleteThis();
+                t->deleteNext();
+                tok->str(".");
+            } else {
+                tok->str(".");
+                tok->originalName("->");
+            }
         }
     }
 }
@@ -5909,7 +5918,7 @@ void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
         if (mSettings.verbose)
             list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
 
-        list.front()->printValueFlow(xml, out);
+        list.front()->printValueFlow(list.getFiles(), xml, out);
 
         if (xml)
             out << "</debug>" << std::endl;
@@ -6060,6 +6069,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeMaybeUnused=\"true\"";
         if (tok->isAttributeUnused())
             outs += " isAttributeUnused=\"true\"";
+        if (tok->isAttributeFallthrough())
+            outs += " isAttributeFallthrough=\"true\"";
         if (tok->isInitBracket())
             outs += " isInitBracket=\"true\"";
         if (tok->hasAttributeAlignas()) {
@@ -6169,7 +6180,7 @@ void Tokenizer::dump(std::ostream &out) const
     }
 
     if (list.front())
-        list.front()->printValueFlow(true, out);
+        list.front()->printValueFlow(list.getFiles(), true, out);
 
     outs += dumpTypedefInfo();
 
@@ -8523,7 +8534,7 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok->linkAt(1)->previous());
 
         // UNKNOWN_MACRO(return)
-        else if (Token::Match(tok, "%name% throw|return") && std::isupper(tok->str()[0]))
+        else if (!tok->isKeyword() && Token::Match(tok, "%name% throw|return"))
             unknownMacroError(tok);
 
         // Assign/increment/decrement literal
@@ -9443,6 +9454,14 @@ void Tokenizer::simplifyCPPAttribute()
                 if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{;")) {
                     head->previous()->isAttributeNodiscard(true);
                 }
+            } else if (Token::findsimplematch(tok->tokAt(2), "fallthrough", tok->link()) || Token::findsimplematch(tok->tokAt(2), "__fallthrough__", tok->link())) {
+                Token * head = skipCPPOrAlignAttribute(tok)->next();
+                while (isCPPAttribute(head) || isAlignAttribute(head))
+                    head = skipCPPOrAlignAttribute(head)->next();
+                while (head && head->str() == ";") // we have semicollon after the attribute which would be removed in 'removeRedundantSemicolons()' so we skip it
+                    head = head->next();
+                if (head)
+                    head->isAttributeFallthrough(true);
             } else if ((hasMaybeUnusedUnderscores && Token::findsimplematch(tok->tokAt(2), "__maybe_unused__", tok->link()))
                        || (hasMaybeUnused && Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link()))) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
@@ -10950,7 +10969,8 @@ bool Tokenizer::isPacked(const Token * bodyStart) const
 
 void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& settings)
 {
-    Tokenizer tokenizer(settings, errorLogger);
+    TokenList tokenlist{&settings};
+    Tokenizer tokenizer(std::move(tokenlist), settings, errorLogger);
     tokenizer.invalidConstFunctionTypeError(nullptr);
     // checkLibraryNoReturn
     tokenizer.unhandled_macro_class_x_y(nullptr, "", "", "", "");

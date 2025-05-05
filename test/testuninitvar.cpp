@@ -34,6 +34,7 @@ private:
     const Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
+        // TODO: mNewTemplate = true;
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_warn_once); // only write 1 warning at a time
         TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files
@@ -118,8 +119,8 @@ private:
         const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).debugwarnings(options.debugwarnings).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
@@ -5464,8 +5465,8 @@ private:
         // Tokenize..
         const Settings s = settingsBuilder(settings).debugwarnings(false).build();
 
-        SimpleTokenizer tokenizer(s, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        SimpleTokenizer tokenizer(s, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &s, this);
@@ -6161,7 +6162,7 @@ private:
                         "    A* p = &a;\n"
                         "    g(p->x);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (error) Uninitialized variable: p->x\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: p->x\n", errout_str());
 
         valueFlowUninit("void f() {\n"
                         "    int a;\n"
@@ -7632,6 +7633,22 @@ private:
                         "    S s{ d };\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: d\n", errout_str());
+
+        valueFlowUninit("struct S { int x; int y; };\n"
+                        "int f() {\n"
+                        "  S s;\n"
+                        "  s.x = 0;\n"
+                        "  return (&s)->x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("struct S { int x; int y; };\n"
+                        "int f() {\n"
+                        "  S s;\n"
+                        "  s.x = 0;\n"
+                        "  return (&s)->y;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s.y\n", errout_str());
     }
 
     void valueFlowUninitForLoop()

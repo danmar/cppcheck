@@ -19,6 +19,7 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "path.h"
 #include "settings.h"
 #include "templatesimplifier.h"
 #include "token.h"
@@ -28,6 +29,7 @@
 #include <cstring>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 class TestSimplifyTemplate : public TestFixture {
@@ -217,6 +219,7 @@ private:
         TEST_CASE(template178);
         TEST_CASE(template179);
         TEST_CASE(template180);
+        TEST_CASE(template181);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -3711,7 +3714,7 @@ private:
                                "class GenericConfigurationHandler<int,std::allocator,std::list> ; "
                                "class TargetConfigurationHandler : public GenericConfigurationHandler<int,std::allocator,std::list> { } ; "
                                "class GenericConfigurationHandler<int,std::allocator,std::list> { "
-                               "std :: list < int , std :: std :: allocator < int > > m_target_configurations ; "
+                               "std :: list < int , std :: allocator < int > > m_target_configurations ; "
                                "} ;";
             ASSERT_EQUALS(exp, tok(code));
         }
@@ -4593,6 +4596,44 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template181() {
+        const char code[] = "struct K { bool b; };\n" // #13747
+                            "template<bool b>\n"
+                            "void f(struct K* k) {\n"
+                            "    assert(b == k->b);\n"
+                            "}\n"
+                            "void g(struct K* k) {\n"
+                            "    f<false>(k);\n"
+                            "}\n";
+        const char exp[] = "struct K { bool b ; } ; "
+                           "void f<false> ( struct K * k ) ; "
+                           "void g ( struct K * k ) { "
+                           "f<false> ( k ) ; "
+                           "} "
+                           "void f<false> ( struct K * k ) { "
+                           "assert ( false == k . b ) ; "
+                           "}";
+        ASSERT_EQUALS(exp, tok(code));
+
+        const char code2[] = "namespace N { bool b = false; }\n" // #13759
+                             "template<bool b>\n"
+                             "void f() {\n"
+                             "    assert(b == N::b);\n"
+                             "}\n"
+                             "void g() {\n"
+                             "    f<false>();\n"
+                             "}\n";
+        const char exp2[] = "namespace N { bool b ; b = false ; } "
+                            "void f<false> ( ) ; "
+                            "void g ( ) { "
+                            "f<false> ( ) ; "
+                            "} "
+                            "void f<false> ( ) { "
+                            "assert ( false == N :: b ) ; "
+                            "}";
+        ASSERT_EQUALS(exp2, tok(code2));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5387,11 +5428,12 @@ private:
     }
 
     unsigned int templateParameters(const char code[]) {
-        Tokenizer tokenizer(settings, *this);
-
+        TokenList tokenlist{&settings};
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        tokenlist.appendFileIfNew("test.cpp");
+        if (!tokenlist.createTokens(istr, Path::identify("test.cpp", false)))
             return false;
+        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5455,11 +5497,13 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
     int templateNamePositionHelper(const char code[], unsigned offset = 0) {
-        Tokenizer tokenizer(settings, *this);
+        TokenList tokenlist{&settings};
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        tokenlist.appendFileIfNew("test.cpp");
+        if (!tokenlist.createTokens(istr, Path::identify("test.cpp", false)))
             return false;
+        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5526,11 +5570,11 @@ private:
 
     // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
     bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
-        Tokenizer tokenizer(settings, *this);
-
+        TokenList tokenlist{&settings};
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
             return false;
+        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5556,11 +5600,12 @@ private:
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
     bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
-        Tokenizer tokenizer(settings, *this);
+        TokenList tokenlist{&settings};
 
         std::istringstream istr(code);
-        if (!tokenizer.list.createTokens(istr, "test.cpp"))
+        if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
             return false;
+        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 

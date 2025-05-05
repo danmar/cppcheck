@@ -51,8 +51,8 @@ private:
         const Settings settings = options.s ? *options.s : settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(tokenizer, this);
@@ -85,6 +85,7 @@ private:
     }
 
     void run() override {
+        // TODO: mNewTemplate = true;
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
@@ -3497,7 +3498,7 @@ private:
 
     void buffer_overrun_errorpath() {
         setMultiline();
-        const Settings settingsOld = settings0;
+        const Settings settingsOld = settings0; // TODO: get rid of this
         settings0.templateLocation = "{file}:{line}:note:{info}";
 
         check("void f() {\n"

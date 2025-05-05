@@ -26,6 +26,7 @@ jobs:
           - os: macos-13
             image: ""
             stdlib: libc++  # no libstdc++ on macOS
+            mapping_file_opt: '-Xiwyu --mapping_file=$(realpath ./macos.imp)'
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -73,6 +74,8 @@ jobs:
           dnf install -y cmake clang pcre-devel
           dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
           dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
+          dnf install -y python3-pip  # fixes missing pip module in jurplel/install-qt-action
+          dnf install -y python3-devel  # fixes building of wheels for jurplel/install-qt-action
           dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
@@ -104,8 +107,17 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
           install-deps: false
           cache: true
+
+      - name: Generate macOS mappings
+        if: contains(matrix.os, 'macos')
+        run: |
+          set -x
+
+          wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-apple-libc.py
+          python3 iwyu-mapgen-apple-libc.py $(xcrun --show-sdk-path)/usr/include > macos.imp
 
       - name: Prepare CMake
         run: |
@@ -134,13 +146,21 @@ jobs:
         run: |
           # -isystem/usr/lib/clang/17/include
           # TODO: remove -stdlib= - it should have been taken from the compilation database
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} ${{ matrix.mapping_file_opt }} > iwyu.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Compilation Database (include-what-you-use - ${{ matrix.os }} ${{ matrix.stdlib }})
           path: ./cmake.output/compile_commands.json
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ contains(matrix.os, 'macos') && (success() || failure()) }}
+        with:
+          name: macOS Mappings
+          path: |
+            ./iwyu-mapgen-apple-libc.py
+            ./macos.imp
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
@@ -195,6 +215,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
           install-deps: false
           cache: true
 
