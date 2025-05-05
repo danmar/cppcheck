@@ -6805,7 +6805,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     value.valueType = ValueFlow::Value::ValueType::TOK;
                     value.tokvalue = tok;
                     value.setKnown();
-                    values.push_back(value);
+                    values.push_back(std::move(value));
                 } else if (Token::simpleMatch(tok, "(")) {
                     const Token* constructorArgs = tok;
                     values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);

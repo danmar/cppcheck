@@ -760,13 +760,13 @@ void CheckOther::redundantBitwiseOperationInSwitchError()
             //    case 4: b = b | 1;
             else if (Token::Match(tok2->previous(), ";|{|}|: %var% = %name% %or%|& %num% ;") &&
                      tok2->varId() == tok2->tokAt(2)->varId()) {
-                const std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
+                std::string bitOp = tok2->strAt(3) + tok2->strAt(4);
                 const auto i2 = utils::as_const(varsWithBitsSet).find(tok2->varId());
 
                 // This variable has not had a bit operation performed on it yet, so just make a note of it
                 if (i2 == varsWithBitsSet.end()) {
                     varsWithBitsSet[tok2->varId()] = tok2;
-                    bitOperations[tok2->varId()] = bitOp;
+                    bitOperations[tok2->varId()] = std::move(bitOp);
                 }
 
                 // The same bit operation has been performed on the same variable twice, so report an error

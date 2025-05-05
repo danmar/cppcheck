@@ -693,7 +693,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                                           fi->file0,
                                           warning ? Severity::warning : Severity::error,
                                           message,
-                                          id,
+                                          std::move(id),
                                           CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
                 errorLogger.reportErr(errmsg);
 

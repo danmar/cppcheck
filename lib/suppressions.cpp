@@ -98,7 +98,7 @@ std::string SuppressionList::parseFile(std::istream &istr)
         if (pos < line.size() - 1 && line[pos] == '/' && line[pos + 1] == '/')
             continue;
 
-        const std::string errmsg(addSuppressionLine(line));
+        std::string errmsg(addSuppressionLine(line));
         if (!errmsg.empty())
             return errmsg;
     }

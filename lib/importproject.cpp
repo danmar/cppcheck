@@ -306,7 +306,7 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
                 defs += defval;
             defs += ';';
         } else if (F=='U')
-            fs.undefs.insert(fval);
+            fs.undefs.insert(std::move(fval));
         else if (F=='I') {
             std::string i = std::move(fval);
             if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
