@@ -774,10 +774,15 @@ unsigned int CppCheck::check(const FileWithDetails &file)
         (void)mSuppressions.nomsg.isSuppressed(SuppressionList::ErrorMessage::fromErrorMessage(msg, {}), true);
     }
 
+    unsigned int returnValue;
     if (mSettings.clang)
-        return checkClang(file);
+        returnValue = checkClang(file);
+    else
+        returnValue = checkFile(file, "");
 
-    return checkFile(file, "");
+    // TODO: call analyseClangTidy()
+
+    return returnValue;
 }
 
 unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
@@ -827,6 +832,8 @@ unsigned int CppCheck::check(const FileSettings &fs)
         temp.mFileInfo.pop_back();
     }
     // TODO: propagate back more data?
+    if (mSettings.clangTidy)
+        analyseClangTidy(fs); // TODO: returnValue
     return returnValue;
 }
 
@@ -1927,6 +1934,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename() + "\" -- " + allIncludes + allDefines;
     std::string output;
     if (const int exitcode = mExecuteCommand(exe, split(args), "2>&1", output)) {
+        // TODO: needs to be a proper error
         std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
         return;
     }

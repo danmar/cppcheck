@@ -55,6 +55,8 @@ namespace simplecpp { class TokenList; }
  * Usage: See check() for more info.
  */
 class CPPCHECKLIB CppCheck {
+    friend class TestCppcheck;
+
 public:
     using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
 
@@ -123,7 +125,6 @@ public:
     static void getErrorMessages(ErrorLogger &errorlogger);
 
     void tooManyConfigsError(const std::string &file, int numberOfConfigurations);
-    void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
@@ -132,14 +133,14 @@ public:
      */
     bool analyseWholeProgram();
 
-    /** Analyze all files using clang-tidy */
-    void analyseClangTidy(const FileSettings &fileSettings);
-
     /** analyse whole program use .analyzeinfo files or ctuinfo string */
     unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
 
     static void resetTimerResults();
     static void printTimerResults(SHOWTIME_MODES mode);
+
+private:
+    void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     bool isPremiumCodingStandardId(const std::string& id) const;
 
@@ -150,7 +151,9 @@ public:
 
     std::string getLibraryDumpData() const;
 
-private:
+    /** Analyze all files using clang-tidy */
+    void analyseClangTidy(const FileSettings &fileSettings);
+
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
