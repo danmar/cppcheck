@@ -12,6 +12,8 @@ If you file a pull request you might not get a reply immediately. We are a very 
 
 Any kind of contribution is welcome but we might reject it. In that case we usually provide an explanation for the reasons but everything is always open to discussion.
 
+Changes in the `externals` folder need to be submitted to the respective upstream projects and will be pulled downstream with their next stable release (`picojson` is an exception because it is no longer maintained - the handling of such changes is not yet determined - see also https://trac.cppcheck.net/ticket/12233).
+
 Also after you filed a pull request please be ready to reply to questions and feedback. If you just "dump and leave" it might lower the chances of your change being accepted. This also applies after it was successfully merged as it might cause issues which were not exposed by the CI.
 
 Please be not discouraged if your change was rejected or if the review process might not have been as smooth as it could have been.
