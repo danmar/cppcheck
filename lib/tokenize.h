@@ -546,11 +546,6 @@ private:
                                       std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                       nonneg int &varId_);
 
-    /**
-     * Output list of unknown types.
-     */
-    void printUnknownTypes() const;
-
     /** Find end of SQL (or PL/SQL) block */
     static const Token *findSQLBlockEnd(const Token *tokSQLStart);
 

@@ -433,8 +433,6 @@ private:
         // --check-config
         TEST_CASE(checkConfiguration);
 
-        TEST_CASE(unknownType); // #8952
-
         TEST_CASE(unknownMacroBeforeReturn);
 
         TEST_CASE(cppcast);
@@ -7920,25 +7918,6 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(checkConfig("void f() { DEBUG(x();y()); }"),
                                      UNKNOWN_MACRO,
                                      "There is an unknown macro here somewhere. Configuration is required. If DEBUG is a macro then please configure it.");
-    }
-
-    void unknownType() { // #8952
-        const Settings settings = settingsBuilder().debugwarnings().build();
-
-        char code[] = "class A {\n"
-                      "public:\n"
-                      "    enum Type { Null };\n"
-                      "};\n"
-                      "using V = A;\n"
-                      "V::Type value;";
-
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT(tokenizer.tokenize(code));
-
-        tokenizer.printUnknownTypes();
-
-        ASSERT_EQUALS("", errout_str());
     }
 
     void unknownMacroBeforeReturn() {
