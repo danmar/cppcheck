@@ -1974,26 +1974,28 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         const std::string errorString = line.substr(endErrorPos, line.length());
 
         std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
+        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
         const auto lineNumber = strToInt<int64_t>(lineNumString);
         const auto column = strToInt<int64_t>(columnNumString);
-        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
 
         ErrorMessage errmsg;
         errmsg.callStack.emplace_back(fixedpath, lineNumber, column);
-
-        errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
-        if (errmsg.id.find("performance") != std::string::npos)
-            errmsg.severity = Severity::performance;
-        else if (errmsg.id.find("portability") != std::string::npos)
-            errmsg.severity = Severity::portability;
-        else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
-            errmsg.severity = Severity::warning;
-        else
-            errmsg.severity = Severity::style;
-
         errmsg.file0 = std::move(fixedpath);
         errmsg.setmsg(trim(messageString));
-        mErrorLogger.reportErr(errmsg);
+
+        for (const auto& id : splitString(errorString.substr(1, errorString.length() - 2), ',')) {
+            errmsg.id = "clang-tidy-" + id;
+            if (errmsg.id.find("performance") != std::string::npos)
+                errmsg.severity = Severity::performance;
+            else if (errmsg.id.find("portability") != std::string::npos)
+                errmsg.severity = Severity::portability;
+            else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
+                errmsg.severity = Severity::warning;
+            else
+                errmsg.severity = Severity::style;
+
+            mErrorLogger.reportErr(errmsg);
+        }
     }
 }
 
