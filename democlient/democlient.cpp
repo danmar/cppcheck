@@ -67,7 +67,7 @@ public:
     {}
 
     void run(const char code[]) {
-        cppcheck.check(FileWithDetails("test.cpp"), code);
+        cppcheck.check(FileWithDetails("test.cpp", Standards::Language::CPP, 0), code);
     }
 
     void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}
