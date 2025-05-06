@@ -314,6 +314,9 @@ public:
     /** Is checker id enabled by premiumArgs */
     bool isPremiumEnabled(const char id[]) const;
 
+    /** @brief Precompile a header file into a .pch file */
+    bool precompileHeader{};
+
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
 

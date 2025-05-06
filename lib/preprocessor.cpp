@@ -688,7 +688,7 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
     }
 }
 
-static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cfg, const std::string &filename)
+simplecpp::DUI Preprocessor::createDUI(const Settings &mSettings, const std::string &cfg, const std::string &filename)
 {
     // TODO: make it possible to specify platform-dependent sizes
     simplecpp::DUI dui;

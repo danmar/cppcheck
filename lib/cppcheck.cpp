@@ -973,6 +973,15 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             return mLogger->exitcode();
         }
 
+        if (mSettings.precompileHeader) {
+            std::ofstream fout(file.spath() + ".pch");
+            if (fout.is_open()) {
+                const simplecpp::DUI& dui = Preprocessor::createDUI(mSettings, "", file.spath());
+                fout << simplecpp::precompileHeader(tokens1, files, dui, &outputList);
+                return mLogger->exitcode();
+            }
+        }
+
         Preprocessor preprocessor(mSettings, mErrorLogger);
 
         if (!preprocessor.loadFiles(tokens1, files))

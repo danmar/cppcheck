@@ -125,6 +125,8 @@ public:
 
     static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
 
+    static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cfg, const std::string &filename);
+
     simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
 
     std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool writeLocations);
