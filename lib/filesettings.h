@@ -23,6 +23,7 @@
 #include "path.h"
 #include "platform.h"
 #include "standards.h"
+#include "utils.h"
 
 #include <list>
 #include <set>
@@ -82,11 +83,41 @@ private:
 struct CPPCHECKLIB FileSettings {
     explicit FileSettings(std::string path)
         : file(std::move(path))
+        , hash(0)
     {}
 
     FileSettings(std::string path, Standards::Language lang, std::size_t size)
         : file(std::move(path), lang, size)
+        , hash(0)
     {}
+
+    void computeHash() {
+        hash = std::hash<std::string>{}(file.path());
+
+        hash ^= std::hash<std::string>{}(standard);
+
+        for (const auto &undef : undefs) {
+            hash = rotateLeft(hash, 1);
+            hash ^= std::hash<std::string>{}(undef);
+        }
+
+        for (const auto &includePath : includePaths) {
+            hash = rotateLeft(hash, 1);
+            hash ^= std::hash<std::string>{}(includePath);
+        }
+
+        for (const auto &systemIncludePath : systemIncludePaths) {
+            hash = rotateLeft(hash, 1);
+            hash ^= std::hash<std::string>{}(systemIncludePath);
+        }
+
+        for (const auto &define : splitString(defines, ';')) {
+            hash = rotateLeft(hash, 1);
+            hash ^= std::hash<std::string>{}(define);
+        }
+
+        hash ^= std::hash<std::string>{}(cfg);
+    }
 
     std::string cfg;
     FileWithDetails file;
@@ -110,6 +141,7 @@ struct CPPCHECKLIB FileSettings {
     std::list<std::string> systemIncludePaths;
     std::string standard;
     Platform::Type platformType = Platform::Type::Unspecified;
+    std::size_t hash;
     // TODO: get rid of these
     bool msc{};
     bool useMfc{};

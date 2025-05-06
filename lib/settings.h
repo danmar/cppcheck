@@ -227,6 +227,9 @@ public:
     /** @brief Do not filter duplicated errors. */
     bool emitDuplicates{};
 
+    /** @brief Recheck project files with identical path and config. */
+    bool recheckProjectDuplicates{};
+
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language enforcedLang{};
 

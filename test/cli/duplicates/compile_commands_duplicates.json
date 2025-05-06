@@ -1,0 +1,12 @@
+[
+{
+  "directory": "./.",
+  "command": "/usr/bin/c++  -std=gnu++11 -c ./main.cpp",
+  "file": "./main.cpp"
+},
+{
+  "directory": "./.",
+  "command": "/usr/bin/c++ -std=gnu++11 -c ./main.cpp",
+  "file": "./main.cpp"
+}
+]

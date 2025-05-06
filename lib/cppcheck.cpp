@@ -331,13 +331,17 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename)
+static std::string getDumpFileName(const Settings& settings, const std::string& filename, const std::string &cfgHash = "")
 {
     std::string extension;
-    if (settings.dump || !settings.buildDir.empty())
-        extension = ".dump";
-    else
-        extension = "." + std::to_string(settings.pid) + ".dump";
+
+    if (!settings.dump && settings.buildDir.empty())
+        extension += "." + std::to_string(settings.pid);
+
+    if (!cfgHash.empty())
+        extension += "." + cfgHash;
+
+    extension += ".dump";
 
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + extension;
@@ -352,11 +356,12 @@ static std::string getCtuInfoFileName(const std::string &dumpFile)
 static void createDumpFile(const Settings& settings,
                            const FileWithDetails& file,
                            std::ofstream& fdump,
-                           std::string& dumpFile)
+                           std::string& dumpFile,
+                           const std::string &cfgHash = "")
 {
     if (!settings.dump && settings.addons.empty())
         return;
-    dumpFile = getDumpFileName(settings, file.spath());
+    dumpFile = getDumpFileName(settings, file.spath(), cfgHash);
 
     fdump.open(dumpFile);
     if (!fdump.is_open())
@@ -788,7 +793,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
 unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(file, "", &iss);
+    return checkFile(file, "", "", &iss);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -824,7 +829,9 @@ unsigned int CppCheck::check(const FileSettings &fs)
     }
     // need to pass the externally provided ErrorLogger instead of our internal wrapper
     CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
-    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
+    std::stringstream hash;
+    hash << std::hex << fs.hash;
+    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg, hash.str());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     while (!temp.mFileInfo.empty()) {
@@ -861,7 +868,7 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
-unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream)
+unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, const std::string &cfgHash, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -1011,9 +1018,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
+            const std::size_t fileHash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
             std::list<ErrorMessage> errors;
-            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
+            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgHash, fileHash, errors)) {
                 while (!errors.empty()) {
                     mErrorLogger.reportErr(errors.front());
                     errors.pop_front();
@@ -1077,7 +1084,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // write dump file xml prolog
         std::ofstream fdump;
         std::string dumpFile;
-        createDumpFile(mSettings, file, fdump, dumpFile);
+        createDumpFile(mSettings, file, fdump, dumpFile, cfgHash);
         if (fdump.is_open()) {
             fdump << getLibraryDumpData();
             fdump << dumpProlog;
@@ -1819,7 +1826,9 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
     }
 
     for (const auto &f: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename());
+        std::stringstream hash;
+        hash << std::hex << f.hash;
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename(), hash.str());
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
