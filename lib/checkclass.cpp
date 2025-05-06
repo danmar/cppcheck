@@ -172,17 +172,6 @@ void CheckClass::constructors()
         if (!printWarnings)
             continue;
 
-        // #3196 => bailout if there are nested unions
-        // TODO: handle union variables better
-        {
-            const bool bailout = std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [](const Scope* nestedScope) {
-                return nestedScope->type == ScopeType::eUnion;
-            });
-            if (bailout)
-                continue;
-        }
-
-
         std::vector<Usage> usageList = createUsageList(scope);
 
         for (const Function &func : scope->functionList) {
@@ -310,22 +299,20 @@ void CheckClass::constructors()
                     // If constructor is not in scope then we maybe using a constructor from a different template specialization
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
-                    const Scope *varType = var.typeScope();
-                    if (!varType || varType->type != ScopeType::eUnion) {
-                        const bool derived = scope != var.scope();
-                        if (func.type == FunctionType::eConstructor &&
-                            func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
-                            func.argCount() == 0 && func.functionScope &&
-                            func.arg && func.arg->link()->next() == func.functionScope->bodyStart &&
-                            func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
-                            // don't warn about user defined default constructor when there are other constructors
-                            if (printInconclusive)
-                                uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, true);
-                        } else if (missingCopy)
-                            missingMemberCopyError(func.token, func.type, var.scope()->className, var.name());
-                        else
-                            uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, false);
-                    }
+
+                    const bool derived = scope != var.scope();
+                    if (func.type == FunctionType::eConstructor &&
+                        func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
+                        func.argCount() == 0 && func.functionScope &&
+                        func.arg && func.arg->link()->next() == func.functionScope->bodyStart &&
+                        func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
+                        // don't warn about user defined default constructor when there are other constructors
+                        if (printInconclusive)
+                            uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, true);
+                    } else if (missingCopy)
+                        missingMemberCopyError(func.token, func.type, var.scope()->className, var.name());
+                    else
+                        uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, false);
                 }
             }
         }
