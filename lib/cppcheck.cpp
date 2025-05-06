@@ -1985,11 +1985,11 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 
         for (const auto& id : splitString(errorString.substr(1, errorString.length() - 2), ',')) {
             errmsg.id = "clang-tidy-" + id;
-            if (errmsg.id.find("performance") != std::string::npos)
+            if (startsWith(id, "performance-"))
                 errmsg.severity = Severity::performance;
-            else if (errmsg.id.find("portability") != std::string::npos)
+            else if (startsWith(id, "portability-"))
                 errmsg.severity = Severity::portability;
-            else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
+            else if (startsWith(id, "cert-") || startsWith(id, "misc-") || startsWith(id, "bugprone-") || (id.find("-unused-") != std::string::npos))
                 errmsg.severity = Severity::warning;
             else
                 errmsg.severity = Severity::style;
