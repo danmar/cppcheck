@@ -3564,3 +3564,47 @@ def test_suppress_unmatched_wildcard_unchecked(tmp_path):
         '*:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
         'test*.c:-1:0: information: Unmatched suppression: * [unmatchedSuppression]'
     ]
+
+
+def test_preprocess_enforced_c(tmp_path):  # #10989
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#ifdef __cplusplus
+#error "err"
+#endif""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--language=c',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
+
+
+def test_preprocess_enforced_cpp(tmp_path):  # #10989
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#ifdef __cplusplus
+#error "err"
+#endif""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--language=c++',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
+    ]

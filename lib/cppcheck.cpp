@@ -917,7 +917,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
                     if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger);
+                        const Preprocessor preprocessor(mSettings, mErrorLogger, Standards::Language::C);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
                     tokenlist.createTokens(std::move(tokens));
@@ -926,7 +926,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(file.spath(), files);
                     if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger);
+                        const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
                     tokenlist.createTokens(std::move(tokens));
@@ -973,7 +973,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             return mLogger->exitcode();
         }
 
-        Preprocessor preprocessor(mSettings, mErrorLogger);
+        Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
 
         if (!preprocessor.loadFiles(tokens1, files))
             return mLogger->exitcode();

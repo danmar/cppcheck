@@ -136,7 +136,7 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
 
     std::istringstream istr(code);
     simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
-    Preprocessor preprocessor(settings, errorlogger);
+    Preprocessor preprocessor(settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens, *inlineSuppression);
     preprocessor.removeComments(tokens);
@@ -168,7 +168,7 @@ void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &f
     std::istringstream istr(code);
     const simplecpp::TokenList tokens1(istr, files, file0);
 
-    Preprocessor preprocessor(tokenizer.getSettings(), errorlogger);
+    Preprocessor preprocessor(tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
     simplecpp::TokenList tokens2 = preprocessor.preprocess(tokens1, "", files, true);
 
     // Tokenizer..

@@ -25,6 +25,7 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
 #include "tokenlist.h"
 #include "fixture.h"
@@ -54,7 +55,7 @@ private:
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1 = simplecpp::TokenList(istr, files, "file.cpp", &outputList);
-        Preprocessor p(settingsDefault, errorLogger);
+        Preprocessor p(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
         p.reportOutput(outputList, true);
         return tokens2.stringify();
@@ -87,7 +88,7 @@ private:
         std::istringstream istr(code);
         const simplecpp::TokenList tokens1(istr, files, "test.cpp");
 
-        const Preprocessor preprocessor(settingsDefault, errorLogger);
+        const Preprocessor preprocessor(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         return preprocessor.getRemarkComments(tokens1);
     }
 
@@ -301,11 +302,12 @@ private:
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
-        Preprocessor preprocessor(settings, *this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
+        // TODO: this adds an empty filename
         simplecpp::TokenList tokens(istr,files);
         tokens.removeComments();
+        Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
         std::string ret;
         for (const std::string & config : configs)
@@ -314,11 +316,12 @@ private:
     }
 
     std::size_t getHash(const char filedata[]) {
-        Preprocessor preprocessor(settingsDefault, *this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
+        // TODO: this adds an empty filename
         simplecpp::TokenList tokens(istr,files);
         tokens.removeComments();
+        Preprocessor preprocessor(settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
         return preprocessor.calculateHash(tokens, "");
     }
 
@@ -478,7 +481,7 @@ private:
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix32).build();
             Preprocessor::setPlatformInfo(tokens, settings);
-            Preprocessor preprocessor(settings, *this);
+            Preprocessor preprocessor(settings, *this, Path::identify(tokens.getFiles()[0], false));
             ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
         }
 
@@ -486,7 +489,7 @@ private:
         {
             const Settings settings = settingsBuilder().platform(Platform::Type::Unix64).build();
             Preprocessor::setPlatformInfo(tokens, settings);
-            Preprocessor preprocessor(settings, *this);
+            Preprocessor preprocessor(settings, *this, Path::identify(tokens.getFiles()[0], false));
             ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
         }
     }
@@ -1211,7 +1214,7 @@ private:
                                     "#undef z\n"
                                     "int z;\n"
                                     "z = 0;\n";
-            ASSERT_EQUALS("\n\nint z ;\nz = 0 ;", PreprocessorHelper::getcode(settings0, *this, filedata, "", ""));
+            ASSERT_EQUALS("\n\nint z ;\nz = 0 ;", PreprocessorHelper::getcode(settings0, *this, filedata, "", "test.c"));
         }
     }
 
@@ -1629,14 +1632,14 @@ private:
                                     "#if A\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+            ASSERT_EQUALS("", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
         }
         {
             const char filedata[] = "#define A 1\n"
                                     "#if A==1\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+            ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
         }
     }
 
@@ -1646,7 +1649,7 @@ private:
                                 "#if (B==A) || (B==C)\n"
                                 "FOO\n"
                                 "#endif";
-        ASSERT_EQUALS("\n\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+        ASSERT_EQUALS("\n\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
     }
 
     void define_if3() {
@@ -1654,7 +1657,7 @@ private:
                                 "#if (A==0)\n"
                                 "FOO\n"
                                 "#endif";
-        ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+        ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
     }
 
     void define_if4() {
@@ -1662,7 +1665,7 @@ private:
                                 "#if X==123\n"
                                 "FOO\n"
                                 "#endif";
-        ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+        ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
     }
 
     void define_if5() { // #4516 - #define B (A & 0x00f0)
@@ -1672,7 +1675,7 @@ private:
                                     "#if B==0x0010\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+            ASSERT_EQUALS("\n\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
         }
         {
             const char filedata[] = "#define A 0x00f0\n"
@@ -1681,14 +1684,14 @@ private:
                                     "#if C==0x0010\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\n\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+            ASSERT_EQUALS("\n\n\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
         }
         {
             const char filedata[] = "#define A (1+A)\n" // don't hang for recursive macros
                                     "#if A==1\n"
                                     "FOO\n"
                                     "#endif";
-            ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"",""));
+            ASSERT_EQUALS("\n\nFOO", PreprocessorHelper::getcode(settings0, *this, filedata,"","test.c"));
         }
     }
 

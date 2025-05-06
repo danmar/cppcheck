@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <sstream>
@@ -63,8 +64,13 @@ Directive::DirectiveToken::DirectiveToken(const simplecpp::Token & _tok) :
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
-{}
+Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang)
+    : mSettings(settings)
+    , mErrorLogger(errorLogger)
+    , mLang(lang)
+{
+    assert(mLang != Standards::Language::None);
+}
 
 Preprocessor::~Preprocessor()
 {
@@ -688,7 +694,7 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
     }
 }
 
-static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cfg, const std::string &filename)
+static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cfg, Standards::Language lang)
 {
     // TODO: make it possible to specify platform-dependent sizes
     simplecpp::DUI dui;
@@ -716,8 +722,6 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
     // TODO: use mSettings.standards.stdValue instead
-    // TODO: error out on unknown language?
-    const Standards::Language lang = Path::identify(filename, mSettings.cppHeaderProbe);
     if (lang == Standards::Language::CPP) {
         dui.std = mSettings.standards.getCPP();
         splitcfg(mSettings.platform.getLimitsDefines(Standards::getCPP(dui.std)), dui.defines, "");
@@ -773,7 +777,7 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
 
 bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
 {
-    const simplecpp::DUI dui = createDUI(mSettings, "", files[0]);
+    const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
 
     simplecpp::OutputList outputList;
     mTokenLists = simplecpp::load(rawtokens, files, dui, &outputList);
@@ -812,7 +816,7 @@ void Preprocessor::setPlatformInfo(simplecpp::TokenList &tokens, const Settings&
 
 simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
 {
-    const simplecpp::DUI dui = createDUI(mSettings, cfg, files[0]);
+    const simplecpp::DUI dui = createDUI(mSettings, cfg, mLang);
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
@@ -927,7 +931,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
 void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
-    Preprocessor preprocessor(settings, errorLogger);
+    Preprocessor preprocessor(settings, errorLogger, Standards::Language::CPP);
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
     preprocessor.error("", 1, "#error message");   // #error ..

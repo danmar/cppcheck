@@ -165,7 +165,7 @@ private:
         std::istringstream istr(code);
         std::vector<std::string> files;
         simplecpp::TokenList tokens1(istr, files, "poll.h", nullptr);
-        Preprocessor preprocessor(settingsDefault, *this);
+        Preprocessor preprocessor(settingsDefault, *this, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
         TokenList tokenlist(&settingsDefault);
         tokenlist.createTokens(std::move(tokensP)); // do not assert
