@@ -452,6 +452,9 @@ private:
         TEST_CASE(clangTidyCustom);
         TEST_CASE(projectConfigurationNoProject);
         TEST_CASE(projectConfigurationEmpty);
+        TEST_CASE(analyzeAllVsConfigs);
+        TEST_CASE(noAnalyzeAllVsConfigs);
+        TEST_CASE(noAnalyzeAllVsConfigs2);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3080,6 +3083,27 @@ private:
         const char * const argv[] = {"cppcheck", "--project-configuration=", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: --project-configuration parameter is empty.\n", logger->str());
+    }
+
+    void analyzeAllVsConfigs() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->analyzeAllVsConfigs);
+    }
+
+    void noAnalyzeAllVsConfigs() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--no-analyze-all-vs-configs", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
+    }
+
+    void noAnalyzeAllVsConfigs2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "--no-analyze-all-vs-configs", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
     }
 
     void ignorepaths1() {
