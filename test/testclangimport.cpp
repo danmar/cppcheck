@@ -140,7 +140,7 @@ private:
 
     std::string parse(const char clang[]) {
         const Settings settings = settingsBuilder().clang().build();
-        TokenList tokenlist{&settings};
+        TokenList tokenlist{&settings, Standards::Language::CPP};
         Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(tokenizer, istr);
@@ -1061,7 +1061,7 @@ private:
 
 #define GET_SYMBOL_DB(AST) \
     const Settings settings = settingsBuilder().clang().platform(Platform::Type::Unix64).build(); \
-    TokenList tokenlist{&settings}; \
+    TokenList tokenlist{&settings, Standards::Language::CPP}; \
     Tokenizer tokenizer(std::move(tokenlist), settings, *this); \
     { \
         std::istringstream istr(AST); \

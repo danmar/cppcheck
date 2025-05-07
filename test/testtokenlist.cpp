@@ -55,7 +55,7 @@ private:
     // inspired by #5895
     void testaddtoken1() const {
         const std::string code = "0x89504e470d0a1a0a";
-        TokenList tokenlist(&settings);
+        TokenList tokenlist(&settings, Standards::Language::CPP);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("0x89504e470d0a1a0a", tokenlist.front()->str());
     }
@@ -64,7 +64,7 @@ private:
         const std::string code = "0xF0000000";
         /*const*/ Settings settings1 = settings;
         settings1.platform.int_bit = 32;
-        TokenList tokenlist(&settings1);
+        TokenList tokenlist(&settings1, Standards::Language::CPP);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("0xF0000000", tokenlist.front()->str());
     }
@@ -128,10 +128,10 @@ private:
         {
             const char code2[] = "_Generic"; // C11 keyword
             const Settings s = settingsBuilder().c(Standards::C89).build();
-            TokenList tokenlist(&s);
+            TokenList tokenlist(&s, Standards::Language::C);
             std::istringstream istr(code2);
             tokenlist.appendFileIfNew("a.c");
-            ASSERT(tokenlist.createTokens(istr, Path::identify("a.c", false)));
+            ASSERT(tokenlist.createTokens(istr));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -150,10 +150,10 @@ private:
         {
             const char code2[] = "noexcept"; // C++11 keyword
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
-            TokenList tokenlist(&s);
+            TokenList tokenlist(&s, Standards::Language::CPP);
             std::istringstream istr(code2);
             tokenlist.appendFileIfNew("a.cpp");
-            ASSERT(tokenlist.createTokens(istr, Path::identify("a.cpp", false)));
+            ASSERT(tokenlist.createTokens(istr));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }
@@ -167,16 +167,16 @@ private:
         simplecpp::TokenList tokens1(istr, files, "poll.h", nullptr);
         Preprocessor preprocessor(settingsDefault, *this, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
-        TokenList tokenlist(&settingsDefault);
+        TokenList tokenlist(&settingsDefault, Standards::Language::C); // headers are treated as C files
         tokenlist.createTokens(std::move(tokensP)); // do not assert
     }
 
     void ast1() const {
         const std::string s = "('Release|x64' == 'Release|x64');";
 
-        TokenList tokenlist(&settings);
+        TokenList tokenlist(&settings, Standards::Language::C);
         std::istringstream istr(s);
-        ASSERT(tokenlist.createTokens(istr, Standards::Language::C));
+        ASSERT(tokenlist.createTokens(istr));
         // TODO: put this logic in TokenList
         // generate links
         {
