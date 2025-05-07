@@ -999,7 +999,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
             --addrIndex;
         const std::string addr = mExtTokens[addrIndex];
         std::string name = unquote(getSpelling());
-        Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : std::move(name));
+        Token *reftok = addtoken(tokenList, name.empty() ? "<NoName>" : name);
         mData->ref(addr, reftok);
         return reftok;
     }
