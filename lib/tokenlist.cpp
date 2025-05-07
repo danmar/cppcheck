@@ -2225,24 +2225,28 @@ void TokenList::simplifyStdType()
 bool TokenList::isKeyword(const std::string &str) const
 {
     if (isCPP()) {
-        // TODO: integrate into keywords?
-        // types and literals are not handled as keywords
-        static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
-        if (cpp_types.find(str) != cpp_types.end())
-            return false;
-
         const auto &cpp_keywords = Keywords::getAll(mSettings.standards.cpp);
-        return cpp_keywords.find(str) != cpp_keywords.end();
+        const bool b = cpp_keywords.find(str) != cpp_keywords.end();
+        if (b) {
+            // TODO: integrate into keywords?
+            // types and literals are not handled as keywords
+            static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
+            if (cpp_types.find(str) != cpp_types.end())
+                return false;
+        }
+        return b;
     }
 
-    // TODO: integrate into Keywords?
-    // types are not handled as keywords
-    static const std::unordered_set<std::string> c_types = {"char", "double", "float", "int", "long", "short"};
-    if (c_types.find(str) != c_types.end())
-        return false;
-
     const auto &c_keywords = Keywords::getAll(mSettings.standards.c);
-    return c_keywords.find(str) != c_keywords.end();
+    const bool b = c_keywords.find(str) != c_keywords.end();
+    if (b) {
+        // TODO: integrate into Keywords?
+        // types are not handled as keywords
+        static const std::unordered_set<std::string> c_types = {"char", "double", "float", "int", "long", "short"};
+        if (c_types.find(str) != c_types.end())
+            return false;
+    }
+    return b;
 }
 
 bool TokenList::isC() const
