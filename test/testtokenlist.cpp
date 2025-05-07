@@ -50,6 +50,7 @@ private:
         TEST_CASE(isKeyword);
         TEST_CASE(notokens);
         TEST_CASE(ast1);
+        TEST_CASE(setLangInternalError);
     }
 
     // inspired by #5895
@@ -193,6 +194,12 @@ private:
             }
         }
         tokenlist.createAst(); // do not crash
+    }
+
+    void setLangInternalError() const {
+        TokenList tokenList(nullptr);
+        tokenList.setLang(Standards::Language::C, true);
+        ASSERT_THROW_INTERNAL(tokenList.setLang(Standards::Language::CPP, false), InternalError::INTERNAL);
     }
 };
 

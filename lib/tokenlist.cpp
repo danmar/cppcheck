@@ -45,14 +45,7 @@
 
 #include <simplecpp.h>
 
-//#define N_ASSERT_LANG
-
-#ifndef N_ASSERT_LANG
-#include <cassert>
-#define ASSERT_LANG(x) assert(x)
-#else
-#define ASSERT_LANG(x)
-#endif
+#define ASSERT_LANG(x) do { if (!(x)) throw InternalError(nullptr, __FILE__ ":" + std::to_string(__LINE__) + ": Assertion " #x " failed"); } while (0)
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
@@ -2293,6 +2286,7 @@ void TokenList::setLang(Standards::Language lang, bool force)
     ASSERT_LANG(lang != Standards::Language::None);
     if (!force)
     {
+        // cppcheck-suppress premium-misra-cpp-2023-19.3.3; this is a false positive, will be fixed
         ASSERT_LANG(mLang == Standards::Language::None);
     }
 
