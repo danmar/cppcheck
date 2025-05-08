@@ -725,8 +725,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
                              mErrorLogger,
                              mSettings,
                              &s_timerResults);
-        if (mSettings.debugnormal)
-            tokenizer.printDebugOutput(1, std::cout);
+        tokenizer.printDebugOutput(std::cout);
         checkNormalTokens(tokenizer, nullptr); // TODO: provide analyzer information
 
         // create dumpfile

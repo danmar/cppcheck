@@ -3441,7 +3441,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
     }
 
-    printDebugOutput(1, std::cout);
+    printDebugOutput(std::cout);
 
     return true;
 }
@@ -5890,39 +5890,39 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 }
 //---------------------------------------------------------------------------
 
-void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
+// TODO: do not depend on --verbose
+void Tokenizer::printDebugOutput(std::ostream &out) const
 {
-    const bool debug = (simplification != 1U && mSettings.debugSimplified) ||
-                       (simplification != 2U && mSettings.debugnormal);
+    if (!list.front())
+        return;
 
-    if (debug && list.front()) {
-        const bool xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
+    const bool debug = mSettings.debugSimplified || mSettings.debugnormal || mSettings.debugsymdb || mSettings.debugast || mSettings.debugvalueflow;
+    if (!debug)
+        return;
 
-        if (!xml)
-            list.front()->printOut(out, xml, nullptr, list.getFiles());
+    const bool xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
 
+    if (xml)
+        out << "<debug>" << std::endl;
+
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        list.front()->printOut(out, xml, nullptr, list.getFiles());
+
+    if (mSymbolDatabase) {
         if (xml)
-        {
-            out << "<debug>" << std::endl;
-            list.front()->printOut(out, xml, nullptr, list.getFiles());
-        }
+            mSymbolDatabase->printXml(out);
+        else if (mSettings.debugsymdb || (mSettings.debugnormal && mSettings.verbose))
+            mSymbolDatabase->printOut("Symbol database");
+    }
 
-        if (mSymbolDatabase) {
-            if (xml)
-                mSymbolDatabase->printXml(out);
-            else if (mSettings.verbose) {
-                mSymbolDatabase->printOut("Symbol database");
-            }
-        }
+    if (mSettings.debugast || (mSettings.debugnormal && mSettings.verbose))
+        list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
 
-        if (mSettings.verbose)
-            list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
-
+    if (mSettings.debugnormal || mSettings.debugvalueflow)
         list.front()->printValueFlow(list.getFiles(), xml, out);
 
-        if (xml)
-            out << "</debug>" << std::endl;
-    }
+    if (xml)
+        out << "</debug>" << std::endl;
 }
 
 void Tokenizer::dump(std::ostream &out) const
@@ -8077,13 +8077,15 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 
 void Tokenizer::syntaxError(const Token *tok, const std::string &code) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok, code.empty() ? "syntax error" : "syntax error: " + code, InternalError::SYNTAX);
 }
 
 void Tokenizer::unmatchedToken(const Token *tok) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok,
                         "Unmatched '" + tok->str() + "'. Configuration: '" + mConfiguration + "'.",
                         InternalError::SYNTAX);
@@ -8091,13 +8093,15 @@ void Tokenizer::unmatchedToken(const Token *tok) const
 
 void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok, "Code '"+what+"' is invalid C code.", "Use --std, -x or --language to enforce C++. Or --cpp-header-probe to identify C++ headers via the Emacs marker.", InternalError::SYNTAX);
 }
 
 void Tokenizer::unknownMacroError(const Token *tok1) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::UNKNOWN_MACRO);
 }
 
@@ -8131,7 +8135,7 @@ void Tokenizer::invalidConstFunctionTypeError(const Token *tok) const
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
-    printDebugOutput(0, std::cout);
+    printDebugOutput(std::cout);
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 

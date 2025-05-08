@@ -3033,32 +3033,47 @@ def test_debug_verbose_xml(tmp_path):
 
 
 # TODO: test with --xml
-def test_debug_template(tmp_path):
+def __test_debug_template(tmp_path, verbose):
     test_file = tmp_path / 'test.cpp'
     with open(test_file, "w") as f:
         f.write(
 """template<class T> class TemplCl;
-void f
+void f()
 {
-    (void)*((int*)0);
+    (void)*((int*)nullptr);
 }
 """)
 
     args = [
         '-q',
-        '--debug',  # TODO: remove depdency on this
+        '--template=simple',
         '--debug-template',
         str(test_file)
     ]
 
+    if verbose:
+        args += ['--verbose']
+
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0, stdout
-    assert stdout.find('##file ') != -1
-    assert stdout.find('##Value flow') != -1
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') != -1
-    assert stderr.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:4:13: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_template(tmp_path):
+    __test_debug_template(tmp_path, False)
+
+
+def test_debug_template_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_template(tmp_path, False) == __test_debug_template(tmp_path, True)
 
 
 def test_file_ignore_2(tmp_path):  # #13570
@@ -3087,7 +3102,7 @@ def test_file_ignore_2(tmp_path):  # #13570
     assert stderr.splitlines() == []
 
 
-def test_debug_valueflow(tmp_path):
+def test_debug_valueflow_data(tmp_path):
     test_file = tmp_path / 'test.c'
     with open(test_file, "w") as f:
         f.write(
@@ -3100,7 +3115,7 @@ def test_debug_valueflow(tmp_path):
 
     args = [
         '-q',
-        '--debug',  # TODO: limit to valueflow output
+        '--debug-valueflow',
         str(test_file)
     ]
 
@@ -3108,7 +3123,7 @@ def test_debug_valueflow(tmp_path):
     assert exitcode == 0, stdout
 
     # check sections in output
-    assert stdout.find('##file ') != -1
+    assert stdout.find('##file ') == -1
     assert stdout.find('##Value flow') != -1
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
@@ -3130,7 +3145,7 @@ def test_debug_valueflow(tmp_path):
     ]
 
 
-def test_debug_valueflow_xml(tmp_path):  # #13606
+def test_debug_valueflow_data_xml(tmp_path):  # #13606
     test_file = tmp_path / 'test.c'
     with open(test_file, "w") as f:
         f.write(
@@ -3143,7 +3158,7 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
 
     args = [
         '-q',
-        '--debug',  # TODO: limit to valueflow output
+        '--debug-valueflow',
         '--xml',
         str(test_file)
     ]
@@ -3155,7 +3170,7 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     assert ElementTree.fromstring(stderr) is not None
 
     # check sections in output
-    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##file ') == -1
     assert stdout.find('##Value flow') == -1
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
@@ -3165,8 +3180,6 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     debug_xml = ElementTree.fromstring(stdout)
     assert debug_xml is not None
     assert debug_xml.tag == 'debug'
-    file_elem = debug_xml.findall('file')
-    assert len(file_elem) == 1
     valueflow_elem = debug_xml.findall('valueflow')
     assert len(valueflow_elem) == 1
     scopes_elem = debug_xml.findall('scopes')
@@ -3607,4 +3620,259 @@ def test_preprocess_enforced_cpp(tmp_path):  # #10989
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
+    ]
+
+
+# TODO: test with --xml
+def __test_debug_normal(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    if verbose:
+        assert stdout.find('### Symbol database ###') != -1
+    else:
+        assert stdout.find('### Symbol database ###') == -1
+    if verbose:
+        assert stdout.find('##AST') != -1
+    else:
+        assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_normal(tmp_path):
+    __test_debug_normal(tmp_path, False)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_normal_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_normal(tmp_path, False) == __test_debug_normal(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_simplified(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-simplified',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_simplified(tmp_path):
+    __test_debug_simplified(tmp_path, False)
+
+
+def test_debug_simplified_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_simplified(tmp_path, False) == __test_debug_simplified(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_symdb(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-symdb',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') != -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_symdb(tmp_path):
+    __test_debug_symdb(tmp_path, False)
+
+
+@pytest.mark.skip  # TODO: this contains memory addresses the output will always differ - would require stable identifier
+def test_debug_symdb_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_symdb(tmp_path, False) == __test_debug_symdb(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_ast(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-ast',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') != -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_ast(tmp_path):
+    __test_debug_ast(tmp_path, False)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_ast_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_ast(tmp_path, False) == __test_debug_ast(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_valueflow(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-valueflow',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_valueflow(tmp_path):
+    __test_debug_valueflow(tmp_path, False)
+
+
+def test_debug_valueflow_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_valueflow(tmp_path, False) == __test_debug_valueflow(tmp_path, True)
+
+
+def test_debug_syntaxerror_c(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+template<class T> class TemplCl;
+void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
     ]

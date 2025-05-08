@@ -558,11 +558,8 @@ public:
     void createSymbolDatabase();
 
     /** print --debug output if debug flags match the simplification:
-     * 0=unknown/both simplifications
-     * 1=1st simplifications
-     * 2=2nd simplifications
      */
-    void printDebugOutput(int simplification, std::ostream &out) const;
+    void printDebugOutput(std::ostream &out) const;
 
     void dump(std::ostream &out) const;
 
