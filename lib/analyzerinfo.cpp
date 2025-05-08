@@ -192,7 +192,7 @@ bool AnalyzerInformation::Info::parse(const std::string& filesTxtLine) {
         try {
             fileIndex = std::stoi(filesTxtLine.substr(sep2+1, sep3-sep2-1));
         } catch (const std::exception&) {
-                return false;
+            return false;
         }
     }
 
