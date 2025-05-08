@@ -48,9 +48,9 @@ private:
 
     void filesTextDuplicateFile() const {
         std::list<FileSettings> fileSettings;
-        fileSettings.emplace_back("a.c");
+        fileSettings.emplace_back("a.c", Standards::Language::C, 10);
         fileSettings.back().fileIndex = 0;
-        fileSettings.emplace_back("a.c");
+        fileSettings.emplace_back("a.c", Standards::Language::C, 10);
         fileSettings.back().fileIndex = 1;
 
         const char expected[] = "a.a1\t\t\ta.c\n"
