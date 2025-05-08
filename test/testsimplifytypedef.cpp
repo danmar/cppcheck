@@ -277,7 +277,7 @@ private:
         std::istringstream istr(code);
         if (!tokenlist.createTokens(istr))
             return "";
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -312,7 +312,7 @@ private:
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "file.c"))
             return "";
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
         try {
@@ -328,7 +328,7 @@ private:
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "file.c"))
             return {};
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
         try {
@@ -4456,7 +4456,7 @@ private:
         TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4499,7 +4499,7 @@ private:
         TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4518,7 +4518,7 @@ private:
         TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
