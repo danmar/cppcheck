@@ -69,6 +69,16 @@ public:
     bool fillSettingsFromArgs(int argc, const char* const argv[]);
 
     /**
+     * @brief Filter files
+     *
+     * @param fileFilters file filters
+     * @param filesResolved all the files in project
+     * @return the files in filesResolved that match filters
+     */
+    static std::list<FileWithDetails> filterFiles(const std::vector<std::string>& fileFilters,
+                                                  const std::list<FileWithDetails>& filesResolved);
+
+    /**
      * Parse given command line.
      * @return true if command line was ok, false if there was an error.
      */
