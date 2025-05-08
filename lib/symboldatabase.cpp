@@ -1808,8 +1808,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
 
                 // In template arguments, there might not be AST
                 // Determine size by using the "raw tokens"
-                TokenList tokenList(&mSettings);
-                tokenList.setLang(dimension.tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+                TokenList tokenList(&mSettings, dimension.tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                 tokenList.addtoken(";", 0, 0, 0, false);
                 bool fail = false;
                 for (const Token *tok = dimension.tok; tok && !Token::Match(tok, "[,>]"); tok = tok->next()) {
@@ -5735,11 +5734,11 @@ static bool hasMatchingConstructor(const Scope* classScope, const ValueType* arg
             return false;
         const ValueType* vt = f.getArgumentVar(0)->valueType();
         return vt &&
-        vt->type == argType->type &&
-        (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
-        vt->pointer == argType->pointer &&
-        (vt->constness & 1) >= (argType->constness & 1) &&
-        (vt->volatileness & 1) >= (argType->volatileness & 1);
+               vt->type == argType->type &&
+               (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
+               vt->pointer == argType->pointer &&
+               (vt->constness & 1) >= (argType->constness & 1) &&
+               (vt->volatileness & 1) >= (argType->volatileness & 1);
     });
 }
 
@@ -7293,7 +7292,7 @@ static const Token* parsedecl(const Token* type,
         else if (Token::simpleMatch(type, "volatile"))
             valuetype->volatileness |= (1 << (valuetype->pointer - pointer0));
         else if (settings.clang && type->str().size() > 2 && type->str().find("::") < type->str().find('<')) {
-            TokenList typeTokens(&settings);
+            TokenList typeTokens(&settings, type->isCpp() ? Standards::Language::CPP : Standards::Language::C);
             std::string::size_type pos1 = 0;
             do {
                 const std::string::size_type pos2 = type->str().find("::", pos1);
@@ -7716,9 +7715,9 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 const std::string& typestr(mSettings.library.returnValueType(tok->previous()));
                 if (!typestr.empty()) {
                     ValueType valuetype;
-                    TokenList tokenList(&mSettings);
+                    TokenList tokenList(&mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                     std::istringstream istr(typestr+";");
-                    tokenList.createTokens(istr, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
+                    tokenList.createTokens(istr); // TODO: check result?
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
                         valuetype.originalTypeName = typestr;
@@ -7806,9 +7805,9 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     }
                     continue;
                 }
-                TokenList tokenList(&mSettings);
+                TokenList tokenList(&mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                 std::istringstream istr(typestr+";");
-                if (tokenList.createTokens(istr, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C)) {
+                if (tokenList.createTokens(istr)) {
                     ValueType vt;
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();

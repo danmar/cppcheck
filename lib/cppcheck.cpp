@@ -715,7 +715,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     }
 
     try {
-        TokenList tokenlist{&mSettings};
+        TokenList tokenlist{&mSettings, file.lang()};
         tokenlist.appendFileIfNew(file.spath());
         Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
         std::istringstream ast(output2);
@@ -910,14 +910,13 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
             if (mUnusedFunctionsCheck && (mSettings.useSingleJob() || analyzerInformation)) {
                 std::size_t hash = 0;
-                TokenList tokenlist{&mSettings};
-                // enforce the language since markup files are special and do not adhere to the enforced language
-                tokenlist.setLang(Standards::Language::C, true);
+                // markup files are special and do not adhere to the enforced language
+                TokenList tokenlist{&mSettings, Standards::Language::C};
                 if (fileStream) {
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
                     if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger);
+                        const Preprocessor preprocessor(mSettings, mErrorLogger, Standards::Language::C);
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
                     tokenlist.createTokens(std::move(tokens));
@@ -926,7 +925,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     std::vector<std::string> files;
                     simplecpp::TokenList tokens(file.spath(), files);
                     if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger);
+                        const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
                         hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
                     }
                     tokenlist.createTokens(std::move(tokens));
@@ -973,7 +972,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             return mLogger->exitcode();
         }
 
-        Preprocessor preprocessor(mSettings, mErrorLogger);
+        Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
 
         if (!preprocessor.loadFiles(tokens1, files))
             return mLogger->exitcode();
@@ -1056,10 +1055,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
-            TokenList tokenlist(&mSettings);
+            TokenList tokenlist(&mSettings, file.lang());
             std::istringstream istr2(code);
-            // TODO: asserts when file has unknown extension
-            tokenlist.createTokens(istr2, Path::identify(*files.begin(), false)); // TODO: check result?
+            tokenlist.createTokens(istr2); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif
@@ -1135,7 +1133,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             }
 
             try {
-                TokenList tokenlist{&mSettings};
+                TokenList tokenlist{&mSettings, file.lang()};
 
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
@@ -1974,26 +1972,28 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         const std::string errorString = line.substr(endErrorPos, line.length());
 
         std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
+        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
         const auto lineNumber = strToInt<int64_t>(lineNumString);
         const auto column = strToInt<int64_t>(columnNumString);
-        fixedpath = Path::toNativeSeparators(std::move(fixedpath));
 
         ErrorMessage errmsg;
         errmsg.callStack.emplace_back(fixedpath, lineNumber, column);
-
-        errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
-        if (errmsg.id.find("performance") != std::string::npos)
-            errmsg.severity = Severity::performance;
-        else if (errmsg.id.find("portability") != std::string::npos)
-            errmsg.severity = Severity::portability;
-        else if (errmsg.id.find("cert") != std::string::npos || errmsg.id.find("misc") != std::string::npos || errmsg.id.find("unused") != std::string::npos)
-            errmsg.severity = Severity::warning;
-        else
-            errmsg.severity = Severity::style;
-
         errmsg.file0 = std::move(fixedpath);
         errmsg.setmsg(trim(messageString));
-        mErrorLogger.reportErr(errmsg);
+
+        for (const auto& id : splitString(errorString.substr(1, errorString.length() - 2), ',')) {
+            errmsg.id = "clang-tidy-" + id;
+            if (startsWith(id, "performance-"))
+                errmsg.severity = Severity::performance;
+            else if (startsWith(id, "portability-"))
+                errmsg.severity = Severity::portability;
+            else if (startsWith(id, "cert-") || startsWith(id, "misc-") || startsWith(id, "bugprone-") || (id.find("-unused-") != std::string::npos))
+                errmsg.severity = Severity::warning;
+            else
+                errmsg.severity = Severity::style;
+
+            mErrorLogger.reportErr(errmsg);
+        }
     }
 }
 

@@ -74,7 +74,7 @@ void ProjectFile::clear()
     mSuppressions.clear();
     mAddons.clear();
     mClangAnalyzer = mClangTidy = false;
-    mAnalyzeAllVsConfigs = false;
+    mAnalyzeAllVsConfigs = false; // TODO: defaults to true if loading a GUI project via CLI
     mCheckHeaders = true;
     mCheckUnusedTemplates = true;
     mInlineSuppression = true;

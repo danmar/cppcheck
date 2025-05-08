@@ -3463,6 +3463,44 @@ def test_clang_tidy_project(tmpdir):
     __test_clang_tidy(tmpdir, True)
 
 
+@pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
+def test_clang_tidy_error_exit(tmp_path):  # #13828 / #13829
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include <string>
+#include <utility>
+
+// cppcheck-suppress clang-tidy-modernize-use-trailing-return-type
+static bool f() // NOLINT(misc-use-anonymous-namespace)
+{
+    std::string str;
+    const std::string str1 = std::move(str);
+    (void)str1;
+    return str.empty();
+}""")
+
+    # TODO: remove project file usage when --clang-tidy works with non-project files
+    project_file = __write_compdb(tmp_path, str(test_file))
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--inline-suppr',
+        '--std=c++11',
+        '--clang-tidy',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        "{}:10:12: warning: 'str' used after it was moved [clang-tidy-bugprone-use-after-move]".format(test_file),
+        "{}:10:12: style: 'str' used after it was moved [clang-tidy-hicpp-invalid-access-moved]".format(test_file)
+    ]
+    assert exitcode == 0, stdout
+
+
 def test_suppress_unmatched_wildcard(tmp_path):  # #13660
     test_file = tmp_path / 'test.c'
     with open(test_file, 'wt') as f:
@@ -3525,4 +3563,48 @@ def test_suppress_unmatched_wildcard_unchecked(tmp_path):
         'tes?.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
         '*:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
         'test*.c:-1:0: information: Unmatched suppression: * [unmatchedSuppression]'
+    ]
+
+
+def test_preprocess_enforced_c(tmp_path):  # #10989
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#ifdef __cplusplus
+#error "err"
+#endif""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--language=c',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
+
+
+def test_preprocess_enforced_cpp(tmp_path):  # #10989
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#ifdef __cplusplus
+#error "err"
+#endif""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--language=c++',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
     ]

@@ -58,7 +58,7 @@ private:
     }
 
     void hasToLogSimple() {
-        const std::list<FileWithDetails> files{FileWithDetails{"test.c"}};
+        const std::list<FileWithDetails> files{FileWithDetails{"test.c", Standards::Language::C, 0}};
         const std::list<FileSettings> fileSettings;
         // this is the "simple" format
         const auto settings = dinit(Settings,

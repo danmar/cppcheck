@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "standards.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -108,7 +109,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger);
+    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang);
     virtual ~Preprocessor();
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
@@ -180,6 +181,7 @@ private:
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string mFile0;
+    Standards::Language mLang{Standards::Language::None};
 
     /** simplecpp tracking info */
     std::list<simplecpp::MacroUsage> mMacroUsage;

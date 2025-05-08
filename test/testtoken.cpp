@@ -33,12 +33,10 @@
 
 class TestToken : public TestFixture {
 public:
-    TestToken() : TestFixture("TestToken") {
-        list.setLang(Standards::Language::C);
-    }
+    TestToken() : TestFixture("TestToken") {}
 
 private:
-    /*const*/ TokenList list{&settingsDefault};
+    const TokenList list{&settingsDefault, Standards::Language::C};
 
     std::vector<std::string> arithmeticalOps;
     std::vector<std::string> logicalOps;
@@ -1372,24 +1370,21 @@ private:
     {
         {
             const Settings s = settingsBuilder().c(Standards::cstd_t::C89).build();
-            TokenList list_c{&s};
-            list_c.setLang(Standards::Language::C);
+            TokenList list_c{&s, Standards::Language::C};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_c, std::move(tokensFrontBack));
             tok.str("alignas"); // not a C89 keyword
             assert_tok(&tok, Token::Type::eName);
         }
         {
-            TokenList list_c{&settingsDefault};
-            list_c.setLang(Standards::Language::C);
+            TokenList list_c{&settingsDefault, Standards::Language::C};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_c, std::move(tokensFrontBack));
             tok.str("alignas"); // a C23 keyword
             assert_tok(&tok, Token::Type::eKeyword);
         }
         {
-            TokenList list_c{&settingsDefault};
-            list_c.setLang(Standards::Language::C);
+            TokenList list_c{&settingsDefault, Standards::Language::C};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_c, std::move(tokensFrontBack));
             tok.str("and_eq"); // a C++ keyword
@@ -1401,24 +1396,21 @@ private:
     {
         {
             const Settings s = settingsBuilder().cpp(Standards::cppstd_t::CPP03).build();
-            TokenList list_cpp{&s};
-            list_cpp.setLang(Standards::Language::CPP);
+            TokenList list_cpp{&s, Standards::Language::CPP};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_cpp, std::move(tokensFrontBack));
             tok.str("consteval"); // not a C++03 keyword
             assert_tok(&tok, Token::Type::eName);
         }
         {
-            TokenList list_cpp{&settingsDefault};
-            list_cpp.setLang(Standards::Language::CPP);
+            TokenList list_cpp{&settingsDefault, Standards::Language::CPP};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_cpp, std::move(tokensFrontBack));
             tok.str("consteval"); // a C++20 keyword
             assert_tok(&tok, Token::Type::eKeyword);
         }
         {
-            TokenList list_cpp{&settingsDefault};
-            list_cpp.setLang(Standards::Language::CPP);
+            TokenList list_cpp{&settingsDefault, Standards::Language::CPP};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_cpp, std::move(tokensFrontBack));
             tok.str("typeof_unqual"); // a C keyword
@@ -1477,16 +1469,14 @@ private:
     void update_property_info_etype_c() const
     {
         {
-            TokenList list_c{&settingsDefault};
-            list_c.setLang(Standards::Language::C);
+            TokenList list_c{&settingsDefault, Standards::Language::C};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_c, std::move(tokensFrontBack));
             tok.str("char"); // not treated as keyword in TokenList::isKeyword()
             assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
         }
         {
-            TokenList list_c{&settingsDefault};
-            list_c.setLang(Standards::Language::C);
+            TokenList list_c{&settingsDefault, Standards::Language::C};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_c, std::move(tokensFrontBack));
             tok.str("size_t"); // not treated as keyword in TokenList::isKeyword()
@@ -1497,16 +1487,14 @@ private:
     void update_property_info_etype_cpp() const
     {
         {
-            TokenList list_cpp{&settingsDefault};
-            list_cpp.setLang(Standards::Language::CPP);
+            TokenList list_cpp{&settingsDefault, Standards::Language::CPP};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_cpp, std::move(tokensFrontBack));
             tok.str("bool"); // not treated as keyword in TokenList::isKeyword()
             assert_tok(&tok, Token::Type::eType, /*l=*/ false, /*std=*/ true);
         }
         {
-            TokenList list_cpp{&settingsDefault};
-            list_cpp.setLang(Standards::Language::CPP);
+            TokenList list_cpp{&settingsDefault, Standards::Language::CPP};
             auto tokensFrontBack = std::make_shared<TokensFrontBack>();
             Token tok(list_cpp, std::move(tokensFrontBack));
             tok.str("size_t");
@@ -1526,8 +1514,7 @@ private:
 
     void varid_reset() const
     {
-        TokenList list_c{&settingsDefault};
-        list_c.setLang(Standards::Language::C);
+        TokenList list_c{&settingsDefault, Standards::Language::C};
         auto tokensFrontBack = std::make_shared<TokensFrontBack>();
         Token tok(list_c, std::move(tokensFrontBack));
         tok.str("int"); // not treated as keyword in TokenList::isKeyword()

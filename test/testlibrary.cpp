@@ -151,9 +151,9 @@ private:
                                    "  </function>\n"
                                    "</def>";
 
-        TokenList tokenList(&settingsDefault);
+        TokenList tokenList(&settingsDefault, Standards::Language::CPP);
         std::istringstream istr("foo();"); // <- too few arguments, not library function
-        ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
+        ASSERT(tokenList.createTokens(istr));
         Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
         tokenList.createAst();
 
@@ -175,18 +175,18 @@ private:
         ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
-            TokenList tokenList(&settingsDefault);
+            TokenList tokenList(&settingsDefault, Standards::Language::CPP);
             std::istringstream istr("foo();"); // <- too few arguments, not library function
-            ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
+            ASSERT(tokenList.createTokens(istr));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
             ASSERT(library.isNotLibraryFunction(tokenList.front()));
         }
         {
-            TokenList tokenList(&settingsDefault);
+            TokenList tokenList(&settingsDefault, Standards::Language::CPP);
             std::istringstream istr("foo(a);"); // <- library function
-            ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
+            ASSERT(tokenList.createTokens(istr));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
@@ -195,9 +195,9 @@ private:
             ASSERT(func);
         }
         {
-            TokenList tokenList(&settingsDefault);
+            TokenList tokenList(&settingsDefault, Standards::Language::CPP);
             std::istringstream istr("foo(a, b);"); // <- library function
-            ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
+            ASSERT(tokenList.createTokens(istr));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 
@@ -206,9 +206,9 @@ private:
             ASSERT(func);
         }
         {
-            TokenList tokenList(&settingsDefault);
+            TokenList tokenList(&settingsDefault, Standards::Language::CPP);
             std::istringstream istr("foo(a, b, c);"); // <- too much arguments, not library function
-            ASSERT(tokenList.createTokens(istr, Standards::Language::CPP));
+            ASSERT(tokenList.createTokens(istr));
             Token::createMutualLinks(tokenList.front()->next(), tokenList.back()->previous());
             tokenList.createAst();
 

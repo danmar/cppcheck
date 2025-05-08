@@ -1303,7 +1303,7 @@ private:
               "    {\n"
               "    }\n"
               "};");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::U' is not initialized in the constructor.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Fred::U' is not initialized in the constructor.\n", errout_str());
     }
 
 
@@ -3429,9 +3429,6 @@ private:
     }
 
     void uninitVarUnion2() {
-        // If the "data_type" is 0 it means union member "data" is invalid.
-        // So it's ok to not initialize "data".
-        // related forum: http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=3&p=1806
         check("union Data { int id; int *ptr; };\n"
               "\n"
               "class Fred {\n"
@@ -3442,7 +3439,7 @@ private:
               "    Fred() : data_type(0)\n"
               "    { }\n"
               "};");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'Fred::data' is not initialized in the constructor.\n", errout_str());
     }
 
     void uninitMissingFuncDef() {

@@ -433,8 +433,6 @@ private:
         // --check-config
         TEST_CASE(checkConfiguration);
 
-        TEST_CASE(unknownType); // #8952
-
         TEST_CASE(unknownMacroBeforeReturn);
 
         TEST_CASE(cppcast);
@@ -552,14 +550,14 @@ private:
     }
 
     void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
-        Preprocessor preprocessor(settings, *this);
         std::istringstream istr(filedata);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
+        Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
-        TokenList tokenlist{&settings};
+        TokenList tokenlist{&settings, Path::identify(filename, false)};
         Tokenizer tokenizer(std::move(tokenlist), settings, *this);
         tokenizer.setDirectives(std::move(directives));
 
@@ -867,11 +865,11 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify(";template<class T> class X { };",false,Platform::Type::Native,false), SYNTAX);
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("int X<Y>() {};",false,Platform::Type::Native,false), SYNTAX);
         {
-            TokenList tokenlist{&settings1};
+            TokenList tokenlist{&settings1, Standards::Language::C}; // headers are treated as C files
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
             std::istringstream istr(code);
             tokenlist.appendFileIfNew("test.h");
-            ASSERT(tokenlist.createTokens(istr, Path::identify("test.h", false)));
+            ASSERT(tokenlist.createTokens(istr));
             Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
@@ -3690,7 +3688,7 @@ private:
     }
 
     void simplifyString() {
-        TokenList tokenlist{&settings0};
+        TokenList tokenlist{&settings0, Standards::Language::CPP};
         Tokenizer tokenizer(std::move(tokenlist), settings0, *this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
         ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
@@ -6139,10 +6137,10 @@ private:
 
     std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
-        TokenList tokenlist{&settings0};
+        TokenList tokenlist{&settings0, Standards::Language::CPP};
         std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr,Path::identify("test.cpp", false)))
+        if (!tokenlist.createTokens(istr))
             return "ERROR";
 
         Tokenizer tokenizer(std::move(tokenlist), settings0, *this);
@@ -7922,25 +7920,6 @@ private:
                                      "There is an unknown macro here somewhere. Configuration is required. If DEBUG is a macro then please configure it.");
     }
 
-    void unknownType() { // #8952
-        const Settings settings = settingsBuilder().debugwarnings().build();
-
-        char code[] = "class A {\n"
-                      "public:\n"
-                      "    enum Type { Null };\n"
-                      "};\n"
-                      "using V = A;\n"
-                      "V::Type value;";
-
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT(tokenizer.tokenize(code));
-
-        tokenizer.printUnknownTypes();
-
-        ASSERT_EQUALS("", errout_str());
-    }
-
     void unknownMacroBeforeReturn() {
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("int f() { X return 0; }"), UNKNOWN_MACRO);
     }
@@ -8594,7 +8573,7 @@ private:
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(fin, files, "", &outputList);
         const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcode(settingsDefault, *this, filedata, "", "");
+        const std::string code = PreprocessorHelper::getcode(settingsDefault, *this, filedata, "", "test.c");
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
     }

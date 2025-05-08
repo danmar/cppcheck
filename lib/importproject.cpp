@@ -420,7 +420,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             printError("'" + path + "' from compilation database does not exist");
             return false;
         }
-        FileSettings fs{std::move(path)};
+        FileSettings fs{std::move(path), Standards::Language::None, 0}; // file will be identified later on
         fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
@@ -577,9 +577,9 @@ namespace {
 
             // TODO: improve evaluation
             const Settings s;
-            TokenList tokenlist(&s);
+            TokenList tokenlist(&s, Standards::Language::C);
             std::istringstream istr(c);
-            tokenlist.createTokens(istr, Standards::Language::C); // TODO: check result
+            tokenlist.createTokens(istr); // TODO: check result
             // TODO: put in a helper
             // generate links
             {
@@ -833,7 +833,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     continue;
             }
 
-            FileSettings fs{cfilename};
+            FileSettings fs{cfilename, Standards::Language::None, 0}; // file will be identified later on
             fs.cfg = p.name;
             // TODO: detect actual MSC version
             fs.msc = true;
@@ -1195,7 +1195,8 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
         //
         // We can also force C++ compilation for all files using the -P command line switch.
         const bool cppMode = forceCppMode || Path::getFilenameExtensionInLowerCase(c) == ".cpp";
-        FileSettings fs{Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c)};
+        // TODO: needs to set language and ignore later identification and language enforcement
+        FileSettings fs{Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c), Standards::Language::None, 0}; // file will be identified later on
         fsSetIncludePaths(fs, projectDir, toStringList(includePath), variables);
         fsSetDefines(fs, cppMode ? cppDefines : defines);
         fileSettings.push_back(std::move(fs));
@@ -1263,8 +1264,6 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
     // default to --check-level=normal for import for now
     temp.setCheckLevel(Settings::CheckLevel::normal);
 
-    guiProject.analyzeAllVsConfigs.clear();
-
     // TODO: this should support all available command-line options
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         const char* name = node->Name();
@@ -1319,7 +1318,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         else if (strcmp(name, CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = empty_if_null(node->GetText());
         else if (strcmp(name, CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
-            guiProject.analyzeAllVsConfigs = empty_if_null(node->GetText());
+            temp.analyzeAllVsConfigs = std::string(empty_if_null(node->GetText())) != "false";
         else if (strcmp(name, CppcheckXml::Parser) == 0)
             temp.clang = true;
         else if (strcmp(name, CppcheckXml::AddonsElementName) == 0) {
@@ -1400,6 +1399,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
     settings.addons = temp.addons;
     settings.clang = temp.clang;
     settings.clangTidy = temp.clangTidy;
+    settings.analyzeAllVsConfigs = temp.analyzeAllVsConfigs;
 
     if (!settings.premiumArgs.empty())
         settings.premiumArgs += temp.premiumArgs;
@@ -1484,7 +1484,7 @@ void ImportProject::setRelativePaths(const std::string &filename)
         return;
     const std::vector<std::string> basePaths{Path::fromNativeSeparators(Path::getCurrentPath())};
     for (auto &fs: fileSettings) {
-        fs.file = FileWithDetails{Path::getRelativePath(fs.filename(), basePaths)};
+        fs.file = FileWithDetails{Path::getRelativePath(fs.filename(), basePaths), Standards::Language::None, 0}; // file will be identified later on
         for (auto &includePath: fs.includePaths)
             includePath = Path::getRelativePath(includePath, basePaths);
     }

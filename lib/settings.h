@@ -123,6 +123,9 @@ public:
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;
 
+    /** @brief Analyze all configuration in Visual Studio project. */
+    bool analyzeAllVsConfigs{true};
+
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 

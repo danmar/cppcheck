@@ -1943,9 +1943,9 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
 }
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y, bool cpp)
 {
-    TokenList tokenList(nullptr);
+    TokenList tokenList(nullptr, cpp ? Standards::Language::CPP : Standards::Language::C);
     std::istringstream istr(y);
-    tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
+    tokenList.createTokens(istr); // TODO: check result?
     return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
 }
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp)
@@ -2724,7 +2724,7 @@ static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, Er
                 const Token* varTok = args[iArg - 1];
                 if (varTok->variable() && varTok->variable()->isLocal())
                     LifetimeStore{ varTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
-                    tok->next(), tokenlist, errorLogger, settings);
+                        tok->next(), tokenlist, errorLogger, settings);
             }
         }
     }
@@ -7051,9 +7051,9 @@ static bool getMinMaxValues(const std::string& typestr,
                             MathLib::bigint& minvalue,
                             MathLib::bigint& maxvalue)
 {
-    TokenList typeTokens(&settings);
+    TokenList typeTokens(&settings, cpp ? Standards::Language::CPP : Standards::Language::C);
     std::istringstream istr(typestr + ";");
-    if (!typeTokens.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C))
+    if (!typeTokens.createTokens(istr))
         return false;
     typeTokens.simplifyPlatformTypes();
     typeTokens.simplifyStdType();

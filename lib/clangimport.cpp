@@ -677,8 +677,7 @@ void clangimport::AstNode::setValueType(Token *tok)
             // TODO
             continue;
 
-        TokenList decl(nullptr);
-        decl.setLang(tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+        TokenList decl(nullptr, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
         addTypeTokens(decl, type, tok->scope());
         if (!decl.front())
             break;
@@ -1502,12 +1501,12 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
         std::vector<AstNodePtr> children2;
         std::copy_if(children.cbegin(), children.cend(), std::back_inserter(children2), [](const AstNodePtr& child) {
             return child->nodeType == CXXConstructorDecl ||
-            child->nodeType == CXXDestructorDecl ||
-            child->nodeType == CXXMethodDecl ||
-            child->nodeType == FieldDecl ||
-            child->nodeType == VarDecl ||
-            child->nodeType == AccessSpecDecl ||
-            child->nodeType == TypedefDecl;
+                   child->nodeType == CXXDestructorDecl ||
+                   child->nodeType == CXXMethodDecl ||
+                   child->nodeType == FieldDecl ||
+                   child->nodeType == VarDecl ||
+                   child->nodeType == AccessSpecDecl ||
+                   child->nodeType == TypedefDecl;
         });
         Scope *scope = createScope(tokenList, isStruct ? ScopeType::eStruct : ScopeType::eClass, children2, classToken);
         const std::string addr = mExtTokens[0];
