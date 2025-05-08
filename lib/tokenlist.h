@@ -204,8 +204,6 @@ public:
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
 private:
-    void determineCppC();
-
     bool createTokensInternal(std::istream &code, const std::string& file0);
 
     /** Token list */
