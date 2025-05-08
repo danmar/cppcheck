@@ -2581,7 +2581,7 @@ private:
         {
             dui.std = "c89";
             std::vector<std::string> files;
-            TokenList tokenlist{&settingsDefault, Standards::Language::CPP};
+            TokenList tokenlist{settingsDefault, Standards::Language::CPP};
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
@@ -2589,7 +2589,7 @@ private:
         {
             dui.std = "gnu23";
             std::vector<std::string> files;
-            TokenList tokenlist{&settingsDefault, Standards::Language::CPP};
+            TokenList tokenlist{settingsDefault, Standards::Language::CPP};
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
@@ -2597,7 +2597,7 @@ private:
         {
             dui.std = "c++98";
             std::vector<std::string> files;
-            TokenList tokenlist{&settingsDefault, Standards::Language::CPP};
+            TokenList tokenlist{settingsDefault, Standards::Language::CPP};
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
@@ -2605,7 +2605,7 @@ private:
         {
             dui.std = "gnu++26";
             std::vector<std::string> files;
-            TokenList tokenlist{&settingsDefault, Standards::Language::CPP};
+            TokenList tokenlist{settingsDefault, Standards::Language::CPP};
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(tokenlist.front());
         }
@@ -2613,7 +2613,7 @@ private:
         {
             dui.std = "gnu77";
             std::vector<std::string> files;
-            TokenList tokenlist{&settingsDefault, Standards::Language::CPP};
+            TokenList tokenlist{settingsDefault, Standards::Language::CPP};
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }

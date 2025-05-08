@@ -1808,7 +1808,7 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
 
                 // In template arguments, there might not be AST
                 // Determine size by using the "raw tokens"
-                TokenList tokenList(&mSettings, dimension.tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+                TokenList tokenList(mSettings, dimension.tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                 tokenList.addtoken(";", 0, 0, 0, false);
                 bool fail = false;
                 for (const Token *tok = dimension.tok; tok && !Token::Match(tok, "[,>]"); tok = tok->next()) {
@@ -7292,7 +7292,7 @@ static const Token* parsedecl(const Token* type,
         else if (Token::simpleMatch(type, "volatile"))
             valuetype->volatileness |= (1 << (valuetype->pointer - pointer0));
         else if (settings.clang && type->str().size() > 2 && type->str().find("::") < type->str().find('<')) {
-            TokenList typeTokens(&settings, type->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+            TokenList typeTokens(settings, type->isCpp() ? Standards::Language::CPP : Standards::Language::C);
             std::string::size_type pos1 = 0;
             do {
                 const std::string::size_type pos2 = type->str().find("::", pos1);
@@ -7715,7 +7715,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 const std::string& typestr(mSettings.library.returnValueType(tok->previous()));
                 if (!typestr.empty()) {
                     ValueType valuetype;
-                    TokenList tokenList(&mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+                    TokenList tokenList(mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                     std::istringstream istr(typestr+";");
                     tokenList.createTokens(istr); // TODO: check result?
                     tokenList.simplifyStdType();
@@ -7805,7 +7805,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     }
                     continue;
                 }
-                TokenList tokenList(&mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+                TokenList tokenList(mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
                 std::istringstream istr(typestr+";");
                 if (tokenList.createTokens(istr)) {
                     ValueType vt;

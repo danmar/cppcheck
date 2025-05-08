@@ -45,15 +45,15 @@ namespace tinyxml2 {
 class SimpleTokenizer : public Tokenizer {
 public:
     explicit SimpleTokenizer(ErrorLogger& errorlogger, bool cpp = true)
-        : Tokenizer{TokenList{&s_settings, cpp ? Standards::Language::CPP : Standards::Language::C}, s_settings, errorlogger}
+        : Tokenizer{TokenList{s_settings, cpp ? Standards::Language::CPP : Standards::Language::C}, s_settings, errorlogger}
     {}
 
     SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, bool cpp = true)
-        : Tokenizer{TokenList{&settings, cpp ? Standards::Language::CPP : Standards::Language::C}, settings, errorlogger}
+        : Tokenizer{TokenList{settings, cpp ? Standards::Language::CPP : Standards::Language::C}, settings, errorlogger}
     {}
 
     SimpleTokenizer(const Settings& settings, ErrorLogger& errorlogger, const std::string& filename)
-        : Tokenizer{TokenList{&settings, Path::identify(filename, false)}, settings, errorlogger}
+        : Tokenizer{TokenList{settings, Path::identify(filename, false)}, settings, errorlogger}
     {
         list.appendFileIfNew(filename);
     }
@@ -99,7 +99,7 @@ class SimpleTokenList
 public:
     template<size_t size>
     explicit SimpleTokenList(const char (&code)[size], Standards::Language lang = Standards::Language::CPP)
-        : list{&settings, lang}
+        : list{settings, lang}
     {
         std::istringstream iss(code);
         if (!list.createTokens(iss))
@@ -234,14 +234,14 @@ class SimpleTokenizer2 : public Tokenizer {
 public:
     template<size_t size>
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)
-        : Tokenizer{TokenList{&settings, Path::identify(file0, false)}, settings, errorlogger}
+        : Tokenizer{TokenList{settings, Path::identify(file0, false)}, settings, errorlogger}
     {
         preprocess(code, mFiles, file0, *this, errorlogger);
     }
 
     // TODO: get rid of this
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], const std::string& file0)
-        : Tokenizer{TokenList{&settings, Path::identify(file0, false)}, settings, errorlogger}
+        : Tokenizer{TokenList{settings, Path::identify(file0, false)}, settings, errorlogger}
     {
         preprocess(code, mFiles, file0, *this, errorlogger);
     }

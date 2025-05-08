@@ -50,8 +50,7 @@ struct TokensFrontBack {
 
 class CPPCHECKLIB TokenList {
 public:
-    // TODO: pass settings as reference
-    explicit TokenList(const Settings* settings, Standards::Language lang);
+    explicit TokenList(const Settings& settings, Standards::Language lang);
     ~TokenList();
 
     TokenList(const TokenList &) = delete;
@@ -219,7 +218,7 @@ private:
     std::vector<std::string> mOrigFiles;
 
     /** settings */
-    const Settings* const mSettings{};
+    const Settings& mSettings;
 
     /** File is known to be C/C++ code */
     Standards::Language mLang{Standards::Language::None};

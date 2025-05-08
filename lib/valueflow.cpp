@@ -1941,23 +1941,23 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
     start2 = skipCVRefs(start2, y.second);
     return !(start1 == x.second && start2 == y.second);
 }
-static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y, bool cpp)
+static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y, bool cpp, const Settings& settings)
 {
-    TokenList tokenList(nullptr, cpp ? Standards::Language::CPP : Standards::Language::C);
+    TokenList tokenList(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
     std::istringstream istr(y);
     tokenList.createTokens(istr); // TODO: check result?
     return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
 }
-static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp)
+static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp, const Settings& settings)
 {
     if (y == nullptr)
         return false;
     if (y->originalTypeName.empty())
         return false;
-    return isNotEqual(x, y->originalTypeName, cpp);
+    return isNotEqual(x, y->originalTypeName, cpp, settings);
 }
 
-static bool isDifferentType(const Token* src, const Token* dst)
+static bool isDifferentType(const Token* src, const Token* dst, const Settings& settings)
 {
     const Type* t = Token::typeOf(src);
     const Type* parentT = Token::typeOf(dst);
@@ -1970,9 +1970,9 @@ static bool isDifferentType(const Token* src, const Token* dst)
         const bool isCpp = (src && src->isCpp()) || (dst && dst->isCpp());
         if (isNotEqual(decl, parentdecl) && !(isCpp && (Token::simpleMatch(decl.first, "auto") || Token::simpleMatch(parentdecl.first, "auto"))))
             return true;
-        if (isNotEqual(decl, dst->valueType(), isCpp))
+        if (isNotEqual(decl, dst->valueType(), isCpp, settings))
             return true;
-        if (isNotEqual(parentdecl, src->valueType(), isCpp))
+        if (isNotEqual(parentdecl, src->valueType(), isCpp, settings))
             return true;
     }
     return false;
@@ -1996,7 +1996,7 @@ bool ValueFlow::isLifetimeBorrowed(const Token *tok, const Settings &settings)
             return false;
     }
     if (parent) {
-        if (isDifferentType(tok, parent))
+        if (isDifferentType(tok, parent, settings))
             return false;
     }
     return true;
@@ -3682,7 +3682,7 @@ static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase& 
                 if (isTruncated(
                         tok->astOperand2()->valueType(), tok->astOperand1()->valueType(), settings))
                     continue;
-            } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
+            } else if (isDifferentType(tok->astOperand2(), tok->astOperand1(), settings)) {
                 continue;
             }
             const std::set<nonneg int> rhsVarIds = getVarIds(tok->astOperand2());
@@ -7051,7 +7051,7 @@ static bool getMinMaxValues(const std::string& typestr,
                             MathLib::bigint& minvalue,
                             MathLib::bigint& maxvalue)
 {
-    TokenList typeTokens(&settings, cpp ? Standards::Language::CPP : Standards::Language::C);
+    TokenList typeTokens(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
     std::istringstream istr(typestr + ";");
     if (!typeTokens.createTokens(istr))
         return false;
