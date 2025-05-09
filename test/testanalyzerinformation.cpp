@@ -69,7 +69,7 @@ private:
         ASSERT_EQUALS("file1.a2", getAnalyzerInfoFileFromFilesTxt(f2, "file1.c", "", 2));
     }
 
-    void parse() {
+    void parse() const {
         AnalyzerInformation::Info info;
 
         ASSERT_EQUALS(false, info.parse("a"));
@@ -83,11 +83,11 @@ private:
         ASSERT_EQUALS(0, info.fileIndex);
         ASSERT_EQUALS("d", info.sourceFile);
 
-        ASSERT_EQUALS(true, info.parse("a:b:12:d"));
-        ASSERT_EQUALS("a", info.afile);
-        ASSERT_EQUALS("b", info.cfg);
+        ASSERT_EQUALS(true, info.parse("e:f:12:g"));
+        ASSERT_EQUALS("e", info.afile);
+        ASSERT_EQUALS("f", info.cfg);
         ASSERT_EQUALS(12, info.fileIndex);
-        ASSERT_EQUALS("d", info.sourceFile);
+        ASSERT_EQUALS("g", info.sourceFile);
     }
 };
 
