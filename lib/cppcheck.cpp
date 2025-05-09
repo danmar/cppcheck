@@ -63,6 +63,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <thread>
 
 #include "json.h"
 
@@ -336,8 +337,12 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
     std::string extension;
     if (settings.dump || !settings.buildDir.empty())
         extension = ".dump";
-    else
-        extension = "." + std::to_string(settings.pid) + ".dump";
+    else {
+        // TODO: use hash instead when deduplication is done
+        std::stringstream tid;
+        tid << std::this_thread::get_id();
+        extension = "." + std::to_string(settings.pid) + "." + tid.str() + ".dump";
+    }
 
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + extension;
