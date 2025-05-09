@@ -1016,7 +1016,7 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
         }
         break;
     case ReportType::misraC:
-        if (errId.rfind("misra-c20", 0) == 0)
+        if (errId.rfind("misra-c20", 0) == 0 || errId.rfind("premium-misra-c-20", 0) == 0)
             guideline = errId.substr(errId.rfind('-') + 1);
         break;
     case ReportType::misraCpp2008:
