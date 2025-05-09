@@ -1145,7 +1145,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 "misra-c++-2023",
                 "misra-cpp-2023",
                 "bughunting",
-                "safety"};
+                "safety",
+                "debug-progress"};
             // valid options --premium-..=
             const std::set<std::string> valid2{
                 "cert-c-int-precision",

@@ -237,6 +237,7 @@ private:
         TEST_CASE(premiumOptionsInvalid1);
         TEST_CASE(premiumOptionsInvalid2);
         TEST_CASE(premiumSafety);
+        TEST_CASE(premiumDebugProgress);
         TEST_CASE(reportProgress1);
         TEST_CASE(reportProgress2);
         TEST_CASE(reportProgress3);
@@ -1452,6 +1453,14 @@ private:
         const char * const argv[] = {"cppcheck", "--premium=safety", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->safety);
+    }
+
+    void premiumDebugProgress() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {"cppcheck", "--premium=debug-progress", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS("--debug-progress", settings->premiumArgs);
     }
 
     void reportProgress1() {
