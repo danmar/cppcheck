@@ -64,7 +64,8 @@ public:
 
     static const char sep = '\t';
 
-    struct Info {
+    class CPPCHECKLIB Info {
+    public:
         bool parse(const std::string& filesTxtLine);
         std::string afile;
         std::string cfg;
