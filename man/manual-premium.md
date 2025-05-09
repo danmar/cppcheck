@@ -981,47 +981,68 @@ Cppcheck is distributed with a few addons which are listed below.
 
 ## Supported addons
 
-### misra.py
+### namingng.py
 
-[misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.
+[namingng.py](https://github.com/danmar/cppcheck/blob/main/addons/namingng.py) allows you to configure and check naming conventions.
 
-The full list of supported rules is available on: [https://files.cppchecksolutions.com/misrac2023.html](https://files.cppchecksolutions.com/misrac2023.html)
+You need to have a configuration file that defines your naming conventions. By default the filename `namingng.config.json` is used but there is an option so you can use any filename you want.
 
-### y2038.py
-
-[y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) checks Linux systems for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
+Example configuration of naming conventions:
+```
+{
+   "RE_VARNAME": ["[a-z]*[a-zA-Z0-9_]*\\Z"],
+   "RE_PRIVATE_MEMBER_VARIABLE": null,
+   "RE_FUNCTIONNAME": ["[a-z0-9A-Z]*\\Z"],
+   "_comment": "comments can be added to the config with underscore-prefixed keys",
+   "include_guard": {
+       "input": "path",
+       "prefix": "GUARD_",
+       "case": "upper",
+       "max_linenr": 5,
+       "RE_HEADERFILE": "[^/].*\\.h\\Z",
+       "required": true
+   },
+   "var_prefixes": {"uint32_t": "ui32"},
+   "function_prefixes": {"uint16_t": "ui16",
+                         "uint32_t": "ui32"}
+}
+```
 
 ### threadsafety.py
 
 [threadsafety.py](https://github.com/danmar/cppcheck/blob/main/addons/threadsafety.py) analyses Cppcheck dump files to locate thread safety issues like static local objects used by multiple threads.
 
+### y2038.py
+
+[y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) checks Linux systems for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
+
 ## Running Addons
 
-Addons could be run through Cppcheck command line utility as follows:
+Addons can be executed with the `--addon` option:
 
-    cppcheck --addon=misra.py somefile.c
+    cppcheck --addon=namingng.py somefile.c
 
-This will launch all Cppcheck checks and additionally calls specific checks provided by selected addon.
+Likewise, if you have created your own script you can execute that:
 
-Some addons need extra arguments. You can configure how you want to execute an addon in a json file. For example put this in misra.json:
+    cppcheck --addon=mychecks.py somefile.c
+
+You can configure how you want to execute an addon in a json file. For example:
 
     {
-        "script": "misra.py",
+        "script": "mychecks.py",
         "args": [
-            "--rule-texts=misra.txt"
-        ]
+            "--some-option"
+        ],
+        "ctu": false
     }
 
-And then the configuration can be executed on the Cppcheck command line:
+To use that json file to execute your addon use the --addon option:
 
-    cppcheck --addon=misra.json somefile.c
+    cppcheck --addon=mychecks.json somefile.c
 
-By default Cppcheck would search addon at the standard path which was specified 
-during the installation process. You also can set this path directly, for example:
+Cppcheck search for addons in the local folder first and then in the installation folder. A different path can be specified explicitly, for instance:
 
-    cppcheck --addon=/opt/cppcheck/configurations/my_misra.json somefile.c
-
-This allows you to create and manage multiple configuration files for different projects.
+    cppcheck --addon=path/to/my-addon.py somefile.c
 
 # Library configuration
 
