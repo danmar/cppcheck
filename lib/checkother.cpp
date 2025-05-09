@@ -1093,6 +1093,9 @@ void CheckOther::checkVariableScope()
 
         if (var->nameToken()->isExpandedMacro())
             continue;
+        if (isStructuredBindingVariable(var) && // warn for single decomposition
+            !(Token::simpleMatch(var->nameToken()->astParent(), "[") && var->nameToken()->astParent()->astOperand2() == var->nameToken()))
+            continue;
 
         const bool isPtrOrRef = var->isPointer() || var->isReference();
         const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || (var->typeStartToken()->isC() && var->type() && var->type()->isStructType());

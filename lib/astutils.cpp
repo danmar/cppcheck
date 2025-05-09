@@ -1163,7 +1163,7 @@ static bool hasUnknownVars(const Token* startTok)
 
 bool isStructuredBindingVariable(const Variable* var)
 {
-    if (!var)
+    if (!var || var->isArray())
         return false;
     const Token* tok = var->nameToken();
     while (tok && Token::Match(tok->astParent(), "[|,|:"))

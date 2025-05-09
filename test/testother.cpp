@@ -106,6 +106,7 @@ private:
         TEST_CASE(varScope40);
         TEST_CASE(varScope41);      // #11845
         TEST_CASE(varScope42);
+        TEST_CASE(varScope43);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1872,6 +1873,28 @@ private:
               "       g(\"%d %s\", 1, s);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:17]: (style) The scope of the variable 's' can be reduced. [variableScope]\n", errout_str());
+    }
+
+    void varScope43() {
+        check("struct S { int a, b; };\n" // #13838
+              "int f(S s) {\n"
+              "    auto& [x, y] = s;\n"
+              "    if (x < 5) {\n"
+              "        return y;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int a; };\n"
+            "int f(S s) {\n"
+            "    auto& [x] = s;\n"
+            "    if (y) {\n"
+            "        return x;\n"
+            "    }\n"
+            "    return 0;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:3:12]: (style) The scope of the variable 'x' can be reduced. [variableScope]\n", errout_str());
     }
 
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
