@@ -88,6 +88,12 @@ private:
         ASSERT_EQUALS("f", info.cfg);
         ASSERT_EQUALS(12, info.fileIndex);
         ASSERT_EQUALS("g", info.sourceFile);
+
+        ASSERT_EQUALS(true, info.parse("odr1.a1:::C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp"));
+        ASSERT_EQUALS("odr1.a1", info.afile);
+        ASSERT_EQUALS("", info.cfg);
+        ASSERT_EQUALS(0, info.fileIndex);
+        ASSERT_EQUALS("C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp", info.sourceFile);
     }
 };
 

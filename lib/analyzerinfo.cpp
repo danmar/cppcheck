@@ -183,8 +183,6 @@ bool AnalyzerInformation::Info::parse(const std::string& filesTxtLine) {
     const std::string::size_type sep3 = filesTxtLine.find(sep, sep2+1);
     if (sep3 == std::string::npos)
         return false;
-    if (filesTxtLine.find(sep, sep3+1) != std::string::npos)
-        return false;
 
     if (sep3 == sep2 + 1)
         fileIndex = 0;
