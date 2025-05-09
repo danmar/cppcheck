@@ -25,6 +25,7 @@
 
 #include <cstring>
 #include <map>
+#include <sstream>
 
 #include "xml.h"
 
@@ -47,21 +48,30 @@ static std::string getFilename(const std::string &fullpath)
 
 void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings)
 {
-    std::map<std::string, unsigned int> fileCount;
-
     const std::string filesTxt(buildDir + "/files.txt");
     std::ofstream fout(filesTxt);
+    fout << getFilesTxt(sourcefiles, userDefines, fileSettings);
+}
+
+std::string AnalyzerInformation::getFilesTxt(const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings) {
+    std::ostringstream ret;
+
+    std::map<std::string, unsigned int> fileCount;
+
     for (const std::string &f : sourcefiles) {
         const std::string afile = getFilename(f);
-        fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::simplifyPath(f) << '\n';
+        ret << afile << ".a" << (++fileCount[afile]) << sep << sep << sep << Path::simplifyPath(f) << '\n';
         if (!userDefines.empty())
-            fout << afile << ".a" << (++fileCount[afile]) << ":" << userDefines << ":" << Path::simplifyPath(f) << '\n';
+            ret << afile << ".a" << (++fileCount[afile]) << sep << userDefines << sep << sep << Path::simplifyPath(f) << '\n';
     }
 
     for (const FileSettings &fs : fileSettings) {
         const std::string afile = getFilename(fs.filename());
-        fout << afile << ".a" << (++fileCount[afile]) << ":" << fs.cfg << ":" << Path::simplifyPath(fs.filename()) << std::endl;
+        const std::string id = fs.fileIndex > 0 ? std::to_string(fs.fileIndex) : "";
+        ret << afile << ".a" << (++fileCount[afile]) << sep << fs.cfg << sep << id << sep << Path::simplifyPath(fs.filename()) << std::endl;
     }
+
+    return ret.str();
 }
 
 void AnalyzerInformation::close()
@@ -96,25 +106,26 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
     return true;
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg)
+std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, int fileIndex)
 {
+    const std::string id = (fileIndex > 0) ? std::to_string(fileIndex) : "";
     std::string line;
-    const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
+    const std::string end(sep + cfg + sep + id + sep + Path::simplifyPath(sourcefile));
     while (std::getline(filesTxt,line)) {
         if (line.size() <= end.size() + 2U)
             continue;
         if (!endsWith(line, end.c_str(), end.size()))
             continue;
-        return line.substr(0,line.find(':'));
+        return line.substr(0,line.find(sep));
     }
     return "";
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
+std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fileIndex)
 {
     std::ifstream fin(Path::join(buildDir, "files.txt"));
     if (fin.is_open()) {
-        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg);
+        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg, fileIndex);
         if (!ret.empty())
             return Path::join(buildDir, ret);
     }
@@ -128,13 +139,13 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     return Path::join(buildDir, filename) + ".analyzerinfo";
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t hash, std::list<ErrorMessage> &errors)
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fileIndex, std::size_t hash, std::list<ErrorMessage> &errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
     close();
 
-    mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg);
+    mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
 
     if (skipAnalysis(mAnalyzerInfoFile, hash, errors))
         return false;
@@ -161,3 +172,31 @@ void AnalyzerInformation::setFileInfo(const std::string &check, const std::strin
     if (mOutputStream.is_open() && !fileInfo.empty())
         mOutputStream << "  <FileInfo check=\"" << check << "\">\n" << fileInfo << "  </FileInfo>\n";
 }
+
+bool AnalyzerInformation::Info::parse(const std::string& filesTxtLine) {
+    const std::string::size_type sep1 = filesTxtLine.find(sep);
+    if (sep1 == std::string::npos)
+        return false;
+    const std::string::size_type sep2 = filesTxtLine.find(sep, sep1+1);
+    if (sep2 == std::string::npos)
+        return false;
+    const std::string::size_type sep3 = filesTxtLine.find(sep, sep2+1);
+    if (sep3 == std::string::npos)
+        return false;
+
+    if (sep3 == sep2 + 1)
+        fileIndex = 0;
+    else {
+        try {
+            fileIndex = std::stoi(filesTxtLine.substr(sep2+1, sep3-sep2-1));
+        } catch (const std::exception&) {
+            return false;
+        }
+    }
+
+    afile = filesTxtLine.substr(0, sep1);
+    cfg = filesTxtLine.substr(sep1+1, sep2-sep1-1);
+    sourceFile = filesTxtLine.substr(sep3+1);
+    return true;
+}
+

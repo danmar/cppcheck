@@ -355,6 +355,8 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         return false;
     }
 
+    std::map<std::string, int> fileIndex;
+
     for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
         std::string dirpath = Path::fromNativeSeparators(obj["directory"].get<std::string>());
@@ -420,10 +422,13 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             printError("'" + path + "' from compilation database does not exist");
             return false;
         }
-        FileSettings fs{std::move(path), Standards::Language::None, 0}; // file will be identified later on
+        FileSettings fs{path, Standards::Language::None, 0}; // file will be identified later on
         fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
+        // Assign a unique index to each file path. If the file path already exists in the map,
+        // increment the index to handle duplicate file entries.
+        fs.fileIndex = fileIndex[path]++;
         fileSettings.push_back(std::move(fs));
     }
 

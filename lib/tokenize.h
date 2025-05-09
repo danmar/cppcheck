@@ -79,7 +79,7 @@ public:
      */
     bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
-    bool simplifyTokens1(const std::string &configuration);
+    bool simplifyTokens1(const std::string &configuration, int fileIndex=0);
 
 private:
     /** Set variable id */

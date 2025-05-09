@@ -331,16 +331,16 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename)
+static std::string getDumpFileName(const Settings& settings, const std::string& filename, int fileIndex)
 {
-    std::string extension;
-    if (settings.dump || !settings.buildDir.empty())
-        extension = ".dump";
-    else
-        extension = "." + std::to_string(settings.pid) + ".dump";
+    std::string extension = ".dump";
+    if (fileIndex > 0)
+        extension = "." + std::to_string(fileIndex) + extension;
+    if (!settings.dump && settings.buildDir.empty())
+        extension = "." + std::to_string(settings.pid) + extension;
 
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + extension;
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "", fileIndex) + extension;
     return filename + extension;
 }
 
@@ -351,12 +351,13 @@ static std::string getCtuInfoFileName(const std::string &dumpFile)
 
 static void createDumpFile(const Settings& settings,
                            const FileWithDetails& file,
+                           int fileIndex,
                            std::ofstream& fdump,
                            std::string& dumpFile)
 {
     if (!settings.dump && settings.addons.empty())
         return;
-    dumpFile = getDumpFileName(settings, file.spath());
+    dumpFile = getDumpFileName(settings, file.spath(), fileIndex);
 
     fdump.open(dumpFile);
     if (!fdump.is_open())
@@ -649,7 +650,7 @@ static std::string getClangFlags(const Settings& setting, Standards::Language la
 }
 
 // TODO: clear error list before returning
-unsigned int CppCheck::checkClang(const FileWithDetails &file)
+unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
 {
     // TODO: clear exitcode
 
@@ -662,7 +663,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     // TODO: get language from FileWithDetails object
     std::string clangStderr;
     if (!mSettings.buildDir.empty())
-        clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "") + ".clang-stderr";
+        clangStderr = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, file.spath(), "", fileIndex) + ".clang-stderr";
 
     std::string exe = mSettings.clangExecutable;
 #ifdef _WIN32
@@ -731,7 +732,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
         // create dumpfile
         std::ofstream fdump;
         std::string dumpFile;
-        createDumpFile(mSettings, file, fdump, dumpFile);
+        createDumpFile(mSettings, file, fileIndex, fdump, dumpFile);
         if (fdump.is_open()) {
             fdump << getLibraryDumpData();
             // TODO: use tinyxml2 to create XML
@@ -775,9 +776,9 @@ unsigned int CppCheck::check(const FileWithDetails &file)
 
     unsigned int returnValue;
     if (mSettings.clang)
-        returnValue = checkClang(file);
+        returnValue = checkClang(file, 0);
     else
-        returnValue = checkFile(file, "");
+        returnValue = checkFile(file, "", 0);
 
     // TODO: call analyseClangTidy()
 
@@ -787,7 +788,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
 unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(file, "", &iss);
+    return checkFile(file, "", 0, &iss);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -823,7 +824,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     }
     // need to pass the externally provided ErrorLogger instead of our internal wrapper
     CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mUseGlobalSuppressions, mExecuteCommand);
-    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg);
+    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg, fs.fileIndex);
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     while (!temp.mFileInfo.empty()) {
@@ -860,7 +861,7 @@ static std::size_t calculateHash(const Preprocessor& preprocessor, const simplec
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
-unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream)
+unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream* fileStream)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -937,7 +938,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     mLogger->setAnalyzerInfo(nullptr);
 
                     std::list<ErrorMessage> errors;
-                    analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors);
+                    analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors);
                     analyzerInformation->setFileInfo("CheckUnusedFunctions", mUnusedFunctionsCheck->analyzerInfo(tokenizer));
                     analyzerInformation->close();
                 }
@@ -1011,7 +1012,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             // Calculate hash so it can be compared with old hash / future hashes
             const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
             std::list<ErrorMessage> errors;
-            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, hash, errors)) {
+            if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
                 while (!errors.empty()) {
                     mErrorLogger.reportErr(errors.front());
                     errors.pop_front();
@@ -1074,7 +1075,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // write dump file xml prolog
         std::ofstream fdump;
         std::string dumpFile;
-        createDumpFile(mSettings, file, fdump, dumpFile);
+        createDumpFile(mSettings, file, fileIndex, fdump, dumpFile);
         if (fdump.is_open()) {
             fdump << getLibraryDumpData();
             fdump << dumpProlog;
@@ -1169,7 +1170,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 #endif
 
                     // Simplify tokens into normal form, skip rest of iteration if failed
-                    if (!tokenizer.simplifyTokens1(currentConfig))
+                    if (!tokenizer.simplifyTokens1(currentConfig, fileIndex))
                         continue;
 
                     // dump xml if --dump
@@ -1811,12 +1812,12 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.path());
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.path(), 0);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
     for (const auto &f: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename());
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename(), f.fileIndex);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
@@ -1943,7 +1944,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), "");
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), "", fileSettings.fileIndex);
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }
@@ -2035,14 +2036,11 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     std::ifstream fin(filesTxt);
     std::string filesTxtLine;
     while (std::getline(fin, filesTxtLine)) {
-        const std::string::size_type firstColon = filesTxtLine.find(':');
-        if (firstColon == std::string::npos)
+        AnalyzerInformation::Info filesTxtInfo;
+        if (!filesTxtInfo.parse(filesTxtLine))
             continue;
-        const std::string::size_type lastColon = filesTxtLine.rfind(':');
-        if (firstColon == lastColon)
-            continue;
-        const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
-        //const std::string sourcefile = filesTxtLine.substr(lastColon+1);
+
+        const std::string xmlfile = buildDir + '/' + filesTxtInfo.afile;
 
         tinyxml2::XMLDocument doc;
         const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
@@ -2067,7 +2065,7 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
             for (const Check *check : Check::instances()) {
                 if (checkClassAttr == check->name()) {
                     Check::FileInfo* fi = check->loadFileInfoFromXml(e);
-                    fi->file0 = filesTxtLine.substr(firstColon + 2);
+                    fi->file0 = filesTxtInfo.sourceFile;
                     fileInfoList.push_back(fi);
                 }
             }

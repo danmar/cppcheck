@@ -64,6 +64,7 @@ private:
         TEST_CASE(importCompileCommands10); // #10887: include path with space
         TEST_CASE(importCompileCommands11); // include path order
         TEST_CASE(importCompileCommands12); // #13040: "directory" is parent directory, relative include paths
+        TEST_CASE(importCompileCommands13); // #13333: duplicate file entries
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -336,6 +337,28 @@ private:
         const FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS(1, fs.includePaths.size());
         ASSERT_EQUALS("/x/", fs.includePaths.front());
+    }
+
+    void importCompileCommands13() const { // #13333
+        REDIRECT;
+        constexpr char json[] =
+            R"([{
+               "file": "/x/src/1.c" ,
+               "directory": "/x",
+               "command": "cc -c -I. src/1.c"
+            },{
+               "file": "/x/src/1.c" ,
+               "directory": "/x",
+               "command": "cc -c -I. src/1.c"
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(2, importer.fileSettings.size());
+        const FileSettings &fs1 = importer.fileSettings.front();
+        const FileSettings &fs2 = importer.fileSettings.back();
+        ASSERT_EQUALS(0, fs1.fileIndex);
+        ASSERT_EQUALS(1, fs2.fileIndex);
     }
 
     void importCompileCommandsArgumentsSection() const {
