@@ -987,7 +987,7 @@ Cppcheck is distributed with a few addons which are listed below.
 
 You need to have a configuration file that defines your naming conventions. By default the filename `namingng.config.json` is used but there is an option so you can use any filename you want.
 
-Example configuration:
+Example configuration of naming conventions:
 ```
 {
    "RE_VARNAME": ["[a-z]*[a-zA-Z0-9_]*\\Z"],
@@ -1018,28 +1018,29 @@ Example configuration:
 
 ## Running Addons
 
-Addons could be run through Cppcheck command line utility as follows:
+Addons can be executed with the `--addon` option:
 
     cppcheck --addon=namingng.py somefile.c
 
-This will launch all Cppcheck checks and additionally calls specific checks provided by selected addon.
+Likewise, if you have created your own script you can execute that:
 
-Some addons need extra arguments. You can configure how you want to execute an addon in a json file. For example put this in `naming.json`:
+    cppcheck --addon=mychecks.py somefile.c
+
+You can configure how you want to execute an addon in a json file. For example:
 
     {
-        "script": "namingng.py",
+        "script": "mychecks.py",
         "args": [
-            "--configfile=path/to/naming-conventions.config"
-        ]
+            "--some-option"
+        ],
+        "ctu": false
     }
 
-And then on the Cppcheck command line use `--addon=naming.json`:
+To use that json file to execute your addon use the --addon option:
 
-    cppcheck --addon=naming.json somefile.c
+    cppcheck --addon=mychecks.json somefile.c
 
-The namingng.py addon is now executed with the `--configfile=path/to/naming-conventions.config` option.
-
-Cppcheck search for addons in the local folder first and then in the installation data folder. You can also provide the path explicitly, for instance:
+Cppcheck search for addons in the local folder first and then in the installation folder. A different path can be specified explicitly, for instance:
 
     cppcheck --addon=path/to/my-addon.py somefile.c
 
