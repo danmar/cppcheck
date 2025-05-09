@@ -1186,11 +1186,11 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", logger->str());
     }
 
-    void fileFilterFileWithDetailsSimplifiedPath() {
+    void fileFilterFileWithDetailsSimplifiedPath() const {
         // match against simplified path
         const std::vector<std::string> fileFilters{"m1.c"};
         const std::list<FileWithDetails> filesResolved{ FileWithDetails("./m1.c", Standards::Language::C, 123) };
-        std::list<FileWithDetails> files = CmdLineParser::filterFiles(fileFilters, filesResolved);
+        const std::list<FileWithDetails> files = CmdLineParser::filterFiles(fileFilters, filesResolved);
         ASSERT_EQUALS(1U, files.size());
     }
 
@@ -1198,7 +1198,7 @@ private:
         // in windows, paths are case insensitive
         const std::vector<std::string> fileFilters{"m1.c"};
         const std::list<FileWithDetails> filesResolved{ FileWithDetails("M1.C", Standards::Language::C, 123) };
-        std::list<FileWithDetails> files = CmdLineParser::filterFiles(fileFilters, filesResolved);
+        const std::list<FileWithDetails> files = CmdLineParser::filterFiles(fileFilters, filesResolved);
 #ifdef _WIN32
         ASSERT_EQUALS(1U, files.size());
 #else
