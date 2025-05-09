@@ -79,7 +79,7 @@ protected:
      * @param settings the settings
      * @param supprs the suppressions
      **/
-    int check_wrapper(const Settings& settings, Suppressions& supprs);
+    int check_wrapper(const Settings& settings, Suppressions& supprs) const;
 
     /**
      * Starts the checking.
