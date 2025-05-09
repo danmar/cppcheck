@@ -422,7 +422,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             printError("'" + path + "' from compilation database does not exist");
             return false;
         }
-        FileSettings fs{std::move(path), Standards::Language::None, 0}; // file will be identified later on
+        FileSettings fs{path, Standards::Language::None, 0}; // file will be identified later on
         fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
