@@ -5433,7 +5433,7 @@ private:
         tokenlist.appendFileIfNew("test.cpp");
         if (!tokenlist.createTokens(istr))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5503,7 +5503,7 @@ private:
         tokenlist.appendFileIfNew("test.cpp");
         if (!tokenlist.createTokens(istr))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5574,7 +5574,7 @@ private:
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5605,7 +5605,7 @@ private:
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 

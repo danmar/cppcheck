@@ -717,7 +717,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file)
     try {
         TokenList tokenlist{mSettings, file.lang()};
         tokenlist.appendFileIfNew(file.spath());
-        Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
+        Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
         std::istringstream ast(output2);
         clangimport::parseClangAstDump(tokenizer, ast);
         ValueFlow::setValues(tokenizer.list,
@@ -930,7 +930,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     tokenlist.createTokens(std::move(tokens));
                 }
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
-                Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
+                Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
 
                 if (analyzerInformation) {
@@ -1141,7 +1141,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 });
                 hasValidConfig = true;
 
-                Tokenizer tokenizer(std::move(tokenlist), mSettings, mErrorLogger);
+                Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
                 try {
                     if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                         tokenizer.setTimerResults(&s_timerResults);

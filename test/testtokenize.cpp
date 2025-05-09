@@ -558,7 +558,7 @@ private:
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
         TokenList tokenlist{settings, Path::identify(filename, false)};
-        Tokenizer tokenizer(std::move(tokenlist), settings, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.setDirectives(std::move(directives));
 
         tokenizer.dump(ostr);
@@ -870,7 +870,7 @@ private:
             std::istringstream istr(code);
             tokenlist.appendFileIfNew("test.h");
             ASSERT(tokenlist.createTokens(istr));
-            Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+            Tokenizer tokenizer(std::move(tokenlist), *this);
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
     }
@@ -3689,7 +3689,7 @@ private:
 
     void simplifyString() {
         TokenList tokenlist{settings0, Standards::Language::CPP};
-        Tokenizer tokenizer(std::move(tokenlist), settings0, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
         ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
         ASSERT_EQUALS("\"3\"", tokenizer.simplifyString("\"\\x33\""));
@@ -6143,7 +6143,7 @@ private:
         if (!tokenlist.createTokens(istr))
             return "ERROR";
 
-        Tokenizer tokenizer(std::move(tokenlist), settings0, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.combineStringAndCharLiterals();
         tokenizer.combineOperators();
         tokenizer.simplifySpaceshipOperator();

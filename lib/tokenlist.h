@@ -203,6 +203,10 @@ public:
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
 
+    const Settings& getSettings() const {
+        return mSettings;
+    }
+
 private:
     bool createTokensInternal(std::istream &code, const std::string& file0);
 
