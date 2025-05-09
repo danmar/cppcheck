@@ -308,9 +308,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         std::list<FileWithDetails> files;
         if (!mSettings.fileFilters.empty()) {
-            std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
-                return matchglobs(mSettings.fileFilters, entry.path());
-            });
+            files = filterFiles(mSettings.fileFilters, filesResolved);
             if (files.empty()) {
                 mLogger.printError("could not find any files matching the filter.");
                 return false;
@@ -2186,3 +2184,16 @@ bool CmdLineParser::loadCppcheckCfg()
     return true;
 }
 
+std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::string>& fileFilters,
+                                                      const std::list<FileWithDetails>& filesResolved) {
+    std::list<FileWithDetails> files;
+#ifdef _WIN32
+    constexpr bool caseInsensitive = true;
+#else
+    constexpr bool caseInsensitive = false;
+#endif
+    std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
+        return matchglobs(fileFilters, entry.path(), caseInsensitive) || matchglobs(fileFilters, entry.spath(), caseInsensitive);
+    });
+    return files;
+}

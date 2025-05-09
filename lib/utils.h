@@ -202,9 +202,9 @@ CPPCHECKLIB int caseInsensitiveStringCompare(const std::string& lhs, const std::
 
 CPPCHECKLIB bool isValidGlobPattern(const std::string& pattern);
 
-CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
+CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name, bool caseInsensitive = false);
 
-CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name);
+CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name, bool caseInsensitive = false);
 
 CPPCHECKLIB void strTolower(std::string& str);
 
