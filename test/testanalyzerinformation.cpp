@@ -37,7 +37,7 @@ private:
     }
 
     void getAnalyzerInfoFile() const {
-        constexpr char filesTxt[] = "file1.a4\t\t\tfile1.c\n";
+        constexpr char filesTxt[] = "file1.a4:::file1.c\n";
         std::istringstream f1(filesTxt);
         ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 0));
         std::istringstream f2(filesTxt);
@@ -53,16 +53,16 @@ private:
         fileSettings.emplace_back("a.c", Standards::Language::C, 10);
         fileSettings.back().fileIndex = 1;
 
-        const char expected[] = "a.a1\t\t\ta.c\n"
-                                "a.a2\t\t1\ta.c\n";
+        const char expected[] = "a.a1:::a.c\n"
+                                "a.a2::1:a.c\n";
 
         ASSERT_EQUALS(expected, getFilesTxt({}, "", fileSettings));
     }
 
     void duplicateFile() const {
         // same file duplicated
-        constexpr char filesTxt[] = "file1.a1\t\t1\tfile1.c\n"
-                                    "file1.a2\t\t2\tfile1.c\n";
+        constexpr char filesTxt[] = "file1.a1::1:file1.c\n"
+                                    "file1.a2::2:file1.c\n";
         std::istringstream f1(filesTxt);
         ASSERT_EQUALS("file1.a1", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 1));
         std::istringstream f2(filesTxt);
@@ -73,17 +73,17 @@ private:
         AnalyzerInformation::Info info;
 
         ASSERT_EQUALS(false, info.parse("a"));
-        ASSERT_EQUALS(false, info.parse("a\tb"));
-        ASSERT_EQUALS(false, info.parse("a\tb\tc"));
-        ASSERT_EQUALS(false, info.parse("a\tb\tc\td"));
+        ASSERT_EQUALS(false, info.parse("a:b"));
+        ASSERT_EQUALS(false, info.parse("a:b:c"));
+        ASSERT_EQUALS(false, info.parse("a:b:c:d"));
 
-        ASSERT_EQUALS(true, info.parse("a\tb\t\td"));
+        ASSERT_EQUALS(true, info.parse("a:b::d"));
         ASSERT_EQUALS("a", info.afile);
         ASSERT_EQUALS("b", info.cfg);
         ASSERT_EQUALS(0, info.fileIndex);
         ASSERT_EQUALS("d", info.sourceFile);
 
-        ASSERT_EQUALS(true, info.parse("a\tb\t12\td"));
+        ASSERT_EQUALS(true, info.parse("a:b:12:d"));
         ASSERT_EQUALS("a", info.afile);
         ASSERT_EQUALS("b", info.cfg);
         ASSERT_EQUALS(12, info.fileIndex);
