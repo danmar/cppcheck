@@ -1887,13 +1887,13 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("struct S { int a; };\n"
-            "int f(S s) {\n"
-            "    auto& [x] = s;\n"
-            "    if (y) {\n"
-            "        return x;\n"
-            "    }\n"
-            "    return 0;\n"
-            "}\n");
+              "int f(S s) {\n"
+              "    auto& [x] = s;\n"
+              "    if (y) {\n"
+              "        return x;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3:12]: (style) The scope of the variable 'x' can be reduced. [variableScope]\n", errout_str());
     }
 
