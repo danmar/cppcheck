@@ -349,6 +349,72 @@ class Token:
     linenr = None
     column = None
 
+    @classmethod
+    def from_token(cls, other_token):
+        """
+        Create a new Token instance from an existing Token
+        """
+        # Create an empty element-like dictionary with minimal required attributes
+        element = {'id': other_token.Id, 'str': other_token.str}
+        new_token = cls(element)
+
+        # Copy basic attributes
+        new_token.scopeId = other_token.scopeId
+        new_token.scope = other_token.scope
+        new_token.type = other_token.type
+        new_token.isName = other_token.isName
+        new_token.isNumber = other_token.isNumber
+        new_token.isInt = other_token.isInt
+        new_token.isFloat = other_token.isFloat
+        new_token.isString = other_token.isString
+        new_token.strlen = other_token.strlen
+        new_token.isChar = other_token.isChar
+        new_token.isBoolean = other_token.isBoolean
+        new_token.isOp = other_token.isOp
+        new_token.isArithmeticalOp = other_token.isArithmeticalOp
+        new_token.isAssignmentOp = other_token.isAssignmentOp
+        new_token.isComparisonOp = other_token.isComparisonOp
+        new_token.isLogicalOp = other_token.isLogicalOp
+        new_token.isCast = other_token.isCast
+        new_token.isUnsigned = other_token.isUnsigned
+        new_token.isSigned = other_token.isSigned
+        new_token.externLang = other_token.externLang
+        new_token.macroName = other_token.macroName
+        new_token.isExpandedMacro = other_token.isExpandedMacro
+        new_token.isRemovedVoidParameter = other_token.isRemovedVoidParameter
+        new_token.isSplittedVarDeclComma = other_token.isSplittedVarDeclComma
+        new_token.isSplittedVarDeclEq = other_token.isSplittedVarDeclEq
+        new_token.isImplicitInt = other_token.isImplicitInt
+        new_token.isComplex = other_token.isComplex
+        new_token.isRestrict = other_token.isRestrict
+        new_token.isAttributeExport = other_token.isAttributeExport
+        new_token.linkId = other_token.linkId
+        new_token.link = other_token.link
+        new_token.varId = other_token.varId
+        new_token.variableId = other_token.variableId
+        new_token.variable = other_token.variable
+        new_token.functionId = other_token.functionId
+        new_token.function = other_token.function
+        new_token.valuesId = other_token.valuesId
+        new_token.values = other_token.values
+        new_token.valueType = other_token.valueType
+        new_token.typeScopeId = other_token.typeScopeId
+        new_token.typeScope = other_token.typeScope
+        new_token.astParentId = other_token.astParentId
+        new_token.astOperand1Id = other_token.astOperand1Id
+        new_token.astOperand1 = other_token.astOperand1
+        new_token.astOperand2Id = other_token.astOperand2Id
+        new_token.astOperand2 = other_token.astOperand2
+        new_token.originalName = other_token.originalName
+        new_token.astParent = other_token.astParent
+
+        # Copy location information
+        new_token.file = other_token.file
+        new_token.linenr = other_token.linenr
+        new_token.column = other_token.column
+ 
+        return new_token
+
     def __init__(self, element):
         self.Id = element.get('id')
         self.str = element.get('str')
