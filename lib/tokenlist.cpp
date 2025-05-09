@@ -32,6 +32,7 @@
 #include "token.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cstdint>
 #include <exception>
@@ -44,15 +45,6 @@
 #include <unordered_set>
 
 #include <simplecpp.h>
-
-//#define N_ASSERT_LANG
-
-#ifndef N_ASSERT_LANG
-#include <cassert>
-#define ASSERT_LANG(x) assert(x)
-#else
-#define ASSERT_LANG(x)
-#endif
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
@@ -97,25 +89,9 @@ void TokenList::deallocateTokens()
     mFiles.clear();
 }
 
-void TokenList::determineCppC()
-{
-    // only try to determine if it wasn't enforced
-    if (mLang == Standards::Language::None) {
-        ASSERT_LANG(!getSourceFilePath().empty());
-        mLang = Path::identify(getSourceFilePath(), mSettings.cppHeaderProbe);
-        // TODO: cannot enable assert as this might occur for unknown extensions
-        //ASSERT_LANG(mLang != Standards::Language::None);
-        if (mLang == Standards::Language::None) {
-            // TODO: should default to C instead like we do for headers
-            // default to C++
-            mLang = Standards::Language::CPP;
-        }
-    }
-}
-
 int TokenList::appendFileIfNew(std::string fileName)
 {
-    ASSERT_LANG(!fileName.empty());
+    assert(!fileName.empty());
 
     // Has this file been tokenized already?
     auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
@@ -127,10 +103,6 @@ int TokenList::appendFileIfNew(std::string fileName)
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));
 
-    // Update mIsC and mIsCpp properties
-    if (mFiles.size() == 1) { // Update only useful if first file added to _files
-        determineCppC();
-    }
     return mFiles.size() - 1;
 }
 
@@ -377,8 +349,6 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
     }
     else
         mFiles.clear();
-
-    determineCppC();
 
     for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
@@ -2247,23 +2217,11 @@ bool TokenList::isKeyword(const std::string &str) const
 
 bool TokenList::isC() const
 {
-    ASSERT_LANG(mLang != Standards::Language::None);
-
-    // TODO: remove the fallback
-    if (mLang == Standards::Language::None)
-        return false; // treat as C++ by default
-
     return mLang == Standards::Language::C;
 }
 
 bool TokenList::isCPP() const
 {
-    ASSERT_LANG(mLang != Standards::Language::None);
-
-    // TODO: remove the fallback
-    if (mLang == Standards::Language::None)
-        return true; // treat as C++ by default
-
     return mLang == Standards::Language::CPP;
 }
 
