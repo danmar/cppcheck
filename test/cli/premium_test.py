@@ -122,6 +122,11 @@ def test_misra_py(tmpdir):
 
     exe = __copy_cppcheck_premium(tmpdir)
 
+    # ensure that misra.py is not available:
+    _, stdout, _ = cppcheck(['--enable=style', '--addon=misra', test_file], cppcheck_exe=exe)
+    assert 'Did not find addon misra.py' in stdout
+
+    # Execute misra
     _, stdout, _ = cppcheck(['--enable=style', '--premium=misra-c-2012', test_file], cppcheck_exe=exe)
     assert 'misra.py' not in stdout # Did not find misra.py
     assert 'Checking' in stdout
