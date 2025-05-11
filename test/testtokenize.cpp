@@ -8081,7 +8081,7 @@ private:
         const Token *brace = inttok->next();
         ASSERT(brace);
         ASSERT_EQUALS(brace->astOperand1(), inttok);
-        ASSERT_EQUALS(brace->astOperand2(), (const Token*) nullptr);
+        ASSERT_EQUALS(brace->astOperand2(), static_cast<const Token*>(nullptr));
     }
 
     void cpp20_default_bitfield_initializer() {
