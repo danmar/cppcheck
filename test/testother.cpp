@@ -306,6 +306,8 @@ private:
 
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
+
+        TEST_CASE(ternarySameValuePlatformDependent); // #13773
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -13092,6 +13094,19 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2:13] -> [test.cpp:3:11]: (style) The comparison 'i > +1' is always false. [knownConditionTrueFalse]\n",
             errout_str());
+    }
+
+    void ternarySameValuePlatformDependent() // #13773
+    {
+        check("typedef float _Complex complex_f32;\n"
+              "typedef struct {\n"
+              "    uint16_t real;\n"
+              "    uint16_t imag;\n"
+              "} packed_complex;\n"
+              "void foo(void) {\n"
+              "    b = a ? sizeof(packed_complex) : sizeof(complex_f32);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
