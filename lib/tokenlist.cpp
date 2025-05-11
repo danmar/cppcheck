@@ -834,6 +834,10 @@ static void compileTerm(Token *&tok, AST_state& state)
                     if (precedes(tok,end)) // typically for something like `MACRO(x, { if (c) { ... } })`, where end is the last curly, and tok is the open curly for the if
                         tok = end;
                 }
+            } else if (tok->next() == end) {
+                tok->astOperand1(state.op.top());
+                state.op.pop();
+                tok = tok->next();
             } else
                 compileBinOp(tok, state, compileExpression);
             if (tok != end)
