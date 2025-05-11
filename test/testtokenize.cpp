@@ -456,6 +456,8 @@ private:
         TEST_CASE(simplifyIfSwitchForInit4);
         TEST_CASE(simplifyIfSwitchForInit5);
 
+        TEST_CASE(newPlacementArgsCppInit); // #13775
+
         TEST_CASE(cpp20_default_bitfield_initializer);
 
         TEST_CASE(cpp11init);
@@ -8068,6 +8070,18 @@ private:
         const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         const char code[] = "void f() { if ([] { ; }) {} }";
         ASSERT_EQUALS("void f ( ) { if ( [ ] { ; } ) { } }", tokenizeAndStringify(code, settings));
+    }
+
+    void newPlacementArgsCppInit() { // #13775
+        const char code[] = "::new(nullptr) int {};";
+        SimpleTokenizer tokenizer(settings1, *this);
+        tokenizer.tokenize(code);
+        const Token *inttok = Token::findsimplematch(tokenizer.tokens(), "int");
+        ASSERT(inttok);
+        const Token *brace = inttok->next();
+        ASSERT(brace);
+        ASSERT_EQUALS(brace->astOperand1(), inttok);
+        ASSERT_EQUALS(brace->astOperand2(), (const Token*) nullptr);
     }
 
     void cpp20_default_bitfield_initializer() {
