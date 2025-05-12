@@ -3486,22 +3486,23 @@ class MisraChecker:
                         tok = tok.next
 
     def misra_17_3(self, cfg):
+        # Check for Clang warnings related to implicit function declarations
         for w in cfg.clang_warnings:
             if w['message'].endswith('[-Wimplicit-function-declaration]'):
                 self.reportError(cppcheckdata.Location(w), 17, 3)
+
+        # Additional check for implicit function calls in expressions
         for token in cfg.tokenlist:
-            if token.str not in ["while", "if"]:
-                continue
-            if token.next.str != "(":
-                continue
-            tok = token.next
-            end_token = token.next.link
-            while tok != end_token:
-                if tok.isName and tok.function is None and tok.valueType is None and tok.next.str == "(" and \
-                        tok.next.valueType is None and not isKeyword(tok.str, cfg.standards.c) and not isStdLibId(tok.str, cfg.standards.c):
-                    self.reportError(tok, 17, 3)
-                    break
-                tok = tok.next
+            if token.isName and token.function is None and token.valueType is None:
+                if token.next and token.next.str == "(" and token.next.valueType is None:
+                    if token.next.next.str == "*" and \
+                        token.next.next.next.isName and token.next.next.next.valueType is not None and \
+                        token.next.next.next.valueType.pointer > 0 :
+                        # this is a function pointer definition the tokens look like this int16_t ( * misra_8_2_p_a ) ()
+                        # and the int16_t causes the detection as the '(' follows
+                        continue
+                    if not isKeyword(token.str,cfg.standards.c) and not isStdLibId(token.str,cfg.standards.c):
+                        self.reportError(token, 17, 3)
 
     def misra_config(self, data):
         for var in data.variables:
