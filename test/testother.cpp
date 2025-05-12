@@ -307,8 +307,7 @@ private:
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
 
-        TEST_CASE(ternarySameValuePlatformDependent1); // #13773
-        TEST_CASE(ternarySameValuePlatformDependent2); // #23773
+        TEST_CASE(ternarySameValueSizeof); // #13773
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -13097,16 +13096,13 @@ private:
             errout_str());
     }
 
-    void ternarySameValuePlatformDependent1() // #13773
+    void ternarySameValueSizeof() // #13773
     {
         check("void f(void) {\n"
               "    b = a ? sizeof(unsigned int) : sizeof(uint32_t);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
-    }
 
-    void ternarySameValuePlatformDependent2() // #13773
-    {
         check("void f(void) {\n"
               "    b = a ? sizeof(uint32_t) : sizeof(uint32_t);\n"
               "}\n");
