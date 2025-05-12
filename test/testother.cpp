@@ -307,7 +307,8 @@ private:
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
 
-        TEST_CASE(ternarySameValuePlatformDependent); // #13773
+        TEST_CASE(ternarySameValuePlatformDependent1); // #13773
+        TEST_CASE(ternarySameValuePlatformDependent2); // #23773
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -13096,17 +13097,20 @@ private:
             errout_str());
     }
 
-    void ternarySameValuePlatformDependent() // #13773
+    void ternarySameValuePlatformDependent1() // #13773
     {
-        check("typedef float _Complex complex_f32;\n"
-              "typedef struct {\n"
-              "    uint16_t real;\n"
-              "    uint16_t imag;\n"
-              "} packed_complex;\n"
-              "void foo(void) {\n"
-              "    b = a ? sizeof(packed_complex) : sizeof(complex_f32);\n"
+        check("void f(void) {\n"
+              "    b = a ? sizeof(unsigned int) : sizeof(uint32_t);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void ternarySameValuePlatformDependent2() // #13773
+    {
+        check("void f(void) {\n"
+              "    b = a ? sizeof(uint32_t) : sizeof(uint32_t);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:30]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
     }
 };
 
