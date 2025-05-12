@@ -204,6 +204,8 @@ private:
         TEST_CASE(exitcodeSuppressionsOld);
         TEST_CASE(exitcodeSuppressions);
         TEST_CASE(exitcodeSuppressionsNoFile);
+        TEST_CASE(fileFilterFileWithDetailsSimplifiedPath);
+        TEST_CASE(fileFilterFileWithDetailsCase);
         TEST_CASE(fileFilterStdin);
         TEST_CASE(fileList);
         TEST_CASE(fileListNoFile);
@@ -1183,6 +1185,26 @@ private:
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", logger->str());
+    }
+
+    void fileFilterFileWithDetailsSimplifiedPath() const {
+        // match against simplified path
+        const std::vector<std::string> fileFilters{"m1.c"};
+        const std::list<FileWithDetails> filesResolved{ FileWithDetails("./m1.c", Standards::Language::C, 123) };
+        const std::list<FileWithDetails> files = CmdLineParser::filterFiles(fileFilters, filesResolved);
+        ASSERT_EQUALS(1U, files.size());
+    }
+
+    void fileFilterFileWithDetailsCase() {
+        // in windows, paths are case insensitive
+        const std::vector<std::string> fileFilters{"m1.c"};
+        const std::list<FileWithDetails> filesResolved{ FileWithDetails("M1.C", Standards::Language::C, 123) };
+        const std::list<FileWithDetails> files = CmdLineParser::filterFiles(fileFilters, filesResolved);
+#ifdef _WIN32
+        ASSERT_EQUALS(1U, files.size());
+#else
+        ASSERT_EQUALS(0U, files.size());
+#endif
     }
 
     void fileFilterStdin() {

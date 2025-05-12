@@ -24,4 +24,5 @@ Other:
 - The minimum supported Python version has been bumped to 3.7.
 - CMake will now unconditionally use Boost.Containers if available. If CMake option `USE_BOOST` is specified it will now bail out when it is not found.
 - Fix checking a project that contains several project file entries for the same file.
+- Fixed --file-filter matching of looked up files in provided paths.
 -

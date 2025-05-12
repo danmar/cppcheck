@@ -51,7 +51,7 @@ bool isValidGlobPattern(const std::string& pattern)
     return true;
 }
 
-bool matchglob(const std::string& pattern, const std::string& name)
+bool matchglob(const std::string& pattern, const std::string& name, bool caseInsensitive)
 {
     const char* p = pattern.c_str();
     const char* n = name.c_str();
@@ -82,6 +82,8 @@ bool matchglob(const std::string& pattern, const std::string& name)
             default:
                 // Non-wildcard characters match literally
                 if (*n == *p) {
+                    n++;
+                } else if (caseInsensitive && tolower(*n) == tolower(*p)) {
                     n++;
                 } else if (*n == '\\' && *p == '/') {
                     n++;
@@ -115,9 +117,9 @@ bool matchglob(const std::string& pattern, const std::string& name)
     }
 }
 
-bool matchglobs(const std::vector<std::string> &patterns, const std::string &name) {
-    return std::any_of(begin(patterns), end(patterns), [&name](const std::string &pattern) {
-        return matchglob(pattern, name);
+bool matchglobs(const std::vector<std::string> &patterns, const std::string &name, bool caseInsensitive) {
+    return std::any_of(begin(patterns), end(patterns), [&name, caseInsensitive](const std::string &pattern) {
+        return matchglob(pattern, name, caseInsensitive);
     });
 }
 
