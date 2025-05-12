@@ -1168,8 +1168,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
             mSettings.premiumArgs += "--" + p;
-            if (p == "misra-c-2012" || p == "misra-c-2023")
-                mSettings.addons.emplace("misra");
             if (startsWith(p, "autosar") || startsWith(p, "cert") || startsWith(p, "misra")) {
                 // All checkers related to the coding standard should be enabled. The coding standards
                 // do not all undefined behavior or portability issues.

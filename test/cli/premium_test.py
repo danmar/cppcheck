@@ -114,3 +114,19 @@ def test_build_dir_hash_cppcheck_product(tmpdir):
     assert hash1 != hash2
 
 
+def test_misra_py(tmpdir):
+    # 13831 - do not execute misra.py when --premium=misra-c-2012 is used
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('void foo();\n')
+
+    exe = __copy_cppcheck_premium(tmpdir)
+
+    # ensure that misra.py is not available:
+    _, stdout, _ = cppcheck(['--enable=style', '--addon=misra', test_file], cppcheck_exe=exe)
+    assert 'Did not find addon misra.py' in stdout
+
+    # Execute misra
+    _, stdout, _ = cppcheck(['--enable=style', '--premium=misra-c-2012', test_file], cppcheck_exe=exe)
+    assert 'misra.py' not in stdout # Did not find misra.py
+    assert 'Checking' in stdout
