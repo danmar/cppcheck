@@ -991,7 +991,6 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
     mkdir(p, 0);
     getcwd(0, 0);
     // cppcheck-suppress nullPointer
-    // cppcheck-suppress readdirCalled
     readdir(0);
     // cppcheck-suppress nullPointer
     // cppcheck-suppress utimeCalled
