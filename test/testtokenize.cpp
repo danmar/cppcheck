@@ -80,6 +80,7 @@ private:
         TEST_CASE(tokenize38);  // #9569
         TEST_CASE(tokenize39);  // #9771
         TEST_CASE(tokenize40);  // #13181
+        TEST_CASE(tokenize41);  // #13847
 
         TEST_CASE(validate);
 
@@ -858,6 +859,18 @@ private:
                             "}\n";
         (void) tokenizeAndStringify(code);
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void tokenize41() { // #13847
+        const char code[] = "int main() {\n"
+                            "     using x::a;\n"
+                            "     b = a + 2;\n"
+                            "}\n";
+        ASSERT_EQUALS("int main ( ) {\n"
+                      "\n"
+                      "b = x :: a + 2 ;\n"
+                      "}", tokenizeAndStringify(code));
+        (void)errout_str();
     }
 
     void validate() {

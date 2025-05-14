@@ -249,8 +249,8 @@ private:
         TEST_CASE(simplifyTypedefTokenColumn3);
 
         TEST_CASE(typedefInfo1);
-
         TEST_CASE(typedefInfo2);
+        TEST_CASE(typedefInfo3);
     }
 
     struct TokOptions
@@ -4561,6 +4561,14 @@ private:
                       "    <info name=\"int16_t\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\" isFunctionPointer=\"0\"/>\n"
                       "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"20\" used=\"0\" isFunctionPointer=\"1\"/>\n"
                       "  </typedef-info>\n",xml);
+    }
+
+    void typedefInfo3() {
+        const std::string xml = dumpTypedefInfo("int main() {\n"
+                                                "     using x::a;\n"
+                                                "     b = a + 2;\n"
+                                                "}\n");
+        ASSERT_EQUALS("",xml);
     }
 };
 
