@@ -6853,9 +6853,10 @@ private:
 
     void astrequires()
     {
-        ASSERT_EQUALS("requires{ac::||= ac::", testAst("template <class a> concept b = requires { a::c; } || a::c;"));
-        ASSERT_EQUALS("requires{ac::||= a{b{||",
+        ASSERT_EQUALS("brequires{ac::||= ac::", testAst("template <class a> concept b = requires { a::c; } || a::c;"));
+        ASSERT_EQUALS("crequires{ac::||= a{b{||",
                       testAst("template <class a, class b> concept c = requires { a{} || b{}; } || a::c;"));
+        ASSERT_EQUALS("ifrequires{(", testAst("if (requires { true; }) {}")); // #13308
     }
 
     void astcast() {
