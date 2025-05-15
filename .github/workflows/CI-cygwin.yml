@@ -24,7 +24,7 @@ jobs:
   build_cygwin:
     strategy:
       matrix:
-        os: [windows-2022]
+        os: [windows-2022, windows-2025]
         platform: [x86_64]
         include:
           - platform: 'x86_64'
