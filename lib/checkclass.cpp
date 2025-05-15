@@ -3380,6 +3380,8 @@ void CheckClass::checkReturnByReference()
                 continue;
             if (func.isOperator())
                 continue;
+            if (func.functionPointerUsage)
+                continue;
             if (const Library::Container* container = mSettings->library.detectContainer(func.retDef))
                 if (container->view)
                     continue;

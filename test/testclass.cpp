@@ -9240,6 +9240,15 @@ private:
                                "};\n");
         ASSERT_EQUALS("[test.cpp:10:17]: (performance) Function 'get2()' should return member 'str' by const reference. [returnByReference]\n",
                       errout_str());
+
+        checkReturnByReference("struct S {\n" // #13845
+                               "    std::string m;\n"
+                               "    std::string get() { return m; }\n"
+                               "};\n"
+                               "std::string f(std::optional<S> o) {\n"
+                               "    return o.transform(&S::get).value_or(\"\");\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
