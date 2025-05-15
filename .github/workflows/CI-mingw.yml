@@ -24,9 +24,8 @@ jobs:
   build_mingw:
     strategy:
       matrix:
-        # the MinGW installation in windows-2019 is supposed to be 8.1 but it is 12.2
         # the MinGW installation in windows-2022 is not including all necessary packages by default, so just use the older image instead - package versions are he same
-        os: [windows-2019]
+        os: [windows-2022]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
