@@ -24,8 +24,8 @@ jobs:
   build_mingw:
     strategy:
       matrix:
-        # the MinGW installation in windows-2022 is not including all necessary packages by default, so just use the older image instead - package versions are he same
-        os: [windows-2022]
+        # only use the latest windows-* as the installed toolchain is identical
+        os: [windows-2025]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
