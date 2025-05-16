@@ -8929,10 +8929,10 @@ private:
                               "  static C *mInstance;\n"
                               "  void hello() {}\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:38]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:13]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:3:38]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         checkThisUseAfterFree("class C {\n"
@@ -8942,10 +8942,10 @@ private:
                               "  static std::shared_ptr<C> mInstance;\n"
                               "  void hello() {}\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:39]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:29]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:3:39]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         checkThisUseAfterFree("class C {\n"
@@ -8956,10 +8956,10 @@ private:
                               "  void hello();\n"
                               "  void reset() { mInstance.reset(); }\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:7:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:29]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:29]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:7:18]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:3:29]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         // Use member..
@@ -8970,10 +8970,10 @@ private:
                               "  static C *self;\n"
                               "  int x;\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:33]: warning: Using member 'x' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:13]: note: Assuming 'self' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'self', invalidating 'this'\n"
+                      "[test.cpp:3:33]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         checkThisUseAfterFree("class C {\n"
@@ -8983,10 +8983,10 @@ private:
                               "  static C *self;\n"
                               "  std::map<int,int> x;\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:33]: warning: Using member 'x' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:13]: note: Assuming 'self' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'self', invalidating 'this'\n"
+                      "[test.cpp:3:33]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         // Assign 'shared_from_this()' to non-static smart pointer
@@ -8998,10 +8998,10 @@ private:
                               "  std::shared_ptr<C> mInstance;\n"
                               "  void hello() {}\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:4:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:6:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:4:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:4:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:4:39]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:6:22]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:4:20]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:4:39]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         // Avoid FP..

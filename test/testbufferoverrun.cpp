@@ -3505,9 +3505,9 @@ private:
               "    char *p = malloc(10);\n"
               "    memset(p, 0, 20);\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:error:Buffer is accessed out of bounds: p\n"
-                      "test.cpp:2:note:Assign p, buffer with size 10\n"
-                      "test.cpp:3:note:Buffer overrun\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:12]: error: Buffer is accessed out of bounds: p [bufferAccessOutOfBounds]\n"
+                      "[test.cpp:2:13]: note: Assign p, buffer with size 10\n"
+                      "[test.cpp:3:12]: note: Buffer overrun\n", errout_str());
 
         settings0 = settingsOld;
     }
@@ -3557,33 +3557,33 @@ private:
               "    char a[2];\n"
               "    f(a);\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
-                      "test.cpp:4:note:Function 'f' is called\n"
-                      "test.cpp:1:note:Declaration of 1st function argument.\n"
-                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
-                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: warning: Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument [argumentSize]\n"
+                      "[test.cpp:4:5]: note: Function 'f' is called\n"
+                      "[test.cpp:1:13]: note: Declaration of 1st function argument.\n"
+                      "[test.cpp:3:10]: note: Passing buffer 'a' to function that is declared here\n"
+                      "[test.cpp:4:5]: note: Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout_str());
 
         check("void f(float a[10][3]);\n"
               "void g() {\n"
               "    float a[2][3];\n"
               "    f(a);\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
-                      "test.cpp:4:note:Function 'f' is called\n"
-                      "test.cpp:1:note:Declaration of 1st function argument.\n"
-                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
-                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: warning: Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument [argumentSize]\n"
+                      "[test.cpp:4:5]: note: Function 'f' is called\n"
+                      "[test.cpp:1:14]: note: Declaration of 1st function argument.\n"
+                      "[test.cpp:3:11]: note: Passing buffer 'a' to function that is declared here\n"
+                      "[test.cpp:4:5]: note: Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout_str());
 
         check("void f(int a[20]);\n"
               "void g() {\n"
               "    int a[2];\n"
               "    f(a);\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:warning:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
-                      "test.cpp:4:note:Function 'f' is called\n"
-                      "test.cpp:1:note:Declaration of 1st function argument.\n"
-                      "test.cpp:3:note:Passing buffer 'a' to function that is declared here\n"
-                      "test.cpp:4:note:Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: warning: Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument [argumentSize]\n"
+                      "[test.cpp:4:5]: note: Function 'f' is called\n"
+                      "[test.cpp:1:12]: note: Declaration of 1st function argument.\n"
+                      "[test.cpp:3:9]: note: Passing buffer 'a' to function that is declared here\n"
+                      "[test.cpp:4:5]: note: Buffer 'a' is too small, the function 'f' expects a bigger buffer in 1st argument\n", errout_str());
 
         check("void f(int a[]) {\n"
               "  switch (2) {\n"
@@ -3613,11 +3613,11 @@ private:
               "    f(b);\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:8:warning:Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
-                      "test.cpp:8:note:Function 'f' is called\n"
-                      "test.cpp:1:note:Declaration of 1st function argument.\n"
-                      "test.cpp:7:note:Passing buffer 'b' to function that is declared here\n"
-                      "test.cpp:8:note:Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n",
+        ASSERT_EQUALS("[test.cpp:8:5]: warning: Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument [argumentSize]\n"
+                      "[test.cpp:8:5]: note: Function 'f' is called\n"
+                      "[test.cpp:1:12]: note: Declaration of 1st function argument.\n"
+                      "[test.cpp:7:9]: note: Passing buffer 'b' to function that is declared here\n"
+                      "[test.cpp:8:5]: note: Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n",
                       errout_str());
     }
 

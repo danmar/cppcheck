@@ -233,40 +233,40 @@ private:
                     "            bar(v[2], v[3]) )\n"                          // v[3] is accessed
                     "    {;}\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:9:warning:Either the condition 'v.size()>=2' is redundant or size of 'v' can be 2. Expression 'v[2]' causes access out of bounds.\n"
-                      "test.cpp:8:note:condition 'v.size()>=2'\n"
-                      "test.cpp:9:note:Access out of bounds\n"
-                      "test.cpp:9:warning:Either the condition 'v.size()>=2' is redundant or size of 'v' can be 2. Expression 'v[3]' causes access out of bounds.\n"
-                      "test.cpp:8:note:condition 'v.size()>=2'\n"
-                      "test.cpp:9:note:Access out of bounds\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:9:18]: warning: Either the condition 'v.size()>=2' is redundant or size of 'v' can be 2. Expression 'v[2]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:8:17]: note: condition 'v.size()>=2'\n"
+                      "[test.cpp:9:18]: note: Access out of bounds\n"
+                      "[test.cpp:9:24]: warning: Either the condition 'v.size()>=2' is redundant or size of 'v' can be 2. Expression 'v[3]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:8:17]: note: condition 'v.size()>=2'\n"
+                      "[test.cpp:9:24]: note: Access out of bounds\n", errout_str());
 
         checkNormal("void f() {\n"
                     "  std::string s;\n"
                     "  s[10] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's[10]' because 's' is empty.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:4]: error: Out of bounds access in expression 's[10]' because 's' is empty. [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f() {\n"
                     "  std::string s = \"abcd\";\n"
                     "  s[10] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 's[10]', if 's' size is 4 and '10' is 10\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:4]: error: Out of bounds access in 's[10]', if 's' size is 4 and '10' is 10 [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f(std::vector<int> v) {\n"
                     "    v.front();\n"
                     "    if (v.empty()) {}\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:2:warning:Either the condition 'v.empty()' is redundant or expression 'v.front()' causes access out of bounds.\n"
-                      "test.cpp:3:note:condition 'v.empty()'\n"
-                      "test.cpp:2:note:Access out of bounds\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:12]: warning: Either the condition 'v.empty()' is redundant or expression 'v.front()' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:3:16]: note: condition 'v.empty()'\n"
+                      "[test.cpp:2:12]: note: Access out of bounds\n", errout_str());
 
         checkNormal("void f(std::vector<int> v) {\n"
                     "    if (v.size() == 3) {}\n"
                     "    v[16] = 0;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'v.size()==3' is redundant or size of 'v' can be 3. Expression 'v[16]' causes access out of bounds.\n"
-                      "test.cpp:2:note:condition 'v.size()==3'\n"
-                      "test.cpp:3:note:Access out of bounds\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:6]: warning: Either the condition 'v.size()==3' is redundant or size of 'v' can be 3. Expression 'v[16]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:2:18]: note: condition 'v.size()==3'\n"
+                      "[test.cpp:3:6]: note: Access out of bounds\n", errout_str());
 
         checkNormal("void f(std::vector<int> v) {\n"
                     "    int i = 16;\n"
@@ -274,9 +274,9 @@ private:
                     "        v[i] = 0;\n"
                     "    }\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:4:warning:Either the condition 'v.size()==3' is redundant or size of 'v' can be 3. Expression 'v[i]' causes access out of bounds.\n"
-                      "test.cpp:3:note:condition 'v.size()==3'\n"
-                      "test.cpp:4:note:Access out of bounds\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: warning: Either the condition 'v.size()==3' is redundant or size of 'v' can be 3. Expression 'v[i]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:3:18]: note: condition 'v.size()==3'\n"
+                      "[test.cpp:4:10]: note: Access out of bounds\n", errout_str());
 
         checkNormal("void f(std::vector<int> v, int i) {\n"
                     "    if (v.size() == 3 || i == 16) {}\n"
@@ -294,9 +294,9 @@ private:
                     "        s[2] = 0;\n"
                     "    }\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 's.size()==1' is redundant or size of 's' can be 1. Expression 's[2]' causes access out of bounds.\n"
-                      "test.cpp:2:note:condition 's.size()==1'\n"
-                      "test.cpp:3:note:Access out of bounds\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: warning: Either the condition 's.size()==1' is redundant or size of 's' can be 1. Expression 's[2]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:2:18]: note: condition 's.size()==1'\n"
+                      "[test.cpp:3:10]: note: Access out of bounds\n", errout_str());
 
         // Do not crash
         checkNormal("void a() {\n"
@@ -323,20 +323,20 @@ private:
                     "  x = s.begin() + 1;\n"
                     "}");
         ASSERT_EQUALS(
-            "test.cpp:3:error:Out of bounds access in expression 's.begin()+1' because 's' is empty.\n"
-            "test.cpp:3:error:Out of bounds access in expression 's.begin()+1' because 's' is empty.\n",   // duplicate
+            "[test.cpp:3:17]: error: Out of bounds access in expression 's.begin()+1' because 's' is empty. [containerOutOfBounds]\n"
+            "[test.cpp:3:17]: error: Out of bounds access in expression 's.begin()+1' because 's' is empty. [containerOutOfBounds]\n",   // duplicate
             errout_str());
 
         checkNormal("void f(int x) {\n"
                     "  std::string s;\n"
                     "  auto it = s.begin() + x;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:23]: error: Out of bounds access in expression 's.begin()+x' because 's' is empty and 'x' may be non-zero. [containerOutOfBounds]\n", errout_str());
 
         checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[42]; }\n"
                     "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[42]; }");
-        ASSERT_EQUALS("test.cpp:1:error:Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42\n"
-                      "test.cpp:2:error:Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:54]: error: Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42 [containerOutOfBounds]\n"
+                      "[test.cpp:2:60]: error: Out of bounds access in 's[42]', if 's' size is 6 and '42' is 42 [containerOutOfBounds]\n", errout_str());
 
         checkNormal("char fstr1(){const std::string s = \"<a><b>\"; return s[1]; }\n"
                     "wchar_t fwstr1(){const std::wstring s = L\"<a><b>\"; return s[1]; }");
@@ -347,7 +347,7 @@ private:
                     "    std::vector<int> * pv = &v;\n"
                     "    return (*pv)[42];\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv)[42]' because '*pv' is empty.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:17]: error: Out of bounds access in expression '(*pv)[42]' because '*pv' is empty. [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f() {\n"
                     "  std::string s;\n"
@@ -362,7 +362,7 @@ private:
                     "    if(b) ++x;\n"
                     "    return s[x];\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:5:error:Out of bounds access in 's[x]', if 's' size is 6 and 'x' is 6\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:13]: error: Out of bounds access in 's[x]', if 's' size is 6 and 'x' is 6 [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f() {\n"
                     "    static const int N = 4;\n"
@@ -386,7 +386,7 @@ private:
                     "    if(v.at(b?42:0)) {}\n"
                     "}\n");
         ASSERT_EQUALS(
-            "test.cpp:3:error:Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty.\n",
+            "[test.cpp:3:12]: error: Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty. [containerOutOfBounds]\n",
             errout_str());
 
         checkNormal("void f(std::vector<int> v, bool b){\n"
@@ -394,9 +394,9 @@ private:
                     "        if(v.at(b?42:0)) {}\n"
                     "}\n");
         ASSERT_EQUALS(
-            "test.cpp:3:warning:Either the condition 'v.size()==1' is redundant or size of 'v' can be 1. Expression 'v.at(b?42:0)' causes access out of bounds.\n"
-            "test.cpp:2:note:condition 'v.size()==1'\n"
-            "test.cpp:3:note:Access out of bounds\n",
+            "[test.cpp:3:16]: warning: Either the condition 'v.size()==1' is redundant or size of 'v' can be 1. Expression 'v.at(b?42:0)' causes access out of bounds. [containerOutOfBounds]\n"
+            "[test.cpp:2:18]: note: condition 'v.size()==1'\n"
+            "[test.cpp:3:16]: note: Access out of bounds\n",
             errout_str());
 
         check("struct T {\n"
@@ -524,7 +524,7 @@ private:
                     "        v.resize(entries);\n"
                     "    v[0] = 1;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:5:error:Out of bounds access in expression 'v[0]' because 'v' is empty.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:6]: error: Out of bounds access in expression 'v[0]' because 'v' is empty. [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f(size_t entries) {\n"
                     "    if (entries < 2) return;\n"
@@ -559,7 +559,7 @@ private:
                     "    std::vector<int> * pv = &v;\n"
                     "    return (*pv).at(42);\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv).at(42)' because '*pv' is empty.\n",
+        ASSERT_EQUALS("[test.cpp:4:20]: error: Out of bounds access in expression '(*pv).at(42)' because '*pv' is empty. [containerOutOfBounds]\n",
                       errout_str());
 
         checkNormal("std::string f(const char* DirName) {\n"
@@ -581,7 +581,7 @@ private:
                     "      return true;\n"
                     "  return false;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:5:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:3]: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]\n", errout_str());
 
         checkNormal("std::vector<int> range(int n);\n"
                     "bool f(bool b) {\n"
@@ -594,7 +594,7 @@ private:
                     "      return true;\n"
                     "  return false;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:7:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:3]: style: Consider using std::any_of algorithm instead of a raw loop. [useStlAlgorithm]\n", errout_str());
 
         checkNormal("bool g();\n"
                     "int f(int x) {\n"
@@ -607,7 +607,7 @@ private:
                     "            return i;\n"
                     "    return 0;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:8:style:Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:0]: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]\n", errout_str());
 
         checkNormal("bool g();\n"
                     "int f(int x) {\n"
@@ -620,7 +620,7 @@ private:
                     "            return i;\n"
                     "    return 0;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:8:style:Consider using std::find_if algorithm instead of a raw loop.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:0]: style: Consider using std::find_if algorithm instead of a raw loop. [useStlAlgorithm]\n", errout_str());
 
         checkNormal("bool g();\n"
                     "void f(int x) {\n"
@@ -637,9 +637,9 @@ private:
         checkNormal("void foo(const std::vector<int> &v) {\n"
                     "    if(v.size() >=1 && v[0] == 4 && v[1] == 2){}\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:2:warning:Either the condition 'v.size()>=1' is redundant or size of 'v' can be 1. Expression 'v[1]' causes access out of bounds.\n"
-                      "test.cpp:2:note:condition 'v.size()>=1'\n"
-                      "test.cpp:2:note:Access out of bounds\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:38]: warning: Either the condition 'v.size()>=1' is redundant or size of 'v' can be 1. Expression 'v[1]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:2:17]: note: condition 'v.size()>=1'\n"
+                      "[test.cpp:2:38]: note: Access out of bounds\n", errout_str());
 
         checkNormal("int f(int x, int y) {\n"
                     "    std::vector<int> a = {0,1,2};\n"
@@ -650,9 +650,9 @@ private:
                     "    return y;\n"
                     "}\n");
         ASSERT_EQUALS(
-            "test.cpp:6:warning:Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' causes access out of bounds.\n"
-            "test.cpp:3:note:condition 'x<2'\n"
-            "test.cpp:6:note:Access out of bounds\n",
+            "[test.cpp:6:14]: warning: Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' causes access out of bounds. [containerOutOfBounds]\n"
+            "[test.cpp:3:9]: note: condition 'x<2'\n"
+            "[test.cpp:6:14]: note: Access out of bounds\n",
             errout_str());
 
         checkNormal("int f(std::vector<int> v) {\n"
@@ -701,12 +701,12 @@ private:
                     "        if (v[i]) {}\n"
                     "    }\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'i<=(int)v.size()' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds.\n"
-                      "test.cpp:2:note:condition 'i<=(int)v.size()'\n"
-                      "test.cpp:3:note:Access out of bounds\n"
-                      "test.cpp:6:warning:Either the condition 'i<=static_cast<int>(v.size())' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds.\n"
-                      "test.cpp:5:note:condition 'i<=static_cast<int>(v.size())'\n"
-                      "test.cpp:6:note:Access out of bounds\n",
+        ASSERT_EQUALS("[test.cpp:3:14]: warning: Either the condition 'i<=(int)v.size()' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:2:11]: note: condition 'i<=(int)v.size()'\n"
+                      "[test.cpp:3:14]: note: Access out of bounds\n"
+                      "[test.cpp:6:14]: warning: Either the condition 'i<=static_cast<int>(v.size())' is redundant or 'i' can have the value v.size(). Expression 'v[i]' causes access out of bounds. [containerOutOfBounds]\n"
+                      "[test.cpp:5:11]: note: condition 'i<=static_cast<int>(v.size())'\n"
+                      "[test.cpp:6:14]: note: Access out of bounds\n",
                       errout_str());
 
         check("template<class Iterator>\n"
@@ -719,7 +719,7 @@ private:
               "  b(buf.begin());\n"
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 'd+c.length()' because 'buf' is empty.\n",
+        ASSERT_EQUALS("[test.cpp:4:5]: error: Out of bounds access in expression 'd+c.length()' because 'buf' is empty. [containerOutOfBounds]\n",
                       errout_str());
 
         check("template<class Iterator>\n"
@@ -739,9 +739,9 @@ private:
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS(
-            "test.cpp:2:warning:Either the condition 'v.empty()' is redundant or expression 'v.back()' causes access out of bounds.\n"
-            "test.cpp:2:note:condition 'v.empty()'\n"
-            "test.cpp:2:note:Access out of bounds\n",
+            "[test.cpp:2:36]: warning: Either the condition 'v.empty()' is redundant or expression 'v.back()' causes access out of bounds. [containerOutOfBounds]\n"
+            "[test.cpp:2:20]: note: condition 'v.empty()'\n"
+            "[test.cpp:2:36]: note: Access out of bounds\n",
             errout_str());
 
         check("std::vector<int> g() {\n" // #10779
@@ -750,7 +750,7 @@ private:
               "        v[i] = 42;\n"
               "    return v;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10\n",
+        ASSERT_EQUALS("[test.cpp:4:10]: error: Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10 [containerOutOfBounds]\n",
                       errout_str());
 
         check("void f() {\n"
@@ -758,14 +758,14 @@ private:
               "    std::vector <int> v(s);\n"
               "    v[100] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 2 and '100' is 100\n",
+        ASSERT_EQUALS("[test.cpp:4:6]: error: Out of bounds access in 'v[100]', if 'v' size is 2 and '100' is 100 [containerOutOfBounds]\n",
                       errout_str());
 
         check("void f() {\n"
               "    std::vector <int> v({ 1, 2, 3 });\n"
               "    v[100] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+        ASSERT_EQUALS("[test.cpp:3:6]: error: Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100 [containerOutOfBounds]\n",
                       errout_str());
 
         check("void f() {\n"
@@ -773,7 +773,7 @@ private:
               "    std::vector<char> v(c, sizeof(c) + c);\n"
               "    v[100] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+        ASSERT_EQUALS("[test.cpp:4:6]: error: Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100 [containerOutOfBounds]\n",
                       errout_str());
 
         check("void f() {\n"
@@ -781,7 +781,7 @@ private:
               "    std::vector<char> v{ c, c + sizeof(c) };\n"
               "    v[100] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+        ASSERT_EQUALS("[test.cpp:4:6]: error: Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100 [containerOutOfBounds]\n",
                       errout_str());
 
         check("void f() {\n"
@@ -789,7 +789,7 @@ private:
               "    std::vector<int> v(i, i + sizeof(i) / 4);\n"
               "    v[100] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+        ASSERT_EQUALS("[test.cpp:4:6]: error: Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100 [containerOutOfBounds]\n",
                       errout_str());
 
         check("void f() {\n" // #6615
@@ -811,10 +811,10 @@ private:
               "    static constexpr std::array<int, 10> d = {};\n"
               "    d[10];\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'a[10]', if 'a' size is 10 and '10' is 10\n"
-                      "test.cpp:5:error:Out of bounds access in 'b[10]', if 'b' size is 10 and '10' is 10\n"
-                      "test.cpp:7:error:Out of bounds access in 'c[10]', if 'c' size is 10 and '10' is 10\n"
-                      "test.cpp:9:error:Out of bounds access in 'd[10]', if 'd' size is 10 and '10' is 10\n",
+        ASSERT_EQUALS("[test.cpp:3:6]: error: Out of bounds access in 'a[10]', if 'a' size is 10 and '10' is 10 [containerOutOfBounds]\n"
+                      "[test.cpp:5:6]: error: Out of bounds access in 'b[10]', if 'b' size is 10 and '10' is 10 [containerOutOfBounds]\n"
+                      "[test.cpp:7:6]: error: Out of bounds access in 'c[10]', if 'c' size is 10 and '10' is 10 [containerOutOfBounds]\n"
+                      "[test.cpp:9:6]: error: Out of bounds access in 'd[10]', if 'd' size is 10 and '10' is 10 [containerOutOfBounds]\n",
                       errout_str());
 
         check("struct test_fixed {\n"
@@ -825,7 +825,7 @@ private:
               "    test_fixed x = test_fixed();\n"
               "    x.index(10);\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+        ASSERT_EQUALS("[test.cpp:3:30]: error: Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10 [containerOutOfBounds]\n",
                       errout_str());
 
         check("struct test_constexpr {\n"
@@ -836,7 +836,7 @@ private:
               "    test_constexpr x = test_constexpr();\n"
               "    x.index(10);\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+        ASSERT_EQUALS("[test.cpp:3:30]: error: Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10 [containerOutOfBounds]\n",
                       errout_str());
 
         checkNormal("struct A {\n"
@@ -934,7 +934,7 @@ private:
                     "    std::string_view sv(s);\n"
                     "    return s[2];\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[2]' because 's' is empty.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:13]: error: Out of bounds access in expression 's[2]' because 's' is empty. [containerOutOfBounds]\n", errout_str());
 
         checkNormal("void f() {\n" // #12738
                     "    std::vector<double> v{ 0, 0.1 };\n"
@@ -961,27 +961,27 @@ private:
         checkNormal("void f(std::string s) {\n"
                     "  s[s.size()] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 's.size()' is out of bounds.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: error: Out of bounds access of s, index 's.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
 
         checkNormal("void f(std::string s) {\n"
                     "  s[s.size()+1] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 's.size()+1' is out of bounds.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: error: Out of bounds access of s, index 's.size()+1' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
 
         checkNormal("void f(std::string s) {\n"
                     "  s[1+s.size()] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index '1+s.size()' is out of bounds.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: error: Out of bounds access of s, index '1+s.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
 
         checkNormal("void f(std::string s) {\n"
                     "  s[x*s.size()] = 1;\n"
                     "}");
-        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 'x*s.size()' is out of bounds.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: error: Out of bounds access of s, index 'x*s.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
 
         checkNormal("bool f(std::string_view& sv) {\n" // #10031
                     "    return sv[sv.size()] == '\\0';\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of sv, index 'sv.size()' is out of bounds.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:12]: error: Out of bounds access of sv, index 'sv.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
     }
     void outOfBoundsIterator() {
         check("int f() {\n"
@@ -2662,10 +2662,10 @@ private:
               "void g(const std::vector<int>& w) {\n"
               "    f(-1, w);\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:5:warning:Array index -1 is out of bounds.\n"
-                      "test.cpp:8:note:Calling function 'f', 1st argument '-1' value is -1\n"
-                      "test.cpp:3:note:Assuming condition is false\n"
-                      "test.cpp:5:note:Negative array index\n",
+        ASSERT_EQUALS("[test.cpp:5:9]: warning: Array index -1 is out of bounds. [negativeContainerIndex]\n"
+                      "[test.cpp:8:8]: note: Calling function 'f', 1st argument '-1' value is -1\n"
+                      "[test.cpp:3:9]: note: Assuming condition is false\n"
+                      "[test.cpp:5:9]: note: Negative array index\n",
                       errout_str());
 
         settings = oldSettings;
