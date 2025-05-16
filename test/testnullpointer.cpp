@@ -4596,20 +4596,20 @@ private:
             "  int *p = 0;\n"
             "  f(p);\n"
             "}");
-        ASSERT_EQUALS("test.cpp:2:error:Null pointer dereference: fp\n"
-                      "test.cpp:5:note:Assignment 'p=0', assigned value is 0\n"
-                      "test.cpp:6:note:Calling function f, 1st argument is null\n"
-                      "test.cpp:2:note:Dereferencing argument fp that is null\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:10]: error: Null pointer dereference: fp [ctunullpointer]\n"
+                      "[test.cpp:5:12]: note: Assignment 'p=0', assigned value is 0\n"
+                      "[test.cpp:6:4]: note: Calling function f, 1st argument is null\n"
+                      "[test.cpp:2:10]: note: Dereferencing argument fp that is null\n", errout_str());
 
         ctu("void use(int *p) { a = *p + 3; }\n"
             "void call(int x, int *p) { x++; use(p); }\n"
             "int main() {\n"
             "  call(4,0);\n"
             "}");
-        ASSERT_EQUALS("test.cpp:1:error:Null pointer dereference: p\n"
-                      "test.cpp:4:note:Calling function call, 2nd argument is null\n"
-                      "test.cpp:2:note:Calling function use, 1st argument is null\n"
-                      "test.cpp:1:note:Dereferencing argument p that is null\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:25]: error: Null pointer dereference: p [ctunullpointer]\n"
+                      "[test.cpp:4:7]: note: Calling function call, 2nd argument is null\n"
+                      "[test.cpp:2:33]: note: Calling function use, 1st argument is null\n"
+                      "[test.cpp:1:25]: note: Dereferencing argument p that is null\n", errout_str());
 
         ctu("void dostuff(int *x, int *y) {\n"
             "  if (!var)\n"
@@ -4687,11 +4687,11 @@ private:
             "    int* q = (int*)malloc(4);\n"
             "    f(q);\n"
             "}\n");
-        ASSERT_EQUALS("test.cpp:2:warning:If memory allocation fails, then there is a possible null pointer dereference: p\n"
-                      "test.cpp:5:note:Assuming allocation function fails\n"
-                      "test.cpp:5:note:Assignment 'q=(int*)malloc(4)', assigned value is 0\n"
-                      "test.cpp:6:note:Calling function f, 1st argument is null\n"
-                      "test.cpp:2:note:Dereferencing argument p that is null\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:6]: warning: If memory allocation fails, then there is a possible null pointer dereference: p [ctunullpointerOutOfMemory]\n"
+                      "[test.cpp:5:26]: note: Assuming allocation function fails\n"
+                      "[test.cpp:5:14]: note: Assignment 'q=(int*)malloc(4)', assigned value is 0\n"
+                      "[test.cpp:6:6]: note: Calling function f, 1st argument is null\n"
+                      "[test.cpp:2:6]: note: Dereferencing argument p that is null\n", errout_str());
 
         // ctu: resource allocation fails
         ctu("void foo(FILE* f) {\n"
@@ -4701,11 +4701,11 @@ private:
             "    FILE* f = fopen(notexist,t);\n"
             "    foo(f);\n"
             "}\n");
-        ASSERT_EQUALS("test.cpp:2:warning:If resource allocation fails, then there is a possible null pointer dereference: f\n"
-                      "test.cpp:5:note:Assuming allocation function fails\n"
-                      "test.cpp:5:note:Assignment 'f=fopen(notexist,t)', assigned value is 0\n"
-                      "test.cpp:6:note:Calling function foo, 1st argument is null\n"
-                      "test.cpp:2:note:Dereferencing argument f that is null\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:13]: warning: If resource allocation fails, then there is a possible null pointer dereference: f [ctunullpointerOutOfResources]\n"
+                      "[test.cpp:5:20]: note: Assuming allocation function fails\n"
+                      "[test.cpp:5:20]: note: Assignment 'f=fopen(notexist,t)', assigned value is 0\n"
+                      "[test.cpp:6:8]: note: Calling function foo, 1st argument is null\n"
+                      "[test.cpp:2:13]: note: Dereferencing argument f that is null\n", errout_str());
     }
 };
 

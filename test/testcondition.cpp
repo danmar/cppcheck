@@ -789,19 +789,19 @@ private:
               "    if (x) {}\n"
               "    else if (!x) {}\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Expression is always true because 'else if' condition is opposite to previous condition at line 2.\n"
-                      "test.cpp:2:note:first condition\n"
-                      "test.cpp:3:note:else if condition is opposite to first condition\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:14]: style: Expression is always true because 'else if' condition is opposite to previous condition at line 2. [multiCondition]\n"
+                      "[test.cpp:2:9]: note: first condition\n"
+                      "[test.cpp:3:14]: note: else if condition is opposite to first condition\n", errout_str());
 
         check("void f(int x) {\n"
               "    int y = x;\n"
               "    if (x) {}\n"
               "    else if (!y) {}\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Expression is always true because 'else if' condition is opposite to previous condition at line 3.\n"
-                      "test.cpp:2:note:'y' is assigned value 'x' here.\n"
-                      "test.cpp:3:note:first condition\n"
-                      "test.cpp:4:note:else if condition is opposite to first condition\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:14]: style: Expression is always true because 'else if' condition is opposite to previous condition at line 3. [multiCondition]\n"
+                      "[test.cpp:2:13]: note: 'y' is assigned value 'x' here.\n"
+                      "[test.cpp:3:9]: note: first condition\n"
+                      "[test.cpp:4:14]: note: else if condition is opposite to first condition\n", errout_str());
     }
 
     void checkBadBitmaskCheck() {
@@ -6021,17 +6021,17 @@ private:
               "    if (x == y)\n"
               "        x = y;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
-                      "test.cpp:2:note:Condition 'x==y'\n"
-                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:11]: style: Assignment 'x=y' is redundant with condition 'x==y'. [duplicateConditionalAssign]\n"
+                      "[test.cpp:2:11]: note: Condition 'x==y'\n"
+                      "[test.cpp:3:11]: note: Assignment 'x=y' is redundant\n", errout_str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
               "        x = y;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:2:style:The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'.\n"
-                      "test.cpp:3:note:Assignment 'x=y'\n"
-                      "test.cpp:2:note:Condition 'x!=y' is redundant\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:11]: style: The statement 'if (x!=y) x=y' is logically equivalent to 'x=y'. [duplicateConditionalAssign]\n"
+                      "[test.cpp:3:11]: note: Assignment 'x=y'\n"
+                      "[test.cpp:2:11]: note: Condition 'x!=y' is redundant\n", errout_str());
 
         check("void f(int& x, int y) {\n"
               "    if (x == y)\n"
@@ -6039,9 +6039,9 @@ private:
               "    else\n"
               "        x = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Assignment 'x=y' is redundant with condition 'x==y'.\n"
-                      "test.cpp:2:note:Condition 'x==y'\n"
-                      "test.cpp:3:note:Assignment 'x=y' is redundant\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:11]: style: Assignment 'x=y' is redundant with condition 'x==y'. [duplicateConditionalAssign]\n"
+                      "[test.cpp:2:11]: note: Condition 'x==y'\n"
+                      "[test.cpp:3:11]: note: Assignment 'x=y' is redundant\n", errout_str());
 
         check("void f(int& x, int y) {\n"
               "    if (x != y)\n"
@@ -6091,18 +6091,18 @@ private:
               "    }\n"
               "    bool b;\n"
               "};\n");
-        ASSERT_EQUALS("test.cpp:4:style:The statement 'if (b) b=true' is redundant.\n"
-                      "test.cpp:4:note:Assignment 'b=true'\n"
-                      "test.cpp:4:note:Condition 'b' is redundant\n"
-                      "test.cpp:5:style:The statement 'if (b) b=false' is logically equivalent to 'b=false'.\n"
-                      "test.cpp:5:note:Assignment 'b=false'\n"
-                      "test.cpp:5:note:Condition 'b' is redundant\n"
-                      "test.cpp:6:style:The statement 'if (!b) b=true' is logically equivalent to 'b=true'.\n"
-                      "test.cpp:6:note:Assignment 'b=true'\n"
-                      "test.cpp:6:note:Condition '!b' is redundant\n"
-                      "test.cpp:7:style:The statement 'if (!b) b=false' is redundant.\n"
-                      "test.cpp:7:note:Assignment 'b=false'\n"
-                      "test.cpp:7:note:Condition '!b' is redundant\n",
+        ASSERT_EQUALS("[test.cpp:4:13]: style: The statement 'if (b) b=true' is redundant. [duplicateConditionalAssign]\n"
+                      "[test.cpp:4:18]: note: Assignment 'b=true'\n"
+                      "[test.cpp:4:13]: note: Condition 'b' is redundant\n"
+                      "[test.cpp:5:13]: style: The statement 'if (b) b=false' is logically equivalent to 'b=false'. [duplicateConditionalAssign]\n"
+                      "[test.cpp:5:18]: note: Assignment 'b=false'\n"
+                      "[test.cpp:5:13]: note: Condition 'b' is redundant\n"
+                      "[test.cpp:6:13]: style: The statement 'if (!b) b=true' is logically equivalent to 'b=true'. [duplicateConditionalAssign]\n"
+                      "[test.cpp:6:19]: note: Assignment 'b=true'\n"
+                      "[test.cpp:6:13]: note: Condition '!b' is redundant\n"
+                      "[test.cpp:7:13]: style: The statement 'if (!b) b=false' is redundant. [duplicateConditionalAssign]\n"
+                      "[test.cpp:7:19]: note: Assignment 'b=false'\n"
+                      "[test.cpp:7:13]: note: Condition '!b' is redundant\n",
                       errout_str());
     }
 
