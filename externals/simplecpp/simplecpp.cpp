@@ -3145,11 +3145,11 @@ static std::string openHeader(std::ifstream &f, const std::string &path)
     return "";
 }
 
-static std::string getRelativeFileName(const std::string &sourcefile, const std::string &header)
+static std::string getRelativeFileName(const std::string &baseFile, const std::string &header)
 {
     std::string path;
-    if (sourcefile.find_first_of("\\/") != std::string::npos)
-        path = sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header;
+    if (baseFile.find_first_of("\\/") != std::string::npos)
+        path = baseFile.substr(0, baseFile.find_last_of("\\/") + 1U) + header;
     else
         path = header;
     return simplecpp::simplifyPath(path);
@@ -3160,12 +3160,22 @@ static std::string openHeaderRelative(std::ifstream &f, const std::string &sourc
     return openHeader(f, getRelativeFileName(sourcefile, header));
 }
 
+// returns the simplified header path:
+// * If the header path is absolute, returns it in absolute path
+// * Otherwise, returns it in relative path with respect to the current directory
 static std::string getIncludePathFileName(const std::string &includePath, const std::string &header)
 {
-    std::string path = toAbsolutePath(includePath);
-    if (!path.empty() && path[path.size()-1U]!='/' && path[path.size()-1U]!='\\')
-        path += '/';
-    return path + header;
+    std::string simplifiedHeader = simplecpp::simplifyPath(header);
+
+    if (isAbsolutePath(simplifiedHeader)) {
+        return simplifiedHeader;
+    }
+
+    std::string basePath = toAbsolutePath(includePath);
+    if (!basePath.empty() && basePath[basePath.size()-1U]!='/' && basePath[basePath.size()-1U]!='\\')
+        basePath += '/';
+    const std::string absolutesimplifiedHeaderPath = basePath + simplifiedHeader;
+    return extractRelativePathFromAbsolute(absolutesimplifiedHeaderPath).first;
 }
 
 static std::string openHeaderIncludePath(std::ifstream &f, const simplecpp::DUI &dui, const std::string &header)
@@ -3183,17 +3193,16 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
     if (isAbsolutePath(header))
         return openHeader(f, header);
 
-    if (systemheader) {
-        // always return absolute path for systemheaders
-        return toAbsolutePath(openHeaderIncludePath(f, dui, header));
+    // prefer first to search the header relatively to source file if found, when not a system header
+    if (!systemheader) {
+        std::string relativeHeader = openHeaderRelative(f, sourcefile, header);
+        if (!relativeHeader.empty()) {
+            return relativeHeader;
+        }
     }
 
-    std::string ret;
-
-    ret = openHeaderRelative(f, sourcefile, header);
-    if (ret.empty())
-        return toAbsolutePath(openHeaderIncludePath(f, dui, header));// in a similar way to system headers
-    return ret;
+    // search the header on the include paths (provided by the flags "-I...")
+    return openHeaderIncludePath(f, dui, header);
 }
 
 static std::string findPathInMapBothRelativeAndAbsolute(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string& path) {
@@ -3212,8 +3221,9 @@ static std::string findPathInMapBothRelativeAndAbsolute(const std::map<std::stri
         }
     } else {
         const std::string absolutePath = toAbsolutePath(path);
-        if (filedata.find(absolutePath) != filedata.end())
+        if (filedata.find(absolutePath) != filedata.end()) {
             return absolutePath;
+        }
     }
     // otherwise
     return "";
@@ -3226,7 +3236,10 @@ static std::string getFileIdPath(const std::map<std::string, simplecpp::TokenLis
     }
     if (isAbsolutePath(header)) {
         const std::string simplifiedHeaderPath = simplecpp::simplifyPath(header);
-        return (filedata.find(simplifiedHeaderPath) != filedata.end()) ? simplifiedHeaderPath : "";
+        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, simplifiedHeaderPath);
+        if (!match.empty()) {
+            return match;
+        }
     }
 
     if (!systemheader) {
@@ -3235,17 +3248,16 @@ static std::string getFileIdPath(const std::map<std::string, simplecpp::TokenLis
         if (!match.empty()) {
             return match;
         }
+    } else if (filedata.find(header) != filedata.end()) {
+        return header;// system header that its file is already in the filedata - return that as is
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
-        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, simplecpp::simplifyPath(getIncludePathFileName(*it, header)));
+        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, getIncludePathFileName(*it, header));
         if (!match.empty()) {
             return match;
         }
     }
-
-    if (systemheader && filedata.find(header) != filedata.end())
-        return header;// system header that its file wasn't found in the included paths but alreasy in the filedata - return this as is
 
     return "";
 }
