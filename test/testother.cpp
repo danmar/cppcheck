@@ -703,7 +703,7 @@ private:
 
     void zeroDivInLoop()
     {
-        // single for loop
+        // Single for loop
         check("void f(void) {\n"
               "   for (int j = 1; j >= 0; --j) {\n"
               "       int result = 42 / j;\n" // << Division by zero when j is 0
@@ -711,11 +711,21 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3:24]: (error) Division by zero. [zerodiv]\n", errout_str());
 
-        // nested for loop
+        // Nested for loop where i becomes 0
         check("void f(void) {\n"
               "    for (int i = 2; i >= 0; --i) {\n"
+              "        for (int j = 1; j > 0; --j) {\n"
+              "            int result = 42 / (i * j);\n" // <<
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4:29]: (error) Division by zero. [zerodiv]\n", errout_str());
+
+        // Nested for loop where j becomes 0
+        check("void f(void) {\n"
+              "    for (int i = 2; i > 0; --i) {\n"
               "        for (int j = 1; j >= 0; --j) {\n"
-              "            int result = 42 / (i * j);\n" // << Division by zero when i or j is 0
+              "            int result = 42 / (i * j);\n" // <<
               "        }\n"
               "    }\n"
               "}");
