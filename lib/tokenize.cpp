@@ -503,31 +503,6 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator)
     return const_cast<Token*>(processFunc(const_cast<const Token*>(tok2), inOperator));
 }
 
-void Tokenizer::simplifyUsingToTypedef()
-{
-    if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // using a::b;  =>   typedef  a::b  b;
-        if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
-            (Token::Match(tok, "[;{}] using :: %name% :: %name% ::|;") && !tok->tokAt(3)->isKeyword())) {
-            Token *endtok = tok->tokAt(5);
-            if (Token::Match(endtok, "%name%"))
-                endtok = endtok->next();
-            while (Token::Match(endtok, ":: %name%"))
-                endtok = endtok->tokAt(2);
-            if (endtok && endtok->str() == ";") {
-                if (endtok->strAt(-1) == endtok->strAt(-3))
-                    continue;
-                tok->next()->str("typedef");
-                endtok = endtok->previous();
-                endtok->insertToken(endtok->str());
-            }
-        }
-    }
-}
-
 void Tokenizer::simplifyTypedefLHS()
 {
     if (!list.front())
@@ -1156,9 +1131,6 @@ void Tokenizer::simplifyTypedefCpp()
 
     // add global namespace
     std::vector<Space> spaceInfo(1);
-
-    // Convert "using a::b;" to corresponding typedef statements
-    simplifyUsingToTypedef();
 
     const std::time_t maxTime = mSettings.typedefMaxTime > 0 ? std::time(nullptr) + mSettings.typedefMaxTime: 0;
     const bool doProgress = (mSettings.reportProgress != -1) && !list.getFiles().empty();
@@ -1975,6 +1947,11 @@ void Tokenizer::simplifyTypedefCpp()
                     }
                     if (Token::Match(tok2->tokAt(-1), "class|struct|union") && tok2->strAt(-1) == typeStart->str())
                         tok2->deletePrevious();
+
+                    if (cpp && Token::Match(tok2->previous(), "using %name% ::|;")) {
+                        tok2->previous()->str("typedef");
+                        tok2->insertToken(tok2->str());
+                    }
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
