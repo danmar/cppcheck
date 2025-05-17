@@ -2651,13 +2651,13 @@ namespace {
         }
 
         if (Token::Match(tok1, "%name% (") && TokenList::isFunctionHead(tok1->next(), "{;:")) {
-            if (Token::Match(tok1->previous(), "%name%"))
+            if (Token::Match(tok1->previous(), "%name%") && !tok1->previous()->isControlFlowKeyword())
                 return false;
             if (Token::Match(tok1->previous(), ">|>>") && tok1->previous()->link())
                 return false;
             if (Token::Match(tok1->previous(), "*|&|&&")) {
                 const Token* prev = tok1->previous();
-                while (Token::Match(prev, "%name%|*|&|&&|::"))
+                while (Token::Match(prev, "%name%|*|&|&&|::") && !prev->isControlFlowKeyword())
                     prev = prev->previous();
                 if (Token::Match(prev, ">|>>") && tok1->previous()->link())
                     return false;
@@ -3012,18 +3012,12 @@ bool Tokenizer::simplifyUsing()
         if (Token::Match(start, "class|struct|union|enum"))
             start = start->next();
 
-        Token *startToken = usingEnd;
-        for (const Token* tok2 = nameToken->tokAt(2); Token::Match(tok2, "%name%|::"); tok2 = tok2->next()) {
-            if (Token::Match(tok2, "%name% <")) {
-                // Unfortunately we have to start searching from the beginning
-                // of the token stream because templates are instantiated at
-                // the end of the token stream and it may be used before then.
-                startToken = list.front();
-            }
-        }
-
+        // Unfortunately we have to start searching from the beginning
+        // of the token stream because templates are instantiated at
+        // the end of the token stream and it may be used before then.
         ScopeInfo3 scopeInfo1;
         ScopeInfo3 *currentScope1 = &scopeInfo1;
+        Token *startToken = list.front();
         Token *endToken = nullptr;
         bool inMemberFunc = false;
         const ScopeInfo3 * memberFuncScope = nullptr;
