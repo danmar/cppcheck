@@ -480,6 +480,7 @@ private:
         TEST_CASE(constFunctionPtrTypedef); // #12135
 
         TEST_CASE(simplifyPlatformTypes);
+        TEST_CASE(simplifyUsing1);
 
         TEST_CASE(dumpFallthrough);
     }
@@ -8531,6 +8532,21 @@ private:
             ASSERT_EQUALS("long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix32));
             ASSERT_EQUALS("long f ( ) ;", tokenizeAndStringify(code, true, Platform::Type::Unix64));
         }
+    }
+
+    void simplifyUsing1() {
+        // #13873
+        const char code1[] = "using NS1::f;\n"
+                             "namespace NS1 { void f(); }\n";
+        ASSERT_EQUALS("namespace NS1 { void f ( ) ; }", tokenizeAndStringify(code1));
+
+        const char code2[] = "using NS1::f;\n"
+                             "void bar() { f(); }\n";
+        ASSERT_EQUALS("void bar ( ) { NS1 :: f ( ) ; }", tokenizeAndStringify(code2));
+
+        const char code3[] = "using NS1::f;\n"
+                             "namespace NS1 { void* f(); }\n";
+        ASSERT_EQUALS("namespace NS1 { void * f ( ) ; }", tokenizeAndStringify(code3));
     }
 
     void dumpFallthrough() {

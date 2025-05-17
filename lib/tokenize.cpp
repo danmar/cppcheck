@@ -2650,6 +2650,22 @@ namespace {
             return false;
         }
 
+        if (Token::Match(tok1, "%name% (") && TokenList::isFunctionHead(tok1->next(), "{;:")) {
+            if (Token::Match(tok1->previous(), "%name%"))
+                return false;
+            if (Token::Match(tok1->previous(), ">|>>") && tok1->previous()->link())
+                return false;
+            if (Token::Match(tok1->previous(), "*|&|&&")) {
+                const Token* prev = tok1->previous();
+                while (Token::Match(prev, "%name%|*|&|&&|::"))
+                    prev = prev->previous();
+                if (Token::Match(prev, ">|>>") && tok1->previous()->link())
+                    return false;
+                if (Token::Match(prev, "[;{}] %name%"))
+                    return false;
+            }
+        }
+
         // get qualification
         std::string qualification;
         const Token* tok2 = tok1;
@@ -2996,12 +3012,18 @@ bool Tokenizer::simplifyUsing()
         if (Token::Match(start, "class|struct|union|enum"))
             start = start->next();
 
-        // Unfortunately we have to start searching from the beginning
-        // of the token stream because templates are instantiated at
-        // the end of the token stream and it may be used before then.
+        Token *startToken = usingEnd;
+        for (const Token* tok2 = nameToken->tokAt(2); Token::Match(tok2, "%name%|::"); tok2 = tok2->next()) {
+            if (Token::Match(tok2, "%name% <")) {
+                // Unfortunately we have to start searching from the beginning
+                // of the token stream because templates are instantiated at
+                // the end of the token stream and it may be used before then.
+                startToken = list.front();
+            }
+        }
+
         ScopeInfo3 scopeInfo1;
         ScopeInfo3 *currentScope1 = &scopeInfo1;
-        Token *startToken = list.front();
         Token *endToken = nullptr;
         bool inMemberFunc = false;
         const ScopeInfo3 * memberFuncScope = nullptr;
@@ -3026,6 +3048,8 @@ bool Tokenizer::simplifyUsing()
                 }
             }
         }
+
+        bool isTypedefInfoAdded = false; // TODO should we add a separate mUsingInfo?
 
         std::string scope1 = currentScope1->fullName;
         bool skip = false; // don't erase type aliases we can't parse
@@ -3096,6 +3120,18 @@ bool Tokenizer::simplifyUsing()
                     continue;
             } else if (!usingMatch(nameToken, scope, tok1, scope1, currentScope1, nullptr))
                 continue;
+
+            if (!isTypedefInfoAdded && Token::Match(tok1, "%name% (")) {
+                isTypedefInfoAdded = true;
+                TypedefInfo usingInfo;
+                usingInfo.name = name;
+                usingInfo.filename = list.file(nameToken);
+                usingInfo.lineNumber = nameToken->linenr();
+                usingInfo.column = nameToken->column();
+                usingInfo.used = true;
+                usingInfo.isFunctionPointer = false;
+                mTypedefInfo.push_back(std::move(usingInfo));
+            }
 
             const auto nReplace = tokDistance(start, usingEnd);
             if (nReplace > maxReplacementTokens) {
