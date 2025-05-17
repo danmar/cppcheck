@@ -60,6 +60,7 @@ private:
         TEST_CASE(zeroDiv19);
         TEST_CASE(zeroDiv20); // #11175
         TEST_CASE(zeroDiv21);
+        TEST_CASE(zeroDivInLoop);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -698,6 +699,37 @@ private:
               "    return f(1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2:14]: (error) Division by zero. [zerodiv]\n", errout_str());
+    }
+
+    void zeroDivInLoop()
+    {
+        // Single for loop
+        check("void f(void) {\n"
+              "   for (int j = 1; j >= 0; --j) {\n"
+              "       int result = 42 / j;\n" // << Division by zero when j is 0
+              "   }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3:24]: (error) Division by zero. [zerodiv]\n", errout_str());
+
+        // Nested for loop where i becomes 0
+        check("void f(void) {\n"
+              "    for (int i = 2; i >= 0; --i) {\n"
+              "        for (int j = 1; j > 0; --j) {\n"
+              "            int result = 42 / (i * j);\n" // <<
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4:29]: (error) Division by zero. [zerodiv]\n", errout_str());
+
+        // Nested for loop where j becomes 0
+        check("void f(void) {\n"
+              "    for (int i = 2; i > 0; --i) {\n"
+              "        for (int j = 1; j >= 0; --j) {\n"
+              "            int result = 42 / (i * j);\n" // <<
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4:29]: (error) Division by zero. [zerodiv]\n", errout_str());
     }
 
     void zeroDivCond() {
