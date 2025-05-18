@@ -9,10 +9,10 @@
 ## Motivation
 
 C style casts can be dangerous in many ways:
- * there can be unintentional loss of precision
- * there can be unintentional loss of sign
- * there can be unintentional loss of constness
- * there can be invalid type conversions
+ * loss of precision
+ * loss of sign
+ * loss of constness
+ * invalid type conversion
 
 ## Philosophy
 
@@ -20,17 +20,22 @@ This checker warns about old style C casts that looks dangerous.
 
 This checker is not about readability. It is about safety.
 
-We only want to warn if there are possible safety issues and a C++ cast can provide better safety.
+This checker focus on invalid type conversions:
+If there is loss of sign or precision in the cast; it's hard to know for Cppcheck if that is intentional.
+If there is loss of constness; there are other checkers available and these apply to C code also.
+Therefore we only warn about pointer/reference casts that could be invalid type conversions.
 
 ## Other tools / checkers
 
-Related checkers:
- * Complements: Misra C 11.8 is violated if there is "loss of constness"
- * More noisy: Misra C++ 8.2.2, cover all C style casts.
- * More noisy: C style cast compiler warnings (i.e. clang reports Wold-style-cast)
- * Complements: Loss of constness compiler warnings.
+If you want more warnings that warn about all c style casts:
+ * Misra C++ 8.2.2, cover all C style casts.
+ * C style cast compiler warnings (i.e. clang reports Wold-style-cast)
 
-## Example
+Checking for loss of constness:
+ * Misra C 11.8
+ * Loss of constness compiler warnings (i.e. clang reports Wcast-qual).
+
+## Examples
 
 ### Compliant C style cast
 
@@ -42,19 +47,12 @@ int *p = (int*)0;
 ```
 A static_cast can be used however technically it's the same as the C style cast.
 
-Other example:
-```
-uint8_t x = (uint8_t)0x1234;
-```
-A static_cast can be used however technically it's the same as the C style cast.
-
 ### Non compliant C style cast
 
 A cast from a base class pointer to a derived class pointer is potentially unsafe:
 ```
 Derived *p = (Derived*)base;
 ```
-A `dynamic_cast` is safer than the C-style cast here.
 
 ## How to fix
 
