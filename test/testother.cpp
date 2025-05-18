@@ -703,33 +703,59 @@ private:
 
     void zeroDivInLoop()
     {
-        // Single for loop
-        check("void f(void) {\n"
-              "   for (int j = 1; j >= 0; --j) {\n"
-              "       int result = 42 / j;\n" // << Division by zero when j is 0
-              "   }\n"
+        // For loop where j becomes 0
+        check("void foo(int i) {\n"
+              "    for (int j=2; j >= 0; j--)\n"
+              "        result = 20  / (i * j);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3:24]: (error) Division by zero. [zerodiv]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:22]: (error) Division by zero. [zerodiv]\n", errout_str());
 
-        // Nested for loop where i becomes 0
-        check("void f(void) {\n"
-              "    for (int i = 2; i >= 0; --i) {\n"
-              "        for (int j = 1; j > 0; --j) {\n"
-              "            int result = 42 / (i * j);\n" // <<
-              "        }\n"
-              "    }\n"
+        // No warning is expected, because j will never become 0
+        check("void foo(int i) {\n"
+              "    for (int j=2; j > 0; j--)\n"
+              "        result = 20  / (i * j);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4:29]: (error) Division by zero. [zerodiv]\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
-        // Nested for loop where j becomes 0
-        check("void f(void) {\n"
-              "    for (int i = 2; i > 0; --i) {\n"
-              "        for (int j = 1; j >= 0; --j) {\n"
-              "            int result = 42 / (i * j);\n" // <<
+        // Nested for loop where i and j becomes 0 simultaneously
+        check("void f(void) {\n" // # 13874
+              "  for (int i=2; i >= 0; i--) {\n"
+              "        for (int j=2; j >= 0; j--) {\n"
+              "            result = 20 / (i + j);\n"
               "        }\n"
-              "    }\n"
+              "    }"
               "}");
-        ASSERT_EQUALS("[test.cpp:4:29]: (error) Division by zero. [zerodiv]\n", errout_str());
+        TODO_ASSERT_EQUALS("[test.cpp:4:25]: (error) Division by zero. [zerodiv]\n", "", errout_str());
+
+        // No warning is expected, as j cannot be 0
+        check("void f(void) {\n"
+              "  for (int i=2; i >= 0; i--) {\n"
+              "        for (int j=2; j > 0; j--) {\n"
+              "            result = 20 / (i + j);\n"
+              "        }\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
+        // No warning is expected, as i cannot be 0
+        check("void f(void) {\n"
+              "  for (int i=2; i > 0; i--) {\n"
+              "        for (int j=2; j >= 0; j--) {\n"
+              "            result = 20 / (i + j);\n"
+              "        }\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
+        // No warning is expected, as neither i nor j can be 0
+        check("void f(void) {\n"
+              "  for (int i=2; i > 0; i--) {\n"
+              "        for (int j=2; j > 0; j--) {\n"
+              "            result = 20 / (i + j);\n"
+              "        }\n"
+              "    }"
+              "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void zeroDivCond() {
