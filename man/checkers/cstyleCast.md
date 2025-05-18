@@ -27,11 +27,11 @@ Therefore we only warn about pointer/reference casts that could be invalid type 
 
 ## Other tools / checkers
 
-If you want more warnings that warn about all c style casts:
+Extended checking; if you want more warnings that warn about all c style casts:
  * Misra C++ 8.2.2, cover all C style casts.
  * C style cast compiler warnings (i.e. clang reports Wold-style-cast)
 
-Checking for loss of constness:
+Complementing; checking for loss of constness etc:
  * Misra C 11.8
  * Loss of constness compiler warnings (i.e. clang reports Wcast-qual).
 
