@@ -1,6 +1,7 @@
 
 # cstyleCast
 
+**Message**: C-style pointer casting<br/>
 **Category**: Type Safety<br/>
 **Severity**: Style<br/>
 **Language**: C++, not applicable for C code
