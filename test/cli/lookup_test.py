@@ -23,7 +23,6 @@ def test_lib_lookup(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        "looking for library 'gnu'",
         "looking for library 'gnu.cfg'",
         "looking for library '{}/gnu.cfg'".format(exepath),
         "looking for library '{}/cfg/gnu.cfg'".format(exepath),
@@ -63,7 +62,6 @@ def test_lib_lookup_notfound(tmpdir):
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
         # TODO: specify which folder is actually used for lookup here
-        "looking for library 'none'",  # TODO: this could conflict with the platform lookup
         "looking for library 'none.cfg'",
         # TODO: lookup of '{exepath}/none' missing - could conflict with the platform lookup though
         "looking for library '{}/none.cfg'".format(exepath),
@@ -126,7 +124,6 @@ def test_lib_lookup_relative_noext_notfound(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        "looking for library 'config/gnu'",
         "looking for library 'config/gnu.cfg'",
         "looking for library '{}/config/gnu.cfg'".format(exepath),
         "looking for library '{}/cfg/config/gnu.cfg'".format(exepath),
@@ -186,8 +183,6 @@ def test_lib_lookup_nofile(tmpdir):
         pass
 
     # make sure we do not produce an error when the attempted lookup path is a directory and not a file
-    gtk_dir = os.path.join(tmpdir, 'gtk')
-    os.mkdir(gtk_dir)
     gtk_cfg_dir = os.path.join(tmpdir, 'gtk.cfg')
     os.mkdir(gtk_cfg_dir)
 
@@ -198,7 +193,6 @@ def test_lib_lookup_nofile(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        "looking for library 'gtk'",
         "looking for library 'gtk.cfg'",
         "looking for library '{}/gtk.cfg'".format(exepath),
         "looking for library '{}/cfg/gtk.cfg'".format(exepath),
@@ -223,7 +217,6 @@ def test_lib_lookup_invalid(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        "looking for library 'gnu'",
         "looking for library 'gnu.cfg'",
         "library not found: 'gnu'",
         "Error=XML_ERROR_PARSING_TEXT ErrorID=8 (0x8) Line number=1",  # TODO: log the failure before saying the library was not found
@@ -243,11 +236,9 @@ def test_lib_lookup_multi(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        "looking for library 'posix'",
         "looking for library 'posix.cfg'",
         "looking for library '{}/posix.cfg'".format(exepath),
         "looking for library '{}/cfg/posix.cfg'".format(exepath),
-        "looking for library 'gnu'",
         "looking for library 'gnu.cfg'",
         "looking for library '{}/gnu.cfg'".format(exepath),
         "looking for library '{}/cfg/gnu.cfg'".format(exepath),

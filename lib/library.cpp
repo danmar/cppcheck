@@ -196,24 +196,20 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
 
     const bool is_abs_path = Path::isAbsolute(path);
 
+    std::string fullfilename(path);
+
+    // TODO: what if the extension is not .cfg?
+    // only append extension when we provide the library name and not a path - TODO: handle relative paths?
+    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
+        fullfilename += ".cfg";
+
     std::string absolute_path;
     // open file..
     tinyxml2::XMLDocument doc;
     if (debug)
-        std::cout << "looking for library '" + std::string(path) + "'" << std::endl;
-    tinyxml2::XMLError error = xml_LoadFile(doc, path);
+        std::cout << "looking for library '" + fullfilename + "'" << std::endl;
+    tinyxml2::XMLError error = xml_LoadFile(doc, fullfilename.c_str());
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
-        // failed to open file.. is there no extension?
-        std::string fullfilename(path);
-        if (Path::getFilenameExtension(fullfilename).empty()) {
-            fullfilename += ".cfg";
-            if (debug)
-                std::cout << "looking for library '" + fullfilename + "'" << std::endl;
-            error = xml_LoadFile(doc, fullfilename.c_str());
-            if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-                absolute_path = Path::getAbsoluteFilePath(fullfilename);
-        }
-
         // only perform further lookups when the given path was not absolute
         if (!is_abs_path && error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         {
@@ -240,7 +236,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
             }
         }
     } else
-        absolute_path = Path::getAbsoluteFilePath(path);
+        absolute_path = Path::getAbsoluteFilePath(fullfilename);
 
     if (error == tinyxml2::XML_SUCCESS) {
         if (mData->mFiles.find(absolute_path) == mData->mFiles.end()) {
