@@ -42,7 +42,7 @@ Checking for loss of constness:
 The goal is to not warn about "safe" and/or "intentional" casts.
 
 For example:
-```
+```cpp
 int *p = (int*)0;
 ```
 A static_cast can be used however technically it's the same as the C style cast.
@@ -50,8 +50,12 @@ A static_cast can be used however technically it's the same as the C style cast.
 ### Non compliant C style cast
 
 A cast from a base class pointer to a derived class pointer is potentially unsafe:
-```
-Derived *p = (Derived*)base;
+```cpp
+struct Base{};
+struct Derived: public Base {};
+void foo(Base* base) {
+    Derived *p = (Derived*)base; // <- dangerous
+}
 ```
 
 ## How to fix
@@ -59,16 +63,19 @@ Derived *p = (Derived*)base;
 You can use `dynamic_cast` or `static_cast` to fix warnings.
 
 Before:
-```
-Derived *p = (Derived*)base;
+```cpp
+struct Base{};
+struct Derived: public Base {};
+void foo(Base* base) {
+    Derived *p = (Derived*)base; // <- dangerous
+}
 ```
 
 After:
+```cpp
+struct Base{};
+struct Derived: public Base {};
+void foo(Base* base) {
+    Derived *p = dynamic_cast<Derived*>(base);
+}
 ```
-Derived *p = dynamic_cast<Derived*>(base);
-```
-
-## Enable
-
---enable=style
-
