@@ -33,7 +33,7 @@ Extended checking; if you want more warnings that warn about all C style casts:
 
 Complementing; checking for loss of constness etc:
  * Misra C 11.8
- * Loss of constness compiler warnings (i.e. clang reports Wcast-qual).
+ * Loss of constness compiler warnings (i.e. clang reports -Wcast-qual).
 
 ## Examples
 
