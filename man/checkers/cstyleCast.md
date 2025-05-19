@@ -16,7 +16,7 @@ C style casts can be dangerous in many ways:
 
 ## Philosophy
 
-This checker warns about old style C casts that looks dangerous.
+This checker warns about old style C casts that can be dangerous.
 
 This checker is not about readability. It is about safety.
 
