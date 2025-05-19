@@ -2650,6 +2650,22 @@ namespace {
             return false;
         }
 
+        if (Token::Match(tok1, "%name% (") && TokenList::isFunctionHead(tok1->next(), "{;:")) {
+            if (Token::Match(tok1->previous(), "%name%") && !tok1->previous()->isControlFlowKeyword())
+                return false;
+            if (Token::Match(tok1->previous(), ">|>>") && tok1->linkAt(-1))
+                return false;
+            if (Token::Match(tok1->previous(), "*|&|&&")) {
+                const Token* prev = tok1->previous();
+                while (Token::Match(prev, "%name%|*|&|&&|::") && !prev->isControlFlowKeyword())
+                    prev = prev->previous();
+                if (Token::Match(prev, ">|>>") && tok1->linkAt(-1))
+                    return false;
+                if (Token::Match(prev, "[;{}] %name%"))
+                    return false;
+            }
+        }
+
         // get qualification
         std::string qualification;
         const Token* tok2 = tok1;
@@ -3027,6 +3043,8 @@ bool Tokenizer::simplifyUsing()
             }
         }
 
+        bool isTypedefInfoAdded = false; // TODO should we add a separate mUsingInfo?
+
         std::string scope1 = currentScope1->fullName;
         bool skip = false; // don't erase type aliases we can't parse
         Token *enumOpenBrace = nullptr;
@@ -3096,6 +3114,18 @@ bool Tokenizer::simplifyUsing()
                     continue;
             } else if (!usingMatch(nameToken, scope, tok1, scope1, currentScope1, nullptr))
                 continue;
+
+            if (!isTypedefInfoAdded && Token::Match(tok1, "%name% (")) {
+                isTypedefInfoAdded = true;
+                TypedefInfo usingInfo;
+                usingInfo.name = name;
+                usingInfo.filename = list.file(nameToken);
+                usingInfo.lineNumber = nameToken->linenr();
+                usingInfo.column = nameToken->column();
+                usingInfo.used = true;
+                usingInfo.isFunctionPointer = false;
+                mTypedefInfo.push_back(std::move(usingInfo));
+            }
 
             const auto nReplace = tokDistance(start, usingEnd);
             if (nReplace > maxReplacementTokens) {
