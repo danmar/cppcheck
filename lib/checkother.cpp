@@ -314,7 +314,7 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (tok->str() != "(")
+            if (!tok->isCast() || tok->isBinaryOp())
                 continue;
             const Token* castTok = tok->next();
             while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::")) {
