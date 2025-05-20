@@ -144,6 +144,7 @@ void nullPointer_pthread_attr_setstack(const pthread_attr_t *attr) {
     (void) pthread_attr_setstack(NULL, NULL, 0);
     (void) pthread_attr_setstack(attr, NULL, 0);
     // cppcheck-suppress nullPointer
+    // cppcheck-suppress intToPointerCast
     (void) pthread_attr_setstack(NULL, (void*) 1, 0);
 }
 

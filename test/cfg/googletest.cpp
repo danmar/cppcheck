@@ -44,7 +44,7 @@ namespace ExampleNamespace {
 
 TEST(ASSERT, ASSERT)
 {
-    int *a = (int*)calloc(10,sizeof(int)); // cppcheck-suppress cstyleCast
+    int *a = (int*)calloc(10,sizeof(int));
     ASSERT_TRUE(a != nullptr);
 
     a[0] = 10;

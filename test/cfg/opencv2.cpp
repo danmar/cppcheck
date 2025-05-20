@@ -30,7 +30,7 @@ void validCode(const char* argStr)
     cvStr += " World";
     std::cout << cvStr;
 
-    // cppcheck-suppress [cstyleCast, unusedAllocatedMemory]
+    // cppcheck-suppress unusedAllocatedMemory
     char * pBuf = (char *)cv::fastMalloc(20);
     cv::fastFree(pBuf);
 }
@@ -43,7 +43,6 @@ void ignoredReturnValue()
 
 void memleak()
 {
-    // cppcheck-suppress cstyleCast
     const char * pBuf = (char *)cv::fastMalloc(1000);
     // cppcheck-suppress [uninitdata, valueFlowBailoutIncompleteVar, nullPointerOutOfMemory]
     std::cout << pBuf;
