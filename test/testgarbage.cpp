@@ -1832,7 +1832,6 @@ private:
         ASSERT_THROW_INTERNAL(checkCode("void f(){x=0,return return''[]()}"), SYNTAX);
         ASSERT_THROW_INTERNAL(checkCode("void f(){x='0'++'0'(return)[];}"), SYNTAX); // #9063
         (void)checkCode("void f(){*(int *)42=0;}"); // no syntax error
-        ignore_errout(); // we are not interested in the output
         ASSERT_THROW_INTERNAL(checkCode("void f() { x= 'x' > typedef name5 | ( , ;){ } (); }"), SYNTAX); // #9067
         ASSERT_THROW_INTERNAL(checkCode("void f() { x= {}( ) ( 'x')[ ] (); }"), SYNTAX); // #9068
         ASSERT_THROW_INTERNAL(checkCode("void f() { x= y{ } name5 y[ ] + y ^ name5 ^ name5 for ( ( y y y && y y y && name5 ++ int )); }"), SYNTAX); // #9069

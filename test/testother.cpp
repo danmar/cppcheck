@@ -3097,7 +3097,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4:19]: (style) C-style reference casting [cstyleCast]\n"
+        ASSERT_EQUALS("[test.cpp:4:18]: (style) C-style reference casting [cstyleCast]\n"
                       "[test.cpp:2:11]: (style) Parameter 'x' can be declared as reference to const [constParameterReference]\n",
                       errout_str());
         check("struct T : public U { void dostuff() const {}};\n"
@@ -3112,7 +3112,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (typename const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4:0]: (style) C-style reference casting [cstyleCast]\n"
+        ASSERT_EQUALS("[test.cpp:4:18]: (style) C-style reference casting [cstyleCast]\n"
                       "[test.cpp:2:11]: (style) Parameter 'x' can be declared as reference to const [constParameterReference]\n",
                       errout_str());
         check("struct T : public U { void dostuff() const {}};\n"
@@ -3573,7 +3573,7 @@ private:
               "void g(A* a) {\n"
               "    const B* b = (const B*)a;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10:19]: (style) C-style pointer casting [cstyleCast]\n"
+        ASSERT_EQUALS("[test.cpp:10:18]: (style) C-style pointer casting [cstyleCast]\n"
                       "[test.cpp:6:11]: (style) Parameter 'a' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:9:11]: (style) Parameter 'a' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
@@ -4339,8 +4339,7 @@ private:
               "void f(T* t) {\n"
               "    S* s = (S*)t->p;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3:12]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:3:8]: (style) Variable 's' can be declared as pointer to const [constVariablePointer]\n",
+        ASSERT_EQUALS("[test.cpp:3:8]: (style) Variable 's' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str()); // don't crash
 
         check("struct S { int i; };\n" // #12205
@@ -10160,7 +10159,7 @@ private:
               "  *reg = 12;\n"
               "  *reg = 34;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2:25]: style: C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(std::map<int, int>& m, int key, int value) {\n" // #6379
               "    m[key] = value;\n"
