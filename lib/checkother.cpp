@@ -296,10 +296,6 @@ void CheckOther::suspiciousSemicolonError(const Token* tok)
 //---------------------------------------------------------------------------
 void CheckOther::warningOldStylePointerCast()
 {
-    // Only valid on C++ code
-    if (!mTokenizer->isCPP())
-        return;
-
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("cstyleCast"))
         return;
 
@@ -316,42 +312,42 @@ void CheckOther::warningOldStylePointerCast()
             // Old style pointer casting..
             if (!tok->isCast() || tok->isBinaryOp())
                 continue;
-            const Token* castTok = tok->next();
-            while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::")) {
-                castTok = castTok->next();
-                if (Token::simpleMatch(castTok, "<") && castTok->link())
-                    castTok = castTok->link()->next();
+            const Token* from = tok->astOperand1();
+            if (!from)
+                continue;
+            if (!tok->valueType() || !from->valueType())
+                continue;
+            if (tok->valueType()->type == from->valueType()->type &&
+                tok->valueType()->typeScope == from->valueType()->typeScope)
+                continue;
+            const bool refcast = (tok->valueType()->reference != Reference::None);
+            if (!refcast && tok->valueType()->pointer == 0)
+                continue;
+            if (!refcast && from->valueType()->pointer == 0) {
+                // casting non-zero integer literal (decimal/octal) to pointer is suspicious
+                if (mSettings->severity.isEnabled(Severity::portability) &&
+                    tok->valueType()->pointer > 0 &&
+                    from->isNumber() &&
+                    !MathLib::isIntHex(from->str()) &&
+                    from->getKnownIntValue() != 0)
+                    intToPointerCastError(tok);
+                continue;
             }
-            if (castTok == tok->next())
-                continue;
-            bool isPtr = false, isRef = false;
-            while (Token::Match(castTok, "*|const|&")) {
-                if (castTok->str() == "*")
-                    isPtr = true;
-                else if (castTok->str() == "&")
-                    isRef = true;
-                castTok = castTok->next();
-            }
-            if ((!isPtr && !isRef) || !Token::Match(castTok, ") (| %name%|%num%|%bool%|%char%|%str%|&"))
+
+            // Use C++ cast: Only valid on C++ code
+            if (!mTokenizer->isCPP())
                 continue;
 
-            if (Token::Match(tok->previous(), "%type%"))
+            if (tok->valueType()->type == ValueType::Type::VOID || from->valueType()->type == ValueType::Type::VOID)
+                continue;
+            if (tok->valueType()->pointer == 0 && tok->valueType()->isIntegral())
+                // ok: (uintptr_t)ptr;
+                continue;
+            if (from->valueType()->pointer == 0 && from->valueType()->isIntegral())
+                // ok: (int *)addr;
                 continue;
 
-            // skip first "const" in "const Type* const"
-            while (Token::Match(tok->next(), "const|volatile|class|struct|union"))
-                tok = tok->next();
-            const Token* typeTok = tok->next();
-            // skip second "const" in "const Type* const"
-            if (tok->strAt(3) == "const")
-                tok = tok->next();
-
-            const Token *p = tok->tokAt(4);
-            if (p->hasKnownIntValue() && p->getKnownIntValue()==0) // Casting nullpointers is safe
-                continue;
-
-            if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
-                cstyleCastError(tok, isPtr);
+            cstyleCastError(tok, tok->valueType()->pointer > 0);
         }
     }
 }
@@ -365,6 +361,14 @@ void CheckOther::cstyleCastError(const Token *tok, bool isPtr)
                 "static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to "
                 "any of those automatically, thus it is considered safer if the programmer explicitly states "
                 "which kind of cast is expected.", CWE398, Certainty::normal);
+}
+
+
+void CheckOther::intToPointerCastError(const Token *tok)
+{
+    reportError(tok, Severity::portability, "intToPointerCast",
+                "Casting non-zero integer literal in decimal or octal format to pointer.",
+                CWE398, Certainty::normal);
 }
 
 void CheckOther::suspiciousFloatingPointCast()
@@ -4459,6 +4463,7 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
     c.checkCastIntToCharAndBackError(nullptr, "func_name");
     c.cstyleCastError(nullptr);
+    c.intToPointerCastError(nullptr);
     c.suspiciousFloatingPointCastError(nullptr);
     c.passedByValueError(nullptr, false);
     c.constVariableError(nullptr, nullptr);
