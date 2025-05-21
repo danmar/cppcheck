@@ -80,6 +80,9 @@ private:
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
 
+    /** @brief Dangerous type cast */
+    void warningDangerousOldStyleTypeCast();
+
     /** @brief Casting non-hexadecimal integer literal to pointer */
     void warningIntToPointerCast();
 
@@ -201,6 +204,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok, bool isPtr = true);
+    void dangerousOldStyleTypeCastError(const Token *tok, bool isPtr);
     void intToPointerCastError(const Token *tok);
     void suspiciousFloatingPointCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
@@ -277,6 +281,7 @@ private:
                // warning
                "- either division by zero or useless condition\n"
                "- access of moved or forwarded variable.\n"
+               "- potentially dangerous C style type cast of pointer/reference to object.\n"
 
                // performance
                "- redundant data copying for const variable\n"

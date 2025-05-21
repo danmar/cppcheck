@@ -290,6 +290,44 @@ void CheckOther::suspiciousSemicolonError(const Token* tok)
                 "Suspicious use of ; at the end of '" + (tok ? tok->str() : std::string()) + "' statement.", CWE398, Certainty::normal);
 }
 
+/** @brief would it make sense to use dynamic_cast instead of C style cast? */
+static bool isDangerousTypeConversion(const Token* const tok)
+{
+    const Token* from = tok->astOperand1();
+    if (!from)
+        return false;
+    if (!tok->valueType() || !from->valueType())
+        return false;
+    if (tok->valueType()->typeScope != nullptr &&
+        tok->valueType()->typeScope == from->valueType()->typeScope)
+        return false;
+    if (tok->valueType()->type == from->valueType()->type &&
+        tok->valueType()->isPrimitive())
+        return false;
+    // cast from derived object to base object is safe..
+    if (tok->valueType()->typeScope && from->valueType()->typeScope) {
+        const Type* fromType = from->valueType()->typeScope->definedType;
+        const Type* toType = tok->valueType()->typeScope->definedType;
+        if (fromType && toType && fromType->isDerivedFrom(toType->name()))
+            return false;
+    }
+    const bool refcast = (tok->valueType()->reference != Reference::None);
+    if (!refcast && tok->valueType()->pointer == 0)
+        return false;
+    if (!refcast && from->valueType()->pointer == 0)
+        return false;
+
+    if (tok->valueType()->type == ValueType::Type::VOID || from->valueType()->type == ValueType::Type::VOID)
+        return false;
+    if (tok->valueType()->pointer == 0 && tok->valueType()->isIntegral())
+        // ok: (uintptr_t)ptr;
+        return false;
+    if (from->valueType()->pointer == 0 && from->valueType()->isIntegral())
+        // ok: (int *)addr;
+        return false;
+
+    return true;
+}
 
 //---------------------------------------------------------------------------
 // For C++ code, warn if C-style casts are used on pointer types
@@ -316,40 +354,45 @@ void CheckOther::warningOldStylePointerCast()
             // Old style pointer casting..
             if (!tok->isCast() || tok->isBinaryOp())
                 continue;
-            const Token* from = tok->astOperand1();
-            if (!from)
+            if (isDangerousTypeConversion(tok))
                 continue;
-            if (!tok->valueType() || !from->valueType())
-                continue;
-            if (tok->valueType()->typeScope != nullptr &&
-                tok->valueType()->typeScope == from->valueType()->typeScope)
-                continue;
-            if (tok->valueType()->type == from->valueType()->type &&
-                tok->valueType()->isPrimitive())
-                continue;
-            // cast from derived object to base object is safe..
-            if (tok->valueType()->typeScope && from->valueType()->typeScope) {
-                const Type* fromType = from->valueType()->typeScope->definedType;
-                const Type* toType = tok->valueType()->typeScope->definedType;
-                if (fromType && toType && fromType->isDerivedFrom(toType->name()))
-                    continue;
+            const Token* const errtok = tok;
+            const Token* castTok = tok->next();
+            while (Token::Match(castTok, "const|volatile|class|struct|union|%type%|::")) {
+                castTok = castTok->next();
+                if (Token::simpleMatch(castTok, "<") && castTok->link())
+                    castTok = castTok->link()->next();
             }
-            const bool refcast = (tok->valueType()->reference != Reference::None);
-            if (!refcast && tok->valueType()->pointer == 0)
+            if (castTok == tok->next())
                 continue;
-            if (!refcast && from->valueType()->pointer == 0)
-                continue;
-
-            if (tok->valueType()->type == ValueType::Type::VOID || from->valueType()->type == ValueType::Type::VOID)
-                continue;
-            if (tok->valueType()->pointer == 0 && tok->valueType()->isIntegral())
-                // ok: (uintptr_t)ptr;
-                continue;
-            if (from->valueType()->pointer == 0 && from->valueType()->isIntegral())
-                // ok: (int *)addr;
+            bool isPtr = false, isRef = false;
+            while (Token::Match(castTok, "*|const|&")) {
+                if (castTok->str() == "*")
+                    isPtr = true;
+                else if (castTok->str() == "&")
+                    isRef = true;
+                castTok = castTok->next();
+            }
+            if ((!isPtr && !isRef) || !Token::Match(castTok, ") (| %name%|%bool%|%char%|%str%|&"))
                 continue;
 
-            cstyleCastError(tok, tok->valueType()->pointer > 0);
+            if (Token::Match(tok->previous(), "%type%"))
+                continue;
+
+            // skip first "const" in "const Type* const"
+            while (Token::Match(tok->next(), "const|volatile|class|struct|union"))
+                tok = tok->next();
+            const Token* typeTok = tok->next();
+            // skip second "const" in "const Type* const"
+            if (tok->strAt(3) == "const")
+                tok = tok->next();
+
+            const Token *p = tok->tokAt(4);
+            if (p->hasKnownIntValue() && p->getKnownIntValue()==0) // Casting nullpointers is safe
+                continue;
+
+            if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
+                cstyleCastError(errtok, isPtr);
         }
     }
 }
@@ -365,14 +408,49 @@ void CheckOther::cstyleCastError(const Token *tok, bool isPtr)
                 "which kind of cast is expected.", CWE398, Certainty::normal);
 }
 
+void CheckOther::warningDangerousOldStyleTypeCast()
+{
+    // Only valid on C++ code
+    if (!mTokenizer->isCPP())
+        return;
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("cstyleCast"))
+        return;
+
+    logChecker("CheckOther::warningDangerousOldStyleTypeCast"); // warning,c++
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        const Token* tok;
+        if (scope->function && scope->function->isConstructor())
+            tok = scope->classDef;
+        else
+            tok = scope->bodyStart;
+        for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
+            // Old style pointer casting..
+            if (!tok->isCast() || tok->isBinaryOp())
+                continue;
+
+            if (isDangerousTypeConversion(tok))
+                dangerousOldStyleTypeCastError(tok, tok->valueType()->pointer > 0);
+        }
+    }
+}
+
+void CheckOther::dangerousOldStyleTypeCastError(const Token *tok, bool isPtr)
+{
+    const std::string type = isPtr ? "pointer" : "reference";
+    reportError(tok, Severity::warning, "dangerousOldStyleTypeCast",
+                "Potentially dangerous C style type cast of " + type + " to object, use dynamic_cast or static_cast",
+                CWE398, Certainty::normal);
+}
+
 void CheckOther::warningIntToPointerCast()
 {
-    if (!mSettings->severity.isEnabled(Severity::portability))
+    if (!mSettings->severity.isEnabled(Severity::portability) && !mSettings->isPremiumEnabled("cstyleCast"))
         return;
 
     logChecker("CheckOther::warningIntToPointerCast"); // portability
 
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         // pointer casting..
         if (!tok->isCast())
@@ -4487,6 +4565,7 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
     c.checkCastIntToCharAndBackError(nullptr, "func_name");
     c.cstyleCastError(nullptr);
+    c.dangerousOldStyleTypeCastError(nullptr, true);
     c.intToPointerCastError(nullptr);
     c.suspiciousFloatingPointCastError(nullptr);
     c.passedByValueError(nullptr, false);

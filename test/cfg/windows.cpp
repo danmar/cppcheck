@@ -624,7 +624,7 @@ void memleak_HeapAlloc()
 void memleak_LocalAlloc()
 {
     LPTSTR pszBuf;
-    // cppcheck-suppress [LocalAllocCalled, valueFlowBailoutIncompleteVar]
+    // cppcheck-suppress [LocalAllocCalled, cstyleCast, valueFlowBailoutIncompleteVar]
     pszBuf = (LPTSTR)LocalAlloc(LPTR, MAX_PATH*sizeof(TCHAR));
     (void)LocalSize(pszBuf);
     (void)LocalFlags(pszBuf);
@@ -700,7 +700,7 @@ void resourceLeak_LoadLibrary()
     HINSTANCE hInstLib;
     hInstLib = ::LoadLibrary(L"My.dll");
     typedef BOOL (WINAPI *fpFunc)();
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, cstyleCast]
     fpFunc pFunc = (fpFunc)GetProcAddress(hInstLib, "name");
     // cppcheck-suppress resourceLeak
 }
@@ -825,7 +825,7 @@ void invalidFunctionArg()
     CloseHandle(hMutex);
 
     //Incorrect: 2. parameter to LoadLibraryEx() must be NULL
-    // cppcheck-suppress [invalidFunctionArg, intToPointerCast]
+    // cppcheck-suppress [invalidFunctionArg, cstyleCast]
     HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", HANDLE(1), 0);
     FreeLibrary(hInstLib);
 
