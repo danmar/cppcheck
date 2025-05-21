@@ -2650,6 +2650,10 @@ namespace {
             return false;
         }
 
+        if (Token::simpleMatch(tok1->tokAt(-2), "> ::")) {
+            return false;
+        }
+
         if (Token::Match(tok1, "%name% (") && TokenList::isFunctionHead(tok1->next(), "{;:")) {
             if (Token::Match(tok1->previous(), "%name%") && !tok1->previous()->isControlFlowKeyword())
                 return false;
