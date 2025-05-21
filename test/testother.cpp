@@ -1914,35 +1914,49 @@ private:
     void oldStylePointerCast() {
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
+                                 "void foo(Base* base)\n"
+                                 "{\n"
+                                 "    Derived * d = (Derived *) base;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base{};\n"
+                                 "class Derived: public Base {};\n"
                                  "void foo(Derived* derived)\n"
                                  "{\n"
                                  "    Base * b = (Base *) derived;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("", errout_str()); // <- cast from derived to base is safe
+
+        checkOldStylePointerCast("void foo(Base* base)\n"
+                                 "{\n"
+                                 "    Derived * d = (Derived *) base;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:3:19]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
-                                 "void foo(Derived* derived)\n"
+                                 "void foo(Base* base)\n"
                                  "{\n"
-                                 "    Base * b = (const Base *) derived;\n"
+                                 "    Derived * d = (const Derived *) base;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
                                  "void foo()\n"
                                  "{\n"
-                                 "    Base * b = (Base *) ( new Derived() );\n"
+                                 "    Derived * d = (const Derived *) ( new Base() );\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
                                  "void foo()\n"
                                  "{\n"
-                                 "    Base * b = (Base *) new Derived();\n"
+                                 "    Derived * d = (const Derived *) new Base();\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "void foo()\n"
@@ -2071,12 +2085,12 @@ private:
         // #5210
         checkOldStylePointerCast("class Base {};\n"
                                  "class Derived: public Base {};\n"
-                                 "void f(Derived** d1, Derived*** d2) {\n"
-                                 "    Base** p1 = (Base**)d1;\n"
-                                 "    Base*** p2 = (Base***)d2;\n"
+                                 "void f(Base** b1, Base*** b2) {\n"
+                                 "    Derived** p1 = (Derived**)b1;\n"
+                                 "    Derived*** p2 = (Derived***)b2;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:4:17]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:5:18]: (style) C-style pointer casting [cstyleCast]\n",
+        ASSERT_EQUALS("[test.cpp:4:20]: (style) C-style pointer casting [cstyleCast]\n"
+                      "[test.cpp:5:21]: (style) C-style pointer casting [cstyleCast]\n",
                       errout_str());
 
         // #12446
@@ -2095,10 +2109,10 @@ private:
         // #12447
         checkOldStylePointerCast("class Base {};\n"
                                  "class Derived: public Base {};\n"
-                                 "void f(const Derived& derived) {\n"
-                                 "  Base& b = (Base&)derived;\n"
+                                 "void f(const Base& base) {\n"
+                                 "  d = (const Derived&)base;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:4:13]: (style) C-style reference casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: (style) C-style reference casting [cstyleCast]\n", errout_str());
 
         // #11430
         checkOldStylePointerCast("struct B {\n"

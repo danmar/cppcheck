@@ -317,9 +317,19 @@ void CheckOther::warningOldStylePointerCast()
                 continue;
             if (!tok->valueType() || !from->valueType())
                 continue;
-            if (tok->valueType()->type == from->valueType()->type &&
+            if (tok->valueType()->typeScope != nullptr &&
                 tok->valueType()->typeScope == from->valueType()->typeScope)
                 continue;
+            if (tok->valueType()->type == from->valueType()->type &&
+                tok->valueType()->isPrimitive())
+                continue;
+            // cast from derived object to base object is safe..
+            if (tok->valueType()->typeScope && from->valueType()->typeScope) {
+                const Type* fromType = from->valueType()->typeScope->definedType;
+                const Type* toType = tok->valueType()->typeScope->definedType;
+                if (fromType && toType && fromType->isDerivedFrom(toType->name()))
+                    continue;
+            }
             const bool refcast = (tok->valueType()->reference != Reference::None);
             if (!refcast && tok->valueType()->pointer == 0)
                 continue;
