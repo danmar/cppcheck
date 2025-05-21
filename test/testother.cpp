@@ -1920,7 +1920,7 @@ private:
                                  "{\n"
                                  "    Derived * d = (Derived *) base;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
@@ -1934,7 +1934,7 @@ private:
                                  "{\n"
                                  "    Derived * d = (Derived *) base;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:3:19]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:19]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
@@ -1942,7 +1942,7 @@ private:
                                  "{\n"
                                  "    Derived * d = (const Derived *) base;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
@@ -1950,7 +1950,7 @@ private:
                                  "{\n"
                                  "    Derived * d = (const Derived *) ( new Base() );\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "class Derived: public Base {};\n"
@@ -1958,14 +1958,63 @@ private:
                                  "{\n"
                                  "    Derived * d = (const Derived *) new Base();\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base{};\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (Base *) new short[10];\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:16]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (volatile Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (volatile Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const volatile Base *) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const volatile Base * const) derived;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const Base *) ( new Derived() );\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const Base *) new Derived();\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const Base *) new short[10];\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class B;\n"
                                  "class A\n"
@@ -2047,16 +2096,16 @@ private:
                                  "    TT* tt = (TT*)i;\n"
                                  "    TT2* tt2 = (TT2*)i;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:10:12]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:11:14]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:12:21]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:13:12]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:14:20]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:15:15]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:16:16]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:17:16]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:18:14]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:19:16]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n",
+        ASSERT_EQUALS("[test.cpp:10:12]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:11:14]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:12:21]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:13:12]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:14:20]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:15:15]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:16:16]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:17:16]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:18:14]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:19:16]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n",
                       errout_str());
 
         // #8649
@@ -2094,8 +2143,8 @@ private:
                                  "    Derived** p1 = (Derived**)b1;\n"
                                  "    Derived*** p2 = (Derived***)b2;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:4:20]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n"
-                      "[test.cpp:5:21]: (warning) Potentially dangerous C style type cast of pointer to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n",
+        ASSERT_EQUALS("[test.cpp:4:20]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n"
+                      "[test.cpp:5:21]: (warning) Potentially dangerous C style type cast of pointer to object [dangerousTypeCast]\n",
                       errout_str());
 
         // #12446
@@ -2119,7 +2168,7 @@ private:
                                  "void f(const Base& base) {\n"
                                  "  d = (const Derived&)base;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:4:7]: (warning) Potentially dangerous C style type cast of reference to object, use dynamic_cast or static_cast [dangerousOldStyleTypeCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: (warning) Potentially dangerous C style type cast of reference to object [dangerousTypeCast]\n", errout_str());
 
         // #11430
         checkOldStylePointerCast("struct B {\n"

@@ -204,7 +204,7 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok, bool isPtr = true);
-    void dangerousOldStyleTypeCastError(const Token *tok, bool isPtr);
+    void dangerousTypeCastError(const Token *tok, bool isPtr);
     void intToPointerCastError(const Token *tok);
     void suspiciousFloatingPointCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);

@@ -431,16 +431,16 @@ void CheckOther::warningDangerousOldStyleTypeCast()
                 continue;
 
             if (isDangerousTypeConversion(tok))
-                dangerousOldStyleTypeCastError(tok, tok->valueType()->pointer > 0);
+                dangerousTypeCastError(tok, tok->valueType()->pointer > 0);
         }
     }
 }
 
-void CheckOther::dangerousOldStyleTypeCastError(const Token *tok, bool isPtr)
+void CheckOther::dangerousTypeCastError(const Token *tok, bool isPtr)
 {
     const std::string type = isPtr ? "pointer" : "reference";
-    reportError(tok, Severity::warning, "dangerousOldStyleTypeCast",
-                "Potentially dangerous C style type cast of " + type + " to object, use dynamic_cast or static_cast",
+    reportError(tok, Severity::warning, "dangerousTypeCast",
+                "Potentially dangerous C style type cast of " + type + " to object",
                 CWE398, Certainty::normal);
 }
 
@@ -4565,7 +4565,7 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
     c.checkCastIntToCharAndBackError(nullptr, "func_name");
     c.cstyleCastError(nullptr);
-    c.dangerousOldStyleTypeCastError(nullptr, true);
+    c.dangerousTypeCastError(nullptr, true);
     c.intToPointerCastError(nullptr);
     c.suspiciousFloatingPointCastError(nullptr);
     c.passedByValueError(nullptr, false);
