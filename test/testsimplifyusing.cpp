@@ -71,6 +71,7 @@ private:
         TEST_CASE(simplifyUsing33);
         TEST_CASE(simplifyUsing34);
         TEST_CASE(simplifyUsing35);
+        TEST_CASE(simplifyUsing36);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -869,6 +870,14 @@ private:
         const char code[] = "using a = b;\n"
                             "using c = d;\n";
         const char expected[] = ";";
+        ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyUsing36() {
+        const char code[] = "using A::a;\n"
+                            "int c = B<int>::a;\n";
+        const char expected[] = "int c ; c = B < int > :: a ;";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout_str());
     }
