@@ -296,6 +296,10 @@ void CheckOther::suspiciousSemicolonError(const Token* tok)
 //---------------------------------------------------------------------------
 void CheckOther::warningOldStylePointerCast()
 {
+    // Only valid on C++ code
+    if (!mTokenizer->isCPP())
+        return;
+
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("cstyleCast"))
         return;
 
@@ -333,19 +337,7 @@ void CheckOther::warningOldStylePointerCast()
             const bool refcast = (tok->valueType()->reference != Reference::None);
             if (!refcast && tok->valueType()->pointer == 0)
                 continue;
-            if (!refcast && from->valueType()->pointer == 0) {
-                // casting non-zero integer literal (decimal/octal) to pointer is suspicious
-                if (mSettings->severity.isEnabled(Severity::portability) &&
-                    tok->valueType()->pointer > 0 &&
-                    from->isNumber() &&
-                    !MathLib::isIntHex(from->str()) &&
-                    from->getKnownIntValue() != 0)
-                    intToPointerCastError(tok);
-                continue;
-            }
-
-            // Use C++ cast: Only valid on C++ code
-            if (!mTokenizer->isCPP())
+            if (!refcast && from->valueType()->pointer == 0)
                 continue;
 
             if (tok->valueType()->type == ValueType::Type::VOID || from->valueType()->type == ValueType::Type::VOID)
@@ -373,6 +365,27 @@ void CheckOther::cstyleCastError(const Token *tok, bool isPtr)
                 "which kind of cast is expected.", CWE398, Certainty::normal);
 }
 
+void CheckOther::warningIntToPointerCast()
+{
+    if (!mSettings->severity.isEnabled(Severity::portability))
+        return;
+
+    logChecker("CheckOther::warningIntToPointerCast"); // portability
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        // pointer casting..
+        if (!tok->isCast())
+            continue;
+        const Token* from = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+        if (!from || !from->isNumber())
+            continue;
+        if (!tok->valueType() || tok->valueType()->pointer == 0)
+            continue;
+        if (!MathLib::isIntHex(from->str()) && from->getKnownIntValue() != 0)
+            intToPointerCastError(tok);
+    }
+}
 
 void CheckOther::intToPointerCastError(const Token *tok)
 {
@@ -4407,6 +4420,7 @@ void CheckOther::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
 
     // Checks
     checkOther.warningOldStylePointerCast();
+    checkOther.warningIntToPointerCast();
     checkOther.suspiciousFloatingPointCast();
     checkOther.invalidPointerCast();
     checkOther.checkCharVariable();

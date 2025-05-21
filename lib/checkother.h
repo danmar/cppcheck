@@ -80,6 +80,9 @@ private:
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
 
+    /** @brief Casting non-hexadecimal integer literal to pointer */
+    void warningIntToPointerCast();
+
     void suspiciousFloatingPointCast();
 
     /** @brief Check for pointer casts to a type with an incompatible binary data representation */

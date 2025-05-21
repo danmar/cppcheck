@@ -109,6 +109,7 @@ private:
         TEST_CASE(varScope43);
 
         TEST_CASE(oldStylePointerCast);
+        TEST_CASE(intToPointerCast);
         TEST_CASE(invalidPointerCast);
 
         TEST_CASE(passedByValue);
@@ -1901,7 +1902,7 @@ private:
     template<size_t size>
     void checkOldStylePointerCast_(const char* file, int line, const char (&code)[size], Standards::cppstd_t std = Standards::CPPLatest) {
 
-        const Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::portability).cpp(std).build();
+        const Settings settings = settingsBuilder().severity(Severity::style).cpp(std).build();
 
         // Tokenize..
         SimpleTokenizer tokenizerCpp(settings, *this);
@@ -1982,9 +1983,9 @@ private:
         // #3630
         checkOldStylePointerCast("class SomeType{};\n"
                                  "class X : public Base {\n"
-                                 "    X() : Base((SomeType*)7) {}\n"
+                                 "    X() : Base((SomeType*)7) {}\n" // <- intToPointerCast
                                  "};");
-        ASSERT_EQUALS("[test.cpp:3:16]: (portability) Casting non-zero integer literal in decimal or octal format to pointer. [intToPointerCast]\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
         checkOldStylePointerCast("class SomeType{};\n"
                                  "class X : public Base {\n"
@@ -2125,6 +2126,35 @@ private:
                                  "    using float_ptr = float*;\n"
                                  "    return N::f(float_ptr(b.data()));\n" // <- the cast is safe
                                  "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+#define checkIntToPointerCast(...) checkIntToPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void checkIntToPointerCast_(const char* file, int line, const char (&code)[size]) {
+
+        const Settings settings = settingsBuilder().severity(Severity::portability).build();
+
+        // Tokenize..
+        SimpleTokenizer tokenizerCpp(settings, *this);
+        ASSERT_LOC(tokenizerCpp.tokenize(code), file, line);
+
+        CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
+        checkOtherCpp.warningIntToPointerCast();
+    }
+
+    void intToPointerCast() {
+        // #3630
+        checkIntToPointerCast("uint8_t* ptr = (uint8_t*)7;");
+        ASSERT_EQUALS("[test.cpp:1:16]: (portability) Casting non-zero integer literal in decimal or octal format to pointer. [intToPointerCast]\n", errout_str());
+
+        checkIntToPointerCast("void* ptr = (void*)7;");
+        ASSERT_EQUALS("[test.cpp:1:13]: (portability) Casting non-zero integer literal in decimal or octal format to pointer. [intToPointerCast]\n", errout_str());
+
+        checkIntToPointerCast("uint8_t* ptr = (uint8_t*)0;");
+        ASSERT_EQUALS("", errout_str());
+
+        checkIntToPointerCast("uint8_t* ptr = (uint8_t*)0x7000;"); // <- it's common in embedded code to cast address
         ASSERT_EQUALS("", errout_str());
     }
 
