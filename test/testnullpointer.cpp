@@ -140,6 +140,7 @@ private:
         TEST_CASE(nullpointer101);        // #11382
         TEST_CASE(nullpointer102);
         TEST_CASE(nullpointer103);
+        TEST_CASE(nullpointer104); // #13881
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2917,6 +2918,15 @@ private:
               "    f(nullptr, &x);\n"
               "}\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:3:10]: (warning) Possible null pointer dereference: p [nullPointer]\n", errout_str());
+    }
+
+    void nullpointer104() // #13881
+    {
+        check("using std::max;\n"
+              "void f(int i) {\n"
+              "    const size_t maxlen = i == 1 ? 8 : (std::numeric_limits<std::size_t>::max());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void nullpointer_addressOf() { // address of
