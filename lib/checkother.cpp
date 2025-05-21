@@ -438,7 +438,8 @@ void CheckOther::warningDangerousTypeCast()
 
 void CheckOther::dangerousTypeCastError(const Token *tok, bool isPtr)
 {
-    const std::string type = isPtr ? "pointer" : "reference";
+    //const std::string type = isPtr ? "pointer" : "reference";
+    (void)isPtr;
     reportError(tok, Severity::warning, "dangerousTypeCast",
                 "Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast",
                 CWE398, Certainty::normal);
