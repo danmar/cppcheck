@@ -1,7 +1,7 @@
 
 # dangerousTypeCast
 
-**Message**: Potentially dangerous C style type cast of pointer to object<br/>
+**Message**: Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast<br/>
 **Category**: Type Safety<br/>
 **Severity**: Warning<br/>
 **Language**: C++, not applicable for C code

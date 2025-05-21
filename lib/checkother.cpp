@@ -408,7 +408,7 @@ void CheckOther::cstyleCastError(const Token *tok, bool isPtr)
                 "which kind of cast is expected.", CWE398, Certainty::normal);
 }
 
-void CheckOther::warningDangerousOldStyleTypeCast()
+void CheckOther::warningDangerousTypeCast()
 {
     // Only valid on C++ code
     if (!mTokenizer->isCPP())
@@ -416,7 +416,7 @@ void CheckOther::warningDangerousOldStyleTypeCast()
     if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("cstyleCast"))
         return;
 
-    logChecker("CheckOther::warningDangerousOldStyleTypeCast"); // warning,c++
+    logChecker("CheckOther::warningDangerousTypeCast"); // warning,c++
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -440,7 +440,7 @@ void CheckOther::dangerousTypeCastError(const Token *tok, bool isPtr)
 {
     const std::string type = isPtr ? "pointer" : "reference";
     reportError(tok, Severity::warning, "dangerousTypeCast",
-                "Potentially dangerous C style type cast of " + type + " to object",
+                "Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast",
                 CWE398, Certainty::normal);
 }
 
@@ -460,15 +460,23 @@ void CheckOther::warningIntToPointerCast()
             continue;
         if (!tok->valueType() || tok->valueType()->pointer == 0)
             continue;
-        if (!MathLib::isIntHex(from->str()) && from->getKnownIntValue() != 0)
-            intToPointerCastError(tok);
+        if (!MathLib::isIntHex(from->str()) && from->getKnownIntValue() != 0) {
+            std::string format;
+            if (MathLib::isDec(from->str()))
+                format = "decimal";
+            else if (MathLib::isOct(from->str()))
+                format = "octal";
+            else
+                continue;
+            intToPointerCastError(tok, format);
+        }
     }
 }
 
-void CheckOther::intToPointerCastError(const Token *tok)
+void CheckOther::intToPointerCastError(const Token *tok, const std::string& format)
 {
     reportError(tok, Severity::portability, "intToPointerCast",
-                "Casting non-zero integer literal in decimal or octal format to pointer.",
+                "Casting non-zero " + format + " integer literal to pointer.",
                 CWE398, Certainty::normal);
 }
 
@@ -4498,6 +4506,7 @@ void CheckOther::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
 
     // Checks
     checkOther.warningOldStylePointerCast();
+    checkOther.warningDangerousTypeCast();
     checkOther.warningIntToPointerCast();
     checkOther.suspiciousFloatingPointCast();
     checkOther.invalidPointerCast();
@@ -4566,7 +4575,7 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.checkCastIntToCharAndBackError(nullptr, "func_name");
     c.cstyleCastError(nullptr);
     c.dangerousTypeCastError(nullptr, true);
-    c.intToPointerCastError(nullptr);
+    c.intToPointerCastError(nullptr, "decimal");
     c.suspiciousFloatingPointCastError(nullptr);
     c.passedByValueError(nullptr, false);
     c.constVariableError(nullptr, nullptr);
