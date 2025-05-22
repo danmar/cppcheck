@@ -311,6 +311,8 @@ private:
 
         TEST_CASE(explicitBool1);
         TEST_CASE(explicitBool2);
+
+        TEST_CASE(templateArgPreserveType); // #13882 - type of template argument
     }
 
     struct CheckOptions
@@ -677,7 +679,7 @@ private:
                                  "vec<4> v ; "
                                  "struct vec<4> { "
                                  "vec<4> ( ) { } "
-                                 "vec<4> ( const vec < 4 - 1 > & v ) { } "
+                                 "vec<4> ( const vec < ( int ) 4 - 1 > & v ) { } "
                                  "} ;";
 
         ASSERT_EQUALS(expected2, tok(code2));
@@ -1302,7 +1304,7 @@ private:
                                 "int calculate_value<1,1> ( ) ; "
                                 "int value ; value = calculate_value<1,1> ( ) ; "
                                 "int calculate_value<1,1> ( ) { "
-                                "if ( 1 != 1 ) { "
+                                "if ( ( int ) 1 != ( int ) 1 ) { "
                                 "return sum<0> ( ) ; "
                                 "} else { "
                                 "return 0 ; "
@@ -1332,16 +1334,16 @@ private:
                                 "} ; "
                                 "const int x = Factorial<4> :: value ; "
                                 "struct Factorial<4> { "
-                                "enum Anonymous0 { value = 4 * Factorial<3> :: value } ; "
+                                "enum Anonymous0 { value = ( int ) 4 * Factorial<3> :: value } ; "
                                 "} ; "
                                 "struct Factorial<3> { "
-                                "enum Anonymous0 { value = 3 * Factorial<2> :: value } ; "
+                                "enum Anonymous0 { value = ( int ) 3 * Factorial<2> :: value } ; "
                                 "} ; "
                                 "struct Factorial<2> { "
-                                "enum Anonymous0 { value = 2 * Factorial<1> :: value } ; "
+                                "enum Anonymous0 { value = ( int ) 2 * Factorial<1> :: value } ; "
                                 "} ; "
                                 "struct Factorial<1> { "
-                                "enum Anonymous0 { value = 1 * Factorial<0> :: value } ; "
+                                "enum Anonymous0 { value = ( int ) 1 * Factorial<0> :: value } ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, dinit(CheckOptions, $.debugwarnings = true)));
         ASSERT_EQUALS("", errout_str());
@@ -1459,10 +1461,10 @@ private:
                            "int diagonalGroupTest<4> ( ) ; "
                            "int main ( ) { return diagonalGroupTest<4> ( ) ; } "
                            "int diagonalGroupTest<4> ( ) { return Factorial<4> :: value ; } "
-                           "struct Factorial<4> { enum FacHelper { value = 4 * Factorial<3> :: value } ; } ; "
-                           "struct Factorial<3> { enum FacHelper { value = 3 * Factorial<2> :: value } ; } ; "
-                           "struct Factorial<2> { enum FacHelper { value = 2 * Factorial<1> :: value } ; } ; "
-                           "struct Factorial<1> { enum FacHelper { value = 1 * Factorial<0> :: value } ; } ;";
+                           "struct Factorial<4> { enum FacHelper { value = ( int ) 4 * Factorial<3> :: value } ; } ; "
+                           "struct Factorial<3> { enum FacHelper { value = ( int ) 3 * Factorial<2> :: value } ; } ; "
+                           "struct Factorial<2> { enum FacHelper { value = ( int ) 2 * Factorial<1> :: value } ; } ; "
+                           "struct Factorial<1> { enum FacHelper { value = ( int ) 1 * Factorial<0> :: value } ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -1558,11 +1560,11 @@ private:
                            "} ; "
                            "void A :: t_func<0> ( ) "
                            "{ "
-                           "if ( 0 != 0 || foo<int> ( ) ) { ; } "
+                           "if ( ( int ) 0 != 0 || foo<int> ( ) ) { ; } "
                            "} "
                            "void A :: t_func<1> ( ) "
                            "{ "
-                           "if ( 1 != 0 || foo<int> ( ) ) { ; } "
+                           "if ( ( int ) 1 != 0 || foo<int> ( ) ) { ; } "
                            "} "
                            "bool foo<int> ( ) { return true ; }";
         ASSERT_EQUALS(exp, tok(code));
@@ -4765,15 +4767,15 @@ private:
                                 "    A<int,(int)2> a1;\n"
                                 "    A<int> a2;\n"
                                 "}\n";
-            const char expected[] = "class A<int,(int)2> ; "
+            const char expected[] = "class A<int,2> ; "
                                     "class A<int,3> ; "
                                     "void f ( ) "
                                     "{ "
-                                    "A<int,(int)2> a1 ; "
+                                    "A<int,2> a1 ; "
                                     "A<int,3> a2 ; "
                                     "} "
-                                    "class A<int,(int)2> "
-                                    "{ int ar [ ( int ) 2 ] ; } ; "
+                                    "class A<int,2> "
+                                    "{ int ar [ 2 ] ; } ; "
                                     "class A<int,3> "
                                     "{ int ar [ 3 ] ; } ;";
             ASSERT_EQUALS(expected, tok(code));
@@ -6311,7 +6313,7 @@ private:
                             "}";
         const char expected[] = "struct A<0> ; "
                                 "void bar ( ) { A<0> :: foo ( ) ; } "
-                                "struct A<0> { static void foo ( ) { int i ; i = 0 ; } } ;";
+                                "struct A<0> { static void foo ( ) { int i ; i = ( int ) 0 ; } } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -6585,6 +6587,17 @@ private:
     void explicitBool2() {
         const char code[] = "class Fred { explicit(false) Fred(int); };";
         ASSERT_EQUALS("class Fred { Fred ( int ) ; } ;", tok(code));
+    }
+
+    void templateArgPreserveType() { // #13882 - type of template argument
+        const char code[] = "template <std::size_t Size> class Test {\n"
+                            "    std::size_t maxLen = Size;\n"
+                            "};\n"
+                            "Test<64> test;\n";
+        ASSERT_EQUALS("class Test<64> ; "
+                      "Test<64> test ; "
+                      "class Test<64> { unsigned long maxLen ; maxLen = ( unsigned long ) 64 ; } ;",
+                      tok(code));
     }
 };
 

@@ -4211,11 +4211,11 @@ private:
                             "struct S\n"
                             "{};\n"
                             "S<int> s;\n";
-        ASSERT_EQUALS("struct S<int,(int)0> ;\n"
+        ASSERT_EQUALS("struct S<int,0> ;\n"
                       "\n"
                       "\n"
-                      "S<int,(int)0> s ;\n"
-                      "struct S<int,(int)0>\n"
+                      "S<int,0> s ;\n"
+                      "struct S<int,0>\n"
                       "{ } ;",
                       tokenizeAndStringify(code));
     }
