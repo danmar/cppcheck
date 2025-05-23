@@ -80,6 +80,12 @@ private:
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
 
+    /** @brief Dangerous type cast */
+    void warningDangerousTypeCast();
+
+    /** @brief Casting non-hexadecimal integer literal to pointer */
+    void warningIntToPointerCast();
+
     void suspiciousFloatingPointCast();
 
     /** @brief Check for pointer casts to a type with an incompatible binary data representation */
@@ -198,6 +204,8 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok, bool isPtr = true);
+    void dangerousTypeCastError(const Token *tok, bool isPtr);
+    void intToPointerCastError(const Token *tok, const std::string& format);
     void suspiciousFloatingPointCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
     void passedByValueError(const Variable* var, bool inconclusive, bool isRangeBasedFor = false);
@@ -273,6 +281,7 @@ private:
                // warning
                "- either division by zero or useless condition\n"
                "- access of moved or forwarded variable.\n"
+               "- potentially dangerous C style type cast of pointer/reference to object.\n"
 
                // performance
                "- redundant data copying for const variable\n"
@@ -281,6 +290,7 @@ private:
 
                // portability
                "- Passing NULL pointer to function with variable number of arguments leads to UB.\n"
+               "- Casting non-zero integer literal in decimal or octal format to pointer.\n"
 
                // style
                "- C-style pointer cast in C++ code\n"
