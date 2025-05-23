@@ -6590,13 +6590,13 @@ private:
     }
 
     void templateArgPreserveType() { // #13882 - type of template argument
-        const char code[] = "template <std::size_t Size> class Test {\n"
-                            "    std::size_t maxLen = Size;\n"
+        const char code[] = "template <uint32_t x> class Test {\n"
+                            "    uint32_t i = x;\n"
                             "};\n"
                             "Test<64> test;\n";
         ASSERT_EQUALS("class Test<64> ; "
                       "Test<64> test ; "
-                      "class Test<64> { unsigned long maxLen ; maxLen = ( unsigned long ) 64 ; } ;",
+                      "class Test<64> { uint32_t i ; i = ( uint32_t ) 64 ; } ;",
                       tok(code));
     }
 };
