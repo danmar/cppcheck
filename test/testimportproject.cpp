@@ -67,6 +67,8 @@ private:
         TEST_CASE(importCompileCommands13); // #13333: duplicate file entries
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
+        TEST_CASE(importCompileCommandsDirectoryMissing); // 'directory' field missing
+        TEST_CASE(importCompileCommandsDirectoryInvalid); // 'directory' field not a string
         TEST_CASE(importCppcheckGuiProject);
         TEST_CASE(ignorePaths);
     }
@@ -382,6 +384,27 @@ private:
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
         ASSERT_EQUALS("cppcheck: error: no 'arguments' or 'command' field found in compilation database entry\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void importCompileCommandsDirectoryMissing() const {
+        REDIRECT;
+        constexpr char json[] = "[ { \"file\": \"src.mm\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(false, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS("cppcheck: error: 'directory' field in compilation database entry missing\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void importCompileCommandsDirectoryInvalid() const {
+        REDIRECT;
+        constexpr char json[] = "[ { \"directory\": 123,"
+                                "\"file\": \"src.mm\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(false, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS("cppcheck: error: 'directory' field in compilation database entry is not a string\n", GET_REDIRECT_OUTPUT);
     }
 
     void importCppcheckGuiProject() const {
