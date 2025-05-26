@@ -226,6 +226,8 @@ private:
         //TEST_CASE(redundantMemWrite); // FIXME: temporary hack
         TEST_CASE(redundantAssignmentSameValue);
 
+        TEST_CASE(memOverlap);
+
         TEST_CASE(varFuncNullUB);
 
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
@@ -10893,6 +10895,22 @@ private:
               "    a = x;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void memOverlap() {
+        check("void f()\n"
+              "{\n"
+              "    char str[] = \"test\";\n"
+              "    strcpy(str, str + 1);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping read/write in strcpy() is undefined behavior\n","", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char str[] = \"test\";\n"
+              "    strncpy(str, str + 1, 2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping read/write in strncpy() is undefined behavior\n", errout.str());
     }
 
     void varFuncNullUB() { // #4482
