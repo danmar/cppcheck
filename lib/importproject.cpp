@@ -359,6 +359,17 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
     for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
+
+        if (obj.count("directory") == 0) {
+            printError("'directory' field in compilation database entry missing");
+            return false;
+        }
+
+        if (!obj["directory"].is<std::string>()) {
+            printError("'directory' field in compilation database entry is not a string");
+            return false;
+        }
+
         std::string dirpath = Path::fromNativeSeparators(obj["directory"].get<std::string>());
 
         /* CMAKE produces the directory without trailing / so add it if not
