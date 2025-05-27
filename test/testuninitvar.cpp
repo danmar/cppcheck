@@ -4987,6 +4987,14 @@ private:
                        "    return s.i;\n"
                        "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkUninitVar("struct S { int a; };\n" // #13848
+                       "int f(std::istream& is) {\n"
+                       "    S s;\n"
+                       "    is >> s;\n"
+                       "    return s.a;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitvar2_while() {

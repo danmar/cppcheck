@@ -796,6 +796,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
 
             if (!membervar.empty()) {
+                if (mTokenizer->isCPP() && Token::simpleMatch(tok->astParent(), ">>"))
+                    return true;
+
                 if (isMemberVariableAssignment(tok, membervar)) {
                     checkRhs(tok, var, *alloc, number_of_if, membervar);
                     return true;
