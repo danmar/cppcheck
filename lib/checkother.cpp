@@ -461,7 +461,7 @@ void CheckOther::warningIntToPointerCast()
             continue;
         if (!tok->valueType() || tok->valueType()->pointer == 0)
             continue;
-        if (!MathLib::isIntHex(from->str()) && from->getKnownIntValue() != 0) {
+        if (!MathLib::isIntHex(from->str()) && from->hasKnownIntValue() && from->getKnownIntValue() != 0) {
             std::string format;
             if (MathLib::isDec(from->str()))
                 format = "decimal";
