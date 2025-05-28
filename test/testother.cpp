@@ -2211,6 +2211,10 @@ private:
 
         checkIntToPointerCast("uint8_t* ptr = (uint8_t*)0x7000;"); // <- it's common in embedded code to cast address
         ASSERT_EQUALS("", errout_str());
+
+        checkIntToPointerCast("struct S { int i; };\n" // #13886, don't crash
+                              "int f() { return sizeof(((struct S*)0)->i); }");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
