@@ -28,6 +28,7 @@
 #include <iosfwd>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -80,6 +81,10 @@ public:
     bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
     bool simplifyTokens1(const std::string &configuration, int fileIndex=0);
+
+    bool isVarUsedInTemplate(nonneg int id) const {
+        return mTemplateVarIdUsage.count(id) != 0;
+    }
 
 private:
     /** Set variable id */
@@ -640,6 +645,8 @@ private:
     SymbolDatabase* mSymbolDatabase{};
 
     TemplateSimplifier * const mTemplateSimplifier;
+
+    std::set<nonneg int> mTemplateVarIdUsage;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */

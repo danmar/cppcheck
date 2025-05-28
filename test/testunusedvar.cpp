@@ -71,6 +71,7 @@ private:
         TEST_CASE(structmember26); // #13345
         TEST_CASE(structmember27); // #13367
         TEST_CASE(structmember_macro);
+        TEST_CASE(structmember_template_argument); // #13887 - do not report that member used in template argument is unused
         TEST_CASE(classmember);
         TEST_CASE(structmemberStructuredBinding); // #13107
 
@@ -2001,6 +2002,15 @@ private:
         checkStructMemberUsageP("#define S(n) struct n { int a, b, c; };\n"
                                 "S(unused);\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void structmember_template_argument() { // #13887 - False positive
+        checkStructMemberUsage("template <class T, int i> struct A{ T buf[i]; }\n"
+                               "struct B {\n"
+                               "    constexpr int x = 20;\n" // <- not unused
+                               "    A<uint32_t, x> a;\n" // <- unused
+                               "};");
+        ASSERT_EQUALS("[test.cpp:4:20]: (style) struct member 'B::a' is never used. [unusedStructMember]\n", errout_str());
     }
 
     void classmember() {
