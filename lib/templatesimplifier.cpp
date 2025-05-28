@@ -1648,7 +1648,7 @@ void TemplateSimplifier::expandTemplate(
     std::vector<newInstantiation> newInstantiations;
 
     for (const Token* tok = templateInstantiation.token()->next()->findClosingBracket();
-         tok && tok != templateInstantiation.token() ; tok = tok->previous()) {
+         tok && tok != templateInstantiation.token(); tok = tok->previous()) {
         if (tok->isName())
             mUsedVariables[newName].insert(tok->str());
     }
