@@ -1647,6 +1647,12 @@ void TemplateSimplifier::expandTemplate(
 
     std::vector<newInstantiation> newInstantiations;
 
+    for (const Token* tok = templateInstantiation.token()->next()->findClosingBracket();
+         tok && tok != templateInstantiation.token() ; tok = tok->previous()) {
+        if (tok->isName())
+            mUsedVariables[newName].insert(tok->str());
+    }
+
     // add forward declarations
     if (copy && isClass) {
         templateDeclaration.token()->insertTokenBefore(templateDeclarationToken->strAt(1));
@@ -3858,6 +3864,12 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                 mDump += t.dump(mTokenizer.list.getFiles());
             for (const TokenAndName& t: mTemplateForwardDeclarations)
                 mDump += t.dump(mTokenizer.list.getFiles());
+            for (const auto& t: mUsedVariables) {
+                mDump += "    <varusage typename=\"" + t.first + "\">\n";
+                for (const auto& varname: t.second)
+                    mDump += "      <var name=\"" + varname + "\"/>\n";
+                mDump += "    </varusage>\n";
+            }
             if (!mDump.empty())
                 mDump = "  <TemplateSimplifier>\n" + mDump + "  </TemplateSimplifier>\n";
         }

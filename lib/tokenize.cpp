@@ -4406,10 +4406,26 @@ static void setVarIdStructMembers(Token *&tok1,
     tok1 = tok;
 }
 
+static void addTemplateVarIdUsage(const std::string &tokstr,
+                                  const std::map<std::string, std::set<std::string>>& templateVarUsage,
+                                  const std::unordered_map<std::string, nonneg int>& variableMap,
+                                  std::set<nonneg int>& templateVarIdUsage) {
+    const auto v = templateVarUsage.find(tokstr);
+    if (v != templateVarUsage.end()) {
+        for (const std::string& varname: v->second) {
+            const auto it = variableMap.find(varname);
+            if (it != variableMap.end())
+                templateVarIdUsage.insert(it->second);
+        }
+    }
+}
+
 static bool setVarIdClassDeclaration(Token* const startToken,
                                      VariableMap& variableMap,
                                      const nonneg int scopeStartVarId,
-                                     std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
+                                     const std::map<std::string, std::set<std::string>>& templateVarUsage,
+                                     std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
+                                     std::set<nonneg int>& templateVarIdUsage)
 {
     // end of scope
     const Token* const endToken = startToken->link();
@@ -4476,6 +4492,8 @@ static bool setVarIdClassDeclaration(Token* const startToken,
                     if (it != variableMap.map(false).end()) {
                         tok->varId(it->second);
                         setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
+                    } else if (tok->str().back() == '>') {
+                        addTemplateVarIdUsage(tok->str(), templateVarUsage, variableMap.map(false), templateVarIdUsage);
                     }
                 }
             }
@@ -4655,7 +4673,9 @@ void Tokenizer::setVarIdPass1()
                         if (!setVarIdClassDeclaration(tok->link(),
                                                       variableMap,
                                                       scopeStack.top().startVarid,
-                                                      structMembers)) {
+                                                      mTemplateSimplifier->getUsedVariables(),
+                                                      structMembers,
+                                                      mTemplateVarIdUsage)) {
                             syntaxError(nullptr);
                         }
                     }
@@ -4742,6 +4762,16 @@ void Tokenizer::setVarIdPass1()
 
             if (decl) {
                 if (cpp) {
+                    for (const Token* tok3 = tok->next(); tok3->isName(); tok3 = tok3->next()) {
+                        addTemplateVarIdUsage(tok3->str(),
+                                              mTemplateSimplifier->getUsedVariables(),
+                                              variableMap.map(false),
+                                              mTemplateVarIdUsage);
+                        addTemplateVarIdUsage(tok3->str(),
+                                              mTemplateSimplifier->getUsedVariables(),
+                                              variableMap.map(true),
+                                              mTemplateVarIdUsage);
+                    }
                     if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
                         for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
                             if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
@@ -4853,6 +4883,13 @@ void Tokenizer::setVarIdPass1()
                     continue;
                 if (Token::simpleMatch(tok->tokAt(-2), ":: template"))
                     continue;
+            }
+
+            if (tok->str().back() == '>') {
+                addTemplateVarIdUsage(tok->str(),
+                                      mTemplateSimplifier->getUsedVariables(),
+                                      variableMap.map(globalNamespace),
+                                      mTemplateVarIdUsage);
             }
 
             // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
@@ -6171,6 +6208,12 @@ void Tokenizer::dump(std::ostream &out) const
     outs += dumpTypedefInfo();
 
     outs += mTemplateSimplifier->dump();
+    if (!mTemplateVarIdUsage.empty()) {
+        outs += "  <template-varid-usage>\n";
+        for (nonneg int id: mTemplateVarIdUsage)
+            outs += "    <var id=\"" + std::to_string(id) + "\">\n";
+        outs += "  </template-varid-usage>\n";
+    }
 
     out << outs;
 }

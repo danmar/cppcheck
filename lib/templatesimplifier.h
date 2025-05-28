@@ -54,6 +54,10 @@ public:
         return mDump;
     }
 
+    const std::map<std::string, std::set<std::string>>& getUsedVariables() const {
+        return mUsedVariables;
+    }
+
     /**
      */
     void checkComplicatedSyntaxErrorsInTemplates();
@@ -510,6 +514,8 @@ private:
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
     std::unordered_map<const Token*, int> mTemplateNamePos;
     std::string mDump;
+
+    std::map<std::string, std::set<std::string>> mUsedVariables;
 };
 
 /// @}
