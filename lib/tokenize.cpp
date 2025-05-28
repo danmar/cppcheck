@@ -6211,7 +6211,7 @@ void Tokenizer::dump(std::ostream &out) const
     if (!mTemplateVarIdUsage.empty()) {
         outs += "  <template-varid-usage>\n";
         for (nonneg int id: mTemplateVarIdUsage)
-            outs += "    <var id=\"" + std::to_string(id) + "\">\n";
+            outs += "    <var id=\"" + std::to_string(id) + "\"/>\n";
         outs += "  </template-varid-usage>\n";
     }
 
