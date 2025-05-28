@@ -3864,12 +3864,6 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                 mDump += t.dump(mTokenizer.list.getFiles());
             for (const TokenAndName& t: mTemplateForwardDeclarations)
                 mDump += t.dump(mTokenizer.list.getFiles());
-            for (const auto& t: mUsedVariables) {
-                mDump += "    <varusage typename=\"" + t.first + "\">\n";
-                for (const auto& varname: t.second)
-                    mDump += "      <var name=\"" + varname + "\"/>\n";
-                mDump += "    </varusage>\n";
-            }
             if (!mDump.empty())
                 mDump = "  <TemplateSimplifier>\n" + mDump + "  </TemplateSimplifier>\n";
         }
