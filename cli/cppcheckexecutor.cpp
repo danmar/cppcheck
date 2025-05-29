@@ -120,6 +120,10 @@ namespace {
                         properties["tags"] = picojson::value(tags);
                     }
                     rule["properties"] = picojson::value(properties);
+                    // rule.defaultConfiguration.level
+                    picojson::object defaultConfiguration;
+                    defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
+                    rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
 
                     ret.emplace_back(rule);
                 }
