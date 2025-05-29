@@ -289,11 +289,12 @@ namespace {
         void reportMetrics()
         {
             if (!mFileMetrics.empty()) {
-                std::cout << "    <metrics>" << std::endl;
+                auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+                out << "    <metrics>" << std::endl;
                 for (const auto &metric : mFileMetrics) {
-                    reportOut("        " + metric);
+                    out << "        " << metric << std::endl;
                 }
-                std::cout << "    </metrics>" << std::endl;
+                out << "    </metrics>" << std::endl;
             }
         }
 
@@ -508,7 +509,8 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
     stdLogger.writeCheckersReport(supprs);
 
     if (settings.outputFormat == Settings::OutputFormat::xml) {
-        stdLogger.reportMetrics();
+        if (settings.xml_version == 3)
+            stdLogger.reportMetrics();
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
