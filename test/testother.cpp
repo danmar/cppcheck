@@ -12390,6 +12390,12 @@ private:
               "}\n"
               "int g() { return 1; }\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #13888
+              "    int i;\n"
+              "    friend int f() { int i = 5; return i; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void knownArgument() {
