@@ -234,6 +234,7 @@ private:
         TEST_CASE(premiumOptions3);
         TEST_CASE(premiumOptions4);
         TEST_CASE(premiumOptions5);
+        TEST_CASE(premiumOptionsMetrics);
         TEST_CASE(premiumOptionsCertCIntPrecision);
         TEST_CASE(premiumOptionsLicenseFile);
         TEST_CASE(premiumOptionsInvalid1);
@@ -1435,6 +1436,17 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
         ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
+    }
+
+    void premiumOptionsMetrics() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {"cppcheck", "--premium=metrics", "file.c"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS("--metrics", settings->premiumArgs);
+        ASSERT(settings->severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::portability));
     }
 
     void premiumOptionsCertCIntPrecision() {
