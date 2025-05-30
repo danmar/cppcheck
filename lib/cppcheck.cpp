@@ -1773,17 +1773,14 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                 picojson::object metric_json = obj["metric"].get<picojson::object>();
 
                 std::stringstream ss;
-                ss << "<";
+                ss << "<metric";
 
-                bool isFirst = true;
                 for (auto pair : metric_json) {
-                    std::string sep = isFirst ? "" : " ";
-                    isFirst = false;
                     const std::string id = pair.first;
                     if (pair.second.is<std::int64_t>())
-                        ss << sep << id << "=\"" << pair.second.get<std::int64_t>() << "\"";
+                        ss << " " << id << "=\"" << pair.second.get<std::int64_t>() << "\"";
                     else if (pair.second.is<std::string>())
-                        ss << sep << id << "=\"" << pair.second.get<std::string>() << "\"";
+                        ss << " " << id << "=\"" << pair.second.get<std::string>() << "\"";
                 }
 
                 ss << "/>";

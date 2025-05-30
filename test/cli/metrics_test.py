@@ -7,14 +7,14 @@ __script_dir = os.path.dirname(os.path.abspath(__file__))
 __addon_path = os.path.join(__script_dir, 'metrics_test', 'dummy_addon.py')
 __source_path = os.path.join(__script_dir, 'metrics_test', 'dummy_file.c')
 __expected_xml = [
-    '<fileName="1.cpp" function="write" id="HISCall" lineNumber="6" value="2"/>',
-    '<fileName="1.cpp" function="write" id="HISGoto" lineNumber="6" value="0"/>',
-    '<fileName="1.cpp" function="write" id="HISLevel" lineNumber="6" value="2"/>',
-    '<fileName="1.cpp" function="write" id="HISParam" lineNumber="6" value="2"/>',
-    '<fileName="1.cpp" function="write" id="HISPath" lineNumber="6" value="3"/>',
-    '<fileName="1.cpp" function="write" id="HISReturn" lineNumber="6" value="0"/>',
-    '<fileName="1.cpp" function="write" id="HISStmt" lineNumber="6" value="15"/>',
-    '<fileName="1.cpp" function="write" id="cyclomaticComplexity" lineNumber="6" value="3"/>'
+    '<metric fileName="1.cpp" function="write" id="HISCall" lineNumber="6" value="2"/>',
+    '<metric fileName="1.cpp" function="write" id="HISGoto" lineNumber="6" value="0"/>',
+    '<metric fileName="1.cpp" function="write" id="HISLevel" lineNumber="6" value="2"/>',
+    '<metric fileName="1.cpp" function="write" id="HISParam" lineNumber="6" value="2"/>',
+    '<metric fileName="1.cpp" function="write" id="HISPath" lineNumber="6" value="3"/>',
+    '<metric fileName="1.cpp" function="write" id="HISReturn" lineNumber="6" value="0"/>',
+    '<metric fileName="1.cpp" function="write" id="HISStmt" lineNumber="6" value="15"/>',
+    '<metric fileName="1.cpp" function="write" id="cyclomaticComplexity" lineNumber="6" value="3"/>'
 ]
 
 def test_dummy_metrics_xml_report(tmpdir):
