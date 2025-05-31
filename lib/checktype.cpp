@@ -322,8 +322,12 @@ static bool checkTypeCombination(ValueType src, ValueType tgt, const Settings& s
     src.reference = Reference::None;
     tgt.reference = Reference::None;
 
-    const std::size_t sizeSrc = ValueFlow::getSizeOf(src, settings);
-    const std::size_t sizeTgt = ValueFlow::getSizeOf(tgt, settings);
+    const std::size_t sizeSrc = ValueFlow::getSizeOf(src,
+                                                     settings,
+                                                     ValueFlow::Accuracy::ExcactOrZero);
+    const std::size_t sizeTgt = ValueFlow::getSizeOf(tgt,
+                                                     settings,
+                                                     ValueFlow::Accuracy::ExcactOrZero);
     if (!(sizeSrc > 0 && sizeTgt > 0 && sizeSrc < sizeTgt))
         return false;
 

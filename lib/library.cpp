@@ -941,7 +941,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         const char *argattr = argnode->Attribute("arg");
                         if (!argattr)
                             return Error(ErrorCode::MISSING_ATTRIBUTE, "arg");
-                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]> '9')
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, argattr);
 
                         ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
@@ -950,7 +950,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             const char *arg2attr = argnode->Attribute("arg2");
                             if (!arg2attr)
                                 return Error(ErrorCode::MISSING_ATTRIBUTE, "arg2");
-                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]> '9')
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, arg2attr);
                             ac.minsizes.back().arg2 = arg2attr[0] - '0';
                         }
