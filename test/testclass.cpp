@@ -8906,6 +8906,7 @@ private:
     }
 
 
+    // TODO: add columns and IDs
 #define checkThisUseAfterFree(...) checkThisUseAfterFree_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkThisUseAfterFree_(const char* file, int line, const char (&code)[size]) {
