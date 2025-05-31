@@ -122,6 +122,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wno-disabled-macro-expansion)
     add_compile_options_safe(-Wno-bitwise-instead-of-logical)
     add_compile_options(-Wno-sign-compare)
+    add_compile_options_safe(-Wno-ms-bitfield-padding) # TODO: fix this
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
