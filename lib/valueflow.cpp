@@ -1533,7 +1533,6 @@ enum class LifetimeCapture : std::uint8_t { Undefined, ByValue, ByReference };
 
 static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
-    std::string result;
     if (!val)
         return "object";
     switch (val->lifetimeKind) {
