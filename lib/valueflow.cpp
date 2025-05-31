@@ -447,8 +447,6 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
             else
                 total = f(total, *vt, dim);
         }
-        if (total == 0)
-            return 0;
     }
     return total;
 }
@@ -530,7 +528,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
             size_t n = ValueFlow::getSizeOf(vt2, settings, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings);
             if (n == 0 || a == 0)
-                return 0;
+                return total;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             return vt.typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
@@ -543,11 +541,10 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
                 return v;
             });
         }
-        if (total == 0)
-            return 0;
+        total = std::max(size_t{1}, total);
         size_t align = getAlignOf(vt, settings);
         if (align == 0)
-            return 0;
+            return total;
         total += (align - (total % align)) % align;
         return total;
     }

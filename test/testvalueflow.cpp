@@ -1653,6 +1653,22 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(12, values.back().intvalue);
 
+        code = "struct X { A a; int b; A c; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(4, values.back().intvalue);
+
+        code = "struct X {};\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+
         code = "struct T;\n"
                "struct S { T& r; };\n"
                "struct T { S s{ *this }; };\n"
