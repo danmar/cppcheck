@@ -1156,7 +1156,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
             inTemplateArg = tok->link();
         if (inTemplateArg == tok)
             inTemplateArg = nullptr;
-        if (tok->isName() && !tok->function() && tok->varId() == 0 && ((tok->astParent() && tok->astParent()->isComparisonOp()) || Token::Match(tok, "%name% [{(,)>;:]]")) && !isReservedName(tok)) {
+        if (tok->isName() && !tok->function() && tok->varId() == 0 && ((tok->astParent() && tok->astParent()->isComparisonOp()) || Token::Match(tok, "%name% [{}(,)>;:]]")) && !isReservedName(tok)) {
             if (tok->strAt(1) == ">" && !tok->linkAt(1))
                 continue;
 
