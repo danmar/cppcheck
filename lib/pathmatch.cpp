@@ -25,7 +25,8 @@
 #include <utility>
 
 PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
-    : mPaths(std::move(paths)), mCaseSensitive(caseSensitive)
+    : mPaths(std::move(paths))
+    , mCaseSensitive(caseSensitive)
 {
     for (std::string& p : mPaths)
     {
@@ -37,7 +38,7 @@ PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
     mWorkingDirectory.push_back(Path::fromNativeSeparators(Path::getCurrentPath()));
 }
 
-bool PathMatch::match(const std::string &path) const
+bool PathMatch::match(const std::string &path, bool glob) const
 {
     if (path.empty())
         return false;
@@ -55,6 +56,10 @@ bool PathMatch::match(const std::string &path) const
 
     // TODO: align the match logic with ImportProject::ignorePaths()
     for (auto i = mPaths.cbegin(); i != mPaths.cend(); ++i) {
+        if (glob && utils::isWildcard(*i) && isValidGlobPattern(*i) && matchglob(*i, findpath)) {
+            return true;
+        }
+
         const std::string pathToMatch((!is_absolute && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 
         // Filtering directory name

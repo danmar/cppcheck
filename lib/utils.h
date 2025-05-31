@@ -427,6 +427,10 @@ namespace utils {
             return result;
         };
     }
+
+    static inline bool isWildcard(const std::string& expr) {
+        return expr.find_first_of("?*") != std::string::npos;
+    }
 }
 
 #endif
