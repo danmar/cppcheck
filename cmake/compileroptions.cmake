@@ -130,6 +130,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     # can only be partially addressed
     add_compile_options(-Wno-padded)
+    add_compile_options_safe(-Wno-nrvo)
 
     # no need for C++98 compatibility
     add_compile_options(-Wno-c++98-compat)
