@@ -1550,6 +1550,8 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
             return "pointer";
         return "object";
     }
+
+    cppcheck::unreachable();
 }
 
 std::string ValueFlow::lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
