@@ -604,11 +604,11 @@ static const Token* findTypeEnd(const Token* tok)
 
 static std::vector<const Token*> evaluateType(const Token* start, const Token* end)
 {
-    std::vector<const Token*> result;
     if (!start)
-        return result;
+        return {};
     if (!end)
-        return result;
+        return {};
+    std::vector<const Token*> result;
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (!Token::Match(tok, "%name%|::|<|(|*|&|&&"))
             return {};
@@ -1538,23 +1538,18 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
         return "object";
     switch (val->lifetimeKind) {
     case ValueFlow::Value::LifetimeKind::Lambda:
-        result = "lambda";
-        break;
+        return "lambda";
     case ValueFlow::Value::LifetimeKind::Iterator:
-        result = "iterator";
-        break;
+        return "iterator";
     case ValueFlow::Value::LifetimeKind::Object:
     case ValueFlow::Value::LifetimeKind::SubObject:
     case ValueFlow::Value::LifetimeKind::Address:
         if (astIsPointer(tok))
-            result = "pointer";
-        else if (Token::simpleMatch(tok, "=") && astIsPointer(tok->astOperand2()))
-            result = "pointer";
-        else
-            result = "object";
-        break;
+            return "pointer";
+        if (Token::simpleMatch(tok, "=") && astIsPointer(tok->astOperand2()))
+            return "pointer";
+        return "object";
     }
-    return result;
 }
 
 std::string ValueFlow::lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)

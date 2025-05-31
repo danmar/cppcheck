@@ -8278,7 +8278,7 @@ std::string ValueType::str() const
     else if (reference == Reference::RValue)
         ret += " &&";
     if (ret.empty())
-        return ret;
+        return {};
     return ret.substr(1);
 }
 
