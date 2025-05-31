@@ -1,0 +1,12 @@
+print(
+"""
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISCall","lineNumber":6,"value":2}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISGoto","lineNumber":6,"value":0}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISLevel","lineNumber":6,"value":2}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISParam","lineNumber":6,"value":2}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISPath","lineNumber":6,"value":3}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISReturn","lineNumber":6,"value":0}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"HISStmt","lineNumber":6,"value":15}}
+{"metric":{"fileName":"1.cpp","function":"write","id":"cyclomaticComplexity","lineNumber":6,"value":3}}
+"""
+)

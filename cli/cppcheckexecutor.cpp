@@ -281,6 +281,23 @@ namespace {
          */
         void reportErr(const std::string &errmsg);
 
+        void reportMetric(const std::string &metric) override
+        {
+            mFileMetrics.push_back(metric);
+        }
+
+        void reportMetrics()
+        {
+            if (!mFileMetrics.empty()) {
+                auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+                out << "    <metrics>" << std::endl;
+                for (const auto &metric : mFileMetrics) {
+                    out << "        " << metric << std::endl;
+                }
+                out << "    </metrics>" << std::endl;
+            }
+        }
+
         /**
          * @brief Write the checkers report
          */
@@ -353,6 +370,11 @@ namespace {
          * Coding standard guideline mapping
          */
         std::map<std::string, std::string> mGuidelineMapping;
+
+        /**
+         * File metrics
+         */
+        std::vector<std::string> mFileMetrics;
     };
 }
 
@@ -487,6 +509,8 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
     stdLogger.writeCheckersReport(supprs);
 
     if (settings.outputFormat == Settings::OutputFormat::xml) {
+        if (settings.xml_version == 3)
+            stdLogger.reportMetrics();
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 

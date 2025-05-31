@@ -81,6 +81,7 @@ public:
         if (logfile != nullptr)
             std::fprintf(logfile, "%s\n", s.c_str());
     }
+    void reportMetric(const std::string & /*metric*/) override {}
 
     void reportProgress(const std::string& /*filename*/,
                         const char /*stage*/[],

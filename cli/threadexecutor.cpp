@@ -66,6 +66,11 @@ public:
         mErrorLogger.reportErr(msg);
     }
 
+    void reportMetric(const std::string &metric) override {
+        std::lock_guard<std::mutex> lg(mReportSync);
+        mErrorLogger.reportMetric(metric);
+    }
+
     void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal) {
         std::lock_guard<std::mutex> lg(mReportSync);
         mThreadExecutor.reportStatus(fileindex, filecount, sizedone, sizetotal);
