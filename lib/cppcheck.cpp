@@ -1772,19 +1772,18 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             if (obj.count("metric") > 0) {
                 picojson::object metric_json = obj["metric"].get<picojson::object>();
 
-                std::stringstream ss;
-                ss << "<metric";
+                std::string metric = "<metric";
 
                 for (auto pair : metric_json) {
                     const std::string id = pair.first;
                     if (pair.second.is<std::int64_t>())
-                        ss << " " << id << "=\"" << pair.second.get<std::int64_t>() << "\"";
+                        metric += " " + id + "=\"" + std::to_string(pair.second.get<std::int64_t>()) + "\"";
                     else if (pair.second.is<std::string>())
-                        ss << " " << id << "=\"" << pair.second.get<std::string>() << "\"";
+                        metric += " " + id + "=\"" + ErrorLogger::toxml(pair.second.get<std::string>()) + "\"";
                 }
 
-                ss << "/>";
-                mErrorLogger.reportMetric(ss.str());
+                metric += "/>";
+                mErrorLogger.reportMetric(metric);
 
                 continue;
             }
