@@ -282,7 +282,7 @@ std::string Settings::applyEnabled(const std::string &str, bool enable)
     }
     // FIXME: hack to make sure "error" is always enabled
     severity.enable(Severity::error);
-    return errmsg;
+    return {};
 }
 
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
