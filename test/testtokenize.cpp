@@ -4516,6 +4516,14 @@ private:
             ASSERT_EQUALS("{ return doSomething ( X ) , 0 ; }", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout_str());
         }
+
+        {
+            // 13893
+            const char code[] = "namespace test { bool foo; }";
+            SimpleTokenizer tokenizer(settings0, *this);
+            ASSERT(tokenizer.tokenize(code));
+            ASSERT(!tokenizer.tokens()->tokAt(2)->isInitBracket());
+        }
     }
 
     void simplifyInitVar2() {
