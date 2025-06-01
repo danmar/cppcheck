@@ -482,6 +482,8 @@ private:
         TEST_CASE(simplifyPlatformTypes);
 
         TEST_CASE(dumpFallthrough);
+
+        TEST_CASE(simplifyRedundantParentheses);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8555,6 +8557,14 @@ private:
         tokenizer.dump(ostr);
         const std::string dump = ostr.str();
         ASSERT(dump.find(" isAttributeFallthrough=\"true\"") != std::string::npos);
+    }
+
+    void simplifyRedundantParentheses() {
+        const char *code = "int f(struct S s) {\n"
+                           "    return g(1, &(int){ s.i });\n"
+                           "}\n";
+        SimpleTokenizer tokenizer(settingsDefault, *this, false);
+        ASSERT_NO_THROW(tokenizer.tokenize(code));
     }
 };
 
