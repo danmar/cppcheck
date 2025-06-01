@@ -296,18 +296,24 @@ private:
     }
 
     void ToXmlV2Locations() const {
-        std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8_i };
+        const ErrorMessage::FileLocation dir1loc{"dir1/a.cpp", 1, 1};
+        const ErrorMessage::FileLocation dir2loc{"dir2\\a.cpp", 1, 1};
+        ErrorMessage::FileLocation dir3loc{"dir/a.cpp", 1, 1};
+        dir3loc.setfile("dir3/a.cpp");
+        ErrorMessage::FileLocation dir4loc{"dir/a.cpp", 1, 1};
+        dir4loc.setfile("dir4\\a.cpp");
+        std::list<ErrorMessage::FileLocation> locs = { dir4loc, dir3loc, dir2loc, dir1loc, fooCpp5, barCpp8_i };
+
         ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
-        std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
-        header += "    <cppcheck version=\"";
-        header += CppCheck::version();
-        header += "\"/>\n    <errors>";
-        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader(""));
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter(2));
-        std::string message("        <error id=\"errorId\" severity=\"error\"");
-        message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
+        std::string message;
+        message += "        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>\n";
-        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n        </error>";
+        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n";
+        message += "            <location file=\"dir1/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location file=\"dir2\\a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location file=\"dir3/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location file=\"dir4/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "        </error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
 

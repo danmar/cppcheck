@@ -508,7 +508,7 @@ std::string ErrorMessage::toXML() const
 
     for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", it->getfile().c_str());
+        printer.PushAttribute("file", it->getfile(false).c_str());
         printer.PushAttribute("line", std::max(it->line,0));
         printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
@@ -726,6 +726,7 @@ std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
 
 void ErrorMessage::FileLocation::setfile(std::string file)
 {
+    // TODO: consistently simplify mFileName
     mFileName = Path::simplifyPath(std::move(file));
 }
 
