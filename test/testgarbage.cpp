@@ -1880,6 +1880,9 @@ private:
                             "    auto fn = []() -> foo* { return new foo(); };\n"
                             "}"));
         ignore_errout(); // we do not care about the output
+
+        // #13892
+        ASSERT_NO_THROW(checkCode("void foovm(int x[const *]);"));
     }
 };
 
