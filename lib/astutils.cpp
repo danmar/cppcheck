@@ -2388,28 +2388,28 @@ Token* getTokenArgumentFunction(Token* tok, int& argn) {
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
 {
-    std::vector<const Variable*> result;
     if (!tok)
-        return result;
+        return {};
     if (tok->function()) {
         const Variable* argvar = tok->function()->getArgumentVar(argnr);
         if (argvar)
             return {argvar};
-        return result;
+        return {};
     }
     if (tok->variable() || Token::simpleMatch(tok, "{") || Token::Match(tok->previous(), "%type% (|{")) {
         const Type* type = Token::typeOf(tok);
         if (!type)
-            return result;
+            return {};
         const Scope* typeScope = type->classScope;
         if (!typeScope)
-            return result;
+            return {};
         const bool tokIsBrace = Token::simpleMatch(tok, "{");
         // Aggregate constructor
         if (tokIsBrace && typeScope->numConstructors == 0 && argnr < typeScope->varlist.size()) {
             auto it = std::next(typeScope->varlist.cbegin(), argnr);
             return {&*it};
         }
+        std::vector<const Variable*> result;
         const int argCount = numberOfArguments(tok);
         const bool constructor = tokIsBrace || (tok->variable() && tok->variable()->nameToken() == tok);
         for (const Function &function : typeScope->functionList) {
@@ -2423,8 +2423,9 @@ std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
             if (argvar)
                 result.push_back(argvar);
         }
+        return result;
     }
-    return result;
+    return {};
 }
 
 static bool isCPPCastKeyword(const Token* tok)
@@ -3528,13 +3529,13 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
 
 std::vector<const Variable*> getLHSVariables(const Token* tok)
 {
-    std::vector<const Variable*> result;
     if (!Token::Match(tok, "%assign%|(|{"))
-        return result;
+        return {};
     if (!tok->astOperand1())
-        return result;
+        return {};
     if (tok->astOperand1()->varId() > 0 && tok->astOperand1()->variable())
         return {tok->astOperand1()->variable()};
+    std::vector<const Variable*> result;
     getLHSVariablesRecursive(result, tok->astOperand1());
     return result;
 }
