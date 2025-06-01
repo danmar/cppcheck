@@ -284,9 +284,7 @@ def test_platform_lookup(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'avr8' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8",
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/avr8",
         "try to load platform file 'platforms/avr8.xml' ... Success",
         'Checking {} ...'.format(test_file)
     ]
@@ -308,7 +306,6 @@ def test_platform_lookup_ext(tmpdir):
     assert lines == [
         "looking for platform 'avr8.xml' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'avr8.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml.xml",  # TODO: the extension is incorrectly appended
         "try to load platform file 'platforms/avr8.xml' ... Success",
         'Checking {} ...'.format(test_file)
     ]
@@ -329,13 +326,9 @@ def test_platform_lookup_notfound(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'none' in '{}'".format(exepath_bin),  # TODO: this is not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none",
         "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none",
         "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
-        "try to load platform file '{}/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none".format(exepath, exepath),
-        # TODO: lookup of '{exepath}/none.xml' missing
-        "try to load platform file '{}/platforms/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none".format(exepath, exepath),
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'none'."
     ]
@@ -357,12 +350,9 @@ def test_platform_lookup_ext_notfound(tmpdir):
     assert lines == [
         "looking for platform 'none.xml' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
         "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'none.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml.xml",  # TODO: the extension is incorrectly appended
         "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
-        "try to load platform file 'platforms/none.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml.xml",  # TODO: the extension is incorrectly appended
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
-        "try to load platform file '{}/platforms/none.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml.xml".format(exepath, exepath),  # TODO: the extension is incorrectly appended
         "cppcheck: error: unrecognized platform: 'none.xml'."
     ]
 
@@ -383,12 +373,9 @@ def test_platform_lookup_relative_notfound(tmpdir):
     assert lines == [
         "looking for platform 'platform/none.xml' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
         "try to load platform file 'platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml",
-        "try to load platform file 'platform/none.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml.xml",  # TODO: the extension is incorrectly appended
         "try to load platform file 'platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml",
-        "try to load platform file 'platforms/platform/none.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml.xml",  # TODO: the extension is incorrectly appended
         "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml".format(exepath, exepath),
-        "try to load platform file '{}/platforms/platform/none.xml.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml.xml".format(exepath, exepath),  # TODO: the extension is incorrectly appended
         "cppcheck: error: unrecognized platform: 'platform/none.xml'."
     ]
 
@@ -408,12 +395,9 @@ def test_platform_lookup_relative_noext_notfound(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'platform/none' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'platform/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none",
         "try to load platform file 'platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml",
-        "try to load platform file 'platforms/platform/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none",
         "try to load platform file 'platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml",
-        "try to load platform file '{}/platform/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none".format(exepath, exepath),
-        "try to load platform file '{}/platforms/platform/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none".format(exepath, exepath),
+        "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'platform/none'."
     ]
@@ -472,8 +456,6 @@ def test_platform_lookup_nofile(tmpdir):
         pass
 
     # make sure we do not produce an error when the attempted lookup path is a directory and not a file
-    avr8_dir = os.path.join(tmpdir, 'avr8')
-    os.mkdir(avr8_dir)
     avr8_cfg_dir = os.path.join(tmpdir, 'avr8.xml')
     os.mkdir(avr8_cfg_dir)
 
@@ -486,9 +468,7 @@ def test_platform_lookup_nofile(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'avr8' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8",
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/avr8",
         "try to load platform file 'platforms/avr8.xml' ... Success",
         'Checking {} ...'.format(test_file)
     ]
@@ -514,7 +494,6 @@ def test_platform_lookup_invalid(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'avr8' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8",
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_PARSING_TEXT ErrorID=8 (0x8) Line number=1",
         "cppcheck: error: unrecognized platform: 'avr8'."
     ]
