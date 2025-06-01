@@ -3935,6 +3935,15 @@ private:
         ASSERT_EQUALS("[test.cpp:3:8] -> [test.cpp:1:13]: (style) Parameter 'p' can be declared as pointer to const. "
                       "However it seems that 'f' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s). [constParameterCallback]\n",
                       errout_str());
+
+        check("struct S { explicit S(std::function<void(std::string)>); };\n" // #13338
+              "void cb(std::string s) {\n"
+              "    (void)s.empty();\n"
+              "}\n"
+              "void f() {\n"
+              "    S s2{ cb };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:11] -> [test.cpp:2:21]: (performance) Function parameter 's' should be passed by const reference. However it seems that 'cb' is a callback function. [passedByValueCallback]\n", errout_str());
     }
 
     void constPointer() {
