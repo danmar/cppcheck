@@ -8033,7 +8033,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             while (Token::Match(tok2, "%type%|static|const|extern") && tok2->str() != "operator") {
                 tok2 = tok2->previous();
             }
-            if (tok2 && !Token::Match(tok2, "[;,{]")) {
+            if (tok2 && !Token::Match(tok2, "[;{]")) {
                 // Not a variable declaration
             } else {
                 tok->deleteThis();
