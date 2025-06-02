@@ -7721,8 +7721,11 @@ void Tokenizer::simplifyInitVar()
             continue;
 
         if (Token::Match(tok, "%type% *|&| %name% (|{")) {
+            bool isNamespace = Token::simpleMatch(tok, "namespace");
             while (tok && !Token::Match(tok, "(|{"))
                 tok = tok->next();
+            if (isNamespace)
+                continue;
             if (tok)
                 tok->isInitBracket(true);
             /* tok = initVar(tok);
