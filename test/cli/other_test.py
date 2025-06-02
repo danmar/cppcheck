@@ -2390,6 +2390,7 @@ void f(const void* p)
     exitcode_1, stdout_1, stderr_1 = cppcheck(args)
     assert exitcode_1 == 0, stdout_1
     assert stdout_1 == ''
+    test_file_exp = str(test_file).replace('\\', '/')
     assert (stderr_1 ==
 '''<?xml version="1.0" encoding="UTF-8"?>
 <results version="2">
@@ -2402,7 +2403,7 @@ void f(const void* p)
         </error>
     </errors>
 </results>
-'''.format(version_str, str(test_file).replace('\\', '/'), test_file, test_file))  # TODO: the slashes are inconsistent
+'''.format(version_str, test_file_exp, test_file_exp, test_file_exp))
 
 
 def test_internal_error_loc_int(tmp_path):
