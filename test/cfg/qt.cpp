@@ -799,9 +799,9 @@ void constVariablePointer_QVector(QVector<int*>& qv, int* p)
     qv.push_back(p); // #12661
 }
 
-void constParameterPointer_QHash(QHash<QString, int*>& qh, const QString& qs, int* p)
+void constParameterPointer_QHash(QHash<int*, int*>& qh, int* k, int* v)
 {
-    qh.insert(qs, p); // #13902
+    qh.insert(k, v); // #13902
 }
 
 const QString& unassignedVariable_static_QString() // #12935
