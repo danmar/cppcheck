@@ -45,6 +45,9 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
         void reportErr(const ErrorMessage &msg) override {
             errorIds << QString::fromStdString(msg.id);
         }
+        void reportMetric(const std::string &metric) override {
+            (void) metric;
+        }
         QStringList errorIds;
     };
 
