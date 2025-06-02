@@ -191,25 +191,24 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
 
 bool Platform::loadFromFile(const char exename[], const std::string &filename, bool debug)
 {
-    // TODO: only append .xml if missing
+    std::string fullfilename(filename);
+    if (Path::getFilenameExtension(fullfilename).empty())
+        fullfilename += ".xml";
+
     // TODO: use native separators
     std::vector<std::string> filenames{
-        filename,
-        filename + ".xml",
-        "platforms/" + filename,
-        "platforms/" + filename + ".xml"
+        fullfilename,
+        "platforms/" + fullfilename,
     };
     if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + fullfilename);
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + fullfilename);
     }
 #ifdef FILESDIR
     std::string filesdir = FILESDIR;
     if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
         filesdir += '/';
-    filenames.push_back(filesdir + ("platforms/" + filename));
-    filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
+    filenames.push_back(filesdir + ("platforms/" + fullfilename));
 #endif
 
     // open file..
