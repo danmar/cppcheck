@@ -428,7 +428,6 @@ def test_platform_lookup_absolute(tmpdir):
     ]
 
 
-@pytest.mark.xfail(strict=True)  # TODO: performs lots of unnecessary lookups
 def test_platform_lookup_absolute_notfound(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -445,6 +444,7 @@ def test_platform_lookup_absolute_notfound(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         "looking for platform '{}' in '{}'".format(platform_file, exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(platform_file, platform_file),
         "cppcheck: error: unrecognized platform: '{}'.".format(platform_file)
     ]
 

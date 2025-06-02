@@ -191,25 +191,31 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
 
 bool Platform::loadFromFile(const char exename[], const std::string &filename, bool debug)
 {
+    const bool is_abs_path = Path::isAbsolute(filename);
+
     std::string fullfilename(filename);
-    if (Path::getFilenameExtension(fullfilename).empty())
+    // TODO: what if extension is not .xml?
+    // only append extension when we provide the library name is not a path - TODO: handle relative paths?
+    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
         fullfilename += ".xml";
 
     // TODO: use native separators
     std::vector<std::string> filenames{
         fullfilename,
-        "platforms/" + fullfilename,
     };
-    if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + fullfilename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + fullfilename);
-    }
+    if (!is_abs_path) {
+        filenames.push_back("platforms/" + fullfilename);
+        if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + fullfilename);
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + fullfilename);
+        }
 #ifdef FILESDIR
-    std::string filesdir = FILESDIR;
-    if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
-        filesdir += '/';
-    filenames.push_back(filesdir + ("platforms/" + fullfilename));
+        std::string filesdir = FILESDIR;
+        if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
+            filesdir += '/';
+        filenames.push_back(filesdir + ("platforms/" + fullfilename));
 #endif
+    }
 
     // open file..
     tinyxml2::XMLDocument doc;
