@@ -765,14 +765,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::None, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::None, parser->mEnforcedLang);
     }
 
     void enforceLanguage2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::CPP, parser->mEnforcedLang);
     }
 
     void enforceLanguage3() {
@@ -793,14 +793,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::CPP, parser->mEnforcedLang);
     }
 
     void enforceLanguage6() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::C, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::C, parser->mEnforcedLang);
     }
 
     void enforceLanguage7() {
