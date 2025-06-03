@@ -65,6 +65,7 @@
     <ClCompile Include="testexecutor.cpp" />
     <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testfilesettings.cpp" />
+    <ClCompile Include="testfrontend.cpp" />
     <ClCompile Include="testfunctions.cpp" />
     <ClCompile Include="testgarbage.cpp" />
     <ClCompile Include="testimportproject.cpp" />

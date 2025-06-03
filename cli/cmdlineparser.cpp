@@ -39,6 +39,8 @@
 #include "timer.h"
 #include "utils.h"
 
+#include "frontend.h"
+
 #include <algorithm>
 #include <cassert>
 #include <climits>
@@ -221,40 +223,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         mFileSettings.clear();
 
-        if (mEnforcedLang != Standards::Language::None)
-        {
-            // apply enforced language
-            for (auto& fs : fileSettings)
-            {
-                if (mSettings.library.markupFile(fs.filename()))
-                    continue;
-                fs.file.setLang(mEnforcedLang);
-            }
-        }
-        else
-        {
-            // identify files
-            for (auto& fs : fileSettings)
-            {
-                if (mSettings.library.markupFile(fs.filename()))
-                    continue;
-                assert(fs.file.lang() == Standards::Language::None);
-                bool header = false;
-                fs.file.setLang(Path::identify(fs.filename(), mSettings.cppHeaderProbe, &header));
-                // unknown extensions default to C++
-                if (!header && fs.file.lang() == Standards::Language::None)
-                    fs.file.setLang(Standards::Language::CPP);
-            }
-        }
-
-        // enforce the language since markup files are special and do not adhere to the enforced language
-        for (auto& fs : fileSettings)
-        {
-            if (mSettings.library.markupFile(fs.filename())) {
-                assert(fs.file.lang() == Standards::Language::None);
-                fs.file.setLang(Standards::Language::C);
-            }
-        }
+        frontend::applyLang(fileSettings, mSettings, mEnforcedLang);
 
         // sort the markup last
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {

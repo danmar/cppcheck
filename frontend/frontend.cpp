@@ -18,5 +18,49 @@
 
 #include "frontend.h"
 
-namespace frontend
-{}
+#include "filesettings.h"
+#include "library.h"
+#include "path.h"
+#include "settings.h"
+
+#include <cassert>
+
+namespace frontend {
+    void applyLang(std::list<FileSettings>& fileSettings, const Settings& settings, Standards::Language enforcedLang)
+    {
+        if (enforcedLang != Standards::Language::None)
+        {
+            // apply enforced language
+            for (auto& fs : fileSettings)
+            {
+                if (settings.library.markupFile(fs.filename()))
+                    continue;
+                fs.file.setLang(enforcedLang);
+            }
+        }
+        else
+        {
+            // identify files
+            for (auto& fs : fileSettings)
+            {
+                if (settings.library.markupFile(fs.filename()))
+                    continue;
+                assert(fs.file.lang() == Standards::Language::None);
+                bool header = false;
+                fs.file.setLang(Path::identify(fs.filename(), settings.cppHeaderProbe, &header));
+                // unknown extensions default to C++
+                if (!header && fs.file.lang() == Standards::Language::None)
+                    fs.file.setLang(Standards::Language::CPP);
+            }
+        }
+
+        // enforce the language since markup files are special and do not adhere to the enforced language
+        for (auto& fs : fileSettings)
+        {
+            if (settings.library.markupFile(fs.filename())) {
+                assert(fs.file.lang() == Standards::Language::None);
+                fs.file.setLang(Standards::Language::C);
+            }
+        }
+    }
+}
