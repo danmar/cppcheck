@@ -19,7 +19,16 @@
 #ifndef FRONTEND_H
 #define FRONTEND_H
 
+#include "standards.h"
+
+#include <list>
+
+struct FileSettings;
+class Settings;
+
 namespace frontend
-{}
+{
+    void applyLang(std::list<FileSettings> &fileSettings, const Settings &settings, Standards::Language enforcedLang);
+}
 
 #endif // FRONTEND_H
