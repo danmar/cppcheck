@@ -797,7 +797,7 @@ void MainWindow::analyzeFiles()
             p.ignoreOtherConfigs(cfg.toStdString());
         }
 
-        doAnalyzeProject(p);
+        doAnalyzeProject(p); // TODO: avoid copy
         return;
     }
 
@@ -1960,7 +1960,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
             msg.exec();
             return;
         }
-        doAnalyzeProject(p, checkLibrary, checkConfiguration);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);  // TODO: avoid copy
         return;
     }
 
