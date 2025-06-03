@@ -1208,7 +1208,7 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
         settings.platform.set(static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt()));
     settings.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     settings.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    settings.enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
 
     settings.jobs = std::max(settings.jobs, 1u);
 

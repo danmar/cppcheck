@@ -221,14 +221,14 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         mFileSettings.clear();
 
-        if (mSettings.enforcedLang != Standards::Language::None)
+        if (mEnforcedLang != Standards::Language::None)
         {
             // apply enforced language
             for (auto& fs : fileSettings)
             {
                 if (mSettings.library.markupFile(fs.filename()))
                     continue;
-                fs.file.setLang(mSettings.enforcedLang);
+                fs.file.setLang(mEnforcedLang);
             }
         }
         else
@@ -324,14 +324,14 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             files = std::move(filesResolved);
         }
 
-        if (mSettings.enforcedLang != Standards::Language::None)
+        if (mEnforcedLang != Standards::Language::None)
         {
             // apply enforced language
             for (auto& f : files)
             {
                 if (mSettings.library.markupFile(f.path()))
                     continue;
-                f.setLang(mSettings.enforcedLang);
+                f.setLang(mEnforcedLang);
             }
         }
         else
@@ -985,9 +985,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             if (str == "c")
-                mSettings.enforcedLang = Standards::Language::C;
+                mEnforcedLang = Standards::Language::C;
             else if (str == "c++")
-                mSettings.enforcedLang = Standards::Language::CPP;
+                mEnforcedLang = Standards::Language::CPP;
             else {
                 mLogger.printError("unknown language '" + str + "' enforced.");
                 return Result::Fail;
