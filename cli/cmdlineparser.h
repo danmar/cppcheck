@@ -176,6 +176,7 @@ private:
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;
+    /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language mEnforcedLang{Standards::Language::None};
 };
 
