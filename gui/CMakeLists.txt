@@ -20,7 +20,7 @@ CheckOptions:
     list(APPEND cppcheck-gui-deps ${hdrs} ${uis_hdrs} ${resources} ${qms})
     add_custom_target(gui-build-deps SOURCES ${cppcheck-gui-deps})
 
-    list(APPEND cppcheck-gui_SOURCES ${srcs})
+    list(APPEND cppcheck-gui_SOURCES ${srcs} $<TARGET_OBJECTS:frontend_objs>)
     if (NOT BUILD_CORE_DLL)
         list(APPEND cppcheck-gui_SOURCES $<TARGET_OBJECTS:cppcheck-core> $<TARGET_OBJECTS:simplecpp_objs>)
         if(USE_BUNDLED_TINYXML2)
@@ -34,7 +34,7 @@ CheckOptions:
     add_executable(cppcheck-gui ${cppcheck-gui-deps} ${cppcheck-gui_SOURCES})
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
     set_target_properties(cppcheck-gui PROPERTIES WIN32_EXECUTABLE ON)
-    target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/)
+    target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/frontend/)
     if(USE_BUNDLED_TINYXML2)
         target_externals_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
     else()
