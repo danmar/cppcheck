@@ -86,9 +86,11 @@ void TokenList::deallocateTokens()
         mTokensFrontBack->front = nullptr;
         mTokensFrontBack->back = nullptr;
     }
+    // TODO: clear mOrigFiles?
     mFiles.clear();
 }
 
+// TODO: also update mOrigFiles?
 int TokenList::appendFileIfNew(std::string fileName)
 {
     assert(!fileName.empty());
@@ -99,6 +101,8 @@ int TokenList::appendFileIfNew(std::string fileName)
     });
     if (it != mFiles.cend())
         return static_cast<int>(std::distance(mFiles.cbegin(), it));
+
+    assert(mTokensFrontBack->front == nullptr); // has no effect if tokens have already been created
 
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));
@@ -347,8 +351,10 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
         mOrigFiles = mFiles = tokenList.getFiles();
     }
-    else
+    else {
+        // TODO: clear mOrigFiles?
         mFiles.clear();
+    }
 
     for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
