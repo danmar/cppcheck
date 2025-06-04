@@ -1474,6 +1474,8 @@ private:
     void validateVariables() const;
 
     Tokenizer& mTokenizer;
+    const Settings &mSettings;
+    ErrorLogger &mErrorLogger;
 
     /** variable symbol table */
     std::vector<const Variable *> mVariableList;
