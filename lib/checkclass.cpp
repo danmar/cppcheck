@@ -319,6 +319,11 @@ void CheckClass::constructors()
     }
 }
 
+static bool isPermissibleConversion(const std::string& type)
+{
+    return type == "std::initializer_list" || type == "std::nullptr_t";
+}
+
 void CheckClass::checkExplicitConstructors()
 {
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("noExplicitConstructor"))
@@ -357,7 +362,7 @@ void CheckClass::checkExplicitConstructors()
                 func.type != FunctionType::eCopyConstructor &&
                 func.type != FunctionType::eMoveConstructor &&
                 !(func.templateDef && Token::simpleMatch(func.argumentList.front().typeEndToken(), "...")) &&
-                func.argumentList.front().getTypeName() != "std::initializer_list") {
+                !isPermissibleConversion(func.argumentList.front().getTypeName())) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == ScopeType::eStruct);
             }
         }
