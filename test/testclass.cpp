@@ -503,6 +503,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Class 'Color' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]\n"
                       "[test.cpp:4:5]: (style) Class 'Color' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]\n",
                       errout_str());
+
+        checkExplicitConstructors("template <typename T>\n" // #13878
+                                  "struct S {\n"
+                                  "    S(std::nullptr_t) {}\n"
+                                  "    explicit S(T* p) : m(p) {}\n"
+                                  "    T* m{};\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkDuplInheritedMembers(...) checkDuplInheritedMembers_( __FILE__, __LINE__, __VA_ARGS__)
