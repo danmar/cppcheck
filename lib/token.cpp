@@ -2634,6 +2634,7 @@ const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) 
 TokenImpl::~TokenImpl()
 {
     delete mMacroName;
+    delete mFuncName;
     delete mOriginalName;
     delete mValueType;
     delete mValues;
@@ -2720,4 +2721,10 @@ Token* findLambdaEndScope(Token* tok)
 }
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
+}
+
+const std::string& Token::funcname(const Library& library) const {
+    if (!mImpl->mFuncName)
+        mImpl->mFuncName = new std::string(library.getFunctionName(this));
+    return *mImpl->mFuncName;
 }

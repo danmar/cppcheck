@@ -655,7 +655,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (!mSettings->library.isNotLibraryFunction(tok))
             continue;
 
-        const std::string &functionName = mSettings->library.getFunctionName(tok);
+        const std::string &functionName = tok->funcname(mSettings->library);
         if (functionName.empty())
             continue;
 
