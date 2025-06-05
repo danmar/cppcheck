@@ -2726,5 +2726,8 @@ const Token* findLambdaEndScope(const Token* tok) {
 const std::string& Token::funcname(const Library& library) const {
     if (!mImpl->mFuncName)
         mImpl->mFuncName = new std::string(library.getFunctionName(this));
+    const std::string fname = library.getFunctionName(this);
+    std::cout << this << " astParent: " << astParent() << " previous: " << previous() << " " << stringify(stringifyOptions::forDebug()) << " " << fname << std::endl;
+    assert(*mImpl->mFuncName == fname);
     return *mImpl->mFuncName;
 }
