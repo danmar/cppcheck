@@ -33,7 +33,6 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 
 `readability-braces-around-statements`<br/>
 `readability-isolate-declaration`<br/>
-`modernize-use-trailing-return-type`<br/>
 `readability-uppercase-literal-suffix`<br/>
 `readability-identifier-length`<br/>
 
@@ -126,6 +125,7 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `readability-avoid-nested-conditional-operator`<br/>
 `modernize-use-designated-initializers`<br/>
 `readability-enum-initial-value`<br/>
+`modernize-use-trailing-return-type`<br/>
 
 To be evaluated (need to remove exclusion).
 
