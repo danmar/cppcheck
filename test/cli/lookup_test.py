@@ -623,15 +623,11 @@ def test_addon_lookup_absolute_notfound(tmpdir):
 
     addon_file = os.path.join(tmpdir, 'test.py')
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=addon', '--addon={}'.format(addon_file), test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=addon', '--addon={}'.format(addon_file), test_file])
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for addon '{}'".format(addon_file),
-        "looking for addon '{}{}'".format(exepath_sep, addon_file),  # TODO: should not perform this lookup
-        "looking for addon '{}addons/{}'".format(exepath_sep, addon_file),  # TODO: should not perform this lookup
         'Did not find addon {}'.format(addon_file)
     ]
 
