@@ -77,3 +77,5 @@ CheckOptions:
     value:           '1'
   - key:             readability-simplify-boolean-expr.SimplifyDeMorgan
     value:           '0'
+  - key:             modernize-use-trailing-return-type.TransformFunctions
+    value:           false
