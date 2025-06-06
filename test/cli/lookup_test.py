@@ -1,8 +1,9 @@
 import os
 import sys
 import pytest
+import shutil
 
-from testutils import cppcheck_ex, cppcheck
+from testutils import cppcheck_ex, cppcheck, __lookup_cppcheck_exe
 
 def __remove_std_lookup_log(l : list, exepath):
     l.remove("looking for library 'std.cfg'")
@@ -679,25 +680,29 @@ def test_addon_lookup_invalid(tmpdir):
     ]
 
 
-@pytest.mark.skip  # TODO
 def test_config_lookup(tmpdir):
+    cppcheck_exe = __lookup_cppcheck_exe()
+    bin_dir = os.path.dirname(cppcheck_exe)
+    tmp_cppcheck_exe = shutil.copy2(cppcheck_exe, tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(bin_dir, 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(bin_dir, 'cfg'), os.path.join(tmpdir, 'cfg'))
+
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
         pass
 
-    # TODO: needs to be in exepath so this is found
     config_file = os.path.join(tmpdir, 'cppcheck.cfg')
-    with open(config_file, 'wt'):
-        pass
+    with open(config_file, 'wt') as f:
+        f.write('{}')
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', '--addon=misra', test_file], cwd=tmpdir)
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file], cwd=tmpdir, cppcheck_exe=tmp_cppcheck_exe)
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for '{}cppcheck.cfg'".format(exepath_sep),
-        'no configuration found',
         'Checking {} ...'.format(test_file)
     ]
 
@@ -718,6 +723,30 @@ def test_config_lookup_notfound(tmpdir):
         'Checking {} ...'.format(test_file)
     ]
 
-# TODO: test handling of invalid configuration
+def test_config_invalid(tmpdir):
+    cppcheck_exe = __lookup_cppcheck_exe()
+    bin_dir = os.path.dirname(cppcheck_exe)
+    tmp_cppcheck_exe = shutil.copy2(cppcheck_exe, tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(bin_dir, 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(bin_dir, 'cfg'), os.path.join(tmpdir, 'cfg'))
+
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
+    with open(config_file, 'wt'):
+        pass
+
+    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file], cwd=tmpdir, cppcheck_exe=tmp_cppcheck_exe)
+    exepath = os.path.dirname(exe)
+    exepath_sep = exepath + os.path.sep
+    assert exitcode == 1, stdout if stdout else stderr
+    lines = stdout.splitlines()
+    assert lines == [
+        "looking for '{}cppcheck.cfg'".format(exepath_sep),
+        'cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: '
+    ]
 
 # TODO: test with FILESDIR
