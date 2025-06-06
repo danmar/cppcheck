@@ -64,9 +64,7 @@ def test_lib_lookup_notfound(tmpdir):
     assert lines == [
         # TODO: specify which folder is actually used for lookup here
         "looking for library 'none.cfg'",
-        # TODO: lookup of '{exepath}/none' missing - could conflict with the platform lookup though
         "looking for library '{}/none.cfg'".format(exepath),
-        # TODO: lookup of '{exepath}/cfg/none' missing
         "looking for library '{}/cfg/none.cfg'".format(exepath),
         "library not found: 'none'",
         "cppcheck: Failed to load library configuration file 'none'. File not found"
@@ -261,7 +259,7 @@ def test_platform_lookup_builtin(tmpdir):
     ]
 
 
-@pytest.mark.skip  # TODO: perform additional lookups when run via symlink in CI
+@pytest.mark.skip  # TODO: performs additional lookups when run via symlink in CI
 def test_platform_lookup(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -282,7 +280,7 @@ def test_platform_lookup(tmpdir):
     ]
 
 
-@pytest.mark.skip  # TODO: perform additional lookups when run via symlink in CI
+@pytest.mark.skip  # TODO: performs additional lookups when run via symlink in CI
 def test_platform_lookup_ext(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -441,7 +439,7 @@ def test_platform_lookup_absolute_notfound(tmpdir):
     ]
 
 
-@pytest.mark.skip  # TODO: perform additional lookups when run via symlink in CI
+@pytest.mark.skip  # TODO: performs additional lookups when run via symlink in CI
 def test_platform_lookup_nofile(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -651,7 +649,7 @@ def test_addon_lookup_nofile(tmpdir):
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra', test_file])
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout if stdout else stderr  # TODO. should fail when addon is not found
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         "looking for addon 'misra.py'",
