@@ -219,20 +219,22 @@ bool Platform::loadFromFile(const char exename[], const std::string &filename, b
 
     // open file..
     tinyxml2::XMLDocument doc;
-    bool success = false;
+    tinyxml2::XMLError err = tinyxml2::XML_SUCCESS;
     for (const std::string & f : filenames) {
         if (debug)
             std::cout << "try to load platform file '" << f << "' ... ";
-        if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
+        err = doc.LoadFile(f.c_str());
+        if (err == tinyxml2::XML_SUCCESS) {
             if (debug)
                 std::cout << "Success" << std::endl;
-            success = true;
             break;
         }
         if (debug)
             std::cout << doc.ErrorStr() << std::endl;
+        if (err != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+            break;
     }
-    if (!success)
+    if (err != tinyxml2::XML_SUCCESS)
         return false;
 
     return loadFromXmlDocument(&doc);
