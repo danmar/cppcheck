@@ -1511,10 +1511,12 @@ namespace {
                     return ValueFlow::Value{};
             } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
                 ValueFlow::Value lhs = execute(expr->astOperand1());
+                if (lhs.isUninitValue())
+                    return unknown();
                 ValueFlow::Value rhs = execute(expr->astOperand2());
-                ValueFlow::Value r = unknown();
-                if (!lhs.isUninitValue() && !rhs.isUninitValue())
-                    r = evaluate(expr->str(), lhs, rhs);
+                if (rhs.isUninitValue())
+                    return unknown();
+                ValueFlow::Value r = evaluate(expr->str(), lhs, rhs);
                 if (expr->isComparisonOp() && (r.isUninitValue() || r.isImpossible())) {
                     if (rhs.isIntValue() && !expr->astOperand1()->values().empty()) {
                         std::vector<ValueFlow::Value> result = infer(makeIntegralInferModel(),
