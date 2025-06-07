@@ -1145,6 +1145,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 "metrics",
                 "misra-c-2012",
                 "misra-c-2023",
+                "misra-c-2025",
                 "misra-c++-2008",
                 "misra-cpp-2008",
                 "misra-c++-2023",
