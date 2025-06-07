@@ -1735,17 +1735,14 @@ def test_ignore_file_append(tmpdir):
     __test_ignore_file(tmpdir, 'test.cpp', append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_back(tmpdir):
     __test_ignore_file(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_front(tmpdir):
     __test_ignore_file(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_placeholder(tmpdir):
     __test_ignore_file(tmpdir, 't?st.cpp')
 
@@ -1758,12 +1755,10 @@ def test_ignore_file_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src/test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.c*')
 
@@ -1776,12 +1771,10 @@ def test_ignore_path_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src*/')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src*\\')
 
@@ -1851,17 +1844,14 @@ def test_ignore_project_file_cli_append(tmpdir):
     __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp', append_cli=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_back(tmpdir):
     __test_ignore_project(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_front(tmpdir):
     __test_ignore_project(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_placeholder(tmpdir):
     __test_ignore_project(tmpdir, 't?st.cpp')
 
@@ -1874,12 +1864,24 @@ def test_ignore_project_file_relative_backslash(tmpdir):
     __test_ignore_project(tmpdir, 'src\\test.cpp')
 
 
+def test_ignore_project_file_relative_wildcard(tmpdir):
+    __test_ignore_project(tmpdir, 'src/test.c*')
+
+
+def test_ignore_project_file_relative_wildcard_backslash(tmpdir):
+    __test_ignore_project(tmpdir, 'src\\test.c*')
+
+
 def test_ignore_project_path_relative(tmpdir):
     __test_ignore_project(tmpdir, 'src/')
 
 
 def test_ignore_project_path_relative_backslash(tmpdir):
     __test_ignore_project(tmpdir, 'src\\')
+
+
+def test_ignore_project_path_relative_wildcard_backslash(tmpdir):
+    __test_ignore_project(tmpdir, 'src*\\')
 
 
 def test_ignore_project_abspath(tmpdir):
