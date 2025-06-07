@@ -39,6 +39,7 @@ private:
     const Settings settings_windows = settingsBuilder().library("windows.cfg").severity(Severity::portability).build();
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(combine_strings);
         TEST_CASE(combine_wstrings);
         TEST_CASE(combine_ustrings);
@@ -2052,7 +2053,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n",
+            "[test.cpp:3:10]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2177,7 +2178,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n",
+            "[test.cpp:3:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2193,7 +2194,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n",
+            "[test.cpp:3:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2225,7 +2226,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, dinit(TokenizeAndStringifyOptions, $.cpp = false)));
         ASSERT_EQUALS(
-            "[test.c:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n",
+            "[test.c:2:13]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2250,7 +2251,7 @@ private:
                                 "}";
             ASSERT_EQUALS(code, tokenizeAndStringify(code));
             ASSERT_EQUALS(
-                "[test.cpp:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+                "[test.cpp:5:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y [valueFlowBailoutIncompleteVar]\n",
                 errout_str());
         }
         {
@@ -2273,7 +2274,7 @@ private:
                                 "}";
             ASSERT_EQUALS(code, tokenizeAndStringify(code));
             ASSERT_EQUALS(
-                "[test.cpp:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+                "[test.cpp:5:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y [valueFlowBailoutIncompleteVar]\n",
                 errout_str());
         }
     }
@@ -2295,7 +2296,7 @@ private:
         ASSERT_EQUALS("void f ( ) { int a ; a = 0 ; int b ; b = 0 ; * p >> a >> b ; return a / b ; }",
                       tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }"));
         ASSERT_EQUALS(
-            "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n",
+            "[test.cpp:1:26]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2377,7 +2378,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n",
+            "[test.cpp:3:9]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n",
             filter_valueflow(errout_str()));
     }
 
@@ -2393,7 +2394,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable nr\n",
+            "[test.cpp:3:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable nr [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2456,7 +2457,7 @@ private:
                             "}\n";
         (void)tokenizeAndStringify(code);
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n",
+            "[test.cpp:3:9]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n",
             filter_valueflow(errout_str())); // no debug warnings
     }
 
