@@ -101,6 +101,7 @@ if(USE_BUNDLED_TINYXML2)
 endif()
 add_subdirectory(externals/simplecpp)
 add_subdirectory(lib)   # CppCheck Library
+add_subdirectory(frontend)
 add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 add_subdirectory(gui)   # Graphical application

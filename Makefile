@@ -162,8 +162,12 @@ ifndef INCLUDE_FOR_LIB
     INCLUDE_FOR_LIB=-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2
 endif
 
+ifndef INCLUDE_FOR_FE
+    INCLUDE_FOR_FE=-Ilib
+endif
+
 ifndef INCLUDE_FOR_CLI
-    INCLUDE_FOR_CLI=-Ilib -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2
+    INCLUDE_FOR_CLI=-Ilib -Ifrontend -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2
 endif
 
 ifndef INCLUDE_FOR_TEST
@@ -251,6 +255,8 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
 
 EXTOBJ =      externals/simplecpp/simplecpp.o \
               externals/tinyxml2/tinyxml2.o
+
+FEOBJ =       frontend/frontend.o
 
 CLIOBJ =      cli/cmdlineparser.o \
               cli/cppcheckexecutor.o \
@@ -344,12 +350,12 @@ TESTOBJ =     test/fixture.o \
 
 ###### Targets
 
-cppcheck: $(EXTOBJ) $(LIBOBJ) $(CLIOBJ)
+cppcheck: $(EXTOBJ) $(LIBOBJ) $(FEOBJ) $(CLIOBJ)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 all:	cppcheck testrunner
 
-testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) cli/cmdlineparser.o cli/cppcheckexecutor.o cli/executor.o cli/filelister.o cli/processexecutor.o cli/sehwrapper.o cli/signalhandler.o cli/singleexecutor.o cli/stacktrace.o cli/threadexecutor.o
+testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) $(FEOBJ) cli/cmdlineparser.o cli/cppcheckexecutor.o cli/executor.o cli/filelister.o cli/processexecutor.o cli/sehwrapper.o cli/signalhandler.o cli/singleexecutor.o cli/stacktrace.o cli/threadexecutor.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 test:	all
@@ -652,6 +658,9 @@ $(libcppdir)/vf_settokenvalue.o: lib/vf_settokenvalue.cpp lib/addoninfo.h lib/as
 
 $(libcppdir)/vfvalue.o: lib/vfvalue.cpp lib/config.h lib/errortypes.h lib/mathlib.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vfvalue.cpp
+
+frontend/frontend.o: frontend/frontend.cpp frontend/frontend.h
+	$(CXX) ${INCLUDE_FOR_FE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ frontend/frontend.cpp
 
 cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlinelogger.h cli/cmdlineparser.h cli/filelister.h externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h lib/xml.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cmdlineparser.cpp

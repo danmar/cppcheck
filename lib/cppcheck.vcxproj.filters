@@ -9,6 +9,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{00a07a33-9811-481c-91aa-46bfba1cda93}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup Label="SourceFiles">
     <ClCompile Include="tokenize.cpp">
@@ -212,88 +215,13 @@
     <ClCompile Include="vf_analyzers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vf_array.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_arraybool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_arrayelement.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_bailout.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_bitand.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="vf_common.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_conditionexpressions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_enumvalue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_functionreturn.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_globalconstvar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_globalstaticvar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_impossiblevalues.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_infercondition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_iteratorinfer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_iterators.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_number.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_pointeralias.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_reverse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_rightshift.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_sameexpressions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vf_settokenvalue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vf_string.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_subfunction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_switchvariable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_symbolicinfer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_symbolicoperators.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vf_unknownfunctionreturn.cpp">
+    <ClCompile Include="findtoken.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -541,88 +469,10 @@
     <ClInclude Include="vf_analyzers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vf_array.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_arraybool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_arrayelement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_bailout.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_bitand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vf_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vf_conditionexpressions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_enumvalue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_functionreturn.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_globalconstvar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_globalstaticvar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_impossiblevalues.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_infercondition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_iteratorinfer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_iterators.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_number.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_pointeralias.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_reverse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_rightshift.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_sameexpressions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vf_settokenvalue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_string.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_subfunction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_switchvariable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_symbolicinfer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_symbolicoperators.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vf_unknownfunctionreturn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xml.h">
@@ -630,9 +480,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="version.rc" />
+    <Natvis Include="cppcheck.natvis">
+      <Filter>Resource Files</Filter>
+    </Natvis>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="cppcheck.natvis" />
+    <ResourceCompile Include="version.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -70,7 +70,7 @@ Checks: >
         -readability-suspicious-call-argument,
         -readability-uppercase-literal-suffix
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(cli|gui|lib|oss-fuzz|test|triage)\/[a-z_]+\.h'
+HeaderFilterRegex: '(cli|gui|frontend|lib|oss-fuzz|test|triage)\/[a-z_]+\.h'
 ExcludeHeaderFilterRegex: 'ui_.*.h'
 CheckOptions:
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
