@@ -23,9 +23,6 @@
     <ClInclude Include="cppcheckexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cppcheckexecutorseh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="signalhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -44,6 +41,12 @@
     <ClInclude Include="singleexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sehwrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\frontend\frontend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup Label="SourceFiles">
     <ClCompile Include="main.cpp">
@@ -53,9 +56,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cppcheckexecutor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cppcheckexecutorseh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="signalhandler.cpp">
@@ -77,6 +77,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="singleexecutor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sehwrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\frontend\frontend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
