@@ -139,6 +139,8 @@ public:
     static void resetTimerResults();
     static void printTimerResults(SHOWTIME_MODES mode);
 
+    const Suppressions &getSuppressions() const;
+
 private:
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 

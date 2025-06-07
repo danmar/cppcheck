@@ -311,6 +311,33 @@ namespace {
             return mCtuInfo;
         }
 
+        void reportInlineSuppressions(const Suppressions &suppressions) const
+        {
+            const auto &suppressionList = suppressions.nomsg.getSuppressions();
+            const bool hasInline = std::any_of(suppressionList.cbegin(), suppressionList.cend(),
+                                               [](const SuppressionList::Suppression &s) {
+                return s.isInline;
+            });
+            if (!hasInline)
+                return;
+
+            auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+            out << "    <inline-suppressions>" << std::endl;
+
+            for (const auto &suppression : suppressionList) {
+                if (!suppression.isInline)
+                    continue;
+                const std::string msg =
+                    "        <suppression file=\"" + ErrorLogger::toxml(suppression.fileName) +
+                    "\" id=\"" + suppression.errorId +
+                    "\" lineNumber=\"" + std::to_string(suppression.lineNumber) +
+                    "\"/>";
+                out << msg << std::endl;
+            }
+
+            out << "    </inline-suppressions>" << std::endl;
+        }
+
     private:
         /**
          * Information about progress is directed here. This should be
@@ -509,8 +536,10 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
     stdLogger.writeCheckersReport(supprs);
 
     if (settings.outputFormat == Settings::OutputFormat::xml) {
-        if (settings.xml_version == 3)
+        if (settings.xml_version == 3) {
             stdLogger.reportMetrics();
+            stdLogger.reportInlineSuppressions(cppcheck.getSuppressions());
+        }
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
