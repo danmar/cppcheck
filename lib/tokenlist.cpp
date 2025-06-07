@@ -1070,7 +1070,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             state.inGeneric = inGenericSaved;
             tok = tok->link()->next();
             if (Token::simpleMatch(tok, "::"))
-                compileBinOp(tok, state, compileTerm);
+                compileBinOp(tok, state, compileScope);
         } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") &&
                    Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
