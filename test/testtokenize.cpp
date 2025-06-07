@@ -436,6 +436,8 @@ private:
 
         TEST_CASE(unknownMacroBeforeReturn);
 
+        TEST_CASE(cppKeywordInCSource);
+
         TEST_CASE(cppcast);
 
         TEST_CASE(checkHeader1);
@@ -7948,6 +7950,10 @@ private:
 
     void unknownMacroBeforeReturn() {
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("int f() { X return 0; }"), UNKNOWN_MACRO);
+    }
+
+    void cppKeywordInCSource() {
+        ASSERT_NO_THROW(tokenizeAndStringify("int throw() {}", true, Platform::Type::Native, false));
     }
 
     void cppcast() {
