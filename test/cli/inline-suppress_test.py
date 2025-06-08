@@ -457,3 +457,43 @@ def test_unmatched_cfg():
     ]
     assert stdout == ''
     assert ret == 0, stdout
+
+def test_xml_report_stdout(tmpdir):
+    args = [
+        '-q',
+        '--inline-suppr',
+        '--xml-version=3',
+        f'{__proj_inline_suppres_path}template.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+
+    assert ret == 0
+    assert stdout == ''
+
+    assert '    <inline-suppressions>' in lines
+    assert f'        <suppression file="{__proj_inline_suppres_path}template.cpp" id="unusedFunction" lineNumber="9"/>' in lines
+    assert '    </inline-suppressions>' in lines
+
+def test_xml_report_file(tmpdir):
+    output_file = os.path.join(tmpdir, "results.xml")
+    args = [
+        '-q',
+        '--inline-suppr',
+        '--xml-version=3',
+        f'--output-file={output_file}',
+        f'{__proj_inline_suppres_path}template.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+
+    assert ret == 0
+    assert stdout == ''
+
+    with open(output_file, 'r') as file:
+        xml = file.read()
+
+    assert '    <inline-suppressions>' in xml
+    assert f'        <suppression file="{__proj_inline_suppres_path}template.cpp" id="unusedFunction" lineNumber="9"/>' in xml
+    assert '    </inline-suppressions>' in xml
