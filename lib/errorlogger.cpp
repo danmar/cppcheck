@@ -701,13 +701,20 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLoc
     return str;
 }
 
+ErrorMessage::FileLocation::FileLocation(const std::string &file, int line, unsigned int column)
+    : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(Path::simplifyPath(file))
+{}
+
+ErrorMessage::FileLocation::FileLocation(const std::string &file, std::string info, int line, unsigned int column)
+    : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(Path::simplifyPath(file)), mInfo(std::move(info))
+{}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok)))
 {}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, std::string info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(std::move(info))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok))), mInfo(std::move(info))
 {}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
@@ -726,7 +733,6 @@ std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
 
 void ErrorMessage::FileLocation::setfile(std::string file)
 {
-    // TODO: consistently simplify mFileName
     mFileName = Path::simplifyPath(std::move(file));
 }
 

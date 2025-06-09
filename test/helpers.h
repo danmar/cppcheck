@@ -106,12 +106,26 @@ public:
             throw std::runtime_error("creating tokens failed");
     }
 
+    template<size_t size>
+    explicit SimpleTokenList(const char (&code)[size], const std::string& file0, Standards::Language lang = Standards::Language::CPP)
+        : list{settings, lang}
+    {
+        std::istringstream iss(code);
+        list.appendFileIfNew(file0);
+        if (!list.createTokens(iss))
+            throw std::runtime_error("creating tokens failed");
+    }
+
     Token* front() {
         return list.front();
     }
 
     const Token* front() const {
         return list.front();
+    }
+
+    const TokenList& get() const {
+        return list;
     }
 
 private:
