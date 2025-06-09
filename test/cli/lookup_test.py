@@ -465,8 +465,6 @@ def test_platform_lookup_nofile(tmpdir):
     ]
 
 
-# make sure we bail out when we encounter an invalid file
-@pytest.mark.xfail(strict=True)  # TODO: does not bail out after it found an invalid file
 def test_platform_lookup_invalid(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
