@@ -164,6 +164,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(array);
         TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
@@ -3278,7 +3279,7 @@ private:
 
         const Settings s = settingsBuilder(settings1).severity(Severity::portability).build();
         check("main(int argc, char *argv[]) { }", false, false, &s);
-        ASSERT_EQUALS("[test.c:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards.\n",
+        ASSERT_EQUALS("[test.c:1:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards. [returnImplicitInt]\n",
                       errout_str());
 
         check("namespace boost {\n"
@@ -3301,8 +3302,8 @@ private:
               "{\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n"
-            "[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n", // duplicate
+            "[test.cpp:1:10]: (debug) Executable scope 'testing' with unknown function. [symbolDatabaseWarning]\n"
+            "[test.cpp:1:10]: (debug) Executable scope 'testing' with unknown function. [symbolDatabaseWarning]\n", // duplicate
             errout_str());
     }
 
@@ -3426,9 +3427,9 @@ private:
         check("::y(){x}");
 
         ASSERT_EQUALS(
-            "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-            "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n"
-            "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", // duplicate
+            "[test.cpp:1:3]: (debug) Executable scope 'y' with unknown function. [symbolDatabaseWarning]\n"
+            "[test.cpp:1:7]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n"
+            "[test.cpp:1:3]: (debug) Executable scope 'y' with unknown function. [symbolDatabaseWarning]\n", // duplicate
             errout_str());
     }
 
@@ -3623,7 +3624,7 @@ private:
               "struct S {\n"
               "  _Atomic union { int n; };\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) Failed to parse 'typedef _Atomic ( int ) & atomic_int_ref ;'. The checking continues anyway.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:1]: (debug) Failed to parse 'typedef _Atomic ( int ) & atomic_int_ref ;'. The checking continues anyway. [simplifyTypedef]\n", errout_str());
     }
 
     void symboldatabase35() { // ticket #4806 and #4841
