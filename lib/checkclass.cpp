@@ -3718,7 +3718,7 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<C
                 continue;
             }
             if (it->second.hash == nameLoc.hash)
-                continue;            
+                continue;
             if (it->second.configuration != nameLoc.configuration)
                 continue;
             // Same location, sometimes the hash is different wrongly (possibly because of different token simplifications).
