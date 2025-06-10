@@ -61,7 +61,7 @@ namespace ValueFlow {
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
     enum class Accuracy : std::uint8_t {
-        ExcactOrZero,
+        ExactOrZero,
         LowerBound,
     };
 

@@ -83,8 +83,8 @@ namespace ValueFlow
         // If the sign is the same there is no truncation
         if (vt1->sign == vt2->sign)
             return value;
-        const size_t n1 = getSizeOf(*vt1, settings, ValueFlow::Accuracy::ExcactOrZero);
-        const size_t n2 = getSizeOf(*vt2, settings, ValueFlow::Accuracy::ExcactOrZero);
+        const size_t n1 = getSizeOf(*vt1, settings, ValueFlow::Accuracy::ExactOrZero);
+        const size_t n2 = getSizeOf(*vt2, settings, ValueFlow::Accuracy::ExactOrZero);
         ValueType::Sign sign = ValueType::Sign::UNSIGNED;
         if (n1 < n2)
             sign = vt2->sign;
@@ -379,8 +379,8 @@ namespace ValueFlow
             const ValueType &valueType = ValueType::parseDecl(castType, settings);
             if (value.isImpossible() && value.isIntValue() && value.intvalue < 0
                 && astIsUnsigned(tok) && valueType.sign == ValueType::SIGNED && tok->valueType()
-                && getSizeOf(*tok->valueType(), settings, ValueFlow::Accuracy::ExcactOrZero)
-                >= getSizeOf(valueType, settings, ValueFlow::Accuracy::ExcactOrZero))
+                && getSizeOf(*tok->valueType(), settings, ValueFlow::Accuracy::ExactOrZero)
+                >= getSizeOf(valueType, settings, ValueFlow::Accuracy::ExactOrZero))
                 return;
             setTokenValueCast(parent, valueType, value, settings);
         }
@@ -645,7 +645,7 @@ namespace ValueFlow
                         if (dst) {
                             const size_t sz = ValueFlow::getSizeOf(*dst,
                                                                    settings,
-                                                                   ValueFlow::Accuracy::ExcactOrZero);
+                                                                   ValueFlow::Accuracy::ExactOrZero);
                             MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue < v.intvalue) {
@@ -677,7 +677,7 @@ namespace ValueFlow
                         if (dst) {
                             const size_t sz = ValueFlow::getSizeOf(*dst,
                                                                    settings,
-                                                                   ValueFlow::Accuracy::ExcactOrZero);
+                                                                   ValueFlow::Accuracy::ExactOrZero);
                             MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue > v.intvalue) {

@@ -454,7 +454,7 @@ static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accura
             else
                 total = f(total, *vt, dim);
         }
-        if (accuracy == ValueFlow::Accuracy::ExcactOrZero && total == 0)
+        if (accuracy == ValueFlow::Accuracy::ExactOrZero && total == 0)
             return {0, false};
     }
     return {total, true};
@@ -538,7 +538,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
             size_t n = ValueFlow::getSizeOf(vt2, settings,accuracy, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings, accuracy);
             if (n == 0 || a == 0)
-                return accuracy == Accuracy::ExcactOrZero ? 0 : total;
+                return accuracy == Accuracy::ExactOrZero ? 0 : total;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             return vt.typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
@@ -552,12 +552,12 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
                 return v;
             });
         }
-        if (accuracy == Accuracy::ExcactOrZero && total == 0 && !result.success)
+        if (accuracy == Accuracy::ExactOrZero && total == 0 && !result.success)
             return 0;
         total = std::max(size_t{1}, total);
         size_t align = getAlignOf(vt, settings, accuracy);
         if (align == 0)
-            return accuracy == Accuracy::ExcactOrZero ? 0 : total;
+            return accuracy == Accuracy::ExactOrZero ? 0 : total;
         total += (align - (total % align)) % align;
         return total;
     }
@@ -4148,10 +4148,10 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     if (!dst || !dst->isIntegral())
         return values;
 
-    const size_t sz = ValueFlow::getSizeOf(*dst, settings, ValueFlow::Accuracy::ExcactOrZero);
+    const size_t sz = ValueFlow::getSizeOf(*dst, settings, ValueFlow::Accuracy::ExactOrZero);
 
     if (src) {
-        const size_t osz = ValueFlow::getSizeOf(*src, settings, ValueFlow::Accuracy::ExcactOrZero);
+        const size_t osz = ValueFlow::getSizeOf(*src, settings, ValueFlow::Accuracy::ExactOrZero);
         if (osz >= sz && dst->sign == ValueType::Sign::SIGNED && src->sign == ValueType::Sign::UNSIGNED) {
             values.remove_if([&](const ValueFlow::Value& value) {
                 if (!value.isIntValue())
