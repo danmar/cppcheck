@@ -580,7 +580,7 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
     } else {
         local.removeModifiedVars(ctx);
     }
-    return local.state;
+    return std::move(local.state);
 }
 
 ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings& settings)
