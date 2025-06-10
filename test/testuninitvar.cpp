@@ -7923,7 +7923,7 @@ private:
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckUninitVar>();
-        fileInfo.push_back(c.getFileInfo(tokenizer, settings));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings, ""));
         c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
         while (!fileInfo.empty()) {
             delete fileInfo.back();

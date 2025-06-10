@@ -9084,7 +9084,7 @@ private:
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
             SimpleTokenizer tokenizer{settingsDefault, *this, filename};
             ASSERT(tokenizer.tokenize(c));
-            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
+            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault, ""));
         }
 
         // Check code..
@@ -9130,7 +9130,7 @@ private:
 
         // Check..
         const Check& c = getCheck<CheckClass>();
-        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1);
+        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1, "");
 
         delete fileInfo;
     }
