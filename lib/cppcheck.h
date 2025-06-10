@@ -176,7 +176,7 @@ private:
      * @param tokenizer tokenizer instance
      * @param analyzerInformation the analyzer infomation
      */
-    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation);
+    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig);
 
     /**
      * Execute addons

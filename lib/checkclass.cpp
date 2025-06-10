@@ -3563,6 +3563,7 @@ namespace
         struct NameLoc {
             std::string className;
             std::string fileName;
+            std::string configuration;
             int lineNumber;
             int column;
             std::size_t hash;
@@ -3592,7 +3593,7 @@ namespace
     };
 }
 
-Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/) const
+Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/, const std::string& currentConfig) const
 {
     if (!tokenizer.isCPP())
         return nullptr;
@@ -3649,6 +3650,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Setti
             }
         }
         nameLoc.hash = std::hash<std::string> {}(def);
+        nameLoc.configuration = currentConfig;
 
         classDefinitions.push_back(std::move(nameLoc));
     }
@@ -3716,6 +3718,8 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<C
                 continue;
             }
             if (it->second.hash == nameLoc.hash)
+                continue;            
+            if (it->second.configuration != nameLoc.configuration)
                 continue;
             // Same location, sometimes the hash is different wrongly (possibly because of different token simplifications).
             if (it->second.isSameLocation(nameLoc))

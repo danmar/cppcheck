@@ -727,7 +727,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
                              mSettings,
                              &s_timerResults);
         tokenizer.printDebugOutput(std::cout);
-        checkNormalTokens(tokenizer, nullptr); // TODO: provide analyzer information
+        checkNormalTokens(tokenizer, nullptr, ""); // TODO: provide analyzer information
 
         // create dumpfile
         std::ofstream fdump;
@@ -1203,7 +1203,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     }
 
                     // Check normal tokens
-                    checkNormalTokens(tokenizer, analyzerInformation.get());
+                    checkNormalTokens(tokenizer, analyzerInformation.get(), currentConfig);
                 } catch (const InternalError &e) {
                     ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                     mErrorLogger.reportErr(errmsg);
@@ -1327,7 +1327,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 // CppCheck - A function that checks a normal token list
 //---------------------------------------------------------------------------
 
-void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation)
+void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig)
 {
     CheckUnusedFunctions unusedFunctionsChecker;
 
@@ -1392,7 +1392,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
         if (!doUnusedFunctionOnly) {
             // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
-                if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings)) {
+                if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings, currentConfig)) {
                     if (analyzerInformation)
                         analyzerInformation->setFileInfo(check->name(), fi->toString());
                     if (mSettings.useSingleJob())
