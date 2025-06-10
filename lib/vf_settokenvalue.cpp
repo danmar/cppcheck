@@ -346,27 +346,26 @@ namespace ValueFlow
                 setTokenValue(parent, std::move(value), settings);
                 return;
             }
-            Value pvalue = value;
             if (!value.subexpressions.empty() && Token::Match(parent, ". %var%")) {
                 if (contains(value.subexpressions, parent->strAt(1)))
-                    pvalue.subexpressions.clear();
+                    value.subexpressions.clear();
                 else
                     return;
             }
             if (parent->isUnaryOp("&")) {
-                pvalue.indirect++;
-                setTokenValue(parent, std::move(pvalue), settings);
+                value.indirect++;
+                setTokenValue(parent, std::move(value), settings);
             } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok && parent->astOperand2()) {
-                if (parent->originalName() == "->" && pvalue.indirect > 0)
-                    pvalue.indirect--;
-                setTokenValue(parent->astOperand2(), std::move(pvalue), settings);
+                if (parent->originalName() == "->" && value.indirect > 0)
+                    value.indirect--;
+                setTokenValue(parent->astOperand2(), std::move(value), settings);
             } else if (Token::Match(parent->astParent(), ". %var%") && parent->astParent()->astOperand1() == parent) {
-                if (parent->astParent()->originalName() == "->" && pvalue.indirect > 0)
-                    pvalue.indirect--;
-                setTokenValue(parent->astParent()->astOperand2(), std::move(pvalue), settings);
-            } else if (parent->isUnaryOp("*") && pvalue.indirect > 0) {
-                pvalue.indirect--;
-                setTokenValue(parent, std::move(pvalue), settings);
+                if (parent->astParent()->originalName() == "->" && value.indirect > 0)
+                    value.indirect--;
+                setTokenValue(parent->astParent()->astOperand2(), std::move(value), settings);
+            } else if (parent->isUnaryOp("*") && value.indirect > 0) {
+                value.indirect--;
+                setTokenValue(parent, std::move(value), settings);
             }
             return;
         }
