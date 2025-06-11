@@ -648,12 +648,20 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string,cppcheck::stricmp> &variables, std::string &includePath, bool *useOfMfc)
+static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string, std::string, cppcheck::stricmp> &variables, std::string &includePath, bool *useOfMfc, bool *useUnicode)
 {
     if (useOfMfc) {
         for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
             if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
                 *useOfMfc = true;
+                break;
+            }
+        }
+    }
+    if (useUnicode) {
+        for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            if (std::strcmp(e->Name(), "CharacterSet") == 0) {
+                *useUnicode = std::strcmp(e->GetText(), "Unicode") == 0;
                 break;
             }
         }
@@ -719,7 +727,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
                 }
             }
         } else if (std::strcmp(name,"PropertyGroup")==0) {
-            importPropertyGroup(node, variables, includePath, nullptr);
+            importPropertyGroup(node, variables, includePath, nullptr, nullptr);
         } else if (std::strcmp(name,"ItemDefinitionGroup")==0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         }
@@ -737,6 +745,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
     std::vector<SharedItemsProject> sharedItemsProjects;
 
     bool useOfMfc = false;
+    bool useUnicode = false;
 
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
@@ -777,7 +786,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         } else if (std::strcmp(name, "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         } else if (std::strcmp(name, "PropertyGroup") == 0) {
-            importPropertyGroup(node, variables, includePath, &useOfMfc);
+            importPropertyGroup(node, variables, includePath, &useOfMfc, &useUnicode);
         } else if (std::strcmp(name, "ImportGroup") == 0) {
             const char *labelAttribute = node->Attribute("Label");
             if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
@@ -878,6 +887,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 else if (i.enhancedInstructionSet == "AdvancedVectorExtensions512")
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
+            }
+            if (useUnicode) {
+                fs.defines += ";UNICODE=1;_UNICODE=1";
             }
             fsSetDefines(fs, fs.defines);
             fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
