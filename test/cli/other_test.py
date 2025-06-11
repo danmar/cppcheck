@@ -858,7 +858,7 @@ def __test_unused_function_include(tmpdir, extra_args):
     args += extra_args
 
     _, _, stderr = cppcheck(args)
-    assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
+    assert stderr == "{}:4:26: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
 
 
 def test_unused_function_include(tmpdir):
