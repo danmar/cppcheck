@@ -1732,8 +1732,6 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             mErrorLogger.reportErr(errmsg);
         }
 
-        const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
-
         for (const picojson::value& res : results) {
             // TODO: get rid of copy?
             // this is a copy so we can access missing fields and get a default value
@@ -1789,9 +1787,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             }
 
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
-            if (misraC2023 && startsWith(errmsg.id, "misra-c2012-"))
-                errmsg.id = "misra-c2023-" + errmsg.id.substr(12);
-            errmsg.setmsg(mSettings.getMisraRuleText(errmsg.id, obj["message"].get<std::string>()));
+            errmsg.setmsg(obj["message"].get<std::string>());
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = severityFromString(severity);
             if (errmsg.severity == Severity::none || errmsg.severity == Severity::internal) {
@@ -2122,10 +2118,8 @@ void CppCheck::printTimerResults(SHOWTIME_MODES mode)
 }
 
 bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
-    if (mSettings.premiumArgs.find("--misra") != std::string::npos) {
-        if (startsWith(id, "misra-") || startsWith(id, "premium-misra-"))
-            return true;
-    }
+    if (mSettings.premiumArgs.find("--misra") != std::string::npos && startsWith(id, "premium-misra-"))
+        return true;
     if (mSettings.premiumArgs.find("--cert") != std::string::npos && startsWith(id, "premium-cert-"))
         return true;
     if (mSettings.premiumArgs.find("--autosar") != std::string::npos && startsWith(id, "premium-autosar-"))

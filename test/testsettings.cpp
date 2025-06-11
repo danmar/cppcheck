@@ -33,7 +33,6 @@ private:
         TEST_CASE(loadCppcheckCfg);
         TEST_CASE(loadCppcheckCfgSafety);
         TEST_CASE(getNameAndVersion);
-        TEST_CASE(ruleTexts);
         TEST_CASE(checkLevelDefault);
     }
 
@@ -277,15 +276,6 @@ private:
             ASSERT_EQUALS("Cppcheck Premium", nameVersion.first);
             ASSERT_EQUALS("12.3.4s", nameVersion.second);
         }
-    }
-
-    void ruleTexts() const
-    {
-        Settings s;
-        s.setMisraRuleTexts("1.1 text 1\n1.2 text 2\n1.3 text 3\r\n");
-        ASSERT_EQUALS("text 1", s.getMisraRuleText("misra-c2012-1.1", "---"));
-        ASSERT_EQUALS("text 2", s.getMisraRuleText("misra-c2012-1.2", "---"));
-        ASSERT_EQUALS("text 3", s.getMisraRuleText("misra-c2012-1.3", "---"));
     }
 
     void checkLevelDefault() const

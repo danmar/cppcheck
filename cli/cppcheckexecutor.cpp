@@ -396,8 +396,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
 
-    settings.setMisraRuleTexts(executeCommand);
-
     const int ret = check_wrapper(settings, supprs);
 
     return ret;
