@@ -846,6 +846,11 @@
                 <string>2023</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>2025</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item>

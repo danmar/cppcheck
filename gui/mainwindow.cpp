@@ -1175,7 +1175,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
             if (!premiumArgs.contains("--misra-c-") && mProjectFile->getAddons().contains("misra"))
                 premiumArgs += " --misra-c-2012";
             settings.premiumArgs = premiumArgs.mid(1).toStdString();
-            settings.setMisraRuleTexts(CheckThread::executeCommand);
         }
     }
     else
