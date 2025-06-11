@@ -262,10 +262,12 @@ private:
 
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2012-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2023-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-dir-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2008-0-0-0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2023-0.0.0"));
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
         }
@@ -275,12 +277,13 @@ private:
 
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
 
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2012-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2023-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-dir-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2008-0-0-0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2023-0.0.0"));
             ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
             ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
         }
