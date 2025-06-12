@@ -7071,6 +7071,23 @@ private:
                                              "}\n"));
         ASSERT_EQUALS("", errout_str());
 
+        ASSERT_NO_THROW(tokenizeAndStringify("int foo() {\n"
+                                             "    connect([]( const int& f ) {\n"
+                                             "                switch( f )\n"
+                                             "                {\n"
+                                             "                    case (int)1:\n"
+                                             "                    {\n"
+                                             "                        A r(f);\n"
+                                             "                        if (1) {}\n"
+                                             "                    }\n"
+                                             "                    break;\n"
+                                             "                }\n"
+                                             "                return 0;\n"
+                                             "             });\n"
+                                             "    return 0;\n"
+                                             "}\n"));
+        ASSERT_EQUALS("", errout_str());
+
         // #11378
         ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
 
