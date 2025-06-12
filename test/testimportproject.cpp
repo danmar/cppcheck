@@ -22,6 +22,7 @@
 #include "redirect.h"
 #include "settings.h"
 #include "suppressions.h"
+#include "xml.h"
 
 #include <list>
 #include <map>
@@ -34,6 +35,8 @@ class TestImporter : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
+    using ImportProject::importVcxproj;
+    using ImportProject::SharedItemsProject;
 
     bool sourceFileExists(const std::string & /*file*/) override {
         return true;
@@ -71,6 +74,7 @@ private:
         TEST_CASE(importCompileCommandsDirectoryInvalid); // 'directory' field not a string
         TEST_CASE(importCppcheckGuiProject);
         TEST_CASE(ignorePaths);
+        TEST_CASE(testVcxprojUnicode);
     }
 
     void setDefines() const {
@@ -453,6 +457,54 @@ private:
 
         project.ignorePaths({ "*e/r*" });
         ASSERT_EQUALS(0, project.fileSettings.size());
+    }
+
+    void testVcxprojUnicode()
+    {
+        const char vcxproj[] = R"-(
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+</Project>
+)-";
+        tinyxml2::XMLDocument doc;
+        ASSERT_EQUALS(tinyxml2::XML_SUCCESS, doc.Parse(vcxproj, sizeof(vcxproj)));
+        TestImporter project;
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
+        std::vector<TestImporter::SharedItemsProject> cache;
+        ASSERT_EQUALS(project.importVcxproj("test.vcxproj", doc, variables, {}, {}, cache), true);
+        ASSERT_EQUALS(project.fileSettings.size(), 2);
+        ASSERT(project.fileSettings.front().defines.find(";UNICODE=1;") != std::string::npos);
+        ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1") != std::string::npos);
+        ASSERT_EQUALS(project.fileSettings.front().useMfc, false);
+        ASSERT(project.fileSettings.back().defines.find(";UNICODE=1;") == std::string::npos);
+        ASSERT(project.fileSettings.back().defines.find(";_UNICODE=1") == std::string::npos);
+        ASSERT_EQUALS(project.fileSettings.back().useMfc, true);
     }
 
     // TODO: test fsParseCommand()

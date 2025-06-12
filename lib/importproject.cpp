@@ -36,6 +36,7 @@
 #include <stack>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "xml.h"
 
@@ -527,51 +528,11 @@ namespace {
         std::string platformStr;
     };
 
-    struct ItemDefinitionGroup {
-        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, std::string includePaths) : additionalIncludePaths(std::move(includePaths)) {
+    struct ConditionalGroup {
+        explicit ConditionalGroup(const tinyxml2::XMLElement *idg){
             const char *condAttr = idg->Attribute("Condition");
             if (condAttr)
                 condition = condAttr;
-            for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
-                const char* name = e1->Name();
-                if (std::strcmp(name, "ClCompile") == 0) {
-                    enhancedInstructionSet = "StreamingSIMDExtensions2";
-                    for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                        const char * const text = e->GetText();
-                        if (!text)
-                            continue;
-                        const char * const ename = e->Name();
-                        if (std::strcmp(ename, "PreprocessorDefinitions") == 0)
-                            preprocessorDefinitions = text;
-                        else if (std::strcmp(ename, "AdditionalIncludeDirectories") == 0) {
-                            if (!additionalIncludePaths.empty())
-                                additionalIncludePaths += ';';
-                            additionalIncludePaths += text;
-                        } else if (std::strcmp(ename, "LanguageStandard") == 0) {
-                            if (std::strcmp(text, "stdcpp14") == 0)
-                                cppstd = Standards::CPP14;
-                            else if (std::strcmp(text, "stdcpp17") == 0)
-                                cppstd = Standards::CPP17;
-                            else if (std::strcmp(text, "stdcpp20") == 0)
-                                cppstd = Standards::CPP20;
-                            else if (std::strcmp(text, "stdcpplatest") == 0)
-                                cppstd = Standards::CPPLatest;
-                        } else if (std::strcmp(ename, "EnableEnhancedInstructionSet") == 0) {
-                            enhancedInstructionSet = text;
-                        }
-                    }
-                }
-                else if (std::strcmp(name, "Link") == 0) {
-                    for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                        const char * const text = e->GetText();
-                        if (!text)
-                            continue;
-                        if (std::strcmp(e->Name(), "EntryPointSymbol") == 0) {
-                            entryPointSymbol = text;
-                        }
-                    }
-                }
-            }
         }
 
         static void replaceAll(std::string &c, const std::string &from, const std::string &to) {
@@ -623,12 +584,74 @@ namespace {
             }
             return false;
         }
+    private:
         std::string condition;
+    };
+
+    struct ItemDefinitionGroup : ConditionalGroup {
+        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, std::string includePaths) : ConditionalGroup(idg), additionalIncludePaths(std::move(includePaths)) {
+            for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
+                const char* name = e1->Name();
+                if (std::strcmp(name, "ClCompile") == 0) {
+                    enhancedInstructionSet = "StreamingSIMDExtensions2";
+                    for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                        const char * const text = e->GetText();
+                        if (!text)
+                            continue;
+                        const char * const ename = e->Name();
+                        if (std::strcmp(ename, "PreprocessorDefinitions") == 0)
+                            preprocessorDefinitions = text;
+                        else if (std::strcmp(ename, "AdditionalIncludeDirectories") == 0) {
+                            if (!additionalIncludePaths.empty())
+                                additionalIncludePaths += ';';
+                            additionalIncludePaths += text;
+                        } else if (std::strcmp(ename, "LanguageStandard") == 0) {
+                            if (std::strcmp(text, "stdcpp14") == 0)
+                                cppstd = Standards::CPP14;
+                            else if (std::strcmp(text, "stdcpp17") == 0)
+                                cppstd = Standards::CPP17;
+                            else if (std::strcmp(text, "stdcpp20") == 0)
+                                cppstd = Standards::CPP20;
+                            else if (std::strcmp(text, "stdcpplatest") == 0)
+                                cppstd = Standards::CPPLatest;
+                        } else if (std::strcmp(ename, "EnableEnhancedInstructionSet") == 0) {
+                            enhancedInstructionSet = text;
+                        }
+                    }
+                }
+                else if (std::strcmp(name, "Link") == 0) {
+                    for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                        const char * const text = e->GetText();
+                        if (!text)
+                            continue;
+                        if (std::strcmp(e->Name(), "EntryPointSymbol") == 0) {
+                            entryPointSymbol = text;
+                        }
+                    }
+                }
+            }
+        }
+
         std::string enhancedInstructionSet;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
         std::string entryPointSymbol; // TODO: use this
         Standards::cppstd_t cppstd = Standards::CPPLatest;
+    };
+
+    struct ConfigutrationPropertyGroup : ConditionalGroup {
+        explicit ConfigutrationPropertyGroup(const tinyxml2::XMLElement *idg) : ConditionalGroup(idg) {
+            for (const tinyxml2::XMLElement *e = idg->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
+                    useOfMfc = true;
+                } else if (std::strcmp(e->Name(), "CharacterSet") == 0) {
+                    useUnicode = std::strcmp(e->GetText(), "Unicode") == 0;
+                }
+            }
+        }
+
+        bool useOfMfc = false;
+        bool useUnicode = false;
     };
 }
 
@@ -648,25 +671,8 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string, std::string, cppcheck::stricmp> &variables, std::string &includePath, bool *useOfMfc, bool *useUnicode)
+static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string, std::string, cppcheck::stricmp> &variables, std::string &includePath)
 {
-    if (useOfMfc) {
-        for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
-                *useOfMfc = true;
-                break;
-            }
-        }
-    }
-    if (useUnicode) {
-        for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "CharacterSet") == 0) {
-                *useUnicode = std::strcmp(e->GetText(), "Unicode") == 0;
-                break;
-            }
-        }
-    }
-
     const char* labelAttribute = node->Attribute("Label");
     if (labelAttribute && std::strcmp(labelAttribute, "UserMacros") == 0) {
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
@@ -727,32 +733,39 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
                 }
             }
         } else if (std::strcmp(name,"PropertyGroup")==0) {
-            importPropertyGroup(node, variables, includePath, nullptr, nullptr);
+            importPropertyGroup(node, variables, includePath);
         } else if (std::strcmp(name,"ItemDefinitionGroup")==0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         }
     }
 }
 
-bool ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache)
+bool ImportProject::importVcxproj(const std::string &filename,
+                                  std::map<std::string, std::string, cppcheck::stricmp> &variables,
+                                  const std::string &additionalIncludeDirectories,
+                                  const std::vector<std::string> &fileFilters,
+                                  std::vector<SharedItemsProject> &cache)
 {
-    variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
-
-    std::list<ProjectConfiguration> projectConfigurationList;
-    std::list<std::string> compileList;
-    std::list<ItemDefinitionGroup> itemDefinitionGroupList;
-    std::string includePath;
-    std::vector<SharedItemsProject> sharedItemsProjects;
-
-    bool useOfMfc = false;
-    bool useUnicode = false;
-
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
         printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
+    return importVcxproj(filename, doc, variables, additionalIncludeDirectories, fileFilters, cache);
+}
+
+bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache)
+{
+    variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
+
+    std::list<ProjectConfiguration> projectConfigurationList;
+    std::list<std::string> compileList;
+    std::list<ItemDefinitionGroup> itemDefinitionGroupList;
+    std::vector<ConfigutrationPropertyGroup> configurationPropertyGroups;
+    std::string includePath;
+    std::vector<SharedItemsProject> sharedItemsProjects;
+
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
         printError("Visual Studio project file has no XML root node");
@@ -786,7 +799,12 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         } else if (std::strcmp(name, "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         } else if (std::strcmp(name, "PropertyGroup") == 0) {
-            importPropertyGroup(node, variables, includePath, &useOfMfc, &useUnicode);
+            const char* labelAttribute = node->Attribute("Label");
+            if (labelAttribute && std::strcmp(labelAttribute, "Configuration") == 0) {
+                configurationPropertyGroups.emplace_back(node);
+            } else {
+                importPropertyGroup(node, variables, includePath);
+            }
         } else if (std::strcmp(name, "ImportGroup") == 0) {
             const char *labelAttribute = node->Attribute("Label");
             if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
@@ -862,7 +880,6 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.cfg = p.name;
             // TODO: detect actual MSC version
             fs.msc = true;
-            fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
             if (p.platform == ProjectConfiguration::Win32)
                 fs.platformType = Platform::Type::Win32W;
@@ -888,8 +905,13 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
-            if (useUnicode) {
-                fs.defines += ";UNICODE=1;_UNICODE=1";
+            for (const ConfigutrationPropertyGroup &c : configurationPropertyGroups) {
+                if (!c.conditionIsTrue(p))
+                    continue;
+                if (c.useUnicode) {
+                    fs.defines += ";UNICODE=1;_UNICODE=1";
+                }
+                fs.useMfc = c.useOfMfc;
             }
             fsSetDefines(fs, fs.defines);
             fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
