@@ -337,6 +337,24 @@ def test_checkclass_project_builddir_j(tmpdir):
     os.mkdir(build_dir)
     __test_checkclass_project(tmpdir, ['-j2', '--cppcheck-build-dir={}'.format(build_dir)])
 
+def test_ctu_odr_config():
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information,style',
+        '--error-exitcode=1',
+        'whole-program/odr4.cpp',
+        'whole-program/odr5.cpp'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == [
+        "whole-program{}odr4.cpp:6:1: error: The one definition rule is violated, different classes/structs have the same name 'S' [ctuOneDefinitionRuleViolation]".format(os.path.sep)
+    ]
+    assert stdout == ''
+    assert ret == 1, stdout
+
 
 def __test_nullpointer_file0(extra_args):
     args = [

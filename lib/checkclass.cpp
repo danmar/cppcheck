@@ -3719,7 +3719,7 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<C
             }
             if (it->second.hash == nameLoc.hash)
                 continue;
-            if (it->second.configuration != nameLoc.configuration)
+            if (it->second.fileName == nameLoc.fileName && it->second.configuration != nameLoc.configuration)
                 continue;
             // Same location, sometimes the hash is different wrongly (possibly because of different token simplifications).
             if (it->second.isSameLocation(nameLoc))
