@@ -1,6 +1,6 @@
 // #10431
 #ifdef X
-struct S { int i; }; // cppcheck-suppress unusedStructMember
+struct S { S(); };
 #else
 struct S {};
 #endif
