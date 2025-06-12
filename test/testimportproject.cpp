@@ -459,7 +459,7 @@ private:
         ASSERT_EQUALS(0, project.fileSettings.size());
     }
 
-    void testVcxprojUnicode()
+    void testVcxprojUnicode() const
     {
         const char vcxproj[] = R"-(
 <?xml version="1.0" encoding="utf-8"?>
