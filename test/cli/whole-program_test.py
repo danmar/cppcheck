@@ -254,7 +254,8 @@ def __test_checkclass(extra_args):
         '--enable=information,style',
         '--error-exitcode=1',
         'whole-program/odr1.cpp',
-        'whole-program/odr2.cpp'
+        'whole-program/odr2.cpp',
+        'whole-program/odr3.cpp'
     ]
 
     args += extra_args
