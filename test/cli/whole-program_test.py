@@ -350,7 +350,7 @@ def test_ctu_odr_config():
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     lines = stderr.splitlines()
     assert lines == [
-        "whole-program{}odr4.cpp:6:1: error: The one definition rule is violated, different classes/structs have the same name 'S' [ctuOneDefinitionRuleViolation]".format(os.path.sep)
+        "whole-program{}odr4.cpp:2:1: error: The one definition rule is violated, different classes/structs have the same name 'S' [ctuOneDefinitionRuleViolation]".format(os.path.sep)
     ]
     assert stdout == ''
     assert ret == 1, stdout
