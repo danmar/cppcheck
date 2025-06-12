@@ -470,7 +470,7 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::Match(tok->link(), ") %assign%|,|..."))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->strAt(-1) != "return" &&
+    if (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") &&
         (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
 
@@ -600,6 +600,10 @@ static bool iscpp11init_impl(const Token * const tok)
             if (Token::simpleMatch(castTok->astParent(), "case"))
                 return true;
         }
+        if (findParent(colonTok->previous(), [](const Token *parent){
+            return parent->str() == "case";
+        }))
+            return true;
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
