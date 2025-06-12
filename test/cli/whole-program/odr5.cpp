@@ -1,1 +1,3 @@
-struct S { S(); };
+struct S {
+    void f() {}
+};
