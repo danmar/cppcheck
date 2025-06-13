@@ -3568,6 +3568,7 @@ namespace
         struct NameLoc {
             std::string className;
             std::string fileName;
+            std::string configuration;
             int lineNumber;
             int column;
             std::size_t hash;
@@ -3587,6 +3588,7 @@ namespace
             for (const NameLoc &nameLoc: classDefinitions) {
                 ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
                        "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+                       "\" configuration=\"" + ErrorLogger::toxml(nameLoc.configuration) +
                        "\" line=\"" + std::to_string(nameLoc.lineNumber) +
                        "\" col=\"" + std::to_string(nameLoc.column) +
                        "\" hash=\"" + std::to_string(nameLoc.hash) +
@@ -3597,7 +3599,7 @@ namespace
     };
 }
 
-Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/) const
+Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/, const std::string& currentConfig) const
 {
     if (!tokenizer.isCPP())
         return nullptr;
@@ -3654,6 +3656,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Setti
             }
         }
         nameLoc.hash = std::hash<std::string> {}(def);
+        nameLoc.configuration = currentConfig;
 
         classDefinitions.push_back(std::move(nameLoc));
     }
@@ -3674,13 +3677,15 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
             continue;
         const char *name = e->Attribute("name");
         const char *file = e->Attribute("file");
+        const char *configuration = e->Attribute("configuration");
         const char *line = e->Attribute("line");
         const char *col = e->Attribute("col");
         const char *hash = e->Attribute("hash");
-        if (name && file && line && col && hash) {
+        if (name && file && configuration && line && col && hash) {
             MyFileInfo::NameLoc nameLoc;
             nameLoc.className = name;
             nameLoc.fileName = file;
+            nameLoc.configuration = configuration;
             nameLoc.lineNumber = strToInt<int>(line);
             nameLoc.column = strToInt<int>(col);
             nameLoc.hash = strToInt<std::size_t>(hash);
@@ -3721,6 +3726,8 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<C
                 continue;
             }
             if (it->second.hash == nameLoc.hash)
+                continue;
+            if (it->second.fileName == nameLoc.fileName && it->second.configuration != nameLoc.configuration)
                 continue;
             // Same location, sometimes the hash is different wrongly (possibly because of different token simplifications).
             if (it->second.isSameLocation(nameLoc))

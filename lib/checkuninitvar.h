@@ -96,7 +96,7 @@ private:
     void valueFlowUninit();
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
 

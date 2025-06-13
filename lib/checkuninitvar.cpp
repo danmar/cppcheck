@@ -1730,7 +1730,7 @@ static bool isVariableUsage(const Settings &settings, const Token *argtok, CTU::
     return isVariableUsage(settings, argtok, &value->value);
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isVariableUsage);
     if (unsafeUsage.empty())
