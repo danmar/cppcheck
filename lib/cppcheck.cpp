@@ -2117,6 +2117,11 @@ void CppCheck::printTimerResults(SHOWTIME_MODES mode)
     s_timerResults.showResults(mode);
 }
 
+const Suppressions &CppCheck::getSuppressions() const
+{
+    return mSuppressions;
+}
+
 bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
     if (mSettings.premiumArgs.find("--misra") != std::string::npos && startsWith(id, "premium-misra-"))
         return true;
