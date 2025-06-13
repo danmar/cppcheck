@@ -3196,7 +3196,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugnormal);
         ASSERT_EQUALS(false, settings->debugSimplified);
-        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(false, settings->debugast);
         ASSERT_EQUALS(false, settings->debugsymdb);
     }
@@ -3207,7 +3207,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugnormal);
         ASSERT_EQUALS(false, settings->debugSimplified);
-        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(true, settings->debugast);
         ASSERT_EQUALS(true, settings->debugsymdb);
     }
@@ -3218,7 +3218,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugnormal);
         ASSERT_EQUALS(false, settings->debugSimplified);
-        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(false, settings->debugast);
         ASSERT_EQUALS(false, settings->debugsymdb);
     }
@@ -3229,7 +3229,7 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugnormal);
         ASSERT_EQUALS(false, settings->debugSimplified);
-        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(true, settings->debugast);
         ASSERT_EQUALS(true, settings->debugsymdb);
     }
