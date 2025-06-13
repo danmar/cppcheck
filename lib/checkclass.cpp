@@ -3583,6 +3583,7 @@ namespace
             for (const NameLoc &nameLoc: classDefinitions) {
                 ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
                        "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+                       "\" configuration=\"" + ErrorLogger::toxml(nameLoc.configuration) +
                        "\" line=\"" + std::to_string(nameLoc.lineNumber) +
                        "\" col=\"" + std::to_string(nameLoc.column) +
                        "\" hash=\"" + std::to_string(nameLoc.hash) +
@@ -3671,13 +3672,15 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
             continue;
         const char *name = e->Attribute("name");
         const char *file = e->Attribute("file");
+        const char *configuration = e->Attribute("configuration");
         const char *line = e->Attribute("line");
         const char *col = e->Attribute("col");
         const char *hash = e->Attribute("hash");
-        if (name && file && line && col && hash) {
+        if (name && file && configuration && line && col && hash) {
             MyFileInfo::NameLoc nameLoc;
             nameLoc.className = name;
             nameLoc.fileName = file;
+            nameLoc.configuration = configuration;
             nameLoc.lineNumber = strToInt<int>(line);
             nameLoc.column = strToInt<int>(col);
             nameLoc.hash = strToInt<std::size_t>(hash);
