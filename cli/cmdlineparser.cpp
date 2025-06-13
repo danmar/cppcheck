@@ -446,6 +446,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     bool def = false;
     bool maxconfigs = false;
+    bool debug = false;
 
     ImportProject::Type projectType = ImportProject::Type::NONE;
     ImportProject project;
@@ -651,6 +652,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.cppHeaderProbe = true;
         }
 
+        else if (std::strcmp(argv[i], "--debug") == 0)
+            debug = true;
+
         else if (std::strcmp(argv[i], "--debug-ast") == 0)
             mSettings.debugast = true;
 
@@ -663,8 +667,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.debugignore = true;
 
         // Show --debug output after the first simplifications
-        else if (std::strcmp(argv[i], "--debug") == 0 ||
-                 std::strcmp(argv[i], "--debug-normal") == 0)
+        else if (std::strcmp(argv[i], "--debug-normal") == 0)
             mSettings.debugnormal = true;
 
         // Show debug warnings for lookup for configuration files
@@ -1614,9 +1617,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (mSettings.force)
         mSettings.maxConfigs = INT_MAX;
-
     else if ((def || mSettings.preprocessOnly) && !maxconfigs)
         mSettings.maxConfigs = 1U;
+
+    if (debug) {
+        mSettings.debugnormal = true;
+        mSettings.debugvalueflow = true;
+        if (mSettings.verbose) {
+            mSettings.debugast = true;
+            mSettings.debugsymdb = true;
+        }
+    }
 
     if (mSettings.jobs > 1 && mSettings.buildDir.empty()) {
         // TODO: bail out instead?
