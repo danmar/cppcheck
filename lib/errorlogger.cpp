@@ -925,7 +925,7 @@ void substituteTemplateLocationStatic(std::string& templateLocation)
     replaceColors(templateLocation);
 }
 
-std::string getClassification(const std::string &guideline, ReportType reportType) {
+std::string getClassification(const std::string &errId, const std::string &guideline, ReportType reportType) {
     if (guideline.empty())
         return "";
 
@@ -954,15 +954,24 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
         const int a = std::stoi(components[0]);
         const int b = std::stoi(components[1]);
 
-        const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
-        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
+        const bool isDirective = errId.find("dir") != std::string::npos;
+        const std::vector<checkers::MisraInfo> *info;
+
+        if (errId.find("2012") != std::string::npos)
+            info = isDirective ? &checkers::misraC2012Directives : &checkers::misraC2012Rules;
+        else if (errId.find("2023") != std::string::npos)
+            info = isDirective ? &checkers::misraC2023Directives : &checkers::misraC2023Rules;
+        else
+            info = isDirective ? &checkers::misraC2025Directives : &checkers::misraC2025Rules;
+
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) {
                 return i.a == a && i.b == b;
             });
 
-        if (it == info.cend())
-            return "";
+        if (it != info->cend())
+            return it->str;
 
-        return it->str;
+        return "";
     }
     case ReportType::misraCpp2008:
     case ReportType::misraCpp2023:

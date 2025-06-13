@@ -323,7 +323,7 @@ private:
         const std::string format = "{severity} {id}";
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "unusedVariable", Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
-        msg.classification = getClassification(msg.guideline, reportType);
+        msg.classification = getClassification(msg.id, msg.guideline, reportType);
         ASSERT_EQUALS("Advisory", msg.classification);
         ASSERT_EQUALS("2.8", msg.guideline);
         ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format, ""));
@@ -349,7 +349,7 @@ private:
         const std::string format = "{severity} {id}";
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "resourceLeak", Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
-        msg.classification = getClassification(msg.guideline, reportType);
+        msg.classification = getClassification(msg.id, msg.guideline, reportType);
         ASSERT_EQUALS("L3", msg.classification);
         ASSERT_EQUALS("FIO42-C", msg.guideline);
         ASSERT_EQUALS("L3 FIO42-C", msg.toString(true, format, ""));

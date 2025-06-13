@@ -295,7 +295,7 @@ CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
 CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
 
 /** Get a classification string from the given guideline and reporttype */
-CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
+CPPCHECKLIB std::string getClassification(const std::string &errId, const std::string &guideline, ReportType reportType);
 
 /** Get a guidline string froM the given error id, reporttype, mapping and severity */
 CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
