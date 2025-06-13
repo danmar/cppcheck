@@ -33,7 +33,6 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 
 `readability-braces-around-statements`<br/>
 `readability-isolate-declaration`<br/>
-`modernize-use-trailing-return-type`<br/>
 `readability-uppercase-literal-suffix`<br/>
 `readability-identifier-length`<br/>
 

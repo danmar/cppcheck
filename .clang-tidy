@@ -50,7 +50,6 @@ Checks: >
         -modernize-type-traits,
         -modernize-use-designated-initializers,
         -modernize-use-nodiscard,
-        -modernize-use-trailing-return-type,
         -performance-avoid-endl,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,
@@ -77,3 +76,5 @@ CheckOptions:
     value:           '1'
   - key:             readability-simplify-boolean-expr.SimplifyDeMorgan
     value:           '0'
+  - key:             modernize-use-trailing-return-type.TransformFunctions
+    value:           false
