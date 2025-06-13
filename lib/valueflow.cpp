@@ -5857,7 +5857,7 @@ static void valueFlowSubFunction(const TokenList& tokenlist,
                     v.errorPath.emplace_back(argtok,
                                              "Calling function '" + calledFunction->name() + "', " + nr + " argument '" +
                                              argtok->expressionString() + "' value is " + v.infoString());
-                    v.path = 256 * v.path + id % 256;
+                    v.path = (256 * v.path) + (id % 256);
                     // Change scope of lifetime values
                     if (v.isLifetimeValue())
                         v.lifetimeScope = ValueFlow::Value::LifetimeScope::SubFunction;
