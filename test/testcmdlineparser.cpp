@@ -3188,6 +3188,7 @@ private:
         const char * const argv[] = {"cppcheck", "--debug", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(true, settings->debugSimplified);
         ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(false, settings->debugast);
         ASSERT_EQUALS(false, settings->debugsymdb);
@@ -3198,6 +3199,7 @@ private:
         const char * const argv[] = {"cppcheck", "--debug", "--verbose", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(true, settings->debugSimplified);
         ASSERT_EQUALS(true, settings->debugvalueflow);
         ASSERT_EQUALS(true, settings->debugast);
         ASSERT_EQUALS(true, settings->debugsymdb);
