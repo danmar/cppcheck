@@ -340,6 +340,7 @@ def test_checkclass_project_builddir_j(tmpdir):
 def test_ctu_odr_config():
     args = [
         '-q',
+        '-j1',
         '--template=simple',
         '--enable=information,style',
         '--error-exitcode=1',
