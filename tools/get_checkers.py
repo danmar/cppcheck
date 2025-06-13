@@ -919,13 +919,13 @@ std::vector<checkers::Info> checkers::autosarInfo{
 def getCertCInfo(main_url:str):
     """Fetches CERT C rules information."""
     # Fetching the CERT C rules page
-    r = requests.get(main_url)
+    r = requests.get(main_url, timeout=30)
     mainpage = r.text
     for line in mainpage.split('\n'):
         res = re.search(r'<a href="(/confluence/[^"]+)">(Rule|Rec.) \d\d[.] [A-Za-z ]+ [(][A-Z][A-Z][A-Z][)]', line)
         if res is None:
             continue
-        r = requests.get('https://wiki.sei.cmu.edu' + res.group(1))
+        r = requests.get('https://wiki.sei.cmu.edu' + res.group(1), timeout=30)
         text = r.text.replace('\n', '').replace('<tr>', '\n').replace('</tr>', '\n')
         rules = []
         for line in text.split('\n'):
