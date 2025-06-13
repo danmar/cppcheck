@@ -1544,6 +1544,7 @@ public:
         mImpl->mValues = nullptr;
     }
 
+    // cppcheck-suppress unusedFunction - used in tests only
     std::string astString(const char *sep = "") const {
         std::string ret;
         if (mImpl->mAstOperand1)
