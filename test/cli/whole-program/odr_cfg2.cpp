@@ -1,3 +1,3 @@
 struct S {
-    void f() {}
+    S() {}
 };
