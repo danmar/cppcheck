@@ -1559,7 +1559,7 @@ public:
 
     std::string expressionString() const;
 
-    void printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const;
+    void printAst(bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const;
 
     void printValueFlow(const std::vector<std::string>& files, bool xml, std::ostream &out) const;
 
