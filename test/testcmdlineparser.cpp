@@ -463,6 +463,10 @@ private:
         TEST_CASE(debugSymdb);
         TEST_CASE(debugAst);
         TEST_CASE(debugValueflow);
+        TEST_CASE(debugNormal);
+        TEST_CASE(debugNormalVerbose);
+        TEST_CASE(debug);
+        TEST_CASE(debugVerbose);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3184,6 +3188,50 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-valueflow", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugvalueflow);
+    }
+
+    void debugNormal() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-normal", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(false, settings->debugast);
+        ASSERT_EQUALS(false, settings->debugsymdb);
+    }
+
+    void debugNormalVerbose() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-normal", "--verbose", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugast);
+        ASSERT_EQUALS(true, settings->debugsymdb);
+    }
+
+    void debug() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(false, settings->debugast);
+        ASSERT_EQUALS(false, settings->debugsymdb);
+    }
+
+    void debugVerbose() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug", "--verbose", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(false, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugast);
+        ASSERT_EQUALS(true, settings->debugsymdb);
     }
 
     void ignorepaths1() {

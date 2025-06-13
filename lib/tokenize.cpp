@@ -5941,7 +5941,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 }
 //---------------------------------------------------------------------------
 
-// TODO: do not depend on --verbose
 void Tokenizer::printDebugOutput(std::ostream &out) const
 {
     if (!list.front())
@@ -5962,11 +5961,12 @@ void Tokenizer::printDebugOutput(std::ostream &out) const
     if (mSymbolDatabase) {
         if (xml)
             mSymbolDatabase->printXml(out);
-        else if (mSettings.debugsymdb || (mSettings.debugnormal && mSettings.verbose))
+        else if (mSettings.debugsymdb)
             mSymbolDatabase->printOut("Symbol database");
     }
 
-    if (mSettings.debugast || (mSettings.debugnormal && mSettings.verbose))
+    // TODO: do not depend on --verbose
+    if (mSettings.debugast)
         list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
 
     if (mSettings.debugnormal || mSettings.debugvalueflow)
