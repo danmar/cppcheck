@@ -236,9 +236,6 @@ public:
     /** @brief Do not filter duplicated errors. */
     bool emitDuplicates{};
 
-    /** @brief Name of the language that is enforced. Empty per default. */
-    Standards::Language enforcedLang{};
-
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
     bool exceptionHandling{};

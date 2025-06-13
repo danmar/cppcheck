@@ -143,6 +143,7 @@ void CheckThread::run()
         qDebug() << "Whole program analysis";
         std::list<FileWithDetails> files2;
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
+            // TODO: apply enforcedLanguage
             return FileWithDetails{file.toStdString(), Path::identify(file.toStdString(), mSettings.cppHeaderProbe), 0};
         });
         cppcheck.analyseWholeProgram(mSettings.buildDir, files2, {}, ctuInfo);
@@ -154,6 +155,7 @@ void CheckThread::run()
     QString file = mResult.getNextFile();
     while (!file.isEmpty() && mState == Running) {
         qDebug() << "Checking file" << file;
+        // TODO: apply enforcedLanguage
         cppcheck.check(FileWithDetails(file.toStdString(), Path::identify(file.toStdString(), mSettings.cppHeaderProbe), 0));
         runAddonsAndTools(mSettings, nullptr, file);
         emit fileChecked(file);
