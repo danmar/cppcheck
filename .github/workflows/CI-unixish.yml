@@ -523,7 +523,7 @@ jobs:
           ./cppcheck $selfcheck_options externals || ec=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli frontend || ec=1
           ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --enable=internal lib || ec=1
           # check gui with qt settings
           mkdir b2
