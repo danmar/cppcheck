@@ -181,7 +181,7 @@ void TranslationHandler::addTranslation(const char *name, const char *filename)
 
 int TranslationHandler::getLanguageIndexByCode(const QString &code) const
 {
-    auto it = std::find_if(mTranslations.cbegin(), mTranslations.cend(), [&](const TranslationInfo& ti) {
+    auto it = std::find_if(mTranslations.cbegin(), mTranslations.cend(), [&](const TranslationInfo& ti) -> bool {
         return ti.mCode == code || ti.mCode == code.left(2);
     });
     return it == mTranslations.cend() ? -1 : static_cast<int>(std::distance(mTranslations.cbegin(), it));

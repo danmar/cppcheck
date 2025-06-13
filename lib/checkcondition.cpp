@@ -668,7 +668,7 @@ void CheckCondition::multiCondition2()
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
-                      [&](const Token *cond) {
+                      [&](const Token *cond) -> ChildrenToVisit {
             if (Token::Match(cond, "%name% (")) {
                 functionCall = true;
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
@@ -700,7 +700,7 @@ void CheckCondition::multiCondition2()
 
         std::vector<const Variable*> varsInCond;
         visitAstNodes(condTok,
-                      [&varsInCond](const Token *cond) {
+                      [&varsInCond](const Token *cond) -> ChildrenToVisit {
             if (cond->variable()) {
                 const Variable *var = cond->variable();
                 if (std::find(varsInCond.cbegin(), varsInCond.cend(), var) == varsInCond.cend())
@@ -744,7 +744,7 @@ void CheckCondition::multiCondition2()
                     ErrorPath errorPath;
 
                     if (type == MULTICONDITIONTYPE::INNER) {
-                        visitAstNodes(cond1, [&](const Token* firstCondition) {
+                        visitAstNodes(cond1, [&](const Token* firstCondition) -> ChildrenToVisit {
                             if (!firstCondition)
                                 return ChildrenToVisit::none;
                             if (firstCondition->str() == "&&") {
@@ -762,7 +762,7 @@ void CheckCondition::multiCondition2()
                             return ChildrenToVisit::none;
                         });
                     } else {
-                        visitAstNodes(cond2, [&](const Token *secondCondition) {
+                        visitAstNodes(cond2, [&](const Token *secondCondition) -> ChildrenToVisit {
                             if (secondCondition->str() == "||" || secondCondition->str() == "&&")
                                 return ChildrenToVisit::op1_and_op2;
 
@@ -806,7 +806,7 @@ void CheckCondition::multiCondition2()
                         // Incomplete code
                         break;
                     }
-                    const bool changed = std::any_of(vars.cbegin(), vars.cend(), [&](int varid) {
+                    const bool changed = std::any_of(vars.cbegin(), vars.cend(), [&](int varid) -> bool {
                         return isVariableChanged(tok1, tok2, varid, nonlocal, *mSettings);
                     });
                     if (changed)
@@ -949,7 +949,7 @@ static int sign(const T v) {
 // returns 1 (-1) if the first (second) condition is sufficient, 0 if indeterminate
 template<typename T>
 static int sufficientCondition(std::string op1, const bool not1, const T value1, std::string op2, const bool not2, const T value2, const bool isAnd) {
-    auto transformOp = [](std::string& op, const bool invert) {
+    auto transformOp = [](std::string& op, const bool invert) -> void {
         if (invert) {
             if (op == "==")
                 op = "!=";
@@ -1587,7 +1587,7 @@ void CheckCondition::alwaysTrueFalse()
                                  true,
                                  true))
                 continue;
-            if (isConstVarExpression(tok, [](const Token* tok) {
+            if (isConstVarExpression(tok, [](const Token* tok) -> bool {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
             }))
                 continue;
@@ -1604,7 +1604,7 @@ void CheckCondition::alwaysTrueFalse()
 
             // Don't warn when there are expanded macros..
             bool isExpandedMacro = false;
-            visitAstNodes(tok, [&](const Token * tok2) {
+            visitAstNodes(tok, [&](const Token * tok2) -> ChildrenToVisit {
                 if (!tok2)
                     return ChildrenToVisit::none;
                 if (tok2->isExpandedMacro()) {
@@ -1626,7 +1626,7 @@ void CheckCondition::alwaysTrueFalse()
 
             // don't warn when condition checks sizeof result
             bool hasSizeof = false;
-            visitAstNodes(tok, [&](const Token * tok2) {
+            visitAstNodes(tok, [&](const Token * tok2) -> ChildrenToVisit {
                 if (!tok2)
                     return ChildrenToVisit::none;
                 if (tok2->isNumber())

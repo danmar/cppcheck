@@ -420,7 +420,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
 
         std::list<ErrorMessage::FileLocation> callstack;
-        std::transform(e.errorPath.cbegin(), e.errorPath.cend(), std::back_inserter(callstack), [](const QErrorPathItem& path) {
+        std::transform(e.errorPath.cbegin(), e.errorPath.cend(), std::back_inserter(callstack), [](const QErrorPathItem& path) -> ErrorMessage::FileLocation {
             return ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column);
         });
         const std::string f0 = file0.toStdString();

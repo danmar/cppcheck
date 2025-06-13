@@ -51,7 +51,6 @@ Checks: >
         -modernize-use-designated-initializers,
         -modernize-use-nodiscard,
         -modernize-use-scoped-lock,
-        -modernize-use-trailing-return-type,
         -performance-avoid-endl,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,

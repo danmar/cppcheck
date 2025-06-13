@@ -1604,7 +1604,7 @@ bool Library::formatstr_function(const Token* ftok) const
 int Library::formatstr_argno(const Token* ftok) const
 {
     const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = mData->mFunctions.at(getFunctionName(ftok)).argumentChecks;
-    auto it = std::find_if(argumentChecksFunc.cbegin(), argumentChecksFunc.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+    auto it = std::find_if(argumentChecksFunc.cbegin(), argumentChecksFunc.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) -> bool {
         return a.second.formatstr;
     });
     return it == argumentChecksFunc.cend() ? -1 : it->first - 1;
@@ -1708,7 +1708,7 @@ bool Library::hasminsize(const Token *ftok) const
     const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
     if (it == mData->mFunctions.cend())
         return false;
-    return std::any_of(it->second.argumentChecks.cbegin(), it->second.argumentChecks.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+    return std::any_of(it->second.argumentChecks.cbegin(), it->second.argumentChecks.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) -> bool {
         return !a.second.minsizes.empty();
     });
 }

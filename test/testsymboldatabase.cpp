@@ -153,7 +153,7 @@ private:
                 currScope = currScope->nestedIn;
         }
         while (currScope) {
-            auto it = std::find_if(currScope->functionList.cbegin(), currScope->functionList.cend(), [&](const Function& f) {
+            auto it = std::find_if(currScope->functionList.cbegin(), currScope->functionList.cend(), [&](const Function& f) -> bool {
                 return f.tokenDef->str() == str;
             });
             if (it != currScope->functionList.end())
@@ -3144,7 +3144,7 @@ private:
                       "namespace barney { X::X(int) { } }");
 
         // Locate the scope for the class..
-        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
+        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) -> bool {
             return s.isClassOrStruct();
         });
         const Scope *scope = (it == db->scopeList.end()) ? nullptr : &*it;
@@ -3175,7 +3175,7 @@ private:
                       "}");
 
         // Locate the scope for the class..
-        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
+        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) -> bool {
             return s.isClassOrStruct();
         });
         const Scope* scope = (it == db->scopeList.end()) ? nullptr : &*it;
@@ -3512,7 +3512,7 @@ private:
         ASSERT_EQUALS(4U, db->scopeList.size());
 
         // Find the scope for the Fred struct..
-        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [&](const Scope& scope) {
+        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [&](const Scope& scope) -> bool {
             return scope.isClassOrStruct() && scope.className == "Fred";
         });
         const Scope* fredScope = (it == db->scopeList.end()) ? nullptr : &*it;
@@ -5533,7 +5533,7 @@ private:
                           "}\n");
             ASSERT(db);
             ASSERT_EQUALS(1, db->functionScopes.size());
-            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
+            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) -> bool {
                 return s.className == "T";
             });
             ASSERT(it != db->scopeList.end());
@@ -5555,7 +5555,7 @@ private:
                           "}\n");
             ASSERT(db);
             ASSERT_EQUALS(1, db->functionScopes.size());
-            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
+            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) -> bool {
                 return s.className == "A";
             });
             ASSERT(it != db->scopeList.end());
@@ -5578,7 +5578,7 @@ private:
                           "void A::f(N::O::B*) {}\n");
             ASSERT(db);
             ASSERT_EQUALS(1, db->functionScopes.size());
-            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
+            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) -> bool {
                 return s.className == "A";
             });
             ASSERT(it != db->scopeList.end());
@@ -5881,7 +5881,7 @@ private:
         ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
         auto list = db->scopeList;
         list.pop_front();
-        ASSERT_EQUALS(true, std::all_of(list.cbegin(), list.cend(), [](const Scope& scope) {
+        ASSERT_EQUALS(true, std::all_of(list.cbegin(), list.cend(), [](const Scope& scope) -> bool {
             return scope.varlist.empty();
         }));
     }

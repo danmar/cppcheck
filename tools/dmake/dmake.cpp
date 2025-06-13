@@ -290,7 +290,7 @@ static std::vector<std::string> prioritizelib(const std::vector<std::string>& li
     priorities["lib/tokenize.cpp"] = 900;
     priorities["lib/symboldatabase.cpp"] = 800;
     std::vector<std::string> libfiles_prio = libfiles;
-    std::sort(libfiles_prio.begin(), libfiles_prio.end(), [&](const std::string &l1, const std::string &l2) {
+    std::sort(libfiles_prio.begin(), libfiles_prio.end(), [&](const std::string &l1, const std::string &l2) -> bool {
         const auto p1 = priorities.find(l1);
         const auto p2 = priorities.find(l2);
         return (p1 != priorities.end() ? p1->second : 0) > (p2 != priorities.end() ? p2->second : 0);
@@ -515,7 +515,7 @@ int main(int argc, char **argv)
 
     // TODO: write filter files
     // Visual Studio projects
-    write_vcxproj("cli/cli.vcxproj", [&](std::string &outstr){
+    write_vcxproj("cli/cli.vcxproj", [&](std::string &outstr) -> void {
         for (const std::string &clifile: clifiles) {
             const std::string c = clifile.substr(4);
             outstr += make_vcxproj_cl_entry(c, c == "executor.cpp" ? Precompile : Compile);
@@ -524,7 +524,7 @@ int main(int argc, char **argv)
             const std::string c = "..\\frontend\\" + frontendfile.substr(9);
             outstr += make_vcxproj_cl_entry(c, Compile);
         }
-    }, [&](std::string &outstr){
+    }, [&](std::string &outstr) -> void {
         for (const std::string &clifile_h: clifiles_h) {
             outstr += make_vcxproj_cl_entry(clifile_h, Include);
         }
@@ -542,7 +542,7 @@ int main(int argc, char **argv)
             const std::string l = libfile.substr(4);
             outstr += make_vcxproj_cl_entry(l, l == "check.cpp" ? Precompile : Compile);
         }
-    }, [&](std::string &outstr){
+    }, [&](std::string &outstr) -> void {
         outstr += make_vcxproj_cl_entry(R"(..\externals\simplecpp\simplecpp.h)", Include);
         outstr += make_vcxproj_cl_entry(R"(..\externals\tinyxml2\tinyxml2.h)", Include);
 
@@ -551,7 +551,7 @@ int main(int argc, char **argv)
         }
     });
 
-    write_vcxproj("test/testrunner.vcxproj", [&](std::string &outstr){
+    write_vcxproj("test/testrunner.vcxproj", [&](std::string &outstr) -> void {
         for (const std::string &clifile: clifiles) {
             if (clifile == "cli/main.cpp")
                 continue;
@@ -568,7 +568,7 @@ int main(int argc, char **argv)
             const std::string t = testfile.substr(5);
             outstr += make_vcxproj_cl_entry(t, t == "fixture.cpp" ? Precompile : Compile);
         }
-    }, [&](std::string &outstr){
+    }, [&](std::string &outstr) -> void {
         for (const std::string &clifile_h: clifiles_h) {
             const std::string c = R"(..\cli\)" + clifile_h;
             outstr += make_vcxproj_cl_entry(c, Include);

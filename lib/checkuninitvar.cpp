@@ -594,7 +594,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
             const Token *errorToken = nullptr;
             visitAstNodes(tok->next(),
-                          [&](const Token *child) {
+                          [&](const Token *child) -> ChildrenToVisit {
                 if (child->isUnaryOp("&"))
                     return ChildrenToVisit::none;
                 if (child->str() == "," || child->str() == "{" || child->isConstOp())
@@ -725,7 +725,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                         if (!suppressErrors && Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && Token::Match(tok->next()->astParent(), "%cop%|return|throw|?"))
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
                         else if (tok->isCpp() && !suppressErrors && Token::Match(tok, "%name%") && Token::Match(tok->astParent(), "return|throw|?")) {
-                            if (std::any_of(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
+                            if (std::any_of(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) -> bool {
                                 return v.isUninitValue() && !v.isInconclusive();
                             }))
                                 uninitStructMemberError(tok, tok->str() + "." + membervar);
@@ -1061,7 +1061,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                     errorToken = errtok;
             } else if (tok->strAt(1) == "=") {
                 bool varIsUsedInRhs = false;
-                visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) {
+                visitAstNodes(tok->next()->astOperand2(), [&](const Token * t) -> ChildrenToVisit {
                     if (!t)
                         return ChildrenToVisit::none;
                     if (t->varId() == var.declarationId()) {

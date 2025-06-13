@@ -44,7 +44,7 @@ private:
     }
 
     static std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) {
-        auto tokenToString = [](const Token* t) {
+        auto tokenToString = [](const Token* t) -> std::string {
             return t ? t->str() : "<null>";
         };
         int index = 0;
@@ -113,16 +113,16 @@ private:
         const char code[] = "void a(){} void main(){ if(true){a();} }";
         const SimpleTokenList tokenList(code);
         ConstTokenRange range{ tokenList.front(), nullptr };
-        ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) {
+        ASSERT_EQUALS(true, std::all_of(range.begin(), range.end(), [](const Token*) -> bool {
             return true;
         }));
-        ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) {
+        ASSERT_EQUALS(true, std::any_of(range.begin(), range.end(), [](const Token* t) -> bool {
             return t->str() == "true";
         }));
-        ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) {
+        ASSERT_EQUALS("true", (*std::find_if(range.begin(), range.end(), [](const Token* t) -> bool {
             return t->str() == "true";
         }))->str());
-        ASSERT_EQUALS(3, std::count_if(range.begin(), range.end(), [](const Token* t) {
+        ASSERT_EQUALS(3, std::count_if(range.begin(), range.end(), [](const Token* t) -> bool {
             return t->str() == "{";
         }));
     }

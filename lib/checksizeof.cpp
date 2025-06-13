@@ -178,7 +178,7 @@ void CheckSizeof::checkSizeofForPointerSize()
                             while (parTok) { // Allow division if followed by multiplication
                                 if (parTok->isArithmeticalOp() && parTok->str() == "*") {
                                     const Token* szToks[] = { parTok->astOperand1(), parTok->astOperand2() };
-                                    if (std::any_of(std::begin(szToks), std::end(szToks), [](const Token* szTok) {
+                                    if (std::any_of(std::begin(szToks), std::end(szToks), [](const Token* szTok) -> bool {
                                         return Token::simpleMatch(szTok, "(") && Token::simpleMatch(szTok->previous(), "sizeof");
                                     }))
                                         return true;

@@ -64,11 +64,11 @@ static bool isAutoDeallocType(const Type* type) {
     if (type->classScope->numConstructors > 0)
         return true;
     const std::list<Variable>& varlist = type->classScope->varlist;
-    if (std::any_of(varlist.begin(), varlist.end(), [](const Variable& v) {
+    if (std::any_of(varlist.begin(), varlist.end(), [](const Variable& v) -> bool {
         return !v.valueType() || (!v.valueType()->isPrimitive() && !v.valueType()->container);
     }))
         return true;
-    if (std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) {
+    if (std::none_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [](const Type::BaseInfo& bi) -> bool {
         return isAutoDeallocType(bi.type);
     }))
         return false;
@@ -368,8 +368,8 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             using Direction = ArgumentChecks::Direction;
             const std::vector<const Token *> args = getArguments(ftok);
             const std::map<int, ArgumentChecks> &argChecks = libFunc->argumentChecks;
-            bool hasOutParam = std::any_of(argChecks.cbegin(), argChecks.cend(), [](const std::pair<int, ArgumentChecks> &pair) {
-                return std::any_of(pair.second.direction.cbegin(), pair.second.direction.cend(), [](const Direction dir) {
+            bool hasOutParam = std::any_of(argChecks.cbegin(), argChecks.cend(), [](const std::pair<int, ArgumentChecks> &pair) -> bool {
+                return std::any_of(pair.second.direction.cbegin(), pair.second.direction.cend(), [](const Direction dir) -> bool {
                     return dir == Direction::DIR_OUT;
                 });
             });
@@ -378,7 +378,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     if (!argChecks.count(i + 1))
                         continue;
                     const ArgumentChecks argCheck = argChecks.at(i + 1);
-                    const bool isInParam = std::any_of(argCheck.direction.cbegin(), argCheck.direction.cend(), [&](const Direction dir) {
+                    const bool isInParam = std::any_of(argCheck.direction.cbegin(), argCheck.direction.cend(), [&](const Direction dir) -> bool {
                         return dir == Direction::DIR_IN;
                     });
                     if (!isInParam)
@@ -568,7 +568,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     astOperand2AfterCommas = astOperand2AfterCommas->astOperand2();
 
                 // Recursively scan variable comparisons in condition
-                visitAstNodes(astOperand2AfterCommas, [&](const Token *tok3) {
+                visitAstNodes(astOperand2AfterCommas, [&](const Token *tok3) -> ChildrenToVisit {
                     if (!tok3)
                         return ChildrenToVisit::none;
                     if (tok3->str() == "&&" || tok3->str() == "||") {
@@ -601,7 +601,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                             (notzero.find(vartok->varId()) != notzero.end()))
                             varInfo2.clear();
 
-                        if (std::any_of(varInfo1.alloctype.begin(), varInfo1.alloctype.end(), [&](const std::pair<int, VarInfo::AllocInfo>& info) {
+                        if (std::any_of(varInfo1.alloctype.begin(), varInfo1.alloctype.end(), [&](const std::pair<int, VarInfo::AllocInfo>& info) -> bool {
                             if (info.second.status != VarInfo::ALLOC)
                                 return false;
                             const Token* ret = getReturnValueFromOutparamAlloc(info.second.allocTok, *mSettings);

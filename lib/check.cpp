@@ -46,7 +46,7 @@ Check::Check(const std::string &aname)
     }
 
     // make sure the instances are sorted
-    const auto it = std::find_if(instances().begin(), instances().end(), [&](const Check* i) {
+    const auto it = std::find_if(instances().begin(), instances().end(), [&](const Check* i) -> bool {
         return i->name() > aname;
     });
     if (it == instances().end())

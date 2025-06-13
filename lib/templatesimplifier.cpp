@@ -769,7 +769,7 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
     if (params.empty())
         return false;
 
-    return std::all_of(params.cbegin(), params.cend(), [](const Token* param) {
+    return std::all_of(params.cbegin(), params.cend(), [](const Token* param) -> bool {
         return Token::Match(param->previous(), "typename|class %name% ,|>");
     });
 }
@@ -1830,7 +1830,7 @@ void TemplateSimplifier::expandTemplate(
                                 type = type->next();
                             }
                             // check if type is instantiated
-                            if (std::any_of(mTemplateInstantiations.cbegin(), mTemplateInstantiations.cend(), [&](const TokenAndName& inst) {
+                            if (std::any_of(mTemplateInstantiations.cbegin(), mTemplateInstantiations.cend(), [&](const TokenAndName& inst) -> bool {
                                 return Token::simpleMatch(inst.token(), name.c_str(), name.size());
                             })) {
                                 // use the instantiated name
@@ -3508,13 +3508,13 @@ void TemplateSimplifier::getSpecializations()
     // try to locate a matching declaration for each user defined specialization
     for (const auto& spec : mTemplateDeclarations) {
         if (spec.isSpecialization()) {
-            auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), [&](const TokenAndName& decl) {
+            auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), [&](const TokenAndName& decl) -> bool {
                 return specMatch(spec, decl);
             });
             if (it != mTemplateDeclarations.cend())
                 mTemplateSpecializationMap[spec.token()] = it->token();
             else {
-                it = std::find_if(mTemplateForwardDeclarations.cbegin(), mTemplateForwardDeclarations.cend(), [&](const TokenAndName& decl) {
+                it = std::find_if(mTemplateForwardDeclarations.cbegin(), mTemplateForwardDeclarations.cend(), [&](const TokenAndName& decl) -> bool {
                     return specMatch(spec, decl);
                 });
                 if (it != mTemplateForwardDeclarations.cend())
@@ -3529,13 +3529,13 @@ void TemplateSimplifier::getPartialSpecializations()
     // try to locate a matching declaration for each user defined partial specialization
     for (const auto& spec : mTemplateDeclarations) {
         if (spec.isPartialSpecialization()) {
-            auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), [&](const TokenAndName& decl) {
+            auto it = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), [&](const TokenAndName& decl) -> bool {
                 return specMatch(spec, decl);
             });
             if (it != mTemplateDeclarations.cend())
                 mTemplatePartialSpecializationMap[spec.token()] = it->token();
             else {
-                it = std::find_if(mTemplateForwardDeclarations.cbegin(), mTemplateForwardDeclarations.cend(), [&](const TokenAndName& decl) {
+                it = std::find_if(mTemplateForwardDeclarations.cbegin(), mTemplateForwardDeclarations.cend(), [&](const TokenAndName& decl) -> bool {
                     return specMatch(spec, decl);
                 });
                 if (it != mTemplateForwardDeclarations.cend())
@@ -3904,7 +3904,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             nameOrdinal.emplace(decl.fullName(), ordinal++);
         }
 
-        auto score = [&](const Token* arg) {
+        auto score = [&](const Token* arg) -> int {
             int i = 0;
             for (const Token* tok = arg; tok; tok = tok->next()) {
                 if (tok->str() == ",")
@@ -3923,7 +3923,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             return 0;
         };
         // Sort so const parameters come first in the list
-        mTemplateDeclarations.sort([&](const TokenAndName& x, const TokenAndName& y) {
+        mTemplateDeclarations.sort([&](const TokenAndName& x, const TokenAndName& y) -> bool {
             if (x.fullName() != y.fullName())
                 return nameOrdinal.at(x.fullName()) < nameOrdinal.at(y.fullName());
             if (x.isFunction() && y.isFunction()) {
@@ -3939,7 +3939,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                                                     xargs.end(),
                                                     yargs.begin(),
                                                     yargs.end(),
-                                                    [&](const Token* xarg, const Token* yarg) {
+                                                    [&](const Token* xarg, const Token* yarg) -> bool {
                     if (xarg != yarg)
                         return score(xarg) < score(yarg);
                     return false;
@@ -3976,7 +3976,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
         }
 
         for (auto it = mInstantiatedTemplates.cbegin(); it != mInstantiatedTemplates.cend(); ++it) {
-            auto decl = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&it](const TokenAndName& decl) {
+            auto decl = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&it](const TokenAndName& decl) -> bool {
                 return decl.token() == it->token();
             });
             if (decl != mTemplateDeclarations.end()) {

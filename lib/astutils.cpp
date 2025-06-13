@@ -664,7 +664,7 @@ const Token* getParentLifetime(const Token* tok, const Library& library)
     if (members.size() < 2)
         return tok;
     // Find the first local variable, temporary, or array
-    auto it = std::find_if(members.crbegin(), members.crend(), [&](const Token* tok2) {
+    auto it = std::find_if(members.crbegin(), members.crend(), [&](const Token* tok2) -> bool {
         const Variable* var = tok2->variable();
         if (var)
             return var->isLocal() || var->isArgument();
@@ -675,7 +675,7 @@ const Token* getParentLifetime(const Token* tok, const Library& library)
     if (it == members.rend())
         return tok;
     // If any of the submembers are borrowed types then stop
-    if (std::any_of(it.base() - 1, members.cend() - 1, [&](const Token* tok2) {
+    if (std::any_of(it.base() - 1, members.cend() - 1, [&](const Token* tok2) -> bool {
         const Token* obj = getParentLifetimeObject(tok2);
         if (!obj)
             return false;
@@ -976,7 +976,7 @@ bool extractForLoopValues(const Token *forToken,
     knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
     initValue = minInitValue.front();
     partialCond = Token::Match(condExpr, "%oror%|&&");
-    visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
+    visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) -> ChildrenToVisit {
         if (Token::Match(tok, "%oror%|&&"))
             return ChildrenToVisit::op1_and_op2;
         if (Token::Match(tok, "<|<=") && tok->isBinaryOp() && tok->astOperand1()->varId() == varid && tok->astOperand2()->hasKnownIntValue()) {
@@ -1068,7 +1068,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
         *indirect = 1;
     for (const ReferenceToken& ref : followAllReferences(tok)) {
         const bool pointer = astIsPointer(ref.token);
-        r = findAstNode(expr, [&](const Token* childTok) {
+        r = findAstNode(expr, [&](const Token* childTok) -> bool {
             if (childTok->exprId() == 0)
                 return false;
             if (ref.token != tok && expr->exprId() == childTok->exprId()) {
@@ -1081,7 +1081,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
                     continue;
                 if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
                     if (findAstNode(val.tokvalue,
-                                    [&](const Token* aliasTok) {
+                                    [&](const Token* aliasTok) -> bool {
                         return aliasTok != childTok && aliasTok->exprId() == childTok->exprId();
                     })) {
                         return true;
@@ -1151,7 +1151,7 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
 static bool hasUnknownVars(const Token* startTok)
 {
     bool result = false;
-    visitAstNodes(startTok, [&](const Token* tok) {
+    visitAstNodes(startTok, [&](const Token* tok) -> ChildrenToVisit {
         if (tok->varId() > 0 && !tok->variable()) {
             result = true;
             return ChildrenToVisit::done;
@@ -1425,7 +1425,7 @@ static bool compareKnownValue(const Token * const tok1, const Token * const tok2
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
 {
-    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
+    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) -> bool {
         bool r = v1.equalValue(v2);
         if (v1.isIteratorValue()) {
             r &= sameLifetime;
@@ -1436,7 +1436,7 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
 
 static inline bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
-    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
+    return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) -> bool {
         bool r = v1.equalValue(v2);
         if (v1.isIteratorValue()) {
             r &= sameLifetime;
@@ -1450,7 +1450,7 @@ static inline bool isSameConstantValue(bool macro, const Token* tok1, const Toke
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
 
-    auto adjustForCast = [](const Token* tok) {
+    auto adjustForCast = [](const Token* tok) -> const Token* {
         if (tok->astOperand2() && Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType())
             return tok->astOperand2();
         return tok;
@@ -1539,7 +1539,7 @@ bool isUsedAsBool(const Token* const tok, const Settings& settings)
         if (parent->str() == "," && parent->isInitComma())
             return false;
         std::vector<ValueType> vtParents = getParentValueTypes(tok, settings);
-        return std::any_of(vtParents.cbegin(), vtParents.cend(), [&](const ValueType& vt) {
+        return std::any_of(vtParents.cbegin(), vtParents.cend(), [&](const ValueType& vt) -> bool {
             return vt.pointer == 0 && vt.type == ValueType::BOOL;
         });
     }
@@ -1981,7 +1981,7 @@ bool isOppositeExpression(const Token * const tok1, const Token * const tok2, co
 
 static bool functionModifiesArguments(const Function* f)
 {
-    return std::any_of(f->argumentList.cbegin(), f->argumentList.cend(), [](const Variable& var) {
+    return std::any_of(f->argumentList.cbegin(), f->argumentList.cend(), [](const Variable& var) -> bool {
         if (var.isReference() || var.isPointer())
             return !var.isConst();
         return true;
@@ -2009,7 +2009,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             // Check for const overloaded function that just return the const version
             if (!Function::returnsConst(f)) {
                 std::vector<const Function*> fs = f->getOverloadedFunctions();
-                if (std::any_of(fs.cbegin(), fs.cend(), [&](const Function* g) {
+                if (std::any_of(fs.cbegin(), fs.cend(), [&](const Function* g) -> bool {
                     if (f == g)
                         return false;
                     if (f->argumentList.size() != g->argumentList.size())
@@ -2058,7 +2058,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         std::vector<const Token*> args = getArguments(ftok);
         if (args.empty())
             return false;
-        return constMember && std::all_of(args.cbegin(), args.cend(), [](const Token* tok) {
+        return constMember && std::all_of(args.cbegin(), args.cend(), [](const Token* tok) -> bool {
             const Variable* var = tok->variable();
             if (var)
                 return var->isConst();
@@ -2116,7 +2116,7 @@ bool isUniqueExpression(const Token* tok)
         if (!scope)
             return true;
         const std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
-        if (!std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
+        if (!std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) -> bool {
             if (f.type != FunctionType::eFunction)
                 return true;
 
@@ -2133,7 +2133,7 @@ bool isUniqueExpression(const Token* tok)
         // Iterate over the variables in scope and the parameters of the function if possible
         const Function * fun = scope->function;
 
-        auto pred = [=](const Variable& v) {
+        auto pred = [=](const Variable& v) -> bool {
             if (varType)
                 return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
             return v.isFloatingType() == var->isFloatingType() &&
@@ -2636,7 +2636,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
     if (indirect == 0 && tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
         return true;
 
-    auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
+    auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) -> const Token * {
         const Token* gparent = parent ? parent->astParent() : nullptr;
         while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || (parent->isUnaryOp("&") && gparent->isUnaryOp("*")))) {
             tok = gparent;
@@ -2932,7 +2932,7 @@ bool isExpressionChangedAt(const Token* expr,
                            const Settings& settings,
                            int depth)
 {
-    return isExpressionChangedAt([&] {
+    return isExpressionChangedAt([&]() -> const Token * {
         return expr;
     }, tok, indirect, expr->exprId(), globalvar, settings, depth);
 }
@@ -2943,7 +2943,7 @@ Token* findVariableChanged(Token *start, const Token *end, int indirect, const n
         return nullptr;
     if (depth < 0)
         return start;
-    auto getExprTok = utils::memoize([&] {
+    auto getExprTok = utils::memoize([&]() -> const Token * {
         return findExpression(start, exprid);
     });
     for (Token *tok = start; tok != end; tok = tok->next()) {
@@ -2984,10 +2984,10 @@ bool isVariablesChanged(const Token* start,
                         const Settings& settings)
 {
     std::set<int> varids;
-    std::transform(vars.cbegin(), vars.cend(), std::inserter(varids, varids.begin()), [](const Variable* var) {
+    std::transform(vars.cbegin(), vars.cend(), std::inserter(varids, varids.begin()), [](const Variable* var) -> nonneg int {
         return var->declarationId();
     });
-    const bool globalvar = std::any_of(vars.cbegin(), vars.cend(), [](const Variable* var) {
+    const bool globalvar = std::any_of(vars.cbegin(), vars.cend(), [](const Variable* var) -> bool {
         return var->isGlobal();
     });
     for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
@@ -3170,7 +3170,7 @@ std::vector<const Token*> getArguments(const Token* ftok) {
 
 int getArgumentPos(const Variable* var, const Function* f)
 {
-    auto arg_it = std::find_if(f->argumentList.cbegin(), f->argumentList.cend(), [&](const Variable& v) {
+    auto arg_it = std::find_if(f->argumentList.cbegin(), f->argumentList.cend(), [&](const Variable& v)-> bool {
         return v.nameToken() == var->nameToken();
     });
     if (arg_it == f->argumentList.end())
@@ -3349,7 +3349,7 @@ bool isConstVarExpression(const Token *tok, const std::function<bool(const Token
         std::vector<const Token *> args = getArguments(tok);
         if (args.empty() && tok->previous()->function() && tok->previous()->function()->isConstexpr())
             return true;
-        return !args.empty() && std::all_of(args.cbegin(), args.cend(), [&](const Token* t) {
+        return !args.empty() && std::all_of(args.cbegin(), args.cend(), [&](const Token* t) -> bool {
             return isConstVarExpression(t, skipPredicate);
         });
     }
@@ -3397,7 +3397,7 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
                 return ExprUsage::Used;
             if (nCtor == 1) {
                 const Scope* scope = ftok->variable()->type()->classScope;
-                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
+                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) -> bool {
                     return f.isConstructor();
                 });
                 if (it != scope->functionList.end())
@@ -3626,7 +3626,7 @@ bool isGlobalData(const Token *expr)
     bool globalData = false;
     bool var = false;
     visitAstNodes(expr,
-                  [expr, &globalData, &var](const Token *tok) {
+                  [expr, &globalData, &var](const Token *tok) -> ChildrenToVisit {
         if (tok->varId())
             var = true;
         if (tok->varId() && !tok->variable()) {
@@ -3750,7 +3750,7 @@ bool isExhaustiveSwitch(const Token *startbrace)
 
     if (condition->valueType()->isEnum()) {
         const std::vector<Enumerator> &enumList = condition->valueType()->typeScope->enumeratorList;
-        return std::all_of(enumList.cbegin(), enumList.cend(), [&](const Enumerator &e) {
+        return std::all_of(enumList.cbegin(), enumList.cend(), [&](const Enumerator &e) -> bool {
             return !e.value_known || switchValues.count(e.value);
         });
     }

@@ -777,7 +777,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         tok = scope->classDef->next();
     for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
-            if (std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [&](const Scope* s) {
+            if (std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [&](const Scope* s) -> bool {
                 return s->bodyStart == tok;
             })) {
                 checkFunctionVariableUsage_iterateScopes(tok->scope(), variables); // Scan child scope
@@ -1155,7 +1155,7 @@ static bool isReturnedByRef(const Variable* var, const Function* func)
     if (!func || !Function::returnsReference(func, true))
         return false;
     const std::vector<const Token*> returns = Function::findReturns(func);
-    return std::any_of(returns.begin(), returns.end(), [var](const Token* tok) {
+    return std::any_of(returns.begin(), returns.end(), [var](const Token* tok) -> bool {
         return tok->varId() == var->declarationId();
     });
 }
@@ -1170,7 +1170,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
-    auto reportLibraryCfgError = [this](const Token* tok, const std::string& typeName) {
+    auto reportLibraryCfgError = [this](const Token* tok, const std::string& typeName) -> void {
         if (mSettings->checkLibrary) {
             reportError(tok,
                         Severity::information,
@@ -1524,9 +1524,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // bail out if struct is inherited
-        const bool isInherited = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
+        const bool isInherited = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) -> bool {
             const Type* dType = derivedScope.definedType;
-            return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) {
+            return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) -> bool {
                 return derivedFrom.type == scope.definedType && derivedFrom.access != AccessControl::Private;
             });
         });
@@ -1711,7 +1711,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     }
 
     // Derived from type that has side effects?
-    if (std::any_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& derivedFrom) {
+    if (std::any_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& derivedFrom) -> bool {
         return !isRecordTypeWithoutSideEffects(derivedFrom.type);
     }))
         return (withoutSideEffects = false);
@@ -1757,7 +1757,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     if (type && type->classScope && type->classScope->numConstructors == 0 &&
         (type->classScope->varlist.empty())) {
-        return (emptyType = std::all_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& bi) {
+        return (emptyType = std::all_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& bi) -> bool {
             return isEmptyType(bi.type);
         }));
     }

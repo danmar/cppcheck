@@ -626,7 +626,7 @@ void CheckOther::checkRedundantAssignment()
                     isInitialization = true;
                     bool trivial = true;
                     visitAstNodes(tok->astOperand2(),
-                                  [&](const Token *rhs) {
+                                  [&](const Token *rhs) -> ChildrenToVisit {
                         if (Token::simpleMatch(rhs, "{ 0 }"))
                             return ChildrenToVisit::none;
                         if (Token::Match(rhs, "%str%|%num%|%name%") && !rhs->varId())
@@ -1371,7 +1371,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
             std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
             if (range.first)
                 range.first = range.first->next();
-            const Token* exprTok = findExpression(var->nameToken()->exprId(), range.first, range.second, [&](const Token* tok2) {
+            const Token* exprTok = findExpression(var->nameToken()->exprId(), range.first, range.second, [&](const Token* tok2) -> bool {
                 return tok2->varId() == var->declarationId();
             });
             if (exprTok) {
@@ -1420,7 +1420,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     if (ftok->function()) {
                         const std::list<Variable> &argvars = ftok->function()->argumentList;
                         if (const Variable* argvar = ftok->function()->getArgumentVar(argn)) {
-                            if (!std::all_of(argvars.cbegin(), argvars.cend(), [&](const Variable& other) {
+                            if (!std::all_of(argvars.cbegin(), argvars.cend(), [&](const Variable& other) -> bool {
                                 return &other == argvar || !mayDependOn(other.valueType(), argvar->valueType());
                             }))
                                 return false;
@@ -1700,7 +1700,7 @@ void CheckOther::checkConstVariable()
         }
         if (function && (Function::returnsReference(function) || Function::returnsPointer(function)) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
-            if (std::any_of(returns.cbegin(), returns.cend(), [&](const Token* retTok) {
+            if (std::any_of(returns.cbegin(), returns.cend(), [&](const Token* retTok) -> bool {
                 if (retTok->varId() == var->declarationId())
                     return true;
                 while (retTok && retTok->isCast())
@@ -2279,7 +2279,7 @@ void CheckOther::checkIncompleteStatement()
         //   dostuff() || x=213;
         if (Token::Match(tok, "%oror%|&&")) {
             bool warn = false;
-            visitAstNodes(tok, [&warn](const Token *child) {
+            visitAstNodes(tok, [&warn](const Token *child) -> ChildrenToVisit {
                 if (Token::Match(child, "%oror%|&&"))
                     return ChildrenToVisit::op1_and_op2;
                 if (child->isAssignmentOp())
@@ -2872,7 +2872,7 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             }
-            auto isInsideLambdaCaptureList = [](const Token* tok) {
+            auto isInsideLambdaCaptureList = [](const Token* tok) -> const Token* {
                 const Token* parent = tok->astParent();
                 while (Token::simpleMatch(parent, ","))
                     parent = parent->astParent();
@@ -2945,7 +2945,7 @@ void CheckOther::checkDuplicateExpression()
                         isWithoutSideEffects(tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, std::move(errorPath));
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library)) {
-                        auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
+                        auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) -> void {
                             if (isSameExpression(true, exp1, exp2, *mSettings, true, true, &errorPath) &&
                                 isWithoutSideEffects(exp1) &&
                                 isWithoutSideEffects(ast1->astOperand2()))
@@ -3213,7 +3213,7 @@ void CheckOther::pointerPositiveError(const Token *tok, const ValueFlow::Value *
 /* check if a constructor in given class scope takes a reference */
 static bool constructorTakesReference(const Scope * const classScope)
 {
-    return std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&](const Function& constructor) {
+    return std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&](const Function& constructor) -> bool {
         if (constructor.isConstructor()) {
             for (int argnr = 0U; argnr < constructor.argCount(); argnr++) {
                 const Variable * const argVar = constructor.getArgumentVar(argnr);
@@ -3673,7 +3673,7 @@ static bool checkEvaluationOrderC(const Token * tok, const Token * tok2, const T
     }
     // Is expression used?
     bool foundError = false;
-    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
+    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) -> ChildrenToVisit {
         if (tok3->str() == "&" && !tok3->astOperand2())
             return ChildrenToVisit::none; // don't handle address-of for now
         if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
@@ -3695,7 +3695,7 @@ static bool checkEvaluationOrderCpp11(const Token * tok, const Token * tok2, con
             return true;
     }
     bool foundUndefined{false};
-    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
+    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) -> ChildrenToVisit {
         if (tok3->str() == "&" && !tok3->astOperand2())
             return ChildrenToVisit::none; // don't handle address-of for now
         if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
@@ -3713,7 +3713,7 @@ static bool checkEvaluationOrderCpp17(const Token * tok, const Token * tok2, con
     if (tok->isAssignmentOp())
         return false;
     bool foundUndefined{false};
-    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) {
+    visitAstNodes((parent->astOperand1() != tok2) ? parent->astOperand1() : parent->astOperand2(), [&](const Token *tok3) -> ChildrenToVisit {
         if (tok3->str() == "&" && !tok3->astOperand2())
             return ChildrenToVisit::none; // don't handle address-of for now
         if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
@@ -4008,7 +4008,7 @@ static const Token *findShadowed(const Scope *scope, const Variable& var, int li
         if (v.name() == var.name())
             return v.nameToken();
     }
-    auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) {
+    auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) -> bool {
         return f.type == FunctionType::eFunction && f.name() == var.name() && precedes(f.tokenDef, var.nameToken());
     });
     if (it != scope->functionList.end())
@@ -4040,7 +4040,7 @@ void CheckOther::checkShadowVariables()
 
             if (functionScope && functionScope->type == ScopeType::eFunction && functionScope->function) {
                 const auto & argList = functionScope->function->argumentList;
-                auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) {
+                auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) -> bool {
                     return arg.nameToken() && var.name() == arg.name();
                 });
                 if (it != argList.end()) {
@@ -4145,7 +4145,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             const Token* vartok = nullptr;
-            visitAstNodes(tok, [&](const Token* child) {
+            visitAstNodes(tok, [&](const Token* child) -> ChildrenToVisit {
                 if (Token::Match(child, "%var%|.|[")) {
                     if (child->hasKnownIntValue())
                         return ChildrenToVisit::none;
@@ -4159,7 +4159,7 @@ void CheckOther::checkKnownArgument()
             if (!vartok)
                 continue;
             if (vartok->astSibling() &&
-                findAstNode(vartok->astSibling(), [](const Token* child) {
+                findAstNode(vartok->astSibling(), [](const Token* child) -> bool {
                 return Token::simpleMatch(child, "sizeof");
             }))
                 continue;
@@ -4223,7 +4223,7 @@ void CheckOther::checkKnownPointerToBool()
                 continue;
             if (tok->isExpandedMacro())
                 continue;
-            if (findParent(tok, [](const Token* parent) {
+            if (findParent(tok, [](const Token* parent) -> bool {
                 return parent->isExpandedMacro();
             }))
                 continue;
@@ -4417,7 +4417,7 @@ void CheckOther::checkOverlappingWrite()
 
                 // Is other union member used in RHS?
                 const Token *errorToken = nullptr;
-                visitAstNodes(tok->astOperand2(), [lhsvar, lhsmember, &errorToken](const Token *rhs) {
+                visitAstNodes(tok->astOperand2(), [lhsvar, lhsmember, &errorToken](const Token *rhs) -> ChildrenToVisit {
                     if (!Token::simpleMatch(rhs, "."))
                         return ChildrenToVisit::op1_and_op2;
                     if (!rhs->isBinaryOp() || rhs->astOperand1()->variable() != lhsvar)

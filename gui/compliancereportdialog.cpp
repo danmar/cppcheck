@@ -80,7 +80,7 @@ static void addHeaders(const QString& file1, QSet<QString> &allFiles) {
 
 static std::vector<std::string> toStdStringList(const QStringList& from) {
     std::vector<std::string> ret;
-    std::transform(from.cbegin(), from.cend(), std::back_inserter(ret), [](const QString& e) {
+    std::transform(from.cbegin(), from.cend(), std::back_inserter(ret), [](const QString& e) -> std::string {
         return e.toStdString();
     });
     return ret;

@@ -204,7 +204,7 @@ namespace cppcheck {
     );
  */
 #define dinit(T, ...) \
-    ([&] { T ${}; __VA_ARGS__; return $; }())
+    ([&]() -> T { T ${}; __VA_ARGS__; return $; }())
 
 // Default construct object to avoid bug in clang
 // error: default member initializer for 'y' needed within definition of enclosing class 'X' outside of member functions

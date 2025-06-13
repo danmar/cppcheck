@@ -252,7 +252,7 @@ static bool hasOverloadedAssignment(const Token* tok, bool& inconclusive)
         if (vt->container && vt->container->stdStringLike)
             return true;
         if (vt->typeScope)
-            return std::any_of(vt->typeScope->functionList.begin(), vt->typeScope->functionList.end(), [](const Function& f) { // TODO: compare argument type
+            return std::any_of(vt->typeScope->functionList.begin(), vt->typeScope->functionList.end(), [](const Function& f) -> bool { // TODO: compare argument type
                 return f.name() == "operator=";
             });
         return false;
@@ -427,7 +427,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
         const Scope * tokScope = tok->scope();
         if (!tokScope)
             return false;
-        if (std::any_of(tokScope->nestedList.cbegin(), tokScope->nestedList.cend(), [&](const Scope* argScope) {
+        if (std::any_of(tokScope->nestedList.cbegin(), tokScope->nestedList.cend(), [&](const Scope* argScope) -> bool {
             return argScope && argScope->isNestedIn(scope);
         }))
             return true;

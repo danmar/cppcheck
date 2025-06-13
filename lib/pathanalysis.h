@@ -46,7 +46,7 @@ struct PathAnalysis {
 
     Info forwardFind(std::function<bool(const Info&)> pred) const {
         Info result{};
-        forward([&](const Info& info) {
+        forward([&](const Info& info) -> Progress {
             if (pred(info)) {
                 result = info;
                 return Progress::Break;

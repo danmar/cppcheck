@@ -416,7 +416,7 @@ int CppCheckExecutor::check_wrapper(const Settings& settings, Suppressions& supp
 
 bool CppCheckExecutor::reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
     const auto& suppr = suppressions.getSuppressions();
-    if (std::any_of(suppr.begin(), suppr.end(), [](const SuppressionList::Suppression& s) {
+    if (std::any_of(suppr.begin(), suppr.end(), [](const SuppressionList::Suppression& s) -> bool {
         return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == SuppressionList::Suppression::NO_LINE;
     }))
         return false;
@@ -532,7 +532,7 @@ void StdLogger::writeCheckersReport(const Suppressions& supprs)
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
     const auto& suppressions = supprs.nomsg.getSuppressions();
-    const bool summarySuppressed = std::any_of(suppressions.cbegin(), suppressions.cend(), [](const SuppressionList::Suppression& s) {
+    const bool summarySuppressed = std::any_of(suppressions.cbegin(), suppressions.cend(), [](const SuppressionList::Suppression& s) -> bool {
         return s.errorId == "checkersReport";
     });
 

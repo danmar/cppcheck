@@ -930,7 +930,7 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
         return "";
 
     const auto getClassification = [](const std::vector<checkers::Info> &info, const std::string &guideline) -> std::string {
-        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::Info &i) {
+        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::Info &i) -> bool {
             return caseInsensitiveStringCompare(i.guideline, guideline) == 0;
         });
         if (it == info.cend())
@@ -974,7 +974,7 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
             cppcheck::unreachable();
         }
 
-        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) {
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) -> bool {
                 return i.a == a && i.b == b;
             });
 
@@ -1006,7 +1006,7 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
         const int b = std::stoi(components[1]);
         const int c = std::stoi(components[2]);
 
-        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) {
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) -> bool {
                 return i.a == a && i.b == b && i.c == c;
             });
 

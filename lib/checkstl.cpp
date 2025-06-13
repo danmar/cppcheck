@@ -180,7 +180,7 @@ void CheckStl::outOfBounds()
             }
             if (indexTok && !indexTok->hasKnownIntValue()) {
                 const ValueFlow::Value* value =
-                    ValueFlow::findValue(indexTok->values(), *mSettings, [&](const ValueFlow::Value& v) {
+                    ValueFlow::findValue(indexTok->values(), *mSettings, [&](const ValueFlow::Value& v) -> bool {
                     if (!v.isSymbolicValue())
                         return false;
                     if (v.isImpossible())
@@ -718,8 +718,8 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     if (kind == ValueFlow::Value::LifetimeKind::Address || kind == ValueFlow::Value::LifetimeKind::Iterator) {
         const auto address1 = getAddressContainer(tok1);
         const auto address2 = getAddressContainer(tok2);
-        return std::any_of(address1.begin(), address1.end(), [&](const Token* tok1) {
-            return std::any_of(address2.begin(), address2.end(), [&](const Token* tok2) {
+        return std::any_of(address1.begin(), address1.end(), [&](const Token* tok1) -> bool {
+            return std::any_of(address2.begin(), address2.end(), [&](const Token* tok2) -> bool {
                 return isSameExpression(false, tok1, tok2, settings, false, false);
             });
         });
@@ -736,11 +736,11 @@ static std::vector<ValueFlow::Value> pruneLifetimes(std::vector<ValueFlow::Value
     while (start != lifetimes.end())
     {
         const Token* tok1 = start->tokvalue;
-        auto it = std::partition(start, lifetimes.end(), [&](const ValueFlow::Value& v) {
+        auto it = std::partition(start, lifetimes.end(), [&](const ValueFlow::Value& v) -> bool {
             const Token* tok2 = v.tokvalue;
             return start->lifetimeKind == v.lifetimeKind && (astHasToken(tok1, tok2) || astHasToken(tok2, tok1));
         });
-        auto root = std::min_element(start, it, [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
+        auto root = std::min_element(start, it, [](const ValueFlow::Value& x, const ValueFlow::Value& y) -> bool {
             return x.tokvalue != y.tokvalue && astHasToken(x.tokvalue, y.tokvalue);
         });
         result.push_back(*root);
@@ -751,8 +751,8 @@ static std::vector<ValueFlow::Value> pruneLifetimes(std::vector<ValueFlow::Value
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
-    auto findIterVal = [](const std::vector<ValueFlow::Value>& values, const std::vector<ValueFlow::Value>::const_iterator beg) {
-        return std::find_if(beg, values.cend(), [](const ValueFlow::Value& v) {
+    auto findIterVal = [](const std::vector<ValueFlow::Value>& values, const std::vector<ValueFlow::Value>::const_iterator beg) -> std::vector<ValueFlow::Value>::const_iterator {
+        return std::find_if(beg, values.cend(), [](const ValueFlow::Value& v) -> bool {
             return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
         });
     };
@@ -851,7 +851,7 @@ void CheckStl::mismatchingContainers()
             }
 
             // Lambda is used to escape the nested loops
-            [&] {
+            [&]() -> void {
                 for (const auto& p : containers)
                 {
                     const std::vector<ArgIteratorInfo>& cargs = p.second;
@@ -1012,7 +1012,7 @@ namespace {
                 auto it = invalidMethods.find(f);
                 if (it != invalidMethods.end()) {
                     std::vector<Info::Reference> refs = it->second.invalidTokens();
-                    std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) {
+                    std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) -> bool {
                         const Variable* var = r.tok->variable();
                         if (!var)
                             return false;
@@ -1188,7 +1188,7 @@ void CheckStl::invalidContainer()
                     const ValueFlow::Value* v = nullptr;
                     ErrorPath errorPath;
                     PathAnalysis::Info info =
-                        PathAnalysis{endToken}.forwardFind([&](const PathAnalysis::Info& info) {
+                        PathAnalysis{endToken}.forwardFind([&](const PathAnalysis::Info& info) -> bool {
                         if (!info.tok->variable())
                             return false;
                         if (info.tok->varId() == 0)
@@ -1252,7 +1252,7 @@ void CheckStl::invalidContainerLoopError(const Token* tok, const Token* loopTok,
     errorPath.emplace_back(loopTok, "Iterating container here.");
 
     // Remove duplicate entries from error path
-    errorPath.remove_if([&](const ErrorPathItem& epi) {
+    errorPath.remove_if([&](const ErrorPathItem& epi) -> bool {
         return epi.first == tok;
     });
 
@@ -1307,7 +1307,7 @@ void CheckStl::stlOutOfBounds()
         std::vector<const Token *> conds;
 
         visitAstNodes(condition,
-                      [&](const Token *cond) {
+                      [&](const Token *cond) -> ChildrenToVisit {
             if (Token::Match(cond, "%oror%|&&"))
                 return ChildrenToVisit::op1_and_op2;
             if (cond->isComparisonOp())
@@ -2451,7 +2451,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
             continue;
 
         std::vector<ValueFlow::Value> contValues;
-        std::copy_if(tok->values().cbegin(), tok->values().cend(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
+        std::copy_if(tok->values().cbegin(), tok->values().cend(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) -> bool {
             if (value.isImpossible())
                 return false;
             if (!printInconclusive && value.isInconclusive())
@@ -2475,7 +2475,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
             } else if (value.isIteratorStartValue() && value.intvalue < 0) {
                 isInvalidIterator = true;
             } else {
-                auto it = std::find_if(contValues.cbegin(), contValues.cend(), [&](const ValueFlow::Value& c) {
+                auto it = std::find_if(contValues.cbegin(), contValues.cend(), [&](const ValueFlow::Value& c) -> bool {
                     if (value.path != c.path)
                         return false;
                     if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)
@@ -2882,7 +2882,7 @@ namespace {
 
         bool hasGotoOrBreak() const
         {
-            return findToken([](const Token* tok) {
+            return findToken([](const Token* tok) -> bool {
                 return Token::Match(tok, "goto|break");
             });
         }
@@ -2901,10 +2901,10 @@ namespace {
                     return "";
                 bool alwaysTrue = true;
                 bool alwaysFalse = true;
-                auto hasReturn = [](const Token* tok) {
+                auto hasReturn = [](const Token* tok) -> bool {
                     return Token::simpleMatch(tok, "return");
                 };
-                findTokens(hasReturn, [&](const Token* tok) {
+                findTokens(hasReturn, [&](const Token* tok) -> void {
                     const Token* returnTok = tok->astOperand1();
                     if (!returnTok || !returnTok->hasKnownIntValue() || !astIsBool(returnTok)) {
                         alwaysTrue = false;
@@ -2964,7 +2964,7 @@ void CheckStl::useStlAlgorithm()
 
     logChecker("CheckStl::useStlAlgorithm"); // style
 
-    auto checkAssignee = [](const Token* tok) {
+    auto checkAssignee = [](const Token* tok) -> bool {
         if (astIsBool(tok)) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
             return false;
         return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
@@ -2987,7 +2987,7 @@ void CheckStl::useStlAlgorithm()
         return false;
     };
 
-    auto isAccumulation = [](const Token* tok, int varId) {
+    auto isAccumulation = [](const Token* tok, int varId) -> bool {
         if (tok->str() != "=")
             return true;
         const Token* end = Token::findmatch(tok, "%varid%|;", varId); // TODO: lambdas?
@@ -3213,7 +3213,7 @@ static bool isKnownEmptyContainer(const Token* tok)
 {
     if (!tok)
         return false;
-    return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+    return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) -> bool {
         if (!v.isKnown())
             return false;
         if (!v.isContainerSizeValue())
@@ -3296,7 +3296,7 @@ void CheckStl::eraseIteratorOutOfBoundsError(const Token *ftok, const Token* ite
 
 static const ValueFlow::Value* getOOBIterValue(const Token* tok, const ValueFlow::Value* sizeVal)
 {
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) -> bool {
         if (v.isPossible() || v.isKnown()) {
             switch (v.valueType) {
             case ValueFlow::Value::ValueType::ITERATOR_END:

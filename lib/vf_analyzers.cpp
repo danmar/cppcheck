@@ -158,7 +158,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 args.push_back(tok->tokAt(-2)->astOperand1());
             }
             ConditionState result;
-            result.dependent = std::any_of(args.cbegin(), args.cend(), [&](const Token* arg) {
+            result.dependent = std::any_of(args.cbegin(), args.cend(), [&](const Token* arg) -> bool {
                 ConditionState cs = analyzeCondition(arg, depth - 1);
                 return cs.dependent;
             });
@@ -305,7 +305,7 @@ struct ValueFlowAnalyzer : Analyzer {
                     if (!value->isImpossible() && value->equalValue(rhsValue))
                         a = Action::Idempotent;
                     if (tok->exprId() != 0 &&
-                        findAstNode(rhs, [&](const Token* child) {
+                        findAstNode(rhs, [&](const Token* child) -> bool {
                         return tok->exprId() == child->exprId();
                     }))
                         a |= Action::Incremental;
@@ -513,7 +513,7 @@ private:
 
     const Token* findMatch(const Token* tok) const
     {
-        return findAstNode(tok, [&](const Token* child) {
+        return findAstNode(tok, [&](const Token* child) -> bool {
             return match(child);
         });
     }
@@ -529,7 +529,7 @@ private:
             return false;
         // If the same symbolic value is already there then skip
         if (currValue->isSymbolicValue() &&
-            std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
+            std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) -> bool {
             return v.isSymbolicValue() && currValue->equalValue(v);
         }))
             return false;
@@ -649,7 +649,7 @@ private:
         // Follow references
         auto refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
-        if (std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
+        if (std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) -> bool {
             return tok == ref.token;
         }))
             refs.emplace_back(ReferenceToken{tok, {}});
@@ -695,7 +695,7 @@ private:
 
     std::vector<MathLib::bigint> evaluateInt(const Token* tok) const
     {
-        return evaluateInt(tok, [&] {
+        return evaluateInt(tok, [&]() -> ProgramMemory {
             return ProgramMemory{getProgramState()};
         });
     }
@@ -703,12 +703,12 @@ private:
     std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const override
     {
         if (e == Evaluate::Integral) {
-            return evaluateInt(tok, [&] {
+            return evaluateInt(tok, [&]() -> ProgramMemory {
                 return pms.get(tok, ctx, getProgramState());
             });
         }
         if (e == Evaluate::ContainerEmpty) {
-            const ValueFlow::Value* value = ValueFlow::findValue(tok->values(), settings, [](const ValueFlow::Value& v) {
+            const ValueFlow::Value* value = ValueFlow::findValue(tok->values(), settings, [](const ValueFlow::Value& v) -> bool {
                 return v.isKnown() && v.isContainerSizeValue();
             });
             if (value)
@@ -1025,7 +1025,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             return true;
         if (!condTok->hasKnownIntValue() && values.count(condTok->varId()) == 0) {
             const auto& values_ = condTok->values();
-            return std::any_of(values_.cbegin(), values_.cend(), [](const ValueFlow::Value& v) {
+            return std::any_of(values_.cbegin(), values_.cend(), [](const ValueFlow::Value& v) -> bool {
                 return v.isSymbolicValue() && Token::Match(v.tokvalue, "%oror%|&&");
             });
         }
@@ -1037,13 +1037,13 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         if (!scope)
             return false;
         if (scope->type == ScopeType::eLambda) {
-            return std::all_of(values.cbegin(), values.cend(), [](const std::pair<nonneg int, ValueFlow::Value>& p) {
+            return std::all_of(values.cbegin(), values.cend(), [](const std::pair<nonneg int, ValueFlow::Value>& p) -> bool {
                 return p.second.isLifetimeValue();
             });
         }
         if (scope->type == ScopeType::eIf || scope->type == ScopeType::eElse || scope->type == ScopeType::eWhile ||
             scope->type == ScopeType::eFor) {
-            auto pred = [](const ValueFlow::Value& value) {
+            auto pred = [](const ValueFlow::Value& value) -> bool {
                 if (value.isKnown())
                     return true;
                 if (value.isImpossible())
@@ -1162,7 +1162,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
 
     bool isGlobal() const override {
         const auto& vars = getVars();
-        return std::any_of(vars.cbegin(), vars.cend(), [] (const std::pair<nonneg int, const Variable*>& p) {
+        return std::any_of(vars.cbegin(), vars.cend(), [] (const std::pair<nonneg int, const Variable*>& p) -> bool {
             const Variable* var = p.second;
             return !var->isLocal() && !var->isArgument() && !var->isConst();
         });
@@ -1266,7 +1266,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
             // TODO: add bailout message
             return;
         }
-        visitAstNodes(start, [&](const Token* tok) {
+        visitAstNodes(start, [&](const Token* tok) -> ChildrenToVisit {
             const bool top = depth == 0 && tok == start;
             const bool ispointer = astIsPointer(tok) || astIsSmartPointer(tok) || astIsIterator(tok);
             if (!top || !ispointer || value.indirect != 0) {
@@ -1480,7 +1480,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                 return Action::Read | Action::Write | Action::Incremental;
             const Library::Container* rhsContainer = getLibraryContainer(rhs);
             if (rhsContainer && rhsContainer->stdStringLike) {
-                if (std::any_of(rhs->values().cbegin(), rhs->values().cend(), [&](const ValueFlow::Value &rhsval) {
+                if (std::any_of(rhs->values().cbegin(), rhs->values().cend(), [&](const ValueFlow::Value &rhsval) -> bool {
                     return rhsval.isKnown() && rhsval.isContainerSizeValue();
                 }))
                     return Action::Read | Action::Write | Action::Incremental;
@@ -1515,7 +1515,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             if (rhs->tokType() == Token::eString)
                 n = Token::getStrLength(rhs);
             else if (rhsContainer && rhsContainer->stdStringLike) {
-                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value& rhsval) {
+                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value& rhsval) -> bool {
                     return rhsval.isKnown() && rhsval.isContainerSizeValue();
                 });
                 if (it != rhs->values().end())

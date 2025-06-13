@@ -198,7 +198,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings &set
         dimensions = array->variable()->dimensions();
         if (dimensions[0].num <= 1 || !dimensions[0].tok) {
             visitAstNodes(arrayToken,
-                          [&](const Token *child) {
+                          [&](const Token *child) -> ChildrenToVisit {
                 if (child->originalName() == "->") {
                     mightBeLarger = true;
                     return ChildrenToVisit::none;
@@ -564,7 +564,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!var || var->isPointer())
         return ValueFlow::Value(-1);
 
-    const MathLib::bigint dim = std::accumulate(var->dimensions().cbegin(), var->dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
+    const MathLib::bigint dim = std::accumulate(var->dimensions().cbegin(), var->dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension &dim) -> MathLib::bigint {
         return i1 * dim.num;
     });
 
@@ -676,7 +676,7 @@ void CheckBufferOverrun::bufferOverflow()
                             continue;
                     }
                 }
-                const bool error = std::none_of(minsizes->begin(), minsizes->end(), [&](const Library::ArgumentChecks::MinSize &minsize) {
+                const bool error = std::none_of(minsizes->begin(), minsizes->end(), [&](const Library::ArgumentChecks::MinSize &minsize) -> bool {
                     return checkBufferSize(tok, minsize, args, bufferSize.intvalue, *mSettings, mTokenizer);
                 });
                 if (error)
@@ -774,7 +774,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
                 continue;
             if (Token::simpleMatch(args[1], "(") && Token::simpleMatch(args[1]->astOperand1(), ". c_str") && args[1]->astOperand1()->astOperand1()) {
                 const std::list<ValueFlow::Value>& contValues = args[1]->astOperand1()->astOperand1()->values();
-                auto it = std::find_if(contValues.cbegin(), contValues.cend(), [](const ValueFlow::Value& value) {
+                auto it = std::find_if(contValues.cbegin(), contValues.cend(), [](const ValueFlow::Value& value) -> bool {
                     return value.isContainerSizeValue() && !value.isImpossible();
                 });
                 if (it != contValues.end() && it->intvalue < sizeToken->getKnownIntValue())
@@ -1105,12 +1105,12 @@ void CheckBufferOverrun::objectIndex()
                     std::copy_if(idx->values().cbegin(),
                                  idx->values().cend(),
                                  std::back_inserter(idxValues),
-                                 [&](const ValueFlow::Value& vidx) {
+                                 [&](const ValueFlow::Value& vidx) -> bool {
                         if (!vidx.isIntValue())
                             return false;
                         return vidx.path == v.path || vidx.path == 0;
                     });
-                    if (std::any_of(idxValues.cbegin(), idxValues.cend(), [&](const ValueFlow::Value& vidx) {
+                    if (std::any_of(idxValues.cbegin(), idxValues.cend(), [&](const ValueFlow::Value& vidx) -> bool {
                         if (vidx.isImpossible())
                             return (vidx.intvalue == 0);
                         return (vidx.intvalue != 0);

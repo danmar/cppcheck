@@ -98,7 +98,7 @@ namespace {
 
         bool stopOnCondition(const Token* condTok) const
         {
-            if (analyzer->isConditional() && findAstNode(condTok, [](const Token* tok) {
+            if (analyzer->isConditional() && findAstNode(condTok, [](const Token* tok) -> bool {
                 return tok->isIncompleteVar();
             }))
                 return true;
@@ -110,10 +110,10 @@ namespace {
                 return std::make_pair(false, false);
             std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
             // TODO: We should convert to bool
-            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
+            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) -> bool {
                 return x != 0;
             });
-            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
+            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) -> bool {
                 return x == 0;
             });
             return std::make_pair(checkThen, checkElse);
@@ -424,7 +424,7 @@ namespace {
             const bool bodyChangesCond = findExpressionChanged(condTok, endBlock->link(), endBlock, settings);
             // Check for mutation in the condition
             const bool condChanged =
-                nullptr != findAstNode(condTok, [&](const Token* tok) {
+                nullptr != findAstNode(condTok, [&](const Token* tok) -> bool {
                 return isVariableChanged(tok, 0, settings);
             });
             const bool changed = stepChangesCond || bodyChangesCond || condChanged;
@@ -437,7 +437,7 @@ namespace {
 
         Progress updateInnerLoop(Token* endBlock, Token* stepTok, Token* condTok) {
             loopEnds.push_back(endBlock);
-            OnExit oe{[&] {
+            OnExit oe{[&]() -> void {
                     loopEnds.pop_back();
                 }};
             if (endBlock && updateScope(endBlock) == Progress::Break)

@@ -129,7 +129,6 @@ Does not improve the readability.
 `readability-avoid-nested-conditional-operator`<br/>
 `modernize-use-designated-initializers`<br/>
 `readability-enum-initial-value`<br/>
-`modernize-use-trailing-return-type`<br/>
 
 To be evaluated (need to remove exclusion).
 

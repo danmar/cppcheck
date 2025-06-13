@@ -100,7 +100,7 @@ private:
         Suppressions supprs;
 
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        CppCheck cppcheck(s, supprs, *this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
+        CppCheck cppcheck(s, supprs, *this, true, [](std::string,std::vector<std::string>,std::string,std::string&) -> int {
             return EXIT_SUCCESS;
         });
 

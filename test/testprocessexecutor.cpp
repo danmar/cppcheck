@@ -95,7 +95,7 @@ private:
         Suppressions supprs;
 
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        auto executeFn = [](std::string,std::vector<std::string>,std::string,std::string&){
+        auto executeFn = [](std::string,std::vector<std::string>,std::string,std::string&) -> int {
             return EXIT_SUCCESS;
         };
 

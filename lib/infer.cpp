@@ -148,7 +148,7 @@ namespace {
 
         static Interval fromValues(const std::list<ValueFlow::Value>& values)
         {
-            return Interval::fromValues(values, [](const ValueFlow::Value&) {
+            return Interval::fromValues(values, [](const ValueFlow::Value&) -> bool {
                 return true;
             });
         }
@@ -228,7 +228,7 @@ namespace {
             if (r.empty())
                 return {};
             bool b = calculate(op, r.front(), 0);
-            if (std::all_of(r.cbegin() + 1, r.cend(), [&](int i) {
+            if (std::all_of(r.cbegin() + 1, r.cend(), [&](int i) -> bool {
                 return b == calculate(op, i, 0);
             }))
                 return {b};
@@ -246,13 +246,13 @@ static void addToErrorPath(ValueFlow::Value& value, const std::vector<const Valu
         std::copy_if(ref->errorPath.cbegin(),
                      ref->errorPath.cend(),
                      std::back_inserter(value.errorPath),
-                     [&](const ErrorPathItem& e) {
+                     [&](const ErrorPathItem& e) -> bool {
             return locations.insert(e.first).second;
         });
         std::copy_if(ref->debugPath.cbegin(),
                      ref->debugPath.cend(),
                      std::back_inserter(value.debugPath),
-                     [&](const ErrorPathItem& e) {
+                     [&](const ErrorPathItem& e) -> bool {
             return locations.insert(e.first).second;
         });
     }
@@ -278,7 +278,7 @@ static void setValueKind(ValueFlow::Value& value, const std::vector<const ValueF
 
 static bool inferNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return std::any_of(values.cbegin(), values.cend(), [&](const ValueFlow::Value& value) {
+    return std::any_of(values.cbegin(), values.cend(), [&](const ValueFlow::Value& value) -> bool {
         return value.isImpossible() && value.intvalue == x;
     });
 }
@@ -289,7 +289,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
                                     std::list<ValueFlow::Value> rhsValues)
 {
     std::vector<ValueFlow::Value> result;
-    auto notMatch = [&](const ValueFlow::Value& value) {
+    auto notMatch = [&](const ValueFlow::Value& value) -> bool {
         return !model->match(value);
     };
     lhsValues.remove_if(notMatch);
@@ -378,13 +378,13 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
 
 std::vector<MathLib::bigint> getMinValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values)
 {
-    return Interval::fromValues(values, [&](const ValueFlow::Value& v) {
+    return Interval::fromValues(values, [&](const ValueFlow::Value& v) -> bool {
         return model->match(v);
     }).minvalue;
 }
 std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values)
 {
-    return Interval::fromValues(values, [&](const ValueFlow::Value& v) {
+    return Interval::fromValues(values, [&](const ValueFlow::Value& v) -> bool {
         return model->match(v);
     }).maxvalue;
 }

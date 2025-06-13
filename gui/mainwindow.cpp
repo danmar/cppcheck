@@ -569,7 +569,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     if (mProjectFile) {
         std::vector<std::string> v;
         const QStringList excluded = mProjectFile->getExcludedPaths();
-        std::transform(excluded.cbegin(), excluded.cend(), std::back_inserter(v), [](const QString& e) {
+        std::transform(excluded.cbegin(), excluded.cend(), std::back_inserter(v), [](const QString& e) -> std::string {
             return e.toStdString();
         });
         p.ignorePaths(v);
@@ -578,7 +578,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
             const Platform::Type platform = static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
             std::vector<std::string> configurations;
             const QStringList configs = mProjectFile->getVsConfigurations();
-            std::transform(configs.cbegin(), configs.cend(), std::back_inserter(configurations), [](const QString& e) {
+            std::transform(configs.cbegin(), configs.cend(), std::back_inserter(configurations), [](const QString& e) -> std::string {
                 return e.toStdString();
             });
             p.selectVsConfigurations(platform, configurations);
@@ -689,7 +689,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
+        std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) -> std::string {
             return s.toStdString();
         });
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, {});
@@ -2317,7 +2317,7 @@ void MainWindow::changeReportType() {
 
     mUI->mResults->setReportType(reportType);
 
-    auto setTextAndHint = [](QAction* a, const QString& s) {
+    auto setTextAndHint = [](QAction* a, const QString& s) -> void {
         a->setVisible(!s.isEmpty());
         a->setText(s);
         a->setToolTip(s);
@@ -2361,7 +2361,7 @@ void MainWindow::changeReportType() {
 
 std::list<FileWithDetails> MainWindow::enrichFilesForAnalysis(const QStringList& fileNames, const Settings& settings) const {
     std::list<FileWithDetails> fdetails;
-    std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(fdetails), [](const QString& f) {
+    std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(fdetails), [](const QString& f) -> FileWithDetails {
         return FileWithDetails{f.toStdString(), Standards::Language::None, static_cast<std::size_t>(QFile(f).size())};
     });
     const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());

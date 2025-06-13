@@ -262,7 +262,7 @@ std::list<FileWithDetails> ThreadHandler::getReCheckFiles(bool all) const
     std::set<QString> unmodified;
 
     std::list<FileWithDetails> files;
-    std::copy_if(mLastFiles.cbegin(), mLastFiles.cend(), std::back_inserter(files), [&](const FileWithDetails &f) {
+    std::copy_if(mLastFiles.cbegin(), mLastFiles.cend(), std::back_inserter(files), [&](const FileWithDetails &f) -> bool {
         return needsReCheck(QString::fromStdString(f.path()), modified, unmodified);
     });
     return files;
