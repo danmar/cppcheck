@@ -5965,9 +5965,8 @@ void Tokenizer::printDebugOutput(std::ostream &out) const
             mSymbolDatabase->printOut("Symbol database");
     }
 
-    // TODO: do not depend on --verbose
     if (mSettings.debugast)
-        list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
+        list.front()->printAst(xml, list.getFiles(), out);
 
     if (mSettings.debugnormal || mSettings.debugvalueflow)
         list.front()->printValueFlow(list.getFiles(), xml, out);

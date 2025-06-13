@@ -3467,7 +3467,6 @@ def test_debug_ast(tmp_path):
     __test_debug_ast(tmp_path, False)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
 def test_debug_ast_verbose_nodiff(tmp_path):
     # make sure --verbose does not change the output
     assert __test_debug_ast(tmp_path, False) == __test_debug_ast(tmp_path, True)
