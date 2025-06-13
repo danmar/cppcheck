@@ -5965,7 +5965,7 @@ void Tokenizer::printDebugOutput(std::ostream &out) const
     if (mSettings.debugast)
         list.front()->printAst(xml, list.getFiles(), out);
 
-    if (mSettings.debugnormal || mSettings.debugvalueflow)
+    if (mSettings.debugvalueflow)
         list.front()->printValueFlow(list.getFiles(), xml, out);
 
     if (xml)

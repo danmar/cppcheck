@@ -1618,6 +1618,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (debug) {
         mSettings.debugnormal = true;
+        mSettings.debugvalueflow = true;
         if (mSettings.verbose) {
             mSettings.debugast = true;
             mSettings.debugsymdb = true;
