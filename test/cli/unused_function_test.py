@@ -44,7 +44,7 @@ def __test_unused_functions(extra_args):
     ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:6: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
 
@@ -103,7 +103,7 @@ def __test_unused_functions_project(extra_args):
     ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
     assert [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:6: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
     ] == stderr.splitlines()
     assert ret == 0, stdout
 
@@ -163,7 +163,7 @@ def __test_unused_functions_compdb(tmpdir, extra_args):
     ret, stdout, stderr = cppcheck(args)
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        "{}3.c:3:0: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}3.c:3:6: style: The function 'f3_3' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
 
