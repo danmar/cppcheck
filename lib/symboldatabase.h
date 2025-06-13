@@ -1418,6 +1418,8 @@ public:
     /* returns the opening { if tok points to enum */
     static const Token* isEnumDefinition(const Token* tok);
 
+    static void getErrorMessages(ErrorLogger &errorLogger);
+
 private:
     friend class Scope;
     friend class Function;
