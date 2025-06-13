@@ -61,10 +61,12 @@ namespace checkers {
 
     extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Directives;
     extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Rules;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2023Directives;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2023Rules;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2025Directives;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2025Rules;
     extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2008Rules;
     extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2023Rules;
-
-    extern CPPCHECKLIB const std::map<std::string, std::string> misraRuleSeverity;
 
     struct CPPCHECKLIB IdMapping {
         const char* guideline;
