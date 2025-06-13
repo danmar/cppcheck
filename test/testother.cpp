@@ -13046,6 +13046,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:15]: (performance) Range variable 's' should be declared as const reference. [iterateByValue]\n",
                       errout_str());
+        check("void f() {\n" // #13696
+              "    struct T {\n"
+              "        std::string name;\n"
+              "        UnknownClass member;\n"
+              "    };\n"
+              "\n"
+              "    const std::set<T> ss;\n"
+              "    for (auto s : ss)\n"
+              "        (void)s.name;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8:15]: (performance) Range variable 's' should be declared as const reference. [iterateByValue]\n",
+                      errout_str());
     }
 
     void knownConditionFloating()

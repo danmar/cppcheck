@@ -1522,7 +1522,7 @@ static bool isLargeContainer(const Variable* var, const Settings& settings)
         return false;
     }
     const ValueType vtElem = ValueType::parseDecl(vt->containerTypeToken, settings);
-    const auto elemSize = std::max<std::size_t>(ValueFlow::getSizeOf(vtElem, settings), 1);
+    const auto elemSize = std::max<std::size_t>(ValueFlow::getSizeOf(vtElem, settings, ValueFlow::Accuracy::LowerBound), 1);
     const auto arraySize = var->dimension(0) * elemSize;
     return arraySize > maxByValueSize;
 }
@@ -1562,7 +1562,7 @@ void CheckOther::checkPassByReference()
                 // Ensure that it is a large object.
                 if (!var->type()->classScope)
                     inconclusive = true;
-                else if (!var->valueType() || ValueFlow::getSizeOf(*var->valueType(), *mSettings) <= 2 * mSettings->platform.sizeof_pointer)
+                else if (!var->valueType() || ValueFlow::getSizeOf(*var->valueType(), *mSettings, ValueFlow::Accuracy::LowerBound) <= 2 * mSettings->platform.sizeof_pointer)
                     continue;
             }
             else
@@ -3283,7 +3283,7 @@ void CheckOther::checkRedundantCopy()
                 const Token* varTok = fScope->bodyEnd->tokAt(-2);
                 if (varTok->variable() && !varTok->variable()->isGlobal() &&
                     (!varTok->variable()->type() || !varTok->variable()->type()->classScope ||
-                     (varTok->variable()->valueType() && ValueFlow::getSizeOf(*varTok->variable()->valueType(), *mSettings) > 2 * mSettings->platform.sizeof_pointer)))
+                     (varTok->variable()->valueType() && ValueFlow::getSizeOf(*varTok->variable()->valueType(), *mSettings, ValueFlow::Accuracy::LowerBound) > 2 * mSettings->platform.sizeof_pointer)))
                     redundantCopyError(startTok, startTok->str());
             }
         }
@@ -3403,7 +3403,7 @@ void CheckOther::checkIncompleteArrayFill()
                 if (size == 0 && var->valueType()->pointer)
                     size = mSettings->platform.sizeof_pointer;
                 else if (size == 0 && var->valueType())
-                    size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
+                    size = ValueFlow::getSizeOf(*var->valueType(), *mSettings, ValueFlow::Accuracy::LowerBound);
                 const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
                 if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                     if (printWarning)
@@ -4346,7 +4346,7 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         bufToken = expr->astOperand1()->astOperand1();
         offsetToken = expr->astOperand1()->astOperand2();
         if (expr->astOperand1()->valueType())
-            elementSize =  ValueFlow::getSizeOf(*expr->astOperand1()->valueType(), settings);
+            elementSize =  ValueFlow::getSizeOf(*expr->astOperand1()->valueType(), settings, ValueFlow::Accuracy::LowerBound);
     } else if (Token::Match(expr, "+|-") && expr->isBinaryOp()) {
         const bool pointer1 = (expr->astOperand1()->valueType() && expr->astOperand1()->valueType()->pointer > 0);
         const bool pointer2 = (expr->astOperand2()->valueType() && expr->astOperand2()->valueType()->pointer > 0);
@@ -4355,13 +4355,13 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
             offsetToken = expr->astOperand2();
             auto vt = *expr->astOperand1()->valueType();
             --vt.pointer;
-            elementSize = ValueFlow::getSizeOf(vt, settings);
+            elementSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::LowerBound);
         } else if (!pointer1 && pointer2) {
             bufToken = expr->astOperand2();
             offsetToken = expr->astOperand1();
             auto vt = *expr->astOperand2()->valueType();
             --vt.pointer;
-            elementSize = ValueFlow::getSizeOf(vt, settings);
+            elementSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::LowerBound);
         } else {
             return false;
         }
@@ -4370,7 +4370,7 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         *offset = 0;
         auto vt = *expr->valueType();
         --vt.pointer;
-        elementSize = ValueFlow::getSizeOf(vt, settings);
+        elementSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::LowerBound);
         if (elementSize > 0) {
             *offset *= elementSize;
             if (sizeValue)

@@ -424,9 +424,16 @@ void ValueFlow::combineValueProperties(const ValueFlow::Value &value1, const Val
         result.path = value1.path;
 }
 
+namespace {
+    struct Result
+    {
+        size_t total;
+        bool success;
+    };
+}
 
 template<class F>
-static size_t accumulateStructMembers(const Scope* scope, F f)
+static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accuracy accuracy)
 {
     size_t total = 0;
     std::set<const Scope*> anonScopes;
@@ -435,7 +442,7 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
             continue;
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
-                return 0;
+                return {0, false};
             const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
                 return i1 * dim.num;
             });
@@ -447,10 +454,10 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
             else
                 total = f(total, *vt, dim);
         }
-        if (total == 0)
-            return 0;
+        if (accuracy == ValueFlow::Accuracy::ExactOrZero && total == 0)
+            return {0, false};
     }
-    return total;
+    return {total, true};
 }
 
 static size_t bitCeil(size_t x)
@@ -467,37 +474,38 @@ static size_t bitCeil(size_t x)
     return x + 1;
 }
 
-static size_t getAlignOf(const ValueType& vt, const Settings& settings, int maxRecursion = 0)
+static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueFlow::Accuracy accuracy, int maxRecursion = 0)
 {
     if (maxRecursion == settings.vfOptions.maxAlignOfRecursion) {
         // TODO: add bailout message
         return 0;
     }
     if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
-        auto align = ValueFlow::getSizeOf(vt, settings);
+        auto align = ValueFlow::getSizeOf(vt, settings, accuracy);
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/) {
-            size_t a = getAlignOf(vt2, settings, ++maxRecursion);
+            size_t a = getAlignOf(vt2, settings, accuracy, ++maxRecursion);
             return std::max(max, a);
         };
-        size_t total = 0;
+        Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
+        size_t total = result.total;
         if (const Type* dt = vt.typeScope->definedType) {
             total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
                 if (bi.type && bi.type->classScope)
-                    v += accumulateStructMembers(bi.type->classScope, accHelper);
+                    v += accumulateStructMembers(bi.type->classScope, accHelper, accuracy).total;
                 return v;
             });
         }
-        return total + accumulateStructMembers(vt.typeScope, accHelper);
+        return result.success ? std::max<size_t>(1, total) : total;
     }
     if (vt.type == ValueType::Type::CONTAINER)
         return settings.platform.sizeof_pointer; // Just guess
     return 0;
 }
 
-size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion)
+size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accuracy accuracy, int maxRecursion)
 {
     if (maxRecursion == settings.vfOptions.maxSizeOfRecursion) {
         // TODO: add bailout message
@@ -527,27 +535,29 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
         return 3 * settings.platform.sizeof_pointer; // Just guess
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim) -> size_t {
-            size_t n = ValueFlow::getSizeOf(vt2, settings, ++maxRecursion);
-            size_t a = getAlignOf(vt2, settings);
+            size_t n = ValueFlow::getSizeOf(vt2, settings,accuracy, ++maxRecursion);
+            size_t a = getAlignOf(vt2, settings, accuracy);
             if (n == 0 || a == 0)
-                return 0;
+                return accuracy == Accuracy::ExactOrZero ? 0 : total;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             return vt.typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
         };
-        size_t total = accumulateStructMembers(vt.typeScope, accHelper);
+        Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
+        size_t total = result.total;
         if (const Type* dt = vt.typeScope->definedType) {
             total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
                 if (bi.type && bi.type->classScope)
-                    v += accumulateStructMembers(bi.type->classScope, accHelper);
+                    v += accumulateStructMembers(bi.type->classScope, accHelper, accuracy).total;
                 return v;
             });
         }
-        if (total == 0)
+        if (accuracy == Accuracy::ExactOrZero && total == 0 && !result.success)
             return 0;
-        size_t align = getAlignOf(vt, settings);
+        total = std::max(size_t{1}, total);
+        size_t align = getAlignOf(vt, settings, accuracy);
         if (align == 0)
-            return 0;
+            return accuracy == Accuracy::ExactOrZero ? 0 : total;
         total += (align - (total % align)) % align;
         return total;
     }
@@ -3610,8 +3620,8 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
     if (src->smartPointer && dst->smartPointer)
         return false;
     if ((src->isIntegral() && dst->isIntegral()) || (src->isFloat() && dst->isFloat())) {
-        const size_t srcSize = ValueFlow::getSizeOf(*src, settings);
-        const size_t dstSize = ValueFlow::getSizeOf(*dst, settings);
+        const size_t srcSize = ValueFlow::getSizeOf(*src, settings, ValueFlow::Accuracy::LowerBound);
+        const size_t dstSize = ValueFlow::getSizeOf(*dst, settings, ValueFlow::Accuracy::LowerBound);
         if (srcSize > dstSize)
             return true;
         if (srcSize == dstSize && src->sign != dst->sign)
@@ -4134,10 +4144,10 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     if (!dst || !dst->isIntegral())
         return values;
 
-    const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+    const size_t sz = ValueFlow::getSizeOf(*dst, settings, ValueFlow::Accuracy::ExactOrZero);
 
     if (src) {
-        const size_t osz = ValueFlow::getSizeOf(*src, settings);
+        const size_t osz = ValueFlow::getSizeOf(*src, settings, ValueFlow::Accuracy::ExactOrZero);
         if (osz >= sz && dst->sign == ValueType::Sign::SIGNED && src->sign == ValueType::Sign::UNSIGNED) {
             values.remove_if([&](const ValueFlow::Value& value) {
                 if (!value.isIntValue())
