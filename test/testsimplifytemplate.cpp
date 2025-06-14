@@ -6334,7 +6334,7 @@ private:
                                 "} "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
-        
+
         const char code2[] = "template <typename T>\n" // #13929
                              "struct S {};\n"
                              "template <typename T, template<typename...> typename C = S>\n"
