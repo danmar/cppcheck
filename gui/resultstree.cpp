@@ -104,8 +104,8 @@ static QString getGuideline(ReportType reportType, const std::map<std::string, s
                                                severity));
 }
 
-static QString getClassification(ReportType reportType, const QString& guideline) {
-    return QString::fromStdString(getClassification(guideline.toStdString(), reportType));
+static QString getClassification(ReportType reportType, const QString& errorId, const QString& guideline) {
+    return QString::fromStdString(getClassification(errorId.toStdString(), guideline.toStdString(), reportType));
 }
 
 static Severity getSeverityFromClassification(const QString &c) {
@@ -177,7 +177,7 @@ void ResultsTree::setReportType(ReportType reportType) {
             const QString& errorId = childdata[ERRORID].toString();
             Severity severity = ShowTypes::ShowTypeToSeverity(ShowTypes::VariantToShowType(childdata[SEVERITY]));
             const QString& guideline = getGuideline(mReportType, mGuideline, errorId, severity);
-            const QString& classification = getClassification(mReportType, guideline);
+            const QString& classification = getClassification(mReportType, errorId, guideline);
             fileItem->child(j, COLUMN_CERT_LEVEL)->setText(classification);
             fileItem->child(j, COLUMN_CERT_RULE)->setText(guideline);
             fileItem->child(j, COLUMN_MISRA_CLASSIFICATION)->setText(classification);
@@ -280,7 +280,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             showItem = mShowSeverities.isShown(item.severity);
         else {
             const QString& guideline = getGuideline(mReportType, mGuideline, item.errorId, item.severity);
-            const QString& classification = getClassification(mReportType, guideline);
+            const QString& classification = getClassification(mReportType, item.errorId, guideline);
             showItem = !classification.isEmpty() && mShowSeverities.isShown(getSeverityFromClassification(classification));
         }
     }
@@ -403,7 +403,7 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
 
     QMap<int, QStandardItem*> columns;
     const QString guideline = getGuideline(mReportType, mGuideline, item.errorId, item.severity);
-    const QString classification = getClassification(mReportType, guideline);
+    const QString classification = getClassification(mReportType, item.errorId, guideline);
     columns[COLUMN_CERT_LEVEL] = createNormalItem(classification);
     columns[COLUMN_CERT_RULE] = createNormalItem(guideline);
     columns[COLUMN_CWE] = createNormalItem(QString::number(item.cwe));

@@ -670,7 +670,7 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     ErrorMessage msgCopy = msg;
     msgCopy.guideline = getGuideline(msgCopy.id, mSettings.reportType,
                                      mGuidelineMapping, msgCopy.severity);
-    msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
+    msgCopy.classification = getClassification(msgCopy.id, msgCopy.guideline, mSettings.reportType);
 
     // TODO: there should be no need for verbose and default messages here
     const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
