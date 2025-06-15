@@ -11240,6 +11240,15 @@ private:
               "};\n"
               "void f(S<char, 3> s) {}\n");
         ASSERT_EQUALS("", errout_str());
+
+        Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).build();
+        check("struct S {\n" // #13850
+              "    int i0 : 32;\n"
+              "    int i1 : 16;\n"
+              "    unsigned short u16;\n"
+              "};\n"
+              "void f(S s) {}\n", true, true, true, false, &settingsUnix32);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {
