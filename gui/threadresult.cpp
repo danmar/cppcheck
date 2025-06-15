@@ -84,10 +84,9 @@ void ThreadResult::setFiles(const QStringList &files)
 {
     std::lock_guard<std::mutex> locker(mutex);
     std::list<FileWithDetails> fdetails;
-    for (const QString& f : files)
-    {
-        fdetails.emplace_back(f.toStdString(), Path::identify(f.toStdString(), false), QFile(f).size()); // TODO: provide Settings::cppHeaderProbe
-    }
+    std::transform(files.cbegin(), files.cend(), std::back_inserter(fdetails), [](const QString& f) {
+        return FileWithDetails{f.toStdString(), Path::identify(f.toStdString(), false), static_cast<std::size_t>(QFile(f).size())}; // TODO: provide Settings::cppHeaderProbe
+    });
     mFiles = std::move(fdetails);
     mItNextFile = mFiles.cbegin();
     mProgress = 0;
