@@ -167,7 +167,9 @@
      <addaction name="mActionReportAutosar"/>
      <addaction name="mActionReportCertC"/>
      <addaction name="mActionReportCertCpp"/>
-     <addaction name="mActionReportMisraC"/>
+     <addaction name="mActionReportMisraC2012"/>
+     <addaction name="mActionReportMisraC2023"/>
+     <addaction name="mActionReportMisraC2025"/>
      <addaction name="mActionReportMisraCpp2008"/>
      <addaction name="mActionReportMisraCpp2023"/>
     </widget>
@@ -977,7 +979,23 @@
     <string>Normal</string>
    </property>
   </action>
-  <action name="mActionReportMisraC">
+  <action name="mActionReportMisraC2012">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Misra C</string>
+   </property>
+  </action>
+  <action name="mActionReportMisraC2023">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Misra C</string>
+   </property>
+  </action>
+  <action name="mActionReportMisraC2025">
    <property name="checkable">
     <bool>true</bool>
    </property>
