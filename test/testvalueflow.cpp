@@ -175,6 +175,7 @@ private:
         mNewTemplate = true;
 
         TEST_CASE(performanceIfCount);
+        TEST_CASE(bitfields);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -9041,6 +9042,41 @@ private:
                "  return v.front();\n"
                "}\n";
         ASSERT_EQUALS(1U, tokenValues(code, "v .", &s).size());
+    }
+
+    void testBitfields(const std::string &structBody, std::size_t expectedSize) {
+        const std::string code = "struct S { " + structBody + " }; const std::size_t size = sizeof(S);";
+        const auto values = tokenValues(code.c_str(), "( S");
+        ASSERT(!values.empty());
+        ASSERT_EQUALS(expectedSize, values.back().intvalue);
+    }
+
+    void bitfields() {
+
+        // #13653
+        testBitfields("unsigned int data_rw: 1;\n"
+                      "unsigned int page_address: 4;\n"
+                      "unsigned int register_address: 3;\n",
+                      4);
+
+        testBitfields("unsigned char data_rw: 1;\n"
+                      "unsigned char page_address: 4;\n"
+                      "unsigned char register_address: 3;\n",
+                      1);
+
+        testBitfields("unsigned int a : 1;\n"
+                      "unsigned int b;\n"
+                      "unsigned int c : 1;\n",
+                      12);
+
+        testBitfields("unsigned int a : 1;\n"
+                      "unsigned char b;\n"
+                      "unsigned int c : 1;\n",
+                      12);
+
+        testBitfields("unsigned int a : 31;\n"
+                      "unsigned int b : 2;\n",
+                      8);
     }
 };
 
