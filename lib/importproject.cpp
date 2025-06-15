@@ -639,8 +639,8 @@ namespace {
         Standards::cppstd_t cppstd = Standards::CPPLatest;
     };
 
-    struct ConfigutrationPropertyGroup : ConditionalGroup {
-        explicit ConfigutrationPropertyGroup(const tinyxml2::XMLElement *idg) : ConditionalGroup(idg) {
+    struct ConfigurationPropertyGroup : ConditionalGroup {
+        explicit ConfigurationPropertyGroup(const tinyxml2::XMLElement *idg) : ConditionalGroup(idg) {
             for (const tinyxml2::XMLElement *e = idg->FirstChildElement(); e; e = e->NextSiblingElement()) {
                 if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
                     useOfMfc = true;
@@ -762,7 +762,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
     std::list<ProjectConfiguration> projectConfigurationList;
     std::list<std::string> compileList;
     std::list<ItemDefinitionGroup> itemDefinitionGroupList;
-    std::vector<ConfigutrationPropertyGroup> configurationPropertyGroups;
+    std::vector<ConfigurationPropertyGroup> configurationPropertyGroups;
     std::string includePath;
     std::vector<SharedItemsProject> sharedItemsProjects;
 
@@ -905,7 +905,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
-            for (const ConfigutrationPropertyGroup &c : configurationPropertyGroups) {
+            for (const ConfigurationPropertyGroup &c : configurationPropertyGroups) {
                 if (!c.conditionIsTrue(p))
                     continue;
                 if (c.useUnicode) {
