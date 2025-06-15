@@ -594,6 +594,7 @@ There are false positives with this option. Each result must be carefully invest
               <glossentry><glossterm>cert-cpp-2016</glossterm><glossdef><para>Cert C++ 2016</para></glossdef></glossentry>
               <glossentry><glossterm>misra-c-2012</glossterm><glossdef><para>Misra C 2012</para></glossdef></glossentry>
               <glossentry><glossterm>misra-c-2023</glossterm><glossdef><para>Misra C 2023</para></glossdef></glossentry>
+              <glossentry><glossterm>misra-c-2025</glossterm><glossdef><para>Misra C 2025</para></glossdef></glossentry>
               <glossentry><glossterm>misra-cpp-2008</glossterm><glossdef><para>Misra C++ 2008</para></glossdef></glossentry>
               <glossentry><glossterm>misra-cpp-2023</glossterm><glossdef><para>Misra C++ 2023</para></glossdef></glossentry>
             </glosslist>

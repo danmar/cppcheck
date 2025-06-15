@@ -1309,8 +1309,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.reportType = ReportType::certC;
             } else if (typeStr == "cert-cpp-2016") {
                 mSettings.reportType = ReportType::certCpp;
-            } else if (typeStr == "misra-c-2012" || typeStr == "misra-c-2023") {
-                mSettings.reportType = ReportType::misraC;
+            } else if (typeStr == "misra-c-2012") {
+                mSettings.reportType = ReportType::misraC2012;
+            } else if (typeStr == "misra-c-2023") {
+                mSettings.reportType = ReportType::misraC2023;
+            } else if (typeStr == "misra-c-2025") {
+                mSettings.reportType = ReportType::misraC2025;
             } else if (typeStr == "misra-cpp-2008") {
                 mSettings.reportType = ReportType::misraCpp2008;
             } else if (typeStr == "misra-cpp-2023") {
@@ -1963,6 +1967,7 @@ void CmdLineParser::printHelp() const
         "                          * cert-cpp-2016    Cert C++ 2016\n"
         "                          * misra-c-2012     Misra C 2012\n"
         "                          * misra-c-2023     Misra C 2023\n"
+        "                          * misra-c-2025     Misra C 2025\n"
         "                          * misra-cpp-2008   Misra C++ 2008\n"
         "                          * misra-cpp-2023   Misra C++ 2023\n"
         "    --rule=<rule>        Match regular expression.\n"

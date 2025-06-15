@@ -945,24 +945,40 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
         return getClassification(checkers::certCInfo, guideline);
     case ReportType::certCpp:
         return getClassification(checkers::certCppInfo, guideline);
-    case ReportType::misraC:
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
     {
-        auto components = splitString(guideline, '.');
+        const bool isDirective = guideline.rfind("Dir ", 0) == 0;
+
+        const std::size_t offset = isDirective ? 4 : 0;
+        auto components = splitString(guideline.substr(offset), '.');
         if (components.size() != 2)
             return "";
 
         const int a = std::stoi(components[0]);
         const int b = std::stoi(components[1]);
 
-        const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
-        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
+        const std::vector<checkers::MisraInfo> *info = nullptr;
+        switch (reportType) {
+        case ReportType::misraC2012:
+            info = isDirective ? &checkers::misraC2012Directives : &checkers::misraC2012Rules;
+            break;
+        case ReportType::misraC2023:
+            info = isDirective ? &checkers::misraC2023Directives : &checkers::misraC2023Rules;
+            break;
+        case ReportType::misraC2025:
+            info = isDirective ? &checkers::misraC2025Directives : &checkers::misraC2025Rules;
+            break;
+        default:
+            break;
+        }
+
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) {
                 return i.a == a && i.b == b;
             });
 
-        if (it == info.cend())
-            return "";
-
-        return it->str;
+        return it == info->cend() ? "" : it->str;
     }
     case ReportType::misraCpp2008:
     case ReportType::misraCpp2023:
@@ -1022,9 +1038,13 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
                            guideline.begin(), static_cast<int (*)(int)>(std::toupper));
         }
         break;
-    case ReportType::misraC:
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
         if (errId.rfind("misra-c20", 0) == 0 || errId.rfind("premium-misra-c-20", 0) == 0)
             guideline = errId.substr(errId.rfind('-') + 1);
+        if (errId.find("dir") != std::string::npos)
+            guideline = "Dir " + guideline;
         break;
     case ReportType::misraCpp2008:
         if (errId.rfind("misra-cpp-2008-", 0) == 0)
@@ -1074,7 +1094,9 @@ std::map<std::string, std::string> createGuidelineMapping(ReportType reportType)
         idMapping1 = &checkers::idMappingCertC;
         ext1 = "-C";
         break;
-    case ReportType::misraC:
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
         idMapping1 = &checkers::idMappingMisraC;
         break;
     case ReportType::misraCpp2008:
