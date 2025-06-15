@@ -433,6 +433,7 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
     for (const Variable& var : scope->varlist) {
         if (var.isStatic())
             continue;
+        const size_t bits = var.nameToken()->bits();
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return 0;
@@ -442,12 +443,12 @@ static size_t accumulateStructMembers(const Scope* scope, F f)
             if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
                 const auto ret = anonScopes.insert(var.nameToken()->scope());
                 if (ret.second)
-                    total = f(total, *vt, dim);
+                    total = f(total, *vt, dim, bits);
             }
             else
-                total = f(total, *vt, dim);
+                total = f(total, *vt, dim, bits);
         }
-        if (total == 0)
+        if (total == 0 && bits == 0)
             return 0;
     }
     return total;
@@ -478,7 +479,7 @@ static size_t getAlignOf(const ValueType& vt, const Settings& settings, int maxR
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/) {
+        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, size_t /*bits*/) {
             size_t a = getAlignOf(vt2, settings, ++maxRecursion);
             return std::max(max, a);
         };
@@ -526,16 +527,38 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, int m
     if (vt.type == ValueType::Type::CONTAINER)
         return 3 * settings.platform.sizeof_pointer; // Just guess
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim) -> size_t {
+        size_t currentBitCount = 0;
+        size_t currentBitfieldAlloc = 0;
+        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, size_t bits) -> size_t {
             size_t n = ValueFlow::getSizeOf(vt2, settings, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings);
+            if (bits > 0) {
+                size_t ret = total;
+                if (currentBitfieldAlloc == 0) {
+                    currentBitfieldAlloc = n;
+                    currentBitCount = 0;
+                } else if (currentBitCount + bits > 8 * currentBitfieldAlloc) {
+                    ret += currentBitfieldAlloc;
+                    currentBitfieldAlloc = n;
+                    currentBitCount = 0;
+                }
+                currentBitCount += bits;
+                return ret;
+            }
             if (n == 0 || a == 0)
                 return 0;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
+            if (currentBitCount > 0) {
+                n += currentBitfieldAlloc;
+                currentBitfieldAlloc = 0;
+                currentBitCount = 0;
+            }
             return vt.typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
         };
         size_t total = accumulateStructMembers(vt.typeScope, accHelper);
+        if (currentBitCount > 0)
+            total += currentBitfieldAlloc;
         if (const Type* dt = vt.typeScope->definedType) {
             total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
                 if (bi.type && bi.type->classScope)
