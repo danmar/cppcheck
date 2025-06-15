@@ -210,7 +210,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mActionReportAutosar, &QAction::triggered, this, &MainWindow::changeReportType);
     connect(mUI->mActionReportCertC, &QAction::triggered, this, &MainWindow::changeReportType);
     connect(mUI->mActionReportCertCpp, &QAction::triggered, this, &MainWindow::changeReportType);
-    connect(mUI->mActionReportMisraC, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportMisraC2012, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportMisraC2023, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportMisraC2025, &QAction::triggered, this, &MainWindow::changeReportType);
     connect(mUI->mActionReportMisraCpp2008, &QAction::triggered, this, &MainWindow::changeReportType);
     connect(mUI->mActionReportMisraCpp2023, &QAction::triggered, this, &MainWindow::changeReportType);
 
@@ -279,7 +281,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionReportAutosar->setActionGroup(mSelectReportActions);
     mUI->mActionReportCertC->setActionGroup(mSelectReportActions);
     mUI->mActionReportCertCpp->setActionGroup(mSelectReportActions);
-    mUI->mActionReportMisraC->setActionGroup(mSelectReportActions);
+    mUI->mActionReportMisraC2012->setActionGroup(mSelectReportActions);
+    mUI->mActionReportMisraC2023->setActionGroup(mSelectReportActions);
+    mUI->mActionReportMisraC2025->setActionGroup(mSelectReportActions);
     mUI->mActionReportMisraCpp2008->setActionGroup(mSelectReportActions);
     mUI->mActionReportMisraCpp2023->setActionGroup(mSelectReportActions);
 
@@ -391,7 +395,9 @@ void MainWindow::loadSettings()
     mUI->mActionReportAutosar->setChecked(reportType == ReportType::autosar);
     mUI->mActionReportCertC->setChecked(reportType == ReportType::certC);
     mUI->mActionReportCertCpp->setChecked(reportType == ReportType::certCpp);
-    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC);
+    mUI->mActionReportMisraC2012->setChecked(reportType == ReportType::misraC2012);
+    mUI->mActionReportMisraC2023->setChecked(reportType == ReportType::misraC2023);
+    mUI->mActionReportMisraC2025->setChecked(reportType == ReportType::misraC2025);
     mUI->mActionReportMisraCpp2008->setChecked(reportType == ReportType::misraCpp2008);
     mUI->mActionReportMisraCpp2023->setChecked(reportType == ReportType::misraCpp2023);
 
@@ -480,7 +486,9 @@ void MainWindow::saveSettings() const
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC2012->isChecked() ? ReportType::misraC2012 :
+                                  mUI->mActionReportMisraC2023->isChecked() ? ReportType::misraC2023 :
+                                  mUI->mActionReportMisraC2025->isChecked() ? ReportType::misraC2025 :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;
@@ -2283,7 +2291,9 @@ void MainWindow::changeReportType() {
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC2012->isChecked() ? ReportType::misraC2012 :
+                                  mUI->mActionReportMisraC2023->isChecked() ? ReportType::misraC2023 :
+                                  mUI->mActionReportMisraC2025->isChecked() ? ReportType::misraC2025 :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;
@@ -2308,7 +2318,9 @@ void MainWindow::changeReportType() {
         setTextAndHint(mUI->mActionShowPortability, "");
         setTextAndHint(mUI->mActionShowPerformance, "");
         setTextAndHint(mUI->mActionShowInformation, "");
-    } else if (mUI->mActionReportMisraC->isChecked() || mUI->mActionReportMisraCpp2008->isChecked() || mUI->mActionReportMisraCpp2023->isChecked()) {
+    } else if (mUI->mActionReportMisraC2012->isChecked() || mUI->mActionReportMisraC2023->isChecked() ||
+               mUI->mActionReportMisraC2025->isChecked() || mUI->mActionReportMisraCpp2008->isChecked() ||
+               mUI->mActionReportMisraCpp2023->isChecked()) {
         setTextAndHint(mUI->mActionShowErrors, mUI->mActionReportMisraCpp2008->isChecked() ? "" : showMandatory);
         setTextAndHint(mUI->mActionShowWarnings, showRequired);
         setTextAndHint(mUI->mActionShowStyle, showAdvisory);
