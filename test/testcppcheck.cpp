@@ -336,7 +336,7 @@ private:
         std::vector<std::string> files;
 
         std::istringstream istr("void f();\nint x;\n");
-        simplecpp::TokenList tokens(istr, files, "m1.c");
+        const simplecpp::TokenList tokens(istr, files, "m1.c");
 
         Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
         ASSERT(preprocessor.loadFiles(tokens, files));
@@ -351,10 +351,10 @@ private:
 
         settings.premiumArgs = "misra-c-2012";
         CppCheck check(settings, supprs, errorLogger, false, {});
-        size_t hash1 = check.calculateHash(preprocessor, tokens);
+        const size_t hash1 = check.calculateHash(preprocessor, tokens);
 
         settings.premiumArgs = "";
-        size_t hash2 = check.calculateHash(preprocessor, tokens);
+        const size_t hash2 = check.calculateHash(preprocessor, tokens);
 
         ASSERT(hash1 != hash2);
     }
