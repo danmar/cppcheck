@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "cmdlineparser.h"
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -57,22 +56,6 @@ private:
 
         void reportMetric(const std::string &metric) override {
             (void) metric;
-        }
-    };
-
-    class NullCmdLineLogger : public CmdLineLogger
-    {
-    public:
-        void printMessage(const std::string &) override
-        {
-        }
-
-        void printError(const std::string &) override
-        {
-        }
-
-        void printRaw(const std::string &) override
-        {
         }
     };
 
