@@ -271,6 +271,7 @@ private:
         TEST_CASE(platformUnspecified);
         TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
+        TEST_CASE(platformEmpty);
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld);
@@ -1725,6 +1726,13 @@ private:
         const char * const argv[] = {"cppcheck", "--platform=win128", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'win128'.\n", logger->str());
+    }
+
+    void platformEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: empty platform specified.\n", logger->str());
     }
 
     void plistEmpty() {
