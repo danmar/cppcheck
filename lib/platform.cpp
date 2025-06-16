@@ -174,7 +174,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         bool found = false;
         for (const std::string& path : paths) {
             if (debug)
-                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
+                std::cout << "looking for platform '" + platformstr + "' relative to '" + path + "'" << std::endl;
             if (loadFromFile(path.c_str(), platformstr, debug)) {
                 found = true;
                 break;
