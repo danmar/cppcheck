@@ -134,7 +134,7 @@ def test_lib_lookup_notfound_project(tmpdir):  # #13938
     ]
 
 
-def test_lib_lookup_notfound_compdb(tmpdir):  # #13938
+def test_lib_lookup_notfound_compdb(tmpdir):
     compdb_file, _ = __create_compdb(tmpdir)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=none', '--project={}'.format(compdb_file)])
@@ -144,7 +144,6 @@ def test_lib_lookup_notfound_compdb(tmpdir):  # #13938
     assert exitcode == 1, stdout
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
-        # TODO: needs to look relative to the project first
         # TODO: specify which folder is actually used for lookup here
         "looking for library 'none.cfg'",
         "looking for library '{}/none.cfg'".format(exepath),
@@ -409,6 +408,7 @@ def test_platform_lookup_notfound(tmpdir):
 
 def test_platform_lookup_notfound_project(tmpdir):  # #13939
     project_file, _ = __create_gui_project(tmpdir)
+    project_path = os.path.dirname(project_file)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', '--project={}'.format(project_file)])
     exepath = os.path.dirname(exe)
@@ -416,11 +416,19 @@ def test_platform_lookup_notfound_project(tmpdir):  # #13939
     if sys.platform == 'win32':
         exepath = exepath.replace('\\', '/')
         exepath_bin += '.exe'
+        project_path = project_path.replace('\\', '/')
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        # TODO: needs to look relative to project file first
+        # TODO: the CWD lookups are duplicated
+        # TODO: needs to do the relative project lookup first
+        "looking for platform 'none' relative to '{}'".format(project_file),
+        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
+        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(project_path, project_path),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(project_path, project_path),
         "looking for platform 'none' relative to '{}'".format(exepath_bin),
+        # TODO: should we really check CWD before relative to executable? should we check CWD at all?
         "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
         "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
@@ -429,7 +437,7 @@ def test_platform_lookup_notfound_project(tmpdir):  # #13939
     ]
 
 
-def test_platform_lookup_notfound_compdb(tmpdir):  # #13939
+def test_platform_lookup_notfound_compdb(tmpdir):
     compdb_file, _ = __create_compdb(tmpdir)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', '--project={}'.format(compdb_file)])
@@ -441,7 +449,6 @@ def test_platform_lookup_notfound_compdb(tmpdir):  # #13939
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        # TODO: needs to look relative to project file first
         "looking for platform 'none' relative to '{}'".format(exepath_bin),
         "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
         "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
@@ -686,7 +693,7 @@ def test_addon_lookup_notfound_project(tmpdir):  # #13940 / #13941
     ]
 
 
-def test_addon_lookup_notfound_compdb(tmpdir):  # #13940
+def test_addon_lookup_notfound_compdb(tmpdir):
     compdb_file, _ = __create_compdb(tmpdir)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none', '--project={}'.format(compdb_file)])
@@ -695,7 +702,6 @@ def test_addon_lookup_notfound_compdb(tmpdir):  # #13940
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        # TODO: needs to look relative to the project file first
         "looking for addon 'none.py'",
         "looking for addon '{}none.py'".format(exepath_sep),
         "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
