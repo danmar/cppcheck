@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+class TokenList;
 enum class SHOWTIME_MODES : std::uint8_t;
 struct FileSettings;
 class CheckUnusedFunctions;
