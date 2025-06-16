@@ -98,6 +98,13 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
     if (!attr || attr != std::to_string(hash))
         return false;
 
+    // Check for invalid license error, in which case we should retry analysis
+    // Any kind of internal error should be checked for here
+    for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (std::strcmp(e->Name(), "error") == 0 && e->Attribute("id", "premium-invalidLicense"))
+            return false;
+    }
+
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "error") == 0)
             errors.emplace_back(e);
