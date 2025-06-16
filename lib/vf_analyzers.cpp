@@ -355,7 +355,9 @@ struct ValueFlowAnalyzer : Analyzer {
             /* Truncate value */
             const ValueType *dst = tok->valueType();
             if (dst) {
-                const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+                const size_t sz = ValueFlow::getSizeOf(*dst,
+                                                       settings,
+                                                       ValueFlow::Accuracy::ExactOrZero);
                 if (sz > 0 && sz < sizeof(MathLib::biguint)) {
                     MathLib::bigint newvalue = ValueFlow::truncateIntValue(value->intvalue, sz, dst->sign);
 
