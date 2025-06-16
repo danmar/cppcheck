@@ -42,6 +42,7 @@ class AnalyzerInformation;
 class ErrorLogger;
 class Settings;
 struct Suppressions;
+class Preprocessor;
 
 namespace simplecpp { class TokenList; }
 
@@ -161,6 +162,15 @@ private:
 
     /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
+
+    /**
+     * @brief Calculate hash used to detect when a file needs to be reanalyzed.
+     *
+     * @param preprocessor  Preprocessor used to calculate the hash.
+     * @param toolinfo      Token list from preprocessed file.
+     * @return hash
+     */
+    std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens);
 
     /**
      * @brief Check a file using stream

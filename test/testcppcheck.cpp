@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cmdlineparser.h"
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -23,6 +24,7 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "path.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
 
@@ -58,6 +60,22 @@ private:
         }
     };
 
+    class NullCmdLineLogger : public CmdLineLogger
+    {
+    public:
+        void printMessage(const std::string &) override
+        {
+        }
+
+        void printError(const std::string &) override
+        {
+        }
+
+        void printRaw(const std::string &) override
+        {
+        }
+    };
+
     void run() override {
         TEST_CASE(getErrorMessages);
         TEST_CASE(checkWithFile);
@@ -68,6 +86,7 @@ private:
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
+        TEST_CASE(premiumResultsCache);
     }
 
     void getErrorMessages() const {
@@ -322,6 +341,39 @@ private:
             const std::string expected = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
         }
+    }
+
+    void premiumResultsCache() const {
+        // Trac #13889 - cached misra results are shown after removing --premium=misra-c-2012 option
+
+        Settings settings;
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+
+        std::vector<std::string> files;
+
+        std::istringstream istr("void f();\nint x;\n");
+        simplecpp::TokenList tokens(istr, files, "m1.c");
+
+        Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
+        ASSERT(preprocessor.loadFiles(tokens, files));
+
+        AddonInfo premiumaddon;
+        premiumaddon.name = "premiumaddon.json";
+        premiumaddon.executable = "premiumaddon";
+
+        settings.cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
+        settings.addons.insert(premiumaddon.name);
+        settings.addonInfos.push_back(premiumaddon);
+
+        settings.premiumArgs = "misra-c-2012";
+        CppCheck check(settings, supprs, errorLogger, false, {});
+        size_t hash1 = check.calculateHash(preprocessor, tokens);
+
+        settings.premiumArgs = "";
+        size_t hash2 = check.calculateHash(preprocessor, tokens);
+
+        ASSERT(hash1 != hash2);
     }
 
     // TODO: test suppressions
