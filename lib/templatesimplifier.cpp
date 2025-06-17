@@ -4061,7 +4061,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             if (Token::Match(tok, "( ... %op%")) {
                 op = tok->tokAt(2);
                 args = tok->link()->previous();
-            } else if (Token::Match(tok, "( %name% %op% ...")) {
+            } else if (Token::Match(tok, "( %name% %op% ...") && !Token::simpleMatch(tok->previous(), "] (")) {
                 op = tok->tokAt(2);
                 args = tok->link()->previous()->isName() ? nullptr : tok->next();
             } else if (Token::Match(tok->link()->tokAt(-3), "%op% ... )")) {

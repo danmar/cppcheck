@@ -220,6 +220,7 @@ private:
         TEST_CASE(template179);
         TEST_CASE(template180);
         TEST_CASE(template181);
+        TEST_CASE(template182); // #13770
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -4634,6 +4635,15 @@ private:
                             "assert ( false == N :: b ) ; "
                             "}";
         ASSERT_EQUALS(exp2, tok(code2));
+    }
+
+    void template182() {
+        const char code[] = "template <class...>\n"
+                            "auto f() {\n"
+                            "    return [](auto&&...) {};\n"
+                            "}\n";
+        const char exp[] = "template < class ... > auto f ( ) { return [ ] ( auto && ... ) { } ; }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
