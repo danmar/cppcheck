@@ -174,6 +174,9 @@ private:
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;
+    bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
+
+    friend class TestCmdlineParser;
 };
 
 /// @}
