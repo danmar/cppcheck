@@ -141,6 +141,7 @@ private:
         TEST_CASE(nullpointer102);
         TEST_CASE(nullpointer103);
         TEST_CASE(nullpointer104); // #13881
+        TEST_CASE(nullpointer105); // #13861
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2925,6 +2926,17 @@ private:
         check("using std::max;\n"
               "void f(int i) {\n"
               "    const size_t maxlen = i == 1 ? 8 : (std::numeric_limits<std::size_t>::max());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void nullpointer105() // #13861
+    {
+        check("struct AB { int a; int b; };\n"
+              "namespace ns { typedef AB S[10]; }\n"
+              "void foo(void) {\n"
+              "    ns::S x = {0};\n"
+              "    x[1].a = 2;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

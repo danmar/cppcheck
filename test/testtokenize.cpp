@@ -81,6 +81,7 @@ private:
         TEST_CASE(tokenize39);  // #9771
         TEST_CASE(tokenize40);  // #13181
         TEST_CASE(tokenize41);  // #13847
+        TEST_CASE(tokenize42);  // #13861
 
         TEST_CASE(validate);
 
@@ -874,6 +875,22 @@ private:
         ASSERT_EQUALS("int main ( ) {\n"
                       "\n"
                       "b = x :: a + 2 ;\n"
+                      "}", tokenizeAndStringify(code));
+        (void)errout_str();
+    }
+
+    void tokenize42() { // #13861
+        const char code[] = "struct AB { int a; int b; };\n"
+                            "namespace ns { typedef AB S[10]; }\n"
+                            "void foo(void) {\n"
+                            "    ns::S x = {0};\n"
+                            "    x[1].a = 2;\n"
+                            "}\n";
+        ASSERT_EQUALS("struct AB { int a ; int b ; } ;\n"
+                      "\n"
+                      "void foo ( ) {\n"
+                      "AB x [ 10 ] = { 0 } ;\n"
+                      "x [ 1 ] . a = 2 ;\n"
                       "}", tokenizeAndStringify(code));
         (void)errout_str();
     }
