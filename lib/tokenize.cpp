@@ -2257,6 +2257,9 @@ void Tokenizer::simplifyTypedefCpp()
                             if (!tok2->next())
                                 syntaxError(tok2);
 
+                            if (Token::Match(tok2, "] ; %name% = {") && tok2->next()->isSplittedVarDeclEq())
+                                tok2->deleteNext(2);
+
                             if (tok2->str() == "=") {
                                 if (tok2->strAt(1) == "{")
                                     tok2 = tok2->linkAt(1)->next();
