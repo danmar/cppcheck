@@ -97,7 +97,8 @@ bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfo
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "error") == 0 &&
             (e->Attribute("id", "premium-invalidLicense") ||
-             e->Attribute("id", "internal")
+             e->Attribute("id", "premium-internalError") ||
+             e->Attribute("id", "internalError")
             ))
             return false;
     }

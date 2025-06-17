@@ -119,6 +119,25 @@ private:
             ASSERT_EQUALS(errorList.size(), 0);
         }
 
+        // Matching hash with premium internal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"premium-internalError\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
+                "<location file=\"Cppcheck\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+
+            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), false);
+            ASSERT_EQUALS(errorList.size(), 0);
+        }
+
         // Matching hash with internal error (don't skip)
         {
             std::list<ErrorMessage> errorList;
@@ -127,7 +146,7 @@ private:
             const tinyxml2::XMLError xmlError = doc.Parse(
                 "<?xml version=\"1.0\"?>"
                 "<analyzerinfo hash=\"100\">"
-                "<error id=\"internal\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
+                "<error id=\"internalError\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
                 "<location file=\"Cppcheck\" line=\"0\" column=\"0\"/>"
                 "</error>"
                 "</analyzerinfo>"
