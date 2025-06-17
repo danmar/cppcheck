@@ -850,19 +850,24 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
-static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings, const Suppressions& supprs)
+std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens) const
 {
     std::ostringstream toolinfo;
-    toolinfo << (settings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : settings.cppcheckCfgProductName);
-    toolinfo << (settings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::style) ? 's' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::information) ? 'i' : ' ');
-    toolinfo << settings.userDefines;
-    toolinfo << std::to_string(static_cast<std::uint8_t>(settings.checkLevel));
+    toolinfo << (mSettings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : mSettings.cppcheckCfgProductName);
+    toolinfo << (mSettings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::style) ? 's' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::information) ? 'i' : ' ');
+    toolinfo << mSettings.userDefines;
+    toolinfo << std::to_string(static_cast<std::uint8_t>(mSettings.checkLevel));
+    for (const auto &a : mSettings.addonInfos) {
+        toolinfo << a.name;
+        toolinfo << a.args;
+    }
+    toolinfo << mSettings.premiumArgs;
     // TODO: do we need to add more options?
-    supprs.nomsg.dump(toolinfo);
+    mSuppressions.nomsg.dump(toolinfo);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
@@ -922,7 +927,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger, Standards::Language::C);
-                        hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
+                        hash = calculateHash(preprocessor, tokens);
                     }
                     tokenlist.createTokens(std::move(tokens));
                 }
@@ -931,7 +936,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     simplecpp::TokenList tokens(file.spath(), files);
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
-                        hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
+                        hash = calculateHash(preprocessor, tokens);
                     }
                     tokenlist.createTokens(std::move(tokens));
                 }
@@ -1015,7 +1020,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
+            const std::size_t hash = calculateHash(preprocessor, tokens1);
             std::list<ErrorMessage> errors;
             if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
                 while (!errors.empty()) {
