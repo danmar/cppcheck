@@ -356,6 +356,7 @@ private:
         settings.premiumArgs = "";
         const size_t hash2 = check.calculateHash(preprocessor, tokens);
 
+        // cppcheck-suppress knownConditionTrueFalse
         ASSERT(hash1 != hash2);
     }
 
