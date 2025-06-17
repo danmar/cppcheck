@@ -147,6 +147,10 @@ To be evaluated (need to enable explicitly).
 
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
 
+`portability-avoid-pragma-once`<br/>
+
+We are not interested in this.
+
 ### Disabled for performance reasons
 
 `portability-std-allocator-const`<br/>
