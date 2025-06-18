@@ -909,9 +909,9 @@ def test_project_file_no_analyze_all_vs_configs(tmp_path):
 """<project>
     <analyze-all-vs-configs>false</analyze-all-vs-configs>
     <paths>
-        <dir name="{}"/>
+        <dir name="."/>
     </paths>
-</project>""".format(test_file))
+</project>""")
 
     ret, stdout, stderr = cppcheck(['--project=' + str(project_path)])
     assert ret == 0, stdout
