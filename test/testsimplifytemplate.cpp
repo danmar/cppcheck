@@ -6344,6 +6344,20 @@ private:
                                 "} "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
+
+        const char code2[] = "template <typename T>\n" // #13929
+                             "struct S {};\n"
+                             "template <typename T, template<typename...> typename C = S>\n"
+                             "struct A {\n"
+                             "    using x = C<T>;\n"
+                             "};\n"
+                             "A<int> a;\n";
+        const char expected2[] = "template < typename T > "
+                                 "struct S { } ; "
+                                 "struct A<int,S> ; "
+                                 "A<int,S> a ; "
+                                 "struct A<int,S> { } ;";
+        ASSERT_EQUALS(expected2, tok(code2));
     }
 
     void template_variable_1() {
