@@ -153,9 +153,8 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
     mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
 
     tinyxml2::XMLDocument analyzerInfoDoc;
-    analyzerInfoDoc.LoadFile(mAnalyzerInfoFile.c_str());
-
-    if (skipAnalysis(analyzerInfoDoc, hash, errors))
+    const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(mAnalyzerInfoFile.c_str());
+    if (xmlError == tinyxml2::XML_SUCCESS && skipAnalysis(analyzerInfoDoc, hash, errors))
         return false;
 
     mOutputStream.open(mAnalyzerInfoFile);
