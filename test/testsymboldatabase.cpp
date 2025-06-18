@@ -304,6 +304,7 @@ private:
         TEST_CASE(functionArgs19); // #10376
         TEST_CASE(functionArgs20);
         TEST_CASE(functionArgs21);
+        TEST_CASE(functionArgs22); // #13945
 
         TEST_CASE(functionImplicitlyVirtual);
         TEST_CASE(functionGetOverridden);
@@ -3062,6 +3063,22 @@ private:
         ASSERT_EQUALS(2, func->argCount());
         arg = func->getArgumentVar(1);
         ASSERT_EQUALS("", arg->name());
+    }
+
+    void functionArgs22() {
+        const char code[] = "typedef void (*callback_fn)(void);\n"
+                            "void ext_func(const callback_fn cb, size_t v) {}\n";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(1U, db->functionScopes.size());
+        const auto it = db->functionScopes.cbegin();
+        const Function *func = (*it)->function;
+        ASSERT_EQUALS("ext_func", func->name());
+        ASSERT_EQUALS(2, func->argCount());
+        const Variable *arg = func->getArgumentVar(0);
+        ASSERT_EQUALS("cb", arg->name());
+        arg = func->getArgumentVar(1);
+        ASSERT_EQUALS("v", arg->name());
     }
 
     void functionImplicitlyVirtual() {
