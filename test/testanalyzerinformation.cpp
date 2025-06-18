@@ -113,10 +113,10 @@ private:
                 "</error>"
                 "</analyzerinfo>"
                 );
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), false);
-            ASSERT_EQUALS(errorList.size(), 0);
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
         }
 
         // Matching hash with premium internal error (don't skip)
@@ -132,10 +132,10 @@ private:
                 "</error>"
                 "</analyzerinfo>"
                 );
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), false);
-            ASSERT_EQUALS(errorList.size(), 0);
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
         }
 
         // Matching hash with internal error (don't skip)
@@ -151,10 +151,10 @@ private:
                 "</error>"
                 "</analyzerinfo>"
                 );
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), false);
-            ASSERT_EQUALS(errorList.size(), 0);
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
         }
 
         // Matching hash with normal error (skip)
@@ -172,10 +172,10 @@ private:
                 "</error>"
                 "</analyzerinfo>"
                 );
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), true);
-            ASSERT_EQUALS(errorList.size(), 1);
+            ASSERT_EQUALS(true, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(1, errorList.size());
         }
 
         // Matching hash with no error (skip)
@@ -188,10 +188,10 @@ private:
                 "<analyzerinfo hash=\"100\">"
                 "</analyzerinfo>"
                 );
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), true);
-            ASSERT_EQUALS(errorList.size(), 0);
+            ASSERT_EQUALS(true, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
         }
 
         // Different hash with normal error (don't skip)
@@ -209,10 +209,10 @@ private:
                 "</error>"
                 "</analyzerinfo>"
                 );
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_SUCCESS);
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 99, errorList), false);
-            ASSERT_EQUALS(errorList.size(), 0);
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 99, errorList));
+            ASSERT_EQUALS(0, errorList.size());
         }
 
         // Empty document (don't skip)
@@ -221,10 +221,10 @@ private:
             tinyxml2::XMLDocument doc;
 
             const tinyxml2::XMLError xmlError = doc.Parse("");
-            ASSERT_EQUALS(xmlError, tinyxml2::XML_ERROR_EMPTY_DOCUMENT);
+            ASSERT_EQUALS(tinyxml2::XML_ERROR_EMPTY_DOCUMENT, xmlError);
 
-            ASSERT_EQUALS(AnalyzerInformation::skipAnalysis(doc, 100, errorList), false);
-            ASSERT_EQUALS(errorList.size(), 0);
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
         }
     }
 };

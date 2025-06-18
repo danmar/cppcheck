@@ -33,6 +33,7 @@ def __copy_cppcheck_premium(tmpdir):
 
     return exe
 
+
 def test_misra_c_builtin_style_checks(tmpdir):
     # FIXME this test does not work in ci-windows.yml (release build)
     if sys.platform == 'win32':
@@ -129,6 +130,7 @@ def test_misra_py(tmpdir):
     _, stdout, _ = cppcheck(['--enable=style', '--premium=misra-c-2012', test_file], cppcheck_exe=exe)
     assert 'misra.py' not in stdout # Did not find misra.py
     assert 'Checking' in stdout
+
 
 def test_invalid_license_retry(tmpdir):
     # Trac 13832 - cppcheck build dir: do not reuse cached results if there were invalidLicense errors
