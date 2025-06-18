@@ -971,7 +971,7 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
             info = isDirective ? &checkers::misraC2025Directives : &checkers::misraC2025Rules;
             break;
         default:
-            break;
+            cppcheck::unreachable();
         }
 
         const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) {
