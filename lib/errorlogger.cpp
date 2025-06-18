@@ -1043,7 +1043,7 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
     case ReportType::misraC2025:
         if (errId.rfind("misra-c20", 0) == 0 || errId.rfind("premium-misra-c-20", 0) == 0)
             guideline = errId.substr(errId.rfind('-') + 1);
-        if (errId.find("dir") != std::string::npos)
+        if (errId.find("-dir-") != std::string::npos)
             guideline = "Dir " + guideline;
         break;
     case ReportType::misraCpp2008:
