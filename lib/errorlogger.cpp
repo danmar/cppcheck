@@ -1043,8 +1043,6 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
     case ReportType::misraC2025:
         if (errId.rfind("misra-c20", 0) == 0 || errId.rfind("premium-misra-c-20", 0) == 0)
             guideline = errId.substr(errId.rfind('-') + 1);
-        if (errId.find("-dir-") != std::string::npos)
-            guideline = "Dir " + guideline;
         break;
     case ReportType::misraCpp2008:
         if (errId.rfind("misra-cpp-2008-", 0) == 0)
@@ -1058,8 +1056,11 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
         break;
     }
 
-    if (!guideline.empty())
+    if (!guideline.empty()) {
+        if (errId.find("-dir-") != std::string::npos)
+            guideline = "Dir " + guideline;
         return guideline;
+    }
 
     auto it = guidelineMapping.find(errId);
 
