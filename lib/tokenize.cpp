@@ -9985,12 +9985,8 @@ void Tokenizer::simplifyAt()
 // Simplify bitfields
 void Tokenizer::simplifyBitfields()
 {
-    bool goback = false;
+    std::size_t anonymousBitfieldCounter = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (goback) {
-            goback = false;
-            tok = tok->previous();
-        }
         Token *last = nullptr;
 
         if (Token::simpleMatch(tok, "for ("))
@@ -10040,8 +10036,15 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(typeTok, "%type% : %num%|%bool% ;") &&
                    typeTok->str() != "default") {
-            tok->deleteNext(4 + tokDistance(tok, typeTok) - 1);
-            goback = true;
+            const std::size_t id = anonymousBitfieldCounter++;
+            const std::string name = "__cppcheck_anon_bit_field_" + std::to_string(id) + "__";
+            Token *newTok = typeTok->insertToken(name);
+            newTok->isAnonymousBitfield(true);
+            if (newTok->tokAt(2)->isBoolean())
+                newTok->setBits(static_cast<unsigned char>(newTok->strAt(2) == "true"));
+            else
+                newTok->setBits(static_cast<unsigned char>(MathLib::toBigNumber(newTok->tokAt(2))));
+            newTok->deleteNext(2);
         }
 
         if (last && last->str() == ",") {
