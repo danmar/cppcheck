@@ -119,3 +119,16 @@ def test_duplicate_file_entries(tmpdir):  #13333
     assert os.path.isfile(test_file + '.dump')
     assert os.path.isfile(test_file + '.1.dump')
 
+
+def test_container_methods(tmpdir):
+    test_file = str(tmpdir / 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write('std::string s;\n')
+
+    exitcode, _, stderr = cppcheck(['--dump', '.'], cwd=str(tmpdir))
+    assert exitcode == 0, stderr
+
+    dumpfile = test_file + '.dump'
+    with open(dumpfile, 'rt') as f:
+        dump = f.read()
+    assert '<f name="emplace" action="push" yield="iterator"/>' in dump

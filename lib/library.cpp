@@ -310,6 +310,66 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
     return Container::Action::NO_ACTION;
 }
 
+std::string Library::Container::toString(Library::Container::Yield yield)
+{
+    switch (yield) {
+    case Library::Container::Yield::AT_INDEX:
+        return "at_index";
+    case Library::Container::Yield::ITEM:
+        return "item";
+    case Library::Container::Yield::BUFFER:
+        return "buffer";
+    case Library::Container::Yield::BUFFER_NT:
+        return "buffer-nt";
+    case Library::Container::Yield::START_ITERATOR:
+        return "start-iterator";
+    case Library::Container::Yield::END_ITERATOR:
+        return "end-iterator";
+    case Library::Container::Yield::ITERATOR:
+        return "iterator";
+    case Library::Container::Yield::SIZE:
+        return "size";
+    case Library::Container::Yield::EMPTY:
+        return "empty";
+    case Library::Container::Yield::NO_YIELD:
+        break;
+    }
+    return "";
+}
+
+std::string Library::Container::toString(Library::Container::Action action)
+{
+    switch (action) {
+    case Library::Container::Action::RESIZE:
+        return "resize";
+    case Library::Container::Action::CLEAR:
+        return "clear";
+    case Library::Container::Action::PUSH:
+        return "push";
+    case Library::Container::Action::POP:
+        return "pop";
+    case Library::Container::Action::FIND:
+        return "find";
+    case Library::Container::Action::FIND_CONST:
+        return "find-const";
+    case Library::Container::Action::INSERT:
+        return "insert";
+    case Library::Container::Action::ERASE:
+        return "erase";
+    case Library::Container::Action::APPEND:
+        return "append";
+    case Library::Container::Action::CHANGE_CONTENT:
+        return "change-content";
+    case Library::Container::Action::CHANGE:
+        return "change";
+    case Library::Container::Action::CHANGE_INTERNAL:
+        return "change-internal";
+    case Library::Container::Action::NO_ACTION:
+        break;
+    }
+    return "";
+}
+
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();

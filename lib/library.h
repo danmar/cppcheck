@@ -261,6 +261,8 @@ public:
 
         static Yield yieldFrom(const std::string& yieldName);
         static Action actionFrom(const std::string& actionName);
+        static std::string toString(Yield yield);
+        static std::string toString(Action action);
     };
     const std::unordered_map<std::string, Container>& containers() const;
     const Container* detectContainer(const Token* typeStart) const;
