@@ -4724,7 +4724,7 @@ private:
         ASSERT_EQUALS("struct RGB { unsigned int r ; unsigned int g ; unsigned int b ; } ;", tokenizeAndStringify(code1));
 
         const char code2[] = "struct A { int a : 3; int : 3; int c : 3; };";
-        ASSERT_EQUALS("struct A { int a ; int c ; } ;", tokenizeAndStringify(code2));
+        ASSERT_EQUALS("struct A { int a ; int __cppcheck_anon_bit_field_0__ ; int c ; } ;", tokenizeAndStringify(code2));
 
         const char code3[] = "struct A { virtual void f() {} int f1 : 1; };";
         ASSERT_EQUALS("struct A { virtual void f ( ) { } int f1 ; } ;", tokenizeAndStringify(code3));
@@ -4738,7 +4738,7 @@ private:
         ASSERT_EQUALS("struct A { bool b ; bool c ; } ;", tokenizeAndStringify(code2));
 
         const char code3[] = "struct A { bool : true; };";
-        ASSERT_EQUALS("struct A { } ;", tokenizeAndStringify(code3));
+        ASSERT_EQUALS("struct A { bool __cppcheck_anon_bit_field_0__ ; } ;", tokenizeAndStringify(code3));
     }
 
     void bitfields7() { // ticket #1987
@@ -4789,7 +4789,7 @@ private:
 
     void bitfields12() { // ticket #3485 (segmentation fault)
         const char code[] = "{a:1;};\n";
-        ASSERT_EQUALS("{ } ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("{ a __cppcheck_anon_bit_field_0__ ; } ;", tokenizeAndStringify(code));
     }
 
     void bitfields13() { // ticket #3502 (segmentation fault)
@@ -4829,9 +4829,9 @@ private:
                             "};\n";
         const char expected[] = "struct S {\n"
                                 "volatile uint32_t a ;\n"
-                                "\n"
+                                "volatile uint32_t __cppcheck_anon_bit_field_0__ ;\n"
                                 "volatile uint32_t b ;\n"
-                                "\n"
+                                "volatile uint32_t __cppcheck_anon_bit_field_1__ ;\n"
                                 "} ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
 
@@ -4841,7 +4841,7 @@ private:
                              "};\n";
         const char expected2[] = "struct S {\n"
                                  "const volatile uint32_t a ;\n"
-                                 "\n"
+                                 "const volatile uint32_t __cppcheck_anon_bit_field_0__ ;\n"
                                  "} ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
