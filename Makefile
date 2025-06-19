@@ -710,7 +710,7 @@ test/options.o: test/options.cpp test/options.h
 test/test64bit.o: test/test64bit.cpp lib/addoninfo.h lib/check.h lib/check64bit.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/test64bit.cpp
 
-test/testanalyzerinformation.o: test/testanalyzerinformation.cpp lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h test/fixture.h
+test/testanalyzerinformation.o: test/testanalyzerinformation.cpp externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h lib/xml.h test/fixture.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testanalyzerinformation.cpp
 
 test/testassert.o: test/testassert.cpp lib/addoninfo.h lib/check.h lib/checkassert.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
