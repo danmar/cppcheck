@@ -259,8 +259,10 @@ public:
             return (i != functions.end()) ? i->second.returnType : mEmptyString;
         }
 
-        static Yield yieldFrom(const std::string& yieldName);
-        static Action actionFrom(const std::string& actionName);
+        CPPCHECKLIB static Yield yieldFrom(const std::string& yieldName);
+        CPPCHECKLIB static Action actionFrom(const std::string& actionName);
+        CPPCHECKLIB static std::string toString(Yield yield);
+        CPPCHECKLIB static std::string toString(Action action);
     };
     const std::unordered_map<std::string, Container>& containers() const;
     const Container* detectContainer(const Token* typeStart) const;
