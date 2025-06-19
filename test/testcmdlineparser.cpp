@@ -3138,6 +3138,7 @@ private:
         const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->analyzeAllVsConfigs);
+        ASSERT(parser->mAnalyzeAllVsConfigsSetOnCmdLine);
     }
 
     void noAnalyzeAllVsConfigs() {
@@ -3145,6 +3146,7 @@ private:
         const char * const argv[] = {"cppcheck", "--no-analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
+        ASSERT(parser->mAnalyzeAllVsConfigsSetOnCmdLine);
     }
 
     void noAnalyzeAllVsConfigs2() {
@@ -3152,6 +3154,7 @@ private:
         const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "--no-analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
+        ASSERT(parser->mAnalyzeAllVsConfigsSetOnCmdLine);
     }
 
     void debugSymdb() {

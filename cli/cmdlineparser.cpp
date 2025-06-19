@@ -550,8 +550,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
             mSettings.addonPython.assign(argv[i]+15);
 
-        else if (std::strcmp(argv[i],"--analyze-all-vs-configs") == 0)
+        else if (std::strcmp(argv[i],"--analyze-all-vs-configs") == 0) {
             mSettings.analyzeAllVsConfigs = true;
+            mAnalyzeAllVsConfigsSetOnCmdLine = true;
+        }
 
         // Check configuration
         else if (std::strcmp(argv[i], "--check-config") == 0)
@@ -1036,8 +1038,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
         }
 
-        else if (std::strcmp(argv[i],"--no-analyze-all-vs-configs") == 0)
+        else if (std::strcmp(argv[i],"--no-analyze-all-vs-configs") == 0) {
             mSettings.analyzeAllVsConfigs = false;
+            mAnalyzeAllVsConfigsSetOnCmdLine = true;
+        }
 
         else if (std::strcmp(argv[i], "--no-check-headers") == 0)
             mSettings.checkHeaders = false;
@@ -1639,12 +1643,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (!mSettings.analyzeAllVsConfigs) {
         if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
-            mLogger.printError("--no-analyze-all-vs-configs has no effect - no Visual Studio project provided.");
-            return Result::Fail;
+            if (mAnalyzeAllVsConfigsSetOnCmdLine) {
+                mLogger.printError("--no-analyze-all-vs-configs has no effect - no Visual Studio project provided.");
+                return Result::Fail;
+            }
+        } else {
+            // TODO: bail out when this does nothing
+            project.selectOneVsConfig(mSettings.platform.type);
         }
-
-        // TODO: bail out when this does nothing
-        project.selectOneVsConfig(mSettings.platform.type);
     }
 
     if (!mSettings.buildDir.empty() && !Path::isDirectory(mSettings.buildDir)) {
