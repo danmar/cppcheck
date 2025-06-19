@@ -231,6 +231,9 @@ void CheckClass::constructors()
                 if (usage.assign || usage.init || var.isStatic())
                     continue;
 
+                if (var.nameToken() && var.nameToken()->isAnonymousBitfield())
+                    continue;
+
                 if (var.valueType() && var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
                     continue;
 

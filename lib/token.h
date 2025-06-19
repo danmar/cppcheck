@@ -742,6 +742,13 @@ public:
         setFlag(fIsInitBracket, b);
     }
 
+    bool isAnonymousBitfield() const {
+        return getFlag(fIsAnonymousBitfield);
+    }
+    void isAnonymousBitfield(bool b) {
+        setFlag(fIsAnonymousBitfield, b);
+    }
+
     // cppcheck-suppress unusedFunction
     bool isBitfield() const {
         return mImpl->mBits > 0;
@@ -1426,6 +1433,7 @@ private:
         fIsFinalType            = (1ULL << 42), // Is this a type with final specifier
         fIsInitComma            = (1ULL << 43), // Is this comma located inside some {..}. i.e: {1,2,3,4}
         fIsInitBracket          = (1ULL << 44), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
+        fIsAnonymousBitfield    = (1ULL << 45), // Is this a token added for an unnamed bit-field
     };
 
     enum : std::uint8_t {
