@@ -3173,7 +3173,7 @@ static std::string openHeader(std::ifstream &f, const std::string &path)
     return "";
 }
 
-static std::string getRelativeFileName(const std::string &baseFile, const std::string &header)
+static std::string getRelativeFileName(const std::string &baseFile, const std::string &header, bool returnAbsolutePath)
 {
     const std::string baseFileSimplified = simplecpp::simplifyPath(baseFile);
     const std::string baseFileAbsolute = isAbsolutePath(baseFileSimplified) ?
@@ -3185,12 +3185,12 @@ static std::string getRelativeFileName(const std::string &baseFile, const std::s
         headerSimplified :
         simplecpp::simplifyPath(dirPath(baseFileAbsolute) + headerSimplified);
 
-    return extractRelativePathFromAbsolute(path);
+    return returnAbsolutePath ? toAbsolutePath(path) : extractRelativePathFromAbsolute(path);
 }
 
 static std::string openHeaderRelative(std::ifstream &f, const std::string &sourcefile, const std::string &header)
 {
-    return openHeader(f, getRelativeFileName(sourcefile, header));
+    return openHeader(f, getRelativeFileName(sourcefile, header, isAbsolutePath(sourcefile)));
 }
 
 // returns the simplified header path:
@@ -3273,10 +3273,17 @@ static std::string getFileIdPath(const std::map<std::string, simplecpp::TokenLis
     }
 
     if (!systemheader) {
-        const std::string relativeOrAbsoluteFilename = getRelativeFileName(sourcefile, header);// unknown if absolute or relative, but always simplified
-        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, relativeOrAbsoluteFilename);
+        const std::string absoluteFilename = getRelativeFileName(sourcefile, header, true);
+        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, absoluteFilename);
         if (!match.empty()) {
             return match;
+        }
+        // if the file exists but hasn't been loaded yet then we need to stop searching here or we could get a false match
+        std::ifstream f;
+        openHeader(f, relativeOrAbsoluteFilename);
+        if (f.is_open()) {
+            f.close();
+            return "";
         }
     } else if (filedata.find(header) != filedata.end()) {
         return header;// system header that its file is already in the filedata - return that as is
