@@ -105,12 +105,12 @@ jobs:
       - name: Run test/cli
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n $(proc) test/cli
 
       - name: Run test/cli (-j2)
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n $(proc) test/cli
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -118,14 +118,14 @@ jobs:
         if: false
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n $(proc) test/cli
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
       - name: Run test/cli (--cppcheck-build-dir)
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n $(proc) test/cli
         env:
           TEST_CPPCHECK_INJECT_BUILDDIR: injected
 
