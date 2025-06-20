@@ -913,7 +913,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
                 useUnicode = c.useUnicode;
                 fs.useMfc = c.useOfMfc;
             }
-            if (useUnicode){
+            if (useUnicode) {
                 fs.defines += ";UNICODE=1;_UNICODE=1";
             }
             fsSetDefines(fs, fs.defines);
