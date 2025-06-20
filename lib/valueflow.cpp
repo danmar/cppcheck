@@ -6290,10 +6290,17 @@ static const Token* parseBinaryIntOp(const Token* expr,
     return varTok;
 }
 
+#include <iostream>
+
 const Token* ValueFlow::solveExprValue(const Token* expr,
                                        const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
                                        ValueFlow::Value& value)
 {
+    if (!expr)
+    {
+        std::cout << "solveExprValue - no expr" << std::endl;
+        return nullptr;
+    }
     if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
         return expr;
     if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
