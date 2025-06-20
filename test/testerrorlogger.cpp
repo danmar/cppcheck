@@ -78,6 +78,7 @@ private:
         TEST_CASE(isCriticalErrorId);
 
         TEST_CASE(ErrorMessageReportTypeMisraC);
+        TEST_CASE(ErrorMessageReportTypeMisraCDirective);
         TEST_CASE(ErrorMessageReportTypeCertC);
     }
 
@@ -317,7 +318,7 @@ private:
 
     void ErrorMessageReportTypeMisraC() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
-        const auto reportType = ReportType::misraC;
+        const auto reportType = ReportType::misraC2012;
         const auto mapping = createGuidelineMapping(reportType);
         const std::string format = "{severity} {id}";
         ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "unusedVariable", Certainty::normal);
@@ -326,6 +327,19 @@ private:
         ASSERT_EQUALS("Advisory", msg.classification);
         ASSERT_EQUALS("2.8", msg.guideline);
         ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format, ""));
+    }
+
+    void ErrorMessageReportTypeMisraCDirective() const {
+        std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
+        const auto reportType = ReportType::misraC2012;
+        const auto mapping = createGuidelineMapping(reportType);
+        const std::string format = "{severity} {id}";
+        ErrorMessage msg(std::move(locs), emptyString, Severity::style, "", "premium-misra-c-2012-dir-4.6", Certainty::normal);
+        msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+        msg.classification = getClassification(msg.guideline, reportType);
+        ASSERT_EQUALS("Advisory", msg.classification);
+        ASSERT_EQUALS("Dir 4.6", msg.guideline);
+        ASSERT_EQUALS("Advisory Dir 4.6", msg.toString(true, format, ""));
     }
 
     void ErrorMessageReportTypeCertC() const {

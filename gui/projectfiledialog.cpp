@@ -59,14 +59,14 @@
 #include <QSpinBox>
 #include <QVariant>
 
-static constexpr char ADDON_MISRA[]   = "misra";
-static constexpr char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
-static constexpr char CODING_STANDARD_MISRA_C_2025[] = "misra-c-2025";
-static constexpr char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
-static constexpr char CODING_STANDARD_MISRA_CPP_2023[] = "misra-cpp-2023";
-static constexpr char CODING_STANDARD_CERT_C[] = "cert-c-2016";
-static constexpr char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
-static constexpr char CODING_STANDARD_AUTOSAR[] = "autosar";
+const char ADDON_MISRA[]   = "misra";
+const char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
+const char CODING_STANDARD_MISRA_C_2025[] = "misra-c-2025";
+const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
+const char CODING_STANDARD_MISRA_CPP_2023[] = "misra-cpp-2023";
+const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
+const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
+const char CODING_STANDARD_AUTOSAR[] = "autosar";
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
