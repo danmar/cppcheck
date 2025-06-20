@@ -3278,13 +3278,6 @@ static std::string getFileIdPath(const std::map<std::string, simplecpp::TokenLis
         if (!match.empty()) {
             return match;
         }
-        // if the file exists but hasn't been loaded yet then we need to stop searching here or we could get a false match
-        std::ifstream f;
-        openHeader(f, relativeOrAbsoluteFilename);
-        if (f.is_open()) {
-            f.close();
-            return "";
-        }
     } else if (filedata.find(header) != filedata.end()) {
         return header;// system header that its file is already in the filedata - return that as is
     }
