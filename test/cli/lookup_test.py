@@ -2,6 +2,7 @@ import os
 import sys
 import pytest
 import shutil
+import json
 
 from testutils import cppcheck_ex, cppcheck, __lookup_cppcheck_exe
 
@@ -10,6 +11,48 @@ def __remove_std_lookup_log(l : list, exepath):
     l.remove("looking for library '{}/std.cfg'".format(exepath))
     l.remove("looking for library '{}/cfg/std.cfg'".format(exepath))
     return l
+
+
+def __create_gui_project(tmpdir):
+    file_name = 'test.c'
+    test_file = os.path.join(tmpdir, file_name)
+    with open(test_file, 'wt'):
+        pass
+
+    project_file = os.path.join(tmpdir, 'project.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+"""<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file)
+        )
+
+    return project_file, test_file
+
+
+def __create_compdb(tmpdir):
+    file_name = 'test.c'
+    test_file = os.path.join(tmpdir, file_name)
+    with open(test_file, 'wt'):
+        pass
+
+    compilation_db = [
+        {
+            "directory": str(tmpdir),
+            "command": "c++ -o {}.o -c {}".format(os.path.basename(file_name), file_name),
+            "file": file_name,
+            "output": "{}.o".format(os.path.basename(file_name))
+        }
+    ]
+
+    compile_commands = os.path.join(tmpdir, 'compile_commands.json')
+    with open(compile_commands, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    return compile_commands, test_file
 
 
 def test_lib_lookup(tmpdir):
@@ -62,6 +105,46 @@ def test_lib_lookup_notfound(tmpdir):
     assert exitcode == 1, stdout
     lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
     assert lines == [
+        # TODO: specify which folder is actually used for lookup here
+        "looking for library 'none.cfg'",
+        "looking for library '{}/none.cfg'".format(exepath),
+        "looking for library '{}/cfg/none.cfg'".format(exepath),
+        "library not found: 'none'",
+        "cppcheck: Failed to load library configuration file 'none'. File not found"
+    ]
+
+
+def test_lib_lookup_notfound_project(tmpdir):  # #13938
+    project_file, _ = __create_gui_project(tmpdir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=none', '--project={}'.format(project_file)])
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 1, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        # TODO: needs to look relative to the project first
+        # TODO: specify which folder is actually used for lookup here
+        "looking for library 'none.cfg'",
+        "looking for library '{}/none.cfg'".format(exepath),
+        "looking for library '{}/cfg/none.cfg'".format(exepath),
+        "library not found: 'none'",
+        "cppcheck: Failed to load library configuration file 'none'. File not found"
+    ]
+
+
+def test_lib_lookup_notfound_compdb(tmpdir):  # #13938
+    compdb_file, _ = __create_compdb(tmpdir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=none', '--project={}'.format(compdb_file)])
+    exepath = os.path.dirname(exe)
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+    assert exitcode == 1, stdout
+    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
+    assert lines == [
+        # TODO: needs to look relative to the project first
         # TODO: specify which folder is actually used for lookup here
         "looking for library 'none.cfg'",
         "looking for library '{}/none.cfg'".format(exepath),
@@ -273,7 +356,7 @@ def test_platform_lookup(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'avr8' relative to '{}'".format(exepath_bin),
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
         "try to load platform file 'platforms/avr8.xml' ... Success",
         'Checking {} ...'.format(test_file)
@@ -294,7 +377,7 @@ def test_platform_lookup_ext(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8.xml' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'avr8.xml' relative to '{}'".format(exepath_bin),
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
         "try to load platform file 'platforms/avr8.xml' ... Success",
         'Checking {} ...'.format(test_file)
@@ -315,7 +398,51 @@ def test_platform_lookup_notfound(tmpdir):
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'none' in '{}'".format(exepath_bin),  # TODO: this is not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'none' relative to '{}'".format(exepath_bin),
+        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
+        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
+        "cppcheck: error: unrecognized platform: 'none'."
+    ]
+
+
+def test_platform_lookup_notfound_project(tmpdir):  # #13939
+    project_file, _ = __create_gui_project(tmpdir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', '--project={}'.format(project_file)])
+    exepath = os.path.dirname(exe)
+    exepath_bin = os.path.join(exepath, 'cppcheck')
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+        exepath_bin += '.exe'
+    assert exitcode == 1, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        # TODO: needs to look relative to project file first
+        "looking for platform 'none' relative to '{}'".format(exepath_bin),
+        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
+        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
+        "cppcheck: error: unrecognized platform: 'none'."
+    ]
+
+
+def test_platform_lookup_notfound_compdb(tmpdir):  # #13939
+    compdb_file, _ = __create_compdb(tmpdir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', '--project={}'.format(compdb_file)])
+    exepath = os.path.dirname(exe)
+    exepath_bin = os.path.join(exepath, 'cppcheck')
+    if sys.platform == 'win32':
+        exepath = exepath.replace('\\', '/')
+        exepath_bin += '.exe'
+    assert exitcode == 1, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        # TODO: needs to look relative to project file first
+        "looking for platform 'none' relative to '{}'".format(exepath_bin),
         "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
         "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
@@ -338,7 +465,7 @@ def test_platform_lookup_ext_notfound(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'none.xml' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'none.xml' relative to '{}'".format(exepath_bin),
         "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
         "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
@@ -361,7 +488,7 @@ def test_platform_lookup_relative_notfound(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'platform/none.xml' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'platform/none.xml' relative to '{}'".format(exepath_bin),
         "try to load platform file 'platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml",
         "try to load platform file 'platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml",
         "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(exepath, exepath),
@@ -384,7 +511,7 @@ def test_platform_lookup_relative_noext_notfound(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'platform/none' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'platform/none' relative to '{}'".format(exepath_bin),
         "try to load platform file 'platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml",
         "try to load platform file 'platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml",
         "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(exepath, exepath),
@@ -412,7 +539,7 @@ def test_platform_lookup_absolute(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform '{}' in '{}'".format(platform_file, exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform '{}' relative to '{}'".format(platform_file, exepath_bin),
         "try to load platform file '{}' ... Success".format(platform_file),
         'Checking {} ...'.format(test_file)
     ]
@@ -433,7 +560,7 @@ def test_platform_lookup_absolute_notfound(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform '{}' in '{}'".format(platform_file, exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform '{}' relative to '{}'".format(platform_file, exepath_bin),
         "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(platform_file, platform_file),
         "cppcheck: error: unrecognized platform: '{}'.".format(platform_file)
     ]
@@ -457,7 +584,7 @@ def test_platform_lookup_nofile(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'avr8' relative to '{}'".format(exepath_bin),
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
         "try to load platform file 'platforms/avr8.xml' ... Success",
         'Checking {} ...'.format(test_file)
@@ -481,7 +608,7 @@ def test_platform_lookup_invalid(tmpdir):
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8' in '{}'".format(exepath_bin),  # TODO: this not not the path *of* the executable but the the path *to* the executable
+        "looking for platform 'avr8' relative to '{}'".format(exepath_bin),
         "try to load platform file 'avr8.xml' ... Error=XML_ERROR_PARSING_TEXT ErrorID=8 (0x8) Line number=1",
         "cppcheck: error: unrecognized platform: 'avr8'."
     ]
@@ -534,6 +661,41 @@ def test_addon_lookup_notfound(tmpdir):
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
+        "looking for addon 'none.py'",
+        "looking for addon '{}none.py'".format(exepath_sep),
+        "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
+        'Did not find addon none.py'
+    ]
+
+
+@pytest.mark.xfail(strict=True)  # TODO: no addon lookup is being performed at all
+def test_addon_lookup_notfound_project(tmpdir):  # #13940 / #13941
+    project_file, _ = __create_gui_project(tmpdir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none', '--project={}'.format(project_file)])
+    exepath = os.path.dirname(exe)
+    exepath_sep = exepath + os.path.sep
+    assert exitcode == 0, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        # TODO: needs to look relative to the project file first
+        "looking for addon 'none.py'",
+        "looking for addon '{}none.py'".format(exepath_sep),
+        "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
+        'Did not find addon none.py'
+    ]
+
+
+def test_addon_lookup_notfound_compdb(tmpdir):  # #13940
+    compdb_file, _ = __create_compdb(tmpdir)
+
+    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none', '--project={}'.format(compdb_file)])
+    exepath = os.path.dirname(exe)
+    exepath_sep = exepath + os.path.sep
+    assert exitcode == 1, stdout
+    lines = stdout.splitlines()
+    assert lines == [
+        # TODO: needs to look relative to the project file first
         "looking for addon 'none.py'",
         "looking for addon '{}none.py'".format(exepath_sep),
         "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
@@ -714,6 +876,7 @@ def test_config_lookup_notfound(tmpdir):
         'no configuration found',
         'Checking {} ...'.format(test_file)
     ]
+
 
 def test_config_invalid(tmpdir):
     cppcheck_exe = __lookup_cppcheck_exe()
