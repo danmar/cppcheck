@@ -905,13 +905,16 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
+            bool useUnicode = false;
             for (const ConfigurationPropertyGroup &c : configurationPropertyGroups) {
                 if (!c.conditionIsTrue(p))
                     continue;
-                if (c.useUnicode) {
-                    fs.defines += ";UNICODE=1;_UNICODE=1";
-                }
+                // in msbuild the last definition wins
+                useUnicode = c.useUnicode;
                 fs.useMfc = c.useOfMfc;
+            }
+            if (useUnicode){
+                fs.defines += ";UNICODE=1;_UNICODE=1";
             }
             fsSetDefines(fs, fs.defines);
             fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);

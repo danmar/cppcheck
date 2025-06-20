@@ -474,6 +474,10 @@ private:
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <!-- Only to test that the last configuration entry overwrites this -->
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -501,6 +505,7 @@ private:
         ASSERT_EQUALS(project.fileSettings.size(), 2);
         ASSERT(project.fileSettings.front().defines.find(";UNICODE=1;") != std::string::npos);
         ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1") != std::string::npos);
+        ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1;") == std::string::npos); // No duplicates
         ASSERT_EQUALS(project.fileSettings.front().useMfc, false);
         ASSERT(project.fileSettings.back().defines.find(";UNICODE=1;") == std::string::npos);
         ASSERT(project.fileSettings.back().defines.find(";_UNICODE=1") == std::string::npos);
