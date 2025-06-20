@@ -50,9 +50,8 @@ public:
 
     /**
      * @brief Get next unprocessed file
-     * @return File path
      */
-    QString getNextFile();
+    void getNextFile(const FileWithDetails*& file);
 
     void getNextFileSettings(const FileSettings*& fs);
 
@@ -138,7 +137,8 @@ protected:
      * @brief List of files to check
      *
      */
-    QStringList mFiles;
+    std::list<FileWithDetails> mFiles;
+    std::list<FileWithDetails>::const_iterator mItNextFile;
 
     std::list<FileSettings> mFileSettings;
     std::list<FileSettings>::const_iterator mItNextFileSettings;

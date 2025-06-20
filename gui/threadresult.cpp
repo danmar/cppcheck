@@ -58,14 +58,15 @@ void ThreadResult::reportErr(const ErrorMessage &msg)
         emit debugError(item);
 }
 
-QString ThreadResult::getNextFile()
+void ThreadResult::getNextFile(const FileWithDetails*& file)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    if (mFiles.isEmpty()) {
-        return QString();
+    file = nullptr;
+    if (mItNextFile == mFiles.cend()) {
+        return;
     }
-
-    return mFiles.takeFirst();
+    file = &(*mItNextFile);
+    ++mItNextFile;
 }
 
 void ThreadResult::getNextFileSettings(const FileSettings*& fs)
@@ -82,15 +83,20 @@ void ThreadResult::getNextFileSettings(const FileSettings*& fs)
 void ThreadResult::setFiles(const QStringList &files)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    mFiles = files;
+    std::list<FileWithDetails> fdetails;
+    std::transform(files.cbegin(), files.cend(), std::back_inserter(fdetails), [](const QString& f) {
+        return FileWithDetails{f.toStdString(), Path::identify(f.toStdString(), false), static_cast<std::size_t>(QFile(f).size())}; // TODO: provide Settings::cppHeaderProbe
+    });
+    mFiles = std::move(fdetails);
+    mItNextFile = mFiles.cbegin();
     mProgress = 0;
     mFilesChecked = 0;
     mTotalFiles = files.size();
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
-    quint64 sizeOfFiles = std::accumulate(files.begin(), files.end(), 0, [](quint64 total, const QString& file) {
-        return total + QFile(file).size();
+    quint64 sizeOfFiles = std::accumulate(mFiles.cbegin(), mFiles.cend(), 0, [](quint64 total, const FileWithDetails& file) {
+        return total + file.size();
     });
     mMaxProgress = sizeOfFiles;
 }

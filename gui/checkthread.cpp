@@ -151,25 +151,27 @@ void CheckThread::run()
         return;
     }
 
-    QString file = mResult.getNextFile();
-    while (!file.isEmpty() && mState == Running) {
-        qDebug() << "Checking file" << file;
-        cppcheck.check(FileWithDetails(file.toStdString(), Path::identify(file.toStdString(), mSettings.cppHeaderProbe), 0));
-        runAddonsAndTools(mSettings, nullptr, file);
-        emit fileChecked(file);
+    const FileWithDetails* file = nullptr;
+    mResult.getNextFile(file);
+    while (file && mState == Running) {
+        const std::string& fname = file->spath();
+        qDebug() << "Checking file" << QString::fromStdString(fname);
+        cppcheck.check(*file);
+        runAddonsAndTools(mSettings, nullptr, QString::fromStdString(fname));
+        emit fileChecked(QString::fromStdString(fname));
 
         if (mState == Running)
-            file = mResult.getNextFile();
+            mResult.getNextFile(file);
     }
 
     const FileSettings* fileSettings = nullptr;
     mResult.getNextFileSettings(fileSettings);
     while (fileSettings && mState == Running) {
-        file = QString::fromStdString(fileSettings->filename());
-        qDebug() << "Checking file" << file;
+        const std::string& fname = fileSettings->filename();
+        qDebug() << "Checking file" << QString::fromStdString(fname);
         cppcheck.check(*fileSettings);
-        runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fileSettings->filename()));
-        emit fileChecked(file);
+        runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fname));
+        emit fileChecked(QString::fromStdString(fname));
 
         if (mState == Running)
             mResult.getNextFileSettings(fileSettings);
