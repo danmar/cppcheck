@@ -7008,6 +7008,7 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
         case Library::AllocFunc::BufferSize::strdup:
             if (arg1 && arg1->hasKnownValue()) {
                 const ValueFlow::Value& value = arg1->values().back();
+                assert(value.isKnown());
                 if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
                     sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
             }
@@ -7268,7 +7269,10 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const S
         valueFlowConstantFoldAST(expr->astOperand2(), settings);
         valueFlowSetConstantValue(expr, settings);
     }
-    return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
+    const auto* v = expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
+    if (v)
+        assert(v->isKnown());
+    return v;
 }
 
 struct ValueFlowState {
