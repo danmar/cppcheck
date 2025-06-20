@@ -2465,7 +2465,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
                 const Token* parent = lhs->astParent();
-                while (parent) {
+                while (Token::Match(parent, "[+(]")) {
                     if (isNonConstPtrCast(parent))
                         return false;
                     parent = parent->astParent();
