@@ -142,10 +142,10 @@ public:
      * @param debug log verbose information about the lookup
      * @return returns true if file was loaded successfully
      */
-    bool loadFromFile(const char exename[], const std::string &filename, bool debug = false);
+    bool loadFromFile(const char exename[], const std::string &filename, std::string& errmsg, bool debug = false);
 
     /** load platform from xml document, primarily for testing */
-    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
+    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc, std::string& errmsg);
 
     /**
      * @brief Returns true if platform type is Windows
