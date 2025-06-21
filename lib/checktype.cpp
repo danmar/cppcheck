@@ -544,7 +544,9 @@ void CheckType::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
     c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
     c.tooBigSignedBitwiseShiftError(nullptr, 31, ValueFlow::Value(31));
     c.integerOverflowError(nullptr, ValueFlow::Value(1LL<<32));
+    // TODO: integerOverflowCond
     c.signConversionError(nullptr, nullptr, false);
+    // TODO: signConversionCond
     c.longCastAssignError(nullptr);
     c.longCastReturnError(nullptr);
     ValueFlow::Value f;

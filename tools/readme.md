@@ -78,3 +78,8 @@ Script to compare result of working Cppcheck from your branch with main branch.
 This tool lets you comfortably look at Cppcheck analysis results for daca packages. It automatically
 downloads the package, extracts it and jumps to the corresponding source code for a Cppcheck
 message.
+
+### * tools/errorid.sh
+
+Script to compare the error IDs in the expected `testrunner` output (without executing it) with the `--errorlist` output.
+It will report missing test coverage for an ID and missing IDs in the `--errorlist` output.
