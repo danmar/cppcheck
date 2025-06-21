@@ -189,6 +189,7 @@ private:
         TEST_CASE(const96);
         TEST_CASE(const97);
         TEST_CASE(const98);
+        TEST_CASE(const99);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6838,6 +6839,17 @@ private:
                    "    }\n"
                    "    void g2() {\n"
                    "        set2(reinterpret_cast<int*>(reinterpret_cast<void*>(&e)), 1);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void const99() {
+        checkConst("typedef void (*InitFunc)(void**);\n" // #13953
+                   "struct S {\n"
+                   "    int *m;\n"
+                   "    void f(InitFunc func) {\n"
+                   "        func(reinterpret_cast<void**>(&m));\n"
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());

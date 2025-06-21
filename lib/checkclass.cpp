@@ -2360,6 +2360,14 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 
 const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map", "std :: map|unordered_map <" }; // start pattern
 
+static bool isNonConstPtrCast(const Token* tok)
+{
+    if (!tok || !tok->isCast())
+        return false;
+    const ValueType* vt = tok->valueType();
+    return !vt || (vt->pointer > 0 && !vt->isConst(vt->pointer));
+}
+
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
@@ -2450,9 +2458,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             }
 
             // non const pointer cast
-            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() &&
-                !(tok1->astParent()->valueType() &&
-                  (tok1->astParent()->valueType()->pointer == 0 || tok1->astParent()->valueType()->isConst(tok1->astParent()->valueType()->pointer))))
+            if (tok1->valueType() && tok1->valueType()->pointer > 0 && isNonConstPtrCast(tok1->astParent()))
                 return false;
 
             const Token* lhs = tok1->previous();
@@ -2463,6 +2469,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
                 lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
+                const Token* parent = lhs->astParent();
+                while (Token::Match(parent, "[+(]")) {
+                    if (isNonConstPtrCast(parent))
+                        return false;
+                    parent = parent->astParent();
+                }
                 const Token* const top = lhs->astTop();
                 if (top->isAssignmentOp()) {
                     if (Token::simpleMatch(top->astOperand2(), "{") && !top->astOperand2()->previous()->function()) // TODO: check usage in init list
