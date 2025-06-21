@@ -36,6 +36,7 @@
 #include <stack>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "xml.h"
 
@@ -527,11 +528,68 @@ namespace {
         std::string platformStr;
     };
 
-    struct ItemDefinitionGroup {
-        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, std::string includePaths) : additionalIncludePaths(std::move(includePaths)) {
+    struct ConditionalGroup {
+        explicit ConditionalGroup(const tinyxml2::XMLElement *idg){
             const char *condAttr = idg->Attribute("Condition");
             if (condAttr)
-                condition = condAttr;
+                mCondition = condAttr;
+        }
+
+        static void replaceAll(std::string &c, const std::string &from, const std::string &to) {
+            std::string::size_type pos;
+            while ((pos = c.find(from)) != std::string::npos) {
+                c.erase(pos,from.size());
+                c.insert(pos,to);
+            }
+        }
+
+        // see https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-conditions
+        // properties are .NET String objects and you can call any of its members on them
+        bool conditionIsTrue(const ProjectConfiguration &p) const {
+            if (mCondition.empty())
+                return true;
+            std::string c = '(' + mCondition + ");";
+            replaceAll(c, "$(Configuration)", p.configuration);
+            replaceAll(c, "$(Platform)", p.platformStr);
+
+            // TODO: improve evaluation
+            const Settings s;
+            TokenList tokenlist(s, Standards::Language::C);
+            std::istringstream istr(c);
+            tokenlist.createTokens(istr); // TODO: check result
+            // TODO: put in a helper
+            // generate links
+            {
+                std::stack<Token*> lpar;
+                for (Token* tok2 = tokenlist.front(); tok2; tok2 = tok2->next()) {
+                    if (tok2->str() == "(")
+                        lpar.push(tok2);
+                    else if (tok2->str() == ")") {
+                        if (lpar.empty())
+                            break;
+                        Token::createMutualLinks(lpar.top(), tok2);
+                        lpar.pop();
+                    }
+                }
+            }
+            tokenlist.createAst();
+            for (const Token *tok = tokenlist.front(); tok; tok = tok->next()) {
+                if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
+                    // TODO: this is wrong - it is Contains() not Equals()
+                    if (tok->astOperand1()->expressionString() == "Configuration.Contains")
+                        return ('\'' + p.configuration + '\'') == tok->astOperand2()->str();
+                }
+                if (tok->str() == "==" && tok->astOperand1() && tok->astOperand2() && tok->astOperand1()->str() == tok->astOperand2()->str())
+                    return true;
+            }
+            return false;
+        }
+    private:
+        std::string mCondition;
+    };
+
+    struct ItemDefinitionGroup : ConditionalGroup {
+        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, std::string includePaths) : ConditionalGroup(idg), additionalIncludePaths(std::move(includePaths)) {
             for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
                 const char* name = e1->Name();
                 if (std::strcmp(name, "ClCompile") == 0) {
@@ -574,61 +632,26 @@ namespace {
             }
         }
 
-        static void replaceAll(std::string &c, const std::string &from, const std::string &to) {
-            std::string::size_type pos;
-            while ((pos = c.find(from)) != std::string::npos) {
-                c.erase(pos,from.size());
-                c.insert(pos,to);
-            }
-        }
-
-        // see https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-conditions
-        // properties are .NET String objects and you can call any of its members on them
-        bool conditionIsTrue(const ProjectConfiguration &p) const {
-            if (condition.empty())
-                return true;
-            std::string c = '(' + condition + ");";
-            replaceAll(c, "$(Configuration)", p.configuration);
-            replaceAll(c, "$(Platform)", p.platformStr);
-
-            // TODO: improve evaluation
-            const Settings s;
-            TokenList tokenlist(s, Standards::Language::C);
-            std::istringstream istr(c);
-            tokenlist.createTokens(istr); // TODO: check result
-            // TODO: put in a helper
-            // generate links
-            {
-                std::stack<Token*> lpar;
-                for (Token* tok2 = tokenlist.front(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        lpar.push(tok2);
-                    else if (tok2->str() == ")") {
-                        if (lpar.empty())
-                            break;
-                        Token::createMutualLinks(lpar.top(), tok2);
-                        lpar.pop();
-                    }
-                }
-            }
-            tokenlist.createAst();
-            for (const Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-                if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
-                    // TODO: this is wrong - it is Contains() not Equals()
-                    if (tok->astOperand1()->expressionString() == "Configuration.Contains")
-                        return ('\'' + p.configuration + '\'') == tok->astOperand2()->str();
-                }
-                if (tok->str() == "==" && tok->astOperand1() && tok->astOperand2() && tok->astOperand1()->str() == tok->astOperand2()->str())
-                    return true;
-            }
-            return false;
-        }
-        std::string condition;
         std::string enhancedInstructionSet;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
         std::string entryPointSymbol; // TODO: use this
         Standards::cppstd_t cppstd = Standards::CPPLatest;
+    };
+
+    struct ConfigurationPropertyGroup : ConditionalGroup {
+        explicit ConfigurationPropertyGroup(const tinyxml2::XMLElement *idg) : ConditionalGroup(idg) {
+            for (const tinyxml2::XMLElement *e = idg->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
+                    useOfMfc = true;
+                } else if (std::strcmp(e->Name(), "CharacterSet") == 0) {
+                    useUnicode = std::strcmp(e->GetText(), "Unicode") == 0;
+                }
+            }
+        }
+
+        bool useOfMfc = false;
+        bool useUnicode = false;
     };
 }
 
@@ -648,17 +671,8 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string,cppcheck::stricmp> &variables, std::string &includePath, bool *useOfMfc)
+static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string, std::string, cppcheck::stricmp> &variables, std::string &includePath)
 {
-    if (useOfMfc) {
-        for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "UseOfMfc") == 0) {
-                *useOfMfc = true;
-                break;
-            }
-        }
-    }
-
     const char* labelAttribute = node->Attribute("Label");
     if (labelAttribute && std::strcmp(labelAttribute, "UserMacros") == 0) {
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
@@ -719,31 +733,39 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
                 }
             }
         } else if (std::strcmp(name,"PropertyGroup")==0) {
-            importPropertyGroup(node, variables, includePath, nullptr);
+            importPropertyGroup(node, variables, includePath);
         } else if (std::strcmp(name,"ItemDefinitionGroup")==0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         }
     }
 }
 
-bool ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache)
+bool ImportProject::importVcxproj(const std::string &filename,
+                                  std::map<std::string, std::string, cppcheck::stricmp> &variables,
+                                  const std::string &additionalIncludeDirectories,
+                                  const std::vector<std::string> &fileFilters,
+                                  std::vector<SharedItemsProject> &cache)
 {
-    variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
-
-    std::list<ProjectConfiguration> projectConfigurationList;
-    std::list<std::string> compileList;
-    std::list<ItemDefinitionGroup> itemDefinitionGroupList;
-    std::string includePath;
-    std::vector<SharedItemsProject> sharedItemsProjects;
-
-    bool useOfMfc = false;
-
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
         printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
+    return importVcxproj(filename, doc, variables, additionalIncludeDirectories, fileFilters, cache);
+}
+
+bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache)
+{
+    variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
+
+    std::list<ProjectConfiguration> projectConfigurationList;
+    std::list<std::string> compileList;
+    std::list<ItemDefinitionGroup> itemDefinitionGroupList;
+    std::vector<ConfigurationPropertyGroup> configurationPropertyGroups;
+    std::string includePath;
+    std::vector<SharedItemsProject> sharedItemsProjects;
+
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
         printError("Visual Studio project file has no XML root node");
@@ -777,7 +799,12 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         } else if (std::strcmp(name, "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         } else if (std::strcmp(name, "PropertyGroup") == 0) {
-            importPropertyGroup(node, variables, includePath, &useOfMfc);
+            const char* labelAttribute = node->Attribute("Label");
+            if (labelAttribute && std::strcmp(labelAttribute, "Configuration") == 0) {
+                configurationPropertyGroups.emplace_back(node);
+            } else {
+                importPropertyGroup(node, variables, includePath);
+            }
         } else if (std::strcmp(name, "ImportGroup") == 0) {
             const char *labelAttribute = node->Attribute("Label");
             if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
@@ -853,7 +880,6 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.cfg = p.name;
             // TODO: detect actual MSC version
             fs.msc = true;
-            fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
             if (p.platform == ProjectConfiguration::Win32)
                 fs.platformType = Platform::Type::Win32W;
@@ -878,6 +904,17 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 else if (i.enhancedInstructionSet == "AdvancedVectorExtensions512")
                     fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
+            }
+            bool useUnicode = false;
+            for (const ConfigurationPropertyGroup &c : configurationPropertyGroups) {
+                if (!c.conditionIsTrue(p))
+                    continue;
+                // in msbuild the last definition wins
+                useUnicode = c.useUnicode;
+                fs.useMfc = c.useOfMfc;
+            }
+            if (useUnicode) {
+                fs.defines += ";UNICODE=1;_UNICODE=1";
             }
             fsSetDefines(fs, fs.defines);
             fsSetIncludePaths(fs, Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
