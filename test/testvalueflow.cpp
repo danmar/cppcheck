@@ -9105,6 +9105,10 @@ private:
                       "int b : 16;\n"
                       "unsigned short c;\n",
                       8);
+
+        testBitfields("unsigned int a : 31;\n"
+                      "unsigned int   : 2;\n",
+                      8);
     }
 };
 
