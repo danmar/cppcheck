@@ -532,7 +532,7 @@ namespace {
         explicit ConditionalGroup(const tinyxml2::XMLElement *idg){
             const char *condAttr = idg->Attribute("Condition");
             if (condAttr)
-                mCondition_ = condAttr;
+                mCondition = condAttr;
         }
 
         static void replaceAll(std::string &c, const std::string &from, const std::string &to) {
@@ -546,9 +546,9 @@ namespace {
         // see https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-conditions
         // properties are .NET String objects and you can call any of its members on them
         bool conditionIsTrue(const ProjectConfiguration &p) const {
-            if (mCondition_.empty())
+            if (mCondition.empty())
                 return true;
-            std::string c = '(' + mCondition_ + ");";
+            std::string c = '(' + mCondition + ");";
             replaceAll(c, "$(Configuration)", p.configuration);
             replaceAll(c, "$(Platform)", p.platformStr);
 
@@ -585,7 +585,7 @@ namespace {
             return false;
         }
     private:
-        std::string mCondition_;
+        std::string mCondition;
     };
 
     struct ItemDefinitionGroup : ConditionalGroup {
