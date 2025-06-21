@@ -110,7 +110,7 @@ public:
         std::string file0;
     };
 
-    virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/) const {
+    virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/, const std::string& /*currentConfig*/) const {
         return nullptr;
     }
 
