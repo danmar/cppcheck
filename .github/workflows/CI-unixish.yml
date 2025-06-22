@@ -506,6 +506,7 @@ jobs:
           make -C cmake.output autogen
           make -C cmake.output gui-build-deps triage-build-ui-deps
 
+      # TODOL: utilize selfcheck.sh
       - name: Self check
         run: |
           selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
