@@ -105,6 +105,7 @@ void ThreadResult::setProject(const ImportProject &prj)
 {
     std::lock_guard<std::mutex> locker(mutex);
     mFiles.clear();
+    mItNextFile = mFiles.cbegin();
     mFileSettings = prj.fileSettings;
     mItNextFileSettings = mFileSettings.cbegin();
     mProgress = 0;
