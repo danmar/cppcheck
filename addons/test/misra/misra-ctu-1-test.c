@@ -53,3 +53,10 @@ void misra_8_7_external(void) {}
 // #12362
 void misra_8_7_compliant( void ){}
 static void misra_8_7_call(void) { misra_8_7_compliant(); }
+
+#if MISRA_2_5_USE_A != 0
+ #define MISRA_2_5_NOT_USED_A 10
+#else
+ // cppcheck-suppress misra-c2012-2.5
+ #define MISRA_2_5_NOT_USED_B 10
+#endif

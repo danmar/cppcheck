@@ -1749,11 +1749,71 @@ class MisraChecker:
     def misra_2_5(self, dumpfile, cfg):
         used_macros = []
         unused_macro = {}
+        if_else_mapping = {}
+        if_condition_macro = {}
+        if_else_list = []
+        for condition in cfg.preprocessor_if_conditions:
+            if_condition_macro[(condition.file, condition.linenr)] = bool(condition.result)
+
+        for directive in cfg.directives:
+            if directive.str.startswith('#if'):
+                if_else_list.append([(directive.file, directive.linenr,if_condition_macro.get((directive.file, directive.linenr), False))])
+            elif directive.str.startswith('#elif'):
+                if_flag = if_else_list[-1][0][-1]
+                if if_flag:
+                    if_else_list[-1].append((directive.file, directive.linenr,False))
+                else:
+                    if_else_list[-1].append((directive.file, directive.linenr,if_condition_macro.get((directive.file, directive.linenr), False)))
+            elif directive.str == '#else':
+                else_flag = True
+                for _dir in if_else_list[-1]:
+                    if _dir[-1]:
+                        else_flag = False
+                if_else_list[-1].append((directive.file, directive.linenr, else_flag))
+            elif directive.str == '#endif':
+                _key = if_else_list[-1][0][:2]
+                if_else_mapping[_key] = {}
+                for i in range(0, len(if_else_list[-1])):
+                    if if_else_list[-1][i][-1]:
+                        if_else_mapping[_key]['start'] = (if_else_list[-1][i][0], if_else_list[-1][i][1])
+                        if i+1 < len(if_else_list[-1]):
+                            if_else_mapping[_key]['end'] = (if_else_list[-1][i+1][0], if_else_list[-1][i+1][1])
+                        else:
+                            if_else_mapping[_key]['end'] = (directive.file, directive.linenr)
+
+                if_else_list.pop()
+
+
+
         for m in cfg.macro_usage:
             used_macros.append(m.name)
+        start = None
+        end = None
+        skip_till_endif = False
         for directive in cfg.directives:
+            if start and directive.linenr < start:
+                continue
+            if not start and end and directive.linenr < end:
+                continue
+
+            if directive.str.startswith('#if') and (directive.file, directive.linenr) in if_else_mapping:
+                start = if_else_mapping[(directive.file, directive.linenr)].get('start', (None, None))[1]
+                end = if_else_mapping[(directive.file, directive.linenr)].get('end', (None, None))[1]
+
+            if directive.linenr == end:
+                start = None
+                end = None
+                if directive.str != '#endif':
+                    skip_till_endif = True
+
+            if skip_till_endif:
+                if directive.linenr != '#endif':
+                    continue
+                skip_till_endif = False
+
             res_define = re.match(r'#define[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
             res_undef = re.match(r'#undef[ \t]+([a-zA-Z_][a-zA-Z_0-9]*).*', directive.str)
+
             if res_define:
                 macro_name = res_define.group(1)
                 unused_macro[macro_name] = {'name': macro_name, 'used': (macro_name in used_macros),

@@ -22,3 +22,5 @@ void misra_8_7_external(void);
 extern void misra_8_7_compliant( void );
 
 #define MISRA_2_5_OK_3 This
+
+#define MISRA_2_5_USE_A 0
