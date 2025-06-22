@@ -64,6 +64,7 @@
 #include <QVariant>
 #include <QVariantMap>
 #include <Qt>
+#include <QHeaderView>
 
 static constexpr char COLUMN[] = "column";
 static constexpr char CWE[] = "cwe";
@@ -666,6 +667,7 @@ void ResultsTree::refreshTree()
         // Show the file if any of it's errors are visible
         setRowHidden(i, QModelIndex(), !showFile);
     }
+    sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
 }
 
 QStandardItem *ResultsTree::ensureFileItem(const QString &fullpath, const QString &file0, bool hide)
