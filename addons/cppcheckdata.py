@@ -166,7 +166,7 @@ class ValueType:
     Attributes:
         type             nonstd/pod/record/smart-pointer/container/iterator/void/bool/char/short/wchar_t/int/long/long long/unknown int/float/double/long double
         sign             signed/unsigned
-        bits
+        bits             bit count for bit-fields, otherwise None
         pointer
         constness
         reference
@@ -178,7 +178,7 @@ class ValueType:
 
     type = None
     sign = None
-    bits = 0
+    bits = None
     constness = 0
     pointer = 0
     typeScopeId = None
@@ -188,7 +188,8 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
-        self.bits = int(element.get('valueType-bits', 0))
+        self.bits = element.get('valueType-bits', None)
+        self.bits = int(self.bits) if self.bits else None
         self.pointer = int(element.get('valueType-pointer', 0))
         self.constness = int(element.get('valueType-constness', 0))
         self.reference = element.get('valueType-reference')
