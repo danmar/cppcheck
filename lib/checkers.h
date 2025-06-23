@@ -31,9 +31,11 @@ enum class ReportType : std::uint8_t {
     autosar = 1,
     certC = 2,
     certCpp = 3,
-    misraC = 4,
+    misraC2012 = 4,
     misraCpp2008 = 5,
     misraCpp2023 = 6,
+    misraC2023 = 7,
+    misraC2025 = 8,
 };
 
 namespace checkers {

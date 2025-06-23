@@ -391,7 +391,9 @@ void MainWindow::loadSettings()
     mUI->mActionReportAutosar->setChecked(reportType == ReportType::autosar);
     mUI->mActionReportCertC->setChecked(reportType == ReportType::certC);
     mUI->mActionReportCertCpp->setChecked(reportType == ReportType::certCpp);
-    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC);
+    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC2012 ||
+                                         reportType == ReportType::misraC2023 ||
+                                         reportType == ReportType::misraC2025);
     mUI->mActionReportMisraCpp2008->setChecked(reportType == ReportType::misraCpp2008);
     mUI->mActionReportMisraCpp2023->setChecked(reportType == ReportType::misraCpp2023);
 
@@ -470,6 +472,15 @@ void MainWindow::loadSettings()
     }
 }
 
+static ReportType getMisraCReportType(const QStringList &standards)
+{
+    if (standards.contains(CODING_STANDARD_MISRA_C_2023))
+        return ReportType::misraC2023;
+    if (standards.contains(CODING_STANDARD_MISRA_C_2025))
+        return ReportType::misraC2025;
+    return ReportType::misraC2012;
+}
+
 void MainWindow::saveSettings() const
 {
     // Window/dialog sizes
@@ -480,7 +491,7 @@ void MainWindow::saveSettings() const
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;
@@ -2283,7 +2294,7 @@ void MainWindow::changeReportType() {
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;

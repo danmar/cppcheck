@@ -1536,7 +1536,9 @@ bool ResultsTree::isCertReport() const {
 
 bool ResultsTree::isAutosarMisraReport() const {
     return mReportType == ReportType::autosar ||
-           mReportType == ReportType::misraC ||
+           mReportType == ReportType::misraC2012 ||
+           mReportType == ReportType::misraC2023 ||
+           mReportType == ReportType::misraC2025 ||
            mReportType == ReportType::misraCpp2008 ||
            mReportType == ReportType::misraCpp2023;
 }
