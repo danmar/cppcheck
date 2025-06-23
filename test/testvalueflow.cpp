@@ -9126,6 +9126,11 @@ private:
         testBitfields("unsigned int a : 31;\n"
                       "unsigned int   : 2;\n",
                       8);
+
+        testBitfields("unsigned int a : 16;\n"
+                      "unsigned int   : 0;\n"
+                      "unsigned int b : 16;\n",
+                      8);
     }
 };
 
