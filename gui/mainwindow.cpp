@@ -54,6 +54,8 @@
 
 #include "ui_mainwindow.h"
 
+#include "frontend.h"
+
 #include <algorithm>
 #include <iterator>
 #include <list>
@@ -615,6 +617,10 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());
     }
+
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(p.fileSettings, checkSettings, enforcedLang);
+
     mThread->setProject(p);
     mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
@@ -714,6 +720,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
+    // TODO: apply enforcedLanguage
     cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
     analysisDone();
 
@@ -808,7 +815,7 @@ void MainWindow::analyzeFiles()
             p.ignoreOtherConfigs(cfg.toStdString());
         }
 
-        doAnalyzeProject(p);
+        doAnalyzeProject(p); // TODO: avoid copy
         return;
     }
 
@@ -1219,7 +1226,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
         settings.platform.set(static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt()));
     settings.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     settings.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    settings.enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
 
     settings.jobs = std::max(settings.jobs, 1u);
 
@@ -1971,7 +1977,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
             msg.exec();
             return;
         }
-        doAnalyzeProject(p, checkLibrary, checkConfiguration);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);  // TODO: avoid copy
         return;
     }
 

@@ -19,7 +19,19 @@
 #ifndef FRONTEND_H
 #define FRONTEND_H
 
+#include "standards.h"
+
+#include <list>
+
+struct FileSettings;
+class Settings;
+
 namespace frontend
-{}
+{
+    /**
+        Applies the enforced language as all as identifying remaining files - also taking markup files into consideration.
+     */
+    void applyLang(std::list<FileSettings> &fileSettings, const Settings &settings, Standards::Language enforcedLang);
+}
 
 #endif // FRONTEND_H
