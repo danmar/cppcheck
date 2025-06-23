@@ -293,40 +293,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             files = std::move(filesResolved);
         }
 
-        if (mEnforcedLang != Standards::Language::None)
-        {
-            // apply enforced language
-            for (auto& f : files)
-            {
-                if (mSettings.library.markupFile(f.path()))
-                    continue;
-                f.setLang(mEnforcedLang);
-            }
-        }
-        else
-        {
-            // identify remaining files
-            for (auto& f : files)
-            {
-                if (f.lang() != Standards::Language::None)
-                    continue;
-                if (mSettings.library.markupFile(f.path()))
-                    continue;
-                bool header = false;
-                f.setLang(Path::identify(f.path(), mSettings.cppHeaderProbe, &header));
-                // unknown extensions default to C++
-                if (!header && f.lang() == Standards::Language::None)
-                    f.setLang(Standards::Language::CPP);
-            }
-        }
-
-        // enforce the language since markup files are special and do not adhere to the enforced language
-        for (auto& f : files)
-        {
-            if (mSettings.library.markupFile(f.path())) {
-                f.setLang(Standards::Language::C);
-            }
-        }
+        frontend::applyLang(files, mSettings, mEnforcedLang);
 
         // sort the markup last
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const FileWithDetails& entry) {

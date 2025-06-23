@@ -20,6 +20,7 @@
 
 #include "checkthread.h"
 #include "common.h"
+#include "filesettings.h"
 #include "resultsview.h"
 #include "settings.h"
 
@@ -55,10 +56,10 @@ void ThreadHandler::clearFiles()
     mSuppressionsUI.clear();
 }
 
-void ThreadHandler::setFiles(const QStringList &files)
+void ThreadHandler::setFiles(std::list<FileWithDetails> files)
 {
-    mResults.setFiles(files);
     mLastFiles = files;
+    mResults.setFiles(std::move(files));
 }
 
 void ThreadHandler::setProject(const ImportProject &prj)
@@ -74,10 +75,10 @@ void ThreadHandler::setCheckFiles(bool all)
     }
 }
 
-void ThreadHandler::setCheckFiles(const QStringList& files)
+void ThreadHandler::setCheckFiles(std::list<FileWithDetails> files)
 {
     if (mRunningThreadCount == 0) {
-        mResults.setFiles(files);
+        mResults.setFiles(std::move(files));
     }
 }
 
@@ -172,6 +173,7 @@ void ThreadHandler::threadDone()
 {
     mRunningThreadCount--;
 
+    // TODO: also run with projects?
     if (mRunningThreadCount == 0 && mAnalyseWholeProgram) {
         createThreads(1);
         mRunningThreadCount = 1;
@@ -235,7 +237,7 @@ void ThreadHandler::saveSettings(QSettings &settings) const
 
 bool ThreadHandler::hasPreviousFiles() const
 {
-    return !mLastFiles.isEmpty();
+    return !mLastFiles.empty();
 }
 
 int ThreadHandler::getPreviousFilesCount() const
@@ -248,7 +250,7 @@ int ThreadHandler::getPreviousScanDuration() const
     return mScanDuration;
 }
 
-QStringList ThreadHandler::getReCheckFiles(bool all) const
+std::list<FileWithDetails> ThreadHandler::getReCheckFiles(bool all) const
 {
     if (mLastCheckTime.isNull() || all)
         return mLastFiles;
@@ -256,10 +258,10 @@ QStringList ThreadHandler::getReCheckFiles(bool all) const
     std::set<QString> modified;
     std::set<QString> unmodified;
 
-    QStringList files;
-    for (int i = 0; i < mLastFiles.size(); ++i) {
-        if (needsReCheck(mLastFiles[i], modified, unmodified))
-            files.push_back(mLastFiles[i]);
+    std::list<FileWithDetails> files;
+    for (const auto& f : mLastFiles) {
+        if (needsReCheck(QString::fromStdString(f.path()), modified, unmodified))
+            files.push_back(f);
     }
     return files;
 }

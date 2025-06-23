@@ -63,4 +63,42 @@ namespace frontend {
             }
         }
     }
+
+    void applyLang(std::list<FileWithDetails>& files, const Settings& settings, Standards::Language enforcedLang)
+    {
+        if (enforcedLang != Standards::Language::None)
+        {
+            // apply enforced language
+            for (auto& f : files)
+            {
+                if (settings.library.markupFile(f.path()))
+                    continue;
+                f.setLang(enforcedLang);
+            }
+        }
+        else
+        {
+            // identify remaining files
+            for (auto& f : files)
+            {
+                if (f.lang() != Standards::Language::None)
+                    continue;
+                if (settings.library.markupFile(f.path()))
+                    continue;
+                bool header = false;
+                f.setLang(Path::identify(f.path(), settings.cppHeaderProbe, &header));
+                // unknown extensions default to C++
+                if (!header && f.lang() == Standards::Language::None)
+                    f.setLang(Standards::Language::CPP);
+            }
+        }
+
+        // enforce the language since markup files are special and do not adhere to the enforced language
+        for (auto& f : files)
+        {
+            if (settings.library.markupFile(f.path())) {
+                f.setLang(Standards::Language::C);
+            }
+        }
+    }
 }
