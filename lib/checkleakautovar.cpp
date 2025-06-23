@@ -1024,7 +1024,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
         const Token * const argTypeStartTok = arg;
 
-        while (Token::Match(arg, "%name% .|:: %name%"))
+        while (Token::Match(arg, "%name% :: %name%"))
             arg = arg->tokAt(2);
 
         if ((Token::Match(arg, "%var% [-,)] !!.") && !(arg->variable() && arg->variable()->isArray())) ||
