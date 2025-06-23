@@ -84,21 +84,18 @@ public:
 
     // Cppcheck GUI output
     struct {
-        std::vector<std::string> pathNames;
-        std::list<std::string> libraries;
-        std::list<std::string> excludedPaths;
-        std::list<std::string> checkVsConfigs;
+        std::list<std::string> checkVsConfigs; // TODO: CLI?
         std::string projectFile;
-        std::string platform;
+        std::string args;
     } guiProject;
 
     void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
+    Type import(const std::string &filename, const std::vector<std::string>& fileFilters = {});
 protected:
     bool importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
+    bool importCppcheckGuiProject(std::istream &istr);
     virtual bool sourceFileExists(const std::string &file);
 
 private:
