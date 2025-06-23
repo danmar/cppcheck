@@ -2701,8 +2701,9 @@ def test_debug_verbose_xml(tmp_path):
     assert len(ast_elem) == 1
 
 
+# TODO: remove interaction with --debug?
 # TODO: test with --xml
-def __test_debug_template(tmp_path, verbose):
+def __test_debug_template(tmp_path, verbose=False, debug=False):
     test_file = tmp_path / 'test.cpp'
     with open(test_file, "w") as f:
         f.write(
@@ -2722,14 +2723,31 @@ void f()
 
     if verbose:
         args += ['--verbose']
+    if debug:
+        args += ['--debug']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0, stdout
-    assert stdout.find('##file ') == -1
-    assert stdout.find('##Value flow') == -1
-    assert stdout.find('### Symbol database ###') == -1
-    assert stdout.find('##AST') == -1
-    assert stdout.find('### Template Simplifier pass ') != -1
+    if debug:
+        assert stdout.find('##file ') != -1
+    else:
+        assert stdout.find('##file ') == -1
+    if debug:
+        assert stdout.find('##Value flow') != -1
+    else:
+        assert stdout.find('##Value flow') == -1
+    if debug and verbose:
+        assert stdout.find('### Symbol database ###') != -1
+    else:
+        assert stdout.find('### Symbol database ###') == -1
+    if debug and verbose:
+        assert stdout.find('##AST') != -1
+    else:
+        assert stdout.find('##AST') == -1
+    if debug:
+        assert stdout.count('### Template Simplifier pass ') == 2
+    else:
+        assert stdout.count('### Template Simplifier pass ') == 1
     assert stderr.splitlines() == [
         '{}:4:13: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
     ]
@@ -2737,12 +2755,22 @@ void f()
 
 
 def test_debug_template(tmp_path):
-    __test_debug_template(tmp_path, False)
+    __test_debug_template(tmp_path, verbose=False)
 
 
 def test_debug_template_verbose_nodiff(tmp_path):
     # make sure --verbose does not change the output
-    assert __test_debug_template(tmp_path, False) == __test_debug_template(tmp_path, True)
+    assert __test_debug_template(tmp_path, verbose=False) == __test_debug_template(tmp_path, verbose=True)
+
+
+def test_debug_template_debug(tmp_path):
+    __test_debug_template(tmp_path, debug=True)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_template_debug_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_template(tmp_path, debug=True, verbose=False) == __test_debug_template(tmp_path, debug=True, verbose=True)
 
 
 def test_file_ignore_2(tmp_path):  # #13570
