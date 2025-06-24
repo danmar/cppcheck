@@ -2971,7 +2971,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
         }
     }
 
-    reportError(errorPath, Severity::style, "virtualCallInConstructor",
+    reportError(std::move(errorPath), Severity::style, "virtualCallInConstructor",
                 "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + std::to_string(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
 }
 
@@ -2989,7 +2989,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     if (!errorPath.empty())
         errorPath.back().second = purefuncname + " is a pure virtual function without body";
 
-    reportError(errorPath, Severity::warning, "pureVirtualCall",
+    reportError(std::move(errorPath), Severity::warning, "pureVirtualCall",
                 "$symbol:" + purefuncname +"\n"
                 "Call of pure virtual function '$symbol' in " + scopeFunctionTypeName + ".\n"
                 "Call of pure virtual function '$symbol' in " + scopeFunctionTypeName + ". The call will fail during runtime.", CWE(0U), Certainty::normal);
@@ -3120,7 +3120,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
     const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedName +
                                 "' defines member " + member + " with name '" + memberName + "' also defined in its parent " +
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + baseName + "'.";
-    reportError(errorPath, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, Certainty::normal);
 }
 
 
@@ -3230,7 +3230,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
         errorPath.emplace_back(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class");
     }
 
-    reportError(errorPath, Severity::style, "missingOverride",
+    reportError(std::move(errorPath), Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
                 "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
@@ -3254,7 +3254,7 @@ void CheckClass::uselessOverrideError(const Function *funcInBase, const Function
     }
     else
         errStr += "just delegates back to the base class.";
-    reportError(errorPath, Severity::style, "uselessOverride",
+    reportError(std::move(errorPath), Severity::style, "uselessOverride",
                 "$symbol:" + functionName +
                 errStr,
                 CWE(0U) /* Unknown CWE! */,
@@ -3525,10 +3525,10 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
 void CheckClass::thisUseAfterFree(const Token *self, const Token *free, const Token *use)
 {
     std::string selfPointer = self ? self->str() : "ptr";
-    const ErrorPath errorPath = { ErrorPathItem(self, "Assuming '" + selfPointer + "' is used as 'this'"), ErrorPathItem(free, "Delete '" + selfPointer + "', invalidating 'this'"), ErrorPathItem(use, "Call method when 'this' is invalid") };
+    ErrorPath errorPath = { ErrorPathItem(self, "Assuming '" + selfPointer + "' is used as 'this'"), ErrorPathItem(free, "Delete '" + selfPointer + "', invalidating 'this'"), ErrorPathItem(use, "Call method when 'this' is invalid") };
     const std::string usestr = use ? use->str() : "x";
     const std::string usemsg = use && use->function() ? ("Calling method '" + usestr + "()'") : ("Using member '" + usestr + "'");
-    reportError(errorPath, Severity::warning, "thisUseAfterFree",
+    reportError(std::move(errorPath), Severity::warning, "thisUseAfterFree",
                 "$symbol:" + selfPointer + "\n" +
                 usemsg + " when 'this' might be invalid",
                 CWE(0), Certainty::normal);

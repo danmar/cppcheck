@@ -431,8 +431,7 @@ private:
 
     void ToXmlV2Encoding() const {
         {
-            std::list<ErrorMessage::FileLocation> locs;
-            ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", Certainty::normal);
+            ErrorMessage msg({}, "", Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", Certainty::normal);
             const std::string expected("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
             ASSERT_EQUALS(expected, msg.toXML());
         }
@@ -506,8 +505,7 @@ private:
 
     void SerializeInconclusiveMessage() const {
         // Inconclusive error message
-        std::list<ErrorMessage::FileLocation> locs;
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg({}, "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
         msg.file0 = "test.cpp";
 
         const std::string msg_str = msg.serialize();
@@ -605,8 +603,7 @@ private:
     }
 
     void SerializeSanitize() const {
-        std::list<ErrorMessage::FileLocation> locs;
-        ErrorMessage msg(std::move(locs), "", Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
+        ErrorMessage msg({}, "", Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
         msg.file0 = "1.c";
 
         const std::string msg_str = msg.serialize();

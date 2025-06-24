@@ -128,17 +128,17 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
     : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
-    for (const ErrorPathItem& e: errorPath) {
+    for (ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
         // --errorlist can provide null values here
         if (!tok)
             continue;
 
-        const std::string& path_info = e.second;
+        std::string& path_info = e.second;
 
         std::string info;
         if (startsWith(path_info,"$symbol:") && path_info.find('\n') < path_info.size()) {
@@ -147,7 +147,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
             info = replaceStr(path_info.substr(pos+1), "$symbol", symbolName);
         }
         else {
-            info = path_info;
+            info = std::move(path_info);
         }
 
         callStack.emplace_back(tok, std::move(info), tokenList);
