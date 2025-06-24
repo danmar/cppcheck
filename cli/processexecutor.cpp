@@ -116,6 +116,8 @@ namespace {
             suppr_str += suppr.checked ? "1" : "0";
             suppr_str += ";";
             suppr_str += suppr.matched ? "1" : "0";
+            suppr_str += ";";
+            suppr_str += suppr.extraComment;
             return suppr_str;
         }
 
@@ -239,7 +241,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         if (!buf.empty()) {
             // TODO: avoid string splitting
             auto parts = splitString(buf, ';');
-            if (parts.size() != 3)
+            if (parts.size() != 4)
             {
                 // TODO: make this non-fatal
                 std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - insufficient data" << std::endl;
@@ -249,6 +251,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             suppr.isInline = (type == PipeWriter::REPORT_SUPPR_INLINE);
             suppr.checked = parts[1] == "1";
             suppr.matched = parts[2] == "1";
+            suppr.extraComment = parts[3];
             const std::string err = mSuppressions.nomsg.addSuppression(suppr);
             if (!err.empty()) {
                 // TODO: only update state if it doesn't exist - otherwise propagate error
