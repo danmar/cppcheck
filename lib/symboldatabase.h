@@ -1413,6 +1413,7 @@ public:
     void setArrayDimensionsUsingValueFlow();
 
     void clangSetVariables(const std::vector<const Variable *> &variableList);
+    void createTokenRefs();
     void createSymbolDatabaseExprIds();
 
     /* returns the opening { if tok points to enum */

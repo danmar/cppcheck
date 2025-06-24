@@ -647,7 +647,8 @@ private:
         if (invalid())
             return Action::Invalid;
         // Follow references
-        auto refs = followAllReferences(tok);
+        // TODO: avoid copy
+        auto refs = tok->refs();
         const bool inconclusiveRefs = refs.size() != 1;
         if (std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
             return tok == ref.token;
