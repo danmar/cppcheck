@@ -544,7 +544,7 @@ void SuppressionList::dump(std::ostream & out) const
         else
             out << " inline=\"false\"";
         if (!suppression.extraComment.empty())
-            out << " comment=\"" << suppression.extraComment << "\"";
+            out << " comment=\"" << ErrorLogger::toxml(suppression.extraComment) << "\"";
         out << " />" << std::endl;
     }
     out << "  </suppressions>" << std::endl;
