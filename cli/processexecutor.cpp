@@ -241,7 +241,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         if (!buf.empty()) {
             // TODO: avoid string splitting
             auto parts = splitString(buf, ';');
-            if (parts.size() != 4)
+            if (parts.size() < 4)
             {
                 // TODO: make this non-fatal
                 std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - insufficient data" << std::endl;
@@ -252,6 +252,9 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             suppr.checked = parts[1] == "1";
             suppr.matched = parts[2] == "1";
             suppr.extraComment = parts[3];
+            for (std::size_t i = 4; i < parts.size(); i++) {
+                suppr.extraComment += ";" + parts[i];
+            }
             const std::string err = mSuppressions.nomsg.addSuppression(suppr);
             if (!err.empty()) {
                 // TODO: only update state if it doesn't exist - otherwise propagate error
