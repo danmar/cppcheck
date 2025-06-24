@@ -9131,6 +9131,9 @@ private:
                       "unsigned int   : 0;\n"
                       "unsigned int b : 16;\n",
                       8);
+
+        testBitfields("unsigned char a : 16;\n",
+                      2);
     }
 };
 
