@@ -347,6 +347,8 @@ bool SuppressionList::Suppression::parseComment(std::string comment, std::string
 
     if (extraPos != std::string::npos) {
         extraComment = trim(comment.substr(extraPos + extraDelimiterSize));
+        for (auto it = extraComment.begin(); it != extraComment.end();)
+            it = *it & 0x80 ? extraComment.erase(it) : it + 1;
         comment.erase(extraPos);
     }
 
