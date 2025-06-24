@@ -10015,7 +10015,7 @@ void Tokenizer::simplifyBitfields()
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = typeTok->next();
             if (Token::Match(tok1, "%name% : %num% [;=]"))
-                tok1->setBits(static_cast<char>(MathLib::toBigNumber(tok1->tokAt(2))));
+                tok1->setBits(MathLib::toBigNumber(tok1->tokAt(2)));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
@@ -10041,9 +10041,9 @@ void Tokenizer::simplifyBitfields()
             Token *newTok = typeTok->insertToken(name);
             newTok->isAnonymousBitfield(true);
             if (newTok->tokAt(2)->isBoolean())
-                newTok->setBits(static_cast<char>(newTok->strAt(2) == "true"));
+                newTok->setBits(newTok->strAt(2) == "true");
             else
-                newTok->setBits(static_cast<char>(MathLib::toBigNumber(newTok->tokAt(2))));
+                newTok->setBits(MathLib::toBigNumber(newTok->tokAt(2)));
             newTok->deleteNext(2);
         }
 

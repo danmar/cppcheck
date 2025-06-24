@@ -82,7 +82,7 @@ struct TokenImpl {
     nonneg int mIndex{};
 
     /** Bitfield bit count. */
-    char mBits = -1;
+    MathLib::bigint mBits = -1;
 
     // AST..
     Token* mAstOperand1{};
@@ -753,7 +753,7 @@ public:
     bool isBitfield() const {
         return mImpl->mBits >= 0;
     }
-    char bits() const {
+    MathLib::bigint bits() const {
         return mImpl->mBits;
     }
     const std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
@@ -767,7 +767,7 @@ public:
             mImpl->mTemplateSimplifierPointers = new std::set<TemplateSimplifier::TokenAndName*>;
         mImpl->mTemplateSimplifierPointers->insert(tokenAndName);
     }
-    void setBits(const unsigned char b) {
+    void setBits(const MathLib::bigint b) {
         mImpl->mBits = b;
     }
 
