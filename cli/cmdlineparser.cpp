@@ -1397,10 +1397,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
             else if (showtimeMode == "summary")
                 mSettings.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
-            else if (showtimeMode == "top5") {
-                mSettings.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE;
-                mLogger.printMessage("--showtime=top5 is deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.");
-            }
             else if (showtimeMode == "top5_file")
                 mSettings.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE;
             else if (showtimeMode == "top5_summary")
@@ -1412,7 +1408,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
             else {
-                mLogger.printError("unrecognized --showtime mode: '" + showtimeMode + "'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.");
+                mLogger.printError("unrecognized --showtime mode: '" + showtimeMode + "'. Supported modes: file, file-total, summary, top5_file, top5_summary.");
                 return Result::Fail;
             }
         }
@@ -1968,8 +1964,6 @@ void CmdLineParser::printHelp() const
         "                                 Show the top 5 for each processed file\n"
         "                          * top5_summary\n"
         "                                 Show the top 5 summary at the end\n"
-        "                          * top5\n"
-        "                                 Alias for top5_file (deprecated)\n"
         "    --std=<id>           Set standard.\n"
         "                         The available options are:\n"
         "                          * c89\n"

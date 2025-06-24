@@ -630,7 +630,6 @@ There are false positives with this option. Each result must be carefully invest
               <glossentry><glossterm>summary</glossterm><glossdef><para>Show a summary at the end</para></glossdef></glossentry>
               <glossentry><glossterm>top5_file</glossterm><glossdef><para>Show the top 5 for each processed file</para></glossdef></glossentry>
               <glossentry><glossterm>top5_summary</glossterm><glossdef><para>Show the top 5 summary at the end</para></glossdef></glossentry>
-              <glossentry><glossterm>top5</glossterm><glossdef><para>Alias for top5_file (deprecated)</para></glossdef></glossentry>
             </glosslist>
           </para>
         </listitem>
