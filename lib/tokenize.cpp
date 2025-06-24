@@ -10037,9 +10037,9 @@ void Tokenizer::simplifyBitfields()
         } else if (Token::Match(typeTok, "%type% : %num%|%bool% ;") &&
                    typeTok->str() != "default") {
             const std::size_t id = anonymousBitfieldCounter++;
-            const std::string name = "__cppcheck_anon_bit_field_" + std::to_string(id) + "__";
+            const std::string name = "anonymous@" + std::to_string(id);
             Token *newTok = typeTok->insertToken(name);
-            newTok->isAnonymousBitfield(true);
+            newTok->isAnonymous(true);
             if (newTok->tokAt(2)->isBoolean())
                 newTok->setBits(newTok->strAt(2) == "true");
             else

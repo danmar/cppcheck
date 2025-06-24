@@ -1575,7 +1575,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             if (isInherited && !var.isPrivate())
                 continue;
 
-            if (var.nameToken() && (var.nameToken()->isAttributeUnused() || var.nameToken()->isAnonymousBitfield()))
+            if (var.nameToken() && (var.nameToken()->isAttributeUnused() || var.nameToken()->isAnonymous()))
                 continue;
 
             if (mTokenizer->isVarUsedInTemplate(var.declarationId()))
