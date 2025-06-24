@@ -74,9 +74,9 @@ private:
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::FileDataCache cache;
         // TODO: provide and handle outputList
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, dui);
+        simplecpp::preprocess(tokens2, tokens1, files, cache, dui);
 
         // Tokenizer..
         tokenlist.createTokens(std::move(tokens2));
