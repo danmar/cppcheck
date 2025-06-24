@@ -5635,6 +5635,23 @@ private:
         value = valueOfTok(code, ", 1");
         ASSERT_EQUALS(0, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
+
+        // #13959
+        const Settings settingsOld = settings;
+        settings = settingsBuilder(settingsOld).c(Standards::C23).build();
+        code = "void f(int* p) {\n"
+               "    if (p == nullptr)\n"
+               "        return;\n"
+               "    if (p) {}\n"
+               "}\n";
+        value = valueOfTok(code, "p ) { }", &settings, /*cpp*/ false);
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(true, value.isKnown());
+
+        settings = settingsBuilder(settingsOld).c(Standards::C17).build();
+        value = valueOfTok(code, "p ) { }", &settings, /*cpp*/ false);
+        ASSERT(value == ValueFlow::Value());
+        settings = settingsOld;
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
