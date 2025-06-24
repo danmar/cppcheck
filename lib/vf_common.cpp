@@ -150,7 +150,7 @@ namespace ValueFlow
             if (!tok->isTemplateArg())
                 value.setKnown();
             setTokenValue(tok, std::move(value), settings);
-        } else if (tok->str() == "NULL" || (tok->isCpp() && tok->str() == "nullptr")) {
+        } else if (tok->str() == "NULL" || ((tok->isCpp() || settings.standards.c >= Standards::C23) && tok->str() == "nullptr")) {
             Value value(0);
             if (!tok->isTemplateArg())
                 value.setKnown();
