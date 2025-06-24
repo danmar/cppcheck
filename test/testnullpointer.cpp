@@ -183,12 +183,13 @@ private:
         CheckOptions() = default;
         bool inconclusive = false;
         bool cpp = true;
+        Standards::cstd_t cstd = Standards::CLatest;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).c(options.cstd).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);
@@ -201,7 +202,7 @@ private:
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkP_(const char* file, int line, const char (&code)[size]) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).c(options.cstd).build();
 
         SimpleTokenizer2 tokenizer(settings1, *this, code, "test.cpp");
 
@@ -1331,8 +1332,11 @@ private:
         check(code); // C++ file => nullptr means NULL
         ASSERT_EQUALS("[test.cpp:4:11]: (error) Null pointer dereference: i [nullPointer]\n", errout_str());
 
-        check(code, dinit(CheckOptions, $.cpp = false)); // C file => nullptr does not mean NULL
+        check(code, dinit(CheckOptions, $.cpp = false, $.cstd = Standards::C17)); // C17 file => nullptr does not mean NULL
         ASSERT_EQUALS("", errout_str());
+
+        check(code, dinit(CheckOptions, $.cpp = false));
+        ASSERT_EQUALS("[test.c:4:11]: (error) Null pointer dereference: i [nullPointer]\n", errout_str());
     }
 
     void nullpointer15() {  // #3560
