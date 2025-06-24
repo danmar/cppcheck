@@ -5639,7 +5639,7 @@ private:
         // #13959
         const Settings settingsOld = settings;
         settings = settingsBuilder(settingsOld).c(Standards::C23).build();
-        code = "void f(int* p) {\n" // #11894
+        code = "void f(int* p) {\n"
                "    if (p == nullptr)\n"
                "        return;\n"
                "    if (p) {}\n"
@@ -5649,11 +5649,6 @@ private:
         ASSERT_EQUALS(true, value.isKnown());
 
         settings = settingsBuilder(settingsOld).c(Standards::C17).build();
-        code = "void f(int* p) {\n" // #11894
-               "    if (p == nullptr)\n"
-               "        return;\n"
-               "    if (p) {}\n"
-               "}\n";
         value = valueOfTok(code, "p ) { }", &settings, /*cpp*/ false);
         ASSERT(value == ValueFlow::Value());
         settings = settingsOld;
