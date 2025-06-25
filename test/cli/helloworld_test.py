@@ -376,6 +376,7 @@ def test_sarif():
     assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] > 9.5
     assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
     assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
+    assert 'level' in res['runs'][0]['tool']['driver']['rules'][0]['defaultConfiguration'] # #13885
 
 
 def test_xml_checkers_report():

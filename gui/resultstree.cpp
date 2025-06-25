@@ -64,6 +64,7 @@
 #include <QVariant>
 #include <QVariantMap>
 #include <Qt>
+#include <QHeaderView>
 
 static constexpr char COLUMN[] = "column";
 static constexpr char CWE[] = "cwe";
@@ -666,6 +667,7 @@ void ResultsTree::refreshTree()
         // Show the file if any of it's errors are visible
         setRowHidden(i, QModelIndex(), !showFile);
     }
+    sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
 }
 
 QStandardItem *ResultsTree::ensureFileItem(const QString &fullpath, const QString &file0, bool hide)
@@ -1534,7 +1536,9 @@ bool ResultsTree::isCertReport() const {
 
 bool ResultsTree::isAutosarMisraReport() const {
     return mReportType == ReportType::autosar ||
-           mReportType == ReportType::misraC ||
+           mReportType == ReportType::misraC2012 ||
+           mReportType == ReportType::misraC2023 ||
+           mReportType == ReportType::misraC2025 ||
            mReportType == ReportType::misraCpp2008 ||
            mReportType == ReportType::misraCpp2023;
 }

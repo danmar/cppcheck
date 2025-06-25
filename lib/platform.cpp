@@ -174,7 +174,7 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         bool found = false;
         for (const std::string& path : paths) {
             if (debug)
-                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
+                std::cout << "looking for platform '" + platformstr + "' relative to '" + path + "'" << std::endl;
             if (loadFromFile(path.c_str(), platformstr, debug)) {
                 found = true;
                 break;
@@ -191,43 +191,50 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
 
 bool Platform::loadFromFile(const char exename[], const std::string &filename, bool debug)
 {
-    // TODO: only append .xml if missing
+    const bool is_abs_path = Path::isAbsolute(filename);
+
+    std::string fullfilename(filename);
+    // TODO: what if extension is not .xml?
+    // only append extension when we provide the library name is not a path - TODO: handle relative paths?
+    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
+        fullfilename += ".xml";
+
     // TODO: use native separators
     std::vector<std::string> filenames{
-        filename,
-        filename + ".xml",
-        "platforms/" + filename,
-        "platforms/" + filename + ".xml"
+        fullfilename,
     };
-    if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
-    }
+    if (!is_abs_path) {
+        filenames.push_back("platforms/" + fullfilename);
+        if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + fullfilename);
+            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + fullfilename);
+        }
 #ifdef FILESDIR
-    std::string filesdir = FILESDIR;
-    if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
-        filesdir += '/';
-    filenames.push_back(filesdir + ("platforms/" + filename));
-    filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
+        std::string filesdir = FILESDIR;
+        if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
+            filesdir += '/';
+        filenames.push_back(filesdir + ("platforms/" + fullfilename));
 #endif
+    }
 
     // open file..
     tinyxml2::XMLDocument doc;
-    bool success = false;
+    tinyxml2::XMLError err = tinyxml2::XML_SUCCESS;
     for (const std::string & f : filenames) {
         if (debug)
             std::cout << "try to load platform file '" << f << "' ... ";
-        if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
+        err = doc.LoadFile(f.c_str());
+        if (err == tinyxml2::XML_SUCCESS) {
             if (debug)
                 std::cout << "Success" << std::endl;
-            success = true;
             break;
         }
         if (debug)
             std::cout << doc.ErrorStr() << std::endl;
+        if (err != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+            break;
     }
-    if (!success)
+    if (err != tinyxml2::XML_SUCCESS)
         return false;
 
     return loadFromXmlDocument(&doc);

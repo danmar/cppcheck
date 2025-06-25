@@ -188,6 +188,9 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca{};
 
+    /** @brief Is --debug-ast given? */
+    bool debugast{};
+
     /** @brief Is --debug-clang-output given? */
     bool debugClangOutput{};
 
@@ -215,8 +218,14 @@ public:
     /** @brief Is --debug-simplified given? */
     bool debugSimplified{};
 
+    /** @brief Is --debug-symdb given? */
+    bool debugsymdb{};
+
     /** @brief Is --debug-template given? */
     bool debugtemplate{};
+
+    /** @brief Is --debug-valueflow given? */
+    bool debugvalueflow{};
 
     /** @brief Is --debug-warnings given? */
     bool debugwarnings{};
@@ -226,9 +235,6 @@ public:
 
     /** @brief Do not filter duplicated errors. */
     bool emitDuplicates{};
-
-    /** @brief Name of the language that is enforced. Empty per default. */
-    Standards::Language enforcedLang{};
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
@@ -534,17 +540,12 @@ public:
 
     void setCheckLevel(CheckLevel level);
 
-    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
-    void setMisraRuleTexts(const ExecuteCmdFn& executeCommand);
-    void setMisraRuleTexts(const std::string& data);
-    std::string getMisraRuleText(const std::string& id, const std::string& text) const;
 
     static ExecutorType defaultExecutor();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
-    std::map<std::string, std::string> mMisraRuleTexts;
 };
 
 /// @}

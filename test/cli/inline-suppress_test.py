@@ -135,7 +135,7 @@ def __test_compile_commands_unused_function(tmpdir, use_j):
     proj_path_sep = os.path.join(__script_dir, 'proj-inline-suppress-unusedFunction') + os.path.sep
     lines = stderr.splitlines()
     assert lines == [
-        "{}B.cpp:6:0: style: The function 'unusedFunctionTest' is never used. [unusedFunction]".format(proj_path_sep)
+        "{}B.cpp:6:9: style: The function 'unusedFunctionTest' is never used. [unusedFunction]".format(proj_path_sep)
     ]
     assert stdout == ''
     assert ret == 1, stdout

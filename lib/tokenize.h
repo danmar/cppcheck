@@ -28,6 +28,7 @@
 #include <iosfwd>
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -54,7 +55,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TestTokenizer;
 
 public:
-    Tokenizer(TokenList tokenList, const Settings & settings, ErrorLogger &errorLogger);
+    Tokenizer(TokenList tokenList, ErrorLogger &errorLogger);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -79,7 +80,11 @@ public:
      */
     bool isScopeNoReturn(const Token *endScopeToken, bool *unknown = nullptr) const;
 
-    bool simplifyTokens1(const std::string &configuration);
+    bool simplifyTokens1(const std::string &configuration, int fileIndex=0);
+
+    bool isVarUsedInTemplate(nonneg int id) const {
+        return mTemplateVarIdUsage.count(id) != 0;
+    }
 
 private:
     /** Set variable id */
@@ -217,9 +222,6 @@ private:
      *         or NULL when syntaxError is called
      */
     Token * simplifyAddBracesPair(Token *tok, bool commandWithCondition);
-
-    // Convert "using ...;" to corresponding typedef
-    void simplifyUsingToTypedef();
 
     /**
      * typedef A mytype;
@@ -558,11 +560,8 @@ public:
     void createSymbolDatabase();
 
     /** print --debug output if debug flags match the simplification:
-     * 0=unknown/both simplifications
-     * 1=1st simplifications
-     * 2=2nd simplifications
      */
-    void printDebugOutput(int simplification, std::ostream &out) const;
+    void printDebugOutput(std::ostream &out) const;
 
     void dump(std::ostream &out) const;
 
@@ -608,6 +607,10 @@ public:
         return mSettings;
     }
 
+    ErrorLogger &getErrorLogger() {
+        return mErrorLogger;
+    }
+
     void calculateScopes();
 
     /** Disable copy constructor */
@@ -646,6 +649,8 @@ private:
     SymbolDatabase* mSymbolDatabase{};
 
     TemplateSimplifier * const mTemplateSimplifier;
+
+    std::set<nonneg int> mTemplateVarIdUsage;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */

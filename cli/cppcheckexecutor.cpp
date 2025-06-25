@@ -120,6 +120,10 @@ namespace {
                         properties["tags"] = picojson::value(tags);
                     }
                     rule["properties"] = picojson::value(properties);
+                    // rule.defaultConfiguration.level
+                    picojson::object defaultConfiguration;
+                    defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
+                    rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
 
                     ret.emplace_back(rule);
                 }
@@ -277,6 +281,23 @@ namespace {
          */
         void reportErr(const std::string &errmsg);
 
+        void reportMetric(const std::string &metric) override
+        {
+            mFileMetrics.push_back(metric);
+        }
+
+        void reportMetrics()
+        {
+            if (!mFileMetrics.empty()) {
+                auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+                out << "    <metrics>" << std::endl;
+                for (const auto &metric : mFileMetrics) {
+                    out << "        " << metric << std::endl;
+                }
+                out << "    </metrics>" << std::endl;
+            }
+        }
+
         /**
          * @brief Write the checkers report
          */
@@ -349,6 +370,11 @@ namespace {
          * Coding standard guideline mapping
          */
         std::map<std::string, std::string> mGuidelineMapping;
+
+        /**
+         * File metrics
+         */
+        std::vector<std::string> mFileMetrics;
     };
 }
 
@@ -369,8 +395,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
-
-    settings.setMisraRuleTexts(executeCommand);
 
     const int ret = check_wrapper(settings, supprs);
 
@@ -483,6 +507,8 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
     stdLogger.writeCheckersReport(supprs);
 
     if (settings.outputFormat == Settings::OutputFormat::xml) {
+        if (settings.xml_version == 3)
+            stdLogger.reportMetrics();
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 

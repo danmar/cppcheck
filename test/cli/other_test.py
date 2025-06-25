@@ -7,15 +7,8 @@ import pytest
 import json
 import subprocess
 
-from testutils import cppcheck, assert_cppcheck, cppcheck_ex
+from testutils import cppcheck, assert_cppcheck
 from xml.etree import ElementTree
-
-
-def __remove_std_lookup_log(l : list, exepath):
-    l.remove("looking for library 'std.cfg'")
-    l.remove("looking for library '{}/std.cfg'".format(exepath))
-    l.remove("looking for library '{}/cfg/std.cfg'".format(exepath))
-    return l
 
 
 def __remove_verbose_log(l : list):
@@ -865,7 +858,7 @@ def __test_unused_function_include(tmpdir, extra_args):
     args += extra_args
 
     _, _, stderr = cppcheck(args)
-    assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
+    assert stderr == "{}:4:26: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
 
 
 def test_unused_function_include(tmpdir):
@@ -1679,331 +1672,6 @@ def test_cpp_probe_2(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=[])
 
 
-# TODO: test with FILESDIR
-def test_lib_lookup(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library=gnu', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library 'gnu'",
-        "looking for library 'gnu.cfg'",
-        "looking for library '{}/gnu.cfg'".format(exepath),
-        "looking for library '{}/cfg/gnu.cfg'".format(exepath),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_lib_lookup_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=none', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 1, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        # TODO: specify which folder is actually used for lookup here
-        "looking for library 'none'",  # TODO: this could conflict with the platform lookup
-        "looking for library 'none.cfg'",
-        # TODO: lookup of '{exepath}/none' missing - could conflict with the platform lookup though
-        "looking for library '{}/none.cfg'".format(exepath),
-        # TODO: lookup of '{exepath}/cfg/none' missing
-        "looking for library '{}/cfg/none.cfg'".format(exepath),
-        "library not found: 'none'",
-        "cppcheck: Failed to load library configuration file 'none'. File not found"
-    ]
-
-
-def test_lib_lookup_absolute(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    cfg_file = os.path.join(tmpdir, 'test.cfg')
-    with open(cfg_file, 'wt') as f:
-        f.write('''
-<?xml version="1.0"?>
-<def format="2">
-</def>
-        ''')
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library={}'.format(cfg_file), test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library '{}'".format(cfg_file),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-def test_lib_lookup_absolute_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    cfg_file = os.path.join(tmpdir, 'test.cfg')
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library={}'.format(cfg_file), test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 1, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library '{}'".format(cfg_file),
-        "library not found: '{}'".format(cfg_file),
-        "cppcheck: Failed to load library configuration file '{}'. File not found".format(cfg_file)
-    ]
-
-
-def test_lib_lookup_nofile(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    # make sure we do not produce an error when the attempted lookup path is a directory and not a file
-    gtk_dir = os.path.join(tmpdir, 'gtk')
-    os.mkdir(gtk_dir)
-    gtk_cfg_dir = os.path.join(tmpdir, 'gtk.cfg')
-    os.mkdir(gtk_cfg_dir)
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library=gtk', test_file], cwd=tmpdir)
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library 'gtk'",
-        "looking for library 'gtk.cfg'",
-        "looking for library '{}/gtk.cfg'".format(exepath),
-        "looking for library '{}/cfg/gtk.cfg'".format(exepath),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-def test_lib_lookup_multi(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=library', '--library=posix,gnu', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library 'posix'",
-        "looking for library 'posix.cfg'",
-        "looking for library '{}/posix.cfg'".format(exepath),
-        "looking for library '{}/cfg/posix.cfg'".format(exepath),
-        "looking for library 'gnu'",
-        "looking for library 'gnu.cfg'",
-        "looking for library '{}/gnu.cfg'".format(exepath),
-        "looking for library '{}/cfg/gnu.cfg'".format(exepath),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-def test_platform_lookup_builtin(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform=unix64', test_file])
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    # built-in platform are not being looked up
-    assert lines == [
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: behaves differently when using a CMake build
-# TODO: test with FILESDIR
-@pytest.mark.skip
-def test_platform_lookup_external(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for platform 'avr8' in '{}'".format(os.path.join(exepath, 'cppcheck')),  # TODO: this not not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8",
-        "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/avr8",
-        "try to load platform file 'platforms/avr8.xml' ... Success",
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_platform_lookup_external_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
-    assert exitcode == 1, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for platform 'none' in '{}'".format(exepath_bin),  # TODO: this is not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none",
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
-        "try to load platform file '{}/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none".format(exepath, exepath),
-        # TODO: lookup of '{exepath}/none.xml' missing
-        "try to load platform file '{}/platforms/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none".format(exepath, exepath),
-        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
-        "cppcheck: error: unrecognized platform: 'none'."
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'misra.py'",
-        "looking for addon '{}misra.py'".format(exepath_sep),
-        "looking for addon '{}addons/misra.py'".format(exepath_sep),  # TODO: mixed separators
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup_ext(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra.py', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'misra.py'",
-        "looking for addon '{}misra.py'".format(exepath_sep),
-        "looking for addon '{}addons/misra.py'".format(exepath_sep),  # TODO: mixed separators
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 1, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'none.py'",
-        "looking for addon '{}none.py'".format(exepath_sep),
-        "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
-        'Did not find addon none.py'
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup_ext_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none.py', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 1, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'none.py'",
-        "looking for addon '{}none.py'".format(exepath_sep),
-        "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
-        'Did not find addon none.py'
-    ]
-
-
-# TODO: test with FILESDIR
-@pytest.mark.skip
-def test_config_lookup(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    # TODO: needs to be in exepath so this is found
-    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
-    with open(config_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', '--addon=misra', test_file], cwd=tmpdir)
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for '{}cppcheck.cfg'".format(exepath_sep),
-        'no configuration found',
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_config_lookup_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=config', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for '{}cppcheck.cfg'".format(exepath_sep),
-        'no configuration found',
-        'Checking {} ...'.format(test_file)
-    ]
-
-
 def test_checkers_report(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
@@ -2722,6 +2390,7 @@ void f(const void* p)
     exitcode_1, stdout_1, stderr_1 = cppcheck(args)
     assert exitcode_1 == 0, stdout_1
     assert stdout_1 == ''
+    test_file_exp = str(test_file).replace('\\', '/')
     assert (stderr_1 ==
 '''<?xml version="1.0" encoding="UTF-8"?>
 <results version="2">
@@ -2734,7 +2403,7 @@ void f(const void* p)
         </error>
     </errors>
 </results>
-'''.format(version_str, str(test_file).replace('\\', '/'), test_file, test_file))  # TODO: the slashes are inconsistent
+'''.format(version_str, test_file_exp, test_file_exp, test_file_exp))
 
 
 def test_internal_error_loc_int(tmp_path):
@@ -3033,32 +2702,47 @@ def test_debug_verbose_xml(tmp_path):
 
 
 # TODO: test with --xml
-def test_debug_template(tmp_path):
+def __test_debug_template(tmp_path, verbose):
     test_file = tmp_path / 'test.cpp'
     with open(test_file, "w") as f:
         f.write(
 """template<class T> class TemplCl;
-void f
+void f()
 {
-    (void)*((int*)0);
+    (void)*((int*)nullptr);
 }
 """)
 
     args = [
         '-q',
-        '--debug',  # TODO: remove depdency on this
+        '--template=simple',
         '--debug-template',
         str(test_file)
     ]
 
+    if verbose:
+        args += ['--verbose']
+
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0, stdout
-    assert stdout.find('##file ') != -1
-    assert stdout.find('##Value flow') != -1
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') != -1
-    assert stderr.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:4:13: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_template(tmp_path):
+    __test_debug_template(tmp_path, False)
+
+
+def test_debug_template_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_template(tmp_path, False) == __test_debug_template(tmp_path, True)
 
 
 def test_file_ignore_2(tmp_path):  # #13570
@@ -3087,7 +2771,7 @@ def test_file_ignore_2(tmp_path):  # #13570
     assert stderr.splitlines() == []
 
 
-def test_debug_valueflow(tmp_path):
+def test_debug_valueflow_data(tmp_path):
     test_file = tmp_path / 'test.c'
     with open(test_file, "w") as f:
         f.write(
@@ -3100,7 +2784,7 @@ def test_debug_valueflow(tmp_path):
 
     args = [
         '-q',
-        '--debug',  # TODO: limit to valueflow output
+        '--debug-valueflow',
         str(test_file)
     ]
 
@@ -3108,7 +2792,7 @@ def test_debug_valueflow(tmp_path):
     assert exitcode == 0, stdout
 
     # check sections in output
-    assert stdout.find('##file ') != -1
+    assert stdout.find('##file ') == -1
     assert stdout.find('##Value flow') != -1
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
@@ -3130,7 +2814,7 @@ def test_debug_valueflow(tmp_path):
     ]
 
 
-def test_debug_valueflow_xml(tmp_path):  # #13606
+def test_debug_valueflow_data_xml(tmp_path):  # #13606
     test_file = tmp_path / 'test.c'
     with open(test_file, "w") as f:
         f.write(
@@ -3143,7 +2827,7 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
 
     args = [
         '-q',
-        '--debug',  # TODO: limit to valueflow output
+        '--debug-valueflow',
         '--xml',
         str(test_file)
     ]
@@ -3155,7 +2839,7 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     assert ElementTree.fromstring(stderr) is not None
 
     # check sections in output
-    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##file ') == -1
     assert stdout.find('##Value flow') == -1
     assert stdout.find('### Symbol database ###') == -1
     assert stdout.find('##AST') == -1
@@ -3165,8 +2849,6 @@ def test_debug_valueflow_xml(tmp_path):  # #13606
     debug_xml = ElementTree.fromstring(stdout)
     assert debug_xml is not None
     assert debug_xml.tag == 'debug'
-    file_elem = debug_xml.findall('file')
-    assert len(file_elem) == 1
     valueflow_elem = debug_xml.findall('valueflow')
     assert len(valueflow_elem) == 1
     scopes_elem = debug_xml.findall('scopes')
@@ -3607,4 +3289,259 @@ def test_preprocess_enforced_cpp(tmp_path):  # #10989
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
+    ]
+
+
+# TODO: test with --xml
+def __test_debug_normal(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    if verbose:
+        assert stdout.find('### Symbol database ###') != -1
+    else:
+        assert stdout.find('### Symbol database ###') == -1
+    if verbose:
+        assert stdout.find('##AST') != -1
+    else:
+        assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_normal(tmp_path):
+    __test_debug_normal(tmp_path, False)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_normal_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_normal(tmp_path, False) == __test_debug_normal(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_simplified(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-simplified',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_simplified(tmp_path):
+    __test_debug_simplified(tmp_path, False)
+
+
+def test_debug_simplified_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_simplified(tmp_path, False) == __test_debug_simplified(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_symdb(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-symdb',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') != -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_symdb(tmp_path):
+    __test_debug_symdb(tmp_path, False)
+
+
+@pytest.mark.skip  # TODO: this contains memory addresses the output will always differ - would require stable identifier
+def test_debug_symdb_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_symdb(tmp_path, False) == __test_debug_symdb(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_ast(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-ast',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') != -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_ast(tmp_path):
+    __test_debug_ast(tmp_path, False)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_ast_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_ast(tmp_path, False) == __test_debug_ast(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_valueflow(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-valueflow',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_valueflow(tmp_path):
+    __test_debug_valueflow(tmp_path, False)
+
+
+def test_debug_valueflow_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_valueflow(tmp_path, False) == __test_debug_valueflow(tmp_path, True)
+
+
+def test_debug_syntaxerror_c(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+template<class T> class TemplCl;
+void f()
+{
+    (void)*((int*)0);
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
     ]

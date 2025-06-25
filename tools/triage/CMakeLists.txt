@@ -39,6 +39,10 @@ CheckOptions:
         # QBrush fails to compile before 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-134038
         target_compile_definitions(triage PRIVATE -DQT_NO_QPAIR)
     endif()
+    if(QT_VERSION VERSION_EQUAL "6.9.0")
+        # caused by Qt generated moc code in 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
+        target_compile_options_safe(triage -Wno-ctad-maybe-unsupported)
+    endif()
     target_compile_definitions(triage PRIVATE -DQT_NO_FOREACH)
 
     target_compile_definitions(triage PRIVATE $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)

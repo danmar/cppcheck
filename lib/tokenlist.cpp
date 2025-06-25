@@ -32,6 +32,7 @@
 #include "token.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <cstdint>
 #include <exception>
@@ -45,22 +46,13 @@
 
 #include <simplecpp.h>
 
-//#define N_ASSERT_LANG
-
-#ifndef N_ASSERT_LANG
-#include <cassert>
-#define ASSERT_LANG(x) assert(x)
-#else
-#define ASSERT_LANG(x)
-#endif
-
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
 static constexpr int AST_MAX_DEPTH = 150;
 
 
-TokenList::TokenList(const Settings* settings, Standards::Language lang)
+TokenList::TokenList(const Settings& settings, Standards::Language lang)
     : mTokensFrontBack(new TokensFrontBack)
     , mSettings(settings)
 {
@@ -94,28 +86,14 @@ void TokenList::deallocateTokens()
         mTokensFrontBack->front = nullptr;
         mTokensFrontBack->back = nullptr;
     }
+    // TODO: clear mOrigFiles?
     mFiles.clear();
 }
 
-void TokenList::determineCppC()
-{
-    // only try to determine if it wasn't enforced
-    if (mLang == Standards::Language::None) {
-        ASSERT_LANG(!getSourceFilePath().empty());
-        mLang = Path::identify(getSourceFilePath(), mSettings ? mSettings->cppHeaderProbe : false);
-        // TODO: cannot enable assert as this might occur for unknown extensions
-        //ASSERT_LANG(mLang != Standards::Language::None);
-        if (mLang == Standards::Language::None) {
-            // TODO: should default to C instead like we do for headers
-            // default to C++
-            mLang = Standards::Language::CPP;
-        }
-    }
-}
-
+// TODO: also update mOrigFiles?
 int TokenList::appendFileIfNew(std::string fileName)
 {
-    ASSERT_LANG(!fileName.empty());
+    assert(!fileName.empty());
 
     // Has this file been tokenized already?
     auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
@@ -124,13 +102,11 @@ int TokenList::appendFileIfNew(std::string fileName)
     if (it != mFiles.cend())
         return static_cast<int>(std::distance(mFiles.cbegin(), it));
 
+    assert(mTokensFrontBack->front == nullptr); // has no effect if tokens have already been created
+
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));
 
-    // Update mIsC and mIsCpp properties
-    if (mFiles.size() == 1) { // Update only useful if first file added to _files
-        determineCppC();
-    }
     return mFiles.size() - 1;
 }
 
@@ -375,10 +351,10 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
         mOrigFiles = mFiles = tokenList.getFiles();
     }
-    else
+    else {
+        // TODO: clear mOrigFiles?
         mFiles.clear();
-
-    determineCppC();
+    }
 
     for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
@@ -408,9 +384,9 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
             tokenList.deleteToken(tok->previous);
     }
 
-    if (mSettings && mSettings->relativePaths) {
+    if (mSettings.relativePaths) {
         for (std::string & mFile : mFiles)
-            mFile = Path::getRelativePath(mFile, mSettings->basePaths);
+            mFile = Path::getRelativePath(mFile, mSettings.basePaths);
     }
 
     Token::assignProgressValues(mTokensFrontBack->front);
@@ -494,7 +470,7 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::Match(tok->link(), ") %assign%|,|..."))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->strAt(-1) != "return" &&
+    if (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") &&
         (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
 
@@ -624,6 +600,10 @@ static bool iscpp11init_impl(const Token * const tok)
             if (Token::simpleMatch(castTok->astParent(), "case"))
                 return true;
         }
+        if (findParent(colonTok->previous(), [](const Token *parent){
+            return parent->str() == "case";
+        }))
+            return true;
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
@@ -864,6 +844,10 @@ static void compileTerm(Token *&tok, AST_state& state)
                     if (precedes(tok,end)) // typically for something like `MACRO(x, { if (c) { ... } })`, where end is the last curly, and tok is the open curly for the if
                         tok = end;
                 }
+            } else if (tok->next() == end) {
+                tok->astOperand1(state.op.top());
+                state.op.pop();
+                tok = tok->next();
             } else
                 compileBinOp(tok, state, compileExpression);
             if (tok != end)
@@ -1060,6 +1044,8 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
         } else if (Token::simpleMatch(tok->previous(), "requires {")) {
+            tok->astOperand1(state.op.top());
+            state.op.pop();
             state.op.push(tok);
             tok = tok->link()->next();
             continue;
@@ -1094,7 +1080,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             state.inGeneric = inGenericSaved;
             tok = tok->link()->next();
             if (Token::simpleMatch(tok, "::"))
-                compileBinOp(tok, state, compileTerm);
+                compileBinOp(tok, state, compileScope);
         } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") &&
                    Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;
@@ -2006,20 +1992,17 @@ bool TokenList::validateToken(const Token* tok) const
 
 void TokenList::simplifyPlatformTypes()
 {
-    if (!mSettings)
-        return;
-
-    const bool isCPP11 = isCPP() && (mSettings->standards.cpp >= Standards::CPP11);
+    const bool isCPP11 = isCPP() && (mSettings.standards.cpp >= Standards::CPP11);
 
     enum : std::uint8_t { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
+    if (mSettings.platform.sizeof_size_t == mSettings.platform.sizeof_long)
         type = isLong;
-    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
+    else if (mSettings.platform.sizeof_size_t == mSettings.platform.sizeof_long_long)
         type = isLongLong;
-    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_int)
+    else if (mSettings.platform.sizeof_size_t == mSettings.platform.sizeof_int)
         type = isInt;
     else
         return;
@@ -2072,13 +2055,13 @@ void TokenList::simplifyPlatformTypes()
         }
     }
 
-    const std::string platform_type(mSettings->platform.toString());
+    const std::string platform_type(mSettings.platform.toString());
 
     for (Token *tok = front(); tok; tok = tok->next()) {
         if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
             continue;
 
-        const Library::PlatformType * const platformtype = mSettings->library.platform_type(tok->str(), platform_type);
+        const Library::PlatformType * const platformtype = mSettings.library.platform_type(tok->str(), platform_type);
 
         if (platformtype) {
             // check for namespace
@@ -2166,7 +2149,7 @@ void TokenList::simplifyStdType()
             continue;
         }
 
-        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (isC() && (!mSettings || (mSettings->standards.c >= Standards::C99)) && Token::Match(tok, "complex|_Complex"))) {
+        if (Token::Match(tok, "char|short|int|long|unsigned|signed|double|float") || (isC() && (mSettings.standards.c >= Standards::C99) && Token::Match(tok, "complex|_Complex"))) {
             bool isFloat= false;
             bool isSigned = false;
             bool isUnsigned = false;
@@ -2189,7 +2172,7 @@ void TokenList::simplifyStdType()
                 else if (Token::Match(tok2, "float|double")) {
                     isFloat = true;
                     typeSpec = tok2;
-                } else if (isC() && (!mSettings || (mSettings->standards.c >= Standards::C99)) && Token::Match(tok2, "complex|_Complex"))
+                } else if (isC() && (mSettings.standards.c >= Standards::C99) && Token::Match(tok2, "complex|_Complex"))
                     isComplex = !isFloat || tok2->str() == "_Complex" || Token::Match(tok2->next(), "*|&|%name%"); // Ensure that "complex" is not the variables name
                 else if (Token::Match(tok2, "char|int")) {
                     if (!typeSpec)
@@ -2228,55 +2211,37 @@ void TokenList::simplifyStdType()
 bool TokenList::isKeyword(const std::string &str) const
 {
     if (isCPP()) {
-        // TODO: integrate into keywords?
-        // types and literals are not handled as keywords
-        static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
-        if (cpp_types.find(str) != cpp_types.end())
-            return false;
-
-        if (mSettings) {
-            const auto &cpp_keywords = Keywords::getAll(mSettings->standards.cpp);
-            return cpp_keywords.find(str) != cpp_keywords.end();
+        const auto &cpp_keywords = Keywords::getAll(mSettings.standards.cpp);
+        const bool b = cpp_keywords.find(str) != cpp_keywords.end();
+        if (b) {
+            // TODO: integrate into keywords?
+            // types and literals are not handled as keywords
+            static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
+            if (cpp_types.find(str) != cpp_types.end())
+                return false;
         }
-
-        static const auto& latest_cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPPLatest);
-        return latest_cpp_keywords.find(str) != latest_cpp_keywords.end();
+        return b;
     }
 
-    // TODO: integrate into Keywords?
-    // types are not handled as keywords
-    static const std::unordered_set<std::string> c_types = {"char", "double", "float", "int", "long", "short"};
-    if (c_types.find(str) != c_types.end())
-        return false;
-
-    if (mSettings) {
-        const auto &c_keywords = Keywords::getAll(mSettings->standards.c);
-        return c_keywords.find(str) != c_keywords.end();
+    const auto &c_keywords = Keywords::getAll(mSettings.standards.c);
+    const bool b = c_keywords.find(str) != c_keywords.end();
+    if (b) {
+        // TODO: integrate into Keywords?
+        // types are not handled as keywords
+        static const std::unordered_set<std::string> c_types = {"char", "double", "float", "int", "long", "short"};
+        if (c_types.find(str) != c_types.end())
+            return false;
     }
-
-    static const auto& latest_c_keywords = Keywords::getAll(Standards::cstd_t::CLatest);
-    return latest_c_keywords.find(str) != latest_c_keywords.end();
+    return b;
 }
 
 bool TokenList::isC() const
 {
-    ASSERT_LANG(mLang != Standards::Language::None);
-
-    // TODO: remove the fallback
-    if (mLang == Standards::Language::None)
-        return false; // treat as C++ by default
-
     return mLang == Standards::Language::C;
 }
 
 bool TokenList::isCPP() const
 {
-    ASSERT_LANG(mLang != Standards::Language::None);
-
-    // TODO: remove the fallback
-    if (mLang == Standards::Language::None)
-        return true; // treat as C++ by default
-
     return mLang == Standards::Language::CPP;
 }
 

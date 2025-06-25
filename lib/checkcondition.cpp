@@ -522,7 +522,7 @@ void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok
 
     std::string msg = "The if condition is the same as the previous if condition";
 
-    reportError(errorPath, Severity::style, "duplicateCondition", msg, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, "duplicateCondition", msg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::multiCondition()
@@ -590,7 +590,7 @@ void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Tok
     errorPath.emplace_back(ifCond, "first condition");
     errorPath.emplace_back(elseIfCond, "else if condition is opposite to first condition");
 
-    reportError(errorPath, Severity::style, "multiCondition", errmsg.str(), CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, "multiCondition", errmsg.str(), CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -867,7 +867,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
     const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
                           "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
-    reportError(errorPath, Severity::warning, "oppositeInnerCondition", msg, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::warning, "oppositeInnerCondition", msg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
@@ -882,7 +882,7 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 
     const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
                           "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
-    reportError(errorPath, Severity::warning, "identicalInnerCondition", msg, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::warning, "identicalInnerCondition", msg, CWE398, Certainty::normal);
 }
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
@@ -898,7 +898,7 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
     errorPath.emplace_back(cond1, "If condition '" + cond + "' is true, the function will return/exit");
     errorPath.emplace_back(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'");
 
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 Severity::warning,
                 "identicalConditionAfterEarlyExit",
                 isReturnValue
@@ -1353,12 +1353,12 @@ void CheckCondition::incorrectLogicOperatorError(const Token *tok, const std::st
         return;
     errors.emplace_back(tok, "");
     if (always)
-        reportError(errors, Severity::warning, "incorrectLogicOperator",
+        reportError(std::move(errors), Severity::warning, "incorrectLogicOperator",
                     "Logical disjunction always evaluates to true: " + condition + ".\n"
                     "Logical disjunction always evaluates to true: " + condition + ". "
                     "Are these conditions necessary? Did you intend to use && instead? Are the numbers correct? Are you comparing the correct variables?", CWE571, inconclusive ? Certainty::inconclusive : Certainty::normal);
     else
-        reportError(errors, Severity::warning, "incorrectLogicOperator",
+        reportError(std::move(errors), Severity::warning, "incorrectLogicOperator",
                     "Logical conjunction always evaluates to false: " + condition + ".\n"
                     "Logical conjunction always evaluates to false: " + condition + ". "
                     "Are these conditions necessary? Did you intend to use || instead? Are the numbers correct? Are you comparing the correct variables?", CWE570, inconclusive ? Certainty::inconclusive : Certainty::normal);
@@ -1647,8 +1647,8 @@ void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* conditi
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
     const std::string errmsg = conditionStr + " '" + expr + "' is always " + bool_to_string(alwaysTrue);
-    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath,
+    ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(std::move(errorPath),
                 Severity::style,
                 "knownConditionTrueFalse",
                 errmsg,
@@ -1880,7 +1880,7 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
     }
 
     reportError(
-        errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, Certainty::normal);
+        std::move(errors), Severity::style, "duplicateConditionalAssign", msg, CWE398, Certainty::normal);
 }
 
 

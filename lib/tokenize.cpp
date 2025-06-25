@@ -115,9 +115,9 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer(TokenList tokenList, const Settings &settings, ErrorLogger &errorLogger) :
+Tokenizer::Tokenizer(TokenList tokenList, ErrorLogger &errorLogger) :
     list(std::move(tokenList)),
-    mSettings(settings),
+    mSettings(list.getSettings()),
     mErrorLogger(errorLogger),
     mTemplateSimplifier(new TemplateSimplifier(*this))
 {}
@@ -501,31 +501,6 @@ const Token *Tokenizer::processFunc(const Token *tok2, bool inOperator) const
 Token *Tokenizer::processFunc(Token *tok2, bool inOperator)
 {
     return const_cast<Token*>(processFunc(const_cast<const Token*>(tok2), inOperator));
-}
-
-void Tokenizer::simplifyUsingToTypedef()
-{
-    if (!isCPP() || mSettings.standards.cpp < Standards::CPP11)
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // using a::b;  =>   typedef  a::b  b;
-        if ((Token::Match(tok, "[;{}] using %name% :: %name% ::|;") && !tok->tokAt(2)->isKeyword()) ||
-            (Token::Match(tok, "[;{}] using :: %name% :: %name% ::|;") && !tok->tokAt(3)->isKeyword())) {
-            Token *endtok = tok->tokAt(5);
-            if (Token::Match(endtok, "%name%"))
-                endtok = endtok->next();
-            while (Token::Match(endtok, ":: %name%"))
-                endtok = endtok->tokAt(2);
-            if (endtok && endtok->str() == ";") {
-                if (endtok->strAt(-1) == endtok->strAt(-3))
-                    continue;
-                tok->next()->str("typedef");
-                endtok = endtok->previous();
-                endtok->insertToken(endtok->str());
-            }
-        }
-    }
 }
 
 void Tokenizer::simplifyTypedefLHS()
@@ -1156,9 +1131,6 @@ void Tokenizer::simplifyTypedefCpp()
 
     // add global namespace
     std::vector<Space> spaceInfo(1);
-
-    // Convert "using a::b;" to corresponding typedef statements
-    simplifyUsingToTypedef();
 
     const std::time_t maxTime = mSettings.typedefMaxTime > 0 ? std::time(nullptr) + mSettings.typedefMaxTime: 0;
     const bool doProgress = (mSettings.reportProgress != -1) && !list.getFiles().empty();
@@ -1975,6 +1947,11 @@ void Tokenizer::simplifyTypedefCpp()
                     }
                     if (Token::Match(tok2->tokAt(-1), "class|struct|union") && tok2->strAt(-1) == typeStart->str())
                         tok2->deletePrevious();
+
+                    if (cpp && Token::Match(tok2->previous(), "using %name% ::|;")) {
+                        tok2->previous()->str("typedef");
+                        tok2->insertToken(tok2->str());
+                    }
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
@@ -2279,6 +2256,9 @@ void Tokenizer::simplifyTypedefCpp()
                             tok2 = simplifyTypedefCopyTokens(tok2, arrayStart, arrayEnd, location);
                             if (!tok2->next())
                                 syntaxError(tok2);
+
+                            if (Token::Match(tok2, "] ; %name% = {") && tok2->next()->isSplittedVarDeclEq())
+                                tok2->deleteNext(2);
 
                             if (tok2->str() == "=") {
                                 if (tok2->strAt(1) == "{")
@@ -2673,6 +2653,26 @@ namespace {
             return false;
         }
 
+        if (Token::simpleMatch(tok1->tokAt(-2), "> ::")) {
+            return false;
+        }
+
+        if (Token::Match(tok1, "%name% (") && TokenList::isFunctionHead(tok1->next(), "{;:")) {
+            if (Token::Match(tok1->previous(), "%name%") && !tok1->previous()->isControlFlowKeyword())
+                return false;
+            if (Token::Match(tok1->previous(), ">|>>") && tok1->linkAt(-1))
+                return false;
+            if (Token::Match(tok1->previous(), "*|&|&&")) {
+                const Token* prev = tok1->previous();
+                while (Token::Match(prev, "%name%|*|&|&&|::") && !prev->isControlFlowKeyword())
+                    prev = prev->previous();
+                if (Token::Match(prev, ">|>>") && tok1->linkAt(-1))
+                    return false;
+                if (Token::Match(prev, "[;{}] %name%"))
+                    return false;
+            }
+        }
+
         // get qualification
         std::string qualification;
         const Token* tok2 = tok1;
@@ -3050,6 +3050,8 @@ bool Tokenizer::simplifyUsing()
             }
         }
 
+        bool isTypedefInfoAdded = false; // TODO should we add a separate mUsingInfo?
+
         std::string scope1 = currentScope1->fullName;
         bool skip = false; // don't erase type aliases we can't parse
         Token *enumOpenBrace = nullptr;
@@ -3119,6 +3121,18 @@ bool Tokenizer::simplifyUsing()
                     continue;
             } else if (!usingMatch(nameToken, scope, tok1, scope1, currentScope1, nullptr))
                 continue;
+
+            if (!isTypedefInfoAdded && Token::Match(tok1, "%name% (")) {
+                isTypedefInfoAdded = true;
+                TypedefInfo usingInfo;
+                usingInfo.name = name;
+                usingInfo.filename = list.file(nameToken);
+                usingInfo.lineNumber = nameToken->linenr();
+                usingInfo.column = nameToken->column();
+                usingInfo.used = true;
+                usingInfo.isFunctionPointer = false;
+                mTypedefInfo.push_back(std::move(usingInfo));
+            }
 
             const auto nReplace = tokDistance(start, usingEnd);
             if (nReplace > maxReplacementTokens) {
@@ -3375,7 +3389,7 @@ void Tokenizer::simplifyUsingError(const Token* usingStart, const Token* usingEn
     }
 }
 
-bool Tokenizer::simplifyTokens1(const std::string &configuration)
+bool Tokenizer::simplifyTokens1(const std::string &configuration, int fileIndex)
 {
     // Fill the map mTypeSize..
     fillTypeSizes();
@@ -3408,7 +3422,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     });
 
     if (!mSettings.buildDir.empty())
-        Summaries::create(*this, configuration);
+        Summaries::create(*this, configuration, fileIndex);
 
     // TODO: apply this through Settings::ValueFlowOptions
     // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
@@ -3441,7 +3455,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
     }
 
-    printDebugOutput(1, std::cout);
+    printDebugOutput(std::cout);
 
     return true;
 }
@@ -4399,10 +4413,26 @@ static void setVarIdStructMembers(Token *&tok1,
     tok1 = tok;
 }
 
+static void addTemplateVarIdUsage(const std::string &tokstr,
+                                  const std::map<std::string, std::set<std::string>>& templateVarUsage,
+                                  const std::unordered_map<std::string, nonneg int>& variableMap,
+                                  std::set<nonneg int>& templateVarIdUsage) {
+    const auto v = templateVarUsage.find(tokstr);
+    if (v != templateVarUsage.end()) {
+        for (const std::string& varname: v->second) {
+            const auto it = variableMap.find(varname);
+            if (it != variableMap.end())
+                templateVarIdUsage.insert(it->second);
+        }
+    }
+}
+
 static bool setVarIdClassDeclaration(Token* const startToken,
                                      VariableMap& variableMap,
                                      const nonneg int scopeStartVarId,
-                                     std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
+                                     const std::map<std::string, std::set<std::string>>& templateVarUsage,
+                                     std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
+                                     std::set<nonneg int>& templateVarIdUsage)
 {
     // end of scope
     const Token* const endToken = startToken->link();
@@ -4469,6 +4499,8 @@ static bool setVarIdClassDeclaration(Token* const startToken,
                     if (it != variableMap.map(false).end()) {
                         tok->varId(it->second);
                         setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
+                    } else if (tok->str().back() == '>') {
+                        addTemplateVarIdUsage(tok->str(), templateVarUsage, variableMap.map(false), templateVarIdUsage);
                     }
                 }
             }
@@ -4648,7 +4680,9 @@ void Tokenizer::setVarIdPass1()
                         if (!setVarIdClassDeclaration(tok->link(),
                                                       variableMap,
                                                       scopeStack.top().startVarid,
-                                                      structMembers)) {
+                                                      mTemplateSimplifier->getUsedVariables(),
+                                                      structMembers,
+                                                      mTemplateVarIdUsage)) {
                             syntaxError(nullptr);
                         }
                     }
@@ -4735,6 +4769,16 @@ void Tokenizer::setVarIdPass1()
 
             if (decl) {
                 if (cpp) {
+                    for (const Token* tok3 = tok->next(); tok3->isName(); tok3 = tok3->next()) {
+                        addTemplateVarIdUsage(tok3->str(),
+                                              mTemplateSimplifier->getUsedVariables(),
+                                              variableMap.map(false),
+                                              mTemplateVarIdUsage);
+                        addTemplateVarIdUsage(tok3->str(),
+                                              mTemplateSimplifier->getUsedVariables(),
+                                              variableMap.map(true),
+                                              mTemplateVarIdUsage);
+                    }
                     if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
                         for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
                             if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
@@ -4846,6 +4890,13 @@ void Tokenizer::setVarIdPass1()
                     continue;
                 if (Token::simpleMatch(tok->tokAt(-2), ":: template"))
                     continue;
+            }
+
+            if (tok->str().back() == '>') {
+                addTemplateVarIdUsage(tok->str(),
+                                      mTemplateSimplifier->getUsedVariables(),
+                                      variableMap.map(globalNamespace),
+                                      mTemplateVarIdUsage);
             }
 
             // function declaration inside executable scope? Function declaration is of form: type name "(" args ")"
@@ -5890,39 +5941,39 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 }
 //---------------------------------------------------------------------------
 
-void Tokenizer::printDebugOutput(int simplification, std::ostream &out) const
+// TODO: do not depend on --verbose
+void Tokenizer::printDebugOutput(std::ostream &out) const
 {
-    const bool debug = (simplification != 1U && mSettings.debugSimplified) ||
-                       (simplification != 2U && mSettings.debugnormal);
+    if (!list.front())
+        return;
 
-    if (debug && list.front()) {
-        const bool xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
+    const bool debug = mSettings.debugSimplified || mSettings.debugnormal || mSettings.debugsymdb || mSettings.debugast || mSettings.debugvalueflow;
+    if (!debug)
+        return;
 
-        if (!xml)
-            list.front()->printOut(out, xml, nullptr, list.getFiles());
+    const bool xml = (mSettings.outputFormat == Settings::OutputFormat::xml);
 
+    if (xml)
+        out << "<debug>" << std::endl;
+
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        list.front()->printOut(out, xml, nullptr, list.getFiles());
+
+    if (mSymbolDatabase) {
         if (xml)
-        {
-            out << "<debug>" << std::endl;
-            list.front()->printOut(out, xml, nullptr, list.getFiles());
-        }
+            mSymbolDatabase->printXml(out);
+        else if (mSettings.debugsymdb || (mSettings.debugnormal && mSettings.verbose))
+            mSymbolDatabase->printOut("Symbol database");
+    }
 
-        if (mSymbolDatabase) {
-            if (xml)
-                mSymbolDatabase->printXml(out);
-            else if (mSettings.verbose) {
-                mSymbolDatabase->printOut("Symbol database");
-            }
-        }
+    if (mSettings.debugast || (mSettings.debugnormal && mSettings.verbose))
+        list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
 
-        if (mSettings.verbose)
-            list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
-
+    if (mSettings.debugnormal || mSettings.debugvalueflow)
         list.front()->printValueFlow(list.getFiles(), xml, out);
 
-        if (xml)
-            out << "</debug>" << std::endl;
-    }
+    if (xml)
+        out << "</debug>" << std::endl;
 }
 
 void Tokenizer::dump(std::ostream &out) const
@@ -6151,8 +6202,23 @@ void Tokenizer::dump(std::ostream &out) const
             outs += "\" ";
             outs += "std-string-like=\"";
             outs += bool_to_string(c->stdStringLike);
-            outs += "\"/>";
-            outs += '\n';
+            outs += "\"";
+            if (c->functions.empty()) {
+                outs += "/>\n";
+                continue;
+            }
+            outs += ">\n";
+            for (const auto& fp: c->functions) {
+                std::string action;
+                std::string yield;
+                if (fp.second.action != Library::Container::Action::NO_ACTION)
+                    action = " action=\"" + Library::Container::toString(fp.second.action) + "\"";
+                if (fp.second.yield != Library::Container::Yield::NO_YIELD)
+                    yield = " yield=\"" + Library::Container::toString(fp.second.yield) + "\"";
+                if (!action.empty() || !yield.empty())
+                    outs += "      <f name=\"" + fp.first + "\"" + action + yield + "/>\n";
+            }
+            outs += "    </container>\n";
         }
         outs += "  </containers>";
         outs += '\n';
@@ -6164,6 +6230,12 @@ void Tokenizer::dump(std::ostream &out) const
     outs += dumpTypedefInfo();
 
     outs += mTemplateSimplifier->dump();
+    if (!mTemplateVarIdUsage.empty()) {
+        outs += "  <template-varid-usage>\n";
+        for (nonneg int id: mTemplateVarIdUsage)
+            outs += "    <var id=\"" + std::to_string(id) + "\"/>\n";
+        outs += "  </template-varid-usage>\n";
+    }
 
     out << outs;
 }
@@ -7667,8 +7739,11 @@ void Tokenizer::simplifyInitVar()
             continue;
 
         if (Token::Match(tok, "%type% *|&| %name% (|{")) {
+            bool isNamespace = Token::simpleMatch(tok, "namespace");
             while (tok && !Token::Match(tok, "(|{"))
                 tok = tok->next();
+            if (isNamespace)
+                continue;
             if (tok)
                 tok->isInitBracket(true);
             /* tok = initVar(tok);
@@ -7979,7 +8054,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             while (Token::Match(tok2, "%type%|static|const|extern") && tok2->str() != "operator") {
                 tok2 = tok2->previous();
             }
-            if (tok2 && !Token::Match(tok2, "[;,{]")) {
+            if (tok2 && !Token::Match(tok2, "[;{]")) {
                 // Not a variable declaration
             } else {
                 tok->deleteThis();
@@ -8077,13 +8152,15 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
 
 void Tokenizer::syntaxError(const Token *tok, const std::string &code) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok, code.empty() ? "syntax error" : "syntax error: " + code, InternalError::SYNTAX);
 }
 
 void Tokenizer::unmatchedToken(const Token *tok) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok,
                         "Unmatched '" + tok->str() + "'. Configuration: '" + mConfiguration + "'.",
                         InternalError::SYNTAX);
@@ -8091,13 +8168,15 @@ void Tokenizer::unmatchedToken(const Token *tok) const
 
 void Tokenizer::syntaxErrorC(const Token *tok, const std::string &what) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok, "Code '"+what+"' is invalid C code.", "Use --std, -x or --language to enforce C++. Or --cpp-header-probe to identify C++ headers via the Emacs marker.", InternalError::SYNTAX);
 }
 
 void Tokenizer::unknownMacroError(const Token *tok1) const
 {
-    printDebugOutput(0, std::cout);
+    if (mSettings.debugSimplified || mSettings.debugnormal)
+        printDebugOutput(std::cout);
     throw InternalError(tok1, "There is an unknown macro here somewhere. Configuration is required. If " + tok1->str() + " is a macro then please configure it.", InternalError::UNKNOWN_MACRO);
 }
 
@@ -8131,7 +8210,7 @@ void Tokenizer::invalidConstFunctionTypeError(const Token *tok) const
 
 void Tokenizer::cppcheckError(const Token *tok) const
 {
-    printDebugOutput(0, std::cout);
+    printDebugOutput(std::cout);
     throw InternalError(tok, "Analysis failed. If the code is valid then please report this failure.", InternalError::INTERNAL);
 }
 
@@ -8513,7 +8592,7 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok->linkAt(1)->previous());
 
         // UNKNOWN_MACRO(return)
-        else if (!tok->isKeyword() && Token::Match(tok, "%name% throw|return"))
+        else if (!tok->isKeyword() && (Token::Match(tok, "%name% return") || (isCPP() && Token::Match(tok, "%name% throw"))))
             unknownMacroError(tok);
 
         // Assign/increment/decrement literal
@@ -8756,7 +8835,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "[;([{] %comp%|%oror%|%or%|%|/"))
             syntaxError(tok);
-        if (Token::Match(tok, "%cop%|= ]") && !(cpp && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
+        if (Token::Match(tok, "%cop%|= ]") && !Token::simpleMatch(tok, "*") && !(cpp && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(cpp && Token::simpleMatch(tok->previous(), "operator")))
             syntaxError(tok);
@@ -10230,7 +10309,7 @@ void Tokenizer::simplifyBorland()
 void Tokenizer::createSymbolDatabase()
 {
     if (!mSymbolDatabase)
-        mSymbolDatabase = new SymbolDatabase(*this, mSettings, mErrorLogger);
+        mSymbolDatabase = new SymbolDatabase(*this);
     mSymbolDatabase->validate();
 }
 
@@ -10870,8 +10949,8 @@ bool Tokenizer::isPacked(const Token * bodyStart) const
 
 void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& settings)
 {
-    TokenList tokenlist{&settings, Standards::Language::C};
-    Tokenizer tokenizer(std::move(tokenlist), settings, errorLogger);
+    TokenList tokenlist{settings, Standards::Language::C};
+    Tokenizer tokenizer(std::move(tokenlist), errorLogger);
     tokenizer.invalidConstFunctionTypeError(nullptr);
     // checkLibraryNoReturn
     tokenizer.unhandled_macro_class_x_y(nullptr, "", "", "", "");

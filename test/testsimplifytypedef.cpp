@@ -40,6 +40,7 @@ private:
     const Settings settings1 = settingsBuilder().severity(Severity::portability).build();
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(c1);
         TEST_CASE(c2);
         TEST_CASE(canreplace1);
@@ -111,7 +112,9 @@ private:
         TEST_CASE(simplifyTypedef38);
         TEST_CASE(simplifyTypedef43); // ticket #1588
         TEST_CASE(simplifyTypedef44);
+        mNewTemplate = false;
         TEST_CASE(simplifyTypedef45); // ticket #1613
+        mNewTemplate = true;
         TEST_CASE(simplifyTypedef46);
         TEST_CASE(simplifyTypedef47);
         TEST_CASE(simplifyTypedef48); // ticket #1673
@@ -203,7 +206,9 @@ private:
         TEST_CASE(simplifyTypedef136);
         TEST_CASE(simplifyTypedef137);
         TEST_CASE(simplifyTypedef138);
+        mNewTemplate = false;
         TEST_CASE(simplifyTypedef139);
+        mNewTemplate = true;
         TEST_CASE(simplifyTypedef140); // #10798
         TEST_CASE(simplifyTypedef141); // #10144
         TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
@@ -249,8 +254,8 @@ private:
         TEST_CASE(simplifyTypedefTokenColumn3);
 
         TEST_CASE(typedefInfo1);
-
         TEST_CASE(typedefInfo2);
+        TEST_CASE(typedefInfo3);
     }
 
     struct TokOptions
@@ -273,11 +278,11 @@ private:
     }
 
     std::string simplifyTypedef(const char code[]) {
-        TokenList tokenlist{&settings1, Standards::Language::CPP};
+        TokenList tokenlist{settings1, Standards::Language::CPP};
         std::istringstream istr(code);
         if (!tokenlist.createTokens(istr))
             return "";
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -307,12 +312,12 @@ private:
 
 
     std::string simplifyTypedefC(const char code[]) {
-        TokenList tokenlist{&settings1, Standards::Language::C};
+        TokenList tokenlist{settings1, Standards::Language::C};
 
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "file.c"))
             return "";
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
         try {
@@ -324,11 +329,11 @@ private:
     }
 
     std::string dumpTypedefInfo(const char code[]) {
-        TokenList tokenlist{&settings1, Standards::Language::C};
+        TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         if (!TokenListHelper::createTokens(tokenlist, istr, "file.c"))
             return {};
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
         try {
@@ -449,7 +454,7 @@ private:
         const char code[] = "typedef int f(int);\n"
                             "typedef const f cf;\n";
         (void)simplifyTypedefC(code);
-        ASSERT_EQUALS("[file.c:2]: (portability) It is unspecified behavior to const qualify a function type.\n", errout_str());
+        ASSERT_EQUALS("[file.c:2:9]: (portability) It is unspecified behavior to const qualify a function type. [invalidConstFunctionType]\n", errout_str());
     }
 
     void cfunction4() {
@@ -1166,7 +1171,7 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, dinit(TokOptions, $.simplify = false)));
         ASSERT_EQUALS(
-            "[test.cpp:4]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable value\n",
+            "[test.cpp:4:67]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable value [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2028,7 +2033,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global\n",
+            "[test.cpp:3:50]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable global [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -3025,7 +3030,7 @@ private:
                             "using array_p = const array_t *;\n"
                             "array_p x;\n";
         ASSERT_EQUALS("using array_p = const unsigned char ( * ) [ 16 ] ; array_p x ;", tok(code, dinit(TokOptions, $.simplify = false)));
-        ASSERT_EQUALS("[test.cpp:2]: (debug) Failed to parse 'using array_p = const unsigned char ( * ) [ 16 ] ;'. The checking continues anyway.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:1]: (debug) Failed to parse 'using array_p = const unsigned char ( * ) [ 16 ] ;'. The checking continues anyway. [simplifyUsing]\n", errout_str());
     }
 
     void simplifyTypedef134() {
@@ -3213,7 +3218,7 @@ private:
                                 "} "
                                 "struct external :: ns1 :: B<1> { } ;";
             TODO_ASSERT_EQUALS(exp, act, tok(code));
-            TODO_ASSERT_EQUALS("", "[test.cpp:14]: (debug) Executable scope 'f' with unknown function.\n", errout_str());
+            TODO_ASSERT_EQUALS("", "[test.cpp:14:13]: (debug) Executable scope 'f' with unknown function. [symbolDatabaseWarning]\n", errout_str());
         }
         {
             // using "namespace external::ns1;" without redundant qualification on declaration and definition
@@ -4278,7 +4283,7 @@ private:
         const char code[] = "typedef int f_expand(const nrv_byte *);\n"
                             "void f(f_expand *(*get_fexp(int))){}";
         checkSimplifyTypedef(code);
-        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (debug) Function::addArguments found argument 'int' with varid 0.\n", errout_str());  // make sure that there is no internal error
+        TODO_ASSERT_EQUALS("", "[test.cpp:2:29]: (debug) Function::addArguments found argument 'int' with varid 0. [varid0]\n", errout_str());  // make sure that there is no internal error
     }
 
     void simplifyTypedefFunction9() {
@@ -4453,10 +4458,10 @@ private:
                             "uint8_t t;"
                             "void test(rFunctionPointer_fp functionPointer);";
 
-        TokenList tokenlist{&settings1, Standards::Language::C};
+        TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4496,10 +4501,10 @@ private:
                             "    MY_INT x = 0;\n"
                             "}";
 
-        TokenList tokenlist{&settings1, Standards::Language::C};
+        TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4515,10 +4520,10 @@ private:
                             "    F x = 0;\n"
                             "}";
 
-        TokenList tokenlist{&settings1, Standards::Language::C};
+        TokenList tokenlist{settings1, Standards::Language::C};
         std::istringstream istr(code);
         ASSERT(TokenListHelper::createTokens(tokenlist, istr, "file.c"));
-        Tokenizer tokenizer(std::move(tokenlist), settings1, *this);
+        Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.simplifyTypedef();
 
@@ -4561,6 +4566,14 @@ private:
                       "    <info name=\"int16_t\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\" isFunctionPointer=\"0\"/>\n"
                       "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"20\" used=\"0\" isFunctionPointer=\"1\"/>\n"
                       "  </typedef-info>\n",xml);
+    }
+
+    void typedefInfo3() {
+        const std::string xml = dumpTypedefInfo("int main() {\n"
+                                                "     using x::a;\n"
+                                                "     b = a + 2;\n"
+                                                "}\n");
+        ASSERT_EQUALS("",xml);
     }
 };
 

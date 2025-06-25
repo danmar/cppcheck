@@ -54,6 +54,8 @@
 
 #include "ui_mainwindow.h"
 
+#include "frontend.h"
+
 #include <algorithm>
 #include <iterator>
 #include <list>
@@ -391,7 +393,9 @@ void MainWindow::loadSettings()
     mUI->mActionReportAutosar->setChecked(reportType == ReportType::autosar);
     mUI->mActionReportCertC->setChecked(reportType == ReportType::certC);
     mUI->mActionReportCertCpp->setChecked(reportType == ReportType::certCpp);
-    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC);
+    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC2012 ||
+                                         reportType == ReportType::misraC2023 ||
+                                         reportType == ReportType::misraC2025);
     mUI->mActionReportMisraCpp2008->setChecked(reportType == ReportType::misraCpp2008);
     mUI->mActionReportMisraCpp2023->setChecked(reportType == ReportType::misraCpp2023);
 
@@ -470,6 +474,15 @@ void MainWindow::loadSettings()
     }
 }
 
+static ReportType getMisraCReportType(const QStringList &standards)
+{
+    if (standards.contains(CODING_STANDARD_MISRA_C_2023))
+        return ReportType::misraC2023;
+    if (standards.contains(CODING_STANDARD_MISRA_C_2025))
+        return ReportType::misraC2025;
+    return ReportType::misraC2012;
+}
+
 void MainWindow::saveSettings() const
 {
     // Window/dialog sizes
@@ -480,7 +493,7 @@ void MainWindow::saveSettings() const
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;
@@ -604,6 +617,10 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());
     }
+
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(p.fileSettings, checkSettings, enforcedLang);
+
     mThread->setProject(p);
     mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
@@ -703,6 +720,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
+    // TODO: apply enforcedLanguage
     cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
     analysisDone();
 
@@ -797,7 +815,7 @@ void MainWindow::analyzeFiles()
             p.ignoreOtherConfigs(cfg.toStdString());
         }
 
-        doAnalyzeProject(p);
+        doAnalyzeProject(p); // TODO: avoid copy
         return;
     }
 
@@ -1010,10 +1028,7 @@ QString MainWindow::loadAddon(Settings &settings, const QString &filesDir, const
         if (!misraFile.isEmpty()) {
             QString arg;
             picojson::array arr;
-            if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                arg = "--misra-pdf=" + misraFile;
-            else
-                arg = "--rule-texts=" + misraFile;
+            arg = "--rule-texts=" + misraFile;
             arr.emplace_back(arg.toStdString());
             obj["args"] = picojson::value(arr);
         }
@@ -1039,6 +1054,7 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
     Settings::terminate(true);
 
     settings.exename = QCoreApplication::applicationFilePath().toStdString();
+    settings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
 
     // default to --check-level=normal for GUI for now
     settings.setCheckLevel(Settings::CheckLevel::normal);
@@ -1157,6 +1173,8 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
             settings.checkUnknownFunctionReturn.insert(s.toStdString());
 
         for (const QString& addon : mProjectFile->getAddons()) {
+            if (isCppcheckPremium() && addon == "misra")
+                continue;
             const QString addonError = loadAddon(settings, filesDir, pythonCmd, addon);
             if (!addonError.isEmpty()) {
                 QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
@@ -1172,10 +1190,9 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
                 premiumArgs += " --cert-c-int-precision=" + QString::number(mProjectFile->getCertIntPrecision());
             for (const QString& c: mProjectFile->getCodingStandards())
                 premiumArgs += " --" + c;
-            if (!premiumArgs.contains("misra") && mProjectFile->getAddons().contains("misra"))
+            if (!premiumArgs.contains("--misra-c-") && mProjectFile->getAddons().contains("misra"))
                 premiumArgs += " --misra-c-2012";
             settings.premiumArgs = premiumArgs.mid(1).toStdString();
-            settings.setMisraRuleTexts(CheckThread::executeCommand);
         }
     }
     else
@@ -1209,7 +1226,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
         settings.platform.set(static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt()));
     settings.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     settings.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    settings.enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
 
     settings.jobs = std::max(settings.jobs, 1u);
 
@@ -1961,7 +1977,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
             msg.exec();
             return;
         }
-        doAnalyzeProject(p, checkLibrary, checkConfiguration);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);  // TODO: avoid copy
         return;
     }
 
@@ -2284,7 +2300,7 @@ void MainWindow::changeReportType() {
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;

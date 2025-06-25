@@ -143,6 +143,7 @@ void CheckThread::run()
         qDebug() << "Whole program analysis";
         std::list<FileWithDetails> files2;
         std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
+            // TODO: apply enforcedLanguage
             return FileWithDetails{file.toStdString(), Path::identify(file.toStdString(), mSettings.cppHeaderProbe), 0};
         });
         cppcheck.analyseWholeProgram(mSettings.buildDir, files2, {}, ctuInfo);
@@ -151,25 +152,28 @@ void CheckThread::run()
         return;
     }
 
-    QString file = mResult.getNextFile();
-    while (!file.isEmpty() && mState == Running) {
-        qDebug() << "Checking file" << file;
-        cppcheck.check(FileWithDetails(file.toStdString(), Path::identify(file.toStdString(), mSettings.cppHeaderProbe), 0));
-        runAddonsAndTools(mSettings, nullptr, file);
-        emit fileChecked(file);
+    // TODO: apply enforcedLanguage
+    const FileWithDetails* file = nullptr;
+    mResult.getNextFile(file);
+    while (file && mState == Running) {
+        const std::string& fname = file->spath();
+        qDebug() << "Checking file" << QString::fromStdString(fname);
+        cppcheck.check(*file);
+        runAddonsAndTools(mSettings, nullptr, QString::fromStdString(fname));
+        emit fileChecked(QString::fromStdString(fname));
 
         if (mState == Running)
-            file = mResult.getNextFile();
+            mResult.getNextFile(file);
     }
 
     const FileSettings* fileSettings = nullptr;
     mResult.getNextFileSettings(fileSettings);
     while (fileSettings && mState == Running) {
-        file = QString::fromStdString(fileSettings->filename());
-        qDebug() << "Checking file" << file;
+        const std::string& fname = fileSettings->filename();
+        qDebug() << "Checking file" << QString::fromStdString(fname);
         cppcheck.check(*fileSettings);
-        runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fileSettings->filename()));
-        emit fileChecked(file);
+        runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fname));
+        emit fileChecked(QString::fromStdString(fname));
 
         if (mState == Running)
             mResult.getNextFileSettings(fileSettings);
@@ -245,7 +249,7 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
 
             const std::string &buildDir = settings.buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg));
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg, fileSettings->fileIndex));
 
                 QStringList args2(args);
                 args2.insert(0,"-E");
@@ -436,7 +440,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
         const std::string id = e.errorId.toStdString();
-        ErrorMessage errmsg(callstack, f0, e.severity, msg, id, Certainty::normal);
+        ErrorMessage errmsg(std::move(callstack), f0, e.severity, msg, id, Certainty::normal);
         mResult.reportErr(errmsg);
     }
 }

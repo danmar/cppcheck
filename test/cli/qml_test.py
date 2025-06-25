@@ -26,9 +26,9 @@ def __test_unused_functions(extra_args):
     lines.sort()
     # there are unused functions. But fillSampleData is not unused because that is referenced from main.qml
     assert lines == [
-        "{}samplemodel.cpp:15:0: style: The function 'data' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:38:0: style: The function 'roleNames' is never used. [unusedFunction]".format(__project_dir_sep),
-        "{}samplemodel.cpp:9:0: style: The function 'rowCount' is never used. [unusedFunction]".format(__project_dir_sep)
+        "{}samplemodel.cpp:15:23: style: The function 'data' is never used. [unusedFunction]".format(__project_dir_sep),
+        "{}samplemodel.cpp:38:37: style: The function 'roleNames' is never used. [unusedFunction]".format(__project_dir_sep),
+        "{}samplemodel.cpp:9:18: style: The function 'rowCount' is never used. [unusedFunction]".format(__project_dir_sep)
     ]
     assert ret == 0, stdout
 

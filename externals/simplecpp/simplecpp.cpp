@@ -40,6 +40,12 @@
 #include <utility>
 #include <vector>
 
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
+
 #ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
 #undef ERROR
@@ -145,6 +151,12 @@ static unsigned long long stringToULL(const std::string &s)
         istr >> std::oct;
     istr >> ret;
     return ret;
+}
+
+// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild 
+static bool startsWith_(const std::string &s, const std::string &p)
+{
+    return (s.size() >= p.size()) && std::equal(p.begin(), p.end(), s.begin());
 }
 
 static bool endsWith(const std::string &s, const std::string &e)
@@ -2334,17 +2346,12 @@ namespace simplecpp {
 namespace simplecpp {
 
 #ifdef __CYGWIN__
-    bool startsWith(const std::string &str, const std::string &s)
-    {
-        return (str.size() >= s.size() && str.compare(0, s.size(), s) == 0);
-    }
-
     std::string convertCygwinToWindowsPath(const std::string &cygwinPath)
     {
         std::string windowsPath;
 
         std::string::size_type pos = 0;
-        if (cygwinPath.size() >= 11 && startsWith(cygwinPath, "/cygdrive/")) {
+        if (cygwinPath.size() >= 11 && startsWith_(cygwinPath, "/cygdrive/")) {
             const unsigned char driveLetter = cygwinPath[10];
             if (std::isalpha(driveLetter)) {
                 if (cygwinPath.size() == 11) {
@@ -2679,6 +2686,75 @@ static bool isCpp17OrLater(const simplecpp::DUI &dui)
 {
     const std::string std_ver = simplecpp::getCppStdString(dui.std);
     return !std_ver.empty() && (std_ver >= "201703L");
+}
+
+
+static std::string currentDirectoryOSCalc() {
+    const std::size_t size = 4096;
+    char currentPath[size];
+
+#ifndef _WIN32
+    if (getcwd(currentPath, size) != nullptr)
+#else
+    if (_getcwd(currentPath, size) != nullptr)
+#endif
+        return std::string(currentPath);
+
+    return "";
+}
+
+static const std::string& currentDirectory() {
+    static const std::string curdir = simplecpp::simplifyPath(currentDirectoryOSCalc());
+    return curdir;
+}
+
+static std::string toAbsolutePath(const std::string& path) {
+    if (path.empty()) {
+        return path;// preserve error file path that is indicated by an empty string
+    }
+    if (!isAbsolutePath(path)) {
+        return simplecpp::simplifyPath(currentDirectory() + "/" + path);
+    }
+    // otherwise
+    return simplecpp::simplifyPath(path);
+}
+
+static std::string dirPath(const std::string& path, bool withTrailingSlash=true) {
+    const std::size_t lastSlash = path.find_last_of("\\/");
+    if (lastSlash == std::string::npos) {
+        return "";
+    }
+    return path.substr(0, lastSlash + (withTrailingSlash ? 1U : 0U));
+}
+
+static std::string omitPathTrailingSlash(const std::string& path) {
+    if (endsWith(path, "/")) {
+        return path.substr(0, path.size() - 1U);
+    }
+    return path;
+}
+
+static std::string extractRelativePathFromAbsolute(const std::string& absoluteSimplifiedPath, const std::string& prefixSimplifiedAbsoluteDir = currentDirectory()) {
+    const std::string normalizedAbsolutePath = omitPathTrailingSlash(absoluteSimplifiedPath);
+    std::string currentPrefix = omitPathTrailingSlash(prefixSimplifiedAbsoluteDir);
+    std::string leadingParenting;
+    while (!startsWith_(normalizedAbsolutePath, currentPrefix)) {
+        leadingParenting = "../" + leadingParenting;
+        currentPrefix = dirPath(currentPrefix, false);
+    }
+    const std::size_t size = currentPrefix.size();
+    std::string relativeFromMeetingPath = normalizedAbsolutePath.substr(size, normalizedAbsolutePath.size() - size);
+    if (currentPrefix.empty() && !(startsWith_(absoluteSimplifiedPath, "/") && startsWith_(prefixSimplifiedAbsoluteDir, "/"))) {
+        // In the case that there is no common prefix path,
+        //  and at not both of the paths start with `/` (can happen only in Windows paths on distinct partitions),
+        //  return the absolute simplified path as is because no relative path can match.
+        return absoluteSimplifiedPath;
+    }
+    if (startsWith_(relativeFromMeetingPath, "/")) {
+        // omit the leading slash
+        relativeFromMeetingPath = relativeFromMeetingPath.substr(1, relativeFromMeetingPath.size());
+    }
+    return leadingParenting + relativeFromMeetingPath;
 }
 
 static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const std::string &sourcefile, const std::string &header, bool systemheader);
@@ -3097,32 +3173,51 @@ static std::string openHeader(std::ifstream &f, const std::string &path)
     return "";
 }
 
-static std::string getRelativeFileName(const std::string &sourcefile, const std::string &header)
+static std::string getRelativeFileName(const std::string &baseFile, const std::string &header, bool returnAbsolutePath)
 {
-    if (sourcefile.find_first_of("\\/") != std::string::npos)
-        return simplecpp::simplifyPath(sourcefile.substr(0, sourcefile.find_last_of("\\/") + 1U) + header);
-    return simplecpp::simplifyPath(header);
+    const std::string baseFileSimplified = simplecpp::simplifyPath(baseFile);
+    const std::string baseFileAbsolute = isAbsolutePath(baseFileSimplified) ?
+        baseFileSimplified :
+        simplecpp::simplifyPath(currentDirectory() + "/" + baseFileSimplified);
+
+    const std::string headerSimplified = simplecpp::simplifyPath(header);
+    const std::string path = isAbsolutePath(headerSimplified) ?
+        headerSimplified :
+        simplecpp::simplifyPath(dirPath(baseFileAbsolute) + headerSimplified);
+
+    return returnAbsolutePath ? toAbsolutePath(path) : extractRelativePathFromAbsolute(path);
 }
 
 static std::string openHeaderRelative(std::ifstream &f, const std::string &sourcefile, const std::string &header)
 {
-    return openHeader(f, getRelativeFileName(sourcefile, header));
+    return openHeader(f, getRelativeFileName(sourcefile, header, isAbsolutePath(sourcefile)));
 }
 
+// returns the simplified header path:
+// * If the header path is absolute, returns it in absolute path
+// * Otherwise, returns it in relative path with respect to the current directory
 static std::string getIncludePathFileName(const std::string &includePath, const std::string &header)
 {
-    std::string path = includePath;
-    if (!path.empty() && path[path.size()-1U]!='/' && path[path.size()-1U]!='\\')
-        path += '/';
-    return path + header;
+    std::string simplifiedHeader = simplecpp::simplifyPath(header);
+
+    if (isAbsolutePath(simplifiedHeader)) {
+        return simplifiedHeader;
+    }
+
+    std::string basePath = toAbsolutePath(includePath);
+    if (!basePath.empty() && basePath[basePath.size()-1U]!='/' && basePath[basePath.size()-1U]!='\\')
+        basePath += '/';
+    const std::string absoluteSimplifiedHeaderPath = simplecpp::simplifyPath(basePath + simplifiedHeader);
+    // preserve absoluteness/relativieness of the including dir
+    return isAbsolutePath(includePath) ? absoluteSimplifiedHeaderPath : extractRelativePathFromAbsolute(absoluteSimplifiedHeaderPath);
 }
 
 static std::string openHeaderIncludePath(std::ifstream &f, const simplecpp::DUI &dui, const std::string &header)
 {
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
-        std::string simplePath = openHeader(f, getIncludePathFileName(*it, header));
-        if (!simplePath.empty())
-            return simplePath;
+        std::string path = openHeader(f, getIncludePathFileName(*it, header));
+        if (!path.empty())
+            return path;
     }
     return "";
 }
@@ -3132,49 +3227,91 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
     if (isAbsolutePath(header))
         return openHeader(f, header);
 
-    std::string ret;
-
-    if (systemheader) {
-        ret = openHeaderIncludePath(f, dui, header);
-        return ret;
+    // prefer first to search the header relatively to source file if found, when not a system header
+    if (!systemheader) {
+        std::string relativeHeader = openHeaderRelative(f, sourcefile, header);
+        if (!relativeHeader.empty()) {
+            return relativeHeader;
+        }
     }
 
-    ret = openHeaderRelative(f, sourcefile, header);
-    if (ret.empty())
-        return openHeaderIncludePath(f, dui, header);
-    return ret;
+    // search the header on the include paths (provided by the flags "-I...")
+    return openHeaderIncludePath(f, dui, header);
 }
 
-static std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
+static std::string findPathInMapBothRelativeAndAbsolute(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string& path) {
+    // here there are two possibilities - either we match this from absolute path or from a relative one
+    if (filedata.find(path) != filedata.end()) {// try first to respect the exact match
+        return path;
+    }
+
+    // otherwise - try to use the normalize to the correct representation
+    std::string alternativePath;
+    if (isAbsolutePath(path)) {
+        alternativePath = extractRelativePathFromAbsolute(simplecpp::simplifyPath(path));
+    } else {
+        alternativePath = toAbsolutePath(path);
+    }
+
+    if (filedata.find(alternativePath) != filedata.end()) {
+        return alternativePath;
+    }
+    return "";
+}
+
+static std::string getFileIdPath(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
 {
     if (filedata.empty()) {
         return "";
     }
     if (isAbsolutePath(header)) {
-        return (filedata.find(header) != filedata.end()) ? simplecpp::simplifyPath(header) : "";
+        const std::string simplifiedHeaderPath = simplecpp::simplifyPath(header);
+        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, simplifiedHeaderPath);
+        if (!match.empty()) {
+            return match;
+        }
     }
 
     if (!systemheader) {
-        const std::string relativeFilename = getRelativeFileName(sourcefile, header);
-        if (filedata.find(relativeFilename) != filedata.end())
-            return relativeFilename;
+        const std::string relativeFilename = getRelativeFileName(sourcefile, header, true);
+        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, relativeFilename);
+        if (!match.empty()) {
+            return match;
+        }
+        // if the file exists but hasn't been loaded yet then we need to stop searching here or we could get a false match
+        std::ifstream f;
+        openHeader(f, relativeFilename);
+        if (f.is_open()) {
+            f.close();
+            return "";
+        }
+    } else if (filedata.find(header) != filedata.end()) {
+        return header;// system header that its file is already in the filedata - return that as is
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
-        std::string s = simplecpp::simplifyPath(getIncludePathFileName(*it, header));
-        if (filedata.find(s) != filedata.end())
-            return s;
+        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, getIncludePathFileName(*it, header));
+        if (!match.empty()) {
+            return match;
+        }
     }
-
-    if (systemheader && filedata.find(header) != filedata.end())
-        return header;
 
     return "";
 }
 
 static bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
 {
-    return !getFileName(filedata, sourcefile, header, dui, systemheader).empty();
+    return !getFileIdPath(filedata, sourcefile, header, dui, systemheader).empty();
+}
+
+static void safeInsertTokenListToMap(std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &header2, simplecpp::TokenList *tokens, const std::string &header, const std::string &sourcefile, bool systemheader, const char* contextDesc)
+{
+    const bool inserted = filedata.insert(std::make_pair(header2, tokens)).second;
+    if (!inserted) {
+        std::cerr << "error in " << contextDesc << " - attempt to add a tokenized file to the file map, but this file is already in the map! Details:" <<
+            "header: " << header << " header2: " << header2 << " source: " << sourcefile << " systemheader: " << systemheader << std::endl;
+        std::abort();
+    }
 }
 
 std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &filenames, const simplecpp::DUI &dui, simplecpp::OutputList *outputList)
@@ -3253,7 +3390,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         TokenList *tokens = new TokenList(header2, filenames, outputList);
         if (dui.removeComments)
             tokens->removeComments();
-        ret[header2] = tokens;
+        safeInsertTokenListToMap(ret, header2, tokens, header, rawtok->location.file(), systemheader, "simplecpp::load");
         if (tokens->front())
             filelist.push_back(tokens->front());
     }
@@ -3530,7 +3667,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
                 const bool systemheader = (inctok->str()[0] == '<');
                 const std::string header(realFilename(inctok->str().substr(1U, inctok->str().size() - 2U)));
-                std::string header2 = getFileName(filedata, rawtok->location.file(), header, dui, systemheader);
+                std::string header2 = getFileIdPath(filedata, rawtok->location.file(), header, dui, systemheader);
                 if (header2.empty()) {
                     // try to load file..
                     std::ifstream f;
@@ -3540,7 +3677,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                         TokenList * const tokens = new TokenList(header2, files, outputList);
                         if (dui.removeComments)
                             tokens->removeComments();
-                        filedata[header2] = tokens;
+                        safeInsertTokenListToMap(filedata, header2, tokens, header, rawtok->location.file(), systemheader, "simplecpp::preprocess");
                     }
                 }
                 if (header2.empty()) {

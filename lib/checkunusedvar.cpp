@@ -1575,6 +1575,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             if (isInherited && !var.isPrivate())
                 continue;
 
+            if (mTokenizer->isVarUsedInTemplate(var.declarationId()))
+                continue;
+
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {

@@ -106,8 +106,10 @@ private:
         TEST_CASE(varScope40);
         TEST_CASE(varScope41);      // #11845
         TEST_CASE(varScope42);
+        TEST_CASE(varScope43);
 
         TEST_CASE(oldStylePointerCast);
+        TEST_CASE(intToPointerCast);
         TEST_CASE(invalidPointerCast);
 
         TEST_CASE(passedByValue);
@@ -1874,11 +1876,33 @@ private:
         ASSERT_EQUALS("[test.cpp:3:17]: (style) The scope of the variable 's' can be reduced. [variableScope]\n", errout_str());
     }
 
+    void varScope43() {
+        check("struct S { int a, b; };\n" // #13838
+              "int f(S s) {\n"
+              "    auto& [x, y] = s;\n"
+              "    if (x < 5) {\n"
+              "        return y;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int a; };\n"
+              "int f(S s) {\n"
+              "    auto& [x] = s;\n"
+              "    if (y) {\n"
+              "        return x;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:12]: (style) The scope of the variable 'x' can be reduced. [variableScope]\n", errout_str());
+    }
+
 #define checkOldStylePointerCast(...) checkOldStylePointerCast_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkOldStylePointerCast_(const char* file, int line, const char (&code)[size], Standards::cppstd_t std = Standards::CPPLatest) {
 
-        const Settings settings = settingsBuilder().severity(Severity::style).cpp(std).build();
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).cpp(std).build();
 
         // Tokenize..
         SimpleTokenizer tokenizerCpp(settings, *this);
@@ -1886,78 +1910,111 @@ private:
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();
+        checkOtherCpp.warningDangerousTypeCast();
     }
 
     void oldStylePointerCast() {
-        checkOldStylePointerCast("class Base;\n"
-                                 "void foo()\n"
+        checkOldStylePointerCast("class Base{};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void foo(Base* base)\n"
                                  "{\n"
-                                 "    Base * b = (Base *) derived;\n"
+                                 "    Derived * d = (Derived *) base;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
 
-        checkOldStylePointerCast("class Base;\n"
-                                 "void foo()\n"
+        checkOldStylePointerCast("class Base{};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void foo(Derived* derived)\n"
                                  "{\n"
-                                 "    Base * b = (const Base *) derived;\n"
+                                 "    Base * b = (Base *) derived;\n" // <- cast from derived to base is safe => cstyleCast
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:17]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
-        checkOldStylePointerCast("class Base;\n"
+        checkOldStylePointerCast("void foo(Base* base)\n"
+                                 "{\n"
+                                 "    Derived * d = (Derived *) base;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:3:19]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base{};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void foo(Base* base)\n"
+                                 "{\n"
+                                 "    Derived * d = (const Derived *) base;\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base{};\n"
+                                 "class Derived: public Base {};\n"
                                  "void foo()\n"
                                  "{\n"
-                                 "    Base * b = (const Base * const) derived;\n"
+                                 "    Derived * d = (const Derived *) ( new Base() );\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:23]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base{};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Derived * d = (const Derived *) new Base();\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:5:19]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
+
+        checkOldStylePointerCast("class Base{};\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (Base *) new short[10];\n"
+                                 "}");
+        ASSERT_EQUALS("[test.cpp:4:16]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (volatile Base *) derived;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:17]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (volatile Base * const) derived;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:26]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (const volatile Base *) derived;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:23]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (const volatile Base * const) derived;\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:32]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (const Base *) ( new Derived() );\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:17]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (const Base *) new Derived();\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:17]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         checkOldStylePointerCast("class Base;\n"
                                  "void foo()\n"
                                  "{\n"
                                  "    Base * b = (const Base *) new short[10];\n"
                                  "}");
-        ASSERT_EQUALS("[test.cpp:4:17]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:16]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
 
         checkOldStylePointerCast("class B;\n"
                                  "class A\n"
@@ -1974,11 +2031,17 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // #3630
-        checkOldStylePointerCast("class SomeType;\n"
+        checkOldStylePointerCast("class SomeType{};\n"
                                  "class X : public Base {\n"
-                                 "    X() : Base((SomeType*)7) {}\n"
+                                 "    X() : Base((SomeType*)7) {}\n" // <- intToPointerCast
                                  "};");
-        ASSERT_EQUALS("[test.cpp:3:16]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
+
+        checkOldStylePointerCast("class SomeType{};\n"
+                                 "class X : public Base {\n"
+                                 "    X() : Base((SomeType*)0x7000) {}\n" // <- it's common in embedded code to cast address
+                                 "};");
+        ASSERT_EQUALS("", errout_str());
 
         checkOldStylePointerCast("class SomeType;\n"
                                  "class X : public Base {\n"
@@ -2009,6 +2072,7 @@ private:
                                  "  std::vector<Base*> v;\n"
                                  "  v.push_back((Base*)new Derived);\n"
                                  "}");
+        // FIXME write a dangerousTypeCast warning instead
         ASSERT_EQUALS("[test.cpp:5:15]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         // #7709
@@ -2032,28 +2096,39 @@ private:
                                  "    TT* tt = (TT*)i;\n"
                                  "    TT2* tt2 = (TT2*)i;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:10:13]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:11:15]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:12:22]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:13:13]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:14:21]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:15:15]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:16:16]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:17:16]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:18:15]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:19:17]: (style) C-style pointer casting [cstyleCast]\n",
+        ASSERT_EQUALS("[test.cpp:10:12]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:11:14]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:12:21]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:13:12]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:14:20]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:15:15]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:16:16]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:17:16]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:18:14]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:19:16]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n",
                       errout_str());
 
         // #8649
         checkOldStylePointerCast("struct S {};\n"
                                  "void g(S*& s);\n"
-                                 "void f(int i) {\n"
+                                 "void f(uintptr_t i) {\n"
                                  "    g((S*&)i);\n"
                                  "    S*& r = (S*&)i;\n"
                                  "}\n");
         ASSERT_EQUALS("[test.cpp:4:7]: (style) C-style pointer casting [cstyleCast]\n"
                       "[test.cpp:5:13]: (style) C-style pointer casting [cstyleCast]\n",
                       errout_str());
+
+        checkOldStylePointerCast("struct S {};\n"
+                                 "void g(S*& s);\n"
+                                 "void f(uint8_t i) {\n"
+                                 "    g((S*&)i);\n"
+                                 "    S*& r = (S*&)i;\n"
+                                 "}\n");
+        // TODO: these conversions are dangerous, but it's a different issue not covered by cstyleCast. A separate checker can be added which is executed for both C and C++ code.
+        // clang says: 1.cpp:5:18: warning: cast to 'unsigned char *' from smaller integer type 'uint8_t' (aka 'unsigned char') [-Wint-to-pointer-cast]
+        ASSERT_EQUALS("[test.cpp:4:7]: (style) C-style pointer casting [cstyleCast]\n"
+                      "[test.cpp:5:13]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         // #10823
         checkOldStylePointerCast("void f(void* p) {\n"
@@ -2062,12 +2137,14 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // #5210
-        checkOldStylePointerCast("void f(void* v1, void* v2) {\n"
-                                 "    T** p1 = (T**)v1;\n"
-                                 "    T*** p2 = (T***)v2;\n"
+        checkOldStylePointerCast("class Base {};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void f(Base** b1, Base*** b2) {\n"
+                                 "    Derived** p1 = (Derived**)b1;\n"
+                                 "    Derived*** p2 = (Derived***)b2;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:2:14]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:3:15]: (style) C-style pointer casting [cstyleCast]\n",
+        ASSERT_EQUALS("[test.cpp:4:20]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
+                      "[test.cpp:5:21]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n",
                       errout_str());
 
         // #12446
@@ -2082,16 +2159,16 @@ private:
                                  "    auto pv = (std::vector<int>*)(p);\n"
                                  "}\n");
         ASSERT_EQUALS("[test.cpp:7:15]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:8:16]: (style) C-style pointer casting [cstyleCast]\n"
-                      "[test.cpp:9:15]: (style) C-style pointer casting [cstyleCast]\n",
-                      errout_str());
+                      "[test.cpp:8:15]: (style) C-style pointer casting [cstyleCast]\n"
+                      "[test.cpp:9:15]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
 
         // #12447
-        checkOldStylePointerCast("void f(const int& i) {\n"
-                                 "  int& r = (int&)i;\n"
-                                 "  r = 0;\n"
+        checkOldStylePointerCast("class Base {};\n"
+                                 "class Derived: public Base {};\n"
+                                 "void f(const Base& base) {\n"
+                                 "  d = (const Derived&)base;\n"
                                  "}\n");
-        ASSERT_EQUALS("[test.cpp:2:12]: (style) C-style reference casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
 
         // #11430
         checkOldStylePointerCast("struct B {\n"
@@ -2102,9 +2179,42 @@ private:
                                  "}\n"
                                  "bool g(B& b) {\n"
                                  "    using float_ptr = float*;\n"
-                                 "    return N::f(float_ptr(b.data()));\n"
+                                 "    return N::f(float_ptr(b.data()));\n" // <- the cast is safe
                                  "}\n");
         ASSERT_EQUALS("[test.cpp:9:17]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+    }
+
+#define checkIntToPointerCast(...) checkIntToPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void checkIntToPointerCast_(const char* file, int line, const char (&code)[size]) {
+
+        const Settings settings = settingsBuilder().severity(Severity::portability).build();
+
+        // Tokenize..
+        SimpleTokenizer tokenizerCpp(settings, *this);
+        ASSERT_LOC(tokenizerCpp.tokenize(code), file, line);
+
+        CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
+        checkOtherCpp.warningIntToPointerCast();
+    }
+
+    void intToPointerCast() {
+        // #3630
+        checkIntToPointerCast("uint8_t* ptr = (uint8_t*)7;");
+        ASSERT_EQUALS("[test.cpp:1:16]: (portability) Casting non-zero decimal integer literal to pointer. [intToPointerCast]\n", errout_str());
+
+        checkIntToPointerCast("void* ptr = (void*)7;");
+        ASSERT_EQUALS("[test.cpp:1:13]: (portability) Casting non-zero decimal integer literal to pointer. [intToPointerCast]\n", errout_str());
+
+        checkIntToPointerCast("uint8_t* ptr = (uint8_t*)0;");
+        ASSERT_EQUALS("", errout_str());
+
+        checkIntToPointerCast("uint8_t* ptr = (uint8_t*)0x7000;"); // <- it's common in embedded code to cast address
+        ASSERT_EQUALS("", errout_str());
+
+        checkIntToPointerCast("struct S { int i; };\n" // #13886, don't crash
+                              "int f() { return sizeof(((struct S*)0)->i); }");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -3090,7 +3200,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4:19]: (style) C-style reference casting [cstyleCast]\n"
+        ASSERT_EQUALS("[test.cpp:4:18]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
                       "[test.cpp:2:11]: (style) Parameter 'x' can be declared as reference to const [constParameterReference]\n",
                       errout_str());
         check("struct T : public U { void dostuff() const {}};\n"
@@ -3099,13 +3209,13 @@ private:
               "    U& y = (U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:4:12]: (style) C-style reference casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:12]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    const U& y = (typename const U&)(x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4:0]: (style) C-style reference casting [cstyleCast]\n"
+        ASSERT_EQUALS("[test.cpp:4:18]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
                       "[test.cpp:2:11]: (style) Parameter 'x' can be declared as reference to const [constParameterReference]\n",
                       errout_str());
         check("struct T : public U { void dostuff() const {}};\n"
@@ -3114,14 +3224,14 @@ private:
               "    U& y = (typename U&)(x);\n"
               "    y.mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:4:12]: (style) C-style reference casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:12]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U* y = (U*)(&x);\n"
               "    y->mutate();\n" // to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:4:12]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:12]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
 
         check("struct C { void f() const; };\n" // #9875 - crash
               "\n"
@@ -3566,7 +3676,7 @@ private:
               "void g(A* a) {\n"
               "    const B* b = (const B*)a;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10:19]: (style) C-style pointer casting [cstyleCast]\n"
+        ASSERT_EQUALS("[test.cpp:10:18]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n"
                       "[test.cpp:6:11]: (style) Parameter 'a' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:9:11]: (style) Parameter 'a' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
@@ -3825,6 +3935,15 @@ private:
         ASSERT_EQUALS("[test.cpp:3:8] -> [test.cpp:1:13]: (style) Parameter 'p' can be declared as pointer to const. "
                       "However it seems that 'f' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s). [constParameterCallback]\n",
                       errout_str());
+
+        check("struct S { explicit S(std::function<void(std::string)>); };\n" // #13338
+              "void cb(std::string s) {\n"
+              "    (void)s.empty();\n"
+              "}\n"
+              "void f() {\n"
+              "    S s2{ cb };\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:11] -> [test.cpp:2:21]: (performance) Function parameter 's' should be passed by const reference. However it seems that 'cb' is a callback function. [passedByValueCallback]\n", errout_str());
     }
 
     void constPointer() {
@@ -9714,9 +9833,9 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Variable 'i' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:2:note:i is assigned\n"
-                      "test.cpp:3:note:i is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:7]: style: Variable 'i' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:2:7]: note: i is assigned\n"
+                      "[test.cpp:3:7]: note: i is overwritten\n", errout_str());
 
         // non-local variable => only show warning when inconclusive is used
         check("int i;\n"
@@ -9724,18 +9843,18 @@ private:
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'i' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:i is assigned\n"
-                      "test.cpp:4:note:i is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: style: Variable 'i' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:7]: note: i is assigned\n"
+                      "[test.cpp:4:7]: note: i is overwritten\n", errout_str());
 
         check("void f() {\n"
               "    int i;\n"
               "    i = 1;\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'i' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:i is assigned\n"
-                      "test.cpp:4:note:i is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: style: Variable 'i' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:7]: note: i is assigned\n"
+                      "[test.cpp:4:7]: note: i is overwritten\n", errout_str());
 
         check("void f() {\n"
               "    static int i;\n"
@@ -9749,9 +9868,9 @@ private:
               "    i[2] = 1;\n"
               "    i[2] = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'i[2]' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:i[2] is assigned\n"
-                      "test.cpp:4:note:i[2] is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: style: Variable 'i[2]' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:10]: note: i[2] is assigned\n"
+                      "[test.cpp:4:10]: note: i[2] is overwritten\n", errout_str());
 
         check("void f(int x) {\n"
               "    int i[10];\n"
@@ -9766,9 +9885,9 @@ private:
               "    i[x] = 1;\n"
               "    i[x] = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'i[x]' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:i[x] is assigned\n"
-                      "test.cpp:4:note:i[x] is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: style: Variable 'i[x]' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:10]: note: i[x] is assigned\n"
+                      "[test.cpp:4:10]: note: i[x] is overwritten\n", errout_str());
 
         // Testing different types
         check("void f() {\n"
@@ -9798,9 +9917,9 @@ private:
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'i' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:2:note:i is assigned\n"
-                      "test.cpp:4:note:i is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: style: Variable 'i' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:2:7]: note: i is assigned\n"
+                      "[test.cpp:4:7]: note: i is overwritten\n", errout_str());
 
         check("int i;\n"
               "void f() {\n"
@@ -9824,9 +9943,9 @@ private:
               "    bar();\n"
               "    i = 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:5:style:Variable 'i' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:i is assigned\n"
-                      "test.cpp:5:note:i is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:7]: style: Variable 'i' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:7]: note: i is assigned\n"
+                      "[test.cpp:5:7]: note: i is overwritten\n", errout_str());
 
         check("void bar(int i) {}\n"
               "void f(int i) {\n"
@@ -9857,9 +9976,9 @@ private:
               "    i = 1;\n"
               "    i = 2;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:5:style:Variable 'i' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:4:note:i is assigned\n"
-                      "test.cpp:5:note:i is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:7]: style: Variable 'i' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:4:7]: note: i is assigned\n"
+                      "[test.cpp:5:7]: note: i is overwritten\n", errout_str());
 
         // #4513
         check("int x;\n"
@@ -9879,9 +9998,9 @@ private:
               "    x = 2;\n"
               "    x = g();\n"
               "}");
-        ASSERT_EQUALS("test.cpp:6:style:Variable 'x' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:5:note:x is assigned\n"
-                      "test.cpp:6:note:x is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:7]: style: Variable 'x' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:5:7]: note: x is assigned\n"
+                      "[test.cpp:6:7]: note: x is overwritten\n", errout_str());
 
         check("void f() {\n"
               "    Foo& bar = foo();\n"
@@ -9929,9 +10048,9 @@ private:
               "    x = 1;\n"
               "    return x + 1;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'x' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:x is assigned\n"
-                      "test.cpp:4:note:x is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: style: Variable 'x' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:7]: note: x is assigned\n"
+                      "[test.cpp:4:7]: note: x is overwritten\n", errout_str());
 
         // from #3103 (avoid a false positive)
         check("int foo(){\n"
@@ -9955,7 +10074,7 @@ private:
               "  x = dostuff();\n"
               "}");
         ASSERT_EQUALS(
-            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n",
+            "[test.cpp:2:12]: style: Variable 'x' can be declared as pointer to const [constVariablePointer]\n",
             errout_str());
 
         check("void f() {\n"
@@ -9964,7 +10083,7 @@ private:
               "  x = dostuff();\n"
               "}");
         ASSERT_EQUALS(
-            "test.cpp:2:style:Variable 'x' can be declared as pointer to const\n",
+            "[test.cpp:2:12]: style: Variable 'x' can be declared as pointer to const [constVariablePointer]\n",
             errout_str());
 
         check("int foo() {\n" // #4420
@@ -9984,9 +10103,9 @@ private:
               "    ab.a = 2;\n"
               "    return ab.a;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:6:style:Variable 'ab.a' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:5:note:ab.a is assigned\n"
-                      "test.cpp:6:note:ab.a is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:10]: style: Variable 'ab.a' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:5:10]: note: ab.a is assigned\n"
+                      "[test.cpp:6:10]: note: ab.a is overwritten\n", errout_str());
 
         check("struct AB { int a; int b; };\n"
               "\n"
@@ -10098,8 +10217,8 @@ private:
               "        barney(x);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("test.cpp:2:style:The scope of the variable 'p' can be reduced.\n"
-                      "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",
+        ASSERT_EQUALS("[test.cpp:2:11]: style: The scope of the variable 'p' can be reduced. [variableScope]\n"
+                      "[test.cpp:2:11]: style: Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str());
 
         check("void foo() {\n"
@@ -10124,9 +10243,9 @@ private:
               "    if (memptr)\n"
               "        memptr = 0;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'memptr' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:memptr is assigned\n"
-                      "test.cpp:4:note:memptr is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:12]: style: Variable 'memptr' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:12]: note: memptr is assigned\n"
+                      "[test.cpp:4:12]: note: memptr is overwritten\n", errout_str());
 
         // Pointer function argument (#3857)
         check("void f(float * var)\n"
@@ -10134,18 +10253,18 @@ private:
               "  var[0] = 0.2f;\n"
               "  var[0] = 0.2f;\n" // <-- is initialized twice
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable 'var[0]' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:var[0] is assigned\n"
-                      "test.cpp:4:note:var[0] is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: style: Variable 'var[0]' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:10]: note: var[0] is assigned\n"
+                      "[test.cpp:4:10]: note: var[0] is overwritten\n", errout_str());
 
         check("void f(float * var)\n"
               "{\n"
               "  *var = 0.2f;\n"
               "  *var = 0.2f;\n" // <-- is initialized twice
               "}");
-        ASSERT_EQUALS("test.cpp:4:style:Variable '*var' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:3:note:*var is assigned\n"
-                      "test.cpp:4:note:*var is overwritten\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:8]: style: Variable '*var' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:3:8]: note: *var is assigned\n"
+                      "[test.cpp:4:8]: note: *var is overwritten\n", errout_str());
 
         // Volatile variables
         check("void f() {\n"
@@ -10153,15 +10272,15 @@ private:
               "  *reg = 12;\n"
               "  *reg = 34;\n"
               "}");
-        ASSERT_EQUALS("test.cpp:2:style:C-style pointer casting\n", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(std::map<int, int>& m, int key, int value) {\n" // #6379
               "    m[key] = value;\n"
               "    m[key] = value;\n"
               "}\n");
-        ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
-                      "test.cpp:2:note:m[key] is assigned\n"
-                      "test.cpp:3:note:m[key] is overwritten\n",
+        ASSERT_EQUALS("[test.cpp:3:12]: style: Variable 'm[key]' is reassigned a value before the old one has been used. [redundantAssignment]\n"
+                      "[test.cpp:2:12]: note: m[key] is assigned\n"
+                      "[test.cpp:3:12]: note: m[key] is overwritten\n",
                       errout_str());
     }
 
@@ -10545,18 +10664,18 @@ private:
               "    int err = -ENOMEM;\n"
               "    err = dostuff();\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Redundant initialization for 'err'. The initialized value is overwritten before it is read.\n"
-                      "test.cpp:2:note:err is initialized\n"
-                      "test.cpp:3:note:err is overwritten\n",
+        ASSERT_EQUALS("[test.cpp:3:9]: style: Redundant initialization for 'err'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:2:13]: note: err is initialized\n"
+                      "[test.cpp:3:9]: note: err is overwritten\n",
                       errout_str());
 
         check("void f() {\n"
               "    struct S s = {1,2,3};\n"
               "    s = dostuff();\n"
               "}");
-        ASSERT_EQUALS("test.cpp:3:style:Redundant initialization for 's'. The initialized value is overwritten before it is read.\n"
-                      "test.cpp:2:note:s is initialized\n"
-                      "test.cpp:3:note:s is overwritten\n",
+        ASSERT_EQUALS("[test.cpp:3:7]: style: Redundant initialization for 's'. The initialized value is overwritten before it is read. [redundantInitialization]\n"
+                      "[test.cpp:2:16]: note: s is initialized\n"
+                      "[test.cpp:3:7]: note: s is overwritten\n",
                       errout_str());
 
         check("void f() {\n"
@@ -10564,7 +10683,7 @@ private:
               "    p = dostuff();\n"
               "}");
         ASSERT_EQUALS(
-            "test.cpp:2:style:Variable 'p' can be declared as pointer to const\n",
+            "[test.cpp:2:10]: style: Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
             errout_str());
 
         // "trivial" initialization => do not warn
@@ -11120,6 +11239,15 @@ private:
               "    T a[N];\n"
               "};\n"
               "void f(S<char, 3> s) {}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        Settings settingsUnix32 = settingsBuilder().platform(Platform::Type::Unix32).build();
+        check("struct S {\n" // #13850
+              "    int i0 : 32;\n"
+              "    int i1 : 16;\n"
+              "    unsigned short u16;\n"
+              "};\n"
+              "void f(S s) {}\n", true, true, true, false, &settingsUnix32);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -12280,6 +12408,12 @@ private:
               "}\n"
               "int g() { return 1; }\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #13888
+              "    int i;\n"
+              "    friend int f() { int i = 5; return i; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void knownArgument() {
@@ -12638,7 +12772,7 @@ private:
               "int f(S s) {\n"
               "    return &s.i - (int*)&s;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3:19]: (style) C-style pointer casting [cstyleCast]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:19]: (warning) Potentially invalid type conversion in old-style C cast, clarify/fix with C++ cast [dangerousTypeCast]\n", errout_str());
 
         check("struct S { int i; };\n"
               "int f(S s1, S s2) {\n"
@@ -12920,6 +13054,18 @@ private:
               "        (void)s.size();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:15]: (performance) Range variable 's' should be declared as const reference. [iterateByValue]\n",
+                      errout_str());
+        check("void f() {\n" // #13696
+              "    struct T {\n"
+              "        std::string name;\n"
+              "        UnknownClass member;\n"
+              "    };\n"
+              "\n"
+              "    const std::set<T> ss;\n"
+              "    for (auto s : ss)\n"
+              "        (void)s.name;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8:15]: (performance) Range variable 's' should be declared as const reference. [iterateByValue]\n",
                       errout_str());
     }
 

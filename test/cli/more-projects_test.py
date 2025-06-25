@@ -897,3 +897,23 @@ def test_project_file_nested(tmp_path):
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_no_analyze_all_vs_configs(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt'):
+        pass
+
+    project_path = tmp_path / 'project.cppcheck'
+    with open(project_path, 'wt') as f:
+        f.write(
+"""<project>
+    <analyze-all-vs-configs>false</analyze-all-vs-configs>
+    <paths>
+        <dir name="."/>
+    </paths>
+</project>""")
+
+    ret, stdout, stderr = cppcheck(['--project=' + str(project_path)])
+    assert ret == 0, stdout
+    assert stderr == ''

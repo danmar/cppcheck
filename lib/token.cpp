@@ -784,7 +784,7 @@ nonneg int Token::getStrSize(const Token *tok, const Settings &settings)
     if (tok->valueType()) {
         ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        sizeofType = ValueFlow::getSizeOf(vt, settings);
+        sizeofType = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::ExactOrZero);
     }
     return getStrArraySize(tok) * sizeofType;
 }
@@ -1955,8 +1955,8 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isImpossible())
             continue;
-        if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue)) ||
-            (it->isFloatValue() && !settings.library.isFloatArgValid(ftok, argnr, it->floatValue))) {
+        if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue, settings)) ||
+            (it->isFloatValue() && !settings.library.isFloatArgValid(ftok, argnr, it->floatValue, settings))) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)

@@ -594,6 +594,7 @@ There are false positives with this option. Each result must be carefully invest
               <glossentry><glossterm>cert-cpp-2016</glossterm><glossdef><para>Cert C++ 2016</para></glossdef></glossentry>
               <glossentry><glossterm>misra-c-2012</glossterm><glossdef><para>Misra C 2012</para></glossdef></glossentry>
               <glossentry><glossterm>misra-c-2023</glossterm><glossdef><para>Misra C 2023</para></glossdef></glossentry>
+              <glossentry><glossterm>misra-c-2025</glossterm><glossdef><para>Misra C 2025</para></glossdef></glossentry>
               <glossentry><glossterm>misra-cpp-2008</glossterm><glossdef><para>Misra C++ 2008</para></glossdef></glossentry>
               <glossentry><glossterm>misra-cpp-2023</glossterm><glossdef><para>Misra C++ 2023</para></glossdef></glossentry>
             </glosslist>
@@ -629,7 +630,6 @@ There are false positives with this option. Each result must be carefully invest
               <glossentry><glossterm>summary</glossterm><glossdef><para>Show a summary at the end</para></glossdef></glossentry>
               <glossentry><glossterm>top5_file</glossterm><glossdef><para>Show the top 5 for each processed file</para></glossdef></glossentry>
               <glossentry><glossterm>top5_summary</glossterm><glossdef><para>Show the top 5 summary at the end</para></glossdef></glossentry>
-              <glossentry><glossterm>top5</glossterm><glossdef><para>Alias for top5_file (deprecated)</para></glossdef></glossentry>
             </glosslist>
           </para>
         </listitem>

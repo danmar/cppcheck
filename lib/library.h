@@ -36,6 +36,7 @@
 #include <vector>
 
 class Token;
+class Settings; // TODO: remove dependency on settings
 enum class Severity : std::uint8_t;
 
 namespace tinyxml2 {
@@ -258,8 +259,10 @@ public:
             return (i != functions.end()) ? i->second.returnType : mEmptyString;
         }
 
-        static Yield yieldFrom(const std::string& yieldName);
-        static Action actionFrom(const std::string& actionName);
+        CPPCHECKLIB static Yield yieldFrom(const std::string& yieldName);
+        CPPCHECKLIB static Action actionFrom(const std::string& actionName);
+        CPPCHECKLIB static std::string toString(Yield yield);
+        CPPCHECKLIB static std::string toString(Action action);
     };
     const std::unordered_map<std::string, Container>& containers() const;
     const Container* detectContainer(const Token* typeStart) const;
@@ -346,8 +349,8 @@ public:
         return arg && arg->strz;
     }
 
-    bool isIntArgValid(const Token *ftok, int argnr, MathLib::bigint argvalue) const;
-    bool isFloatArgValid(const Token *ftok, int argnr, double argvalue) const;
+    bool isIntArgValid(const Token *ftok, int argnr, MathLib::bigint argvalue, const Settings& settings) const;
+    bool isFloatArgValid(const Token *ftok, int argnr, double argvalue, const Settings& settings) const;
 
     const std::string& validarg(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

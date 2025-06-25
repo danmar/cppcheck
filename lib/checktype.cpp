@@ -124,14 +124,14 @@ void CheckType::tooBigBitwiseShiftError(const Token *tok, int lhsbits, const Val
         return;
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
+    ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
 
     std::ostringstream errmsg;
     errmsg << "Shifting " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is undefined behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), rhsbits.errorSeverity() ? Severity::error : Severity::warning, id, errmsg.str(), CWE758, rhsbits.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits)
@@ -155,14 +155,14 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 
     if ((severity == Severity::portability) && !mSettings->severity.isEnabled(Severity::portability))
         return;
-    const ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
+    ErrorPath errorPath = getErrorPath(tok, &rhsbits, "Shift");
 
     std::ostringstream errmsg;
     errmsg << "Shifting signed " << lhsbits << "-bit value by " << rhsbits.intvalue << " bits is " + behaviour + " behaviour";
     if (rhsbits.condition)
         errmsg << ". See condition at line " << rhsbits.condition->linenr() << ".";
 
-    reportError(errorPath, severity, id, errmsg.str(), CWE758, rhsbits.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), severity, id, errmsg.str(), CWE758, rhsbits.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -294,8 +294,8 @@ void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *ne
     if (!negativeValue)
         reportError(tok, Severity::warning, "signConversion", msg.str(), CWE195, Certainty::normal);
     else {
-        const ErrorPath &errorPath = getErrorPath(tok,negativeValue,"Negative value is converted to an unsigned value");
-        reportError(errorPath,
+        ErrorPath errorPath = getErrorPath(tok,negativeValue,"Negative value is converted to an unsigned value");
+        reportError(std::move(errorPath),
                     Severity::warning,
                     Check::getMessageId(*negativeValue, "signConversion").c_str(),
                     msg.str(),
@@ -322,8 +322,12 @@ static bool checkTypeCombination(ValueType src, ValueType tgt, const Settings& s
     src.reference = Reference::None;
     tgt.reference = Reference::None;
 
-    const std::size_t sizeSrc = ValueFlow::getSizeOf(src, settings);
-    const std::size_t sizeTgt = ValueFlow::getSizeOf(tgt, settings);
+    const std::size_t sizeSrc = ValueFlow::getSizeOf(src,
+                                                     settings,
+                                                     ValueFlow::Accuracy::ExactOrZero);
+    const std::size_t sizeTgt = ValueFlow::getSizeOf(tgt,
+                                                     settings,
+                                                     ValueFlow::Accuracy::ExactOrZero);
     if (!(sizeSrc > 0 && sizeTgt > 0 && sizeSrc < sizeTgt))
         return false;
 

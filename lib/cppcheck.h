@@ -42,6 +42,7 @@ class AnalyzerInformation;
 class ErrorLogger;
 class Settings;
 struct Suppressions;
+class Preprocessor;
 
 namespace simplecpp { class TokenList; }
 
@@ -163,20 +164,29 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
+     * @brief Calculate hash used to detect when a file needs to be reanalyzed.
+     *
+     * @param preprocessor  Preprocessor used to calculate the hash.
+     * @param tokens        Token list from preprocessed file.
+     * @return hash
+     */
+    std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens) const;
+
+    /**
      * @brief Check a file using stream
      * @param file the file
      * @param cfgname  cfg name
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream = nullptr);
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream* fileStream = nullptr);
 
     /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
      * @param analyzerInformation the analyzer infomation
      */
-    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation);
+    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig);
 
     /**
      * Execute addons
@@ -198,7 +208,7 @@ private:
     void executeRules(const std::string &tokenlist, const TokenList &list);
 #endif
 
-    unsigned int checkClang(const FileWithDetails &file);
+    unsigned int checkClang(const FileWithDetails &file, int fileIndex);
 
     const Settings& mSettings;
     Suppressions& mSuppressions;

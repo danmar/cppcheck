@@ -50,9 +50,8 @@ public:
 
     /**
      * @brief Get next unprocessed file
-     * @return File path
      */
-    QString getNextFile();
+    void getNextFile(const FileWithDetails*& file);
 
     void getNextFileSettings(const FileSettings*& fs);
 
@@ -81,6 +80,10 @@ public:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
+    void reportMetric(const std::string &metric) override
+    {
+        (void) metric;
+    }
 
 public slots:
 
@@ -134,7 +137,8 @@ protected:
      * @brief List of files to check
      *
      */
-    QStringList mFiles;
+    std::list<FileWithDetails> mFiles;
+    std::list<FileWithDetails>::const_iterator mItNextFile;
 
     std::list<FileSettings> mFileSettings;
     std::list<FileSettings>::const_iterator mItNextFileSettings;

@@ -875,7 +875,7 @@ void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &
         errorPath.emplace_back(paramVar->nameToken(), "Passing buffer '" + paramVar->name() + "' to function that is declared here");
     errorPath.emplace_back(tok, "");
 
-    reportError(errorPath, Severity::warning, "argumentSize",
+    reportError(std::move(errorPath), Severity::warning, "argumentSize",
                 "$symbol:" + functionName + '\n' +
                 "Buffer '" + paramExpression + "' is too small, the function '" + functionName + "' expects a bigger buffer in " + strParamNum + " argument", CWE_ARGUMENT_SIZE, Certainty::normal);
 }
@@ -947,7 +947,7 @@ bool CheckBufferOverrun::isCtuUnsafePointerArith(const Settings &settings, const
 }
 
 /** @brief Parse current TU and extract file info */
-Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
+Check::FileInfo *CheckBufferOverrun::getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeArrayIndex = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafeArrayIndex);
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafePointerArith = CTU::getUnsafeUsage(tokenizer, settings, isCtuUnsafePointerArith);
@@ -1014,7 +1014,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
 {
     const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
-    const std::list<ErrorMessage::FileLocation> &locationList =
+    std::list<ErrorMessage::FileLocation> locationList =
         CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::bufferOverflow,
                                     unsafeUsage,
                                     callsMap,
@@ -1042,7 +1042,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
         cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
     }
 
-    const ErrorMessage errorMessage(locationList,
+    const ErrorMessage errorMessage(std::move(locationList),
                                     file0,
                                     Severity::error,
                                     errmsg,
@@ -1138,7 +1138,7 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
     }
     errorPath.emplace_back(tok, "");
     std::string verb = known ? "is" : "might be";
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 known ? Severity::error : Severity::warning,
                 "objectIndex",
                 "The address of variable '" + name + "' " + verb + " accessed at non-zero index.",
@@ -1204,9 +1204,9 @@ void CheckBufferOverrun::negativeArraySizeError(const Token* tok)
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value)
 {
     const std::string msg = "Memory allocation size is negative.";
-    const ErrorPath errorPath = getErrorPath(tok, value, msg);
+    ErrorPath errorPath = getErrorPath(tok, value, msg);
     const bool inconclusive = value != nullptr && !value->isKnown();
-    reportError(errorPath, inconclusive ? Severity::warning : Severity::error, "negativeMemoryAllocationSize",
+    reportError(std::move(errorPath), inconclusive ? Severity::warning : Severity::error, "negativeMemoryAllocationSize",
                 msg, CWE131, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 

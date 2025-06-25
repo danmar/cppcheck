@@ -114,3 +114,45 @@ def test_build_dir_hash_cppcheck_product(tmpdir):
     assert hash1 != hash2
 
 
+def test_misra_py(tmpdir):
+    # 13831 - do not execute misra.py when --premium=misra-c-2012 is used
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write('void foo();\n')
+
+    exe = __copy_cppcheck_premium(tmpdir)
+
+    # ensure that misra.py is not available:
+    _, stdout, _ = cppcheck(['--enable=style', '--addon=misra', test_file], cppcheck_exe=exe)
+    assert 'Did not find addon misra.py' in stdout
+
+    # Execute misra
+    _, stdout, _ = cppcheck(['--enable=style', '--premium=misra-c-2012', test_file], cppcheck_exe=exe)
+    assert 'misra.py' not in stdout # Did not find misra.py
+    assert 'Checking' in stdout
+
+
+def test_invalid_license_retry(tmpdir):
+    # Trac 13832 - cppcheck build dir: do not reuse cached results if there were invalidLicense errors
+    build_dir = os.path.join(tmpdir, 'b')
+    test_file = os.path.join(tmpdir, 'test.c')
+    addon_file = os.path.join(tmpdir, 'premiumaddon.py')
+
+    os.mkdir(build_dir)
+
+    with open(test_file, 'wt') as f:
+        f.write('void foo();\n')
+
+    args = [f"--addon={addon_file}", f"--cppcheck-build-dir={build_dir}", '--xml', '--enable=all', test_file]
+
+    with open(addon_file, 'wt') as f:
+        f.write('print(\'{"addon":"premium","column":0,"errorId":"invalidLicense","extra":"","file":"Cppcheck Premium","linenr":0,"message":"Invalid license: No license file was found, contact sales@cppchecksolutions.com","severity":"error"}\')')
+
+    _, _, stderr = cppcheck(args)
+    assert 'Invalid license' in stderr
+
+    with open(addon_file, 'wt') as f:
+        f.write('')
+
+    _, _, stderr = cppcheck(args)
+    assert 'Invalid license' not in stderr

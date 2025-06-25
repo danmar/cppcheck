@@ -479,19 +479,19 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.ui" line="685"/>
-        <location filename="mainwindow.cpp" line="448"/>
-        <location filename="mainwindow.cpp" line="635"/>
-        <location filename="mainwindow.cpp" line="715"/>
-        <location filename="mainwindow.cpp" line="820"/>
-        <location filename="mainwindow.cpp" line="842"/>
-        <location filename="mainwindow.cpp" line="1429"/>
-        <location filename="mainwindow.cpp" line="1558"/>
-        <location filename="mainwindow.cpp" line="1890"/>
-        <location filename="mainwindow.cpp" line="1898"/>
-        <location filename="mainwindow.cpp" line="1946"/>
-        <location filename="mainwindow.cpp" line="1955"/>
-        <location filename="mainwindow.cpp" line="2027"/>
-        <location filename="mainwindow.cpp" line="2101"/>
+        <location filename="mainwindow.cpp" line="452"/>
+        <location filename="mainwindow.cpp" line="639"/>
+        <location filename="mainwindow.cpp" line="718"/>
+        <location filename="mainwindow.cpp" line="823"/>
+        <location filename="mainwindow.cpp" line="845"/>
+        <location filename="mainwindow.cpp" line="1430"/>
+        <location filename="mainwindow.cpp" line="1559"/>
+        <location filename="mainwindow.cpp" line="1891"/>
+        <location filename="mainwindow.cpp" line="1899"/>
+        <location filename="mainwindow.cpp" line="1947"/>
+        <location filename="mainwindow.cpp" line="1956"/>
+        <location filename="mainwindow.cpp" line="2028"/>
+        <location filename="mainwindow.cpp" line="2102"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -635,14 +635,14 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="468"/>
         <location filename="mainwindow.ui" line="471"/>
-        <location filename="mainwindow.cpp" line="2325"/>
+        <location filename="mainwindow.cpp" line="2326"/>
         <source>Show errors</source>
         <translation>შეცდომების ჩვენება</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="614"/>
         <location filename="mainwindow.ui" line="617"/>
-        <location filename="mainwindow.cpp" line="2326"/>
+        <location filename="mainwindow.cpp" line="2327"/>
         <source>Show warnings</source>
         <translation>გაფრთხილების ჩვენება</translation>
     </message>
@@ -658,8 +658,8 @@ Parameters: -l(line) (file)</source>
         <translation>დამალულის &amp;ჩვენება</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="946"/>
-        <location filename="mainwindow.cpp" line="987"/>
+        <location filename="mainwindow.cpp" line="949"/>
+        <location filename="mainwindow.cpp" line="990"/>
         <source>Information</source>
         <translation>ინფორმაცია</translation>
     </message>
@@ -1067,18 +1067,18 @@ Parameters: -l(line) (file)</source>
         <translation>&amp;დახმარება</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="145"/>
-        <location filename="mainwindow.cpp" line="1736"/>
+        <location filename="mainwindow.cpp" line="149"/>
+        <location filename="mainwindow.cpp" line="1737"/>
         <source>Quick Filter:</source>
         <translation>სწრაფი ფილტრი:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="791"/>
+        <location filename="mainwindow.cpp" line="794"/>
         <source>Select configuration</source>
         <translation>აირჩიეთ კონფიგურაცია</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="821"/>
+        <location filename="mainwindow.cpp" line="824"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -1087,44 +1087,44 @@ Do you want to load this project file instead?</source>
 გნებავთ, სამაგიეროდ, ეს პროექტის ფაილი ჩატვირთოთ?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="955"/>
+        <location filename="mainwindow.cpp" line="958"/>
         <source>File not found</source>
         <translation>ფაილი ნაპოვნი არაა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="958"/>
+        <location filename="mainwindow.cpp" line="961"/>
         <source>Bad XML</source>
         <translation>არასწორი XML</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="961"/>
+        <location filename="mainwindow.cpp" line="964"/>
         <source>Missing attribute</source>
         <translation>აკლია ატრიბუტი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="964"/>
+        <location filename="mainwindow.cpp" line="967"/>
         <source>Bad attribute value</source>
         <translation>არასწორი ატრიბუტის მნიშვნელობა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="967"/>
+        <location filename="mainwindow.cpp" line="970"/>
         <source>Unsupported format</source>
         <translation>მხარდაუჭერელი ფორმატი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="976"/>
+        <location filename="mainwindow.cpp" line="979"/>
         <source>Duplicate define</source>
         <translation>გამეორებული აღწერა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="987"/>
+        <location filename="mainwindow.cpp" line="990"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation>ჩავარდა ჩატვირთვა მონიშნული ბიბლიოთეკისთვის &apos;%1&apos;.
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="998"/>
+        <location filename="mainwindow.cpp" line="1001"/>
         <source>File not found: &apos;%1&apos;</source>
         <translation>ფაილი ვერ ვიპოვე: &apos;%1&apos;</translation>
     </message>
@@ -1151,7 +1151,7 @@ Analysis is aborted.</source>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1160"/>
+        <location filename="mainwindow.cpp" line="1162"/>
         <source>%1
 
 Analysis is aborted.</source>
@@ -1160,62 +1160,62 @@ Analysis is aborted.</source>
 ანალიზი შეწყვეტილია.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1610"/>
+        <location filename="mainwindow.cpp" line="1611"/>
         <source>License</source>
         <translation>ლიცენზია</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1617"/>
+        <location filename="mainwindow.cpp" line="1618"/>
         <source>Authors</source>
         <translation>ავტორები</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1632"/>
+        <location filename="mainwindow.cpp" line="1633"/>
         <source>Save the report file</source>
         <translation>ანგარიშის ფაილში ჩაწერა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1445"/>
-        <location filename="mainwindow.cpp" line="1639"/>
+        <location filename="mainwindow.cpp" line="1446"/>
+        <location filename="mainwindow.cpp" line="1640"/>
         <source>XML files (*.xml)</source>
         <translation>XML ფაილები (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="443"/>
+        <location filename="mainwindow.cpp" line="447"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="716"/>
+        <location filename="mainwindow.cpp" line="719"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>ახალი ფაილების ან საქაღალდეების არჩევამდე პრორექტის ფაილი უნდა დახუროთ!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="946"/>
+        <location filename="mainwindow.cpp" line="949"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation>ბიბლიოთეკა &apos;%1&apos; უცნობ ელემენტებს შეიცავს:
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="970"/>
+        <location filename="mainwindow.cpp" line="973"/>
         <source>Duplicate platform type</source>
         <translation>გამეორებული პლატფორმის ტიპი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="973"/>
+        <location filename="mainwindow.cpp" line="976"/>
         <source>Platform type redefined</source>
         <translation>პლატფორმის ტიპი თავდან აღიწერა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="979"/>
+        <location filename="mainwindow.cpp" line="982"/>
         <source>Unknown element</source>
         <translation>უცნობი ელემენტი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="982"/>
+        <location filename="mainwindow.cpp" line="985"/>
         <source>Unknown issue</source>
         <translation>უცნობი პრობლემა</translation>
     </message>
@@ -1223,85 +1223,85 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="1046"/>
         <location filename="mainwindow.cpp" line="1056"/>
         <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1160"/>
+        <location filename="mainwindow.cpp" line="1162"/>
         <source>Error</source>
         <translation>შეცდომა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1447"/>
+        <location filename="mainwindow.cpp" line="1448"/>
         <source>Open the report file</source>
         <translation>ანგარიშის ფაილის გახსნა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1643"/>
+        <location filename="mainwindow.cpp" line="1644"/>
         <source>Text files (*.txt)</source>
         <translation>ტექსტური ფაილები (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1647"/>
+        <location filename="mainwindow.cpp" line="1648"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV ფაილები (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1775"/>
+        <location filename="mainwindow.cpp" line="1776"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>პროექტის ფაილები (*.cppcheck);;ყველა ფაილი(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1777"/>
+        <location filename="mainwindow.cpp" line="1778"/>
         <source>Select Project File</source>
         <translation>აირჩიეთ პროექტის ფაილი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="226"/>
-        <location filename="mainwindow.cpp" line="1738"/>
-        <location filename="mainwindow.cpp" line="1805"/>
-        <location filename="mainwindow.cpp" line="1995"/>
+        <location filename="mainwindow.cpp" line="230"/>
+        <location filename="mainwindow.cpp" line="1739"/>
+        <location filename="mainwindow.cpp" line="1806"/>
+        <location filename="mainwindow.cpp" line="1996"/>
         <source>Project:</source>
         <translation>პროექტი:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="636"/>
+        <location filename="mainwindow.cpp" line="640"/>
         <source>No suitable files found to analyze!</source>
         <translation>ანალიზისათვის შესაფერისი ფაილები აღმოჩენილი არაა!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="730"/>
+        <location filename="mainwindow.cpp" line="733"/>
         <source>C/C++ Source</source>
         <translation>C/C++ საწყისი კოდი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="731"/>
+        <location filename="mainwindow.cpp" line="734"/>
         <source>Compile database</source>
         <translation>მონაცემთა ბაზის კომპილაცია</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="732"/>
+        <location filename="mainwindow.cpp" line="735"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="733"/>
+        <location filename="mainwindow.cpp" line="736"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="736"/>
+        <location filename="mainwindow.cpp" line="739"/>
         <source>Select files to analyze</source>
         <translation>აირჩეთ ფაილები ანალიზისთვის</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="751"/>
+        <location filename="mainwindow.cpp" line="754"/>
         <source>Select directory to analyze</source>
         <translation>აირჩიეთ საქაღალდე ანალიზისთვის</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="791"/>
+        <location filename="mainwindow.cpp" line="794"/>
         <source>Select the configuration that will be analyzed</source>
         <translation>აირჩიეთ კონფიგურაცია ანალიზისთვის</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="843"/>
+        <location filename="mainwindow.cpp" line="846"/>
         <source>Found project files from the directory.
 
 Do you want to proceed analysis without using any of these project files?</source>
@@ -1310,7 +1310,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 გნებავთ, გააგრძელოთ ანალიზი ამ პროექტის ფაილების გამოყენების გარეშე?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1430"/>
+        <location filename="mainwindow.cpp" line="1431"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1321,7 +1321,7 @@ Do you want to proceed?</source>
 გნებავთ, გააგრძელოთ?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1554"/>
+        <location filename="mainwindow.cpp" line="1555"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1330,47 +1330,47 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 გნებავთ, გააჩეროთ ანალიზი და გახვიდეთ Cppcheck-დან?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1596"/>
+        <location filename="mainwindow.cpp" line="1597"/>
         <source>About</source>
         <translation>შესახებ</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1630"/>
+        <location filename="mainwindow.cpp" line="1631"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML ფაილები (*.xml);;ტექსტური ფაილები (*.txt);;CSV ფაილები (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1670"/>
+        <location filename="mainwindow.cpp" line="1671"/>
         <source>Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors.</source>
         <translation>შესაბამისობის ანგარიშის გენერაცია ახლა შეუძლებელია, რადგან ჯერ ანალიზი წარმატებით უნდა დასრულდეს. სცადეთ, კოდის ანალიზი თავიდან გაუშვათ და დარწმუნდეთ, რომ კრიტიკული შეცდომები არ არსებობს.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1891"/>
+        <location filename="mainwindow.cpp" line="1892"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>აგების საქაღალდე (%1) არ არსებობს. შევქმნა?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1899"/>
+        <location filename="mainwindow.cpp" line="1900"/>
         <source>To check the project using addons, you need a build directory.</source>
         <translation>პროექტის დამატებებით შესამოწმებლად აგების საქაღალდე გჭირდებათ.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1931"/>
+        <location filename="mainwindow.cpp" line="1932"/>
         <source>Failed to open file</source>
         <translation>ფაილის გახსნის შეცდომა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1934"/>
+        <location filename="mainwindow.cpp" line="1935"/>
         <source>Unknown project file format</source>
         <translation>უცნობი პროექტის ფაილის ფორმატი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1937"/>
+        <location filename="mainwindow.cpp" line="1938"/>
         <source>Failed to import project file</source>
         <translation>პროექტის ფაილის შემოტანა ჩავარდა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1947"/>
+        <location filename="mainwindow.cpp" line="1948"/>
         <source>Failed to import &apos;%1&apos;: %2
 
 Analysis is stopped.</source>
@@ -1379,27 +1379,27 @@ Analysis is stopped.</source>
 ანალიზი შეწყდა.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1956"/>
+        <location filename="mainwindow.cpp" line="1957"/>
         <source>Failed to import &apos;%1&apos; (%2), analysis is stopped</source>
         <translation>&apos;%1&apos;-ის (%2) შემოტანა ჩავარდა. ანალიზი შეწყდა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1980"/>
+        <location filename="mainwindow.cpp" line="1981"/>
         <source>Project files (*.cppcheck)</source>
         <translation>პროექტის ფაილები (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1982"/>
+        <location filename="mainwindow.cpp" line="1983"/>
         <source>Select Project Filename</source>
         <translation>აირჩიეთ პროექტის ფაილის სახელი</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2028"/>
+        <location filename="mainwindow.cpp" line="2029"/>
         <source>No project file loaded</source>
         <translation>პროექტის ფაილი ჩატვირთული არაა</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2096"/>
+        <location filename="mainwindow.cpp" line="2097"/>
         <source>The project file
 
 %1
@@ -1416,67 +1416,67 @@ Do you want to remove the file from the recently used projects -list?</source>
 გნებავთ წაშალოთ ეს ფაილი ახლახან გამოყენებული პროექტების სიიდან?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2256"/>
+        <location filename="mainwindow.cpp" line="2257"/>
         <source>Install</source>
         <translation>დაყენება</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2260"/>
+        <location filename="mainwindow.cpp" line="2261"/>
         <source>New version available: %1. %2</source>
         <translation>ხელმისაწვდომია ახალი ვერსია: %1. %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2298"/>
+        <location filename="mainwindow.cpp" line="2299"/>
         <source>Show Mandatory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2299"/>
+        <location filename="mainwindow.cpp" line="2300"/>
         <source>Show Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2300"/>
+        <location filename="mainwindow.cpp" line="2301"/>
         <source>Show Advisory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2301"/>
+        <location filename="mainwindow.cpp" line="2302"/>
         <source>Show Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2318"/>
+        <location filename="mainwindow.cpp" line="2319"/>
         <source>Show L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2319"/>
+        <location filename="mainwindow.cpp" line="2320"/>
         <source>Show L2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2320"/>
+        <location filename="mainwindow.cpp" line="2321"/>
         <source>Show L3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2327"/>
+        <location filename="mainwindow.cpp" line="2328"/>
         <source>Show style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2328"/>
+        <location filename="mainwindow.cpp" line="2329"/>
         <source>Show portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2329"/>
+        <location filename="mainwindow.cpp" line="2330"/>
         <source>Show performance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2330"/>
+        <location filename="mainwindow.cpp" line="2331"/>
         <source>Show information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1557,7 +1557,7 @@ Options:
         <translation>სიმბოლოს სახელი</translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.cpp" line="81"/>
+        <location filename="newsuppressiondialog.cpp" line="83"/>
         <source>Edit suppression</source>
         <translation>ჩახშობის ჩასწორება</translation>
     </message>
@@ -1670,17 +1670,17 @@ Options:
         <translation>ფაილის ამოღება...</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="871"/>
+        <location filename="projectfile.ui" line="876"/>
         <source>MISRA rule texts</source>
         <translation>MISRA-ის წესის ტექსტები</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="878"/>
+        <location filename="projectfile.ui" line="883"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="885"/>
+        <location filename="projectfile.ui" line="890"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -1825,37 +1825,42 @@ Options:
         <translation>შეცდომების ხაზშივე ჩახშობის ჩართვა</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="896"/>
+        <location filename="projectfile.ui" line="851"/>
+        <source>2025</source>
+        <translation type="unfinished">2025</translation>
+    </message>
+    <message>
+        <location filename="projectfile.ui" line="901"/>
         <source>Misra C++</source>
         <translation>Misra C++</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="904"/>
+        <location filename="projectfile.ui" line="909"/>
         <source>2008</source>
         <translation>2008</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="932"/>
+        <location filename="projectfile.ui" line="937"/>
         <source>Cert C</source>
         <translation>Cert C</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="941"/>
+        <location filename="projectfile.ui" line="946"/>
         <source>CERT-INT35-C:  int precision (if size equals precision, you can leave empty)</source>
         <translation>CERT-INT35-C:  მთელი რიცხვის სიზუსტე (თუ ზომა სიზუსტეს ემთხვევა, შეგიძლიათ, ცარიელი დატოვოთ)</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="960"/>
+        <location filename="projectfile.ui" line="965"/>
         <source>Autosar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="976"/>
+        <location filename="projectfile.ui" line="981"/>
         <source>Bug hunting</source>
         <translation>შეცდომებზე ნადირობა</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="986"/>
+        <location filename="projectfile.ui" line="991"/>
         <source>External tools</source>
         <translation>გარე ხელსაწყოები</translation>
     </message>
@@ -1947,27 +1952,27 @@ Options:
     </message>
     <message>
         <location filename="projectfile.ui" line="846"/>
-        <location filename="projectfile.ui" line="909"/>
+        <location filename="projectfile.ui" line="914"/>
         <source>2023</source>
         <translation>2023</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="953"/>
+        <location filename="projectfile.ui" line="958"/>
         <source>Cert C++</source>
         <translation>Cert C++</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="970"/>
+        <location filename="projectfile.ui" line="975"/>
         <source>Bug hunting (Premium)</source>
         <translation>შეცდომებზე ნადირობა (ფასიანი)</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="999"/>
+        <location filename="projectfile.ui" line="1004"/>
         <source>Clang analyzer</source>
         <translation>Clang-ის ანალიზატორი</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="992"/>
+        <location filename="projectfile.ui" line="997"/>
         <source>Clang-tidy</source>
         <translation>Clang-tidy</translation>
     </message>
@@ -1980,82 +1985,82 @@ Options:
 <context>
     <name>ProjectFileDialog</name>
     <message>
-        <location filename="projectfiledialog.cpp" line="118"/>
+        <location filename="projectfiledialog.cpp" line="119"/>
         <source>Project file: %1</source>
         <translation>პროექტის ფაილი: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="575"/>
+        <location filename="projectfiledialog.cpp" line="585"/>
         <source>Select Cppcheck build dir</source>
         <translation>აირჩიეთ Cppcheck-ის აგების საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="844"/>
+        <location filename="projectfiledialog.cpp" line="854"/>
         <source>Select include directory</source>
         <translation>აირჩიეთ ჩასასმელი საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="824"/>
+        <location filename="projectfiledialog.cpp" line="834"/>
         <source>Select a directory to check</source>
         <translation>აირჩიეთ შესამოწმებელი საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="391"/>
+        <location filename="projectfiledialog.cpp" line="392"/>
         <source>Note: Open source Cppcheck does not fully implement Misra C 2012</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="446"/>
+        <location filename="projectfiledialog.cpp" line="454"/>
         <source>Clang-tidy (not found)</source>
         <translation>Clang-tidy (ვერ ვიპოვე)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="614"/>
+        <location filename="projectfiledialog.cpp" line="624"/>
         <source>Visual Studio</source>
         <translation>Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="615"/>
+        <location filename="projectfiledialog.cpp" line="625"/>
         <source>Compile database</source>
         <translation>მონაცემთა ბაზის კომპილაცია</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="616"/>
+        <location filename="projectfiledialog.cpp" line="626"/>
         <source>Borland C++ Builder 6</source>
         <translation>Borland C++ Builder 6</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="617"/>
+        <location filename="projectfiledialog.cpp" line="627"/>
         <source>Import Project</source>
         <translation>პროექტის შემოტანა</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="864"/>
+        <location filename="projectfiledialog.cpp" line="874"/>
         <source>Select directory to ignore</source>
         <translation>აირჩიეთ გამოსატოვებელი საქაღალდე</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="872"/>
+        <location filename="projectfiledialog.cpp" line="882"/>
         <source>Source files</source>
         <translation>კოდის ფაილები</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="873"/>
+        <location filename="projectfiledialog.cpp" line="883"/>
         <source>All files</source>
         <translation>ყველა ფაილი</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="874"/>
+        <location filename="projectfiledialog.cpp" line="884"/>
         <source>Exclude file</source>
         <translation>ფაილის ამოღება</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="958"/>
+        <location filename="projectfiledialog.cpp" line="967"/>
         <source>Select MISRA rule texts file</source>
         <translation>აირჩიეთ MISRA-ის წესების ტექსტის ფაილი</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="960"/>
+        <location filename="projectfiledialog.cpp" line="969"/>
         <source>MISRA rule texts file (%1)</source>
         <translation>MISRA-ის წესის ტექსტების ფაილი (%1)</translation>
     </message>
@@ -2080,17 +2085,17 @@ Options:
         <translation>ჩავარდა თარგმანის ჩატვირთვა ენისთვის %1 ფაილიდან %2</translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="42"/>
+        <location filename="cppchecklibrarydata.cpp" line="43"/>
         <source>line %1: Unhandled element %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="47"/>
+        <location filename="cppchecklibrarydata.cpp" line="48"/>
         <source>line %1: Mandatory attribute &apos;%2&apos; missing in &apos;%3&apos;</source>
         <translation>ხაზი %1: აუცილებელი ატრიბუტი &apos;%2&apos; &apos;%3&apos;-ში აღმოჩენილი არაა</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="279"/>
+        <location filename="projectfiledialog.cpp" line="280"/>
         <source> (Not found)</source>
         <translation> (ვერ ვიპოვე)</translation>
     </message>
@@ -2343,27 +2348,27 @@ Options:
         <translation>გაურკვეველი ფაილი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="751"/>
+        <location filename="resultstree.cpp" line="752"/>
         <source>Copy</source>
         <translation>კოპირება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="944"/>
+        <location filename="resultstree.cpp" line="945"/>
         <source>Could not find file:</source>
         <translation>ვერ ვიპოვე ფაილი:</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="948"/>
+        <location filename="resultstree.cpp" line="949"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>აირჩიეთ საქაღალდე &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="949"/>
+        <location filename="resultstree.cpp" line="950"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>აირჩიეთ საქაღალდე &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="951"/>
+        <location filename="resultstree.cpp" line="952"/>
         <source>Please select the directory where file is located.</source>
         <translation>აირჩიეთ საქაღალდე, სადაც ფაილია მოთავსებული.</translation>
     </message>
@@ -2378,27 +2383,27 @@ Options:
         <translation>ნოტა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="750"/>
+        <location filename="resultstree.cpp" line="751"/>
         <source>Recheck</source>
         <translation>თავიდან შემოწმება</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="752"/>
+        <location filename="resultstree.cpp" line="753"/>
         <source>Hide</source>
         <translation>დამალვა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="753"/>
+        <location filename="resultstree.cpp" line="754"/>
         <source>Hide all with id</source>
         <translation>დამალვა ყველასი id-ით</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="772"/>
+        <location filename="resultstree.cpp" line="773"/>
         <source>Suppress selected id(s)</source>
         <translation>მონიშნული id(ებ)-ის ჩახშობა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="754"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Open containing folder</source>
         <translation>შემცველი საქაღალდის გახსნა</translation>
     </message>
@@ -2408,23 +2413,23 @@ Options:
         <translation>შიდა</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="793"/>
+        <location filename="resultstree.cpp" line="794"/>
         <source>Tag</source>
         <translation>იარლიყი</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="795"/>
+        <location filename="resultstree.cpp" line="796"/>
         <source>No tag</source>
         <translation>ჭდის გარეშე</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="826"/>
-        <location filename="resultstree.cpp" line="840"/>
+        <location filename="resultstree.cpp" line="827"/>
+        <location filename="resultstree.cpp" line="841"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="827"/>
+        <location filename="resultstree.cpp" line="828"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2434,7 +2439,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 მიუთითეთ რედაქტორის აპლიკაცია Cppcheck-სთვის მენიუში მორგება/აპლიკაციები.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="841"/>
+        <location filename="resultstree.cpp" line="842"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2443,12 +2448,12 @@ Please select the default editor application in preferences/Applications.</sourc
 აირჩიეთ ნაგულისხმევი რედაქტორის აპლიკაცია მენიუში მორგება/აპლიკაციები.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="867"/>
+        <location filename="resultstree.cpp" line="868"/>
         <source>Could not find the file!</source>
         <translation>ფაილი ვერ ვიპოვე!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="930"/>
+        <location filename="resultstree.cpp" line="931"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2457,7 +2462,7 @@ Please check the application path and parameters are correct.</source>
 შეამოწმეთ, სწორია, თუ არა აპლიკაციის ბილიკი და მისი პარამეტრები.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="952"/>
+        <location filename="resultstree.cpp" line="953"/>
         <source>Select Directory</source>
         <translation>აირჩიეთ საქაღალდე</translation>
     </message>
@@ -2507,107 +2512,107 @@ Please check the application path and parameters are correct.</source>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="250"/>
+        <location filename="resultsview.cpp" line="252"/>
         <source>Print Report</source>
         <translation>ანგარიშის დაბეჭდვა</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="269"/>
+        <location filename="resultsview.cpp" line="271"/>
         <source>No errors found, nothing to print.</source>
         <translation>შეცდომები ვერ ვიპოვე. დასაბეჭდი არაფერია.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="321"/>
+        <location filename="resultsview.cpp" line="323"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation>%p% (შემოწმებულია %1 ფაილი %2-დან)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="345"/>
-        <location filename="resultsview.cpp" line="356"/>
+        <location filename="resultsview.cpp" line="347"/>
+        <location filename="resultsview.cpp" line="358"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="346"/>
+        <location filename="resultsview.cpp" line="348"/>
         <source>No errors found.</source>
         <translation>შეცდომების გარეშე.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="353"/>
+        <location filename="resultsview.cpp" line="355"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>აღმოჩენილია შეცდომები, მაგრამ მითითებულია, რომ ისინი დაიმალოს.
 იმისათვის, რომ გადართოთ, რა სახის შეცდომებია ნაჩვენები, გახსენით მენიუ &apos;ხედი&apos;.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="402"/>
-        <location filename="resultsview.cpp" line="421"/>
+        <location filename="resultsview.cpp" line="404"/>
+        <location filename="resultsview.cpp" line="423"/>
         <source>Failed to read the report.</source>
         <translation>ანგარიშის წაკითხვა ჩავარდა.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="409"/>
+        <location filename="resultsview.cpp" line="411"/>
         <source>XML format version 1 is no longer supported.</source>
         <translation>XML-ის ფორმატის პირველი ვერსია მხარდაჭერილი აღარაა.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="470"/>
+        <location filename="resultsview.cpp" line="472"/>
         <source>First included by</source>
         <translation>პირველად ჩასმულია ფაილში</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="475"/>
+        <location filename="resultsview.cpp" line="477"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="477"/>
+        <location filename="resultsview.cpp" line="479"/>
         <source>Bug hunting analysis is incomplete</source>
         <translation>შეცდომებზე ნადირობის ანალიზი დაუსრულებელია</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="551"/>
+        <location filename="resultsview.cpp" line="553"/>
         <source>Clear Log</source>
         <translation>ჟურნალის გასუფთავება</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="552"/>
+        <location filename="resultsview.cpp" line="554"/>
         <source>Copy this Log entry</source>
         <translation>ამ ჟურნალის ჩანაწერის კოპირება</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="553"/>
+        <location filename="resultsview.cpp" line="555"/>
         <source>Copy complete Log</source>
         <translation>სრული ჟურნალის კოპირება</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="561"/>
+        <location filename="resultsview.cpp" line="563"/>
         <source>Analysis was stopped</source>
         <translation>ანალიზი გაუქმებულია</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="575"/>
+        <location filename="resultsview.cpp" line="577"/>
         <source>There was a critical error with id &apos;%1&apos;</source>
         <translation>აღმოჩენილია კრიტიკული შეცდომა id-ით &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="577"/>
+        <location filename="resultsview.cpp" line="579"/>
         <source>when checking %1</source>
         <translation>%1-ის შემოწმებისას</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="579"/>
+        <location filename="resultsview.cpp" line="581"/>
         <source>when checking a file</source>
         <translation>ფაილის შემოწმებისას</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="580"/>
+        <location filename="resultsview.cpp" line="582"/>
         <source>Analysis was aborted.</source>
         <translation>ანალიზი შეწყვეტილია.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="232"/>
-        <location filename="resultsview.cpp" line="240"/>
+        <location filename="resultsview.cpp" line="234"/>
+        <location filename="resultsview.cpp" line="242"/>
         <source>Failed to save the report.</source>
         <translation>ანგარიშის შენახვა ჩავარდა.</translation>
     </message>

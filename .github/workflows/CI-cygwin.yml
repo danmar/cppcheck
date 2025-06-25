@@ -24,7 +24,8 @@ jobs:
   build_cygwin:
     strategy:
       matrix:
-        os: [windows-2022]
+        # only use the latest windows-* as the installed toolchain is identical
+        os: [windows-2025]
         platform: [x86_64]
         include:
           - platform: 'x86_64'

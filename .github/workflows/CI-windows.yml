@@ -26,8 +26,8 @@ jobs:
   build_qt:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.8.2]
+        os: [windows-2022, windows-2025]
+        qt_ver: [5.15.2, 6.9.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -84,7 +84,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
         config: [debug, release]
       fail-fast: false
 

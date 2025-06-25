@@ -27,6 +27,7 @@
 
 #include "cmdlinelogger.h"
 #include "filesettings.h"
+#include "standards.h"
 #include "utils.h"
 
 class Settings;
@@ -46,6 +47,7 @@ class Library;
  * class internal options.
  */
 class CmdLineParser {
+    friend class TestCmdlineParser;
 public:
     /**
      * The constructor.
@@ -67,6 +69,16 @@ public:
      * @return false when errors are found in the input
      */
     bool fillSettingsFromArgs(int argc, const char* const argv[]);
+
+    /**
+     * @brief Filter files
+     *
+     * @param fileFilters file filters
+     * @param filesResolved all the files in project
+     * @return the files in filesResolved that match filters
+     */
+    static std::list<FileWithDetails> filterFiles(const std::vector<std::string>& fileFilters,
+                                                  const std::list<FileWithDetails>& filesResolved);
 
     /**
      * Parse given command line.
@@ -164,6 +176,9 @@ private:
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;
+    bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
+    /** @brief Name of the language that is enforced. Empty per default. */
+    Standards::Language mEnforcedLang{Standards::Language::None};
 };
 
 /// @}

@@ -189,6 +189,7 @@ private:
         TEST_CASE(const96);
         TEST_CASE(const97);
         TEST_CASE(const98);
+        TEST_CASE(const99);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -503,6 +504,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Class 'Color' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]\n"
                       "[test.cpp:4:5]: (style) Class 'Color' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]\n",
                       errout_str());
+
+        checkExplicitConstructors("template <typename T>\n" // #13878
+                                  "struct S {\n"
+                                  "    S(std::nullptr_t) {}\n"
+                                  "    explicit S(T* p) : m(p) {}\n"
+                                  "    T* m{};\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkDuplInheritedMembers(...) checkDuplInheritedMembers_( __FILE__, __LINE__, __VA_ARGS__)
@@ -6835,6 +6844,17 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void const99() {
+        checkConst("typedef void (*InitFunc)(void**);\n" // #13953
+                   "struct S {\n"
+                   "    int *m;\n"
+                   "    void f(InitFunc func) {\n"
+                   "        func(reinterpret_cast<void**>(&m));\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -8929,10 +8949,10 @@ private:
                               "  static C *mInstance;\n"
                               "  void hello() {}\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:38]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:13]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:3:38]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         checkThisUseAfterFree("class C {\n"
@@ -8942,10 +8962,10 @@ private:
                               "  static std::shared_ptr<C> mInstance;\n"
                               "  void hello() {}\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:39]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:29]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:3:39]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         checkThisUseAfterFree("class C {\n"
@@ -8956,10 +8976,10 @@ private:
                               "  void hello();\n"
                               "  void reset() { mInstance.reset(); }\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:7:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:29]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:29]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:7:18]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:3:29]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         // Use member..
@@ -8970,10 +8990,10 @@ private:
                               "  static C *self;\n"
                               "  int x;\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:33]: warning: Using member 'x' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:13]: note: Assuming 'self' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'self', invalidating 'this'\n"
+                      "[test.cpp:3:33]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         checkThisUseAfterFree("class C {\n"
@@ -8983,10 +9003,10 @@ private:
                               "  static C *self;\n"
                               "  std::map<int,int> x;\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:3:warning:Using member 'x' when 'this' might be invalid\n"
-                      "test.cpp:5:note:Assuming 'self' is used as 'this'\n"
-                      "test.cpp:3:note:Delete 'self', invalidating 'this'\n"
-                      "test.cpp:3:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:3:33]: warning: Using member 'x' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:5:13]: note: Assuming 'self' is used as 'this'\n"
+                      "[test.cpp:3:20]: note: Delete 'self', invalidating 'this'\n"
+                      "[test.cpp:3:33]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         // Assign 'shared_from_this()' to non-static smart pointer
@@ -8998,10 +9018,10 @@ private:
                               "  std::shared_ptr<C> mInstance;\n"
                               "  void hello() {}\n"
                               "};");
-        ASSERT_EQUALS("test.cpp:4:warning:Calling method 'hello()' when 'this' might be invalid\n"
-                      "test.cpp:6:note:Assuming 'mInstance' is used as 'this'\n"
-                      "test.cpp:4:note:Delete 'mInstance', invalidating 'this'\n"
-                      "test.cpp:4:note:Call method when 'this' is invalid\n",
+        ASSERT_EQUALS("[test.cpp:4:39]: warning: Calling method 'hello()' when 'this' might be invalid [thisUseAfterFree]\n"
+                      "[test.cpp:6:22]: note: Assuming 'mInstance' is used as 'this'\n"
+                      "[test.cpp:4:20]: note: Delete 'mInstance', invalidating 'this'\n"
+                      "[test.cpp:4:39]: note: Call method when 'this' is invalid\n",
                       errout_str());
 
         // Avoid FP..
@@ -9084,7 +9104,7 @@ private:
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
             SimpleTokenizer tokenizer{settingsDefault, *this, filename};
             ASSERT(tokenizer.tokenize(c));
-            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
+            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault, ""));
         }
 
         // Check code..
@@ -9130,7 +9150,7 @@ private:
 
         // Check..
         const Check& c = getCheck<CheckClass>();
-        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1);
+        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1, "");
 
         delete fileInfo;
     }
@@ -9240,6 +9260,15 @@ private:
                                "};\n");
         ASSERT_EQUALS("[test.cpp:10:17]: (performance) Function 'get2()' should return member 'str' by const reference. [returnByReference]\n",
                       errout_str());
+
+        checkReturnByReference("struct S {\n" // #13845
+                               "    std::string m;\n"
+                               "    std::string get() { return m; }\n"
+                               "};\n"
+                               "std::string f(std::optional<S> o) {\n"
+                               "    return o.transform(&S::get).value_or(\"\");\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
