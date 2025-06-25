@@ -78,6 +78,7 @@ private:
         TEST_CASE(isCriticalErrorId);
 
         TEST_CASE(ErrorMessageReportTypeMisraC);
+        TEST_CASE(ErrorMessageReportTypeMisraCpp);
         TEST_CASE(ErrorMessageReportTypeMisraCDirective);
         TEST_CASE(ErrorMessageReportTypeCertC);
     }
@@ -327,6 +328,67 @@ private:
         ASSERT_EQUALS("Advisory", msg.classification);
         ASSERT_EQUALS("2.8", msg.guideline);
         ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format, ""));
+    }
+
+    void ErrorMessageReportTypeMisraCpp() const {
+        std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
+        const std::string format = "{severity} {id}";
+
+        {
+            const auto reportType = ReportType::misraCpp2023;
+            const auto mapping = createGuidelineMapping(reportType);
+            ErrorMessage msg(locs, emptyString, Severity::warning, "", "premium-misra-cpp-2023-6.8.4", Certainty::normal);
+            msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+            msg.classification = getClassification(msg.guideline, reportType);
+            ASSERT_EQUALS("Advisory", msg.classification);
+            ASSERT_EQUALS("6.8.4", msg.guideline);
+            ASSERT_EQUALS("Advisory 6.8.4", msg.toString(true, format, ""));
+        }
+
+        {
+            const auto reportType = ReportType::misraCpp2023;
+            const auto mapping = createGuidelineMapping(reportType);
+            ErrorMessage msg(locs, emptyString, Severity::warning, "", "misra-cpp-2023-6.8.4", Certainty::normal);
+            msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+            msg.classification = getClassification(msg.guideline, reportType);
+            ASSERT_EQUALS("Advisory", msg.classification);
+            ASSERT_EQUALS("6.8.4", msg.guideline);
+            ASSERT_EQUALS("Advisory 6.8.4", msg.toString(true, format, ""));
+        }
+
+        {
+            const auto reportType = ReportType::misraCpp2023;
+            const auto mapping = createGuidelineMapping(reportType);
+            ErrorMessage msg(locs, emptyString, Severity::style, "", "premium-misra-cpp-2023-19.6.1", Certainty::normal);
+            msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+            msg.classification = getClassification(msg.guideline, reportType);
+            ASSERT_EQUALS("Advisory", msg.classification);
+            ASSERT_EQUALS("19.6.1", msg.guideline);
+            ASSERT_EQUALS("Advisory 19.6.1", msg.toString(true, format, ""));
+        }
+
+        {
+            const auto reportType = ReportType::misraCpp2008;
+            const auto mapping = createGuidelineMapping(reportType);
+            ErrorMessage msg(locs, emptyString, Severity::style, "", "premium-misra-cpp-2008-3-4-1", Certainty::normal);
+            msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+            msg.classification = getClassification(msg.guideline, reportType);
+            ASSERT_EQUALS("Required", msg.classification);
+            ASSERT_EQUALS("3-4-1", msg.guideline);
+            ASSERT_EQUALS("Required 3-4-1", msg.toString(true, format, ""));
+        }
+
+        {
+            const auto reportType = ReportType::misraCpp2008;
+            const auto mapping = createGuidelineMapping(reportType);
+            ErrorMessage msg(locs, emptyString, Severity::style, "", "misra-cpp-2008-3-4-1", Certainty::normal);
+            msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
+            msg.classification = getClassification(msg.guideline, reportType);
+            ASSERT_EQUALS("Required", msg.classification);
+            ASSERT_EQUALS("3-4-1", msg.guideline);
+            ASSERT_EQUALS("Required 3-4-1", msg.toString(true, format, ""));
+        }
+
     }
 
     void ErrorMessageReportTypeMisraCDirective() const {
