@@ -304,6 +304,7 @@ private:
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
         TEST_CASE(bitfields16); // Save bitfield bit count
         TEST_CASE(bitfields17);
+        TEST_CASE(bitfields18);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -4844,6 +4845,12 @@ private:
                                  "const volatile uint32_t anonymous@0 ;\n"
                                  "} ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+    }
+
+    void bitfields18() {
+        const char code[] = "struct S { unsigned int a : 100000; };";
+        (void) tokenizeAndStringify(code);
+        ASSERT_EQUALS("[test.cpp:1:29]: (warning) Bit-field size exceeds max number of bits 32767 [tooLargeBitField]\n", errout_str());
     }
 
     void simplifyNamespaceStd() {
