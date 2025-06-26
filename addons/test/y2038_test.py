@@ -21,17 +21,27 @@ TEST_SOURCE_FILES = ['./addons/test/y2038/y2038-test-1-bad-time-bits.c',
                      './addons/test/y2038/y2038-test-4-good.c',
                      './addons/test/y2038/y2038-test-5-good-no-time-used.c']
 
+# Build system test file (for testing build system integration)
+BUILD_SYSTEM_TEST_FILE = './addons/test/y2038/y2038-test-buildsystem.c'
+
 
 def setup_module(module):
     sys.argv.append("--cli")
+
+    # Create dumps for regular test files
     for f in TEST_SOURCE_FILES:
         dump_create(f)
+
+    # For build system tests, we'll create dumps on-demand in each test
+    # to avoid conflicts from multiple dump_create calls on the same file
 
 
 def teardown_module(module):
     sys.argv.remove("--cli")
     for f in TEST_SOURCE_FILES:
         dump_remove(f)
+
+    # Build system test dumps are cleaned up individually in each test method
 
 
 def test_1_bad_time_bits(capsys):
@@ -107,6 +117,49 @@ def test_5_good(capsys):
         assert(len([c for c in unsafe_calls if c['file'].endswith('.c')]) == 0)
 
 
+def test_build_system_integration():
+    """Test that build system integration works correctly"""
+    from addons.y2038 import parse_compile_commands
+    import tempfile
+    import os
+    import json
+
+    temp_dir = tempfile.mkdtemp()
+    
+    try:
+        # Create a dummy source file in the temp directory
+        test_source = os.path.join(temp_dir, "test.c")
+        with open(test_source, 'w') as f:
+            f.write('#include <time.h>\nint main() { time_t t = time(NULL); return 0; }')
+        
+        # Create a dummy compile_commands.json with Y2038-safe flags
+        compile_commands = [
+            {
+                "directory": temp_dir,
+                "command": "gcc -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -D_USE_TIME_BITS64 -c test.c -o test.o",
+                "file": test_source
+            }
+        ]
+        compile_commands_path = os.path.join(temp_dir, "compile_commands.json")
+        with open(compile_commands_path, 'w') as f:
+            json.dump(compile_commands, f)
+        
+        # Test that parse_compile_commands finds the flags correctly
+        result = parse_compile_commands(test_source)
+        
+        # Build system flags should be detected
+        assert result['time_bits_defined'] is True
+        assert result['time_bits_value'] == 64
+        assert result['use_time_bits64_defined'] is True
+        assert result['file_offset_bits_defined'] is True
+        assert result['file_offset_bits_value'] == 64
+            
+    finally:
+        # Clean up
+        import shutil
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+
 def test_arguments_regression():
     args_ok = ["-t=foo", "--template=foo",
                "-q", "--quiet",
@@ -138,3 +191,40 @@ def test_arguments_regression():
             sys.argv.remove(arg)
     finally:
         sys.argv = sys_argv_old
+
+
+def test_parse_compile_commands():
+    """Test the parse_compile_commands function for build system integration"""
+    from addons.y2038 import parse_compile_commands
+    import tempfile
+    import os
+    import json
+
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Test with Y2038-safe compile commands
+        compile_commands = [
+            {
+                "directory": temp_dir,
+                "command": "gcc -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -D_USE_TIME_BITS64 -c y2038-test-buildsystem.c -o y2038-test-buildsystem.o",
+                "file": os.path.join(temp_dir, "y2038-test-buildsystem.c")
+            }
+        ]
+        compile_commands_path = os.path.join(temp_dir, "compile_commands.json")
+        with open(compile_commands_path, 'w') as f:
+            json.dump(compile_commands, f)
+        
+        # Test parsing
+        old_cwd = os.getcwd()
+        os.chdir(temp_dir)
+        try:
+            result = parse_compile_commands(os.path.join(temp_dir, "y2038-test-buildsystem.c"))
+            assert result['time_bits_defined'] is True
+            assert result['time_bits_value'] == 64
+            assert result['use_time_bits64_defined'] is True
+        finally:
+            os.chdir(old_cwd)
+            
+    finally:
+        import shutil
+        shutil.rmtree(temp_dir, ignore_errors=True)
