@@ -26,6 +26,7 @@
 
 #include <list>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -95,7 +96,28 @@ struct CPPCHECKLIB FileSettings {
     std::string defines;
     // TODO: handle differently
     std::string cppcheckDefines() const {
-        return defines + (msc ? ";_MSC_VER=1900" : "") + (useMfc ? ";__AFXWIN_H__=1" : "");
+        std::ostringstream oss;
+        oss << defines;
+
+        if (msc) {
+            oss << ";_MSC_VER=1900";
+        }
+        if (useMfc) {
+            oss << ";__AFXWIN_H__=1";
+        }
+
+        // Add Y2038 specific flags to configuration
+        if (timeBitsDefined) {
+            oss << ";_TIME_BITS=" << timeBitsValue;
+        }
+        if (fileOffsetBitsDefined) {
+            oss << ";_FILE_OFFSET_BITS=" << fileOffsetBitsValue;
+        }
+        if (useTimeBits64Defined) {
+            oss << ";_USE_TIME_BITS64";
+        }
+
+        return oss.str();
     }
     std::set<std::string> undefs;
     std::list<std::string> includePaths;
@@ -106,6 +128,13 @@ struct CPPCHECKLIB FileSettings {
     // TODO: get rid of these
     bool msc{};
     bool useMfc{};
+
+    // Y2038 specific configuration flags
+    bool timeBitsDefined{};
+    int timeBitsValue{};
+    bool useTimeBits64Defined{};
+    bool fileOffsetBitsDefined{};
+    int fileOffsetBitsValue{};
 };
 
 #endif // fileSettingsH
