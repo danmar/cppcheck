@@ -441,9 +441,8 @@ def git_blame(errors, path, file, blame_options):
     full_path = os.path.join(path, file)
     path, filename = os.path.split(full_path)
 
-    cwd = os.getcwd()
-    if path:
-        os.chdir(path)
+    if not path:
+        path = None  # make sure this is None
 
     cmd_args = ['git', 'blame', '-L %d,%d' % (first_line, last_line)]
     if '-w' in blame_options:
@@ -453,12 +452,10 @@ def git_blame(errors, path, file, blame_options):
     cmd_args = cmd_args + ['--porcelain', '--incremental', '--', filename]
 
     try:
-        result = subprocess.check_output(cmd_args)
+        result = subprocess.check_output(cmd_args, cwd=path)
         result = result.decode(locale.getpreferredencoding())
     except:
         return []
-    finally:
-        os.chdir(cwd)
 
     if result.startswith('fatal'):
         return []
@@ -704,7 +701,6 @@ def main() -> None:
         parser.error('No report directory set.')
 
     # Get the directory where source code files are located.
-    cwd = os.getcwd()
     source_dir = os.getcwd()
     if options.source_dir:
         source_dir = options.source_dir
@@ -990,7 +986,6 @@ def main() -> None:
         sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
-    os.chdir(cwd)       # going back to the cwd to find style.css
     with io.open(os.path.join(options.report_dir, 'style.css'), 'w') as css_file:
         css_file.write(STYLE_FILE)
 
