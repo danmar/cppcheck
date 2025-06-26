@@ -1045,13 +1045,11 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
             guideline = errId.substr(errId.rfind('-') + 1);
         break;
     case ReportType::misraCpp2008:
-        if (errId.rfind("misra-cpp-2008", 0) == 0)
-            guideline = errId.substr(15);
-        else if (errId.rfind("premium-misra-cpp-2008", 0) == 0)
+        if (errId.rfind("premium-misra-cpp-2008", 0) == 0)
             guideline = errId.substr(23);
         break;
     case ReportType::misraCpp2023:
-        if (errId.rfind("misra-cpp-2023", 0) == 0 || errId.rfind("premium-misra-cpp-2023", 0) == 0)
+        if (errId.rfind("premium-misra-cpp-2023", 0) == 0)
             guideline = errId.substr(errId.rfind('-') + 1);
         break;
     default:
