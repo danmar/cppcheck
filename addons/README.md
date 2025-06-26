@@ -16,6 +16,8 @@ Addons are scripts that analyses Cppcheck dump files to check compatibility with
   Enforces naming conventions across the code. Enhanced version with support for type prefixes in variable and function names.
 + [findcasts.py](https://github.com/danmar/cppcheck/blob/main/addons/findcasts.py)
   Locates casts in the code.
++ [buildsystem.py](https://github.com/danmar/cppcheck/blob/main/addons/buildsystem.py)
+  Detects and parses build system files to extract compiler flags for Y2038 analysis. Supports multiple build systems including Make, CMake, Meson, Autotools, and Bazel.
 + [misc.py](https://github.com/danmar/cppcheck/blob/main/addons/misc.py)
   Performs miscellaneous checks.
 
