@@ -69,7 +69,7 @@ def test_misra_c_builtin_style_checks(tmpdir):
 
     exitcode, _, stderr = cppcheck(['--xml-version=3', '--suppress=foo', test_file], cppcheck_exe=exe)
     assert exitcode == 0
-    assert '<suppression errorId="foo" />' in stderr
+    assert '<suppression errorId="foo" inline="false" />' in stderr
 
 
 def test_build_dir_hash_cppcheck_product(tmpdir):

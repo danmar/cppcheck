@@ -1014,6 +1014,17 @@ private:
         msg.clear();
         ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &msg));
         ASSERT_EQUALS("", msg);
+        ASSERT_EQUALS("", s.extraComment);
+
+        msg.clear();
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id ; extra */", &msg));
+        ASSERT_EQUALS("", msg);
+        ASSERT_EQUALS("extra", s.extraComment);
+
+        msg.clear();
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id // extra */", &msg));
+        ASSERT_EQUALS("", msg);
+        ASSERT_EQUALS("extra", s.extraComment);
 
         msg.clear();
         ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress-file id */", &msg));

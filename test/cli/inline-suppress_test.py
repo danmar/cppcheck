@@ -55,6 +55,20 @@ def test_2():
     assert ret == 0, stdout
 
 
+def test_xml():
+    args = [
+        '-q',
+        '--template=simple',
+        '--inline-suppr',
+        '--xml-version=3',
+        'proj-inline-suppress'
+    ]
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    assert '<suppression errorId="some_warning_id" fileName="proj-inline-suppress/2.c" lineNumber="2" inline="true" comment="there should be a unmatchedSuppression warning about this" />' in stderr
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
 def test_unmatched_suppression():
     args = [
         '-q',
