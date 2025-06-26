@@ -1037,7 +1037,7 @@ Example configuration of naming conventions:
 
 ### y2038.py
 
-[y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) checks Linux systems for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
+[y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) checks source code for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety.
 
 ## Running Addons
 
