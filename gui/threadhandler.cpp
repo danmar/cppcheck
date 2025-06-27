@@ -38,8 +38,7 @@
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent)
-{
-}
+{}
 
 ThreadHandler::~ThreadHandler()
 {
