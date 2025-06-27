@@ -60,7 +60,7 @@ public:
      *
      * @param view View to show error results
      */
-    virtual void initialize(const ResultsView *view);
+    void initialize(const ResultsView *view);
 
     /**
      * @brief Load settings
