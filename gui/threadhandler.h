@@ -20,6 +20,7 @@
 #ifndef THREADHANDLER_H
 #define THREADHANDLER_H
 
+#include "settings.h"
 #include "suppressions.h"
 #include "threadresult.h"
 
@@ -37,7 +38,6 @@
 class ResultsView;
 class CheckThread;
 class QSettings;
-class Settings;
 class ImportProject;
 class ErrorItem;
 
@@ -54,12 +54,6 @@ class ThreadHandler : public QObject {
 public:
     explicit ThreadHandler(QObject *parent = nullptr);
     ~ThreadHandler() override;
-
-    /**
-     * @brief Set the number of threads to use
-     * @param count The number of threads to use
-     */
-    void setThreadCount(int count);
 
     /**
      * @brief Initialize the threads (connect all signals to resultsview's slots)
@@ -85,7 +79,7 @@ public:
     }
 
     void setSuppressions(const QList<SuppressionList::Suppression> &s) {
-        mSuppressions = s;
+        mSuppressionsUI = s;
     }
 
     void setClangIncludePaths(const QStringList &s) {
@@ -236,10 +230,22 @@ protected:
     int mScanDuration{};
 
     /**
+     * @brief Create checker threads
+     * @param count The number of threads to spawn
+     */
+    void createThreads(int count);
+
+    /**
      * @brief Function to delete all threads
      *
      */
     void removeThreads();
+
+    /*
+     * @brief Apply check settings to a checker thread
+     * @param thread The thread to setup
+     */
+    void setupCheckThread(CheckThread &thread) const;
 
     /**
      * @brief Thread results are stored here
@@ -259,12 +265,24 @@ protected:
      */
     int mRunningThreadCount{};
 
+    /**
+     * @brief A whole program check is queued by check()
+     */
     bool mAnalyseWholeProgram{};
     std::string mCtuInfo;
 
     QStringList mAddonsAndTools;
-    QList<SuppressionList::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressionsUI;
     QStringList mClangIncludePaths;
+
+    /// @{
+    /**
+     * @brief Settings specific to the current analysis
+     */
+    QStringList mCheckAddonsAndTools;
+    Settings mCheckSettings;
+    std::shared_ptr<Suppressions> mCheckSuppressions;
+    /// @}
 private:
 
     /**

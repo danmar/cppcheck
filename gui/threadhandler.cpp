@@ -38,9 +38,7 @@
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent)
-{
-    setThreadCount(1);
-}
+{}
 
 ThreadHandler::~ThreadHandler()
 {
@@ -54,7 +52,7 @@ void ThreadHandler::clearFiles()
     mAnalyseWholeProgram = false;
     mCtuInfo.clear();
     mAddonsAndTools.clear();
-    mSuppressions.clear();
+    mSuppressionsUI.clear();
 }
 
 void ThreadHandler::setFiles(const QStringList &files)
@@ -83,6 +81,14 @@ void ThreadHandler::setCheckFiles(const QStringList& files)
     }
 }
 
+void ThreadHandler::setupCheckThread(CheckThread &thread) const
+{
+    thread.setAddonsAndTools(mCheckAddonsAndTools);
+    thread.setSuppressions(mSuppressionsUI);
+    thread.setClangIncludePaths(mClangIncludePaths);
+    thread.setSettings(mCheckSettings, mCheckSuppressions);
+}
+
 void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppressions>& supprs)
 {
     if (mResults.getFileCount() == 0 || mRunningThreadCount > 0 || settings.jobs == 0) {
@@ -91,25 +97,25 @@ void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppre
         return;
     }
 
-    setThreadCount(settings.jobs);
+    mCheckSettings = settings;
+    mCheckSuppressions = supprs;
+
+    createThreads(mCheckSettings.jobs);
 
     mRunningThreadCount = mThreads.size();
     mRunningThreadCount = std::min(mResults.getFileCount(), mRunningThreadCount);
 
-    QStringList addonsAndTools = mAddonsAndTools;
-    for (const std::string& addon: settings.addons) {
+    mCheckAddonsAndTools = mAddonsAndTools;
+    for (const std::string& addon: mCheckSettings.addons) {
         QString s = QString::fromStdString(addon);
-        if (!addonsAndTools.contains(s))
-            addonsAndTools << s;
+        if (!mCheckAddonsAndTools.contains(s))
+            mCheckAddonsAndTools << s;
     }
 
     mCtuInfo.clear();
 
     for (int i = 0; i < mRunningThreadCount; i++) {
-        mThreads[i]->setAddonsAndTools(addonsAndTools);
-        mThreads[i]->setSuppressions(mSuppressions);
-        mThreads[i]->setClangIncludePaths(mClangIncludePaths);
-        mThreads[i]->setSettings(settings, supprs);
+        setupCheckThread(*mThreads[i]);
         mThreads[i]->start();
     }
 
@@ -123,14 +129,12 @@ void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppre
 
 bool ThreadHandler::isChecking() const
 {
-    return mRunningThreadCount > 0;
+    return mRunningThreadCount > 0 || mAnalyseWholeProgram;
 }
 
-void ThreadHandler::setThreadCount(const int count)
+void ThreadHandler::createThreads(const int count)
 {
-    if (mRunningThreadCount > 0 ||
-        count == mThreads.size() ||
-        count <= 0) {
+    if (mRunningThreadCount > 0 || count <= 0) {
         return;
     }
 
@@ -140,9 +144,9 @@ void ThreadHandler::setThreadCount(const int count)
     for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
         connect(mThreads.last(), &CheckThread::done,
-                this, &ThreadHandler::threadDone);
+                this, &ThreadHandler::threadDone, Qt::QueuedConnection);
         connect(mThreads.last(), &CheckThread::fileChecked,
-                &mResults, &ThreadResult::fileChecked);
+                &mResults, &ThreadResult::fileChecked, Qt::QueuedConnection);
     }
 }
 
@@ -151,7 +155,7 @@ void ThreadHandler::removeThreads()
 {
     for (CheckThread* thread : mThreads) {
         if (thread->isRunning()) {
-            thread->terminate();
+            thread->stop();
             thread->wait();
         }
         disconnect(thread, &CheckThread::done,
@@ -162,19 +166,22 @@ void ThreadHandler::removeThreads()
     }
 
     mThreads.clear();
-    mAnalyseWholeProgram = false;
 }
 
 void ThreadHandler::threadDone()
 {
-    if (mRunningThreadCount == 1 && mAnalyseWholeProgram) {
+    mRunningThreadCount--;
+
+    if (mRunningThreadCount == 0 && mAnalyseWholeProgram) {
+        createThreads(1);
+        mRunningThreadCount = 1;
+        setupCheckThread(*mThreads[0]);
         mThreads[0]->analyseWholeProgram(mLastFiles, mCtuInfo);
         mAnalyseWholeProgram = false;
         mCtuInfo.clear();
         return;
     }
 
-    mRunningThreadCount--;
     if (mRunningThreadCount == 0) {
         emit done();
 
@@ -185,6 +192,9 @@ void ThreadHandler::threadDone()
             mLastCheckTime = mCheckStartTime;
             mCheckStartTime = QDateTime();
         }
+
+        mCheckAddonsAndTools.clear();
+        mCheckSuppressions.reset();
     }
 }
 
@@ -215,7 +225,7 @@ void ThreadHandler::initialize(const ResultsView *view)
 
 void ThreadHandler::loadSettings(const QSettings &settings)
 {
-    setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
+    createThreads(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }
 
 void ThreadHandler::saveSettings(QSettings &settings) const
