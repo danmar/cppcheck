@@ -173,6 +173,30 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
     const bool doProgress = (mSettings.reportProgress != -1);
 
+    std::map<Scope *, std::set<std::string>> forwardDecls;
+
+    const std::function<Scope *(const Token *, Scope *)> findForwardDeclScope = [&](const Token *tok, Scope *startScope) {
+        if (tok->str() == "::")
+            return findForwardDeclScope(tok->next(), &scopeList.front());
+
+        if (Token::Match(tok, "%name% :: %name%")) {
+            auto it = std::find_if(startScope->nestedList.cbegin(), startScope->nestedList.cend(), [&](const Scope *scope) {
+                return scope->className == tok->str();
+            });
+
+            if (it == startScope->nestedList.cend())
+                return static_cast<Scope *>(nullptr);
+
+            return findForwardDeclScope(tok->tokAt(2), *it);
+        }
+
+        auto it = forwardDecls.find(startScope);
+        if (it == forwardDecls.cend())
+            return static_cast<Scope *>(nullptr);
+
+        return it->second.count(tok->str()) > 0 ? startScope : nullptr;
+    };
+
     // find all scopes
     for (const Token *tok = mTokenizer.tokens(); tok; tok = tok ? tok->next() : nullptr) {
         // #5593 suggested to add here:
@@ -291,7 +315,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 scope = new_scope;
                 tok = tok2;
             } else {
-                scopeList.emplace_back(*this, tok, scope);
+
+                const Scope *forwardDeclScope = findForwardDeclScope(tok->next(), scope);
+                const Scope *nestedIn = forwardDeclScope ? forwardDeclScope : scope;
+
+                scopeList.emplace_back(*this, tok, nestedIn);
                 new_scope = &scopeList.back();
 
                 if (tok->str() == "class")
@@ -303,7 +331,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 if (new_scope->isClassOrStructOrUnion() || new_scope->type == ScopeType::eEnum) {
                     Type* new_type = findType(name, scope);
                     if (!new_type) {
-                        typeList.emplace_back(new_scope->classDef, new_scope, scope);
+                        typeList.emplace_back(new_scope->classDef, new_scope, nestedIn);
                         new_type = &typeList.back();
                         scope->definedTypesMap[new_type->name()] = new_type;
                     } else
@@ -386,6 +414,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 typeList.emplace_back(tok, nullptr, scope);
                 Type* new_type = &typeList.back();
                 scope->definedTypesMap[new_type->name()] = new_type;
+                forwardDecls[scope].insert(tok->strAt(1));
             }
             tok = tok->tokAt(2);
         }
