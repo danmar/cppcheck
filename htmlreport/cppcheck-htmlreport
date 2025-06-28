@@ -383,7 +383,7 @@ HTML_FOOTER = """
     </div>
     <div id="footer" class="footer">
       <p>
-        Created by Cppcheck %s (<a href="https://cppcheck.sourceforge.io">Sourceforge</a>, <a href="irc://irc.freenode.net/cppcheck">IRC</a>)
+        Created by Cppcheck %s (<a href="https://cppcheck.sourceforge.io">Sourceforge</a>, <a href="irc://irc.libera.chat/#cppcheck">IRC</a>)
       </p>
     </div>
     </div>
