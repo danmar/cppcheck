@@ -8,6 +8,12 @@
 #define NOMINMAX
 #endif
 
+#ifdef SIMPLECPP_WINDOWS
+#define _WIN32_WINNT 0x0602
+#include <windows.h>
+#undef ERROR
+#endif
+
 #include "simplecpp.h"
 
 #include <algorithm>
@@ -26,41 +32,24 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>
-#if __cplusplus >= 201103L
 #ifdef SIMPLECPP_WINDOWS
 #include <mutex>
 #endif
 #include <unordered_map>
-#endif
 #include <utility>
 #include <vector>
 
 #ifdef _WIN32
 #include <direct.h>
 #else
+#include <sys/stat.h>
 #include <unistd.h>
-#endif
-
-#ifdef SIMPLECPP_WINDOWS
-#include <windows.h>
-#undef ERROR
-#endif
-
-#if __cplusplus >= 201103L
-#define OVERRIDE override
-#define EXPLICIT explicit
-#else
-#define OVERRIDE
-#define EXPLICIT
-#endif
-
-#if (__cplusplus < 201103L) && !defined(__APPLE__)
-#define nullptr NULL
 #endif
 
 static bool isHex(const std::string &s)
@@ -153,7 +142,7 @@ static unsigned long long stringToULL(const std::string &s)
     return ret;
 }
 
-// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild 
+// TODO: added an undercore since this conflicts with a function of the same name in utils.h from Cppcheck source when building Cppcheck with MSBuild
 static bool startsWith_(const std::string &s, const std::string &p)
 {
     return (s.size() >= p.size()) && std::equal(p.begin(), p.end(), s.begin());
@@ -368,22 +357,22 @@ protected:
 class StdIStream : public simplecpp::TokenList::Stream {
 public:
     // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
-    EXPLICIT StdIStream(std::istream &istr)
+    explicit StdIStream(std::istream &istr)
         : istr(istr) {
         assert(istr.good());
         init();
     }
 
-    virtual int get() OVERRIDE {
+    virtual int get() override {
         return istr.get();
     }
-    virtual int peek() OVERRIDE {
+    virtual int peek() override {
         return istr.peek();
     }
-    virtual void unget() OVERRIDE {
+    virtual void unget() override {
         istr.unget();
     }
-    virtual bool good() OVERRIDE {
+    virtual bool good() override {
         return istr.good();
     }
 
@@ -402,20 +391,20 @@ public:
         init();
     }
 
-    virtual int get() OVERRIDE {
+    virtual int get() override {
         if (pos >= size)
             return lastStatus = EOF;
         return str[pos++];
     }
-    virtual int peek() OVERRIDE {
+    virtual int peek() override {
         if (pos >= size)
             return lastStatus = EOF;
         return str[pos];
     }
-    virtual void unget() OVERRIDE {
+    virtual void unget() override {
         --pos;
     }
-    virtual bool good() OVERRIDE {
+    virtual bool good() override {
         return lastStatus != EOF;
     }
 
@@ -429,7 +418,7 @@ private:
 class FileStream : public simplecpp::TokenList::Stream {
 public:
     // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
-    EXPLICIT FileStream(const std::string &filename, std::vector<std::string> &files)
+    explicit FileStream(const std::string &filename, std::vector<std::string> &files)
         : file(fopen(filename.c_str(), "rb"))
         , lastCh(0)
         , lastStatus(0) {
@@ -440,25 +429,25 @@ public:
         init();
     }
 
-    ~FileStream() OVERRIDE {
+    ~FileStream() override {
         fclose(file);
         file = nullptr;
     }
 
-    virtual int get() OVERRIDE {
+    virtual int get() override {
         lastStatus = lastCh = fgetc(file);
         return lastCh;
     }
-    virtual int peek() OVERRIDE{
+    virtual int peek() override{
         // keep lastCh intact
         const int ch = fgetc(file);
         unget_internal(ch);
         return ch;
     }
-    virtual void unget() OVERRIDE {
+    virtual void unget() override {
         unget_internal(lastCh);
     }
-    virtual bool good() OVERRIDE {
+    virtual bool good() override {
         return lastStatus != EOF;
     }
 
@@ -519,12 +508,10 @@ simplecpp::TokenList::TokenList(const TokenList &other) : frontToken(nullptr), b
     *this = other;
 }
 
-#if __cplusplus >= 201103L
 simplecpp::TokenList::TokenList(TokenList &&other) : frontToken(nullptr), backToken(nullptr), files(other.files)
 {
     *this = std::move(other);
 }
-#endif
 
 simplecpp::TokenList::~TokenList()
 {
@@ -543,7 +530,6 @@ simplecpp::TokenList &simplecpp::TokenList::operator=(const TokenList &other)
     return *this;
 }
 
-#if __cplusplus >= 201103L
 simplecpp::TokenList &simplecpp::TokenList::operator=(TokenList &&other)
 {
     if (this != &other) {
@@ -557,7 +543,6 @@ simplecpp::TokenList &simplecpp::TokenList::operator=(TokenList &&other)
     }
     return *this;
 }
-#endif
 
 void simplecpp::TokenList::clear()
 {
@@ -1477,11 +1462,7 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
 
 namespace simplecpp {
     class Macro;
-#if __cplusplus >= 201103L
     using MacroMap = std::unordered_map<TokenString,Macro>;
-#else
-    typedef std::map<TokenString,Macro> MacroMap;
-#endif
 
     class Macro {
     public:
@@ -2379,169 +2360,9 @@ namespace simplecpp {
 }
 
 #ifdef SIMPLECPP_WINDOWS
-
-#if __cplusplus >= 201103L
 using MyMutex = std::mutex;
 template<class T>
 using MyLock = std::lock_guard<T>;
-#else
-class MyMutex {
-public:
-    MyMutex() {
-        InitializeCriticalSection(&m_criticalSection);
-    }
-
-    ~MyMutex() {
-        DeleteCriticalSection(&m_criticalSection);
-    }
-
-    CRITICAL_SECTION* lock() {
-        return &m_criticalSection;
-    }
-private:
-    CRITICAL_SECTION m_criticalSection;
-};
-
-template<typename T>
-class MyLock {
-public:
-    explicit MyLock(T& m)
-        : m_mutex(m) {
-        EnterCriticalSection(m_mutex.lock());
-    }
-
-    ~MyLock() {
-        LeaveCriticalSection(m_mutex.lock());
-    }
-
-private:
-    MyLock& operator=(const MyLock&);
-    MyLock(const MyLock&);
-
-    T& m_mutex;
-};
-#endif
-
-class RealFileNameMap {
-public:
-    RealFileNameMap() {}
-
-    bool getCacheEntry(const std::string& path, std::string& returnPath) {
-        MyLock<MyMutex> lock(m_mutex);
-
-        const std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
-        if (it != m_fileMap.end()) {
-            returnPath = it->second;
-            return true;
-        }
-        return false;
-    }
-
-    void addToCache(const std::string& path, const std::string& actualPath) {
-        MyLock<MyMutex> lock(m_mutex);
-        m_fileMap[path] = actualPath;
-    }
-
-private:
-    std::map<std::string, std::string> m_fileMap;
-    MyMutex m_mutex;
-};
-
-static RealFileNameMap realFileNameMap;
-
-static bool realFileName(const std::string &f, std::string &result)
-{
-    // are there alpha characters in last subpath?
-    bool alpha = false;
-    for (std::string::size_type pos = 1; pos <= f.size(); ++pos) {
-        const unsigned char c = f[f.size() - pos];
-        if (c == '/' || c == '\\')
-            break;
-        if (std::isalpha(c)) {
-            alpha = true;
-            break;
-        }
-    }
-
-    // do not convert this path if there are no alpha characters (either pointless or cause wrong results for . and ..)
-    if (!alpha)
-        return false;
-
-    // Lookup filename or foldername on file system
-    if (!realFileNameMap.getCacheEntry(f, result)) {
-
-        WIN32_FIND_DATAA FindFileData;
-
-#ifdef __CYGWIN__
-        const std::string fConverted = simplecpp::convertCygwinToWindowsPath(f);
-        const HANDLE hFind = FindFirstFileExA(fConverted.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
-#else
-        HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
-#endif
-
-        if (INVALID_HANDLE_VALUE == hFind)
-            return false;
-        result = FindFileData.cFileName;
-        realFileNameMap.addToCache(f, result);
-        FindClose(hFind);
-    }
-    return true;
-}
-
-static RealFileNameMap realFilePathMap;
-
-/** Change case in given path to match filesystem */
-static std::string realFilename(const std::string &f)
-{
-    std::string ret;
-    ret.reserve(f.size()); // this will be the final size
-    if (realFilePathMap.getCacheEntry(f, ret))
-        return ret;
-
-    // Current subpath
-    std::string subpath;
-
-    for (std::string::size_type pos = 0; pos < f.size(); ++pos) {
-        const unsigned char c = f[pos];
-
-        // Separator.. add subpath and separator
-        if (c == '/' || c == '\\') {
-            // if subpath is empty just add separator
-            if (subpath.empty()) {
-                ret += c;
-                continue;
-            }
-
-            const bool isDriveSpecification =
-                (pos == 2 && subpath.size() == 2 && std::isalpha(subpath[0]) && subpath[1] == ':');
-
-            // Append real filename (proper case)
-            std::string f2;
-            if (!isDriveSpecification && realFileName(f.substr(0, pos), f2))
-                ret += f2;
-            else
-                ret += subpath;
-
-            subpath.clear();
-
-            // Append separator
-            ret += c;
-        } else {
-            subpath += c;
-        }
-    }
-
-    if (!subpath.empty()) {
-        std::string f2;
-        if (realFileName(f,f2))
-            ret += f2;
-        else
-            ret += subpath;
-    }
-
-    realFilePathMap.addToCache(f, ret);
-    return ret;
-}
 
 static bool isAbsolutePath(const std::string &path)
 {
@@ -2550,8 +2371,6 @@ static bool isAbsolutePath(const std::string &path)
     return path.length() > 1U && (path[0] == '/' || path[0] == '\\');
 }
 #else
-#define realFilename(f)  f
-
 static bool isAbsolutePath(const std::string &path)
 {
     return path.length() > 1U && path[0] == '/';
@@ -2629,8 +2448,7 @@ namespace simplecpp {
         if (unc)
             path = '/' + path;
 
-        // cppcheck-suppress duplicateExpressionTernary - platform-dependent implementation
-        return strpbrk(path.c_str(), "*?") == nullptr ? realFilename(path) : path;
+        return path;
     }
 }
 
@@ -2689,7 +2507,8 @@ static bool isCpp17OrLater(const simplecpp::DUI &dui)
 }
 
 
-static std::string currentDirectoryOSCalc() {
+static std::string currentDirectoryOSCalc()
+{
     const std::size_t size = 4096;
     char currentPath[size];
 
@@ -2703,12 +2522,14 @@ static std::string currentDirectoryOSCalc() {
     return "";
 }
 
-static const std::string& currentDirectory() {
+static const std::string& currentDirectory()
+{
     static const std::string curdir = simplecpp::simplifyPath(currentDirectoryOSCalc());
     return curdir;
 }
 
-static std::string toAbsolutePath(const std::string& path) {
+static std::string toAbsolutePath(const std::string& path)
+{
     if (path.empty()) {
         return path;// preserve error file path that is indicated by an empty string
     }
@@ -2719,7 +2540,8 @@ static std::string toAbsolutePath(const std::string& path) {
     return simplecpp::simplifyPath(path);
 }
 
-static std::string dirPath(const std::string& path, bool withTrailingSlash=true) {
+static std::string dirPath(const std::string& path, bool withTrailingSlash=true)
+{
     const std::size_t lastSlash = path.find_last_of("\\/");
     if (lastSlash == std::string::npos) {
         return "";
@@ -2727,14 +2549,16 @@ static std::string dirPath(const std::string& path, bool withTrailingSlash=true)
     return path.substr(0, lastSlash + (withTrailingSlash ? 1U : 0U));
 }
 
-static std::string omitPathTrailingSlash(const std::string& path) {
+static std::string omitPathTrailingSlash(const std::string& path)
+{
     if (endsWith(path, "/")) {
         return path.substr(0, path.size() - 1U);
     }
     return path;
 }
 
-static std::string extractRelativePathFromAbsolute(const std::string& absoluteSimplifiedPath, const std::string& prefixSimplifiedAbsoluteDir = currentDirectory()) {
+static std::string extractRelativePathFromAbsolute(const std::string& absoluteSimplifiedPath, const std::string& prefixSimplifiedAbsoluteDir = currentDirectory())
+{
     const std::string normalizedAbsolutePath = omitPathTrailingSlash(absoluteSimplifiedPath);
     std::string currentPrefix = omitPathTrailingSlash(prefixSimplifiedAbsoluteDir);
     std::string leadingParenting;
@@ -2801,10 +2625,8 @@ static void simplifyHasInclude(simplecpp::TokenList &expr, const simplecpp::DUI 
 
             for (simplecpp::Token *headerToken = tok1->next; headerToken != tok3; headerToken = headerToken->next)
                 header += headerToken->str();
-            // cppcheck-suppress selfAssignment - platform-dependent implementation
-            header = realFilename(header);
         } else {
-            header = realFilename(tok1->str().substr(1U, tok1->str().size() - 2U));
+            header = tok1->str().substr(1U, tok1->str().size() - 2U);
         }
         std::ifstream f;
         const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
@@ -3177,13 +2999,13 @@ static std::string getRelativeFileName(const std::string &baseFile, const std::s
 {
     const std::string baseFileSimplified = simplecpp::simplifyPath(baseFile);
     const std::string baseFileAbsolute = isAbsolutePath(baseFileSimplified) ?
-        baseFileSimplified :
-        simplecpp::simplifyPath(currentDirectory() + "/" + baseFileSimplified);
+                                         baseFileSimplified :
+                                         simplecpp::simplifyPath(currentDirectory() + "/" + baseFileSimplified);
 
     const std::string headerSimplified = simplecpp::simplifyPath(header);
     const std::string path = isAbsolutePath(headerSimplified) ?
-        headerSimplified :
-        simplecpp::simplifyPath(dirPath(baseFileAbsolute) + headerSimplified);
+                             headerSimplified :
+                             simplecpp::simplifyPath(dirPath(baseFileAbsolute) + headerSimplified);
 
     return returnAbsolutePath ? toAbsolutePath(path) : extractRelativePathFromAbsolute(path);
 }
@@ -3239,101 +3061,141 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
     return openHeaderIncludePath(f, dui, header);
 }
 
-static std::string findPathInMapBothRelativeAndAbsolute(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string& path) {
-    // here there are two possibilities - either we match this from absolute path or from a relative one
-    if (filedata.find(path) != filedata.end()) {// try first to respect the exact match
-        return path;
-    }
-
-    // otherwise - try to use the normalize to the correct representation
-    std::string alternativePath;
-    if (isAbsolutePath(path)) {
-        alternativePath = extractRelativePathFromAbsolute(simplecpp::simplifyPath(path));
-    } else {
-        alternativePath = toAbsolutePath(path);
-    }
-
-    if (filedata.find(alternativePath) != filedata.end()) {
-        return alternativePath;
-    }
-    return "";
-}
-
-static std::string getFileIdPath(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
+simplecpp::FileData *simplecpp::FileDataCache::lookup(const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
 {
-    if (filedata.empty()) {
-        return "";
-    }
+    if (mData.empty())
+        return nullptr;
+
     if (isAbsolutePath(header)) {
-        const std::string simplifiedHeaderPath = simplecpp::simplifyPath(header);
-        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, simplifiedHeaderPath);
-        if (!match.empty()) {
-            return match;
-        }
+        const std::string path = simplecpp::simplifyPath(header);
+        const auto name_it = mNameMap.find(path);
+
+        if (name_it != mNameMap.end())
+            return name_it->second;
     }
 
     if (!systemheader) {
-        const std::string relativeFilename = getRelativeFileName(sourcefile, header, true);
-        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, relativeFilename);
-        if (!match.empty()) {
-            return match;
-        }
-        // if the file exists but hasn't been loaded yet then we need to stop searching here or we could get a false match
+        const std::string path = getRelativeFileName(sourcefile, header, true);
+        const auto name_it = mNameMap.find(path);
+
+        if (name_it != mNameMap.end())
+            return name_it->second;
+
+        // If the file exists but hasn't been loaded yet then we need to stop searching here or we could get a false match
         std::ifstream f;
-        openHeader(f, relativeFilename);
-        if (f.is_open()) {
-            f.close();
-            return "";
-        }
-    } else if (filedata.find(header) != filedata.end()) {
-        return header;// system header that its file is already in the filedata - return that as is
+        openHeader(f, path);
+        if (f.is_open())
+            return nullptr;
     }
 
     for (std::list<std::string>::const_iterator it = dui.includePaths.begin(); it != dui.includePaths.end(); ++it) {
-        const std::string match = findPathInMapBothRelativeAndAbsolute(filedata, getIncludePathFileName(*it, header));
-        if (!match.empty()) {
-            return match;
-        }
+        const std::string path = getIncludePathFileName(*it, header);
+        const auto name_it = mNameMap.find(path);
+
+        if (name_it != mNameMap.end())
+            return name_it->second;
     }
 
-    return "";
+    return nullptr;
 }
 
-static bool hasFile(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)
+std::pair<bool, simplecpp::FileData *> simplecpp::FileDataCache::load(const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader, std::vector<std::string> &filenames, simplecpp::OutputList *outputList)
 {
-    return !getFileIdPath(filedata, sourcefile, header, dui, systemheader).empty();
-}
+    std::ifstream f;
+    std::string path = openHeader(f, dui, sourcefile, header, systemheader);
 
-static void safeInsertTokenListToMap(std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &header2, simplecpp::TokenList *tokens, const std::string &header, const std::string &sourcefile, bool systemheader, const char* contextDesc)
-{
-    const bool inserted = filedata.insert(std::make_pair(header2, tokens)).second;
-    if (!inserted) {
-        std::cerr << "error in " << contextDesc << " - attempt to add a tokenized file to the file map, but this file is already in the map! Details:" <<
-            "header: " << header << " header2: " << header2 << " source: " << sourcefile << " systemheader: " << systemheader << std::endl;
-        std::abort();
+    if (path.empty())
+        return std::make_pair(false, nullptr);
+
+    FileID fileId;
+
+    if (!getFileId(path, fileId))
+        return std::make_pair(false, nullptr);
+
+    const auto id_it = mIdMap.find(fileId);
+    if (id_it != mIdMap.end()) {
+        mNameMap.insert(std::make_pair(std::move(path), id_it->second));
+
+        return std::make_pair(false, id_it->second);
     }
+
+    FileData *const data = new FileData {path, TokenList(f, filenames, path, outputList)};
+
+    if (dui.removeComments)
+        data->tokens.removeComments();
+
+    mNameMap.insert(std::make_pair(std::move(path), data));
+    mIdMap.insert(std::make_pair(fileId, data));
+    mData.push_back(std::unique_ptr<FileData>(data));
+
+    return std::make_pair(true, data);
 }
 
-std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &filenames, const simplecpp::DUI &dui, simplecpp::OutputList *outputList)
+std::pair<bool, simplecpp::FileData *> simplecpp::FileDataCache::get(const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader, std::vector<std::string> &filenames, simplecpp::OutputList *outputList)
+{
+    FileData *const data = lookup(sourcefile, header, dui, systemheader);
+
+    if (data != nullptr)
+        return std::make_pair(false, data);
+
+    return load(sourcefile, header, dui, systemheader, filenames, outputList);
+}
+
+bool simplecpp::FileDataCache::getFileId(const std::string &path, FileID &id)
+{
+#ifdef SIMPLECPP_WINDOWS
+    HANDLE hFile = CreateFileA(path.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE)
+        return false;
+
+    const BOOL ret = GetFileInformationByHandleEx(hFile, FileIdInfo, &id.fileIdInfo, sizeof(id.fileIdInfo));
+
+    CloseHandle(hFile);
+
+    return ret == TRUE;
+#else
+    struct stat statbuf;
+
+    if (stat(path.c_str(), &statbuf) != 0)
+        return false;
+
+    id.dev = statbuf.st_dev;
+    id.ino = statbuf.st_ino;
+
+    return true;
+#endif
+}
+
+bool simplecpp::FileDataCache::FileID::operator< (const FileID &that) const
+{
+#ifdef SIMPLECPP_WINDOWS
+    return std::memcmp(&fileIdInfo, &that.fileIdInfo, sizeof(fileIdInfo)) < 0;
+#else
+    return dev < that.dev || (dev == that.dev && ino < that.ino);
+#endif
+}
+
+simplecpp::FileDataCache simplecpp::load(const simplecpp::TokenList &rawtokens, std::vector<std::string> &filenames, const simplecpp::DUI &dui, simplecpp::OutputList *outputList)
 {
 #ifdef SIMPLECPP_WINDOWS
     if (dui.clearIncludeCache)
         nonExistingFilesCache.clear();
 #endif
 
-    std::map<std::string, simplecpp::TokenList*> ret;
+    FileDataCache cache;
 
     std::list<const Token *> filelist;
 
     // -include files
     for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
-        const std::string &filename = realFilename(*it);
+        const std::string &filename = *it;
 
-        if (ret.find(filename) != ret.end())
-            continue;
+        const auto loadResult = cache.get("", filename, dui, false, filenames, outputList);
+        const bool loaded = loadResult.first;
+        FileData *const filedata = loadResult.second;
 
-        std::ifstream fin(filename.c_str());
-        if (!fin.is_open()) {
+        if (filedata == nullptr) {
             if (outputList) {
                 simplecpp::Output err(filenames);
                 err.type = simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND;
@@ -3343,18 +3205,17 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             }
             continue;
         }
-        fin.close();
 
-        TokenList *tokenlist = new TokenList(filename, filenames, outputList);
-        if (!tokenlist->front()) {
-            delete tokenlist;
+        if (!loaded)
             continue;
-        }
+
+        if (!filedata->tokens.front())
+            continue;
 
         if (dui.removeComments)
-            tokenlist->removeComments();
-        ret[filename] = tokenlist;
-        filelist.push_back(tokenlist->front());
+            filedata->tokens.removeComments();
+
+        filelist.push_back(filedata->tokens.front());
     }
 
     for (const Token *rawtok = rawtokens.cfront(); rawtok || !filelist.empty(); rawtok = rawtok ? rawtok->next : nullptr) {
@@ -3377,25 +3238,20 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             continue;
 
         const bool systemheader = (htok->str()[0] == '<');
-        const std::string header(realFilename(htok->str().substr(1U, htok->str().size() - 2U)));
-        if (hasFile(ret, sourcefile, header, dui, systemheader))
+        const std::string header(htok->str().substr(1U, htok->str().size() - 2U));
+
+        FileData *const filedata = cache.get(sourcefile, header, dui, systemheader, filenames, outputList).second;
+        if (!filedata)
             continue;
 
-        std::ifstream f;
-        const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
-        if (!f.is_open())
-            continue;
-        f.close();
-
-        TokenList *tokens = new TokenList(header2, filenames, outputList);
         if (dui.removeComments)
-            tokens->removeComments();
-        safeInsertTokenListToMap(ret, header2, tokens, header, rawtok->location.file(), systemheader, "simplecpp::load");
-        if (tokens->front())
-            filelist.push_back(tokens->front());
+            filedata->tokens.removeComments();
+
+        if (filedata->tokens.front())
+            filelist.push_back(filedata->tokens.front());
     }
 
-    return ret;
+    return cache;
 }
 
 static bool preprocessToken(simplecpp::TokenList &output, const simplecpp::Token **tok1, simplecpp::MacroMap &macros, std::vector<std::string> &files, simplecpp::OutputList *outputList)
@@ -3451,7 +3307,7 @@ static std::string getTimeDefine(const struct tm *timep)
     return std::string("\"").append(buf).append("\"");
 }
 
-void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, simplecpp::TokenList *> &filedata, const simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<simplecpp::MacroUsage> *macroUsage, std::list<simplecpp::IfCond> *ifCond)
+void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenList &rawtokens, std::vector<std::string> &files, simplecpp::FileDataCache &cache, const simplecpp::DUI &dui, simplecpp::OutputList *outputList, std::list<simplecpp::MacroUsage> *macroUsage, std::list<simplecpp::IfCond> *ifCond)
 {
 #ifdef SIMPLECPP_WINDOWS
     if (dui.clearIncludeCache)
@@ -3543,9 +3399,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
     includetokenstack.push(rawtokens.cfront());
     for (std::list<std::string>::const_iterator it = dui.includes.begin(); it != dui.includes.end(); ++it) {
-        const std::map<std::string, TokenList*>::const_iterator f = filedata.find(*it);
-        if (f != filedata.end())
-            includetokenstack.push(f->second->cfront());
+        const FileData *const filedata = cache.get("", *it, dui, false, files, outputList).second;
+        if (filedata != nullptr && filedata->tokens.cfront() != nullptr)
+            includetokenstack.push(filedata->tokens.cfront());
     }
 
     std::map<std::string, std::list<Location> > maybeUsedMacros;
@@ -3666,21 +3522,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 const Token * const inctok = inc2.cfront();
 
                 const bool systemheader = (inctok->str()[0] == '<');
-                const std::string header(realFilename(inctok->str().substr(1U, inctok->str().size() - 2U)));
-                std::string header2 = getFileIdPath(filedata, rawtok->location.file(), header, dui, systemheader);
-                if (header2.empty()) {
-                    // try to load file..
-                    std::ifstream f;
-                    header2 = openHeader(f, dui, rawtok->location.file(), header, systemheader);
-                    if (f.is_open()) {
-                        f.close();
-                        TokenList * const tokens = new TokenList(header2, files, outputList);
-                        if (dui.removeComments)
-                            tokens->removeComments();
-                        safeInsertTokenListToMap(filedata, header2, tokens, header, rawtok->location.file(), systemheader, "simplecpp::preprocess");
-                    }
-                }
-                if (header2.empty()) {
+                const std::string header(inctok->str().substr(1U, inctok->str().size() - 2U));
+                const FileData *const filedata = cache.get(rawtok->location.file(), header, dui, systemheader, files, outputList).second;
+                if (filedata == nullptr) {
                     if (outputList) {
                         simplecpp::Output out(files);
                         out.type = Output::MISSING_HEADER;
@@ -3696,10 +3540,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                         out.msg = "#include nested too deeply";
                         outputList->push_back(out);
                     }
-                } else if (pragmaOnce.find(header2) == pragmaOnce.end()) {
+                } else if (pragmaOnce.find(filedata->filename) == pragmaOnce.end()) {
                     includetokenstack.push(gotoNextLine(rawtok));
-                    const TokenList * const includetokens = filedata.find(header2)->second;
-                    rawtok = includetokens ? includetokens->cfront() : nullptr;
+                    rawtok = filedata->tokens.cfront();
                     continue;
                 }
             } else if (rawtok->str() == IF || rawtok->str() == IFDEF || rawtok->str() == IFNDEF || rawtok->str() == ELIF) {
@@ -3776,12 +3619,10 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                                 if (systemheader) {
                                     while ((tok = tok->next) && tok->op != '>')
                                         header += tok->str();
-                                    // cppcheck-suppress selfAssignment - platform-dependent implementation
-                                    header = realFilename(header);
                                     if (tok && tok->op == '>')
                                         closingAngularBracket = true;
                                 } else {
-                                    header = realFilename(tok->str().substr(1U, tok->str().size() - 2U));
+                                    header = tok->str().substr(1U, tok->str().size() - 2U);
                                     closingAngularBracket = true;
                                 }
                                 std::ifstream f;
@@ -3929,11 +3770,9 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     }
 }
 
-void simplecpp::cleanup(std::map<std::string, TokenList*> &filedata)
+void simplecpp::cleanup(FileDataCache &cache)
 {
-    for (std::map<std::string, TokenList*>::iterator it = filedata.begin(); it != filedata.end(); ++it)
-        delete it->second;
-    filedata.clear();
+    cache.clear();
 }
 
 simplecpp::cstd_t simplecpp::getCStd(const std::string &std)
@@ -4032,7 +3871,3 @@ std::string simplecpp::getCppStdString(const std::string &std)
 {
     return getCppStdString(getCppStd(std));
 }
-
-#if (__cplusplus < 201103L) && !defined(__APPLE__)
-#undef nullptr
-#endif
