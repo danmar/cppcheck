@@ -522,13 +522,11 @@ jobs:
           # self check externals
           ./cppcheck $selfcheck_options externals || ec=1
           # self check lib/cli
-          mkdir b1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json frontend || ec=1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json -Ifrontend cli || ec=1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --enable=internal lib || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --addon=naming.json frontend || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --addon=naming.json -Ifrontend cli || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --addon=naming.json --enable=internal lib || ec=1
           # check gui with qt settings
-          mkdir b2
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
           # self check test and tools
           ./cppcheck $selfcheck_options $cppcheck_options -Ifrontend -Icli test/*.cpp  || ec=1
           ./cppcheck $selfcheck_options $cppcheck_options -Icli tools/dmake/*.cpp || ec=1
