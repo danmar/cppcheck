@@ -33,6 +33,7 @@ public:
 private:
     void run() override {
         TEST_CASE(applyLangFS);
+        TEST_CASE(applyLangFiles);
     }
 
     void applyLangFS() const {
@@ -85,6 +86,60 @@ private:
             ASSERT_EQUALS_ENUM((it++)->file.lang(), Standards::Language::CPP);
             ASSERT_EQUALS_ENUM((it++)->file.lang(), Standards::Language::CPP);
             ASSERT_EQUALS_ENUM((it++)->file.lang(), Standards::Language::C); // markup files are always C
+        }
+    }
+
+    void applyLangFiles() const
+    {
+        const char xmldata[] = R"(<def format="2"><markup ext=".ml" reporterrors="false"/></def>)";
+        const Settings s = settingsBuilder().libraryxml(xmldata).build();
+
+        const std::list<FileWithDetails> fs = {
+            {"nolang", Standards::Language::None, 0 },
+            {"c", Standards::Language::C, 0 },
+            {"cpp", Standards::Language::CPP, 0 },
+            {"nolang.c", Standards::Language::None, 0 },
+            {"nolang.cpp", Standards::Language::None, 0 },
+            {"nolang.ml", Standards::Language::None, 0 }
+        };
+
+        // no language to enforce - identify only
+        {
+            std::list<FileWithDetails> fs1 = fs;
+            frontend::applyLang(fs1, s, Standards::Language::None);
+            auto it = fs1.cbegin();
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP); // unknown defaults to C++
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C); // markup files are always C
+        }
+
+        // language to enforce (C)
+        {
+            std::list<FileWithDetails> fs1 = fs;
+            frontend::applyLang(fs1, s, Standards::Language::C);
+            auto it = fs1.cbegin();
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C); // markup files are always C
+        }
+
+        // language to enforce (C++)
+        {
+            std::list<FileWithDetails> fs1 = fs;
+            frontend::applyLang(fs1, s, Standards::Language::CPP);
+            auto it = fs1.cbegin();
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::CPP);
+            ASSERT_EQUALS_ENUM((it++)->lang(), Standards::Language::C); // markup files are always C
         }
     }
 };

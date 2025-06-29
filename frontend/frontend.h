@@ -25,6 +25,7 @@
 
 struct FileSettings;
 class Settings;
+class FileWithDetails;
 
 namespace frontend
 {
@@ -32,6 +33,7 @@ namespace frontend
         Applies the enforced language as all as identifying remaining files - also taking markup files into consideration.
      */
     void applyLang(std::list<FileSettings> &fileSettings, const Settings &settings, Standards::Language enforcedLang);
+    void applyLang(std::list<FileWithDetails> &files, const Settings &settings, Standards::Language enforcedLang);
 }
 
 #endif // FRONTEND_H

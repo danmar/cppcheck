@@ -25,6 +25,7 @@
 #include "importproject.h"
 
 #include <numeric>
+#include <utility>
 
 #include <QFile>
 
@@ -80,18 +81,14 @@ void ThreadResult::getNextFileSettings(const FileSettings*& fs)
     ++mItNextFileSettings;
 }
 
-void ThreadResult::setFiles(const QStringList &files)
+void ThreadResult::setFiles(std::list<FileWithDetails> files)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    std::list<FileWithDetails> fdetails;
-    std::transform(files.cbegin(), files.cend(), std::back_inserter(fdetails), [](const QString& f) {
-        return FileWithDetails{f.toStdString(), Path::identify(f.toStdString(), false), static_cast<std::size_t>(QFile(f).size())}; // TODO: provide Settings::cppHeaderProbe
-    });
-    mFiles = std::move(fdetails);
+    mTotalFiles = files.size();
+    mFiles = std::move(files);
     mItNextFile = mFiles.cbegin();
     mProgress = 0;
     mFilesChecked = 0;
-    mTotalFiles = files.size();
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate

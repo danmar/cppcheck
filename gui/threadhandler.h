@@ -24,6 +24,7 @@
 #include "suppressions.h"
 #include "threadresult.h"
 
+#include <list>
 #include <memory>
 #include <set>
 #include <string>
@@ -40,6 +41,7 @@ class CheckThread;
 class QSettings;
 class ImportProject;
 class ErrorItem;
+class FileWithDetails;
 
 /// @addtogroup GUI
 /// @{
@@ -97,7 +99,7 @@ public:
      *
      * @param files files to check
      */
-    void setFiles(const QStringList &files);
+    void setFiles(std::list<FileWithDetails> files);
 
     /**
      * @brief Set project to check
@@ -126,7 +128,7 @@ public:
      *
      * @param files list of files to be checked
      */
-    void setCheckFiles(const QStringList& files);
+    void setCheckFiles(std::list<FileWithDetails> files);
 
     /**
      * @brief Is checking running?
@@ -160,7 +162,7 @@ public:
      * @brief Get files that should be rechecked because they have been
      * changed.
      */
-    QStringList getReCheckFiles(bool all) const;
+    std::list<FileWithDetails> getReCheckFiles(bool all) const;
 
     /**
      * @brief Get start time of last check
@@ -207,7 +209,7 @@ protected:
      * @brief List of files checked last time (used when rechecking)
      *
      */
-    QStringList mLastFiles;
+    std::list<FileWithDetails> mLastFiles;
 
     /** @brief date and time when current checking started */
     QDateTime mCheckStartTime;

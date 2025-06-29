@@ -57,6 +57,8 @@
 #include "frontend.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <fstream>
 #include <iterator>
 #include <list>
 #include <memory>
@@ -661,9 +663,11 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         return;
     }
 
-    mUI->mResults->checkingStarted(fileNames.count());
+    std::list<FileWithDetails> fdetails = enrichFilesForAnalysis(fileNames, checkSettings);
 
-    mThread->setFiles(fileNames);
+    // TODO: lock UI here?
+    mUI->mResults->checkingStarted(fdetails.size());
+    mThread->setFiles(std::move(fdetails));
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
     mThread->setSuppressions(mProjectFile ? mProjectFile->getCheckingSuppressions() : QList<SuppressionList::Suppression>());
@@ -701,9 +705,9 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     if (!getCppcheckSettings(checkSettings, supprs))
         return;
 
+    // TODO: split ErrorLogger from ThreadResult
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
-    result.setFiles(QStringList(filename));
     connect(&result, SIGNAL(progress(int,QString)),
             mUI->mResults, SLOT(progress(int,QString)));
     connect(&result, SIGNAL(error(ErrorItem)),
@@ -720,7 +724,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    // TODO: apply enforcedLanguage
+    // TODO: apply enforcedLanguage?
     cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
     analysisDone();
 
@@ -1380,10 +1384,12 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     pathList.addPathList(files);
     if (mProjectFile)
         pathList.addExcludeList(mProjectFile->getExcludedPaths());
-    QStringList fileNames = pathList.getFileList();
+
+    std::list<FileWithDetails> fdetails = enrichFilesForAnalysis(pathList.getFileList(), checkSettings);
+
     checkLockDownUI(); // lock UI while checking
-    mUI->mResults->checkingStarted(fileNames.size());
-    mThread->setCheckFiles(fileNames);
+    mUI->mResults->checkingStarted(fdetails.size());
+    mThread->setCheckFiles(std::move(fdetails));
 
     // Saving last check start time, otherwise unchecked modified files will not be
     // considered in "Modified Files Check"  performed after "Selected Files Check"
@@ -1396,7 +1402,7 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
 
 void MainWindow::reAnalyze(bool all)
 {
-    const QStringList files = mThread->getReCheckFiles(all);
+    const std::list<FileWithDetails> files = mThread->getReCheckFiles(all);
     if (files.empty())
         return;
 
@@ -1409,8 +1415,8 @@ void MainWindow::reAnalyze(bool all)
     mUI->mResults->clear(all);
 
     // Clear results for changed files
-    for (int i = 0; i < files.size(); ++i)
-        mUI->mResults->clear(files[i]);
+    for (const auto& f : files)
+        mUI->mResults->clear(QString::fromStdString(f.path()));
 
     checkLockDownUI(); // lock UI while checking
     mUI->mResults->checkingStarted(files.size());
@@ -2349,3 +2355,12 @@ void MainWindow::changeReportType() {
     }
 }
 
+std::list<FileWithDetails> MainWindow::enrichFilesForAnalysis(const QStringList& fileNames, const Settings& settings) const {
+    std::list<FileWithDetails> fdetails;
+    std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(fdetails), [](const QString& f) {
+        return FileWithDetails{f.toStdString(), Standards::Language::None, static_cast<std::size_t>(QFile(f).size())};
+    });
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(fdetails, settings, enforcedLang);
+    return fdetails;
+}
