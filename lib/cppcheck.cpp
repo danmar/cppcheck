@@ -35,6 +35,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
+#include "symboldatabase.h"
 #include "timer.h"
 #include "token.h"
 #include "tokenize.h"
@@ -1934,6 +1935,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     CheckUnusedFunctions::getErrorMessages(errorlogger);
     Preprocessor::getErrorMessages(errorlogger, s);
     Tokenizer::getErrorMessages(errorlogger, s);
+    SymbolDatabase::getErrorMessages(errorlogger);
 }
 
 void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
