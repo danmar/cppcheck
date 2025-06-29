@@ -8110,7 +8110,7 @@ std::string ValueType::dump() const
         break;
     }
 
-    if (bits > 0) {
+    if (bits >= 0) {
         ret += " valueType-bits=\"";
         ret += std::to_string(bits);
         ret += '\"';

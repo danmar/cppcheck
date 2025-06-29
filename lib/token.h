@@ -82,7 +82,7 @@ struct TokenImpl {
     nonneg int mIndex{};
 
     /** Bitfield bit count. */
-    unsigned char mBits{};
+    short mBits = -1;
 
     // AST..
     Token* mAstOperand1{};
@@ -742,11 +742,18 @@ public:
         setFlag(fIsInitBracket, b);
     }
 
+    bool isAnonymous() const {
+        return getFlag(fIsAnonymous);
+    }
+    void isAnonymous(bool b) {
+        setFlag(fIsAnonymous, b);
+    }
+
     // cppcheck-suppress unusedFunction
     bool isBitfield() const {
-        return mImpl->mBits > 0;
+        return mImpl->mBits >= 0;
     }
-    unsigned char bits() const {
+    short bits() const {
         return mImpl->mBits;
     }
     const std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
@@ -760,8 +767,14 @@ public:
             mImpl->mTemplateSimplifierPointers = new std::set<TemplateSimplifier::TokenAndName*>;
         mImpl->mTemplateSimplifierPointers->insert(tokenAndName);
     }
-    void setBits(const unsigned char b) {
-        mImpl->mBits = b;
+    bool setBits(const MathLib::bigint b) {
+        const MathLib::bigint max = std::numeric_limits<short>::max();
+        if (b > max) {
+            mImpl->mBits = max;
+            return false;
+        }
+        mImpl->mBits = b < 0 ? -1 : b;
+        return true;
     }
 
     bool isUtf8() const {
@@ -1426,6 +1439,7 @@ private:
         fIsFinalType            = (1ULL << 42), // Is this a type with final specifier
         fIsInitComma            = (1ULL << 43), // Is this comma located inside some {..}. i.e: {1,2,3,4}
         fIsInitBracket          = (1ULL << 44), // Is this bracket used as a part of variable initialization i.e: int a{5}, b(2);
+        fIsAnonymous            = (1ULL << 45), // Is this a token added for an unnamed member
     };
 
     enum : std::uint8_t {

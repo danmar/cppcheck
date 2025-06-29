@@ -9084,8 +9084,9 @@ private:
 
 #define testBitfields(structBody, expectedSize) testBitfields_(__FILE__, __LINE__, structBody, expectedSize)
     void testBitfields_(const char *file, int line, const std::string &structBody, std::size_t expectedSize) {
+        const Settings settingsUnix64 = settingsBuilder().platform(Platform::Type::Unix64).build();
         const std::string code = "struct S { " + structBody + " }; const std::size_t size = sizeof(S);";
-        const auto values = tokenValues(code.c_str(), "( S");
+        const auto values = tokenValues(code.c_str(), "( S", &settingsUnix64);
         ASSERT_LOC(!values.empty(), file, line);
         ASSERT_EQUALS_LOC(expectedSize, values.back().intvalue, file, line);
     }
@@ -9122,6 +9123,18 @@ private:
                       "int b : 16;\n"
                       "unsigned short c;\n",
                       8);
+
+        testBitfields("unsigned int a : 31;\n"
+                      "unsigned int   : 2;\n",
+                      8);
+
+        testBitfields("unsigned int a : 16;\n"
+                      "unsigned int   : 0;\n"
+                      "unsigned int b : 16;\n",
+                      8);
+
+        testBitfields("unsigned char a : 16;\n",
+                      2);
     }
 };
 

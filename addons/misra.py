@@ -2017,7 +2017,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if not token.valueType:
                 continue
-            if token.valueType.bits == 0:
+            if token.valueType.bits is None:
                 continue
             if not token.variable:
                 continue
