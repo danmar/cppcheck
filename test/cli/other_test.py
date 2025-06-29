@@ -243,6 +243,30 @@ def test_execute_addon_failure_json_notexist(tmpdir):
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows specific issue")
+def test_execute_addon_path_with_spaces(tmpdir):
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    addon_executable = os.path.join(tmpdir, 'A Folder', 'addon.exe')
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({'executable': addon_executable }))
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = [
+        '--addon={}'.format(addon_json),
+        test_file,
+        '--verbose',
+        '--debug'
+    ]
+
+    _, _, stderr = cppcheck(args)
+
+    # Make sure the full command is used
+    assert 'The system cannot find the path specified. [internalError]' in stderr
+
+
 def test_execute_addon_failure_json_ctu_notexist(tmpdir):
     # specify non-existent python executable so execution of addon fails
     addon_json = os.path.join(tmpdir, 'addon.json')

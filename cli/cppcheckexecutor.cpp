@@ -712,9 +712,10 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
             joinedArgs += arg;
     }
 
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+    std::string cmd = exe + " " + joinedArgs + " " + redirect;
 
 #ifdef _WIN32
+    cmd = "\"" + cmd + "\"";
     FILE* p = _popen(cmd.c_str(), "r");
 #else
     FILE *p = popen(cmd.c_str(), "r");
