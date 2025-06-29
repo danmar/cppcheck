@@ -50,9 +50,10 @@ public:
      * If you want to match a directory the given path needs to end with a path separator.
      *
      * @param path Path to match.
+     * @param glob Match glob patterns.
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool match(const std::string &path) const;
+    bool match(const std::string &path, bool glob = false) const;
 
 protected:
 
