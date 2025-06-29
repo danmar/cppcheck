@@ -78,7 +78,7 @@ void CheckAssert::assertWithSideEffects()
                         f->containerYield == Library::Container::Yield::END_ITERATOR ||
                         f->containerYield == Library::Container::Yield::ITERATOR)
                         continue;
-                    sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
+                    sideEffectInAssertError(tmp, tmp->funcname(mSettings->library));
                 }
                 continue;
             }
