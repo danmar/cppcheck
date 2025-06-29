@@ -2024,6 +2024,8 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 
 bool CppCheck::analyseWholeProgram()
 {
+    return false;
+
     bool errors = false;
     // Analyse the tokens
     CTU::FileInfo ctu;
@@ -2050,6 +2052,8 @@ bool CppCheck::analyseWholeProgram()
 
 unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo)
 {
+    return mLogger->exitcode();
+
     executeAddonsWholeProgram(files, fileSettings, ctuInfo);
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, mErrorLogger, buildDir);
