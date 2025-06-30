@@ -31,7 +31,6 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QtGlobal>
 
 class ErrorItem;
 class ImportProject;
@@ -59,7 +58,7 @@ public:
      * @brief Set list of files to check
      * @param files List of files to check
      */
-    void setFiles(const QStringList &files);
+    void setFiles(std::list<FileWithDetails> files);
 
     void setProject(const ImportProject &prj);
 

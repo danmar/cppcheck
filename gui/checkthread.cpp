@@ -25,7 +25,6 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
-#include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "threadresult.h"
@@ -121,7 +120,7 @@ void CheckThread::setSettings(const Settings &settings, std::shared_ptr<Suppress
     mSuppressions = std::move(supprs);
 }
 
-void CheckThread::analyseWholeProgram(const QStringList &files, const std::string& ctuInfo)
+void CheckThread::analyseWholeProgram(const std::list<FileWithDetails> &files, const std::string& ctuInfo)
 {
     mFiles = files;
     mAnalyseWholeProgram = true;
@@ -136,17 +135,12 @@ void CheckThread::run()
 
     CppCheck cppcheck(mSettings, *mSuppressions, mResult, true, executeCommand);
 
-    if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
+    if (!mFiles.empty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         std::string ctuInfo;
         ctuInfo.swap(mCtuInfo);
         qDebug() << "Whole program analysis";
-        std::list<FileWithDetails> files2;
-        std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
-            // TODO: apply enforcedLanguage
-            return FileWithDetails{file.toStdString(), Path::identify(file.toStdString(), mSettings.cppHeaderProbe), 0};
-        });
-        cppcheck.analyseWholeProgram(mSettings.buildDir, files2, {}, ctuInfo);
+        cppcheck.analyseWholeProgram(mSettings.buildDir, mFiles, {}, ctuInfo);
         mFiles.clear();
         emit done();
         return;
