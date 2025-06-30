@@ -25,7 +25,6 @@
 
 #include <cstddef>
 #include <string>
-#include <vector>
 
 class TestVarID : public TestFixture {
 public:

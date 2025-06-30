@@ -23,7 +23,6 @@
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
-#include "simplecpp.h"
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -47,6 +46,8 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
+
+#include <simplecpp.h>
 
 namespace {
     struct less {

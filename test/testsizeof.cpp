@@ -24,7 +24,6 @@
 
 #include <cstddef>
 #include <string>
-#include <vector>
 
 class TestSizeof : public TestFixture {
 public:

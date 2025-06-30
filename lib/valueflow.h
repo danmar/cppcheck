@@ -25,6 +25,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 
+#include <cstdint>
 #include <cstdlib>
 #include <functional>
 #include <list>

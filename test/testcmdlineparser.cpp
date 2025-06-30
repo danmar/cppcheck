@@ -22,6 +22,8 @@
 #include "config.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filesettings.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "path.h"
 #include "platform.h"
@@ -29,7 +31,6 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "fixture.h"
 #include "timer.h"
 #include "utils.h"
 

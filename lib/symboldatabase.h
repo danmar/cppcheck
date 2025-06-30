@@ -47,6 +47,7 @@ class Settings;
 class SymbolDatabase;
 class Tokenizer;
 class ValueType;
+class ErrorLogger;
 
 enum class Reference : std::uint8_t {
     None,
