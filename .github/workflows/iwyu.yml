@@ -20,9 +20,12 @@ jobs:
           - os: ubuntu-22.04
             image: "fedora:latest"
             stdlib: libstdc++
-          - os: ubuntu-22.04
-            image: "fedora:latest"
-            stdlib: libc++
+            clang_inc: '-isystem/usr/lib/clang/20/include'
+          # TODO: disable because it currently fails with "error: <cstddef> tried including <stddef.h> but didn't find libc++'s <stddef.h> header."
+          #- os: ubuntu-22.04
+          #  image: "fedora:latest"
+          #  stdlib: libc++
+          #  clang_inc: '-isystem/usr/lib/clang/20/include'
           - os: macos-13
             image: ""
             stdlib: libc++  # no libstdc++ on macOS
@@ -144,9 +147,8 @@ jobs:
 
       - name: iwyu_tool
         run: |
-          # -isystem/usr/lib/clang/17/include
           # TODO: remove -stdlib= - it should have been taken from the compilation database
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} ${{ matrix.mapping_file_opt }} > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} ${{ matrix.mapping_file_opt }} ${{ matrix.clang_inc }} > iwyu.log
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
