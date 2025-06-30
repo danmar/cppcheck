@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "addoninfo.h"
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -25,14 +26,17 @@
 #include "path.h"
 #include "preprocessor.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
 
-#include "simplecpp.h"
-
 #include <algorithm>
+#include <cstddef>
 #include <list>
+#include <sstream>
 #include <string>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestCppcheck : public TestFixture {
 public:

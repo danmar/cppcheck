@@ -23,7 +23,6 @@
 
 #include <cstddef>
 #include <string>
-#include <vector>
 
 class TestLeakAutoVar : public TestFixture {
 public:

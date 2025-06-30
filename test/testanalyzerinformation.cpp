@@ -18,12 +18,15 @@
 
 
 #include "analyzerinfo.h"
+#include "errorlogger.h"
 #include "filesettings.h"
 #include "fixture.h"
-#include "xml.h"
+#include "standards.h"
 
+#include <list>
 #include <sstream>
-#include <tinyxml2.h>
+
+#include "xml.h"
 
 class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
 public:

@@ -24,12 +24,12 @@
 #include "helpers.h"
 #include "library.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 
 #include <cstddef>
 #include <list>
 #include <string>
-#include <vector>
 
 class TestNullPointer : public TestFixture {
 public:

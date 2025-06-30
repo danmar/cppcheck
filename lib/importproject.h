@@ -36,6 +36,9 @@
 
 class Settings;
 struct Suppressions;
+namespace tinyxml2 {
+    class XMLDocument;
+}
 
 /// @addtogroup Core
 /// @{

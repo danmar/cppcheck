@@ -23,7 +23,11 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "importproject.h"
+#include "path.h"
 
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
 #include <numeric>
 #include <utility>
 

@@ -24,6 +24,7 @@
 #include "check.h"
 #include "config.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <functional>

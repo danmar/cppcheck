@@ -32,9 +32,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
-#include <functional>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <tuple>
