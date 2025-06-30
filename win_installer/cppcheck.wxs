@@ -156,6 +156,7 @@
           <Directory Id='AddonsFolder' Name='addons'>
             <Component Id='Addons' Guid='$(var.addonsGUID)'>
               <File Id='__init__.py' Name='__init__.py' Source='$(var.AddonsDir)\__init__.py' />
+              <File Id='buildsystem.py' Name='buildsystem.py' Source='$(var.AddonsDir)\buildsystem.py' />
               <File Id='cppcheck.py' Name='cppcheck.py' Source='$(var.AddonsDir)\cppcheck.py' />
               <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
               <File Id='findcasts.py' Name='findcasts.py' Source='$(var.AddonsDir)\findcasts.py' />

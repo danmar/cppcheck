@@ -51,8 +51,51 @@ unsafe, and emits diagnostics whenever it finds one.
 Of course, this is of little use if your code uses a Y2038-proof glibc and
 correctly configured Y2038-proof time support.
 
-This is why y2038.py takes into account two preprocessor directives:
-_TIME_BITS and __USE_TIME_BITS64.
+This is why y2038.py takes into account preprocessor directives like 
+_TIME_BITS, __USE_TIME_BITS64, and _FILE_OFFSET_BITS.
+
+The addon now features comprehensive build system detection and compiler flag
+checking that eliminates false positives when projects are properly configured 
+for Y2038 safety. This enables analysis of entire codebases without being 
+overwhelmed by warnings from correctly configured code.
+
+Key improvements in this version:
+
+* **Eliminate false positives**: Automatically suppress Y2038 warnings when proper 
+  configuration is detected (both _TIME_BITS=64 AND _FILE_OFFSET_BITS=64)
+  
+* **Comprehensive codebase analysis**: Run Y2038 checks across entire projects 
+  without manual flag specification - the addon discovers build configurations
+  automatically
+  
+* **Multi-build-system support**: Detects Y2038 flags from Makefile, CMake, 
+  Meson, Autotools, and other build systems with hierarchical directory search
+  
+* **Smart warning suppression**: When proper Y2038 configuration is found, 
+  displays informational messages instead of false warnings
+  
+* **Enterprise-ready**: Suitable for CI/CD pipelines and large-scale code analysis
+
+Build System Detection:
+The addon automatically searches for and parses the following build files:
+- Makefiles (Makefile, makefile, GNUmakefile, *.mk)
+- CMake files (CMakeLists.txt, *.cmake)
+- Configure scripts (configure, configure.ac, configure.in)
+- Meson build files (meson.build)
+- Other build systems (BUILD, BUILD.bazel, etc.)
+
+The addon searches up to 5 directory levels from the source file location to
+find relevant build files and extracts Y2038-related compiler definitions.
+
+Warning Suppression:
+When proper Y2038 configuration is detected (both _TIME_BITS=64 AND
+_FILE_OFFSET_BITS=64 defined), Y2038 warnings are automatically suppressed
+with an informational message indicating the source of the configuration.
+
+Priority order for Y2038 flag detection (highest to lowest):
+1. Build system files (Makefile, CMakeLists.txt, etc.)
+2. Compiler flags (-D options passed to cppcheck)
+3. Source code #define directives
 
 _TIME_BITS is defined equal to 64 by user code when it wants 64-bit time
 support from the GNU glibc. Code which does not define _TIME_BITS equal to 64
@@ -85,46 +128,128 @@ The Y2038 cppcheck performs the following checks:
      which defaults to 32-bit time support.
 
   3. Upon meeting a symbol (type or function) which is known to be Y2038-
-     unsafe, if _USE_TIME_BITS64 is undefined or _TIME_BITS not properly
-     defined, this warning diagnostic is emitted:
+     unsafe, if proper Y2038 configuration is not detected, this warning
+     diagnostic is emitted:
 
 	Warning: <symbol> is Y2038-unsafe
 
      This reflects the fact that the user code is referring to a symbol
      which, when glibc defaults to 32-bit time support, might fail Y2038.
+     
+     However, if proper Y2038 configuration is detected (both _TIME_BITS=64
+     AND _FILE_OFFSET_BITS=64), these warnings are suppressed and an
+     informational message is displayed instead.
 
 General note: y2038.py will handle multiple configurations, and will
 emit diagnostics for each configuration in turn.
 
 4. How to use the Y2038 cppcheck addon
 
+**Comprehensive Codebase Analysis**
+
+The enhanced Y2038 addon is designed for analyzing entire codebases efficiently:
+
+	# Analyze all C files in a project - addon will detect build system configs automatically
+	cppcheck --dump src/**/*.c
+	python3 addons/y2038.py src/**/*.c.dump
+
+	# For projects with proper Y2038 configuration, you'll see suppression messages instead of false warnings:
+	# Y2038 warnings suppressed: Found proper Y2038 configuration in build system (_TIME_BITS=64 and _FILE_OFFSET_BITS=64)
+
+**CI/CD Integration**
+
+This addon is now suitable for continuous integration workflows:
+
+	# Example CI script
+	#!/bin/bash
+	find . -name "*.c" -exec cppcheck --dump {} \;
+	python3 addons/y2038.py $(find . -name "*.dump")
+	
+	# Returns non-zero exit code only for actual Y2038 issues,
+	# not for properly configured projects
+
+**Basic Usage**
+
 The Y2038 cppcheck addon is used like any other cppcheck addon:
 
-	cppcheck --dump file1.c [ file2.c [...]]]
-	y2038.py file1.c [ file2.c [...]]]
+	cppcheck --dump file1.c [ file2.c [...]]
+	y2038.py file1.c.dump [ file2.c.dump [...]]
 
-Sample test C file is provided:
+To use compiler flags for Y2038 checking:
 
-	test/y2038-test-1-bad-time-bits.c
-	test/y2038-test-2-no-time-bits.c
-	test/y2038-test-3-no-use-time-bits.c
-	test/y2038-test-4-good.c
+	cppcheck --dump -D_TIME_BITS=64 -D_USE_TIME_BITS64 file1.c
+	y2038.py file1.c.dump
+
+For automatic build system detection (recommended):
+
+	cppcheck --dump file1.c  # No flags needed - addon detects from build files
+	y2038.py file1.c.dump
+
+The addon will automatically:
+1. Search for build system files (Makefile, CMakeLists.txt, etc.)
+2. Extract Y2038-related compiler definitions
+3. Validate _TIME_BITS and _USE_TIME_BITS64 configurations
+4. Report any Y2038-unsafe configurations found in build files
+
+Example build system configurations that will be detected:
+
+Makefile:
+	CPPFLAGS = -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64
+
+CMakeLists.txt:
+	add_definitions(-D_TIME_BITS=64)
+	add_definitions(-D_FILE_OFFSET_BITS=64)
+
+meson.build:
+	add_global_arguments('-D_TIME_BITS=64', language : 'c')
+	add_project_arguments('-D_FILE_OFFSET_BITS=64', language : 'c')
+
+When both _TIME_BITS=64 and _FILE_OFFSET_BITS=64 are found, Y2038 warnings
+will be suppressed with a message like:
+	Y2038 warnings suppressed: Found proper Y2038 configuration in build system (_TIME_BITS=64 and _FILE_OFFSET_BITS=64)
+	Suppressed X Y2038-unsafe function warning(s)
+
+Sample test C files are provided:
+
+	test/y2038-test-1-bad-time-bits.c          # Source code with wrong _TIME_BITS
+	test/y2038-test-2-no-time-bits.c           # Source code missing _TIME_BITS
+	test/y2038-test-3-no-use-time-bits.c       # Missing _USE_TIME_BITS64
+	test/y2038-test-4-good.c                   # Proper Y2038 setup in source
+	test/y2038-test-5-good-no-time-used.c      # No time functions used
+	test/y2038-test-compiler-flags.c           # Shared test file for compiler flag scenarios:
+	                                           #   - Proper Y2038 config (-D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -D_USE_TIME_BITS64)
+	                                           #   - Wrong _TIME_BITS value (-D_TIME_BITS=32)
+	                                           #   - Incomplete config (-D_USE_TIME_BITS64 only)
 
 These cover the cases described above. You can run them through cppcheck
 and y2038.py to see for yourself how the addon diagnostics look like. If
 this README is not outdated (and if it is, feel free to submit a patch),
 you can run cppcheck on these files as on any others:
 
-	cppcheck --dump addons/y2038/test/y2038-*.c
-	y2038.py addons/y2038/test/y2038-*.dump
+	cppcheck --dump addons/test/y2038/y2038-*.c
+	python3 addons/y2038.py addons/test/y2038/y2038-*.dump
+
+For testing compiler flag functionality (using the shared test file):
+
+	# Test proper Y2038 configuration
+	cppcheck --dump -D_TIME_BITS=64 -D_FILE_OFFSET_BITS=64 -D_USE_TIME_BITS64 addons/test/y2038/y2038-test-compiler-flags.c
+	python3 addons/y2038.py addons/test/y2038/y2038-test-compiler-flags.c.dump
+
+	# Test wrong _TIME_BITS value
+	cppcheck --dump -D_TIME_BITS=32 addons/test/y2038/y2038-test-compiler-flags.c
+	python3 addons/y2038.py addons/test/y2038/y2038-test-compiler-flags.c.dump
+
+	# Test incomplete configuration (should produce warnings)
+	cppcheck --dump -D_USE_TIME_BITS64 addons/test/y2038/y2038-test-compiler-flags.c
+	python3 addons/y2038.py addons/test/y2038/y2038-test-compiler-flags.c.dump
 
 If you have not installed cppcheck yet, you will have to run these
 commands from the root of the cppcheck repository:
 
     make
     sudo make install
-	./cppcheck --dump addons/y2038/test/y2038-*.c
-    PYTHONPATH=addons python addons/y2038/y2038.py addons/y2038/test/y2038-*.c.dump
+	./cppcheck --dump addons/test/y2038/y2038-*.c
+    PYTHONPATH=addons python3 addons/y2038.py addons/test/y2038/y2038-*.c.dump
 
 In both cases, y2038.py execution should result in the following:
 
