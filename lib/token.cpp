@@ -1655,7 +1655,7 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
     }
 }
 
-void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
+void Token::printAst(bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
 {
     if (!xml)
         out << "\n\n##AST" << std::endl;
@@ -1672,10 +1672,8 @@ void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fil
                     << "\" column=\"" << tok->column() << "\">" << std::endl;
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
-            } else if (verbose)
+            } else
                 out << "[" << fileNames[tok->fileIndex()] << ":" << tok->linenr() << "]" << std::endl << tok->astStringVerbose() << std::endl;
-            else
-                out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
                 tok = tok->link();
         }
