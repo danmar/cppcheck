@@ -5586,7 +5586,7 @@ bool Scope::hasInlineOrLambdaFunction(const Token** tokStart, bool onlyInline) c
     });
 }
 
-void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const
+void Scope::findFunctionInBase(const Token* tok, nonneg int args, std::vector<const Function *> & matches) const
 {
     if (isClassOrStruct() && definedType && !definedType->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo> &derivedFrom = definedType->derivedFrom;
@@ -5596,16 +5596,18 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
                 if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
 
-                auto range = utils::as_const(base->classScope->functionMap).equal_range(name);
+                auto range = utils::as_const(base->classScope->functionMap).equal_range(tok->str());
                 for (auto it = range.first; it != range.second; ++it) {
                     const Function *func = it->second;
+                    if (func->isDestructor() && !Token::simpleMatch(tok->tokAt(-1), "~"))
+                        continue;
                     if ((func->isVariadic() && args >= (func->argCount() - 1)) ||
                         (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount()))) {
                         matches.push_back(func);
                     }
                 }
 
-                base->classScope->findFunctionInBase(name, args, matches);
+                base->classScope->findFunctionInBase(tok, args, matches);
             }
         }
     }
@@ -5791,7 +5793,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     const std::size_t numberOfMatchesNonBase = matches.size();
 
     // check in base classes
-    findFunctionInBase(tok->str(), args, matches);
+    findFunctionInBase(tok, args, matches);
 
     // Non-call => Do not match parameters
     if (!isCall) {
