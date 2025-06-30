@@ -23,7 +23,6 @@
 #include "fixture.h"
 
 #include <string>
-#include <vector>
 
 class TestIncompleteStatement : public TestFixture {
 public:

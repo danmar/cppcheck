@@ -22,7 +22,6 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"

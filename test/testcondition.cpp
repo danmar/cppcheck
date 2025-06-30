@@ -26,7 +26,6 @@
 #include <cstddef>
 #include <limits>
 #include <string>
-#include <vector>
 
 class TestCondition : public TestFixture {
 public:

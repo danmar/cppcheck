@@ -29,7 +29,6 @@
 #include <cstddef>
 #include <list>
 #include <string>
-#include <vector>
 
 class TestBufferOverrun : public TestFixture {
 public:

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
+#include "config.h" // IWYU pragma: keep
 
 #if defined(USE_WINDOWS_SEH)
 #include "sehwrapper.h"

@@ -24,6 +24,7 @@
 #include "utils.h"
 
 #include <cstring>
+#include <exception>
 #include <map>
 #include <sstream>
 
