@@ -1205,7 +1205,7 @@ private:
      */
     bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
 
-    void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
+    void findFunctionInBase(const Token* tok, nonneg int args, std::vector<const Function *> & matches) const;
 
     /** @brief initialize varlist */
     void getVariableList(const Token *start, const Token *end);
