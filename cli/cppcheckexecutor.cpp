@@ -119,15 +119,20 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    const char* securitySeverity = nullptr;
-                    if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
-                        securitySeverity = "9.9"; // We see undefined behavior
-                    //else if (finding.severity == Severity::warning)
-                    //    securitySeverity = 5.1; // We see potential undefined behavior
-                    if (securitySeverity) {
-                        properties["security-severity"] = picojson::value(securitySeverity);
-                        const picojson::array tags{picojson::value("security")};
-                        properties["tags"] = picojson::value(tags);
+                    // Only set security-severity for findings that are actually security-related
+                    if (isSecurityRelatedFinding(finding.id)) {
+                        double securitySeverity = 0;
+                        if (ErrorLogger::isCriticalErrorId(finding.id))
+                            securitySeverity = 9.9;
+                        else if (finding.severity == Severity::error)
+                            securitySeverity = 8.5;
+                        else if (finding.severity == Severity::warning)
+                            securitySeverity = 5.1;
+                        if (securitySeverity > 0.5) {
+                            properties["security-severity"] = picojson::value(securitySeverity);
+                            const picojson::array tags{picojson::value("security")};
+                            properties["tags"] = picojson::value(tags);
+                        }
                     }
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
@@ -270,6 +275,43 @@ namespace {
             return fullDescription 
                 ? ("Issue detected by rule: " + ruleId)
                 : ("Issue detected by rule: " + ruleId);
+        }
+
+        static bool isSecurityRelatedFinding(const std::string& ruleId) {
+            // Security-related findings that have actual security implications
+            static const std::unordered_set<std::string> securityRelatedIds = {
+                // Memory safety issues
+                "nullPointer", "nullPointerArithmetic", "nullPointerRedundantCheck", "nullPointerDefaultArg",
+                "nullPointerOutOfMemory", "nullPointerOutOfResources",
+                "memleak", "memleakOnRealloc", "resourceLeak", "leakReturnValNotUsed", "leakUnsafeArgAlloc",
+                "deallocret", "deallocuse", "doubleFree", "mismatchAllocDealloc", "autovarInvalidDeallocation",
+                
+                // Buffer overflow and array bounds issues
+                "arrayIndexOutOfBounds", "arrayIndexOutOfBoundsCond", "bufferAccessOutOfBounds",
+                "pointerOutOfBounds", "pointerOutOfBoundsCond", "negativeIndex", "objectIndex",
+                "argumentSize", "stringLiteralWrite", "bufferOverflow", "pointerArithmetic",
+                
+                // Uninitialized data issues
+                "uninitvar", "uninitdata", "uninitStructMember",
+                
+                // Use after free and lifetime issues
+                "danglingLifetime", "returnDanglingLifetime", "danglingReference", "danglingTempReference",
+                "danglingTemporaryLifetime", "invalidLifetime", "useClosedFile",
+                
+                // Format string vulnerabilities
+                "wrongPrintfScanfArgNum", "invalidScanfFormatWidth", "invalidscanf", "invalidFunctionArg",
+                
+                // Integer overflow and underflow
+                "integerOverflow", "floatConversionOverflow", "negativeMemoryAllocationSize",
+                
+                // File and resource handling
+                "IOWithoutPositioning", "incompatibleFileOpen", "writeReadOnlyFile",
+                
+                // Other security-relevant issues
+                "zerodiv", "zerodivcond", "invalidLengthModifierError", "preprocessorErrorDirective"
+            };
+            
+            return securityRelatedIds.find(ruleId) != securityRelatedIds.end();
         }
 
         static std::string sarifSeverity(const ErrorMessage& errmsg) {
