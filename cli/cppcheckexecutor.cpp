@@ -133,6 +133,17 @@ namespace {
                             const picojson::array tags{picojson::value("security")};
                             properties["tags"] = picojson::value(tags);
                         }
+                    } else {
+                        // For non-security findings, set problem.severity
+                        std::string problemSeverity;
+                        if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error)
+                            problemSeverity = "error";
+                        else if (finding.severity == Severity::warning)
+                            problemSeverity = "warning";
+                        else
+                            problemSeverity = "recommendation"; // style, information, performance, portability
+                        
+                        properties["problem.severity"] = picojson::value(problemSeverity);
                     }
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
