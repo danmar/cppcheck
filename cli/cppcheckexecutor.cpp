@@ -145,6 +145,7 @@ namespace {
                         problemSeverity = "recommendation"; // style, information, performance, portability
                     }
                     properties["problem.severity"] = picojson::value(problemSeverity);
+                    properties["defaultConfiguration"] = picojson::value(problemSeverity);
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
