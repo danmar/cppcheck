@@ -133,18 +133,18 @@ namespace {
                             const picojson::array tags{picojson::value("security")};
                             properties["tags"] = picojson::value(tags);
                         }
-                    } else {
-                        // For non-security findings, set problem.severity
-                        std::string problemSeverity;
-                        if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error)
-                            problemSeverity = "error";
-                        else if (finding.severity == Severity::warning)
-                            problemSeverity = "warning";
-                        else
-                            problemSeverity = "recommendation"; // style, information, performance, portability
-                        
-                        properties["problem.severity"] = picojson::value(problemSeverity);
                     }
+                    // Set problem.severity for use with github and other severity systems
+                    std::string problemSeverity;
+                    if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error)
+                        problemSeverity = "error";
+                    else if (finding.severity == Severity::warning) {
+                        problemSeverity = "warning";
+                    }
+                    else {
+                        problemSeverity = "recommendation"; // style, information, performance, portability
+                    }
+                    properties["problem.severity"] = picojson::value(problemSeverity);
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
@@ -283,9 +283,7 @@ namespace {
             }
 
             // Fallback for unknown rules
-            return fullDescription 
-                ? ("Issue detected by rule: " + ruleId)
-                : ("Issue detected by rule: " + ruleId);
+            return fullDescription ? ruleId : ruleId;
         }
 
         static bool isSecurityRelatedFinding(const std::string& ruleId) {
