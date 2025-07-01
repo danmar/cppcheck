@@ -84,60 +84,12 @@ namespace {
             mFindings.push_back(std::move(msg));
         }
 
-        static std::string getRuleShortDescription(const std::string& ruleId) {
-            // Map rule IDs to generic descriptions that describe what the rule checks for
-            static const std::map<std::string, std::string> ruleDescriptions = {
-                {"nullPointer", "Null pointer dereference"},
-                {"uninitvar", "Uninitialized variable"},
-                {"memleakOnRealloc", "Memory leak on realloc"},
-                {"memleak", "Memory leak"},
-                {"resourceLeak", "Resource leak"},
-                {"deallocret", "Deallocation of returned value"},
-                {"deallocuse", "Use after free"},
-                {"doubleFree", "Double free"},
-                {"arrayIndexOutOfBounds", "Array index out of bounds"},
-                {"bufferAccessOutOfBounds", "Buffer access out of bounds"},
-                {"stringLiteralWrite", "Write to string literal"},
-                {"unusedVariable", "Unused variable"},
-                {"unreadVariable", "Variable assigned but never used"},
-                {"duplicateCondition", "Duplicate condition"},
-                {"unreachableCode", "Unreachable code"},
-                {"invalidFunctionArg", "Invalid function argument"},
-                {"syntaxError", "Syntax error"},
-                {"cppcheckError", "Cppcheck internal error"},
-                // Add more mappings as needed
-            };
-
-            auto it = ruleDescriptions.find(ruleId);
-            return it != ruleDescriptions.end() ? it->second : ("Issue detected by rule: " + ruleId);
+        std::string getRuleShortDescription(const std::string& ruleId) const {
+            return getRuleDescription(ruleId, false);
         }
 
-        static std::string getRuleFullDescription(const std::string& ruleId) {
-            // Map rule IDs to more detailed descriptions
-            static const std::map<std::string, std::string> ruleFullDescriptions = {
-                {"nullPointer", "Detects when code dereferences a pointer that may be null, which can lead to undefined behavior or program crashes."},
-                {"uninitvar", "Detects usage of variables that have not been initialized, which can lead to unpredictable behavior."},
-                {"memleakOnRealloc", "Detects memory leaks that can occur when realloc() fails and the original memory is not freed."},
-                {"memleak", "Detects memory allocations that are not properly freed, leading to memory leaks."},
-                {"resourceLeak", "Detects when system resources (files, handles, etc.) are not properly closed or released."},
-                {"deallocret", "Detects when a function returns a pointer to memory that has been deallocated."},
-                {"deallocuse", "Detects when code continues to use memory after it has been freed (use-after-free)."},
-                {"doubleFree", "Detects when the same memory is freed multiple times, which leads to undefined behavior."},
-                {"arrayIndexOutOfBounds", "Detects when array indices exceed the bounds of the array."},
-                {"bufferAccessOutOfBounds", "Detects when buffer access operations exceed the allocated buffer size."},
-                {"stringLiteralWrite", "Detects attempts to modify string literals, which is undefined behavior."},
-                {"unusedVariable", "Detects variables that are declared but never used in the code."},
-                {"unreadVariable", "Detects variables that are assigned values but the values are never read."},
-                {"duplicateCondition", "Detects when the same condition is checked multiple times in related code paths."},
-                {"unreachableCode", "Detects code that can never be executed due to program flow."},
-                {"invalidFunctionArg", "Detects when function arguments are invalid or out of expected range."},
-                {"syntaxError", "Detects syntax errors in the source code."},
-                {"cppcheckError", "Internal error occurred during analysis."},
-                // Add more mappings as needed
-            };
-
-            auto it = ruleFullDescriptions.find(ruleId);
-            return it != ruleFullDescriptions.end() ? it->second : getRuleShortDescription(ruleId);
+        std::string getRuleFullDescription(const std::string& ruleId) const {
+            return getRuleDescription(ruleId, true);
         }
 
         picojson::array serializeRules() const {
@@ -150,11 +102,13 @@ namespace {
                 if (ruleIds.insert(finding.id).second) {
                     picojson::object rule;
                     rule["id"] = picojson::value(finding.id);
-                    // rule.shortDescription.text - use generic description for the rule
+                    // rule.name
+                    rule["name"] = picojson::value(getRuleShortDescription(finding.id));
+                    // rule.shortDescription.text
                     picojson::object shortDescription;
                     shortDescription["text"] = picojson::value(getRuleShortDescription(finding.id));
                     rule["shortDescription"] = picojson::value(shortDescription);
-                    // rule.fullDescription.text - use generic full description for the rule
+                    // rule.fullDescription.text
                     picojson::object fullDescription;
                     fullDescription["text"] = picojson::value(getRuleFullDescription(finding.id));
                     rule["fullDescription"] = picojson::value(fullDescription);
@@ -255,6 +209,68 @@ namespace {
             return picojson::value(doc).serialize(true);
         }
     private:
+        // Following the pattern of existing mapping functions in errorlogger.cpp
+        std::string getRuleDescription(const std::string& ruleId, bool fullDescription) const {
+            // Structure similar to IdMapping in checkers.h but for descriptions
+            struct RuleDescription {
+                const char* ruleId;
+                const char* shortDesc;
+                const char* fullDesc;
+            };
+
+            // Mapping of Cppcheck rule IDs to descriptions
+            static const RuleDescription ruleDescriptions[] = {
+                {"nullPointer", "Null pointer dereference", 
+                 "Detects when code dereferences a pointer that may be null, which can lead to undefined behavior or program crashes."},
+                {"uninitvar", "Uninitialized variable", 
+                 "Detects usage of variables that have not been initialized, which can lead to unpredictable behavior."},
+                {"memleakOnRealloc", "Memory leak on realloc", 
+                 "Detects memory leaks that can occur when realloc() fails and the original memory is not freed."},
+                {"memleak", "Memory leak", 
+                 "Detects memory allocations that are not properly freed, leading to memory leaks."},
+                {"resourceLeak", "Resource leak", 
+                 "Detects when system resources (files, handles, etc.) are not properly closed or released."},
+                {"deallocret", "Deallocation of returned value", 
+                 "Detects when a function returns a pointer to memory that has been deallocated."},
+                {"deallocuse", "Use after free", 
+                 "Detects when code continues to use memory after it has been freed (use-after-free)."},
+                {"doubleFree", "Double free", 
+                 "Detects when the same memory is freed multiple times, which leads to undefined behavior."},
+                {"arrayIndexOutOfBounds", "Array index out of bounds", 
+                 "Detects when array indices exceed the bounds of the array."},
+                {"bufferAccessOutOfBounds", "Buffer access out of bounds", 
+                 "Detects when buffer access operations exceed the allocated buffer size."},
+                {"stringLiteralWrite", "Write to string literal", 
+                 "Detects attempts to modify string literals, which is undefined behavior."},
+                {"unusedVariable", "Unused variable", 
+                 "Detects variables that are declared but never used in the code."},
+                {"unreadVariable", "Variable assigned but never used", 
+                 "Detects variables that are assigned values but the values are never read."},
+                {"duplicateCondition", "Duplicate condition", 
+                 "Detects when the same condition is checked multiple times in related code paths."},
+                {"unreachableCode", "Unreachable code", 
+                 "Detects code that can never be executed due to program flow."},
+                {"invalidFunctionArg", "Invalid function argument", 
+                 "Detects when function arguments are invalid or out of expected range."},
+                {"syntaxError", "Syntax error", 
+                 "Detects syntax errors in the source code."},
+                {"cppcheckError", "Cppcheck internal error", 
+                 "Internal error occurred during analysis."},
+                // Add more mappings as needed
+            };
+
+            // Find the rule description using the same pattern as existing mapping functions
+            for (const auto& desc : ruleDescriptions) {
+                if (ruleId == desc.ruleId) {
+                    return fullDescription ? desc.fullDesc : desc.shortDesc;
+                }
+            }
+
+            // Fallback for unknown rules
+            return fullDescription 
+                ? ("Issue detected by rule: " + ruleId)
+                : ("Issue detected by rule: " + ruleId);
+        }
 
         static std::string sarifSeverity(const ErrorMessage& errmsg) {
             if (ErrorLogger::isCriticalErrorId(errmsg.id))
