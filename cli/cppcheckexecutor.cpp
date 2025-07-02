@@ -141,6 +141,15 @@ namespace {
                 result = std::regex_replace(result, nullPtrPattern, "Null pointer dereference");
             }
 
+            // Invalid scanf argument type patterns
+            if (ruleId == "invalidScanfArgType_int" || ruleId.find("invalidScanfArgType") == 0)
+            {
+                // Replace "%format in format string (no. N) requires 'type *' but the argument type is 'type *'."
+                // with "Format specifier in format string requires different argument type."
+                std::regex scanfPattern(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)");
+                result = std::regex_replace(result, scanfPattern, "Format specifier in format string requires different argument type.");
+            }
+
             // Variable name patterns - replace specific variable names with generic terms
             // But be careful not to replace legitimate words like "pointer" in "C-style pointer casting"
 
