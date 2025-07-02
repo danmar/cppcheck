@@ -83,20 +83,24 @@
 #endif
 
 namespace {
-    class SarifRuleCache {
+    class SarifRuleCache
+    {
     public:
         // Get generic rule description for a given rule ID
-        static std::string getRuleDescription(const std::string& ruleId, bool fullDescription) {
+        static std::string getRuleDescription(const std::string& ruleId, bool fullDescription)
+        {
             static std::unordered_map<std::string, std::pair<std::string, std::string>> ruleCache;
             static bool cacheInitialized = false;
 
-            if (!cacheInitialized) {
+            if (!cacheInitialized)
+            {
                 initializeRuleCache(ruleCache);
                 cacheInitialized = true;
             }
 
             const auto it = ruleCache.find(ruleId);
-            if (it != ruleCache.end()) {
+            if (it != ruleCache.end())
+            {
                 const std::string& description = fullDescription ? it->second.second : it->second.first;
                 // Convert instance-specific descriptions to generic ones
                 return makeGeneric(description, ruleId);
@@ -105,29 +109,33 @@ namespace {
             // Fallback for rules not found in cache
             return "Cppcheck rule " + ruleId;
         }
-        
+
     private:
         // Convert instance-specific descriptions to generic ones
-        static std::string makeGeneric(const std::string& description, const std::string& ruleId) {
+        static std::string makeGeneric(const std::string& description, const std::string& ruleId)
+        {
             std::string result = description;
 
             // Common patterns to genericize
             // Array access patterns
-            if (ruleId == "arrayIndexOutOfBounds" || ruleId == "arrayIndexOutOfBoundsCond") {
+            if (ruleId == "arrayIndexOutOfBounds" || ruleId == "arrayIndexOutOfBoundsCond")
+            {
                 // Replace "Array 'arr[16]' accessed at index 16" with "Array accessed at index that is out of bounds"
                 std::regex arrayPattern(R"(Array '[^']*' accessed at index \d+, which is out of bounds\.)");
                 result = std::regex_replace(result, arrayPattern, "Array accessed at index that is out of bounds.");
             }
 
             // Memory leak patterns
-            if (ruleId == "memleak") {
+            if (ruleId == "memleak")
+            {
                 // Replace "Memory leak: varname" with "Memory leak"
                 std::regex memleakPattern(R"(Memory leak:.*$)");
                 result = std::regex_replace(result, memleakPattern, "Memory leak");
             }
 
             // Null pointer patterns
-            if (ruleId == "nullPointer") {
+            if (ruleId == "nullPointer")
+            {
                 // Replace "Null pointer dereference: varname" with "Null pointer dereference"
                 std::regex nullPtrPattern(R"(Null pointer dereference:.*$)");
                 result = std::regex_replace(result, nullPtrPattern, "Null pointer dereference");
@@ -179,47 +187,54 @@ namespace {
 
     private:
         // Error logger that captures error messages for building the rule cache
-        class RuleCacheLogger : public ErrorLogger {
+        class RuleCacheLogger : public ErrorLogger
+        {
         public:
-            explicit RuleCacheLogger(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache) 
-                : mCache(cache) {}
-            
-            void reportErr(const ErrorMessage &msg) override {
-                if (!msg.id.empty()) {
+            explicit RuleCacheLogger(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache)
+                : mCache(cache)
+            {}
+
+            void reportErr(const ErrorMessage& msg) override
+            {
+                if (!msg.id.empty())
+                {
                     // Store both short and verbose messages for each rule ID
-                    const std::string shortMsg = msg.shortMessage();
+                    const std::string shortMsg   = msg.shortMessage();
                     const std::string verboseMsg = msg.verboseMessage();
-                    
+
                     // Only store if we don't already have this rule or if we get a better description
-                    if (mCache.find(msg.id) == mCache.end()) {
-                        mCache[msg.id] = std::make_pair(
-                            shortMsg.empty() ? "Cppcheck rule " + msg.id : shortMsg,
-                            verboseMsg.empty() ? shortMsg : verboseMsg
-                        );
+                    if (mCache.find(msg.id) == mCache.end())
+                    {
+                        mCache[msg.id] = std::make_pair(shortMsg.empty() ? "Cppcheck rule " + msg.id : shortMsg,
+                                                        verboseMsg.empty() ? shortMsg : verboseMsg);
                     }
                 }
             }
-            
-            void reportOut(const std::string&, Color) override {}
-            void reportMetric(const std::string&) override {}
-            
+
+            void reportOut(const std::string&, Color) override
+            {}
+            void reportMetric(const std::string&) override
+            {}
+
         private:
             std::unordered_map<std::string, std::pair<std::string, std::string>>& mCache;
         };
-        
+
         // Initialize the rule cache by leveraging the same mechanism as --errorlist
-        static void initializeRuleCache(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache) {
+        static void initializeRuleCache(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache)
+        {
             RuleCacheLogger logger(cache);
-            
+
             // Use the same approach as CppCheck::getErrorMessages to get all possible error messages
             Settings settings;
             settings.addEnabled("all");
-            
+
             // Call getErrorMessages on all registered Check classes to get generic descriptions
-            for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
+            for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
+            {
                 (*it)->getErrorMessages(&logger, &settings);
             }
-            
+
             // Also get error messages from other components
             CheckUnusedFunctions::getErrorMessages(logger);
             Preprocessor::getErrorMessages(logger, settings);
@@ -227,30 +242,37 @@ namespace {
         }
     };
 
-    class SarifReport {
+    class SarifReport
+    {
     public:
-        void addFinding(ErrorMessage msg) {
+        void addFinding(ErrorMessage msg)
+        {
             mFindings.push_back(std::move(msg));
         }
 
-        std::string getRuleShortDescription(const ErrorMessage& finding) const {
+        std::string getRuleShortDescription(const ErrorMessage& finding) const
+        {
             return SarifRuleCache::getRuleDescription(finding.id, false);
         }
 
-        std::string getRuleFullDescription(const ErrorMessage& finding) const {
+        std::string getRuleFullDescription(const ErrorMessage& finding) const
+        {
             return SarifRuleCache::getRuleDescription(finding.id, true);
         }
 
-        picojson::array serializeRules() const {
+        picojson::array serializeRules() const
+        {
             picojson::array ret;
             std::set<std::string> ruleIds;
-            for (const auto& finding : mFindings) {
+            for (const auto& finding : mFindings)
+            {
                 // github only supports findings with locations
                 if (finding.callStack.empty())
                     continue;
-                if (ruleIds.insert(finding.id).second) {
+                if (ruleIds.insert(finding.id).second)
+                {
                     picojson::object rule;
-                    rule["id"] = picojson::value(finding.id);
+                    rule["id"]   = picojson::value(finding.id);
                     // rule.name
                     rule["name"] = picojson::value(getRuleShortDescription(finding));
                     // rule.shortDescription.text
@@ -269,7 +291,8 @@ namespace {
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
                     // Only set security-severity for findings that are actually security-related
-                    if (isSecurityRelatedFinding(finding.id)) {
+                    if (isSecurityRelatedFinding(finding.id))
+                    {
                         double securitySeverity = 0;
                         if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
                         {
@@ -282,7 +305,7 @@ namespace {
                         else if (finding.severity == Severity::performance || finding.severity == Severity::portability ||
                                  finding.severity == Severity::style)
                         {
-                            securitySeverity = 5.5;  // medium = 4.0 to 6.9
+                            securitySeverity = 5.5; // medium = 4.0 to 6.9
                         }
                         else if (finding.severity == Severity::information || finding.severity == Severity::internal ||
                                  finding.severity == Severity::debug || finding.severity == Severity::none)
@@ -299,12 +322,12 @@ namespace {
                     }
                     // Set problem.severity for use with github
                     const std::string problemSeverity = sarifSeverity(finding);
-                    properties["problem.severity"] = picojson::value(problemSeverity);
-                    rule["properties"] = picojson::value(properties);
+                    properties["problem.severity"]    = picojson::value(problemSeverity);
+                    rule["properties"]                = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
                     defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
-                    rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
+                    rule["defaultConfiguration"]  = picojson::value(defaultConfiguration);
 
                     ret.emplace_back(rule);
                 }
@@ -312,18 +335,20 @@ namespace {
             return ret;
         }
 
-        static picojson::array serializeLocations(const ErrorMessage& finding) {
+        static picojson::array serializeLocations(const ErrorMessage& finding)
+        {
             picojson::array ret;
-            for (const auto& location : finding.callStack) {
+            for (const auto& location : finding.callStack)
+            {
                 picojson::object physicalLocation;
                 picojson::object artifactLocation;
-                artifactLocation["uri"] = picojson::value(location.getfile(false));
+                artifactLocation["uri"]              = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
-                region["startLine"] = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
+                region["startLine"]   = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
                 region["startColumn"] = picojson::value(static_cast<int64_t>(location.column < 1 ? 1 : location.column));
-                region["endLine"] = region["startLine"];
-                region["endColumn"] = region["startColumn"];
+                region["endLine"]     = region["startLine"];
+                region["endColumn"]   = region["startColumn"];
                 physicalLocation["region"] = picojson::value(region);
                 picojson::object loc;
                 loc["physicalLocation"] = picojson::value(physicalLocation);
@@ -332,95 +357,139 @@ namespace {
             return ret;
         }
 
-        picojson::array serializeResults() const {
+        picojson::array serializeResults() const
+        {
             picojson::array results;
-            for (const auto& finding : mFindings) {
+            for (const auto& finding : mFindings)
+            {
                 // github only supports findings with locations
                 if (finding.callStack.empty())
                     continue;
                 picojson::object res;
-                res["level"] = picojson::value(sarifSeverity(finding));
+                res["level"]     = picojson::value(sarifSeverity(finding));
                 res["locations"] = picojson::value(serializeLocations(finding));
                 picojson::object message;
                 message["text"] = picojson::value(finding.shortMessage());
-                res["message"] = picojson::value(message);
-                res["ruleId"] = picojson::value(finding.id);
+                res["message"]  = picojson::value(message);
+                res["ruleId"]   = picojson::value(finding.id);
                 results.emplace_back(res);
             }
             return results;
         }
 
-        picojson::value serializeRuns(const std::string& productName, const std::string& version) const {
+        picojson::value serializeRuns(const std::string& productName, const std::string& version) const
+        {
             picojson::object driver;
-            driver["name"] = picojson::value(productName);
+            driver["name"]            = picojson::value(productName);
             driver["semanticVersion"] = picojson::value(version);
-            driver["informationUri"] = picojson::value("https://cppcheck.sourceforge.io");
-            driver["rules"] = picojson::value(serializeRules());
+            driver["informationUri"]  = picojson::value("https://cppcheck.sourceforge.io");
+            driver["rules"]           = picojson::value(serializeRules());
             picojson::object tool;
             tool["driver"] = picojson::value(driver);
             picojson::object run;
-            run["tool"] = picojson::value(tool);
+            run["tool"]    = picojson::value(tool);
             run["results"] = picojson::value(serializeResults());
             picojson::array runs{picojson::value(run)};
             return picojson::value(runs);
         }
 
-        std::string serialize(std::string productName) const {
+        std::string serialize(std::string productName) const
+        {
             const auto nameAndVersion = Settings::getNameAndVersion(productName);
-            productName = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
-            std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
+            productName               = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
+            std::string version       = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
             if (version.find(' ') != std::string::npos)
                 version.erase(version.find(' '), std::string::npos);
 
             picojson::object doc;
             doc["version"] = picojson::value("2.1.0");
-            doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
+            doc["$schema"] = picojson::value(
+                "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
             doc["runs"] = serializeRuns(productName, version);
 
             return picojson::value(doc).serialize(true);
         }
+
     private:
-        static bool isSecurityRelatedFinding(const std::string& ruleId) {
+        static bool isSecurityRelatedFinding(const std::string& ruleId)
+        {
             // Security-related findings that have actual security implications
-            static const std::unordered_set<std::string> securityRelatedIds = {
-                // Memory safety issues
-                "nullPointer", "nullPointerArithmetic", "nullPointerRedundantCheck", "nullPointerDefaultArg",
-                "nullPointerOutOfMemory", "nullPointerOutOfResources",
-                "memleak", "memleakOnRealloc", "resourceLeak", "leakReturnValNotUsed", "leakUnsafeArgAlloc",
-                "deallocret", "deallocuse", "doubleFree", "mismatchAllocDealloc", "autovarInvalidDeallocation",
-                
+            static const std::unordered_set<std::string> securityRelatedIds = {// Memory safety issues
+                "nullPointer",
+                "nullPointerArithmetic",
+                "nullPointerRedundantCheck",
+                "nullPointerDefaultArg",
+                "nullPointerOutOfMemory",
+                "nullPointerOutOfResources",
+                "memleak",
+                "memleakOnRealloc",
+                "resourceLeak",
+                "leakReturnValNotUsed",
+                "leakUnsafeArgAlloc",
+                "deallocret",
+                "deallocuse",
+                "doubleFree",
+                "mismatchAllocDealloc",
+                "autovarInvalidDeallocation",
+
                 // Buffer overflow and array bounds issues
-                "arrayIndexOutOfBounds", "arrayIndexOutOfBoundsCond", "bufferAccessOutOfBounds",
-                "pointerOutOfBounds", "pointerOutOfBoundsCond", "negativeIndex", "objectIndex",
-                "argumentSize", "stringLiteralWrite", "bufferOverflow", "pointerArithmetic",
-                
+                "arrayIndexOutOfBounds",
+                "arrayIndexOutOfBoundsCond",
+                "bufferAccessOutOfBounds",
+                "pointerOutOfBounds",
+                "pointerOutOfBoundsCond",
+                "negativeIndex",
+                "objectIndex",
+                "argumentSize",
+                "stringLiteralWrite",
+                "bufferOverflow",
+                "pointerArithmetic",
+
                 // Uninitialized data issues
-                "uninitvar", "uninitdata", "uninitStructMember",
-                
+                "uninitvar",
+                "uninitdata",
+                "uninitStructMember",
+
                 // Use after free and lifetime issues
-                "danglingLifetime", "returnDanglingLifetime", "danglingReference", "danglingTempReference",
-                "danglingTemporaryLifetime", "invalidLifetime", "useClosedFile",
-                
+                "danglingLifetime",
+                "returnDanglingLifetime",
+                "danglingReference",
+                "danglingTempReference",
+                "danglingTemporaryLifetime",
+                "invalidLifetime",
+                "useClosedFile",
+
                 // Format string vulnerabilities
-                "wrongPrintfScanfArgNum", "invalidScanfFormatWidth", "invalidscanf", "invalidFunctionArg",
-                
+                "wrongPrintfScanfArgNum",
+                "invalidScanfFormatWidth",
+                "invalidscanf",
+                "invalidFunctionArg",
+
                 // Integer overflow and underflow
-                "integerOverflow", "floatConversionOverflow", "negativeMemoryAllocationSize",
-                
+                "integerOverflow",
+                "floatConversionOverflow",
+                "negativeMemoryAllocationSize",
+
                 // File and resource handling
-                "IOWithoutPositioning", "incompatibleFileOpen", "writeReadOnlyFile",
-                
+                "IOWithoutPositioning",
+                "incompatibleFileOpen",
+                "writeReadOnlyFile",
+
                 // Other security-relevant issues
-                "zerodiv", "zerodivcond", "invalidLengthModifierError", "preprocessorErrorDirective"
-            };
-            
+                "zerodiv",
+                "zerodivcond",
+                "invalidLengthModifierError",
+                "preprocessorErrorDirective"};
+
             return securityRelatedIds.find(ruleId) != securityRelatedIds.end();
         }
 
-        static std::string sarifSeverity(const ErrorMessage& errmsg) {
+        static std::string sarifSeverity(const ErrorMessage& errmsg)
+        {
             if (ErrorLogger::isCriticalErrorId(errmsg.id))
                 return "error";
-            switch (errmsg.severity) {
+            switch (errmsg.severity)
+            {
             case Severity::error:
             case Severity::warning:
                 return "error";
@@ -437,7 +506,8 @@ namespace {
             return "note";
         }
 
-        static std::string sarifPrecision(const ErrorMessage& errmsg) {
+        static std::string sarifPrecision(const ErrorMessage& errmsg)
+        {
             if (errmsg.certainty == Certainty::inconclusive)
                 return "medium";
             return "high";

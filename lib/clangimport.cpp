@@ -1499,12 +1499,12 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
         std::vector<AstNodePtr> children2;
         std::copy_if(children.cbegin(), children.cend(), std::back_inserter(children2), [](const AstNodePtr& child) {
             return child->nodeType == CXXConstructorDecl ||
-                   child->nodeType == CXXDestructorDecl ||
-                   child->nodeType == CXXMethodDecl ||
-                   child->nodeType == FieldDecl ||
-                   child->nodeType == VarDecl ||
-                   child->nodeType == AccessSpecDecl ||
-                   child->nodeType == TypedefDecl;
+            child->nodeType == CXXDestructorDecl ||
+            child->nodeType == CXXMethodDecl ||
+            child->nodeType == FieldDecl ||
+            child->nodeType == VarDecl ||
+            child->nodeType == AccessSpecDecl ||
+            child->nodeType == TypedefDecl;
         });
         Scope *scope = createScope(tokenList, isStruct ? ScopeType::eStruct : ScopeType::eClass, children2, classToken);
         const std::string addr = mExtTokens[0];

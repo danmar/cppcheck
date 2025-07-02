@@ -49,7 +49,7 @@ class PluginWithoutMetaData : public QObject
 public:
     // Add a default arg to make sure we do not get an ambiguity compiler error
     explicit PluginWithoutMetaData(const QObject *, const QVariantList &args = {})
-    : QObject()
+        : QObject()
     {
         Q_UNUSED(args)
     };
@@ -64,7 +64,7 @@ class StaticSimplePluginClass : public QObject
 public:
     // Next to the assertion below, ensure that we have no ambiguity!
     explicit StaticSimplePluginClass(QObject *parent, const QString &data = {})
-    : QObject(parent)
+        : QObject(parent)
     {
         // We have added a default arg, but KPluginFactory should still provide the valid metadata instead of the default one
         data = QString("foo");
