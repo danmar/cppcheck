@@ -106,7 +106,7 @@ namespace {
                     rule["name"] = picojson::value(getRuleShortDescription(finding));
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(finding.shortMessage());
+                    shortDescription["text"] = picojson::value(getRuleShortDescription(finding));
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
