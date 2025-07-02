@@ -129,7 +129,7 @@ namespace {
                         else if (finding.severity == Severity::warning)
                             securitySeverity = 5.1;
                         if (securitySeverity > 0.5) {
-                            properties["security-severity"] = picojson::value(securitySeverity);
+                            properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
                             const picojson::array tags{picojson::value("security")};
                             properties["tags"] = picojson::value(tags);
                         }
