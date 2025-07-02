@@ -79,6 +79,7 @@ int main() {
         TEST_CASE(sarifSecuritySeverity);
         TEST_CASE(sarifLocationInfo);
         TEST_CASE(sarifGenericDescriptions);
+        TEST_CASE(sarifCweTags);
     }
 
     // Helper to run cppcheck and capture SARIF output
@@ -323,15 +324,21 @@ int main() {
                     {
                         const picojson::array& tags = props.at("tags").get<picojson::array>();
                         bool hasSecurityTag         = false;
+                        bool hasCweTag              = false;
                         for (const auto& tag : tags)
                         {
-                            if (tag.get<std::string>() == "security")
+                            const std::string tagStr = tag.get<std::string>();
+                            if (tagStr == "security")
                             {
                                 hasSecurityTag = true;
-                                break;
+                            }
+                            else if (tagStr.find("external/cwe/cwe-") == 0)
+                            {
+                                hasCweTag = true;
                             }
                         }
                         ASSERT_EQUALS(true, hasSecurityTag);
+                        ASSERT_EQUALS(true, hasCweTag);
                     }
                 }
             }
@@ -424,6 +431,95 @@ int main() {
             const std::string fullText       = fullDesc.at("text").get<std::string>();
             ASSERT_EQUALS(std::string::npos, fullText.find("''"));
         }
+    }
+
+    void sarifCweTags()
+    {
+        const std::string sarif = runCppcheckSarif(testCode);
+
+        picojson::value json;
+        picojson::parse(json, sarif);
+        const picojson::object& root   = json.get<picojson::object>();
+        const picojson::array& runs    = root.at("runs").get<picojson::array>();
+        const picojson::object& run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& driver = tool.at("driver").get<picojson::object>();
+        const picojson::array& rules   = driver.at("rules").get<picojson::array>();
+
+        // Check that security-related rules have CWE tags
+        bool foundNullPointerWithCwe = false;
+        bool foundArrayBoundsWithCwe = false;
+        bool foundMemleakWithCwe     = false;
+        bool foundDoubleFreeWithCwe  = false;
+
+        for (const auto& rule : rules)
+        {
+            const picojson::object& r = rule.get<picojson::object>();
+            const std::string ruleId  = r.at("id").get<std::string>();
+
+            // Only check security-related rules that should have CWE tags
+            if (ruleId == "nullPointer" || ruleId == "arrayIndexOutOfBounds" || ruleId == "doubleFree" ||
+                ruleId == "memleak")
+            {
+                const picojson::object& props = r.at("properties").get<picojson::object>();
+
+                // Verify this rule has security-severity (prerequisite for CWE tags)
+                if (props.find("security-severity") != props.end())
+                {
+                    // Should have tags array
+                    ASSERT(props.find("tags") != props.end());
+                    const picojson::array& tags = props.at("tags").get<picojson::array>();
+
+                    bool hasSecurityTag = false;
+                    bool hasCweTag      = false;
+                    std::string cweTag;
+
+                    for (const auto& tag : tags)
+                    {
+                        const std::string tagStr = tag.get<std::string>();
+                        if (tagStr == "security")
+                        {
+                            hasSecurityTag = true;
+                        }
+                        else if (tagStr.find("external/cwe/cwe-") == 0)
+                        {
+                            hasCweTag = true;
+                            cweTag    = tagStr;
+
+                            // Validate CWE tag format: external/cwe/cwe-<number>
+                            ASSERT_EQUALS(0, tagStr.find("external/cwe/cwe-"));
+                            std::string cweNumber = tagStr.substr(17);  // After "external/cwe/cwe-"
+                            ASSERT(cweNumber.length() > 0);
+
+                            // Verify it's a valid number
+                            for (char c : cweNumber)
+                            {
+                                ASSERT(c >= '0' && c <= '9');
+                            }
+
+                            // Track specific CWE mappings we expect
+                            if (ruleId == "nullPointer" && cweNumber == "476")
+                                foundNullPointerWithCwe = true;
+                            else if (ruleId == "arrayIndexOutOfBounds" && cweNumber == "788")
+                                foundArrayBoundsWithCwe = true;
+                            else if (ruleId == "memleak" && cweNumber == "401")
+                                foundMemleakWithCwe = true;
+                            else if (ruleId == "doubleFree" && cweNumber == "415")
+                                foundDoubleFreeWithCwe = true;
+                        }
+                    }
+
+                    ASSERT_EQUALS(true, hasSecurityTag);
+                    ASSERT_EQUALS(true, hasCweTag);
+                }
+            }
+        }
+
+        // Verify we found at least some of the expected CWE mappings
+        // Note: Not all may be present depending on what the test code triggers
+        bool foundAnyCweMapping =
+            foundNullPointerWithCwe || foundArrayBoundsWithCwe || foundMemleakWithCwe || foundDoubleFreeWithCwe;
+        ASSERT_EQUALS(true, foundAnyCweMapping);
     }
 };
 
