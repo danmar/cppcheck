@@ -243,6 +243,35 @@ def test_execute_addon_failure_json_notexist(tmpdir):
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows specific issue")
+def test_execute_addon_path_with_spaces(tmpdir):
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    addon_dir = os.path.join(tmpdir, 'A Folder')
+    addon_script = os.path.join(addon_dir, 'addon.bat')
+
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({'executable': addon_script }))
+
+    os.makedirs(addon_dir, exist_ok=True)
+
+    with open(addon_script, 'wt') as f:
+        f.write('@echo {"file":"1.c","linenr":1,"column":1,"severity":"error","message":"hello world","errorId":"hello","addon":"test"}')
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = [
+        '--addon={}'.format(addon_json),
+        test_file,
+    ]
+
+    _, _, stderr = cppcheck(args)
+
+    # Make sure the full command is used
+    assert '1.c:1:1: error: hello world [test-hello]\n' in stderr
+
+
 def test_execute_addon_failure_json_ctu_notexist(tmpdir):
     # specify non-existent python executable so execution of addon fails
     addon_json = os.path.join(tmpdir, 'addon.json')
