@@ -128,12 +128,14 @@ namespace {
                         else if (finding.severity == Severity::error) {
                             securitySeverity = 8.5; // high = 7.0 to 8.9
                         }
-                        else if (finding.severity == Severity::warning) {
-                            securitySeverity = 5.5; // medium = 4.0 to 6.9
+                        else if (finding.severity == Severity::warning || finding.severity == Severity::performance ||
+                                 finding.severity == Severity::portability || finding.severity == Severity::style)
+                        {
+                            securitySeverity = 5.5;  // medium = 4.0 to 6.9
                         }
-                        else if (finding.severity == Severity::performance ||
-                                 finding.severity == Severity::portability || 
-                                 finding.severity == Severity::style) {
+                        else if (finding.severity == Severity::information || finding.severity == Severity::internal ||
+                                 finding.severity == Severity::debug || finding.severity == Severity::none)
+                        {
                             securitySeverity = 2.0; // low = 0.1 to 3.9
                         }
                         if (securitySeverity > 0.0)
