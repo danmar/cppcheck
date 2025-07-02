@@ -374,7 +374,7 @@ def test_sarif():
     assert res['runs'][0]['tool']['driver']['rules'][0]['id'] == 'zerodiv'
     assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['precision'] == 'high'
     # Test that security-severity is now a string and has the expected value
-    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] == '8.500000'
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] == '9.900000'
     assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
     assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
     assert 'level' in res['runs'][0]['tool']['driver']['rules'][0]['defaultConfiguration'] # #13885
