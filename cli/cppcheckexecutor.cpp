@@ -103,7 +103,7 @@ namespace {
             {
                 const std::string& description = fullDescription ? it->second.second : it->second.first;
                 // Convert instance-specific descriptions to generic ones
-                return makeGeneric(description, ruleId);
+                return makeGeneric(description);
             }
 
             // Fallback for rules not found in cache
@@ -112,47 +112,88 @@ namespace {
 
     private:
         // Convert instance-specific descriptions to generic ones
-        static std::string makeGeneric(const std::string& description, const std::string& ruleId)
+        static std::string makeGeneric(const std::string& description)
         {
             std::string result = description;
 
-            // Common patterns to genericize
-            // Array access patterns
-            if (ruleId == "arrayIndexOutOfBounds" || ruleId == "arrayIndexOutOfBoundsCond")
-            {
-                // Replace "Array 'arr[16]' accessed at index 16" with "Array accessed at index that is out of bounds"
-                std::regex arrayPattern(R"(Array '[^']*' accessed at index \d+, which is out of bounds\.)");
-                result = std::regex_replace(result, arrayPattern, "Array accessed at index that is out of bounds.");
-            }
+            // === GENERAL PATTERNS ===
+            // NOTE: The order of these replacements matters! Also try to avoid ruleID specific patterns
 
-            // Memory leak patterns
-            if (ruleId == "memleak")
-            {
-                // Replace "Memory leak: varname" with "Memory leak"
-                std::regex memleakPattern(R"(Memory leak:.*$)");
-                result = std::regex_replace(result, memleakPattern, "Memory leak");
-            }
+            // 1. Format string patterns - handle printf/scanf argument type mismatches
+            result = std::regex_replace(
+                result,
+                std::regex(
+                    R"(%[a-zA-Z]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)"),
+                "Format specifier in format string requires different argument type than provided.");
+            result = std::regex_replace(
+                result,
+                std::regex(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)"),
+                "Format specifier requires different argument type than provided.");
 
-            // Null pointer patterns
-            if (ruleId == "nullPointer")
-            {
-                // Replace "Null pointer dereference: varname" with "Null pointer dereference"
-                std::regex nullPtrPattern(R"(Null pointer dereference:.*$)");
-                result = std::regex_replace(result, nullPtrPattern, "Null pointer dereference");
-            }
+            // 2. Array access and bounds patterns
+            result = std::regex_replace(result,
+                                        std::regex(R"(Array '[^']*' accessed at index \d+[^.]*\.)"),
+                                        "Array accessed at index that is out of bounds.");
+            result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[\d+\]')"), "'array'");
 
-            // Invalid scanf argument type patterns
-            if (ruleId == "invalidScanfArgType_int" || ruleId.find("invalidScanfArgType") == 0)
-            {
-                // Replace "%format in format string (no. N) requires 'type *' but the argument type is type."
-                // with "Format specifier requires different argument type than provided."
-                // The template format is like: "%d in format string (no. 1) requires 'int *' but the argument type is Unknown."
-                std::regex scanfPattern(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)");
-                result = std::regex_replace(result, scanfPattern, "Format specifier requires different argument type than provided.");
-            }
+            // 3. Memory and resource patterns
+            result = std::regex_replace(result, std::regex(R"(Memory leak:.*$)"), "Memory leak");
+            result =
+                std::regex_replace(result, std::regex(R"(Null pointer dereference:.*$)"), "Null pointer dereference");
+            result = std::regex_replace(
+                result, std::regex(R"(Access of moved variable '[^']*'\.)"), "Access of moved variable.");
 
-            // Variable name patterns - replace specific variable names with generic terms
-            // But be careful not to replace legitimate words like "pointer" in "C-style pointer casting"
+            // 4. Function and parameter patterns
+            result = std::regex_replace(result,
+                                        std::regex(R"(Function parameter '[^']*' should be passed)"),
+                                        "Function parameter should be passed");
+            result =
+                std::regex_replace(result,
+                                   std::regex(R"(Return value of function [a-zA-Z_][a-zA-Z0-9_]*\(\) is not used)"),
+                                   "Return value of function is not used");
+            result =
+                std::regex_replace(result,
+                                   std::regex(R"(Function '[^']*' should return member '[^']*' by const reference\.)"),
+                                   "Function should return member by const reference.");
+
+            // 5. Member variable patterns (including class scope)
+            result = std::regex_replace(result,
+                                        std::regex(R"(Member variable '[^:]*::[^']*' is not initialized)"),
+                                        "Member variable is not initialized");
+
+            // 6. Iterator and container patterns
+            result = std::regex_replace(
+                result,
+                std::regex(
+                    R"(Either the condition '[^']*' is redundant or there is possible dereference of an invalid iterator: [^.]*\.)"),
+                "Either the condition is redundant or there is possible dereference of an invalid iterator.");
+            result = std::regex_replace(result,
+                                        std::regex(R"(Range variable '[^']*' should be declared)"),
+                                        "Range variable should be declared");
+
+            // 7. STL container operation patterns
+            result = std::regex_replace(
+                result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[[^]]*\]=[^;]*;)"), "'container[key]=value;'");
+            result = std::regex_replace(result,
+                                        std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\([^)]*\);)"),
+                                        "'container.method();'");
+
+            // 8. Type casting patterns
+            result = std::regex_replace(
+                result,
+                std::regex(
+                    R"(Casting between [a-zA-Z_][a-zA-Z0-9_\s\*]+ and [a-zA-Z_][a-zA-Z0-9_\s\*]+ which have an incompatible binary data representation\.)"),
+                "Casting between incompatible pointer types which have an incompatible binary data representation.");
+
+            // 9. Uninitialized variable patterns
+            result = std::regex_replace(
+                result, std::regex(R"(Uninitialized variable: [a-zA-Z_][a-zA-Z0-9_]*)"), "Uninitialized variable");
+
+            // 10. Assert and condition patterns
+            result = std::regex_replace(result, std::regex(R"(assert\([^)]+\))"), "assert(condition)");
+            result = std::regex_replace(result, std::regex(R"(for expression '[^']*')"), "for expression");
+
+            // === GENERIC VARIABLE/IDENTIFIER REPLACEMENT ===
 
             // Handle common variable/function patterns by removing quoted names entirely
             result = std::regex_replace(result, std::regex(R"(Variable '[^']*' is)"), "Variable is");
@@ -171,22 +212,13 @@ namespace {
             result = std::regex_replace(result, std::regex(R"(: '[^']*'$)"), "");
             result = std::regex_replace(result, std::regex(R"(: '[^']*'\.)"), ".");
 
-            // Handle array patterns like 'arr[16]' -> 'array'
-            result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[\d+\]')"), "'array'");
-
-            // Handle expression patterns for overflow messages
-            if (ruleId == "integerOverflow" || ruleId == "integerOverflowCond")
-            {
-                // Replace "for expression 'expr'" with "for expression"
-                result = std::regex_replace(result, std::regex(R"(for expression '[^']*')"), "for expression");
-            }
-
             // Replace remaining single-quoted identifiers with generic terms
             // Only replace if they look like variable names (start with letter/underscore)
             result = std::regex_replace(result, std::regex(R"('\b[a-zA-Z_][a-zA-Z0-9_]*\b')"), "'variable'");
 
+            // === CLEANUP PATTERNS ===
+
             // Clean up redundant 'variable' references
-            // Replace patterns where we now have redundant "Variable 'variable'"
             result = std::regex_replace(result, std::regex(R"(Variable 'variable')"), "Variable");
             result = std::regex_replace(result, std::regex(R"(variable 'variable')"), "variable");
             result = std::regex_replace(result, std::regex(R"(Function 'variable')"), "Function");
