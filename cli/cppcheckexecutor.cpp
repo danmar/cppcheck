@@ -144,21 +144,12 @@ namespace {
                         }
                     }
                     // Set problem.severity for use with github
-                    std::string problemSeverity;
-                    if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error) {
-                        problemSeverity = "error";
-                    }
-                    else if (finding.severity == Severity::warning) {
-                        problemSeverity = "warning";
-                    }
-                    else {
-                        problemSeverity = "note"; // style, information, performance, portability
-                    }
+                    const std::string problemSeverity = sarifSeverity(finding);
                     properties["problem.severity"] = picojson::value(problemSeverity);
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
-                    defaultConfiguration["level"] = picojson::value(problemSeverity);
+                    defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
                     rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
 
                     ret.emplace_back(rule);
@@ -480,6 +471,7 @@ namespace {
                 return "error";
             switch (errmsg.severity) {
             case Severity::error:
+                return "error";
             case Severity::warning:
             case Severity::style:
             case Severity::portability:
