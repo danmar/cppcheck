@@ -23,7 +23,9 @@
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
+#include "check.h"
 #include "checkersreport.h"
+#include "checkunusedfunctions.h"
 #include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "color.h"
@@ -33,9 +35,11 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "json.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
+#include "tokenize.h"
 #include "utils.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
@@ -55,6 +59,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <regex>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -78,6 +83,121 @@
 #endif
 
 namespace {
+    class SarifRuleCache {
+    public:
+        // Get generic rule description for a given rule ID
+        static std::string getRuleDescription(const std::string& ruleId, bool fullDescription) {
+            static std::unordered_map<std::string, std::pair<std::string, std::string>> ruleCache;
+            static bool cacheInitialized = false;
+            
+            if (!cacheInitialized) {
+                initializeRuleCache(ruleCache);
+                cacheInitialized = true;
+            }
+            
+            const auto it = ruleCache.find(ruleId);
+            if (it != ruleCache.end()) {
+                const std::string& description = fullDescription ? it->second.second : it->second.first;
+                // Convert instance-specific descriptions to generic ones
+                return makeGeneric(description, ruleId);
+            }
+            
+            // Fallback for rules not found in cache
+            return "Cppcheck rule " + ruleId;
+        }
+        
+    private:
+        // Convert instance-specific descriptions to generic ones
+        static std::string makeGeneric(const std::string& description, const std::string& ruleId) {
+            std::string result = description;
+            
+            // Common patterns to genericize
+            // Array access patterns
+            if (ruleId == "arrayIndexOutOfBounds" || ruleId == "arrayIndexOutOfBoundsCond") {
+                // Replace "Array 'arr[16]' accessed at index 16" with "Array accessed at index that is out of bounds"
+                std::regex arrayPattern(R"(Array '[^']*' accessed at index \d+, which is out of bounds\.)");
+                result = std::regex_replace(result, arrayPattern, "Array accessed at index that is out of bounds.");
+            }
+            
+            // Null pointer patterns
+            if (ruleId.find("nullPointer") != std::string::npos) {
+                // Keep simple messages as they are already generic
+                // "Null pointer dereference" is already generic
+                return result;
+            }
+            
+            // Division by zero
+            if (ruleId == "zerodiv" || ruleId == "zerodivcond") {
+                // "Division by zero." is already generic
+                return result;
+            }
+            
+            // Variable name patterns - replace specific variable names with generic terms
+            result = std::regex_replace(result, std::regex(R"('arr\[\d+\]')"), "'array'");
+            result = std::regex_replace(result, std::regex(R"('varname')"), "'variable'");
+            result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*')"), "'variable'");
+            
+            // Number patterns - replace specific numbers with generic terms
+            result = std::regex_replace(result, std::regex(R"( \d+ )"), " N ");
+            result = std::regex_replace(result, std::regex(R"( at index \d+)"), " at index N");
+            
+            // Function name patterns
+            result = std::regex_replace(result, std::regex(R"(function '[^']*')"), "function");
+            result = std::regex_replace(result, std::regex(R"(Function '[^']*')"), "Function");
+            
+            return result;
+        }
+        
+    private:
+        // Error logger that captures error messages for building the rule cache
+        class RuleCacheLogger : public ErrorLogger {
+        public:
+            explicit RuleCacheLogger(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache) 
+                : mCache(cache) {}
+            
+            void reportErr(const ErrorMessage &msg) override {
+                if (!msg.id.empty()) {
+                    // Store both short and verbose messages for each rule ID
+                    const std::string shortMsg = msg.shortMessage();
+                    const std::string verboseMsg = msg.verboseMessage();
+                    
+                    // Only store if we don't already have this rule or if we get a better description
+                    if (mCache.find(msg.id) == mCache.end()) {
+                        mCache[msg.id] = std::make_pair(
+                            shortMsg.empty() ? "Cppcheck rule " + msg.id : shortMsg,
+                            verboseMsg.empty() ? shortMsg : verboseMsg
+                        );
+                    }
+                }
+            }
+            
+            void reportOut(const std::string&, Color) override {}
+            void reportMetric(const std::string&) override {}
+            
+        private:
+            std::unordered_map<std::string, std::pair<std::string, std::string>>& mCache;
+        };
+        
+        // Initialize the rule cache by leveraging the same mechanism as --errorlist
+        static void initializeRuleCache(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache) {
+            RuleCacheLogger logger(cache);
+            
+            // Use the same approach as CppCheck::getErrorMessages to get all possible error messages
+            Settings settings;
+            settings.addEnabled("all");
+            
+            // Call getErrorMessages on all registered Check classes to get generic descriptions
+            for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
+                (*it)->getErrorMessages(&logger, &settings);
+            }
+            
+            // Also get error messages from other components
+            CheckUnusedFunctions::getErrorMessages(logger);
+            Preprocessor::getErrorMessages(logger, settings);
+            Tokenizer::getErrorMessages(logger, settings);
+        }
+    };
+
     class SarifReport {
     public:
         void addFinding(ErrorMessage msg) {
@@ -85,11 +205,11 @@ namespace {
         }
 
         std::string getRuleShortDescription(const ErrorMessage& finding) const {
-            return getRuleDescription(finding.id, false, finding);
+            return SarifRuleCache::getRuleDescription(finding.id, false);
         }
 
         std::string getRuleFullDescription(const ErrorMessage& finding) const {
-            return getRuleDescription(finding.id, true, finding);
+            return SarifRuleCache::getRuleDescription(finding.id, true);
         }
 
         picojson::array serializeRules() const {
@@ -230,209 +350,6 @@ namespace {
             return picojson::value(doc).serialize(true);
         }
     private:
-        // Following the pattern of existing mapping functions in errorlogger.cpp
-        std::string getRuleDescription(const std::string& ruleId, bool fullDescription, const ErrorMessage& finding) const {
-            // Structure similar to IdMapping in checkers.h but for descriptions
-            struct RuleDescription {
-                const char* ruleId;
-                const char* shortDesc;
-                const char* fullDesc;
-            };
-
-            // Mapping of Cppcheck rule IDs to descriptions
-            static const RuleDescription ruleDescriptions[] = {
-                {"nullPointer", "Null pointer dereference", 
-                 "Detects when code dereferences a pointer that may be null, which can lead to undefined behavior or program crashes."},
-                {"uninitvar", "Uninitialized variable", 
-                 "Detects usage of variables that have not been initialized, which can lead to unpredictable behavior."},
-                {"memleakOnRealloc", "Memory leak on realloc", 
-                 "Detects memory leaks that can occur when realloc() fails and the original memory is not freed."},
-                {"memleak", "Memory leak", 
-                 "Detects memory allocations that are not properly freed, leading to memory leaks."},
-                {"resourceLeak", "Resource leak", 
-                 "Detects when system resources (files, handles, etc.) are not properly closed or released."},
-                {"deallocret", "Deallocation of returned value", 
-                 "Detects when a function returns a pointer to memory that has been deallocated."},
-                {"deallocuse", "Use after free", 
-                 "Detects when code continues to use memory after it has been freed (use-after-free)."},
-                {"doubleFree", "Double free", 
-                 "Detects when the same memory is freed multiple times, which leads to undefined behavior."},
-                {"arrayIndexOutOfBounds", "Array index out of bounds", 
-                 "Detects when array indices exceed the bounds of the array."},
-                {"bufferAccessOutOfBounds", "Buffer access out of bounds", 
-                 "Detects when buffer access operations exceed the allocated buffer size."},
-                {"stringLiteralWrite", "Write to string literal", 
-                 "Detects attempts to modify string literals, which is undefined behavior."},
-                {"unusedVariable", "Unused variable", 
-                 "Detects variables that are declared but never used in the code."},
-                {"unreadVariable", "Variable assigned but never used", 
-                 "Detects variables that are assigned values but the values are never read."},
-                {"duplicateCondition", "Duplicate condition", 
-                 "Detects when the same condition is checked multiple times in related code paths."},
-                {"unreachableCode", "Unreachable code", 
-                 "Detects code that can never be executed due to program flow."},
-                {"invalidFunctionArg", "Invalid function argument", 
-                 "Detects when function arguments are invalid or out of expected range."},
-                {"syntaxError", "Syntax error", 
-                 "Detects syntax errors in the source code."},
-                {"cppcheckError", "Cppcheck internal error", 
-                 "Internal error occurred during analysis."},
-                {"unusedFunction", "Unused function", 
-                 "Detects functions that are declared but never called in the code."},
-                {"ignoredReturnValue", "Ignored return value", 
-                 "Detects when the return value of a function is ignored when it should be checked."},
-                {"passedByValue", "Parameter passed by value", 
-                 "Detects when function parameters should be passed by const reference instead of by value for better performance."},
-                {"derefInvalidIteratorRedundantCheck", "Redundant iterator check", 
-                 "Detects redundant checks for invalid iterator dereferencing."},
-                {"stlFindInsert", "Inefficient STL usage", 
-                 "Detects when searching before insertion is unnecessary and suggests using more efficient STL methods like try_emplace."},
-                {"uselessCallsSubstr", "Ineffective substr call", 
-                 "Detects ineffective calls to substr() that can be replaced with more efficient methods like resize() or pop_back()."},
-                {"uninitMemberVar", "Uninitialized member variable", 
-                 "Detects member variables that are not initialized in the constructor."},
-                {"stlIfStrFind", "Inefficient string find usage", 
-                 "Detects inefficient usage of string::find() in conditions where string::starts_with() or other methods could be faster."},
-                {"invalidScanfArgType_int", "Invalid scanf argument type", 
-                 "Detects when scanf format specifiers don't match the argument types provided."},
-                {"constStatement", "Const statement", 
-                 "Detects statements that have no effect and could indicate a programming error."},
-                {"variableScope", "Variable scope", 
-                 "Detects when variable scope can be reduced to improve code clarity and performance."},
-                {"postfixOperator", "Inefficient postfix operator", 
-                 "Detects when prefix operators (++i) should be used instead of postfix (i++) for better performance."},
-                {"useStlAlgorithm", "Use STL algorithm", 
-                 "Suggests using STL algorithms instead of raw loops for better readability and performance."},
-                {"redundantAssignment", "Redundant assignment", 
-                 "Detects redundant assignments where a variable is assigned but the value is never used."},
-                {"duplicateExpression", "Duplicate expression", 
-                 "Detects identical expressions on both sides of operators which may indicate copy-paste errors."},
-                {"oppositeInnerCondition", "Opposite inner condition", 
-                 "Detects when an inner condition is always false due to an outer condition."},
-                {"knownConditionTrueFalse", "Known condition", 
-                 "Detects conditions that are always true or false due to previous code."},
-                {"clarifyCondition", "Unclear condition", 
-                 "Suggests adding parentheses to clarify operator precedence in conditions."},
-                {"redundantCondition", "Redundant condition", 
-                 "Detects redundant conditions that don't affect the program flow."},
-                {"missingReturn", "Missing return statement", 
-                 "Detects functions that should return a value but may not have a return statement."},
-                {"invalidContainer", "Invalid container usage", 
-                 "Detects invalid usage of STL containers that could lead to undefined behavior."},
-                {"containerOutOfBounds", "Container out of bounds", 
-                 "Detects when container access operations exceed the container size."},
-                {"danglingPointer", "Dangling pointer", 
-                 "Detects pointers that reference memory that has been deallocated."},
-                {"memsetClass", "Memset on class", 
-                 "Detects when memset is used on classes with constructors/destructors which is undefined behavior."},
-                {"noExplicitConstructor", "Missing explicit constructor", 
-                 "Suggests adding 'explicit' keyword to single-argument constructors to prevent implicit conversions."},
-                {"noCopyConstructor", "Missing copy constructor", 
-                 "Detects classes that should have a copy constructor but don't."},
-                {"noOperatorEq", "Missing assignment operator", 
-                 "Detects classes that should have an assignment operator but don't."},
-                {"virtualDestructor", "Missing virtual destructor", 
-                 "Detects base classes that should have virtual destructors."},
-                {"useInitializationList", "Use initialization list", 
-                 "Suggests using constructor initialization lists instead of assignment in constructor body."},
-                {"cstyleCast", "C-style cast", 
-                 "Suggests using C++ style casts instead of C-style casts for better type safety."},
-                {"redundantCopy", "Redundant copy", 
-                 "Detects unnecessary copying of objects that could be avoided."},
-                {"returnTempReference", "Return temporary reference", 
-                 "Detects when functions return references to temporary objects."},
-                {"nullPointerArithmetic", "Null pointer arithmetic", 
-                 "Detects arithmetic operations performed on null pointers."},
-                {"nullPointerRedundantCheck", "Redundant null pointer check", 
-                 "Detects redundant checks for null pointers that are already known to be null or non-null."},
-                {"nullPointerDefaultArg", "Null pointer default argument", 
-                 "Detects when null pointers are used as default arguments which may cause dereferencing issues."},
-                {"nullPointerOutOfMemory", "Null pointer from memory allocation", 
-                 "Detects when memory allocation functions return null due to out-of-memory conditions."},
-                {"nullPointerOutOfResources", "Null pointer from resource exhaustion", 
-                 "Detects when resource allocation functions return null due to resource exhaustion."},
-                {"leakReturnValNotUsed", "Memory leak from unused return value", 
-                 "Detects memory leaks when the return value of allocation functions is not used."},
-                {"leakUnsafeArgAlloc", "Unsafe argument allocation leak", 
-                 "Detects memory leaks in unsafe argument allocation patterns."},
-                {"mismatchAllocDealloc", "Mismatched allocation/deallocation", 
-                 "Detects when memory allocated with one function is freed with an incompatible function."},
-                {"autovarInvalidDeallocation", "Invalid automatic variable deallocation", 
-                 "Detects attempts to deallocate automatic (stack) variables."},
-                {"arrayIndexOutOfBoundsCond", "Conditional array bounds violation", 
-                 "Detects array index out of bounds conditions that may occur under certain circumstances."},
-                {"pointerOutOfBounds", "Pointer out of bounds", 
-                 "Detects when pointer arithmetic results in pointers outside valid memory ranges."},
-                {"pointerOutOfBoundsCond", "Conditional pointer out of bounds", 
-                 "Detects pointer out of bounds conditions that may occur under certain circumstances."},
-                {"negativeIndex", "Negative array index", 
-                 "Detects when negative values are used as array indices."},
-                {"objectIndex", "Invalid object indexing", 
-                 "Detects invalid indexing operations on objects."},
-                {"argumentSize", "Invalid argument size", 
-                 "Detects when function arguments have invalid sizes that could cause buffer overflows."},
-                {"bufferOverflow", "Buffer overflow", 
-                 "Detects potential buffer overflow conditions."},
-                {"pointerArithmetic", "Unsafe pointer arithmetic", 
-                 "Detects potentially unsafe pointer arithmetic operations."},
-                {"uninitdata", "Uninitialized data", 
-                 "Detects usage of uninitialized data structures."},
-                {"uninitStructMember", "Uninitialized struct member", 
-                 "Detects uninitialized members in struct/class instances."},
-                {"danglingLifetime", "Dangling lifetime", 
-                 "Detects when object lifetimes end before their usage is complete."},
-                {"returnDanglingLifetime", "Return dangling lifetime", 
-                 "Detects when functions return references or pointers to objects with ended lifetimes."},
-                {"danglingReference", "Dangling reference", 
-                 "Detects references that point to objects that no longer exist."},
-                {"danglingTempReference", "Dangling temporary reference", 
-                 "Detects references to temporary objects that have been destroyed."},
-                {"danglingTemporaryLifetime", "Dangling temporary lifetime", 
-                 "Detects when temporary object lifetimes end before their usage is complete."},
-                {"invalidLifetime", "Invalid object lifetime", 
-                 "Detects invalid object lifetime usage patterns."},
-                {"useClosedFile", "Use of closed file", 
-                 "Detects operations on file handles that have been closed."},
-                {"wrongPrintfScanfArgNum", "Wrong printf/scanf argument count", 
-                 "Detects when the number of printf/scanf arguments doesn't match the format string."},
-                {"invalidScanfFormatWidth", "Invalid scanf format width", 
-                 "Detects invalid width specifiers in scanf format strings."},
-                {"invalidscanf", "Invalid scanf usage", 
-                 "Detects invalid usage patterns of scanf functions."},
-                {"integerOverflow", "Integer overflow", 
-                 "Detects potential integer overflow conditions."},
-                {"floatConversionOverflow", "Float conversion overflow", 
-                 "Detects when floating-point conversions may cause overflow."},
-                {"negativeMemoryAllocationSize", "Negative memory allocation size", 
-                 "Detects when negative values are used for memory allocation sizes."},
-                {"IOWithoutPositioning", "I/O without positioning", 
-                 "Detects file I/O operations that may have undefined behavior due to positioning issues."},
-                {"incompatibleFileOpen", "Incompatible file open", 
-                 "Detects when files are opened with incompatible modes or flags."},
-                {"writeReadOnlyFile", "Write to read-only file", 
-                 "Detects attempts to write to files opened in read-only mode."},
-                {"zerodiv", "Division by zero", 
-                 "Detects potential division by zero operations."},
-                {"zerodivcond", "Conditional division by zero", 
-                 "Detects division by zero conditions that may occur under certain circumstances."},
-                {"invalidLengthModifierError", "Invalid length modifier", 
-                 "Detects invalid length modifiers in format strings."},
-                {"preprocessorErrorDirective", "Preprocessor error directive", 
-                 "Detects preprocessor #error directives that indicate compilation issues."},
-                // Add more mappings as needed
-            };
-
-            // Find the rule description
-            for (const auto& desc : ruleDescriptions) {
-                if (ruleId == desc.ruleId) {
-                    return fullDescription ? desc.fullDesc : desc.shortDesc;
-                }
-            }
-
-            // Fallback for unknown rules - use the actual error message content
-            return fullDescription ? finding.verboseMessage() : finding.shortMessage();
-        }
-
         static bool isSecurityRelatedFinding(const std::string& ruleId) {
             // Security-related findings that have actual security implications
             static const std::unordered_set<std::string> securityRelatedIds = {
@@ -475,8 +392,8 @@ namespace {
                 return "error";
             switch (errmsg.severity) {
             case Severity::error:
-                return "error";
             case Severity::warning:
+                return "error";
             case Severity::style:
             case Severity::portability:
             case Severity::performance:
