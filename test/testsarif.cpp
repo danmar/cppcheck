@@ -249,6 +249,7 @@ int main() {
         TEST_CASE(sarifRuleCoverage);
         TEST_CASE(sarifSeverityLevels);
         TEST_CASE(sarifNonSecurityRules);
+        TEST_CASE(sarifInvalidScanfArgTypeGeneric);
     }
 
     // Helper to run cppcheck and capture SARIF output
@@ -855,6 +856,83 @@ int main() {
         }
 
         ASSERT_EQUALS(true, foundNonSecurityRule);
+    }
+
+    void sarifInvalidScanfArgTypeGeneric()
+    {
+        // Create a test specifically for invalidScanfArgType_int rule
+        const std::string scanfTestCode = R"(
+            #include <cstdio>
+
+            int main() {
+                char str1, str2, str3, str4, str5, str6;
+
+                // This should trigger invalidScanfArgType_int errors
+                // %hhx expects unsigned char* but gets char*
+                sscanf("12 34 56 78 9A BC", "%hhx %hhx %hhx %hhx %hhx %hhx",
+                       &str1, &str2, &str3, &str4, &str5, &str6);
+
+                return 0;
+            }
+        )";
+
+        const std::string sarif = runCppcheckSarif(scanfTestCode);
+
+        std::string errorMsg;
+        ASSERT_EQUALS(true, validateSarifJson(sarif, errorMsg));
+
+        // Parse and check for invalidScanfArgType_int rule
+        picojson::value json;
+        picojson::parse(json, sarif);
+        const picojson::object& root   = json.get<picojson::object>();
+        const picojson::array& runs    = root.at("runs").get<picojson::array>();
+        const picojson::object& run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& driver = tool.at("driver").get<picojson::object>();
+        const picojson::array& rules   = driver.at("rules").get<picojson::array>();
+
+        // Find and verify the invalidScanfArgType_int rule has a genericized description
+        bool foundRule = false;
+
+        for (const auto& rule : rules)
+        {
+            const picojson::object& r = rule.get<picojson::object>();
+            const std::string ruleId  = r.at("id").get<std::string>();
+
+            if (ruleId == "invalidScanfArgType_int")
+            {
+                foundRule = true;
+
+                const std::string name = r.at("name").get<std::string>();
+
+                // Verify that the rule description is properly genericized
+                // Should be "Format specifier requires different argument type than provided."
+                // not "%d in format string (no. 1) requires 'int *' but the argument type is Unknown."
+                ASSERT_EQUALS("Format specifier requires different argument type than provided.", name);
+
+                break;
+            }
+        }
+
+        ASSERT_EQUALS(true, foundRule);
+
+        // Verify that results contain the invalidScanfArgType_int rule
+        const picojson::array& results = run.at("results").get<picojson::array>();
+        bool foundResult               = false;
+
+        for (const auto& result : results)
+        {
+            const picojson::object& res = result.get<picojson::object>();
+            const std::string ruleId    = res.at("ruleId").get<std::string>();
+
+            if (ruleId == "invalidScanfArgType_int")
+            {
+                foundResult = true;
+                break;
+            }
+        }
+
+        ASSERT_EQUALS(true, foundResult);
     }
 };
 

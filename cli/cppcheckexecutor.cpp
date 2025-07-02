@@ -144,10 +144,11 @@ namespace {
             // Invalid scanf argument type patterns
             if (ruleId == "invalidScanfArgType_int" || ruleId.find("invalidScanfArgType") == 0)
             {
-                // Replace "%format in format string (no. N) requires 'type *' but the argument type is 'type *'."
-                // with "Format specifier in format string requires different argument type."
-                std::regex scanfPattern(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)");
-                result = std::regex_replace(result, scanfPattern, "Format specifier in format string requires different argument type.");
+                // Replace "%format in format string (no. N) requires 'type *' but the argument type is type."
+                // with "Format specifier requires different argument type than provided."
+                // The template format is like: "%d in format string (no. 1) requires 'int *' but the argument type is Unknown."
+                std::regex scanfPattern(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)");
+                result = std::regex_replace(result, scanfPattern, "Format specifier requires different argument type than provided.");
             }
 
             // Variable name patterns - replace specific variable names with generic terms
