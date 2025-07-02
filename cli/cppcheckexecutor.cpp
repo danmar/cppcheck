@@ -143,35 +143,57 @@ namespace {
 
             // Variable name patterns - replace specific variable names with generic terms
             // But be careful not to replace legitimate words like "pointer" in "C-style pointer casting"
-            result = std::regex_replace(result, std::regex(R"('arr\[\d+\]')"), "'array'");
-            result = std::regex_replace(result, std::regex(R"('varname')"), "'variable'");
 
-            // Replace quoted variable names but preserve legitimate words
-            // Only replace single-quoted variable names that are clearly identifiers
+            // Handle common variable/function patterns by removing quoted names entirely
+            result = std::regex_replace(result, std::regex(R"(Variable '[^']*' is)"), "Variable is");
+            result = std::regex_replace(result, std::regex(R"(variable '[^']*' is)"), "variable is");
+            result = std::regex_replace(result, std::regex(R"(Variable '[^']*' )"), "Variable ");
+            result = std::regex_replace(result, std::regex(R"(variable '[^']*' )"), "variable ");
+            result = std::regex_replace(result, std::regex(R"(Function '[^']*' )"), "Function ");
+            result = std::regex_replace(result, std::regex(R"(function '[^']*' )"), "function ");
+            result = std::regex_replace(result, std::regex(R"(Parameter '[^']*' )"), "Parameter ");
+            result = std::regex_replace(result, std::regex(R"(parameter '[^']*' )"), "parameter ");
+
+            // Handle "of 'varname'" -> "of variable"
+            result = std::regex_replace(result, std::regex(R"( of '[^']*')"), " of variable");
+
+            // Handle trailing quoted variable names at end of sentences
+            result = std::regex_replace(result, std::regex(R"(: '[^']*'$)"), "");
+            result = std::regex_replace(result, std::regex(R"(: '[^']*'\.)"), ".");
+
+            // Handle array patterns like 'arr[16]' -> 'array'
+            result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[\d+\]')"), "'array'");
+
+            // Handle expression patterns for overflow messages
+            if (ruleId == "integerOverflow" || ruleId == "integerOverflowCond")
+            {
+                // Replace "for expression 'expr'" with "for expression"
+                result = std::regex_replace(result, std::regex(R"(for expression '[^']*')"), "for expression");
+            }
+
+            // Replace remaining single-quoted identifiers with generic terms
+            // Only replace if they look like variable names (start with letter/underscore)
             result = std::regex_replace(result, std::regex(R"('\b[a-zA-Z_][a-zA-Z0-9_]*\b')"), "'variable'");
 
-            // Replace specific patterns like "Variable 'varname' is..."
-            result = std::regex_replace(result, std::regex(R"(Variable '[^']*')"), "Variable 'variable'");
-            result = std::regex_replace(result, std::regex(R"(variable '[^']*')"), "variable 'variable'");
+            // Clean up redundant 'variable' references
+            // Replace patterns where we now have redundant "Variable 'variable'"
+            result = std::regex_replace(result, std::regex(R"(Variable 'variable')"), "Variable");
+            result = std::regex_replace(result, std::regex(R"(variable 'variable')"), "variable");
+            result = std::regex_replace(result, std::regex(R"(Function 'variable')"), "Function");
+            result = std::regex_replace(result, std::regex(R"(function 'variable')"), "function");
+            result = std::regex_replace(result, std::regex(R"(Parameter 'variable')"), "Parameter");
+            result = std::regex_replace(result, std::regex(R"(parameter 'variable')"), "parameter");
+            result = std::regex_replace(
+                result, std::regex(R"(Memory pointed to by 'variable')"), "Memory pointed to by variable");
+
+            // Handle include file patterns with empty angle brackets
+            result = std::regex_replace(result, std::regex(R"(Include file: <> )"), "Include file: ");
 
             // Number patterns - replace specific numbers with generic terms
             result = std::regex_replace(result, std::regex(R"( \d+ )"), " N ");
             result = std::regex_replace(result, std::regex(R"( at index \d+)"), " at index N");
 
-            // Function name patterns
-            result = std::regex_replace(result, std::regex(R"(function '[^']*')"), "function");
-            result = std::regex_replace(result, std::regex(R"(Function '[^']*')"), "Function");
-
-            // Clean up empty quotes and redundant spaces
-            // Handle cases where parameter/variable names were empty or completely removed
-            result = std::regex_replace(result, std::regex(R"(parameter ''\s)"), "parameter ");
-            result = std::regex_replace(result, std::regex(R"(Parameter ''\s)"), "Parameter ");
-            result = std::regex_replace(result, std::regex(R"(variable ''\s)"), "variable ");
-            result = std::regex_replace(result, std::regex(R"(Variable ''\s)"), "Variable ");
-            result = std::regex_replace(result, std::regex(R"(function ''\s)"), "function ");
-            result = std::regex_replace(result, std::regex(R"(Function ''\s)"), "Function ");
-
-            // Handle standalone empty quotes
+            // Clean up any remaining empty quotes and redundant spaces
             result = std::regex_replace(result, std::regex(R"(\s''\s)"), " ");
             result = std::regex_replace(result, std::regex(R"(^''\s)"), "");
             result = std::regex_replace(result, std::regex(R"(\s''$)"), "");
