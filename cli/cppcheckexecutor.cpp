@@ -140,15 +140,15 @@ namespace {
             result = std::regex_replace(result, std::regex(R"(Variable ''\s)"), "Variable ");
             result = std::regex_replace(result, std::regex(R"(function ''\s)"), "function ");
             result = std::regex_replace(result, std::regex(R"(Function ''\s)"), "Function ");
-            
+
             // Handle standalone empty quotes
             result = std::regex_replace(result, std::regex(R"(\s''\s)"), " ");
             result = std::regex_replace(result, std::regex(R"(^''\s)"), "");
             result = std::regex_replace(result, std::regex(R"(\s''$)"), "");
-            
+
             // Clean up multiple spaces
             result = std::regex_replace(result, std::regex(R"(\s+)"), " ");
-            
+
             // Trim leading and trailing whitespace
             result = std::regex_replace(result, std::regex(R"(^\s+|\s+$)"), "");
 
