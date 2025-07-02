@@ -145,11 +145,10 @@ namespace {
                         problemSeverity = "recommendation"; // style, information, performance, portability
                     }
                     properties["problem.severity"] = picojson::value(problemSeverity);
-                    properties["defaultConfiguration"] = picojson::value(problemSeverity);
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
-                    defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
+                    defaultConfiguration["level"] = picojson::value(problemSeverity);
                     rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
 
                     ret.emplace_back(rule);
