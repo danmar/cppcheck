@@ -145,8 +145,9 @@ namespace {
                     }
                     // Set problem.severity for use with github
                     std::string problemSeverity;
-                    if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error)
+                    if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error) {
                         problemSeverity = "error";
+                    }
                     else if (finding.severity == Severity::warning) {
                         problemSeverity = "warning";
                     }
