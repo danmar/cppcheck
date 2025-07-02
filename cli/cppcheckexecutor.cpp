@@ -122,14 +122,16 @@ namespace {
                     // Only set security-severity for findings that are actually security-related
                     if (isSecurityRelatedFinding(finding.id)) {
                         double securitySeverity = 0;
-                        if (ErrorLogger::isCriticalErrorId(finding.id)) {
+                        if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
+                        {
                             securitySeverity = 9.9; // critical = 9.0+
                         }
-                        else if (finding.severity == Severity::error) {
+                        else if (finding.severity == Severity::warning)
+                        {
                             securitySeverity = 8.5; // high = 7.0 to 8.9
                         }
-                        else if (finding.severity == Severity::warning || finding.severity == Severity::performance ||
-                                 finding.severity == Severity::portability || finding.severity == Severity::style)
+                        else if (finding.severity == Severity::performance || finding.severity == Severity::portability ||
+                                 finding.severity == Severity::style)
                         {
                             securitySeverity = 5.5;  // medium = 4.0 to 6.9
                         }
