@@ -426,7 +426,7 @@ namespace {
                 // Add more mappings as needed
             };
 
-            // Find the rule description using the same pattern as existing mapping functions
+            // Find the rule description
             for (const auto& desc : ruleDescriptions) {
                 if (ruleId == desc.ruleId) {
                     return fullDescription ? desc.fullDesc : desc.shortDesc;
