@@ -103,10 +103,10 @@ namespace {
                     picojson::object rule;
                     rule["id"] = picojson::value(finding.id);
                     // rule.name
-                    rule["name"] = picojson::value(finding.shortMessage());
+                    rule["name"] = picojson::value(getRuleShortDescription(finding));
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(getRuleShortDescription(finding));
+                    shortDescription["text"] = picojson::value(finding.shortMessage());
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
@@ -122,13 +122,22 @@ namespace {
                     // Only set security-severity for findings that are actually security-related
                     if (isSecurityRelatedFinding(finding.id)) {
                         double securitySeverity = 0;
-                        if (ErrorLogger::isCriticalErrorId(finding.id))
-                            securitySeverity = 9.9;
-                        else if (finding.severity == Severity::error)
-                            securitySeverity = 8.5;
-                        else if (finding.severity == Severity::warning)
-                            securitySeverity = 5.1;
-                        if (securitySeverity > 0.5) {
+                        if (ErrorLogger::isCriticalErrorId(finding.id)) {
+                            securitySeverity = 9.9; // critical = 9.0+
+                        }
+                        else if (finding.severity == Severity::error) {
+                            securitySeverity = 8.5; // high = 7.0 to 8.9
+                        }
+                        else if (finding.severity == Severity::warning) {
+                            securitySeverity = 5.5; // medium = 4.0 to 6.9
+                        }
+                        else if (finding.severity == Severity::performance ||
+                                 finding.severity == Severity::portability || 
+                                 finding.severity == Severity::style) {
+                            securitySeverity = 2.0; // low = 0.1 to 3.9
+                        }
+                        if (securitySeverity > 0.0)
+                        {
                             properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
                             const picojson::array tags{picojson::value("security")};
                             properties["tags"] = picojson::value(tags);
@@ -280,6 +289,140 @@ namespace {
                  "Detects when function parameters should be passed by const reference instead of by value for better performance."},
                 {"derefInvalidIteratorRedundantCheck", "Redundant iterator check", 
                  "Detects redundant checks for invalid iterator dereferencing."},
+                {"stlFindInsert", "Inefficient STL usage", 
+                 "Detects when searching before insertion is unnecessary and suggests using more efficient STL methods like try_emplace."},
+                {"uselessCallsSubstr", "Ineffective substr call", 
+                 "Detects ineffective calls to substr() that can be replaced with more efficient methods like resize() or pop_back()."},
+                {"uninitMemberVar", "Uninitialized member variable", 
+                 "Detects member variables that are not initialized in the constructor."},
+                {"stlIfStrFind", "Inefficient string find usage", 
+                 "Detects inefficient usage of string::find() in conditions where string::starts_with() or other methods could be faster."},
+                {"invalidScanfArgType_int", "Invalid scanf argument type", 
+                 "Detects when scanf format specifiers don't match the argument types provided."},
+                {"constStatement", "Const statement", 
+                 "Detects statements that have no effect and could indicate a programming error."},
+                {"variableScope", "Variable scope", 
+                 "Detects when variable scope can be reduced to improve code clarity and performance."},
+                {"postfixOperator", "Inefficient postfix operator", 
+                 "Detects when prefix operators (++i) should be used instead of postfix (i++) for better performance."},
+                {"useStlAlgorithm", "Use STL algorithm", 
+                 "Suggests using STL algorithms instead of raw loops for better readability and performance."},
+                {"redundantAssignment", "Redundant assignment", 
+                 "Detects redundant assignments where a variable is assigned but the value is never used."},
+                {"duplicateExpression", "Duplicate expression", 
+                 "Detects identical expressions on both sides of operators which may indicate copy-paste errors."},
+                {"oppositeInnerCondition", "Opposite inner condition", 
+                 "Detects when an inner condition is always false due to an outer condition."},
+                {"knownConditionTrueFalse", "Known condition", 
+                 "Detects conditions that are always true or false due to previous code."},
+                {"clarifyCondition", "Unclear condition", 
+                 "Suggests adding parentheses to clarify operator precedence in conditions."},
+                {"redundantCondition", "Redundant condition", 
+                 "Detects redundant conditions that don't affect the program flow."},
+                {"missingReturn", "Missing return statement", 
+                 "Detects functions that should return a value but may not have a return statement."},
+                {"invalidContainer", "Invalid container usage", 
+                 "Detects invalid usage of STL containers that could lead to undefined behavior."},
+                {"containerOutOfBounds", "Container out of bounds", 
+                 "Detects when container access operations exceed the container size."},
+                {"danglingPointer", "Dangling pointer", 
+                 "Detects pointers that reference memory that has been deallocated."},
+                {"memsetClass", "Memset on class", 
+                 "Detects when memset is used on classes with constructors/destructors which is undefined behavior."},
+                {"noExplicitConstructor", "Missing explicit constructor", 
+                 "Suggests adding 'explicit' keyword to single-argument constructors to prevent implicit conversions."},
+                {"noCopyConstructor", "Missing copy constructor", 
+                 "Detects classes that should have a copy constructor but don't."},
+                {"noOperatorEq", "Missing assignment operator", 
+                 "Detects classes that should have an assignment operator but don't."},
+                {"virtualDestructor", "Missing virtual destructor", 
+                 "Detects base classes that should have virtual destructors."},
+                {"useInitializationList", "Use initialization list", 
+                 "Suggests using constructor initialization lists instead of assignment in constructor body."},
+                {"cstyleCast", "C-style cast", 
+                 "Suggests using C++ style casts instead of C-style casts for better type safety."},
+                {"redundantCopy", "Redundant copy", 
+                 "Detects unnecessary copying of objects that could be avoided."},
+                {"returnTempReference", "Return temporary reference", 
+                 "Detects when functions return references to temporary objects."},
+                {"nullPointerArithmetic", "Null pointer arithmetic", 
+                 "Detects arithmetic operations performed on null pointers."},
+                {"nullPointerRedundantCheck", "Redundant null pointer check", 
+                 "Detects redundant checks for null pointers that are already known to be null or non-null."},
+                {"nullPointerDefaultArg", "Null pointer default argument", 
+                 "Detects when null pointers are used as default arguments which may cause dereferencing issues."},
+                {"nullPointerOutOfMemory", "Null pointer from memory allocation", 
+                 "Detects when memory allocation functions return null due to out-of-memory conditions."},
+                {"nullPointerOutOfResources", "Null pointer from resource exhaustion", 
+                 "Detects when resource allocation functions return null due to resource exhaustion."},
+                {"leakReturnValNotUsed", "Memory leak from unused return value", 
+                 "Detects memory leaks when the return value of allocation functions is not used."},
+                {"leakUnsafeArgAlloc", "Unsafe argument allocation leak", 
+                 "Detects memory leaks in unsafe argument allocation patterns."},
+                {"mismatchAllocDealloc", "Mismatched allocation/deallocation", 
+                 "Detects when memory allocated with one function is freed with an incompatible function."},
+                {"autovarInvalidDeallocation", "Invalid automatic variable deallocation", 
+                 "Detects attempts to deallocate automatic (stack) variables."},
+                {"arrayIndexOutOfBoundsCond", "Conditional array bounds violation", 
+                 "Detects array index out of bounds conditions that may occur under certain circumstances."},
+                {"pointerOutOfBounds", "Pointer out of bounds", 
+                 "Detects when pointer arithmetic results in pointers outside valid memory ranges."},
+                {"pointerOutOfBoundsCond", "Conditional pointer out of bounds", 
+                 "Detects pointer out of bounds conditions that may occur under certain circumstances."},
+                {"negativeIndex", "Negative array index", 
+                 "Detects when negative values are used as array indices."},
+                {"objectIndex", "Invalid object indexing", 
+                 "Detects invalid indexing operations on objects."},
+                {"argumentSize", "Invalid argument size", 
+                 "Detects when function arguments have invalid sizes that could cause buffer overflows."},
+                {"bufferOverflow", "Buffer overflow", 
+                 "Detects potential buffer overflow conditions."},
+                {"pointerArithmetic", "Unsafe pointer arithmetic", 
+                 "Detects potentially unsafe pointer arithmetic operations."},
+                {"uninitdata", "Uninitialized data", 
+                 "Detects usage of uninitialized data structures."},
+                {"uninitStructMember", "Uninitialized struct member", 
+                 "Detects uninitialized members in struct/class instances."},
+                {"danglingLifetime", "Dangling lifetime", 
+                 "Detects when object lifetimes end before their usage is complete."},
+                {"returnDanglingLifetime", "Return dangling lifetime", 
+                 "Detects when functions return references or pointers to objects with ended lifetimes."},
+                {"danglingReference", "Dangling reference", 
+                 "Detects references that point to objects that no longer exist."},
+                {"danglingTempReference", "Dangling temporary reference", 
+                 "Detects references to temporary objects that have been destroyed."},
+                {"danglingTemporaryLifetime", "Dangling temporary lifetime", 
+                 "Detects when temporary object lifetimes end before their usage is complete."},
+                {"invalidLifetime", "Invalid object lifetime", 
+                 "Detects invalid object lifetime usage patterns."},
+                {"useClosedFile", "Use of closed file", 
+                 "Detects operations on file handles that have been closed."},
+                {"wrongPrintfScanfArgNum", "Wrong printf/scanf argument count", 
+                 "Detects when the number of printf/scanf arguments doesn't match the format string."},
+                {"invalidScanfFormatWidth", "Invalid scanf format width", 
+                 "Detects invalid width specifiers in scanf format strings."},
+                {"invalidscanf", "Invalid scanf usage", 
+                 "Detects invalid usage patterns of scanf functions."},
+                {"integerOverflow", "Integer overflow", 
+                 "Detects potential integer overflow conditions."},
+                {"floatConversionOverflow", "Float conversion overflow", 
+                 "Detects when floating-point conversions may cause overflow."},
+                {"negativeMemoryAllocationSize", "Negative memory allocation size", 
+                 "Detects when negative values are used for memory allocation sizes."},
+                {"IOWithoutPositioning", "I/O without positioning", 
+                 "Detects file I/O operations that may have undefined behavior due to positioning issues."},
+                {"incompatibleFileOpen", "Incompatible file open", 
+                 "Detects when files are opened with incompatible modes or flags."},
+                {"writeReadOnlyFile", "Write to read-only file", 
+                 "Detects attempts to write to files opened in read-only mode."},
+                {"zerodiv", "Division by zero", 
+                 "Detects potential division by zero operations."},
+                {"zerodivcond", "Conditional division by zero", 
+                 "Detects division by zero conditions that may occur under certain circumstances."},
+                {"invalidLengthModifierError", "Invalid length modifier", 
+                 "Detects invalid length modifiers in format strings."},
+                {"preprocessorErrorDirective", "Preprocessor error directive", 
+                 "Detects preprocessor #error directives that indicate compilation issues."},
                 // Add more mappings as needed
             };
 
