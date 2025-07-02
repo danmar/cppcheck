@@ -373,10 +373,17 @@ def test_sarif():
     assert res['runs'][0]['results'][0]['ruleId'] == 'zerodiv'
     assert res['runs'][0]['tool']['driver']['rules'][0]['id'] == 'zerodiv'
     assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['precision'] == 'high'
-    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] == '9.9'
+    # Test that security-severity is now a string and has the expected value
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] == '8.500000'
     assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
     assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
     assert 'level' in res['runs'][0]['tool']['driver']['rules'][0]['defaultConfiguration'] # #13885
+    # Test that rule description is now the generic mapped description, not instance-specific
+    assert res['runs'][0]['tool']['driver']['rules'][0]['shortDescription']['text'] == 'Division by zero'
+    # Test that the result message is still the instance-specific message
+    assert res['runs'][0]['results'][0]['message']['text'] == 'Division by zero.'
+    # Test that problem.severity property exists and is correct
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['problem.severity'] == 'error'
 
 
 def test_xml_checkers_report():
