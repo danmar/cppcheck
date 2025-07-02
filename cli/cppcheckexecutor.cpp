@@ -142,7 +142,7 @@ namespace {
                         problemSeverity = "warning";
                     }
                     else {
-                        problemSeverity = "recommendation"; // style, information, performance, portability
+                        problemSeverity = "note"; // style, information, performance, portability
                     }
                     properties["problem.severity"] = picojson::value(problemSeverity);
                     rule["properties"] = picojson::value(properties);
