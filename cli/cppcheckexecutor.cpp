@@ -143,7 +143,7 @@ namespace {
                             properties["tags"] = picojson::value(tags);
                         }
                     }
-                    // Set problem.severity for use with github and other severity systems
+                    // Set problem.severity for use with github
                     std::string problemSeverity;
                     if (ErrorLogger::isCriticalErrorId(finding.id) || finding.severity == Severity::error)
                         problemSeverity = "error";
