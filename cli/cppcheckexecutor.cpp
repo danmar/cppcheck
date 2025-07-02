@@ -315,8 +315,12 @@ namespace {
                         if (securitySeverity > 0.0)
                         {
                             properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
-                            const picojson::array tags{picojson::value("security")};
-                            // TODO: add cwe tag
+                            picojson::array tags{picojson::value("security")};
+                            // Add CWE tag if available
+                            if (finding.cwe.id > 0)
+                            {
+                                tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
+                            }
                             properties["tags"] = picojson::value(tags);
                         }
                     }
@@ -414,7 +418,8 @@ namespace {
         static bool isSecurityRelatedFinding(const std::string& ruleId)
         {
             // Security-related findings that have actual security implications
-            static const std::unordered_set<std::string> securityRelatedIds = {// Memory safety issues
+            static const std::unordered_set<std::string> securityRelatedIds = {
+                // Memory safety issues
                 "nullPointer",
                 "nullPointerArithmetic",
                 "nullPointerRedundantCheck",
