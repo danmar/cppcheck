@@ -89,19 +89,19 @@ namespace {
         static std::string getRuleDescription(const std::string& ruleId, bool fullDescription) {
             static std::unordered_map<std::string, std::pair<std::string, std::string>> ruleCache;
             static bool cacheInitialized = false;
-            
+
             if (!cacheInitialized) {
                 initializeRuleCache(ruleCache);
                 cacheInitialized = true;
             }
-            
+
             const auto it = ruleCache.find(ruleId);
             if (it != ruleCache.end()) {
                 const std::string& description = fullDescription ? it->second.second : it->second.first;
                 // Convert instance-specific descriptions to generic ones
                 return makeGeneric(description, ruleId);
             }
-            
+
             // Fallback for rules not found in cache
             return "Cppcheck rule " + ruleId;
         }
@@ -110,7 +110,7 @@ namespace {
         // Convert instance-specific descriptions to generic ones
         static std::string makeGeneric(const std::string& description, const std::string& ruleId) {
             std::string result = description;
-            
+
             // Common patterns to genericize
             // Array access patterns
             if (ruleId == "arrayIndexOutOfBounds" || ruleId == "arrayIndexOutOfBoundsCond") {
@@ -118,36 +118,43 @@ namespace {
                 std::regex arrayPattern(R"(Array '[^']*' accessed at index \d+, which is out of bounds\.)");
                 result = std::regex_replace(result, arrayPattern, "Array accessed at index that is out of bounds.");
             }
-            
-            // Null pointer patterns
-            if (ruleId.find("nullPointer") != std::string::npos) {
-                // Keep simple messages as they are already generic
-                // "Null pointer dereference" is already generic
-                return result;
-            }
-            
-            // Division by zero
-            if (ruleId == "zerodiv" || ruleId == "zerodivcond") {
-                // "Division by zero." is already generic
-                return result;
-            }
-            
+
             // Variable name patterns - replace specific variable names with generic terms
             result = std::regex_replace(result, std::regex(R"('arr\[\d+\]')"), "'array'");
             result = std::regex_replace(result, std::regex(R"('varname')"), "'variable'");
             result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*')"), "'variable'");
-            
+
             // Number patterns - replace specific numbers with generic terms
             result = std::regex_replace(result, std::regex(R"( \d+ )"), " N ");
             result = std::regex_replace(result, std::regex(R"( at index \d+)"), " at index N");
-            
+
             // Function name patterns
             result = std::regex_replace(result, std::regex(R"(function '[^']*')"), "function");
             result = std::regex_replace(result, std::regex(R"(Function '[^']*')"), "Function");
+
+            // Clean up empty quotes and redundant spaces
+            // Handle cases where parameter/variable names were empty or completely removed
+            result = std::regex_replace(result, std::regex(R"(parameter ''\s)"), "parameter ");
+            result = std::regex_replace(result, std::regex(R"(Parameter ''\s)"), "Parameter ");
+            result = std::regex_replace(result, std::regex(R"(variable ''\s)"), "variable ");
+            result = std::regex_replace(result, std::regex(R"(Variable ''\s)"), "Variable ");
+            result = std::regex_replace(result, std::regex(R"(function ''\s)"), "function ");
+            result = std::regex_replace(result, std::regex(R"(Function ''\s)"), "Function ");
             
+            // Handle standalone empty quotes
+            result = std::regex_replace(result, std::regex(R"(\s''\s)"), " ");
+            result = std::regex_replace(result, std::regex(R"(^''\s)"), "");
+            result = std::regex_replace(result, std::regex(R"(\s''$)"), "");
+            
+            // Clean up multiple spaces
+            result = std::regex_replace(result, std::regex(R"(\s+)"), " ");
+            
+            // Trim leading and trailing whitespace
+            result = std::regex_replace(result, std::regex(R"(^\s+|\s+$)"), "");
+
             return result;
         }
-        
+
     private:
         // Error logger that captures error messages for building the rule cache
         class RuleCacheLogger : public ErrorLogger {
