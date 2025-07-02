@@ -84,12 +84,12 @@ namespace {
             mFindings.push_back(std::move(msg));
         }
 
-        std::string getRuleShortDescription(const std::string& ruleId) const {
-            return getRuleDescription(ruleId, false);
+        std::string getRuleShortDescription(const ErrorMessage& finding) const {
+            return getRuleDescription(finding.id, false, finding);
         }
 
-        std::string getRuleFullDescription(const std::string& ruleId) const {
-            return getRuleDescription(ruleId, true);
+        std::string getRuleFullDescription(const ErrorMessage& finding) const {
+            return getRuleDescription(finding.id, true, finding);
         }
 
         picojson::array serializeRules() const {
@@ -106,15 +106,15 @@ namespace {
                     rule["name"] = picojson::value(finding.shortMessage());
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(getRuleShortDescription(finding.id));
+                    shortDescription["text"] = picojson::value(getRuleShortDescription(finding));
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(getRuleFullDescription(finding.id));
+                    fullDescription["text"] = picojson::value(getRuleFullDescription(finding));
                     rule["fullDescription"] = picojson::value(fullDescription);
                     // rule.help.text
                     picojson::object help;
-                    help["text"] = picojson::value(getRuleFullDescription(finding.id));
+                    help["text"] = picojson::value(getRuleFullDescription(finding));
                     rule["help"] = picojson::value(help);
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
@@ -226,7 +226,7 @@ namespace {
         }
     private:
         // Following the pattern of existing mapping functions in errorlogger.cpp
-        std::string getRuleDescription(const std::string& ruleId, bool fullDescription) const {
+        std::string getRuleDescription(const std::string& ruleId, bool fullDescription, const ErrorMessage& finding) const {
             // Structure similar to IdMapping in checkers.h but for descriptions
             struct RuleDescription {
                 const char* ruleId;
@@ -272,6 +272,14 @@ namespace {
                  "Detects syntax errors in the source code."},
                 {"cppcheckError", "Cppcheck internal error", 
                  "Internal error occurred during analysis."},
+                {"unusedFunction", "Unused function", 
+                 "Detects functions that are declared but never called in the code."},
+                {"ignoredReturnValue", "Ignored return value", 
+                 "Detects when the return value of a function is ignored when it should be checked."},
+                {"passedByValue", "Parameter passed by value", 
+                 "Detects when function parameters should be passed by const reference instead of by value for better performance."},
+                {"derefInvalidIteratorRedundantCheck", "Redundant iterator check", 
+                 "Detects redundant checks for invalid iterator dereferencing."},
                 // Add more mappings as needed
             };
 
@@ -282,8 +290,8 @@ namespace {
                 }
             }
 
-            // Fallback for unknown rules
-            return fullDescription ? ruleId : ruleId;
+            // Fallback for unknown rules - use the actual error message content
+            return fullDescription ? finding.verboseMessage() : finding.shortMessage();
         }
 
         static bool isSecurityRelatedFinding(const std::string& ruleId) {
