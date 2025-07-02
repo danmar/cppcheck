@@ -103,7 +103,7 @@ namespace {
                     picojson::object rule;
                     rule["id"] = picojson::value(finding.id);
                     // rule.name
-                    rule["name"] = picojson::value(getRuleShortDescription(finding.id));
+                    rule["name"] = picojson::value(finding.shortMessage());
                     // rule.shortDescription.text
                     picojson::object shortDescription;
                     shortDescription["text"] = picojson::value(getRuleShortDescription(finding.id));
