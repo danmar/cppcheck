@@ -119,10 +119,32 @@ namespace {
                 result = std::regex_replace(result, arrayPattern, "Array accessed at index that is out of bounds.");
             }
 
+            // Memory leak patterns
+            if (ruleId == "memleak") {
+                // Replace "Memory leak: varname" with "Memory leak"
+                std::regex memleakPattern(R"(Memory leak:.*$)");
+                result = std::regex_replace(result, memleakPattern, "Memory leak");
+            }
+
+            // Null pointer patterns
+            if (ruleId == "nullPointer") {
+                // Replace "Null pointer dereference: varname" with "Null pointer dereference"
+                std::regex nullPtrPattern(R"(Null pointer dereference:.*$)");
+                result = std::regex_replace(result, nullPtrPattern, "Null pointer dereference");
+            }
+
             // Variable name patterns - replace specific variable names with generic terms
+            // But be careful not to replace legitimate words like "pointer" in "C-style pointer casting"
             result = std::regex_replace(result, std::regex(R"('arr\[\d+\]')"), "'array'");
             result = std::regex_replace(result, std::regex(R"('varname')"), "'variable'");
-            result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*')"), "'variable'");
+
+            // Replace quoted variable names but preserve legitimate words
+            // Only replace single-quoted variable names that are clearly identifiers
+            result = std::regex_replace(result, std::regex(R"('\b[a-zA-Z_][a-zA-Z0-9_]*\b')"), "'variable'");
+
+            // Replace specific patterns like "Variable 'varname' is..."
+            result = std::regex_replace(result, std::regex(R"(Variable '[^']*')"), "Variable 'variable'");
+            result = std::regex_replace(result, std::regex(R"(variable '[^']*')"), "variable 'variable'");
 
             // Number patterns - replace specific numbers with generic terms
             result = std::regex_replace(result, std::regex(R"( \d+ )"), " N ");
@@ -271,6 +293,7 @@ namespace {
                         {
                             properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
                             const picojson::array tags{picojson::value("security")};
+                            // TODO: add cwe tag
                             properties["tags"] = picojson::value(tags);
                         }
                     }
@@ -905,19 +928,21 @@ void StdLogger::reportErr(const ErrorMessage &msg)
                                      mGuidelineMapping, msgCopy.severity);
     msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
 
-    // TODO: there should be no need for verbose and default messages here
-    const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
-
-    // Alert only about unique errors
-    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
-        return;
-
-    if (mSettings.outputFormat == Settings::OutputFormat::sarif)
+    if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
         mSarifReport.addFinding(std::move(msgCopy));
-    else if (mSettings.outputFormat == Settings::OutputFormat::xml)
-        reportErr(msgCopy.toXML());
-    else
-        reportErr(msgStr);
+    } else {
+        // TODO: there should be no need for verbose and default messages here
+        const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+
+        // Alert only about unique errors
+        if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
+            return;
+
+        if (mSettings.outputFormat == Settings::OutputFormat::xml)
+            reportErr(msgCopy.toXML());
+        else
+            reportErr(msgStr);
+    }
 }
 
 /**
