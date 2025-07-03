@@ -559,7 +559,7 @@ int main() {
                 ASSERT(region.find("startLine") != region.end());
                 ASSERT(region.find("startColumn") != region.end());
 
-                // Line numbers should be positive, columns can be 0 or positive
+                // Line numbers should be positive, columns should be positive (SARIF requires >= 1)
                 if (region.at("startLine").is<double>())
                 {
                     const int64_t line = static_cast<int64_t>(region.at("startLine").get<double>());
@@ -569,7 +569,7 @@ int main() {
                 if (region.at("startColumn").is<double>())
                 {
                     const int64_t col = static_cast<int64_t>(region.at("startColumn").get<double>());
-                    ASSERT(col >= 0);
+                    ASSERT(col > 0);
                 }
             }
         }
