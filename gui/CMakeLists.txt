@@ -75,8 +75,8 @@ CheckOptions:
             # caused by Qt generated moc code - see https://bugreports.qt.io/browse/QTBUG-100915
             target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
         endif()
-        if(QT_VERSION VERSION_EQUAL "6.9.0")
-            # caused by Qt generated moc code in 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
+        if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
+            # caused by Qt generated moc code starting with 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
             target_compile_options_safe(cppcheck-gui -Wno-ctad-maybe-unsupported)
         endif()
     endif()
