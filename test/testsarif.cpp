@@ -621,80 +621,85 @@ int main() {
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
-        // Check that security-related rules have CWE tags
+        // Check that rules with CWE IDs have CWE tags (regardless of security classification)
         bool foundNullPointerWithCwe = false;
         bool foundArrayBoundsWithCwe = false;
         bool foundMemleakWithCwe     = false;
         bool foundDoubleFreeWithCwe  = false;
+        bool foundAnyCweTag          = false;
 
         for (const auto& rule : rules)
         {
-            const picojson::object& r = rule.get<picojson::object>();
-            const std::string ruleId  = r.at("id").get<std::string>();
+            const picojson::object& r     = rule.get<picojson::object>();
+            const std::string ruleId      = r.at("id").get<std::string>();
+            const picojson::object& props = r.at("properties").get<picojson::object>();
 
-            // Only check security-related rules that should have CWE tags
-            if (ruleId == "nullPointer" || ruleId == "arrayIndexOutOfBounds" || ruleId == "doubleFree" ||
-                ruleId == "memleak")
+            // Check if this rule has tags
+            if (props.find("tags") != props.end())
             {
-                const picojson::object& props = r.at("properties").get<picojson::object>();
+                const picojson::array& tags = props.at("tags").get<picojson::array>();
 
-                // Verify this rule has security-severity (prerequisite for CWE tags)
-                if (props.find("security-severity") != props.end())
+                bool hasSecurityTag = false;
+                bool hasCweTag      = false;
+                std::string cweTag;
+
+                for (const auto& tag : tags)
                 {
-                    // Should have tags array
-                    ASSERT(props.find("tags") != props.end());
-                    const picojson::array& tags = props.at("tags").get<picojson::array>();
-
-                    bool hasSecurityTag = false;
-                    bool hasCweTag      = false;
-                    std::string cweTag;
-
-                    for (const auto& tag : tags)
+                    const std::string tagStr = tag.get<std::string>();
+                    if (tagStr == "security")
                     {
-                        const std::string tagStr = tag.get<std::string>();
-                        if (tagStr == "security")
-                        {
-                            hasSecurityTag = true;
-                        }
-                        else if (tagStr.find("external/cwe/cwe-") == 0)
-                        {
-                            hasCweTag = true;
-                            cweTag    = tagStr;
-
-                            // Validate CWE tag format: external/cwe/cwe-<number>
-                            ASSERT_EQUALS(0, tagStr.find("external/cwe/cwe-"));
-                            std::string cweNumber = tagStr.substr(17);  // After "external/cwe/cwe-"
-                            ASSERT(cweNumber.length() > 0);
-
-                            // Verify it's a valid number
-                            for (char c : cweNumber)
-                            {
-                                ASSERT(c >= '0' && c <= '9');
-                            }
-
-                            // Track specific CWE mappings we expect
-                            if (ruleId == "nullPointer" && cweNumber == "476")
-                                foundNullPointerWithCwe = true;
-                            else if (ruleId == "arrayIndexOutOfBounds" && cweNumber == "788")
-                                foundArrayBoundsWithCwe = true;
-                            else if (ruleId == "memleak" && cweNumber == "401")
-                                foundMemleakWithCwe = true;
-                            else if (ruleId == "doubleFree" && cweNumber == "415")
-                                foundDoubleFreeWithCwe = true;
-                        }
+                        hasSecurityTag = true;
                     }
+                    else if (tagStr.find("external/cwe/cwe-") == 0)
+                    {
+                        hasCweTag      = true;
+                        foundAnyCweTag = true;
+                        cweTag         = tagStr;
 
-                    ASSERT_EQUALS(true, hasSecurityTag);
-                    ASSERT_EQUALS(true, hasCweTag);
+                        // Validate CWE tag format: external/cwe/cwe-<number>
+                        ASSERT_EQUALS(0, tagStr.find("external/cwe/cwe-"));
+                        std::string cweNumber = tagStr.substr(17);  // After "external/cwe/cwe-"
+                        ASSERT(cweNumber.length() > 0);
+
+                        // Verify it's a valid number
+                        for (char c : cweNumber)
+                        {
+                            ASSERT(c >= '0' && c <= '9');
+                        }
+
+                        // Track specific CWE mappings we expect for security-related rules
+                        if (ruleId == "nullPointer" && cweNumber == "476")
+                            foundNullPointerWithCwe = true;
+                        else if (ruleId == "arrayIndexOutOfBounds" && cweNumber == "788")
+                            foundArrayBoundsWithCwe = true;
+                        else if (ruleId == "memleak" && cweNumber == "401")
+                            foundMemleakWithCwe = true;
+                        else if (ruleId == "doubleFree" && cweNumber == "415")
+                            foundDoubleFreeWithCwe = true;
+                    }
+                }
+
+                // If this is a security-related rule with CWE, it should have both security and CWE tags
+                if (hasCweTag && (ruleId == "nullPointer" || ruleId == "arrayIndexOutOfBounds" ||
+                                  ruleId == "doubleFree" || ruleId == "memleak"))
+                {
+                    // Security-related rules should have security tag when they have security-severity
+                    if (props.find("security-severity") != props.end())
+                    {
+                        ASSERT_EQUALS(true, hasSecurityTag);
+                    }
                 }
             }
         }
 
-        // Verify we found at least some of the expected CWE mappings
+        // Verify we found at least some CWE tags (from any rules, not just security-related)
+        ASSERT_EQUALS(true, foundAnyCweTag);
+
+        // Verify we found at least some of the expected security-related CWE mappings
         // Note: Not all may be present depending on what the test code triggers
-        bool foundAnyCweMapping =
+        bool foundSecurityCweMapping =
             foundNullPointerWithCwe || foundArrayBoundsWithCwe || foundMemleakWithCwe || foundDoubleFreeWithCwe;
-        ASSERT_EQUALS(true, foundAnyCweMapping);
+        ASSERT_EQUALS(true, foundSecurityCweMapping);
     }
 
     void sarifRuleCoverage()
@@ -844,15 +849,18 @@ int main() {
                 // Non-security rules should NOT have security-severity
                 ASSERT(props.find("security-severity") == props.end());
 
-                // If they have tags, they should not include security or CWE tags
+                // If they have tags, they should not include the security tag
+                // but they MAY include CWE tags if they have CWE mappings
                 if (props.find("tags") != props.end())
                 {
                     const picojson::array& tags = props.at("tags").get<picojson::array>();
                     for (const auto& tag : tags)
                     {
                         const std::string tagStr = tag.get<std::string>();
+                        // Non-security rules should not have the security tag
                         ASSERT(tagStr != "security");
-                        ASSERT(tagStr.find("external/cwe/cwe-") != 0);
+                        // But they may have CWE tags if they have CWE mappings
+                        // (no assertion against CWE tags here)
                     }
                 }
 

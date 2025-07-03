@@ -354,6 +354,14 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
+
+                    // Add CWE tag if available
+                    picojson::array tags;
+                    if (finding.cwe.id > 0)
+                    {
+                        tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
+                    }
+
                     // Only set security-severity for findings that are actually security-related
                     if (isSecurityRelatedFinding(finding.id))
                     {
@@ -379,15 +387,16 @@ namespace {
                         if (securitySeverity > 0.0)
                         {
                             properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
-                            picojson::array tags{picojson::value("security")};
-                            // Add CWE tag if available
-                            if (finding.cwe.id > 0)
-                            {
-                                tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
-                            }
-                            properties["tags"] = picojson::value(tags);
+                            tags.emplace_back(picojson::value("security"));
                         }
                     }
+
+                    // Add tags array if it has any content
+                    if (!tags.empty())
+                    {
+                        properties["tags"] = picojson::value(tags);
+                    }
+
                     // Set problem.severity for use with github
                     const std::string problemSeverity = sarifSeverity(finding);
                     properties["problem.severity"]    = picojson::value(problemSeverity);
