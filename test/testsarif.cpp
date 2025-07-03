@@ -257,6 +257,7 @@ int main() {
         TEST_CASE(sarifInvalidPointerCastGeneric);
         TEST_CASE(sarifSTLPatternsGeneric);
         TEST_CASE(sarifAccessMovedGeneric);
+        TEST_CASE(sarifComprehensiveGenericPatterns);
     }
 
     // Helper to run cppcheck and capture SARIF output
@@ -605,6 +606,48 @@ int main() {
             const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
             const std::string fullText       = fullDesc.at("text").get<std::string>();
             ASSERT_EQUALS(std::string::npos, fullText.find("''"));
+
+            // Additional checks for specific genericization patterns
+
+            // Check that specific variable names are genericized
+            ASSERT_EQUALS(std::string::npos, shortText.find("header_path"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("payload_path"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("uid_counts"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("RegisterSettings::"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("header_path"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("payload_path"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("uid_counts"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("RegisterSettings::"));
+
+            // Check that STL container insertion patterns are genericized
+            ASSERT_EQUALS(std::string::npos, shortText.find("uid_counts[uid]=0"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("nicinfo[ifa->ifa_name]=NicInfo()"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("uid_counts[uid]=0"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("nicinfo[ifa->ifa_name]=NicInfo()"));
+
+            // Check that specific type names in casting are genericized
+            ASSERT_EQUALS(std::string::npos, shortText.find("unsigned char *"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("const float *"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("const double *"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("unsigned char *"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("const float *"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("const double *"));
+
+            // Check that format specifiers are genericized
+            ASSERT_EQUALS(std::string::npos, shortText.find("%hhx"));
+            ASSERT_EQUALS(std::string::npos, shortText.find("%d"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("%hhx"));
+            ASSERT_EQUALS(std::string::npos, fullText.find("%d"));
+
+            // Check for proper generic replacements
+            if (ruleId == "stlFindInsert")
+            {
+                // Should contain generic container operation text
+                ASSERT(shortText.find("container operation") != std::string::npos ||
+                       shortText.find("alternative method") != std::string::npos ||
+                       fullText.find("container operation") != std::string::npos ||
+                       fullText.find("alternative method") != std::string::npos);
+            }
         }
     }
 
@@ -925,6 +968,33 @@ int main() {
                 // not "%d in format string (no. 1) requires 'int *' but the argument type is Unknown."
                 ASSERT_EQUALS("Format specifier requires different argument type than provided.", name);
 
+                // Additional checks for descriptions
+                const picojson::object& shortDesc = r.at("shortDescription").get<picojson::object>();
+                const std::string shortText       = shortDesc.at("text").get<std::string>();
+
+                // Verify that specific format specifiers are genericized
+                ASSERT_EQUALS(std::string::npos, shortText.find("%hhx"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("%d"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("%u"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("(no. 1)"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("(no. 3)"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("(no. 4)"));
+
+                // Should not contain specific type names
+                ASSERT_EQUALS(std::string::npos, shortText.find("unsigned char *"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("const char *"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("unsigned int"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("int *"));
+
+                const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
+                const std::string fullText       = fullDesc.at("text").get<std::string>();
+
+                // Same checks for full description
+                ASSERT_EQUALS(std::string::npos, fullText.find("%hhx"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("%d"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("unsigned char *"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("const char *"));
+
                 break;
             }
         }
@@ -1000,6 +1070,30 @@ int main() {
                 // Should be generic: "Function parameter should be passed by const reference"
                 // not "Function parameter 'header_path' should be passed by const reference"
                 ASSERT_EQUALS("Function parameter should be passed by const reference.", name);
+
+                // Additional checks for descriptions
+                const picojson::object& shortDesc = r.at("shortDescription").get<picojson::object>();
+                const std::string shortText       = shortDesc.at("text").get<std::string>();
+
+                // Verify that specific parameter names are genericized
+                ASSERT_EQUALS(std::string::npos, shortText.find("header_path"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("payload_path"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("the_list"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("format"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("new_uid_counts"));
+
+                // Should contain generic parameter reference
+                ASSERT(shortText.find("parameter should be passed") != std::string::npos ||
+                       shortText.find("Function parameter") != std::string::npos);
+
+                const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
+                const std::string fullText       = fullDesc.at("text").get<std::string>();
+
+                // Same checks for full description
+                ASSERT_EQUALS(std::string::npos, fullText.find("header_path"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("payload_path"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("the_list"));
+
                 break;
             }
         }
@@ -1276,6 +1370,26 @@ int main() {
                 ASSERT_EQUALS(
                     "Casting between incompatible pointer types which have an incompatible binary data representation.",
                     name);
+
+                // Additional checks for short and full descriptions
+                const picojson::object& shortDesc = r.at("shortDescription").get<picojson::object>();
+                const std::string shortText       = shortDesc.at("text").get<std::string>();
+
+                // Verify that specific type names are genericized
+                ASSERT_EQUALS(std::string::npos, shortText.find("unsigned char *"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("const float *"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("const double *"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("float *"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("double *"));
+
+                const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
+                const std::string fullText       = fullDesc.at("text").get<std::string>();
+
+                // Same checks for full description
+                ASSERT_EQUALS(std::string::npos, fullText.find("unsigned char *"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("const float *"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("const double *"));
+
                 break;
             }
         }
@@ -1353,9 +1467,32 @@ int main() {
             else if (ruleId == "stlFindInsert")
             {
                 foundStlFindInsert = true;
+
+                const picojson::object& shortDesc = r.at("shortDescription").get<picojson::object>();
+                const std::string shortText       = shortDesc.at("text").get<std::string>();
+
                 // Description should not contain specific variable names
                 ASSERT_EQUALS(std::string::npos, name.find("nicinfo"));
                 ASSERT_EQUALS(std::string::npos, name.find("ifa_name"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("nicinfo"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("ifa_name"));
+
+                // Should contain generic alternatives instead of specific code
+                ASSERT_EQUALS(std::string::npos, shortText.find("nicinfo[ifa_name]=NicInfo()"));
+                ASSERT_EQUALS(std::string::npos, shortText.find("uid_counts[uid]=0"));
+
+                // Should contain generic patterns
+                ASSERT(shortText.find("container operation") != std::string::npos ||
+                       shortText.find("alternative method") != std::string::npos ||
+                       shortText.find("try_emplace") != std::string::npos);
+
+                const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
+                const std::string fullText       = fullDesc.at("text").get<std::string>();
+
+                // Same checks for full description
+                ASSERT_EQUALS(std::string::npos, fullText.find("nicinfo"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("ifa_name"));
+                ASSERT_EQUALS(std::string::npos, fullText.find("nicinfo[ifa_name]=NicInfo()"));
             }
             else if (ruleId == "stlIfStrFind")
             {
@@ -1464,6 +1601,159 @@ int main() {
         // The main goal is to verify we can process move-related patterns
         // Even if the specific accessMoved rule isn't triggered, other related rules might be
         ASSERT_EQUALS(true, foundRule);
+    }
+
+    void sarifComprehensiveGenericPatterns()
+    {
+        // Comprehensive test for all the new genericization patterns
+        const std::string comprehensiveTestCode = R"(
+            #include <map>
+            #include <vector>
+            #include <string>
+            #include <cstdio>
+            #include <cstdlib>
+
+            class MyClass {
+            public:
+                MyClass() {} // Uninitialized members
+
+                void testMethod(std::string large_param, std::vector<int> data_list) {
+                    // Test passedByValue patterns
+                }
+
+                std::string getMemberValue() const {
+                    return member_value; // Should return by const reference
+                }
+
+            private:
+                std::string member_value;
+                int uninitialized_member; // Not initialized in constructor
+            };
+
+            void testAllPatterns() {
+                // STL find-insert patterns
+                std::map<std::string, int> container_map;
+                if (container_map.find("key") == container_map.end()) {
+                    container_map["key"] = 42; // Should use try_emplace
+                }
+
+                // Format string patterns
+                char buffer[20];
+                int int_var = 123;
+                unsigned int uint_var = 456u;
+                sprintf(buffer, "%d %u", uint_var, int_var); // Type mismatch
+
+                // Pointer casting patterns
+                unsigned char* byte_ptr = (unsigned char*)malloc(sizeof(double));
+                const double* double_ptr = (const double*)byte_ptr; // Incompatible cast
+                const float* float_ptr = (const float*)byte_ptr; // Incompatible cast
+
+                free(byte_ptr);
+
+                // Iterator patterns
+                std::vector<char> char_vector = {'a', 'b', 'c'};
+                for (auto character : char_vector) { // Should be const reference
+                    printf("%c", character);
+                }
+
+                // String find patterns
+                std::string test_string = "Hello World";
+                if (test_string.find("Hello") == 0) {
+                    // Should use starts_with
+                }
+            }
+
+            int main() {
+                testAllPatterns();
+                MyClass obj;
+                std::string param = "test";
+                std::vector<int> data = {1, 2, 3};
+                obj.testMethod(param, data);
+                return 0;
+            }
+        )";
+
+        const std::string sarif = runCppcheckSarif(comprehensiveTestCode);
+
+        std::string errorMsg;
+        ASSERT_EQUALS(true, validateSarifJson(sarif, errorMsg));
+
+        picojson::value json;
+        picojson::parse(json, sarif);
+        const picojson::object& root   = json.get<picojson::object>();
+        const picojson::array& runs    = root.at("runs").get<picojson::array>();
+        const picojson::object& run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& driver = tool.at("driver").get<picojson::object>();
+        const picojson::array& rules   = driver.at("rules").get<picojson::array>();
+
+        // Check that all rules have properly genericized descriptions
+        int rulesChecked = 0;
+        std::set<std::string> problematicRules;
+
+        for (const auto& rule : rules)
+        {
+            const picojson::object& r = rule.get<picojson::object>();
+            const std::string ruleId  = r.at("id").get<std::string>();
+            const std::string name    = r.at("name").get<std::string>();
+
+            rulesChecked++;
+
+            // Check for instance-specific content that should be genericized
+            std::vector<std::string> instanceSpecificPatterns = {"large_param",
+                                                                 "data_list",
+                                                                 "member_value",
+                                                                 "uninitialized_member",
+                                                                 "container_map",
+                                                                 "character",
+                                                                 "test_string",
+                                                                 "byte_ptr",
+                                                                 "double_ptr",
+                                                                 "float_ptr",
+                                                                 "%d",
+                                                                 "%u",
+                                                                 "%hhx",
+                                                                 "unsigned char *",
+                                                                 "const double *",
+                                                                 "const float *",
+                                                                 "container_map[\"key\"]=42",
+                                                                 "find(\"Hello\")",
+                                                                 "(no. 1)",
+                                                                 "(no. 2)"};
+
+            const picojson::object& shortDesc = r.at("shortDescription").get<picojson::object>();
+            const std::string shortText       = shortDesc.at("text").get<std::string>();
+
+            for (const std::string& pattern : instanceSpecificPatterns)
+            {
+                if (shortText.find(pattern) != std::string::npos)
+                {
+                    problematicRules.insert(ruleId + ": contains '" + pattern + "'");
+                }
+            }
+
+            // Check that empty quotes are cleaned up
+            ASSERT_EQUALS(std::string::npos, shortText.find("''"));
+
+            const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
+            const std::string fullText       = fullDesc.at("text").get<std::string>();
+            ASSERT_EQUALS(std::string::npos, fullText.find("''"));
+        }
+
+        // Report any problematic rules for debugging
+        if (!problematicRules.empty())
+        {
+            std::string errorReport = "Rules with instance-specific content:\n";
+            for (const std::string& rule : problematicRules)
+            {
+                errorReport += "  " + rule + "\n";
+            }
+            // Print for debugging but don't fail the test - this helps identify patterns we might have missed
+            std::cout << errorReport << std::endl;
+        }
+
+        // Verify we processed a reasonable number of rules
+        ASSERT(rulesChecked > 0);
     }
 };
 

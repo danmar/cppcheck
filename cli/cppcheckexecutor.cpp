@@ -130,6 +130,16 @@ namespace {
                 std::regex(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)"),
                 "Format specifier requires different argument type than provided.");
 
+            // Handle more variations of format string patterns
+            result = std::regex_replace(
+                result,
+                std::regex(R"(%[a-zA-Z0-9]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)"),
+                "Format specifier in format string requires different argument type than provided.");
+            result = std::regex_replace(
+                result,
+                std::regex(R"(%[a-zA-Z0-9]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)"),
+                "Format specifier requires different argument type than provided.");
+
             // 2. Array access and bounds patterns
             result = std::regex_replace(result,
                                         std::regex(R"(Array '[^']*' accessed at index \d+[^.]*\.)"),
@@ -178,12 +188,28 @@ namespace {
                                         std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\([^)]*\);)"),
                                         "'container.method();'");
 
+            // Handle stlFindInsert patterns - "Instead of '...' consider using '...'"
+            result = std::regex_replace(
+                result,
+                std::regex(R"(Instead of '[^']*' consider using '[^']*'\.)"),
+                "Instead of 'container operation' consider using 'alternative method'.");
+            result = std::regex_replace(
+                result,
+                std::regex(R"(Instead of '[^']*' consider using '[^']*';)"),
+                "Instead of 'container operation' consider using 'alternative method';");
+
             // 8. Type casting patterns
             result = std::regex_replace(
                 result,
                 std::regex(
                     R"(Casting between [a-zA-Z_][a-zA-Z0-9_\s\*]+ and [a-zA-Z_][a-zA-Z0-9_\s\*]+ which have an incompatible binary data representation\.)"),
                 "Casting between incompatible pointer types which have an incompatible binary data representation.");
+
+            // Handle more specific type casting patterns
+            result = std::regex_replace(
+                result,
+                std::regex(R"(Casting between [^.]+ and [^.]+ which have)"),
+                "Casting between types which have");
 
             // 9. Uninitialized variable patterns
             result = std::regex_replace(
