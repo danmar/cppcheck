@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.9.0
+      QT_VERSION: 6.9.1
       ASAN_OPTIONS: detect_stack_use_after_return=1
       # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros

@@ -27,7 +27,7 @@ jobs:
     env:
       # see https://www.pcre.org/original/changelog.txt
       PCRE_VERSION: 8.45
-      QT_VERSION: 6.9.0
+      QT_VERSION: 6.9.1
 
     steps:
       - uses: actions/checkout@v4
