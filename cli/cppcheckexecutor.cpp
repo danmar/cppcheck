@@ -340,12 +340,12 @@ namespace {
             mFindings.push_back(std::move(msg));
         }
 
-        std::string getRuleShortDescription(const ErrorMessage& finding) const
+        static std::string getRuleShortDescription(const ErrorMessage& finding)
         {
             return SarifRuleCache::getRuleDescription(finding.id, false);
         }
 
-        std::string getRuleFullDescription(const ErrorMessage& finding) const
+        static std::string getRuleFullDescription(const ErrorMessage& finding)
         {
             return SarifRuleCache::getRuleDescription(finding.id, true);
         }
@@ -364,18 +364,18 @@ namespace {
                     picojson::object rule;
                     rule["id"]   = picojson::value(finding.id);
                     // rule.name
-                    rule["name"] = picojson::value(getRuleShortDescription(finding));
+                    rule["name"] = picojson::value(SarifReport::getRuleShortDescription(finding));
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(getRuleShortDescription(finding));
+                    shortDescription["text"] = picojson::value(SarifReport::getRuleShortDescription(finding));
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(getRuleFullDescription(finding));
+                    fullDescription["text"] = picojson::value(SarifReport::getRuleFullDescription(finding));
                     rule["fullDescription"] = picojson::value(fullDescription);
                     // rule.help.text
                     picojson::object help;
-                    help["text"] = picojson::value(getRuleFullDescription(finding));
+                    help["text"] = picojson::value(SarifReport::getRuleFullDescription(finding));
                     rule["help"] = picojson::value(help);
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
