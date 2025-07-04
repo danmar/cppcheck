@@ -684,7 +684,8 @@ private:
 
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
 
-#if defined(_LIBCPP_VERSION) && (defined(__APPLE__) && defined(__MACH__))
+        // AppleClang before 18 reports a different error
+#if (defined(__APPLE__) && defined(__MACH__)) && (defined(_LIBCPP_VERSION) && (_LIBCPP_VERSION < 180000))
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1invalid");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("1.1invalid"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.1invalid");
 #else
