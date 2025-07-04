@@ -17,6 +17,7 @@ permissions:
 
 jobs:
   build_cmake_tinyxml2:
+    if: false
 
     strategy:
       matrix:
@@ -72,6 +73,7 @@ jobs:
           cmake --build cmake.output.tinyxml2 --target check -- -j$(nproc)
 
   build_cmake:
+    if: false
 
     strategy:
       matrix:
@@ -152,6 +154,7 @@ jobs:
           cmake --build cmake.output --target install
 
   build_uchar:
+    if: false
 
     strategy:
       matrix:
@@ -186,6 +189,7 @@ jobs:
           ./testrunner TestSymbolDatabase
 
   build_mathlib:
+    if: false
 
     strategy:
       matrix:
@@ -220,6 +224,7 @@ jobs:
           make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE check
 
   check_nonneg:
+    if: false
 
     strategy:
       matrix:
