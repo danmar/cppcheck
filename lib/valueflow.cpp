@@ -7017,11 +7017,12 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
                 sizeValue = arg1->getKnownIntValue() * arg2->getKnownIntValue();
             break;
         case Library::AllocFunc::BufferSize::strdup:
-            if (arg1 && arg1->hasKnownValue()) {
-                const ValueFlow::Value& value = arg1->values().back();
-                assert(value.isKnown());
-                if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
-                    sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
+            if (arg1) {
+                if (const ValueFlow::Value* value = arg1->getKnownValue(ValueFlow::Value::ValueType::TOK))
+                {
+                    if (value->tokvalue->tokType() == Token::eString)
+                        sizeValue = Token::getStrLength(value->tokvalue) + 1; // Add one for the null terminator
+                }
             }
             break;
         }
