@@ -38,10 +38,6 @@ public:
     using ImportProject::importCppcheckGuiProject;
     using ImportProject::importVcxproj;
     using ImportProject::SharedItemsProject;
-
-    bool sourceFileExists(const std::string & /*file*/) override {
-        return true;
-    }
 };
 
 

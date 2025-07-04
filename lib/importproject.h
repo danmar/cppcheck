@@ -102,7 +102,6 @@ public:
 protected:
     bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
-    virtual bool sourceFileExists(const std::string &file);
 
 private:
     struct SharedItemsProject {
