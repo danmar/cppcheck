@@ -675,14 +675,13 @@ def test_addon_lookup_notfound(tmpdir):
     ]
 
 
-@pytest.mark.xfail(strict=True)  # TODO: no addon lookup is being performed at all
 def test_addon_lookup_notfound_project(tmpdir):  # #13940 / #13941
     project_file, _ = __create_gui_project(tmpdir)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none', '--project={}'.format(project_file)])
     exepath = os.path.dirname(exe)
     exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
+    assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
         # TODO: needs to look relative to the project file first
