@@ -53,7 +53,8 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "premium-invalidLicense",
     "preprocessorErrorDirective",
     "syntaxError",
-    "unknownMacro"
+    "unknownMacro",
+    "clangImportSkipFile"
 };
 
 ErrorMessage::ErrorMessage()

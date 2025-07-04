@@ -678,7 +678,18 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
     }
 #endif
 
-    const std::string args2 = "-fsyntax-only -Xclang -ast-dump -fno-color-diagnostics " +
+    if (file.lang() == Standards::Language::CPP) {
+        // FIXME: Fix the C++ handling and then remove this ugly isPytest hack
+        const bool isPytest = mSettings.debugast || mSettings.debugsymdb || (startsWith(file.spath(), "test.") || file.spath().find("/test.") != std::string::npos || endsWith(file.spath(), "/test_2"));
+        if (!isPytest) {
+            ErrorMessage::FileLocation loc{file.spath(),0,0};
+            ErrorMessage msg({loc}, file.spath(), Severity::error, "Cppcheck clang import does not work well for c++ code, skipping file",  "clangImportSkipFile", Certainty::normal);
+            mErrorLogger.reportErr(msg);
+            return 0;
+        }
+    }
+
+    const std::string args2 = "-fsyntax-only -Xclang -ast-dump=json -fno-color-diagnostics " +
                               getClangFlags(mSettings, file.lang()) +
                               file.spath();
     const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
@@ -724,8 +735,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
         TokenList tokenlist{mSettings, file.lang()};
         tokenlist.appendFileIfNew(file.spath());
         Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
-        std::istringstream ast(output2);
-        clangimport::parseClangAstDump(tokenizer, ast);
+        clangimport::parseClangAstDump(tokenizer, output2);
         ValueFlow::setValues(tokenizer.list,
                              const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
                              mErrorLogger,

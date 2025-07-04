@@ -29,7 +29,7 @@
 class Tokenizer;
 
 namespace clangimport {
-    void CPPCHECKLIB parseClangAstDump(Tokenizer &tokenizer, std::istream &f);
+    void CPPCHECKLIB parseClangAstDump(Tokenizer &tokenizer, const std::string& json);
 }
 
 #endif
