@@ -528,7 +528,7 @@ namespace ValueFlow
                                                        args2.begin(),
                                                        [&](const Token* atok, const Token* btok) {
                                         return atok->getKnownIntValue() ==
-                                               btok->getKnownIntValue();
+                                        btok->getKnownIntValue();
                                     });
                                 } else {
                                     equal = false;

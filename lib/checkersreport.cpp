@@ -193,11 +193,11 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
 
     auto reportSection = [&fout, cppcheckPremium]
-                         (const std::string& title,
-                          const Settings& settings,
-                          const std::set<std::string>& activeCheckers,
-                          const std::map<std::string, std::string>& premiumCheckers,
-                          const std::string& substring) {
+                             (const std::string& title,
+                             const Settings& settings,
+                             const std::set<std::string>& activeCheckers,
+                             const std::map<std::string, std::string>& premiumCheckers,
+                             const std::string& substring) {
         fout << std::endl << std::endl;
         fout << title << std::endl;
         fout << std::string(title.size(), '-') << std::endl;
