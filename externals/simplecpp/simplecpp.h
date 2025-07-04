@@ -419,8 +419,8 @@ namespace simplecpp {
         void insert(FileData data) {
             FileData *const newdata = new FileData(std::move(data));
 
-            mData.push_back(std::unique_ptr<FileData>(newdata));
-            mNameMap.insert(std::make_pair(newdata->filename, newdata));
+            mData.emplace_back(newdata);
+            mNameMap.emplace(newdata->filename, newdata);
         }
 
         void clear() {
@@ -500,7 +500,7 @@ namespace simplecpp {
 
         static bool getFileId(const std::string &path, FileID &id);
 
-        std::pair<FileData *, bool> tryload(const name_map_type::iterator &name_it, const DUI &dui, std::vector<std::string> &filenames, OutputList *outputList);
+        std::pair<FileData *, bool> tryload(name_map_type::iterator &name_it, const DUI &dui, std::vector<std::string> &filenames, OutputList *outputList);
 
         container_type mData;
         name_map_type mNameMap;

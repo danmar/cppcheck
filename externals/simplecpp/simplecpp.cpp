@@ -2988,18 +2988,18 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
     return "";
 }
 
-std::pair<simplecpp::FileData *, bool> simplecpp::FileDataCache::tryload(const FileDataCache::name_map_type::iterator &name_it, const simplecpp::DUI &dui, std::vector<std::string> &filenames, simplecpp::OutputList *outputList)
+std::pair<simplecpp::FileData *, bool> simplecpp::FileDataCache::tryload(FileDataCache::name_map_type::iterator &name_it, const simplecpp::DUI &dui, std::vector<std::string> &filenames, simplecpp::OutputList *outputList)
 {
     const std::string &path = name_it->first;
     FileID fileId;
 
     if (!getFileId(path, fileId))
-        return std::make_pair(nullptr, false);
+        return {nullptr, false};
 
     const auto id_it = mIdMap.find(fileId);
     if (id_it != mIdMap.end()) {
         name_it->second = id_it->second;
-        return std::make_pair(id_it->second, false);
+        return {id_it->second, false};
     }
 
     std::ifstream f(path);
@@ -3009,53 +3009,56 @@ std::pair<simplecpp::FileData *, bool> simplecpp::FileDataCache::tryload(const F
         data->tokens.removeComments();
 
     name_it->second = data;
-    mIdMap.insert(std::make_pair(fileId, data));
-    mData.push_back(std::unique_ptr<FileData>(data));
+    mIdMap.emplace(fileId, data);
+    mData.emplace_back(data);
 
-    return std::make_pair(data, true);
+    return {data, true};
 }
 
 std::pair<simplecpp::FileData *, bool> simplecpp::FileDataCache::get(const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader, std::vector<std::string> &filenames, simplecpp::OutputList *outputList)
 {
     if (isAbsolutePath(header)) {
-        const auto ins = mNameMap.insert(std::make_pair(simplecpp::simplifyPath(header), nullptr));
+        auto ins = mNameMap.emplace(simplecpp::simplifyPath(header), nullptr);
 
         if (ins.second) {
             const auto ret = tryload(ins.first, dui, filenames, outputList);
-            if (ret.first != nullptr)
+            if (ret.first != nullptr) {
                 return ret;
+            }
         } else {
-            return std::make_pair(ins.first->second, false);
+            return {ins.first->second, false};
         }
 
-        return std::make_pair(nullptr, false);
+        return {nullptr, false};
     }
 
     if (!systemheader) {
-        const auto ins = mNameMap.insert(std::make_pair(simplecpp::simplifyPath(dirPath(sourcefile) + header), nullptr));
+        auto ins = mNameMap.emplace(simplecpp::simplifyPath(dirPath(sourcefile) + header), nullptr);
 
         if (ins.second) {
             const auto ret = tryload(ins.first, dui, filenames, outputList);
-            if (ret.first != nullptr)
+            if (ret.first != nullptr) {
                 return ret;
+            }
         } else if (ins.first->second != nullptr) {
-            return std::make_pair(ins.first->second, false);
+            return {ins.first->second, false};
         }
     }
 
     for (const auto &includePath : dui.includePaths) {
-        const auto ins = mNameMap.insert(std::make_pair(simplecpp::simplifyPath(includePath + "/" + header), nullptr));
+        auto ins = mNameMap.emplace(simplecpp::simplifyPath(includePath + "/" + header), nullptr);
 
         if (ins.second) {
             const auto ret = tryload(ins.first, dui, filenames, outputList);
-            if (ret.first != nullptr)
+            if (ret.first != nullptr) {
                 return ret;
+            }
         } else if (ins.first->second != nullptr) {
-            return std::make_pair(ins.first->second, false);
+            return {ins.first->second, false};
         }
     }
 
-    return std::make_pair(nullptr, false);
+    return {nullptr, false};
 }
 
 bool simplecpp::FileDataCache::getFileId(const std::string &path, FileID &id)
