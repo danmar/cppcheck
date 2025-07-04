@@ -440,7 +440,7 @@ static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accura
     for (const Variable& var : scope->varlist) {
         if (var.isStatic())
             continue;
-        const size_t bits = var.nameToken() ? var.nameToken()->bits() : 0;
+        const MathLib::bigint bits = var.nameToken() ? var.nameToken()->bits() : -1;
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return {0, false};
@@ -455,7 +455,7 @@ static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accura
             else
                 total = f(total, *vt, dim, bits);
         }
-        if (accuracy == ValueFlow::Accuracy::ExactOrZero && total == 0 && bits == 0)
+        if (accuracy == ValueFlow::Accuracy::ExactOrZero && total == 0 && bits == -1)
             return {0, false};
     }
     return {total, true};
@@ -537,10 +537,17 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         size_t currentBitCount = 0;
         size_t currentBitfieldAlloc = 0;
-        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, size_t bits) -> size_t {
+        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, MathLib::bigint bits) -> size_t {
             const size_t charBit = settings.platform.char_bit;
             size_t n = ValueFlow::getSizeOf(vt2, settings,accuracy, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings, accuracy);
+            if (bits == 0) {
+                if (currentBitfieldAlloc == 0) {
+                    bits = n * charBit;
+                } else {
+                    bits = currentBitfieldAlloc * charBit - currentBitCount;
+                }
+            }
             if (bits > 0) {
                 size_t ret = total;
                 if (currentBitfieldAlloc == 0) {
@@ -550,6 +557,10 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
                     ret += currentBitfieldAlloc;
                     currentBitfieldAlloc = n;
                     currentBitCount = 0;
+                }
+                while (bits > charBit * currentBitfieldAlloc) {
+                    ret += currentBitfieldAlloc;
+                    bits -= charBit * currentBitfieldAlloc;
                 }
                 currentBitCount += bits;
                 return ret;

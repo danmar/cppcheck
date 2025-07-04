@@ -6102,6 +6102,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeFallthrough=\"true\"";
         if (tok->isInitBracket())
             outs += " isInitBracket=\"true\"";
+        if (tok->isAnonymous())
+            outs += " isAnonymous=\"true\"";
         if (tok->hasAttributeAlignas()) {
             const std::vector<std::string>& a = tok->getAttributeAlignas();
             outs += " alignas=\"" + ErrorLogger::toxml(a[0]) + "\"";
@@ -9984,12 +9986,8 @@ void Tokenizer::simplifyAt()
 // Simplify bitfields
 void Tokenizer::simplifyBitfields()
 {
-    bool goback = false;
+    std::size_t anonymousBitfieldCounter = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (goback) {
-            goback = false;
-            tok = tok->previous();
-        }
         Token *last = nullptr;
 
         if (Token::simpleMatch(tok, "for ("))
@@ -10010,6 +10008,14 @@ void Tokenizer::simplifyBitfields()
             }
         }
 
+        const auto tooLargeError = [this](const Token *tok) {
+            const MathLib::bigint max = std::numeric_limits<short>::max();
+            reportError(tok,
+                        Severity::warning,
+                        "tooLargeBitField",
+                        "Bit-field size exceeds max number of bits " + std::to_string(max));
+        };
+
         Token* typeTok = tok->next();
         while (Token::Match(typeTok, "const|volatile"))
             typeTok = typeTok->next();
@@ -10018,7 +10024,8 @@ void Tokenizer::simplifyBitfields()
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = typeTok->next();
             if (Token::Match(tok1, "%name% : %num% [;=]"))
-                tok1->setBits(static_cast<unsigned char>(MathLib::toBigNumber(tok1->tokAt(2))));
+                if (!tok1->setBits(MathLib::toBigNumber(tok1->tokAt(2))))
+                    tooLargeError(tok1->tokAt(2));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
@@ -10039,8 +10046,18 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(typeTok, "%type% : %num%|%bool% ;") &&
                    typeTok->str() != "default") {
-            tok->deleteNext(4 + tokDistance(tok, typeTok) - 1);
-            goback = true;
+            const std::size_t id = anonymousBitfieldCounter++;
+            const std::string name = "anonymous@" + std::to_string(id);
+            Token *newTok = typeTok->insertToken(name);
+            newTok->isAnonymous(true);
+            bool failed;
+            if (newTok->tokAt(2)->isBoolean())
+                failed = !newTok->setBits(newTok->strAt(2) == "true");
+            else
+                failed = !newTok->setBits(MathLib::toBigNumber(newTok->tokAt(2)));
+            if (failed)
+                tooLargeError(newTok->tokAt(2));
+            newTok->deleteNext(2);
         }
 
         if (last && last->str() == ",") {

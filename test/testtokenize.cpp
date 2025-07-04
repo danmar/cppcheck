@@ -304,6 +304,7 @@ private:
         TEST_CASE(bitfields15); // ticket #7747 (enum Foo {A,B}:4;)
         TEST_CASE(bitfields16); // Save bitfield bit count
         TEST_CASE(bitfields17);
+        TEST_CASE(bitfields18);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -4724,7 +4725,7 @@ private:
         ASSERT_EQUALS("struct RGB { unsigned int r ; unsigned int g ; unsigned int b ; } ;", tokenizeAndStringify(code1));
 
         const char code2[] = "struct A { int a : 3; int : 3; int c : 3; };";
-        ASSERT_EQUALS("struct A { int a ; int c ; } ;", tokenizeAndStringify(code2));
+        ASSERT_EQUALS("struct A { int a ; int anonymous@0 ; int c ; } ;", tokenizeAndStringify(code2));
 
         const char code3[] = "struct A { virtual void f() {} int f1 : 1; };";
         ASSERT_EQUALS("struct A { virtual void f ( ) { } int f1 ; } ;", tokenizeAndStringify(code3));
@@ -4738,7 +4739,7 @@ private:
         ASSERT_EQUALS("struct A { bool b ; bool c ; } ;", tokenizeAndStringify(code2));
 
         const char code3[] = "struct A { bool : true; };";
-        ASSERT_EQUALS("struct A { } ;", tokenizeAndStringify(code3));
+        ASSERT_EQUALS("struct A { bool anonymous@0 ; } ;", tokenizeAndStringify(code3));
     }
 
     void bitfields7() { // ticket #1987
@@ -4789,7 +4790,7 @@ private:
 
     void bitfields12() { // ticket #3485 (segmentation fault)
         const char code[] = "{a:1;};\n";
-        ASSERT_EQUALS("{ } ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("{ a anonymous@0 ; } ;", tokenizeAndStringify(code));
     }
 
     void bitfields13() { // ticket #3502 (segmentation fault)
@@ -4829,9 +4830,9 @@ private:
                             "};\n";
         const char expected[] = "struct S {\n"
                                 "volatile uint32_t a ;\n"
-                                "\n"
+                                "volatile uint32_t anonymous@0 ;\n"
                                 "volatile uint32_t b ;\n"
-                                "\n"
+                                "volatile uint32_t anonymous@1 ;\n"
                                 "} ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
 
@@ -4841,9 +4842,15 @@ private:
                              "};\n";
         const char expected2[] = "struct S {\n"
                                  "const volatile uint32_t a ;\n"
-                                 "\n"
+                                 "const volatile uint32_t anonymous@0 ;\n"
                                  "} ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+    }
+
+    void bitfields18() {
+        const char code[] = "struct S { unsigned int a : 100000; };";
+        (void) tokenizeAndStringify(code);
+        ASSERT_EQUALS("[test.cpp:1:29]: (warning) Bit-field size exceeds max number of bits 32767 [tooLargeBitField]\n", errout_str());
     }
 
     void simplifyNamespaceStd() {

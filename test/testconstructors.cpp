@@ -172,6 +172,7 @@ private:
         TEST_CASE(uninitVar33); // ticket #10295
         TEST_CASE(uninitVar34); // ticket #10841
         TEST_CASE(uninitVar35);
+        TEST_CASE(uninitVar36);
         TEST_CASE(uninitVarEnum1);
         TEST_CASE(uninitVarEnum2); // ticket #8146
         TEST_CASE(uninitVarStream);
@@ -3018,6 +3019,16 @@ private:
               "};\n"
               "S::S(int h) : a(h), b(0) {}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void uninitVar36() {
+        check("struct S {\n"
+              "    unsigned int a : 16;\n"
+              "    unsigned int   : 8;\n"
+              "    unsigned int b : 8;\n"
+              "    S() : a(0) {}\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) Member variable 'S::b' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
     void uninitVarArray1() {

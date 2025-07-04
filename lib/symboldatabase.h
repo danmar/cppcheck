@@ -1237,7 +1237,7 @@ public:
         DOUBLE,
         LONGDOUBLE
     } type = UNKNOWN_TYPE;
-    nonneg int bits{};                         ///< bitfield bitcount
+    int bits{};                                ///< bitfield bitcount
     nonneg int pointer{};                      ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness{};                    ///< bit 0=data, bit 1=*, bit 2=**
     nonneg int volatileness{};                 ///< bit 0=data, bit 1=*, bit 2=**
