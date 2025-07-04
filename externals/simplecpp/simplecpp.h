@@ -458,9 +458,6 @@ namespace simplecpp {
 
     private:
         struct FileID {
-            struct Hasher;
-            friend class FileDataCache;
-
 #ifdef SIMPLECPP_WINDOWS
             struct {
                 std::uint64_t VolumeSerialNumber;
