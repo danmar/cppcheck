@@ -238,6 +238,9 @@ private:
         TEST_CASE(predefine5);  // automatically define __cplusplus
         TEST_CASE(predefine6);  // automatically define __STDC_VERSION__
 
+
+        TEST_CASE(strictAnsi);
+
         TEST_CASE(invalidElIf); // #2942 segfault
 
         // Preprocessor::getConfigs
@@ -2034,6 +2037,23 @@ private:
         const char code[] = "#ifdef __STDC_VERSION__\n123\n#endif";
         ASSERT_EQUALS("\n123", PreprocessorHelper::getcode(settings0, *this, code, "", "test.c"));
         ASSERT_EQUALS("",      PreprocessorHelper::getcode(settings0, *this, code, "", "test.cpp"));
+    }
+
+    void strictAnsi() {
+        const char code[] = "#ifdef __STRICT_ANSI__\n123\n#endif";
+        Settings settings;
+
+        settings.standards.setStd("gnu99");
+        ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.c"));
+
+        settings.standards.setStd("c99");
+        ASSERT_EQUALS("\n123", PreprocessorHelper::getcode(settings, *this, code, "", "test.c"));
+
+        settings.standards.setStd("gnu++11");
+        ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));
+
+        settings.standards.setStd("c++11");
+        ASSERT_EQUALS("\n123", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));
     }
 
     void invalidElIf() {
