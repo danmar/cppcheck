@@ -67,7 +67,7 @@ function get_pkg_config_cflags {
 
 function iwyu_run {
     # TODO: convert -I includes provided by pkg-config to -isystem so IWYU does not produce warnings for system headers
-    ${IWYU} "${IWYU_OPTS[@]}" "$@"
+    ${IWYU} "${IWYU_OPTS[@]}" "${IWYU_CLANG_INC}" "$@"
 }
 
 function cc_syntax {
