@@ -6103,6 +6103,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeFallthrough=\"true\"";
         if (tok->isInitBracket())
             outs += " isInitBracket=\"true\"";
+        if (tok->isAnonymous())
+            outs += " isAnonymous=\"true\"";
         if (tok->hasAttributeAlignas()) {
             const std::vector<std::string>& a = tok->getAttributeAlignas();
             outs += " alignas=\"" + ErrorLogger::toxml(a[0]) + "\"";

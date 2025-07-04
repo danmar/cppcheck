@@ -263,6 +263,7 @@ class Token:
         isComplex
         isRestrict
         isAttributeExport
+        isAnonymous
         varId              varId for token, each variable has a unique non-zero id
         exprId             exprId for token, each expression has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
@@ -324,6 +325,7 @@ class Token:
     isComplex = False
     isRestrict = False
     isAttributeExport = False
+    isAnonymous = False
     exprId = None
     varId = None
     variableId = None
@@ -407,6 +409,8 @@ class Token:
             self.isRestrict = True
         if element.get('isAttributeExport'):
             self.isAttributeExport = True
+        if element.get('isAnonymous'):
+            self.isAnonymous = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
@@ -440,7 +444,7 @@ class Token:
                 "isChar", "isBoolean", "isOp", "isArithmeticalOp", "isAssignmentOp", 
                 "isComparisonOp", "isLogicalOp", "isCast", "externLang", "isExpandedMacro", 
                 "isRemovedVoidParameter", "isSplittedVarDeclComma", "isSplittedVarDeclEq", 
-                "isImplicitInt", "isComplex", "isRestrict", "isAttributeExport", "linkId", 
+                "isImplicitInt", "isComplex", "isRestrict", "isAttributeExport", "isAnonymous", "linkId",
                 "varId", "variableId", "functionId", "valuesId", "valueType",
                 "typeScopeId", "astParentId", "astOperand1Id", "file",
                 "linenr", "column"]
