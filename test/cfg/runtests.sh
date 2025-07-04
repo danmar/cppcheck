@@ -44,7 +44,7 @@ CPPCHECK_OPT=(
 CXX=g++
 CXX_OPT=("-fsyntax-only" "-w" "-std=c++2a")
 CC=gcc
-CC_OPT=("-fsyntax-only" "-w" "-Wno-implicit-function-declaration" "-std=c11") # TODO: remove -Wno-implicit-function-declaration when warnings are fixed on MacOS
+CC_OPT=("-fsyntax-only" "-w" "-std=c11")
 
 function get_pkg_config_cflags {
     # TODO: get rid of the error enabling/disabling?
