@@ -25,8 +25,6 @@
 #include "settings.h"
 #include "suppressions.h"
 
-#include <string>
-
 #include <QFile>
 #include <QIODevice>
 #include <QList>
@@ -45,9 +43,6 @@ Platform::Platform() = default;
 Library::Library() = default;
 Library::~Library() = default;
 struct Library::LibraryData {};
-bool ImportProject::sourceFileExists(const std::string & /*file*/) {
-    return true;
-}
 
 void TestProjectFile::loadInexisting() const
 {
