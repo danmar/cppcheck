@@ -41,21 +41,6 @@ def test_empty_project(tmpdir, project_ext, expected):
     __test_project_error(tmpdir, project_ext, None, expected)
 
 
-def test_json_entry_file_not_found(tmpdir):
-    compilation_db = [
-        {"directory": str(tmpdir),
-         "command": "c++ -o bug1.o -c bug1.cpp",
-         "file": "bug1.cpp",
-         "output": "bug1.o"}
-    ]
-
-    expected = "'{}' from compilation database does not exist".format(os.path.join(tmpdir, "bug1.cpp"))
-    if sys.platform == "win32":
-        expected = expected.replace('\\', '/')
-
-    __test_project_error(tmpdir, "json", json.dumps(compilation_db), expected)
-
-
 def test_json_no_arguments(tmpdir):
     compilation_db = [
         {"directory": str(tmpdir),

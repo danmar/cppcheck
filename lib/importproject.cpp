@@ -430,10 +430,6 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 #endif
         else
             path = Path::simplifyPath(directory + file);
-        if (!sourceFileExists(path)) {
-            printError("'" + path + "' from compilation database does not exist");
-            return false;
-        }
         FileSettings fs{path, Standards::Language::None, 0}; // file will be identified later on
         fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
@@ -1546,9 +1542,4 @@ void ImportProject::setRelativePaths(const std::string &filename)
 void ImportProject::printError(const std::string &message)
 {
     std::cout << "cppcheck: error: " << message << std::endl;
-}
-
-bool ImportProject::sourceFileExists(const std::string &file)
-{
-    return Path::isFile(file);
 }
