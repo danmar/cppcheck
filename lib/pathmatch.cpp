@@ -19,74 +19,88 @@
 #include "pathmatch.h"
 
 #include "path.h"
-#include "utils.h"
 
 #include <cstddef>
-#include <utility>
+#include <cstring>
+#include <string>
+#include <regex>
 
-PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
-    : mPaths(std::move(paths)), mCaseSensitive(caseSensitive)
+/* Escape regex special chars and translate globs to equivalent regex */
+static std::string translate(const std::string &s)
 {
-    for (std::string& p : mPaths)
-    {
-        p = Path::fromNativeSeparators(p);
-        if (!mCaseSensitive)
-            strTolower(p);
+    std::string r;
+    std::size_t i = 0;
+
+    while (i != s.size()) {
+        int c = s[i++];
+
+        if (std::strchr("\\[](){}+^$|", c) != nullptr) {
+            r.push_back('\\');
+            r.push_back(c);
+        } else if (c == '*') {
+            if (i != s.size() && s[i] == '*') {
+                r.append(".*");
+                i++;
+            }
+            else {
+                r.append("[^/]*");
+            }
+        } else if (c == '?') {
+            r.append("[^/]");
+        } else {
+            r.push_back(c);
+        }
     }
-    // TODO: also make lowercase?
-    mWorkingDirectory.push_back(Path::fromNativeSeparators(Path::getCurrentPath()));
+
+    return r;
+}
+
+PathMatch::PathMatch(const std::vector<std::string> &paths, bool caseSensitive)
+{
+    std::string regex_string;
+
+    for (auto p : paths) {
+        if (p.empty())
+            continue;
+
+        if (!regex_string.empty())
+            regex_string.push_back('|');
+
+        p = Path::fromNativeSeparators(p);
+
+        if (p.front() == '.')
+            p = Path::getCurrentPath() + "/" + p;
+
+        if (Path::isAbsolute(p)) {
+            p = Path::simplifyPath(p);
+
+            if (p.back() == '/')
+                regex_string.append("^" + translate(p));
+            else
+                regex_string.append("^" + translate(p) + "$");
+        } else {
+            if (p.back() == '/')
+                regex_string.append("/" + translate(p));
+            else
+                regex_string.append("/" + translate(p) + "$");
+        }
+    }
+
+    if (caseSensitive)
+        mRegex = std::regex(regex_string, std::regex_constants::extended);
+    else
+        mRegex = std::regex(regex_string, std::regex_constants::extended | std::regex_constants::icase);
 }
 
 bool PathMatch::match(const std::string &path) const
 {
-    if (path.empty())
-        return false;
+    std::string p;
+    std::smatch m;
 
-    std::string findpath = Path::fromNativeSeparators(path);
-    if (!mCaseSensitive)
-        strTolower(findpath);
-    std::string finddir;
-    if (!endsWith(findpath,'/'))
-        finddir = removeFilename(findpath);
+    if (Path::isAbsolute(path))
+        p = Path::simplifyPath(path);
     else
-        finddir = findpath;
+        p = Path::simplifyPath(Path::getCurrentPath() + "/" + path);
 
-    const bool is_absolute = Path::isAbsolute(path);
-
-    // TODO: align the match logic with ImportProject::ignorePaths()
-    for (auto i = mPaths.cbegin(); i != mPaths.cend(); ++i) {
-        const std::string pathToMatch((!is_absolute && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
-
-        // Filtering directory name
-        if (endsWith(pathToMatch,'/')) {
-            if (pathToMatch.length() > finddir.length())
-                continue;
-            // Match relative paths starting with mask
-            // -isrc matches src/foo.cpp
-            if (finddir.compare(0, pathToMatch.size(), pathToMatch) == 0)
-                return true;
-            // Match only full directory name in middle or end of the path
-            // -isrc matches myproject/src/ but does not match
-            // myproject/srcfiles/ or myproject/mysrc/
-            if (finddir.find("/" + pathToMatch) != std::string::npos)
-                return true;
-        }
-        // Filtering filename
-        else {
-            if (pathToMatch.length() > findpath.length())
-                continue;
-            // Check if path ends with mask
-            // -ifoo.cpp matches (./)foo.c, src/foo.cpp and proj/src/foo.cpp
-            // -isrc/file.cpp matches src/foo.cpp and proj/src/foo.cpp
-            if (findpath.compare(findpath.size() - pathToMatch.size(), findpath.size(), pathToMatch) == 0)
-                return true;
-        }
-    }
-    return false;
-}
-
-std::string PathMatch::removeFilename(const std::string &path)
-{
-    const std::size_t ind = path.find_last_of('/');
-    return path.substr(0, ind + 1);
+    return std::regex_search(p, m, mRegex, std::regex_constants::match_any | std::regex_constants::match_not_null);
 }

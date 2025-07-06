@@ -21,11 +21,42 @@
 
 #include "config.h"
 
+#include <regex>
 #include <string>
 #include <vector>
 
 /// @addtogroup CLI
 /// @{
+
+/**
+ *  Path matching rules:
+ *  - If a rule looks like an absolute path (e.g. starts with '/', but varies by platform):
+ *    - The rule will be simplified (path separators vary by platform):
+ *      - '/./' => '/'
+ *      - '/dir/../' => '/'
+ *      - '//' => '/'
+ *    - If the rule ends with a path separator, match all files where the rule matches the start of the file's
+ *      simplified absolute path. Globs are allowed in the rule.
+ *    - Otherwise, match all files where the rule matches the file's simplified absolute path.
+ *      Globs are allowed in the rule.
+ *  - If a rule starts with '.':
+ *    - The rule is interpreted as a path relative to the execution directory (when passed to the CLI),
+ *      or the directory containing the project file (when imported), and then converted to an absolute path and
+ *      treatesd as such according to the above procedure.
+ *  - Otherwise:
+ *    - No simplification is done to the rule.
+ *    - If the rule ends with a path separator:
+ *      - Match all files where the rule matches any part of the file's simplified absolute path, and the matching
+ *        part directly follows a path separator. Globs are allowed in the rule.
+ *    - Otherwise:
+ *      - Match all files where the rules matches the end of the file's simplified absolute path, and the matching
+ *        part directly follows a path separator. Globs are allowed in the rule.
+ *
+ * - Glob rules:
+ *   - '**' matches any number of characters including path separators.
+ *   - '*' matches any number of characters except path separators.
+ *   - '?' matches any single character except path separators.
+ **/
 
 /**
  * @brief Simple path matching for ignoring paths in CLI.
@@ -42,7 +73,7 @@ public:
      * @param caseSensitive Match the case of the characters when
      *   matching paths?
      */
-    explicit PathMatch(std::vector<std::string> paths, bool caseSensitive = true);
+    explicit PathMatch(const std::vector<std::string> &paths, bool caseSensitive = true);
 
     /**
      * @brief Match path against list of masks.
@@ -54,19 +85,8 @@ public:
      */
     bool match(const std::string &path) const;
 
-protected:
-
-    /**
-     * @brief Remove filename part from the path.
-     * @param path Path to edit.
-     * @return path without filename part.
-     */
-    static std::string removeFilename(const std::string &path);
-
 private:
-    std::vector<std::string> mPaths;
-    bool mCaseSensitive;
-    std::vector<std::string> mWorkingDirectory;
+    std::regex mRegex;
 };
 
 /// @}
