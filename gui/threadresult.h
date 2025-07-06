@@ -137,10 +137,10 @@ protected:
      *
      */
     std::list<FileWithDetails> mFiles;
-    std::list<FileWithDetails>::const_iterator mItNextFile;
+    std::list<FileWithDetails>::const_iterator mItNextFile{mFiles.cbegin()};
 
     std::list<FileSettings> mFileSettings;
-    std::list<FileSettings>::const_iterator mItNextFileSettings;
+    std::list<FileSettings>::const_iterator mItNextFileSettings{mFileSettings.cbegin()};
 
     /**
      * @brief Max progress
