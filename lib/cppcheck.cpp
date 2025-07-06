@@ -432,6 +432,9 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &premiumArgs,
                                                  const CppCheck::ExecuteCmdFn &executeCommand)
 {
+    if (!executeCommand)
+        throw InternalError(nullptr, "Failed to execute addon - no command callback provided");
+
     std::string pythonExe;
 
     if (!addonInfo.executable.empty())
@@ -684,6 +687,11 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
     const std::string redirect2 = clangStderr.empty() ? "2>&1" : ("2> " + clangStderr);
     if (mSettings.verbose && !mSettings.quiet) {
         mErrorLogger.reportOut(exe + " " + args2, Color::Reset);
+    }
+
+    if (!mExecuteCommand) {
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no command callback provided)" << std::endl;
+        return 0; // TODO: report as failure?
     }
 
     std::string output2;
@@ -1953,6 +1961,11 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         exe += ".exe";
     }
 #endif
+
+    if (!mExecuteCommand) {
+        std::cerr << "Failed to execute '" << exe << "' (no command callback provided)" << std::endl;
+        return;
+    }
 
     // TODO: log this call
     // TODO: get rid of hard-coded checks
