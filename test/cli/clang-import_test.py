@@ -47,8 +47,8 @@ def __check_symbol_database(tmpdir, code):
     testfile = os.path.join(tmpdir, 'test.cpp')
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, _ = cppcheck(['--clang', '--debug-symdb', testfile])
-    ret2, stdout2, _ = cppcheck(['--debug-symdb', testfile])
+    ret1, stdout1, _ = cppcheck(['-q', '--clang', '--debug-symdb', testfile])
+    ret2, stdout2, _ = cppcheck(['-q', '--debug-symdb', testfile])
     assert 0 == ret1, stdout1
     assert 0 == ret2, stdout2
     assert __get_debug_section('### Symbol database', stdout1) == __get_debug_section('### Symbol database', stdout2)
@@ -58,8 +58,8 @@ def __check_ast(tmpdir, code):
     testfile = os.path.join(tmpdir, 'test.cpp')
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, _ = cppcheck(['--clang', '--debug-ast', testfile])
-    ret2, stdout2, _ = cppcheck(['--debug-ast', testfile])
+    ret1, stdout1, _ = cppcheck(['-q', '--clang', '--debug-ast', testfile])
+    ret2, stdout2, _ = cppcheck(['-q', '--debug-ast', testfile])
     assert 0 == ret1, stdout1
     assert 0 == ret2, stdout1
     assert __get_debug_section('##AST', stdout1) == __get_debug_section('##AST', stdout2)
