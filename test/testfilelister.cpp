@@ -27,8 +27,6 @@
 #include <list>
 #include <stdexcept>
 #include <string>
-#include <vector>
-#include <utility>
 
 class TestFileLister : public TestFixture {
 public:
@@ -62,8 +60,7 @@ private:
 
         // Recursively add add files..
         std::list<FileWithDetails> files;
-        std::vector<std::string> masks;
-        PathMatch matcher(std::move(masks));
+        PathMatch matcher({});
         std::string err = FileLister::recursiveAddFiles(files, adddir, {}, matcher);
         ASSERT_EQUALS("", err);
 
@@ -118,8 +115,7 @@ private:
         const std::string basedir = findBaseDir();
 
         std::list<FileWithDetails> files;
-        std::vector<std::string> ignored{"lib/token.cpp"};
-        PathMatch matcher(ignored);
+        PathMatch matcher({"lib/token.cpp"});
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", {}, matcher);
         ASSERT_EQUALS("", err);
         ASSERT(files.empty());
@@ -129,8 +125,7 @@ private:
         const std::string basedir = findBaseDir();
 
         std::list<FileWithDetails> files;
-        std::vector<std::string> ignored;
-        PathMatch matcher(ignored);
+        PathMatch matcher({});
         std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", {}, matcher);
         ASSERT_EQUALS("", err);
         ASSERT_EQUALS(1, files.size());
@@ -141,8 +136,7 @@ private:
         const std::string basedir = findBaseDir() + ".";
 
         std::list<FileWithDetails> files;
-        std::vector<std::string> ignored{"lib/"}; // needs to end with slash so it matches directories - added by CmdLineParser
-        PathMatch matcher(ignored);
+        PathMatch matcher({"lib/"}); // needs to end with slash so it matches directories - added by CmdLineParser
         std::string err = FileLister::recursiveAddFiles(files, basedir, {}, matcher);
         ASSERT_EQUALS("", err);
         ASSERT(!files.empty());
