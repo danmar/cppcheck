@@ -86,6 +86,9 @@ PathMatch::PathMatch(const std::vector<std::string> &paths, bool caseSensitive)
         }
     }
 
+    if (regex_string.empty())
+        regex_string = "^$";
+
     if (caseSensitive)
         mRegex = std::regex(regex_string, std::regex_constants::extended);
     else
