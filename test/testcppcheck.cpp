@@ -238,15 +238,15 @@ private:
         }
     }
 
-    void checkWithFile() {
+    void checkWithFile() const {
         checkWithFileInternal(false);
     }
 
-    void checkWithFileWithTools() {
+    void checkWithFileWithTools() const {
         checkWithFileInternal(true);
     }
 
-    void checkWithFileWithToolsNoCommand() {
+    void checkWithFileWithToolsNoCommand() const {
         checkWithFileInternal(true, true);
     }
 
@@ -323,15 +323,15 @@ private:
         }
     }
 
-    void checkWithFS() {
+    void checkWithFS() const {
         checkWithFSInternal(false);
     }
 
-    void checkWithFSWithTools() {
+    void checkWithFSWithTools() const {
         checkWithFSInternal(true);
     }
 
-    void checkWithFSWithToolsNoCommand() {
+    void checkWithFSWithToolsNoCommand() const {
         checkWithFSInternal(true, true);
     }
 
