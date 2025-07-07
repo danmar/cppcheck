@@ -320,6 +320,7 @@ protected:
 #define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (const AssertFailedError&) {} catch (...) { assertNoThrowFail(__FILE__, __LINE__, false); } } } while (false)
 
 #define ASSERT( CONDITION ) assert_(__FILE__, __LINE__, (CONDITION))
+#define ASSERT_MSG( CONDITION, MSG ) assert_(__FILE__, __LINE__, (CONDITION), MSG)
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION))
 #define ASSERT_LOC_MSG( CONDITION, MSG, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION), MSG)
 // *INDENT-OFF*
