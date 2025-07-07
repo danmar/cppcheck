@@ -367,6 +367,14 @@ print("""
         {27,0,1,Req}
     };
 
+    const std::vector<MisraCppInfo> misraCpp2023Directives =
+    {
+        {0,3,1,Adv},
+        {0,3,2,Req},
+        {5,7,2,Adv},
+        {15,8,1,Req},
+    };
+
     const std::vector<MisraCppInfo> misraCpp2023Rules =
     {
         {0,0,1,Req},
@@ -377,15 +385,12 @@ print("""
         {0,2,2,Req},
         {0,2,3,Adv},
         {0,2,4,Adv},
-        {0,3,1,Adv},
-        {0,3,2,Req},
         {4,1,1,Req},
         {4,1,2,Adv},
         {4,1,3,Req},
         {4,6,1,Req},
         {5,0,1,Adv},
         {5,7,1,Req},
-        {5,7,2,Adv},
         {5,7,3,Req},
         {5,10,1,Req},
         {5,13,1,Req},
@@ -491,7 +496,6 @@ print("""
         {15,1,3,Req},
         {15,1,4,Adv},
         {15,1,5,Req},
-        {15,8,1,Req},
         {16,5,2,Req},
         {16,6,1,Adv},
         {17,8,1,Req},
