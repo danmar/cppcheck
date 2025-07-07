@@ -41,6 +41,29 @@ def test_empty_project(tmpdir, project_ext, expected):
     __test_project_error(tmpdir, project_ext, None, expected)
 
 
+def test_json_entry_file_not_found(tmpdir):
+    compilation_db = [
+        {"directory": str(tmpdir),
+         "command": "c++ -o bug1.o -c bug1.cpp",
+         "file": "bug1.cpp",
+         "output": "bug1.o"}
+    ]
+
+    project_file = os.path.join(tmpdir, "file.json")
+    missing_file = os.path.join(tmpdir, "bug1.cpp")
+
+    expected = f"{missing_file}:1:0: error: File is missing: {missing_file} [syntaxError]\n\n^\n"
+    if sys.platform == "win32":
+        expected = expected.replace('\\', '/')
+
+    with open(project_file, 'w') as f:
+        f.write(json.dumps(compilation_db))
+
+    ret, stdout, stderr = cppcheck(["--project=" + str(project_file)])
+    assert 0 == ret
+    assert expected == stderr
+
+
 def test_json_no_arguments(tmpdir):
     compilation_db = [
         {"directory": str(tmpdir),
