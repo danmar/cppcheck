@@ -51,17 +51,17 @@ def test_json_entry_file_not_found(tmpdir):
 
     project_file = os.path.join(tmpdir, "file.json")
     missing_file = os.path.join(tmpdir, "bug1.cpp")
+    missing_file_posix = missing_file
 
-    expected = f"{missing_file}:1:0: error: File is missing: {missing_file} [syntaxError]\n\n^\n"
     if sys.platform == "win32":
-        expected = expected.replace('\\', '/')
+        missing_file_posix = missing_file_posix.replace('\\', '/')
 
     with open(project_file, 'w') as f:
         f.write(json.dumps(compilation_db))
 
     ret, stdout, stderr = cppcheck(["--project=" + str(project_file)])
     assert 0 == ret
-    assert expected == stderr
+    assert f"{missing_file}:1:0: error: File is missing: {missing_file_posix} [syntaxError]\n\n^\n" == stderr
 
 
 def test_json_no_arguments(tmpdir):
