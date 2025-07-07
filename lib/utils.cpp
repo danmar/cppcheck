@@ -17,6 +17,7 @@
  */
 
 #include "utils.h"
+#include "path.h"
 
 #include <algorithm>
 #include <cctype>
@@ -118,8 +119,19 @@ bool matchglob(const std::string& pattern, const std::string& name, bool caseIns
 }
 
 bool matchglobs(const std::vector<std::string> &patterns, const std::string &name, bool caseInsensitive) {
-    return std::any_of(begin(patterns), end(patterns), [&name, caseInsensitive](const std::string &pattern) {
-        return matchglob(pattern, name, caseInsensitive);
+    std::string abspath, relpath;
+    if (Path::isAbsolute(name) || name.find("*") != std::string::npos) {
+        abspath = name;
+        const std::string& currentPath = Path::getCurrentPath();
+        if (name.size() > currentPath.size() + 1 && startsWith(name, currentPath + "/"))
+            relpath = name.substr(currentPath.size() + 1);
+    } else {
+        abspath = Path::simplifyPath(Path::getCurrentPath() + "/" + name);
+        relpath = name;
+    }
+
+    return std::any_of(begin(patterns), end(patterns), [&abspath, &relpath, caseInsensitive](const std::string &pattern) {
+        return matchglob(pattern, abspath, caseInsensitive) || (!relpath.empty() && matchglob(pattern, relpath, caseInsensitive));
     });
 }
 
