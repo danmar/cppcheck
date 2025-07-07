@@ -292,6 +292,8 @@ private:
         TEST_CASE(testMissingIncludeMixed);
         TEST_CASE(testMissingIncludeCheckConfig);
 
+        TEST_CASE(hasInclude);
+
         TEST_CASE(limitsDefines);
 
         TEST_CASE(hashCalculation);
@@ -2565,6 +2567,23 @@ private:
                       "test.c:6:0: information: Include file: \"header4.h\" not found. [missingInclude]\n"
                       "test.c:9:0: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
                       "test.c:11:0: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
+    }
+
+    void hasInclude() {
+        const char code[] = "#if __has_include(<directory/non-existent-header.h>)\n123\n#endif";
+        Settings settings;
+
+        settings.standards.setStd("c++11");
+        ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) failed to evaluate #if condition, division/modulo by zero [preprocessorErrorDirective]\n", errout_str());
+
+        settings.standards.setStd("c++17");
+        ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));
+        ASSERT_EQUALS("", errout_str());
+
+        settings.standards.setStd("gnu++11");
+        ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void limitsDefines() {
