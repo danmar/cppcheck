@@ -181,7 +181,7 @@ private:
         if (tools)
         {
             addons.emplace("testcppcheck");
-            addonInfo.emplace_back(AddonInfo());
+            addonInfo.emplace_back(/*AddonInfo()*/);
         }
         const auto s = dinit(Settings,
                              $.templateFormat = templateFormat,
@@ -266,7 +266,7 @@ private:
         if (tools)
         {
             addons.emplace("testcppcheck");
-            addonInfo.emplace_back(AddonInfo());
+            addonInfo.emplace_back(/*AddonInfo()*/);
         }
         const auto s = dinit(Settings,
                              $.templateFormat = templateFormat,
