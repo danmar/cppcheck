@@ -122,7 +122,7 @@ private:
         ASSERT(foundMissingIncludeSystem);
     }
 
-    static std::string exename(std::string exe)
+    static std::string exename(const std::string& exe)
     {
 #ifdef _WIN32
         return exe + ".exe";
@@ -133,7 +133,8 @@ private:
 
     CppCheck::ExecuteCmdFn getExecuteCommand(int& called) const
     {
-        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        // cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
+        // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
         return [&](std::string exe, std::vector<std::string> args, std::string redirect, std::string& /*output*/) -> int {
             ++called;
             if (exe == exename("clang-tidy"))
