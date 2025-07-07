@@ -10,7 +10,7 @@ GUI:
 -
 
 Changed interface:
--
+- Clang import, activated by --clang option, was refactored to read json data. The clang import has never been robust before because it didn't rely on a robust input format. The Clang json format is much better to use and this will be much better in the long run. However, do not expect that clang import works well yet, in particular the Clang import does not handle C++ constructs well yet and therefore C++ files will be skipped by Clang import.
 
 Deprecations:
 - Support for building with Qt 5 will be removed in Cppcheck 2.19.
