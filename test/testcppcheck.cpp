@@ -122,7 +122,7 @@ private:
         ASSERT(foundMissingIncludeSystem);
     }
 
-    static std::string exename(const std::string& exe)
+    static std::string exename_(const std::string& exe)
     {
 #ifdef _WIN32
         return exe + ".exe";
@@ -137,7 +137,7 @@ private:
         // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
         return [&](std::string exe, std::vector<std::string> args, std::string redirect, std::string& /*output*/) -> int {
             ++called;
-            if (exe == exename("clang-tidy"))
+            if (exe == exename_("clang-tidy"))
             {
                 ASSERT_EQUALS(4, args.size());
                 ASSERT_EQUALS("-quiet", args[0]);
@@ -147,14 +147,14 @@ private:
                 ASSERT_EQUALS("2>&1", redirect);
                 return EXIT_SUCCESS;
             }
-            if (exe == exename("python3"))
+            if (exe == exename_("python3"))
             {
                 ASSERT_EQUALS(1, args.size());
                 ASSERT_EQUALS("--version", args[0]);
                 ASSERT_EQUALS("2>&1", redirect);
                 return EXIT_SUCCESS;
             }
-            if (exe == exename("python"))
+            if (exe == exename_("python"))
             {
                 ASSERT_EQUALS(1, args.size());
                 ASSERT_EQUALS("--version", args[0]);
@@ -218,7 +218,7 @@ private:
 
                 // TODO: clang-tidy is currently not invoked for file inputs - see #12053
                 // TODO: needs to become a proper error
-                TODO_ASSERT_EQUALS("Failed to execute '" + exename("clang-tidy") + "' (no command callback provided)\n", "", GET_REDIRECT_ERROUT);
+                TODO_ASSERT_EQUALS("Failed to execute '" + exename_("clang-tidy") + "' (no command callback provided)\n", "", GET_REDIRECT_ERROUT);
 
                 ASSERT_EQUALS(0, called); // not called because we check if the callback exists
             }
@@ -303,7 +303,7 @@ private:
                 ASSERT_EQUALS("Bailing out from analysis: Checking file failed: Failed to execute addon - no command callback provided", it->shortMessage()); // TODO: add addon name
 
                 // TODO: needs to become a proper error
-                ASSERT_EQUALS("Failed to execute '" + exename("clang-tidy") + "' (no command callback provided)\n", GET_REDIRECT_ERROUT);
+                ASSERT_EQUALS("Failed to execute '" + exename_("clang-tidy") + "' (no command callback provided)\n", GET_REDIRECT_ERROUT);
 
                 ASSERT_EQUALS(0, called); // not called because we check if the callback exists
             }
