@@ -983,17 +983,22 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
     case ReportType::misraCpp2008:
     case ReportType::misraCpp2023:
     {
-        char delim;
         const std::vector<checkers::MisraCppInfo> *info;
+        std::vector<std::string> components;
+
         if (reportType == ReportType::misraCpp2008) {
-            delim = '-';
             info = &checkers::misraCpp2008Rules;
+            components = splitString(guideline, '-');
         } else {
-            delim = '.';
-            info = &checkers::misraCpp2023Rules;
+            if (guideline.rfind("Dir ", 0) == 0) {
+                components = splitString(guideline.substr(4), '.');
+                info = &checkers::misraCpp2023Directives;
+            } else {
+                components = splitString(guideline, '.');
+                info = &checkers::misraCpp2023Rules;
+            }
         }
 
-        auto components = splitString(guideline, delim);
         if (components.size() != 3)
             return "";
 
