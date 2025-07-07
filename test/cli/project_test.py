@@ -59,7 +59,7 @@ def test_json_entry_file_not_found(tmpdir):
     with open(project_file, 'w') as f:
         f.write(json.dumps(compilation_db))
 
-    ret, stdout, stderr = cppcheck(["--project=" + str(project_file)])
+    ret, _, stderr = cppcheck(["--project=" + str(project_file)])
     assert 0 == ret
     assert f"{missing_file}:1:0: error: File is missing: {missing_file_posix} [syntaxError]\n\n^\n" == stderr
 
