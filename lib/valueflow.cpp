@@ -486,7 +486,7 @@ static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueFlo
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, size_t /*bits*/) {
+        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, MathLib::bigint /*bits*/) {
             size_t a = getAlignOf(vt2, settings, accuracy, ++maxRecursion);
             return std::max(max, a);
         };
