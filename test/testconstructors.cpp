@@ -3037,7 +3037,7 @@ private:
         check("struct C {\n" // #13989
               "    C() = default;\n"
               "    std::list<int>::const_iterator it;\n"
-              "};\n", dinit(CheckOptions, $.inconclusive = true, $.s = &s));
+              "};\n", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("[test.cpp:2:5]: (warning) Member variable 'C::it' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
