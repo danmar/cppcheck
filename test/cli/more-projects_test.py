@@ -372,6 +372,66 @@ def test_project_file_filter_3(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
+def test_project_relpath_file_filter_abspath(tmpdir):
+    """
+    relative paths in project file, absolute path in file filter
+    """
+    test_file_cpp = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        pass
+    test_file_c = os.path.join(tmpdir, 'test.c')
+    with open(test_file_c, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="test.cpp"/>
+        <dir name="test.c"/>
+    </paths>
+</project>""")
+
+    out_lines = [
+        'Checking test.c ...'
+    ]
+
+    args = ['--file-filter={}'.format(test_file_c), '--project=test.cppcheck']
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=tmpdir)
+
+
+def test_project_abspath_file_filter_relpath(tmpdir):
+    """
+    absolute paths in project file, relative path in file filter
+    """
+    test_file_cpp = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        pass
+    test_file_c = os.path.join(tmpdir, 'test.c')
+    with open(test_file_c, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_c, test_file_cpp))
+
+    out_lines = [
+        'Checking {} ...'.format(test_file_c)
+    ]
+
+    args = ['--file-filter=test.c', '--project=test.cppcheck']
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=tmpdir)
+
+
 def test_project_file_filter_no_match(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:

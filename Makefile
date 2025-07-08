@@ -645,7 +645,7 @@ $(libcppdir)/token.o: lib/token.cpp externals/simplecpp/simplecpp.h lib/addoninf
 $(libcppdir)/tokenlist.o: lib/tokenlist.cpp externals/simplecpp/simplecpp.h lib/addoninfo.h lib/astutils.h lib/checkers.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/keywords.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/smallvector.h lib/standards.h lib/templatesimplifier.h lib/token.h lib/tokenlist.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/tokenlist.cpp
 
-$(libcppdir)/utils.o: lib/utils.cpp lib/config.h lib/utils.h
+$(libcppdir)/utils.o: lib/utils.cpp lib/config.h lib/path.h lib/standards.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/utils.cpp
 
 $(libcppdir)/vf_analyzers.o: lib/vf_analyzers.cpp lib/addoninfo.h lib/analyzer.h lib/astutils.h lib/calculate.h lib/checkers.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/programmemory.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/valueflow.h lib/valueptr.h lib/vf_analyzers.h lib/vf_common.h lib/vf_settokenvalue.h lib/vfvalue.h
