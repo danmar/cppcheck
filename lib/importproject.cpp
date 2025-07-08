@@ -1325,9 +1325,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         } else if (strcmp(name, CppcheckXml::BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, empty_if_null(node->GetText()));
         else if (strcmp(name, CppcheckXml::IncludeDirElementName) == 0)
-            temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib);
+            temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::DefinesElementName) == 0)
-            temp.userDefines = join(readXmlStringList(node, "", CppcheckXml::DefineName, CppcheckXml::DefineNameAttrib), ";");
+            temp.userDefines = join(readXmlStringList(node, "", CppcheckXml::DefineName, CppcheckXml::DefineNameAttrib), ";"); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::UndefinesElementName) == 0) {
             for (const std::string &u : readXmlStringList(node, "", CppcheckXml::UndefineName, nullptr))
                 temp.userUndefs.insert(u);
@@ -1339,15 +1339,15 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         else if (strcmp(name, CppcheckXml::PathsElementName) == 0)
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(name, CppcheckXml::ExcludeElementName) == 0)
-            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib);
+            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::FunctionContracts) == 0)
             ;
         else if (strcmp(name, CppcheckXml::VariableContractsElementName) == 0)
             ;
         else if (strcmp(name, CppcheckXml::IgnoreElementName) == 0)
-            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
+            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::LibrariesElementName) == 0)
-            guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
+            guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::SuppressionsElementName) == 0) {
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
                 if (strcmp(child->Name(), CppcheckXml::SuppressionElementName) != 0)
@@ -1439,13 +1439,14 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
             return false;
         }
     }
-    settings.basePaths = temp.basePaths;
+    settings.basePaths = temp.basePaths; // TODO: append instead of overwrite
     settings.relativePaths |= temp.relativePaths;
     settings.buildDir = temp.buildDir;
-    settings.includePaths = temp.includePaths;
-    settings.userDefines = temp.userDefines;
-    settings.userUndefs = temp.userUndefs;
-    settings.addons = temp.addons;
+    settings.includePaths = temp.includePaths; // TODO: append instead of overwrite
+    settings.userDefines = temp.userDefines; // TODO: append instead of overwrite
+    settings.userUndefs = temp.userUndefs; // TODO: append instead of overwrite
+    for (const std::string &addon : temp.addons)
+        settings.addons.emplace(addon);
     settings.clang = temp.clang;
     settings.clangTidy = temp.clangTidy;
     settings.analyzeAllVsConfigs = temp.analyzeAllVsConfigs;
