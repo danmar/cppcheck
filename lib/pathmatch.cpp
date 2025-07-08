@@ -55,8 +55,16 @@ static std::string translate(const std::string &s)
     return r;
 }
 
-PathMatch::PathMatch(const std::vector<std::string> &paths, bool caseSensitive)
+PathMatch::PathMatch(const std::vector<std::string> &paths, const std::string &basepath, Mode mode)
 {
+    if (mode == Mode::platform) {
+#ifdef _WIN32
+        mode = Mode::icase;
+#else
+        mode = Mode::scase;
+#endif
+    }
+
     std::string regex_string;
 
     for (auto p : paths) {
@@ -66,10 +74,14 @@ PathMatch::PathMatch(const std::vector<std::string> &paths, bool caseSensitive)
         if (!regex_string.empty())
             regex_string.push_back('|');
 
-        p = Path::fromNativeSeparators(p);
+        if (p.front() == '.') {
+            if (Path::isAbsolute(basepath))
+                p = basepath + "/" + p;
+            else
+                p = Path::getCurrentPath() + "/" + basepath + "/" + p;
+        }
 
-        if (p.front() == '.')
-            p = Path::getCurrentPath() + "/" + p;
+        p = Path::fromNativeSeparators(p);
 
         if (Path::isAbsolute(p)) {
             p = Path::simplifyPath(p);
@@ -89,21 +101,23 @@ PathMatch::PathMatch(const std::vector<std::string> &paths, bool caseSensitive)
     if (regex_string.empty())
         regex_string = "^$";
 
-    if (caseSensitive)
-        mRegex = std::regex(regex_string, std::regex_constants::extended);
-    else
+    if (mode == Mode::icase)
         mRegex = std::regex(regex_string, std::regex_constants::extended | std::regex_constants::icase);
+    else
+        mRegex = std::regex(regex_string, std::regex_constants::extended);
 }
 
-bool PathMatch::match(const std::string &path) const
+bool PathMatch::match(const std::string &path, const std::string &basepath) const
 {
     std::string p;
     std::smatch m;
 
     if (Path::isAbsolute(path))
-        p = Path::simplifyPath(path);
+        p = Path::fromNativeSeparators(Path::simplifyPath(path));
+    else if (Path::isAbsolute(basepath))
+        p = Path::fromNativeSeparators(Path::simplifyPath(basepath + "/" + path));
     else
-        p = Path::simplifyPath(Path::getCurrentPath() + "/" + path);
+        p = Path::fromNativeSeparators(Path::simplifyPath(Path::getCurrentPath() + "/" + basepath + "/" + path));
 
     return std::regex_search(p, m, mRegex, std::regex_constants::match_any | std::regex_constants::match_not_null);
 }

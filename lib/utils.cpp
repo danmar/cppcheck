@@ -85,10 +85,6 @@ bool matchglob(const std::string& pattern, const std::string& name, bool caseIns
                     n++;
                 } else if (caseInsensitive && tolower(*n) == tolower(*p)) {
                     n++;
-                } else if (*n == '\\' && *p == '/') {
-                    n++;
-                } else if (*n == '/' && *p == '\\') {
-                    n++;
                 } else {
                     matching = false;
                 }

@@ -40,16 +40,16 @@
  *    - Otherwise, match all files where the rule matches the file's simplified absolute path.
  *      Globs are allowed in the rule.
  *  - If a rule starts with '.':
- *    - The rule is interpreted as a path relative to the execution directory (when passed to the CLI),
- *      or the directory containing the project file (when imported), and then converted to an absolute path and
- *      treatesd as such according to the above procedure.
+ *    - The rule is interpreted as a path relative to `basepath`, which should be the execution directory for rules
+ *      passed to the CLI, or the directory containing the project file when imported, and then converted to an
+ *      absolute path and treated as such according to the above procedure.
  *  - Otherwise:
  *    - No simplification is done to the rule.
  *    - If the rule ends with a path separator:
  *      - Match all files where the rule matches any part of the file's simplified absolute path, and the matching
  *        part directly follows a path separator. Globs are allowed in the rule.
  *    - Otherwise:
- *      - Match all files where the rules matches the end of the file's simplified absolute path, and the matching
+ *      - Match all files where the rule matches the end of the file's simplified absolute path, and the matching
  *        part directly follows a path separator. Globs are allowed in the rule.
  *
  * - Glob rules:
@@ -65,15 +65,29 @@ class CPPCHECKLIB PathMatch {
 public:
 
     /**
+     * @brief Case sensitivity mode.
+     *
+     * platform: Use the platform default.
+     * scase: Case sensitive.
+     * icase: Case insensitive.
+     **/
+    enum class Mode {
+        platform,
+        scase,
+        icase,
+    };
+
+    /**
      * The constructor.
      *
      * If a path is a directory it needs to end with a file separator.
      *
      * @param paths List of masks.
-     * @param caseSensitive Match the case of the characters when
-     *   matching paths?
+     * @param basepath Path to which matched paths are relative, when applicable. Can be relative, in which case it is
+     * appended to Path::getCurrentPath().
+     * @param mode Case sensitivity mode.
      */
-    explicit PathMatch(const std::vector<std::string> &paths, bool caseSensitive = true);
+    explicit PathMatch(const std::vector<std::string> &paths, const std::string &basepath = std::string(), Mode mode = Mode::platform);
 
     /**
      * @brief Match path against list of masks.
@@ -83,7 +97,7 @@ public:
      * @param path Path to match.
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool match(const std::string &path) const;
+    bool match(const std::string &path, const std::string &basepath = std::string()) const;
 
 private:
     std::regex mRegex;

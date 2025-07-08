@@ -45,7 +45,7 @@
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
-    PathMatch matcher(ipaths);
+    PathMatch matcher(ipaths, mPath);
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         if (matcher.match(it->filename())) {
             if (debug)
@@ -840,8 +840,9 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
     }
 
     // Project files
+    PathMatch filtermatcher(fileFilters);
     for (const std::string &cfilename : compileList) {
-        if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
+        if (!fileFilters.empty() && !filtermatcher.match(cfilename))
             continue;
 
         for (const ProjectConfiguration &p : projectConfigurationList) {
@@ -919,6 +920,8 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     SharedItemsProject result;
     result.pathToProjectFile = filename;
 
+    PathMatch filtermatcher(fileFilters);
+
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
@@ -939,8 +942,8 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                         std::string file(include);
                         findAndReplace(file, "$(MSBuildThisFileDirectory)", "./");
 
-                        // Don't include file if it matches the filter
-                        if (!fileFilters.empty() && !matchglobs(fileFilters, file))
+                        // Skip file if it doesn't match the filter
+                        if (!fileFilters.empty() && !filtermatcher.match(file))
                             continue;
 
                         result.sourceFiles.emplace_back(file);

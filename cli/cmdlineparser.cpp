@@ -209,8 +209,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::list<FileSettings> fileSettings;
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
+            PathMatch filtermatcher(mSettings.fileFilters);
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
-                return matchglobs(mSettings.fileFilters, fs.filename());
+                return filtermatcher.match(fs.filename());
             });
             if (fileSettings.empty()) {
                 mLogger.printError("could not find any files matching the filter.");
@@ -242,16 +243,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
     if (!pathnamesRef.empty()) {
         std::list<FileWithDetails> filesResolved;
-        // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
-#if defined(_WIN32)
-        // For Windows we want case-insensitive path matching
-        const bool caseSensitive = false;
-#else
-        const bool caseSensitive = true;
-#endif
         // Execute recursiveAddFiles() to each given file parameter
         // TODO: verbose log which files were ignored?
-        const PathMatch matcher(ignored, caseSensitive);
+        const PathMatch matcher(ignored);
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher, mSettings.debugignore);
             if (!err.empty()) {
@@ -2160,13 +2154,9 @@ bool CmdLineParser::loadCppcheckCfg()
 std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::string>& fileFilters,
                                                       const std::list<FileWithDetails>& filesResolved) {
     std::list<FileWithDetails> files;
-#ifdef _WIN32
-    constexpr bool caseInsensitive = true;
-#else
-    constexpr bool caseInsensitive = false;
-#endif
+    PathMatch filtermatcher(fileFilters);
     std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
-        return matchglobs(fileFilters, entry.path(), caseInsensitive) || matchglobs(fileFilters, entry.spath(), caseInsensitive);
+        return filtermatcher.match(entry.path()) || filtermatcher.match(entry.spath());
     });
     return files;
 }
