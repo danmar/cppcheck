@@ -113,12 +113,6 @@ bool matchglob(const std::string& pattern, const std::string& name, bool caseIns
     }
 }
 
-bool matchglobs(const std::vector<std::string> &patterns, const std::string &name, bool caseInsensitive) {
-    return std::any_of(begin(patterns), end(patterns), [&name, caseInsensitive](const std::string &pattern) {
-        return matchglob(pattern, name, caseInsensitive);
-    });
-}
-
 void strTolower(std::string& str)
 {
     // This wrapper exists because Sun's CC does not allow a static_cast
