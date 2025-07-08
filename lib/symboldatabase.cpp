@@ -5767,11 +5767,11 @@ static bool hasMatchingConstructor(const Scope* classScope, const ValueType* arg
             return false;
         const ValueType* vt = f.getArgumentVar(0)->valueType();
         return vt &&
-               vt->type == argType->type &&
-               (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
-               vt->pointer == argType->pointer &&
-               (vt->constness & 1) >= (argType->constness & 1) &&
-               (vt->volatileness & 1) >= (argType->volatileness & 1);
+        vt->type == argType->type &&
+        (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
+        vt->pointer == argType->pointer &&
+        (vt->constness & 1) >= (argType->constness & 1) &&
+        (vt->volatileness & 1) >= (argType->volatileness & 1);
     });
 }
 
