@@ -45,7 +45,7 @@
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
-    PathMatch matcher(ipaths, mPath);
+    PathMatch matcher(ipaths);
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         if (matcher.match(it->filename())) {
             if (debug)

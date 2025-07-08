@@ -57,6 +57,13 @@ static std::string translate(const std::string &s)
 
 PathMatch::PathMatch(const std::vector<std::string> &paths, const std::string &basepath, Mode mode)
 {
+    if (basepath.empty())
+        mBasepath = Path::getCurrentPath();
+    else if (Path::isAbsolute(basepath))
+        mBasepath = basepath;
+    else
+        mBasepath = Path::getCurrentPath() + "/" + basepath;
+
     if (mode == Mode::platform) {
 #ifdef _WIN32
         mode = Mode::icase;
@@ -74,12 +81,8 @@ PathMatch::PathMatch(const std::vector<std::string> &paths, const std::string &b
         if (!regex_string.empty())
             regex_string.push_back('|');
 
-        if (p.front() == '.') {
-            if (Path::isAbsolute(basepath))
-                p = basepath + "/" + p;
-            else
-                p = Path::getCurrentPath() + "/" + basepath + "/" + p;
-        }
+        if (p.front() == '.')
+            p = mBasepath + "/" + p;
 
         p = Path::fromNativeSeparators(p);
 
@@ -107,17 +110,15 @@ PathMatch::PathMatch(const std::vector<std::string> &paths, const std::string &b
         mRegex = std::regex(regex_string, std::regex_constants::extended);
 }
 
-bool PathMatch::match(const std::string &path, const std::string &basepath) const
+bool PathMatch::match(const std::string &path) const
 {
     std::string p;
     std::smatch m;
 
     if (Path::isAbsolute(path))
         p = Path::fromNativeSeparators(Path::simplifyPath(path));
-    else if (Path::isAbsolute(basepath))
-        p = Path::fromNativeSeparators(Path::simplifyPath(basepath + "/" + path));
     else
-        p = Path::fromNativeSeparators(Path::simplifyPath(Path::getCurrentPath() + "/" + basepath + "/" + path));
+        p = Path::fromNativeSeparators(Path::simplifyPath(mBasepath + "/" + path));
 
     return std::regex_search(p, m, mRegex, std::regex_constants::match_any | std::regex_constants::match_not_null);
 }

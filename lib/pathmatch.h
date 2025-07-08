@@ -40,9 +40,9 @@
  *    - Otherwise, match all files where the rule matches the file's simplified absolute path.
  *      Globs are allowed in the rule.
  *  - If a rule starts with '.':
- *    - The rule is interpreted as a path relative to `basepath`, which should be the execution directory for rules
- *      passed to the CLI, or the directory containing the project file when imported, and then converted to an
- *      absolute path and treated as such according to the above procedure.
+ *    - The rule is interpreted as a path relative to `basepath` and then converted to an absolute path and
+ *      treated as such according to the above procedure. If the rule is relative to some other directory, it should
+ *      be modified to be relative to `basepath` first (this should be done with rules in project files, for example).
  *  - Otherwise:
  *    - No simplification is done to the rule.
  *    - If the rule ends with a path separator:
@@ -83,8 +83,8 @@ public:
      * If a path is a directory it needs to end with a file separator.
      *
      * @param paths List of masks.
-     * @param basepath Path to which matched paths are relative, when applicable. Can be relative, in which case it is
-     * appended to Path::getCurrentPath().
+     * @param basepath Path to which rules and matched paths are relative, when applicable. Can be relative, in which
+     * case it is appended to Path::getCurrentPath().
      * @param mode Case sensitivity mode.
      */
     explicit PathMatch(const std::vector<std::string> &paths, const std::string &basepath = std::string(), Mode mode = Mode::platform);
@@ -97,9 +97,10 @@ public:
      * @param path Path to match.
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool match(const std::string &path, const std::string &basepath = std::string()) const;
+    bool match(const std::string &path) const;
 
 private:
+    std::string mBasepath;
     std::regex mRegex;
 };
 
