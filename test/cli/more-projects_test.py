@@ -492,7 +492,7 @@ def test_project_pathmatch_other_cwd(tmpdir):
     out_lines = [
         'Checking {} ...'.format(test_file_5),
         '1/2 files checked 0% done',
-        'Checking ../cwd/b/b-rel.c ...',
+        'Checking {} ...'.format(os.path.join("..", "cwd", "b", "b-rel.c")),
         '2/2 files checked 0% done'
     ]
 

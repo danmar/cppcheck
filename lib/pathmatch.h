@@ -21,6 +21,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <regex>
 #include <string>
 #include <vector>
@@ -71,7 +72,7 @@ public:
      * scase: Case sensitive.
      * icase: Case insensitive.
      **/
-    enum class Mode {
+    enum class Mode : std::uint8_t {
         platform,
         scase,
         icase,
