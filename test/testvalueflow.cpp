@@ -176,6 +176,8 @@ private:
 
         TEST_CASE(performanceIfCount);
         TEST_CASE(bitfields);
+
+        TEST_CASE(bitfieldsHang);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -9135,6 +9137,12 @@ private:
 
         testBitfields("unsigned char a : 16;\n",
                       2);
+    }
+
+    void bitfieldsHang() {
+        const char *code = "struct S { unknown_type x : 1; };\n"
+                           "const size_t size = sizeof(S);\n";
+        (void)valueOfTok(code, "x");
     }
 };
 

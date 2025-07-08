@@ -541,6 +541,8 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
             const size_t charBit = settings.platform.char_bit;
             size_t n = ValueFlow::getSizeOf(vt2, settings,accuracy, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings, accuracy);
+            if (n == 0 || a == 0)
+                return accuracy == Accuracy::ExactOrZero ? 0 : total;
             if (bits == 0) {
                 if (currentBitfieldAlloc == 0) {
                     bits = n * charBit;
@@ -565,8 +567,6 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
                 currentBitCount += bits;
                 return ret;
             }
-            if (n == 0 || a == 0)
-                return accuracy == Accuracy::ExactOrZero ? 0 : total;
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             if (currentBitCount > 0) {
