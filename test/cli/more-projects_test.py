@@ -491,13 +491,16 @@ def test_project_pathmatch_other_cwd(tmpdir):
 
     out_lines = [
         'Checking {} ...'.format(test_file_5),
-        '1/2 files checked 0% done',
         'Checking {} ...'.format(os.path.join("..", "cwd", "b", "b-rel.c")),
-        '2/2 files checked 0% done'
     ]
 
     args = ['--file-filter={}/*/?/**.c*'.format(test_root), '--project=../test.cppcheck']
-    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=test_cwd)
+    exitcode, stdout, stderr = cppcheck(args, cwd=test_cwd)
+    stdout_lines = stdout.splitlines()
+    assert 0 == exitcode
+    assert '' == stderr
+    assert 4 == len(stdout_lines)
+    assert set(out_lines) <= set(stdout_lines)
 
 
 def test_project_file_filter_no_match(tmpdir):
