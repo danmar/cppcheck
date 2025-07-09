@@ -55,7 +55,7 @@ target_dll_compile_definitions(cppcheck-core EXPORT CPPCHECKLIB_EXPORT)
 target_dll_compile_definitions(cppcheck-core-private IMPORT CPPCHECKLIB_IMPORT)
 
 target_include_directories(cppcheck-core INTERFACE .)
-foreach(lib tinyxml2 simplecpp picojson)
+foreach(lib tinyxml2 simplecpp picojson ${PCRE_LIBRARY})
     if (NOT BUILD_SHARED_LIBS)
         target_link_libraries(cppcheck-core INTERFACE $<LINK_ONLY:${lib}>)
     endif()
