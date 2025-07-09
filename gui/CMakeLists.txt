@@ -26,7 +26,7 @@ CheckOptions:
     endif()
 
     add_executable(cppcheck-gui ${cppcheck-gui-deps} ${cppcheck-gui_SOURCES})
-    target_link_libraries(frontend_objs cppcheck-core simplecpp tinyxml2 picojson)
+    target_link_libraries(cppcheck-gui cppcheck-core simplecpp tinyxml2 picojson)
 
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
     set_target_properties(cppcheck-gui PROPERTIES WIN32_EXECUTABLE ON)
