@@ -2,7 +2,7 @@ file(GLOB hdrs "*.h")
 file(GLOB srcs "*.cpp")
 
 add_library(tinyxml2 ${srcs} ${hdrs})
-target_dll_compile_definitions(tinyxml2 TINYXML2_EXPORT TINYXML2_IMPORT)
+target_dll_compile_definitions(tinyxml2 EXPORT TINYXML2_EXPORT IMPORT TINYXML2_IMPORT)
 
 # TODO: needs to be fixed upstream
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
