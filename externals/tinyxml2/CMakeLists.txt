@@ -20,5 +20,5 @@ if(CYGWIN)
     target_compile_definitions(-D_LARGEFILE_SOURCE)  # required for fseeko() and ftello()
 endif()
 
-target_include_directories(tinyxml2 SYSTEM PUBLIC .)
+target_include_directories(tinyxml2 PUBLIC .)
 
