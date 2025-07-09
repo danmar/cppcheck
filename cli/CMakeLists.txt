@@ -23,7 +23,7 @@ if (BUILD_CLI)
     endif()
 
     add_executable(cppcheck ${cppcheck_SOURCES})
-    target_link_libraries(cppcheck PRIVATE cppcheck-core cli tinyxml2 simplecpp)
+    target_link_libraries(cppcheck cppcheck-core cli tinyxml2 simplecpp)
     if (HAVE_RULES)
         target_link_libraries(cppcheck ${PCRE_LIBRARY})
     endif()
