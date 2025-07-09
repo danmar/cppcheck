@@ -39,6 +39,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(test-resultstree -Wno-missing-noreturn)
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # caused by mocks
+    target_compile_options_safe(test-resultstree -Wno-suggest-attribute=noreturn)
+endif()
+
+
 if (REGISTER_GUI_TESTS)
     # TODO: might crash - see #13223
     #add_test(NAME test-resultstree COMMAND $<TARGET_FILE:test-resultstree> -platform offscreen)
