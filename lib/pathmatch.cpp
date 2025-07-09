@@ -84,25 +84,21 @@ PathMatch::PathMatch(const std::vector<std::string> &paths, const std::string &b
         if (p.front() == '.')
             p = mBasepath + "/" + p;
 
-        p = Path::fromNativeSeparators(p);
+        p = Path::fromNativeSeparators(Path::simplifyPath(p));
 
-        if (Path::isAbsolute(p)) {
-            p = Path::simplifyPath(p);
+        if (p.back() == '/')
+            p.pop_back();
 
-            if (p.back() == '/')
-                regex_string.append("^" + translate(p));
-            else
-                regex_string.append("^" + translate(p) + "$");
-        } else {
-            if (p.back() == '/')
-                regex_string.append("/" + translate(p));
-            else
-                regex_string.append("/" + translate(p) + "$");
-        }
+        if (Path::isAbsolute(p))
+            regex_string.push_back('^');
+        else
+            regex_string.push_back('/');
+
+        regex_string.append(translate(p) + "(/|$)");
     }
 
     if (regex_string.empty())
-        regex_string = "^$";
+        return;
 
     if (mode == Mode::icase)
         mRegex = std::regex(regex_string, std::regex_constants::extended | std::regex_constants::icase);

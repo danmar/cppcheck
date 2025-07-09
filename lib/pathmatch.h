@@ -31,32 +31,25 @@
 
 /**
  *  Path matching rules:
+ *  - All rules are simplified first (path separators vary by platform):
+ *    - '/./' => '/'
+ *    - '/dir/../' => '/'
+ *    - '//' => '/'
+ *    - Trailing slashes are removed
+ *  - Rules can contain globs:
+ *    - '**' matches any number of characters including path separators.
+ *    - '*' matches any number of characters except path separators.
+ *    - '?' matches any single character except path separators.
  *  - If a rule looks like an absolute path (e.g. starts with '/', but varies by platform):
- *    - The rule will be simplified (path separators vary by platform):
- *      - '/./' => '/'
- *      - '/dir/../' => '/'
- *      - '//' => '/'
- *    - If the rule ends with a path separator, match all files where the rule matches the start of the file's
- *      simplified absolute path. Globs are allowed in the rule.
- *    - Otherwise, match all files where the rule matches the file's simplified absolute path.
- *      Globs are allowed in the rule.
+ *    - Match all files where the rule matches the start of the file's simplified absolute path up until a path
+ *      separator or the end of the pathname.
  *  - If a rule starts with '.':
  *    - The rule is interpreted as a path relative to `basepath` and then converted to an absolute path and
  *      treated as such according to the above procedure. If the rule is relative to some other directory, it should
  *      be modified to be relative to `basepath` first (this should be done with rules in project files, for example).
  *  - Otherwise:
- *    - No simplification is done to the rule.
- *    - If the rule ends with a path separator:
- *      - Match all files where the rule matches any part of the file's simplified absolute path, and the matching
- *        part directly follows a path separator. Globs are allowed in the rule.
- *    - Otherwise:
- *      - Match all files where the rule matches the end of the file's simplified absolute path, and the matching
- *        part directly follows a path separator. Globs are allowed in the rule.
- *
- * - Glob rules:
- *   - '**' matches any number of characters including path separators.
- *   - '*' matches any number of characters except path separators.
- *   - '?' matches any single character except path separators.
+ *    - Match all files where the rule matches any part of the file's simplified absolute path up until a
+ *      path separator or the end of the pathname, and the matching part directly follows a path separator.
  **/
 
 /**

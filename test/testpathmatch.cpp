@@ -156,7 +156,7 @@ private:
     }
 
     void onemaskcwd() const {
-        ASSERT(!srcMatcher.match("./src"));
+        ASSERT(srcMatcher.match("./src"));
     }
 
     void twomasklongerpath1() const {
@@ -229,9 +229,9 @@ private:
         PathMatch match({"test?.cpp"});
         ASSERT(match.match("test1.cpp"));
         ASSERT(match.match("src/test1.cpp"));
+        ASSERT(match.match("test1.cpp/src"));
         ASSERT(!match.match("test1.c"));
         ASSERT(!match.match("test.cpp"));
-        ASSERT(!match.match("test1.cpp/src"));
     }
 
     void globstar1() const {

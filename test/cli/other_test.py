@@ -2478,7 +2478,6 @@ def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
 
 
-@pytest.mark.xfail(strict=True)  # #13437 - TODO: suppression needs to match the whole input path
 def test_addon_suppr_cli_file_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:test.c:3'])
 
