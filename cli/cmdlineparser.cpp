@@ -1613,24 +1613,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         return Result::Fail;
     }
 
-    for (auto& path : mIgnoredPaths)
-    {
-        path = Path::removeQuotationMarks(std::move(path));
-        path = Path::simplifyPath(std::move(path));
-
-        bool isdir = false;
-        if (!Path::exists(path, &isdir) && mSettings.debugignore) {
-            // FIXME: this is misleading because we match from the end of the path so it does not require to exist
-            //std::cout << "path to ignore does not exist: " << path << std::endl;
-        }
-        // TODO: this only works when it exists
-        if (isdir) {
-            // If directory name doesn't end with / or \, add it
-            if (!endsWith(path, '/'))
-                path += '/';
-        }
-    }
-
     if (!project.guiProject.pathNames.empty())
         mPathNames = project.guiProject.pathNames;
 
