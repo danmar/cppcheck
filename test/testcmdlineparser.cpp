@@ -2491,6 +2491,7 @@ private:
         ASSERT_EQUALS(1, settings->rules.size());
         auto it = settings->rules.cbegin();
         ASSERT_EQUALS(".+", it->pattern);
+        ASSERT_EQUALS("cppcheck: '--rule' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.\n", logger->str());
     }
 
     void ruleMissingPattern() {
@@ -2547,6 +2548,7 @@ private:
         ASSERT_EQUALS_ENUM(Severity::warning, it->severity);
         ASSERT_EQUALS("ruleId2", it->id);
         ASSERT_EQUALS("ruleSummary2", it->summary);
+        ASSERT_EQUALS("cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.\n", logger->str());
     }
 
     void ruleFileSingle() {
@@ -2570,6 +2572,7 @@ private:
         ASSERT_EQUALS_ENUM(Severity::error, it->severity);
         ASSERT_EQUALS("ruleId", it->id);
         ASSERT_EQUALS("ruleSummary", it->summary);
+        ASSERT_EQUALS("cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.\n", logger->str());
     }
 
     void ruleFileEmpty() {
@@ -2594,12 +2597,14 @@ private:
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' (XML_ERROR_EMPTY_DOCUMENT).\n", logger->str());
     }
 
+    // TODO: bail out instead?
     void ruleFileNoRoot() {
         REDIRECT;
         ScopedFile file("rule.xml", "<?xml version=\"1.0\"?>");
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(0, settings->rules.size());
+        ASSERT_EQUALS("cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.\n", logger->str());
     }
 
     void ruleFileEmptyElements1() {

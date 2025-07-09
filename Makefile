@@ -150,6 +150,7 @@ ifeq ($(HAVE_RULES),yes)
     else
         LIBS=$(shell $(PCRE_CONFIG) --libs)
     endif
+    $(warning The usage of rules has been deprecated and will be removed in a future Cppcheck version. Please use addons instead.)
 else ifneq ($(HAVE_RULES),)
     $(error invalid HAVE_RULES value '$(HAVE_RULES)')
 endif

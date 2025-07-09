@@ -1445,6 +1445,7 @@ void f() { }
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: DEF_1',
         'Processing rule: DEF_2',
@@ -1479,6 +1480,7 @@ void f() { }
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: DEF_.',
         'Checking {}: DEF_3=1...'.format(test_file)
@@ -1512,6 +1514,7 @@ void f(i32) { }
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: int',
     ]
@@ -1544,6 +1547,7 @@ void f(i32) { }
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: i32',
     ]
@@ -1567,6 +1571,7 @@ void f() { }
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
+        "cppcheck: '--rule' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: f',
     ]

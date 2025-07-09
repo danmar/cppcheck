@@ -16,6 +16,7 @@ Deprecations:
 - Support for building with Qt 5 will be removed in Cppcheck 2.19.
 - The platform 'unix32-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix32 --funsigned-char' instead.
 - The platform 'unix64-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix64 --funsigned-char' instead.
+- The usage of rules has been deprecated and will be removed in a future Cppcheck version. Please use addons instead.
 -
 
 Other:
