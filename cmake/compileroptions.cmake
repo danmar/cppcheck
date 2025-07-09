@@ -24,6 +24,13 @@ function(target_externals_include_directories TARGET)
     endif()
 endfunction()
 
+function(target_dll_compile_definitions TARGET EXPORT IMPORT)
+    if (BUILD_SHARED_LIBS AND MSVC)
+        target_compile_definitions(simplecpp_objs PRIVATE ${EXPORT})
+        target_compile_definitions(simplecpp_objs INTERFACE ${IMPORT})
+    endif()
+endfunction()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()
