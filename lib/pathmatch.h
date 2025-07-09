@@ -22,7 +22,6 @@
 #include "config.h"
 
 #include <cstdint>
-#include <regex>
 #include <string>
 #include <vector>
 
@@ -31,24 +30,24 @@
 
 /**
  *  Path matching rules:
- *  - All rules are simplified first (path separators vary by platform):
+ *  - All patterns are simplified first (path separators vary by platform):
  *    - '/./' => '/'
  *    - '/dir/../' => '/'
  *    - '//' => '/'
  *    - Trailing slashes are removed
- *  - Rules can contain globs:
+ *  - Patterns can contain globs:
  *    - '**' matches any number of characters including path separators.
  *    - '*' matches any number of characters except path separators.
  *    - '?' matches any single character except path separators.
- *  - If a rule looks like an absolute path (e.g. starts with '/', but varies by platform):
- *    - Match all files where the rule matches the start of the file's simplified absolute path up until a path
+ *  - If a pattern looks like an absolute path (e.g. starts with '/', but varies by platform):
+ *    - Match all files where the pattern matches the start of the file's simplified absolute path up until a path
  *      separator or the end of the pathname.
- *  - If a rule starts with '.':
- *    - The rule is interpreted as a path relative to `basepath` and then converted to an absolute path and
- *      treated as such according to the above procedure. If the rule is relative to some other directory, it should
- *      be modified to be relative to `basepath` first (this should be done with rules in project files, for example).
+ *  - If a pattern starts with '.':
+ *    - The pattern is interpreted as a path relative to `basepath` and then converted to an absolute path and
+ *      treated as such according to the above procedure. If the pattern is relative to some other directory, it should
+ *      be modified to be relative to `basepath` first (this should be done with patterns in project files, for example).
  *  - Otherwise:
- *    - Match all files where the rule matches any part of the file's simplified absolute path up until a
+ *    - Match all files where the pattern matches any part of the file's simplified absolute path up until a
  *      path separator or the end of the pathname, and the matching part directly follows a path separator.
  **/
 
@@ -66,36 +65,47 @@ public:
      * icase: Case insensitive.
      **/
     enum class Mode : std::uint8_t {
-        platform,
         scase,
         icase,
     };
 
+#ifdef _WIN32
+    static constexpr Mode platform_mode = Mode::icase;
+#else
+    static constexpr Mode platform_mode = Mode::scase;
+#endif
+
     /**
      * The constructor.
      *
-     * If a path is a directory it needs to end with a file separator.
-     *
-     * @param paths List of masks.
-     * @param basepath Path to which rules and matched paths are relative, when applicable. Can be relative, in which
-     * case it is appended to Path::getCurrentPath().
+     * @param patterns List of patterns.
+     * @param basepath Path to which patterns and matched paths are relative, when applicable.
      * @param mode Case sensitivity mode.
      */
-    explicit PathMatch(const std::vector<std::string> &paths, const std::string &basepath = std::string(), Mode mode = Mode::platform);
+    explicit PathMatch(std::vector<std::string> patterns, std::string basepath = std::string(), Mode mode = platform_mode);
 
     /**
-     * @brief Match path against list of masks.
-     *
-     * If you want to match a directory the given path needs to end with a path separator.
+     * @brief Match path against list of patterns.
      *
      * @param path Path to match.
      * @return true if any of the masks match the path, false otherwise.
      */
     bool match(const std::string &path) const;
 
+    /**
+     * @brief Match path against a single pattern.
+     *
+     * @param pattern Pattern to use.
+     * @param path Path to match.
+     * @param basepath Path to which the pattern and path is relative, when applicable.
+     * @param mode Case sensitivity mode.
+     */
+    static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Mode mode = platform_mode);
+
 private:
+    std::vector<std::string> mPatterns;
     std::string mBasepath;
-    std::regex mRegex;
+    Mode mMode;
 };
 
 /// @}

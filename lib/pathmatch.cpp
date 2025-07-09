@@ -20,101 +20,263 @@
 
 #include "path.h"
 
-#include <cstddef>
-#include <cstring>
+#include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <stack>
 #include <string>
-#include <regex>
+#include <vector>
 
-/* Escape regex special chars and translate globs to equivalent regex */
-static std::string translate(const std::string &s)
-{
-    std::string r;
-    std::size_t i = 0;
+struct Pathstr {
+    static Pathstr from_pattern(const std::string &pattern, const std::string &basepath, bool icase)
+    {
+        if (!pattern.empty() && pattern[0] == '.')
+            return Pathstr(basepath.c_str(), pattern.c_str(), icase);
+        return Pathstr(pattern.c_str(), nullptr, icase);
+    }
 
-    while (i != s.size()) {
-        int c = s[i++];
+    static Pathstr from_path(const std::string &path, const std::string &basepath, bool icase)
+    {
+        if (Path::isAbsolute(path))
+            return Pathstr(path.c_str(), nullptr, icase);
+        return Pathstr(basepath.c_str(), path.c_str(), icase);
+    }
 
-        if (std::strchr("\\[](){}+^$|", c) != nullptr) {
-            r.push_back('\\');
-            r.push_back(c);
-        } else if (c == '*') {
-            if (i != s.size() && s[i] == '*') {
-                r.append(".*");
-                i++;
+    explicit Pathstr(const char *a = nullptr, const char *b = nullptr, bool lowercase = false) :
+        s{a, b}, lcase(lowercase)
+    {
+        for (int i = 0; i < 2; i++) {
+            e[i] = s[i];
+
+            if (s[i] == nullptr || *s[i] == '\0')
+                continue;
+
+            if (st.l != 0)
+                st.l++;
+
+            while (*e[i] != '\0') {
+                e[i]++;
+                st.l++;
             }
-            else {
-                r.append("[^/]*");
+
+            st.p = e[i];
+        }
+
+        if (st.l == 0)
+            st.c = '\0';
+
+        simplify(false);
+    }
+
+    std::size_t left() const
+    {
+        return st.l;
+    }
+
+    char current() const
+    {
+        if (st.c != EOF)
+            return st.c;
+
+        char c = st.p[-1];
+
+        if (c == '\\')
+            return '/';
+
+        if (lcase)
+            return std::tolower(c);
+
+        return c;
+    }
+
+    void simplify(bool leadsep) {
+        while (left() != 0) {
+            State rst = st;
+
+            if (leadsep) {
+                if (current() != '/')
+                    break;
+                nextc();
             }
-        } else if (c == '?') {
-            r.append("[^/]");
-        } else {
-            r.push_back(c);
+
+            char c = current();
+            if (c == '.') {
+                nextc();
+                c = current();
+                if (c == '.') {
+                    nextc();
+                    c = current();
+                    if (c == '/') {
+                        /* Skip '<name>/../' */
+                        nextc();
+                        simplify(false);
+                        while (left() != 0 && current() != '/')
+                            nextc();
+                        continue;
+                    }
+                } else if (c == '/') {
+                    /* Skip '/./' */
+                    continue;
+                } else if (c == '\0') {
+                    /* Skip leading './' */
+                    break;
+                }
+            } else if (c == '/' && left() != 1) {
+                /* Skip double separator (keep root) */
+                nextc();
+                leadsep = false;
+                continue;
+            }
+
+            st = rst;
+            break;
         }
     }
 
-    return r;
-}
+    void advance()
+    {
+        nextc();
 
-PathMatch::PathMatch(const std::vector<std::string> &paths, const std::string &basepath, Mode mode)
+        if (current() == '/')
+            simplify(true);
+    }
+
+    void nextc()
+    {
+        if (st.l == 0)
+            return;
+
+        st.l--;
+
+        if (st.l == 0)
+            st.c = '\0';
+        else if (st.c != EOF) {
+            st.c = EOF;
+        } else {
+            st.p--;
+            if (st.p == s[1]) {
+                st.p = e[0];
+                st.c = '/';
+            }
+        }
+    }
+
+    Pathstr &operator++(int) {
+        advance();
+        return *this;
+    }
+
+    char operator*() const {
+        return current();
+    }
+
+    struct State {
+        const char *p;
+        std::size_t l;
+        int c {EOF};
+    };
+
+    const char *s[2] {};
+    const char *e[2] {};
+    State st {};
+    bool lcase;
+};
+
+
+static bool match_one(const std::string &pattern, const std::string &path, const std::string &basepath, bool icase)
 {
-    if (basepath.empty())
-        mBasepath = Path::getCurrentPath();
-    else if (Path::isAbsolute(basepath))
-        mBasepath = basepath;
-    else
-        mBasepath = Path::getCurrentPath() + "/" + basepath;
+    if (pattern.empty())
+        return false;
 
-    if (mode == Mode::platform) {
-#ifdef _WIN32
-        mode = Mode::icase;
-#else
-        mode = Mode::scase;
-#endif
-    }
+    if (pattern == "*" || pattern == "**")
+        return true;
 
-    std::string regex_string;
+    bool real = Path::isAbsolute(pattern) || pattern[0] == '.';
 
-    for (auto p : paths) {
-        if (p.empty())
+    Pathstr s = Pathstr::from_pattern(pattern, basepath, icase);
+    Pathstr t = Pathstr::from_path(path, basepath, icase);
+    Pathstr p = s;
+    Pathstr q = t;
+
+    std::stack<std::pair<Pathstr::State, Pathstr::State>> b;
+
+    for (;;) {
+        switch (*s) {
+        case '*': {
+            bool slash = false;
+            s++;
+            if (*s == '*') {
+                slash = true;
+                s++;
+            }
+            b.emplace(s.st, t.st);
+            while (*t != '\0' && (slash || *t != '/')) {
+                if (*s == *t)
+                    b.emplace(s.st, t.st);
+                t++;
+            }
             continue;
+        }
+        case '?': {
+            if (*t != '\0' && *t != '/') {
+                s++;
+                t++;
+                continue;
+            }
+            break;
+        }
+        case '\0': {
+            if (*t == '\0' || (*t == '/' && !real))
+                return true;
+            break;
+        }
+        default: {
+            if (*s == *t) {
+                s++;
+                t++;
+                continue;
+            }
+            break;
+        }
+        }
 
-        if (!regex_string.empty())
-            regex_string.push_back('|');
+        if (b.size() != 0) {
+            const auto &bp = b.top();
+            b.pop();
+            s.st = bp.first;
+            t.st = bp.second;
+            continue;
+        }
 
-        if (p.front() == '.')
-            p = mBasepath + "/" + p;
+        while (*q != '\0' && *q != '/')
+            q++;
 
-        p = Path::fromNativeSeparators(Path::simplifyPath(p));
+        if (*q == '/') {
+            q++;
+            s = p;
+            t = q;
+            continue;
+        }
 
-        if (p.back() == '/')
-            p.pop_back();
-
-        if (Path::isAbsolute(p))
-            regex_string.push_back('^');
-        else
-            regex_string.push_back('/');
-
-        regex_string.append(translate(p) + "(/|$)");
+        return false;
     }
-
-    if (regex_string.empty())
-        return;
-
-    if (mode == Mode::icase)
-        mRegex = std::regex(regex_string, std::regex_constants::extended | std::regex_constants::icase);
-    else
-        mRegex = std::regex(regex_string, std::regex_constants::extended);
 }
+
+
+PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Mode mode) :
+    mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mMode(mode)
+{}
 
 bool PathMatch::match(const std::string &path) const
 {
-    std::string p;
-    std::smatch m;
+    bool icase = (mMode == Mode::icase);
 
-    if (Path::isAbsolute(path))
-        p = Path::fromNativeSeparators(Path::simplifyPath(path));
-    else
-        p = Path::fromNativeSeparators(Path::simplifyPath(mBasepath + "/" + path));
+    return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
+        return match_one(pattern, path, mBasepath, icase);
+    });
+}
 
-    return std::regex_search(p, m, mRegex, std::regex_constants::match_any | std::regex_constants::match_not_null);
+bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Mode mode)
+{
+    return match_one(pattern, path, basepath, mode == Mode::icase);
 }
