@@ -243,6 +243,39 @@ jobs:
         run: |
           ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 
+  build_cmake_boost:
+
+    strategy:
+      matrix:
+        os: [macos-13, macos-15]  # non-macos platforms are already built with Boost in other contexts
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      # TODO: figure out why there are cache misses with PCH enabled
+      CCACHE_SLOPPINESS: pch_defines,time_macros
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        run: |
+          brew install coreutils boost
+
+      - name: CMake build on macOS (with Boost)
+        run: |
+          cmake -S . -B cmake.output.boost -G "Unix Makefiles" -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build cmake.output.boost -- -j$(nproc)
+
   build:
 
     strategy:
