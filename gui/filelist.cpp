@@ -119,7 +119,7 @@ static std::vector<std::string> toStdStringList(const QStringList &stringList)
 
 QStringList FileList::applyExcludeList() const
 {
-    const PathMatch pathMatch(toStdStringList(mExcludedPaths));
+    const PathMatch pathMatch(toStdStringList(mExcludedPaths), QDir::currentPath().toStdString());
 
     QStringList paths;
     for (const QFileInfo& item : mFileList) {

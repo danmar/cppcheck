@@ -209,7 +209,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::list<FileSettings> fileSettings;
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
-            PathMatch filtermatcher(mSettings.fileFilters);
+            PathMatch filtermatcher(mSettings.fileFilters, Path::getCurrentPath());
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
                 return filtermatcher.match(fs.filename());
             });
@@ -245,7 +245,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::list<FileWithDetails> filesResolved;
         // Execute recursiveAddFiles() to each given file parameter
         // TODO: verbose log which files were ignored?
-        const PathMatch matcher(ignored);
+        const PathMatch matcher(ignored, Path::getCurrentPath());
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher, mSettings.debugignore);
             if (!err.empty()) {
@@ -2136,7 +2136,7 @@ bool CmdLineParser::loadCppcheckCfg()
 std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::string>& fileFilters,
                                                       const std::list<FileWithDetails>& filesResolved) {
     std::list<FileWithDetails> files;
-    PathMatch filtermatcher(fileFilters);
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
     std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
         return filtermatcher.match(entry.path()) || filtermatcher.match(entry.spath());
     });

@@ -82,7 +82,7 @@ public:
      * @param basepath Path to which patterns and matched paths are relative, when applicable.
      * @param mode Case sensitivity mode.
      */
-    explicit PathMatch(std::vector<std::string> patterns, std::string basepath = std::string(), Mode mode = platform_mode);
+    explicit PathMatch(std::vector<std::string> patterns = {}, std::string basepath = std::string(), Mode mode = platform_mode);
 
     /**
      * @brief Match path against list of patterns.

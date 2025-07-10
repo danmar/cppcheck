@@ -45,7 +45,7 @@
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
-    PathMatch matcher(ipaths);
+    PathMatch matcher(ipaths, Path::getCurrentPath());
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
         if (matcher.match(it->filename())) {
             if (debug)
@@ -840,7 +840,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
     }
 
     // Project files
-    PathMatch filtermatcher(fileFilters);
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
     for (const std::string &cfilename : compileList) {
         if (!fileFilters.empty() && !filtermatcher.match(cfilename))
             continue;
@@ -920,7 +920,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     SharedItemsProject result;
     result.pathToProjectFile = filename;
 
-    PathMatch filtermatcher(fileFilters);
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
 
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());

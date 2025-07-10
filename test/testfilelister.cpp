@@ -60,8 +60,7 @@ private:
 
         // Recursively add add files..
         std::list<FileWithDetails> files;
-        PathMatch matcher({});
-        std::string err = FileLister::recursiveAddFiles(files, adddir, {}, matcher);
+        std::string err = FileLister::recursiveAddFiles(files, adddir, {}, PathMatch());
         ASSERT_EQUALS("", err);
 
         ASSERT(!files.empty());
@@ -107,7 +106,7 @@ private:
 
     void recursiveAddFilesEmptyPath() const {
         std::list<FileWithDetails> files;
-        const std::string err = FileLister::recursiveAddFiles(files, "", {}, PathMatch({}));
+        const std::string err = FileLister::recursiveAddFiles(files, "", {}, PathMatch());
         ASSERT_EQUALS("no path specified", err);
     }
 
@@ -125,8 +124,7 @@ private:
         const std::string basedir = findBaseDir();
 
         std::list<FileWithDetails> files;
-        PathMatch matcher({});
-        std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", {}, matcher);
+        std::string err = FileLister::recursiveAddFiles(files, basedir + "lib/token.cpp", {}, PathMatch());
         ASSERT_EQUALS("", err);
         ASSERT_EQUALS(1, files.size());
         ASSERT_EQUALS(basedir + "lib/token.cpp", files.begin()->path());
@@ -136,7 +134,7 @@ private:
         const std::string basedir = findBaseDir() + ".";
 
         std::list<FileWithDetails> files;
-        PathMatch matcher({"lib/"}); // needs to end with slash so it matches directories - added by CmdLineParser
+        PathMatch matcher({"lib/"});
         std::string err = FileLister::recursiveAddFiles(files, basedir, {}, matcher);
         ASSERT_EQUALS("", err);
         ASSERT(!files.empty());
@@ -159,27 +157,27 @@ private:
 
         {
             const std::string addfile = Path::join(Path::join(adddir, "cli"), "main.cpp");
-            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch());
             ASSERT_EQUALS("", err);
         }
         {
             const std::string addfile = Path::join(Path::join(adddir, "lib"), "token.cpp");
-            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch());
             ASSERT_EQUALS("", err);
         }
         {
             const std::string addfile = Path::join(Path::join(adddir, "cli"), "token.cpp"); // does not exist
-            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch());
             ASSERT_EQUALS("", err);
         }
         {
             const std::string addfile = Path::join(Path::join(adddir, "lib2"), "token.cpp"); // does not exist
-            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch());
             ASSERT_EQUALS("", err);
         }
         {
             const std::string addfile = Path::join(Path::join(adddir, "lib"), "matchcompiler.h");
-            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch({}));
+            const std::string err = FileLister::addFiles(files, addfile, {}, true,PathMatch());
             ASSERT_EQUALS("", err);
         }
 
