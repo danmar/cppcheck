@@ -240,7 +240,7 @@ static bool match_one(const std::string &pattern, const std::string &path, const
         }
         }
 
-        if (b.size() != 0) {
+        if (!b.empty()) {
             const auto &bp = b.top();
             b.pop();
             s.st = bp.first;
