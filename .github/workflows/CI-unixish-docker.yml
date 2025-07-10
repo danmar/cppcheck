@@ -74,7 +74,7 @@ jobs:
         if: matrix.build_gui
         run: |
           cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          cmake --build cmake.output -- -j$(nproc)
+          cmake --build cmake.output -- VERBOSE=1
 
       - name: Run CMake test
         run: |
