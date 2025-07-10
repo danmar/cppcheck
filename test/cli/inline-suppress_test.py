@@ -32,6 +32,8 @@ def test_1():
         '-q',
         '--template=simple',
         '--inline-suppr',
+        '-DVER_CHECK(...)=0',
+        '--force',
         'proj-inline-suppress'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
@@ -44,6 +46,8 @@ def test_2():
     args = [
         '-q',
         '--template=simple',
+        '-DVER_CHECK(...)=0',
+        '--force',
         'proj-inline-suppress'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
@@ -461,6 +465,8 @@ def test_unmatched_cfg():
         '--template=simple',
         '--enable=warning,information',
         '--inline-suppr',
+        '-DVER_CHECK(...)=0',
+        '--force',
         'proj-inline-suppress/cfg.c'
     ]
 

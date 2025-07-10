@@ -27,10 +27,6 @@
 #  define SIMPLECPP_LIB
 #endif
 
-#if (__cplusplus < 201103L) && !defined(__APPLE__)
-#define nullptr NULL
-#endif
-
 #if defined(_MSC_VER)
 #  pragma warning(push)
 // suppress warnings about "conversion from 'type1' to 'type2', possible loss of data"
@@ -100,12 +96,12 @@ namespace simplecpp {
     class SIMPLECPP_LIB Token {
     public:
         Token(const TokenString &s, const Location &loc, bool wsahead = false) :
-            whitespaceahead(wsahead), location(loc), previous(nullptr), next(nullptr), string(s) {
+            whitespaceahead(wsahead), location(loc), previous(nullptr), next(nullptr), nextcond(nullptr), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), whitespaceahead(tok.whitespaceahead), location(tok.location), previous(nullptr), next(nullptr), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {
+            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), whitespaceahead(tok.whitespaceahead), location(tok.location), previous(nullptr), next(nullptr), nextcond(nullptr), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {
         }
 
         void flags() {
@@ -141,6 +137,7 @@ namespace simplecpp {
         Location location;
         Token *previous;
         Token *next;
+        mutable const Token *nextcond;
 
         const Token *previousSkipComments() const {
             const Token *tok = this->previous;
@@ -214,14 +211,10 @@ namespace simplecpp {
         /** generates a token list from the given filename parameter */
         TokenList(const std::string &filename, std::vector<std::string> &filenames, OutputList *outputList = nullptr);
         TokenList(const TokenList &other);
-#if __cplusplus >= 201103L
         TokenList(TokenList &&other);
-#endif
         ~TokenList();
         TokenList &operator=(const TokenList &other);
-#if __cplusplus >= 201103L
         TokenList &operator=(TokenList &&other);
-#endif
 
         void clear();
         bool empty() const {
@@ -393,10 +386,6 @@ namespace simplecpp {
 
 #if defined(_MSC_VER)
 #  pragma warning(pop)
-#endif
-
-#if (__cplusplus < 201103L) && !defined(__APPLE__)
-#undef nullptr
 #endif
 
 #endif
