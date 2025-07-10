@@ -397,7 +397,7 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
         if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
             return Result::Checked;
     } else {
-        if (!fileName.empty() && !PathMatch::match(fileName, errmsg.getFileName(), std::string()))
+        if (!fileName.empty() && fileName != errmsg.getFileName() && !PathMatch::match(fileName, errmsg.getFileName()))
             return Result::None;
         if ((SuppressionList::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
             if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)

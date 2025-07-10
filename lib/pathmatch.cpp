@@ -27,7 +27,8 @@
 #include <string>
 #include <vector>
 
-struct Pathstr {
+struct Pathstr
+{
     static Pathstr from_pattern(const std::string &pattern, const std::string &basepath, bool icase)
     {
         if (!pattern.empty() && pattern[0] == '.')
@@ -89,7 +90,8 @@ struct Pathstr {
         return c;
     }
 
-    void simplify(bool leadsep) {
+    void simplify(bool leadsep)
+    {
         while (left() != 0) {
             State rst = st;
 
@@ -161,16 +163,18 @@ struct Pathstr {
         }
     }
 
-    Pathstr &operator++(int) {
+    void operator++()
+    {
         advance();
-        return *this;
     }
 
-    char operator*() const {
+    char operator*() const
+    {
         return current();
     }
 
-    struct State {
+    struct State
+    {
         const char *p;
         std::size_t l;
         int c {EOF};
@@ -195,6 +199,7 @@ static bool match_one(const std::string &pattern, const std::string &path, const
 
     Pathstr s = Pathstr::from_pattern(pattern, basepath, icase);
     Pathstr t = Pathstr::from_path(path, basepath, icase);
+
     Pathstr p = s;
     Pathstr q = t;
 
@@ -204,23 +209,23 @@ static bool match_one(const std::string &pattern, const std::string &path, const
         switch (*s) {
         case '*': {
             bool slash = false;
-            s++;
+            ++s;
             if (*s == '*') {
                 slash = true;
-                s++;
+                ++s;
             }
             b.emplace(s.st, t.st);
             while (*t != '\0' && (slash || *t != '/')) {
                 if (*s == *t)
                     b.emplace(s.st, t.st);
-                t++;
+                ++t;
             }
             continue;
         }
         case '?': {
             if (*t != '\0' && *t != '/') {
-                s++;
-                t++;
+                ++s;
+                ++t;
                 continue;
             }
             break;
@@ -232,8 +237,8 @@ static bool match_one(const std::string &pattern, const std::string &path, const
         }
         default: {
             if (*s == *t) {
-                s++;
-                t++;
+                ++s;
+                ++t;
                 continue;
             }
             break;
@@ -249,10 +254,10 @@ static bool match_one(const std::string &pattern, const std::string &path, const
         }
 
         while (*q != '\0' && *q != '/')
-            q++;
+            ++q;
 
         if (*q == '/') {
-            q++;
+            ++q;
             s = p;
             t = q;
             continue;
@@ -269,10 +274,8 @@ PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Mo
 
 bool PathMatch::match(const std::string &path) const
 {
-    bool icase = (mMode == Mode::icase);
-
     return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
-        return match_one(pattern, path, mBasepath, icase);
+        return match_one(pattern, path, mBasepath, mMode == Mode::icase);
     });
 }
 
