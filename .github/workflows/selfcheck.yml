@@ -71,7 +71,7 @@ jobs:
           # make sure auto-generated GUI files exist
           make -C cmake.output autogen
           # make sure the precompiled headers exist
-          make -C cmake.output lib/CMakeFiles/cppcheck-core-private.dir/cmake_pch.hxx.cxx
+          make -C cmake.output lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
@@ -98,7 +98,7 @@ jobs:
           # make sure auto-generated GUI files exist
           make -C cmake.output.notest autogen
           # make sure the precompiled headers exist
-          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core-private.dir/cmake_pch.hxx.cxx
+          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.notest gui-build-deps
 
@@ -119,7 +119,7 @@ jobs:
       - name: Generate dependencies (no test / no gui)
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output.notest_nogui lib/CMakeFiles/cppcheck-core-private.dir/cmake_pch.hxx.cxx
+          make -C cmake.output.notest_nogui lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
 
       # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / no test / no gui)
@@ -140,7 +140,7 @@ jobs:
           # make sure auto-generated GUI files exist
           make -C cmake.output.notest_nocli autogen
           # make sure the precompiled headers exist
-          make -C cmake.output.notest_nocli lib/CMakeFiles/cppcheck-core-private.dir/cmake_pch.hxx.cxx
+          make -C cmake.output.notest_nocli lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.notest_nocli gui-build-deps
 
