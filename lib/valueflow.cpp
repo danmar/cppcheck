@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <iostream>
 /**
  * @brief This is the ValueFlow component in Cppcheck.
  *
@@ -3119,6 +3119,14 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
         else if (tok->isUnaryOp("&")) {
             if (Token::simpleMatch(tok->astParent(), "*"))
                 continue;
+            if (Token::simpleMatch(tok->astOperand1(), "[")) {
+                const Token* const op1 = tok->astOperand1()->astOperand1();
+                const Token* tok2 = op1;
+                while (Token::simpleMatch(tok2, "."))
+                    tok2 = tok2->astOperand2();
+                if (tok2 && tok2 != op1 && (!tok2->variable() || !tok2->variable()->isArray()))
+                    continue;
+            }
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1(), settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;

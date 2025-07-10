@@ -78,6 +78,7 @@ private:
         TEST_CASE(testautovar_return3);
         TEST_CASE(testautovar_return4);
         TEST_CASE(testautovar_return5);
+        TEST_CASE(testautovar_return6);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
@@ -620,6 +621,17 @@ private:
         check("struct S {};\n"
               "const std::type_info* f() {\n"
               "    return &typeid(S);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void testautovar_return6() { // #14005
+        check("struct S;\n"
+              "struct S { const struct S *s; };\n"
+              "extern struct T factory();\n"
+              "const struct S* f() {\n"
+              "    struct T t = factory();\n"
+              "    return &t.s[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
