@@ -46,6 +46,10 @@ jobs:
         run: |
           cppcheckpremium/cppcheck --premium=safety-off -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2023 --premium=cert-c++-2016 --inline-suppr lib --error-exitcode=0 --output-format=sarif 2> results.sarif
 
+      - name: Cat results
+        run: |
+          cat results.sarif
+
       - name: Upload report
         uses: github/codeql-action/upload-sarif@v3
         with:
