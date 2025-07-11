@@ -121,9 +121,9 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 
     const int count = QThread::idealThreadCount();
     if (count != -1)
-        mUI->mLblIdealThreads->setText(QString::number(count));
+        mUI->mLblMaxThreads->setText(QString::number(count));
     else
-        mUI->mLblIdealThreads->setText(tr("N/A"));
+        mUI->mLblMaxThreads->setText(tr("N/A"));
 
     loadSettings();
     initTranslationsList();
@@ -180,9 +180,7 @@ void SettingsDialog::saveSettings() const
 void SettingsDialog::saveSettingValues() const
 {
     int jobs = mUI->mJobs->text().toInt();
-    if (jobs <= 0) {
-        jobs = 1;
-    }
+    jobs = std::min(std::max(jobs, 1), QThread::idealThreadCount());
 
     QSettings settings;
     settings.setValue(SETTINGS_CHECK_THREADS, jobs);
