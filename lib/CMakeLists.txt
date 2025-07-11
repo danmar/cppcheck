@@ -50,9 +50,7 @@ endif()
 target_dll_compile_definitions(cppcheck-core EXPORT CPPCHECKLIB_EXPORT IMPORT CPPCHECKLIB_IMPORT)
 
 target_include_directories(cppcheck-core PUBLIC .)
-foreach(lib tinyxml2 simplecpp picojson ${PCRE_LIBRARY})
-    target_link_libraries(cppcheck-core PRIVATE ${lib})
-endforeach()
+target_link_libraries(cppcheck-core PRIVATE tinyxml2 simplecpp picojson ${PCRE_LIBRARY})
 
 if (HAVE_RULES)
     target_include_directories(cppcheck-core SYSTEM PRIVATE ${PCRE_INCLUDE})
