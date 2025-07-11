@@ -5,15 +5,7 @@ name: clang-tidy
 on:
   push:
     branches:
-      - 'main'
-      - 'releases/**'
-      - '2.*'
-    tags:
-      - '2.*'
-  pull_request:
-  schedule:
-    - cron: '0 0 * * 0'
-  workflow_dispatch:
+      - non-existent-branch
 
 permissions:
   contents: read

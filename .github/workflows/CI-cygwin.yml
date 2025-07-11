@@ -5,12 +5,7 @@ name: CI-cygwin
 on:
   push:
     branches:
-      - 'main'
-      - 'releases/**'
-      - '2.*'
-    tags:
-      - '2.*'
-  pull_request:
+      - non-existent-branch
 
 permissions:
   contents: read

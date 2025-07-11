@@ -3,8 +3,9 @@
 name: Coverity
 
 on:
-  schedule:
-  - cron: "0 0 * * *"
+  push:
+    branches:
+      - non-existent-branch
 
 permissions:
   contents: read

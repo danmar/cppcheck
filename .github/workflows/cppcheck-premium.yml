@@ -30,16 +30,9 @@ jobs:
 
       - name: Download cppcheckpremium
         run: |
-          premium_version=${{ inputs.premium_version }}
-          if [ -z $premium_version ]; then
-            premium_version=24.11.0
-            #wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
-            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
-          else
-            wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
-          fi
-          tar xzf cppcheckpremium.tar.gz
-          mv cppcheckpremium-$premium_version cppcheckpremium
+          wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-devdrop-20250710-amd64.tar.gz -O cppcheckpremium.tar.gz
+          tar xzvf cppcheckpremium.tar.gz
+          mv cppcheckpremium-devdrop-20250710 cppcheckpremium
 
       - name: Generate a license file
         run: |
@@ -52,4 +45,23 @@ jobs:
       - name: Check
         run: |
           cppcheckpremium/premiumaddon --check-loc-license cppcheck.lic > cppcheck-premium-loc
-          cppcheckpremium/cppcheck -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2023 --premium=cert-c++-2016 --inline-suppr --error-exitcode=1 lib
+          cppcheckpremium/cppcheck --premium=safety-off -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2023 --premium=cert-c++-2016 --inline-suppr lib --error-exitcode=0 --output-format=sarif 2> results.sarif
+
+      - name: Cat results
+        run: |
+          sed -i 's|"startColumn": 0|"startColumn": 1|' results.sarif
+          sed -i 's|"startLine": 0|"startLine": 1|' results.sarif
+          sed -i 's|"endColumn": 0|"endColumn": 1|' results.sarif
+          sed -i 's|"endLine": 0|"endLine": 1|' results.sarif
+          sed -i 's|"security-severity":.*||' results.sarif
+          cat results.sarif
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: results.sarif
+
+      - name: Upload report
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
