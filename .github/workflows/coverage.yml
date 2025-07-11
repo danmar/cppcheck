@@ -12,6 +12,10 @@ on:
       - '2.*'
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -56,16 +60,16 @@ jobs:
           lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
           genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
-          
+
       - uses: actions/upload-artifact@v4
         with:
          name: Coverage results
          path: coverage_report
-         
+
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           # file: ./coverage.xml # optional
           flags: unittests # optional
           name: ${{ github.repository }} # optional
-          fail_ci_if_error: true # optional (default = false):  
+          fail_ci_if_error: true # optional (default = false):

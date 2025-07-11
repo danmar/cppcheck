@@ -12,6 +12,10 @@ on:
       - '2.*'
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -45,7 +49,7 @@ jobs:
           cd uncrustify-uncrustify-${{ env.UNCRUSTIFY_VERSION }}
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build -- -j$(nproc) -s
-          mkdir ~/uncrustify 
+          mkdir ~/uncrustify
           cp build/uncrustify ~/uncrustify/
 
       - name: Uncrustify check
