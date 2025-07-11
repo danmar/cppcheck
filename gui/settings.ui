@@ -65,14 +65,8 @@
              <height>20</height>
             </size>
            </property>
-           <property name="inputMask">
-            <string notr="true">009</string>
-           </property>
            <property name="text">
             <string notr="true"/>
-           </property>
-           <property name="maxLength">
-            <number>3</number>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
