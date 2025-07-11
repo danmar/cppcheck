@@ -159,28 +159,28 @@ public:
     }
 
     /* Constructor */
-    explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, bool lowercase = false) :
-        s{path_a, path_b}, lcase(lowercase)
+    explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, bool lower = false) :
+        mStart{path_a, path_b}, mLower(lower)
     {
         for (int i = 0; i < 2; i++) {
-            e[i] = s[i];
+            mEnd[i] = mStart[i];
 
-            if (s[i] == nullptr || *s[i] == '\0')
+            if (mStart[i] == nullptr || *mStart[i] == '\0')
                 continue;
 
-            if (st.l != 0)
-                st.l++;
+            if (mPos.l != 0)
+                mPos.l++;
 
-            while (*e[i] != '\0') {
-                e[i]++;
-                st.l++;
+            while (*mEnd[i] != '\0') {
+                mEnd[i]++;
+                mPos.l++;
             }
 
-            st.p = e[i];
+            mPos.p = mEnd[i];
         }
 
-        if (st.l == 0)
-            st.c = '\0';
+        if (mPos.l == 0)
+            mPos.c = '\0';
 
         skips(false);
     }
@@ -198,13 +198,13 @@ public:
     /* Save the current position */
     const Pos &getpos() const
     {
-        return st;
+        return mPos;
     }
 
     /* Restore a saved position */
     void setpos(const Pos &pos)
     {
-        st = pos;
+        mPos = pos;
     }
 
     /* Read the current character */
@@ -236,15 +236,15 @@ private:
     /* Read the current character */
     char current() const
     {
-        if (st.c != EOF)
-            return st.c;
+        if (mPos.c != EOF)
+            return mPos.c;
 
-        char c = st.p[-1];
+        char c = mPos.p[-1];
 
         if (c == '\\')
             return '/';
 
-        if (lcase)
+        if (mLower)
             return std::tolower(c);
 
         return c;
@@ -253,8 +253,8 @@ private:
     /* Do canonicalization on a path component boundary */
     void skips(bool leadsep)
     {
-        while (st.l != 0) {
-            Pos rst = st;
+        while (mPos.l != 0) {
+            Pos pos = mPos;
 
             if (leadsep) {
                 if (current() != '/')
@@ -273,7 +273,7 @@ private:
                         /* Skip '<name>/../' */
                         nextc();
                         skips(false);
-                        while (st.l != 0 && current() != '/')
+                        while (mPos.l != 0 && current() != '/')
                             nextc();
                         continue;
                     }
@@ -284,14 +284,14 @@ private:
                     /* Skip leading './' */
                     break;
                 }
-            } else if (c == '/' && st.l != 1) {
+            } else if (c == '/' && mPos.l != 1) {
                 /* Skip double separator (keep root) */
                 nextc();
                 leadsep = false;
                 continue;
             }
 
-            st = rst;
+            mPos = pos;
             break;
         }
     }
@@ -308,32 +308,32 @@ private:
     /* Go to the next character */
     void nextc()
     {
-        if (st.l == 0)
+        if (mPos.l == 0)
             return;
 
-        st.l--;
+        mPos.l--;
 
-        if (st.l == 0)
-            st.c = '\0';
-        else if (st.c != EOF) {
-            st.c = EOF;
+        if (mPos.l == 0)
+            mPos.c = '\0';
+        else if (mPos.c != EOF) {
+            mPos.c = EOF;
         } else {
-            st.p--;
-            if (st.p == s[1]) {
-                st.p = e[0];
-                st.c = '/';
+            mPos.p--;
+            if (mPos.p == mStart[1]) {
+                mPos.p = mEnd[0];
+                mPos.c = '/';
             }
         }
     }
 
     /* String start pointers */
-    const char *s[2] {};
+    const char *mStart[2] {};
     /* String end pointers */
-    const char *e[2] {};
+    const char *mEnd[2] {};
     /* Current position */
-    Pos st {};
+    Pos mPos {};
     /* Lowercase conversion flag */
-    bool lcase;
+    bool mLower;
 };
 
 /// @}
