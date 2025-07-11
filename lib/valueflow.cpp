@@ -3124,7 +3124,7 @@ static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger &errorLogger, co
                 const Token* tok2 = op1;
                 while (Token::simpleMatch(tok2, "."))
                     tok2 = tok2->astOperand2();
-                if (tok2 && tok2 != op1 && (!tok2->variable() || !tok2->variable()->isArray()))
+                if (tok2 && tok2 != op1 && (!tok2->variable() || !tok2->variable()->isArray()) && !(tok2->valueType() && tok2->valueType()->container))
                     continue;
             }
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok->astOperand1(), settings)) {

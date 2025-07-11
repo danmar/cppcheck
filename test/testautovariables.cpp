@@ -634,6 +634,15 @@ private:
               "    return &t.s[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S;\n"
+              "struct T { std::vector<struct S> v; };\n"
+              "extern struct T factory();\n"
+              "const struct S* f() {\n"
+              "    struct T t = factory();\n"
+              "    return &t.v[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:12] -> [test.cpp:5:14] -> [test.cpp:6:12]: (error) Returning pointer to local variable 't' that will be invalid when returning. [returnDanglingLifetime]\n", errout_str());
     }
 
     void testautovar_extern() {
