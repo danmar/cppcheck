@@ -36,21 +36,24 @@ jobs:
 
       - name: Generate a license file
         run: |
-          mkdir ~/.cppcheckpremium
-          echo d6dd5 > ~/.cppcheckpremium/cppcheck-premium-git.lic
-          echo 260426 >> ~/.cppcheckpremium/cppcheck-premium-git.lic
-          echo abdc6437a51ed209 >> ~/.cppcheckpremium/cppcheck-premium-git.lic
-          echo 559f05803f67ce4c >> ~/.cppcheckpremium/cppcheck-premium-git.lic
+          echo cppcheck > cppcheck.lic
+          echo 251231 >> cppcheck.lic
+          echo 80000 >> cppcheck.lic
+          echo 4f8dc8e7c8bb288f >> cppcheck.lic
+          echo path:lib >> cppcheck.lic
 
       - name: Check
         run: |
+          cppcheckpremium/premiumaddon --check-loc-license cppcheck.lic > cppcheck-premium-loc
           cppcheckpremium/cppcheck --premium=safety-off -j$(nproc) -D__GNUC__ -D__CPPCHECK__ --suppressions-list=cppcheckpremium-suppressions --platform=unix64 --enable=style --premium=misra-c++-2023 --premium=cert-c++-2016 --inline-suppr lib --error-exitcode=0 --output-format=sarif 2> results.sarif
 
       - name: Cat results
         run: |
+          sed -i 's|"startColumn": 0|"startColumn": 1|' results.sarif
+          sed -i 's|"startLine": 0|"startLine": 1|' results.sarif
+          sed -i 's|"endColumn": 0|"endColumn": 1|' results.sarif
+          sed -i 's|"endLine": 0|"endLine": 1|' results.sarif
           cat results.sarif
-          sed -i 's|"startColumn": 0,|"startColumn": 1,|' results.sarif
-          sed -i 's|"endColumn": 0,|"endColumn": 1,|' results.sarif
 
       - name: Upload report
         uses: github/codeql-action/upload-sarif@v3
