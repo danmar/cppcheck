@@ -120,7 +120,7 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
             continue;
         }
 
-        /* Couldn't bactrack, try matching from the next path separator */
+        /* Couldn't backtrack, try matching from the next path separator */
         while (*q != '\0' && *q != '/')
             ++q;
 
