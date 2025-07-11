@@ -65,14 +65,8 @@
              <height>20</height>
             </size>
            </property>
-           <property name="inputMask">
-            <string notr="true">009</string>
-           </property>
            <property name="text">
             <string notr="true"/>
-           </property>
-           <property name="maxLength">
-            <number>3</number>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -82,12 +76,12 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Ideal count:</string>
+            <string>Max count:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="mLblIdealThreads">
+          <widget class="QLabel" name="mLblMaxThreads">
            <property name="text">
             <string notr="true">TextLabel</string>
            </property>
