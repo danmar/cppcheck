@@ -45,32 +45,46 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
     if (pattern == "*" || pattern == "**")
         return true;
 
+    /* A "real" path is absolute or relative to the base path. A pattern that isn't "real" can match at any
+     * path component boundary. */
     bool real = Path::isAbsolute(pattern) || pattern[0] == '.';
 
+    /* Pattern iterator */
     PathIterator s = PathIterator::from_pattern(pattern, basepath, mode == Mode::icase);
+    /* Path iterator */
     PathIterator t = PathIterator::from_path(path, basepath, mode == Mode::icase);
+    /* Pattern restart position */
     PathIterator p = s;
+    /* Path restart position */
     PathIterator q = t;
 
+    /* Backtrack stack */
     std::stack<std::pair<PathIterator::Pos, PathIterator::Pos>> b;
 
     for (;;) {
         switch (*s) {
+        /* Star or star-star, matches any number of characters */
         case '*': {
             bool slash = false;
             ++s;
             if (*s == '*') {
+                /* Star-star matches slashes as well */
                 slash = true;
                 ++s;
             }
+            /* Add backtrack for matching zero characters */
             b.emplace(s.getpos(), t.getpos());
             while (*t != '\0' && (slash || *t != '/')) {
-                if (*s == *t)
+                if (*s == *t) {
+                    /* Could stop here, but do greedy match and add
+                     * backtrack instead */
                     b.emplace(s.getpos(), t.getpos());
+                }
                 ++t;
             }
             continue;
         }
+        /* Single character wildcard */
         case '?': {
             if (*t != '\0' && *t != '/') {
                 ++s;
@@ -79,11 +93,14 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
             }
             break;
         }
+        /* Start of pattern; matches start of path, or a path separator if the
+         * pattern is not "real" (an absolute or relative path). */
         case '\0': {
             if (*t == '\0' || (*t == '/' && !real))
                 return true;
             break;
         }
+        /* Literal character */
         default: {
             if (*s == *t) {
                 ++s;
@@ -94,6 +111,7 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
         }
         }
 
+        /* No match, try to backtrack */
         if (!b.empty()) {
             const auto &bp = b.top();
             b.pop();
@@ -102,6 +120,7 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
             continue;
         }
 
+        /* Couldn't bactrack, try matching from the next path separator */
         while (*q != '\0' && *q != '/')
             ++q;
 
@@ -112,6 +131,7 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
             continue;
         }
 
+        /* No more path seperators to try from */
         return false;
     }
 }
