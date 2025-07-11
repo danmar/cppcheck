@@ -627,7 +627,7 @@ private:
 
     void testautovar_return6() { // #14005
         check("struct S;\n"
-              "struct S { const struct S *s; };\n"
+              "struct T { const struct S *s; };\n"
               "extern struct T factory();\n"
               "const struct S* f() {\n"
               "    struct T t = factory();\n"
