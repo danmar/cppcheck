@@ -142,7 +142,7 @@ private:
  **/
 class PathMatch::PathIterator {
 public:
-    /* Create from a pattern and base path */
+    /* Create from a pattern and base path, patterns must begin with '.' to be considered relative */
     static PathIterator from_pattern(const std::string &pattern, const std::string &basepath, bool icase)
     {
         if (!pattern.empty() && pattern[0] == '.')
