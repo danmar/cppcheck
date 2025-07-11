@@ -21,173 +21,23 @@
 #include "path.h"
 
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
 #include <stack>
 #include <string>
 #include <vector>
 
-struct Pathstr
+
+PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Mode mode) :
+    mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mMode(mode)
+{}
+
+bool PathMatch::match(const std::string &path) const
 {
-    static Pathstr from_pattern(const std::string &pattern, const std::string &basepath, bool icase)
-    {
-        if (!pattern.empty() && pattern[0] == '.')
-            return Pathstr(basepath.c_str(), pattern.c_str(), icase);
-        return Pathstr(pattern.c_str(), nullptr, icase);
-    }
+    return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
+        return match(pattern, path, mBasepath, mMode);
+    });
+}
 
-    static Pathstr from_path(const std::string &path, const std::string &basepath, bool icase)
-    {
-        if (Path::isAbsolute(path))
-            return Pathstr(path.c_str(), nullptr, icase);
-        return Pathstr(basepath.c_str(), path.c_str(), icase);
-    }
-
-    explicit Pathstr(const char *a = nullptr, const char *b = nullptr, bool lowercase = false) :
-        s{a, b}, lcase(lowercase)
-    {
-        for (int i = 0; i < 2; i++) {
-            e[i] = s[i];
-
-            if (s[i] == nullptr || *s[i] == '\0')
-                continue;
-
-            if (st.l != 0)
-                st.l++;
-
-            while (*e[i] != '\0') {
-                e[i]++;
-                st.l++;
-            }
-
-            st.p = e[i];
-        }
-
-        if (st.l == 0)
-            st.c = '\0';
-
-        simplify(false);
-    }
-
-    std::size_t left() const
-    {
-        return st.l;
-    }
-
-    char current() const
-    {
-        if (st.c != EOF)
-            return st.c;
-
-        char c = st.p[-1];
-
-        if (c == '\\')
-            return '/';
-
-        if (lcase)
-            return std::tolower(c);
-
-        return c;
-    }
-
-    void simplify(bool leadsep)
-    {
-        while (left() != 0) {
-            State rst = st;
-
-            if (leadsep) {
-                if (current() != '/')
-                    break;
-                nextc();
-            }
-
-            char c = current();
-            if (c == '.') {
-                nextc();
-                c = current();
-                if (c == '.') {
-                    nextc();
-                    c = current();
-                    if (c == '/') {
-                        /* Skip '<name>/../' */
-                        nextc();
-                        simplify(false);
-                        while (left() != 0 && current() != '/')
-                            nextc();
-                        continue;
-                    }
-                } else if (c == '/') {
-                    /* Skip '/./' */
-                    continue;
-                } else if (c == '\0') {
-                    /* Skip leading './' */
-                    break;
-                }
-            } else if (c == '/' && left() != 1) {
-                /* Skip double separator (keep root) */
-                nextc();
-                leadsep = false;
-                continue;
-            }
-
-            st = rst;
-            break;
-        }
-    }
-
-    void advance()
-    {
-        nextc();
-
-        if (current() == '/')
-            simplify(true);
-    }
-
-    void nextc()
-    {
-        if (st.l == 0)
-            return;
-
-        st.l--;
-
-        if (st.l == 0)
-            st.c = '\0';
-        else if (st.c != EOF) {
-            st.c = EOF;
-        } else {
-            st.p--;
-            if (st.p == s[1]) {
-                st.p = e[0];
-                st.c = '/';
-            }
-        }
-    }
-
-    void operator++()
-    {
-        advance();
-    }
-
-    char operator*() const
-    {
-        return current();
-    }
-
-    struct State
-    {
-        const char *p;
-        std::size_t l;
-        int c {EOF};
-    };
-
-    const char *s[2] {};
-    const char *e[2] {};
-    State st {};
-    bool lcase;
-};
-
-
-static bool match_one(const std::string &pattern, const std::string &path, const std::string &basepath, bool icase)
+bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Mode mode)
 {
     if (pattern.empty())
         return false;
@@ -197,13 +47,12 @@ static bool match_one(const std::string &pattern, const std::string &path, const
 
     bool real = Path::isAbsolute(pattern) || pattern[0] == '.';
 
-    Pathstr s = Pathstr::from_pattern(pattern, basepath, icase);
-    Pathstr t = Pathstr::from_path(path, basepath, icase);
+    PathIterator s = PathIterator::from_pattern(pattern, basepath, mode == Mode::icase);
+    PathIterator t = PathIterator::from_path(path, basepath, mode == Mode::icase);
+    PathIterator p = s;
+    PathIterator q = t;
 
-    Pathstr p = s;
-    Pathstr q = t;
-
-    std::stack<std::pair<Pathstr::State, Pathstr::State>> b;
+    std::stack<std::pair<PathIterator::Pos, PathIterator::Pos>> b;
 
     for (;;) {
         switch (*s) {
@@ -214,10 +63,10 @@ static bool match_one(const std::string &pattern, const std::string &path, const
                 slash = true;
                 ++s;
             }
-            b.emplace(s.st, t.st);
+            b.emplace(s.getpos(), t.getpos());
             while (*t != '\0' && (slash || *t != '/')) {
                 if (*s == *t)
-                    b.emplace(s.st, t.st);
+                    b.emplace(s.getpos(), t.getpos());
                 ++t;
             }
             continue;
@@ -248,8 +97,8 @@ static bool match_one(const std::string &pattern, const std::string &path, const
         if (!b.empty()) {
             const auto &bp = b.top();
             b.pop();
-            s.st = bp.first;
-            t.st = bp.second;
+            s.setpos(bp.first);
+            t.setpos(bp.second);
             continue;
         }
 
@@ -265,21 +114,4 @@ static bool match_one(const std::string &pattern, const std::string &path, const
 
         return false;
     }
-}
-
-
-PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Mode mode) :
-    mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mMode(mode)
-{}
-
-bool PathMatch::match(const std::string &path) const
-{
-    return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
-        return match_one(pattern, path, mBasepath, mMode == Mode::icase);
-    });
-}
-
-bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Mode mode)
-{
-    return match_one(pattern, path, basepath, mode == Mode::icase);
 }

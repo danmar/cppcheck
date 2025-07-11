@@ -74,6 +74,7 @@ private:
         TEST_CASE(glob);
         TEST_CASE(globstar1);
         TEST_CASE(globstar2);
+        TEST_CASE(pathiterator);
     }
 
     // Test empty PathMatch
@@ -248,6 +249,21 @@ private:
         ASSERT(match.match("src/lib/foo/bar/foo.c"));
         ASSERT(!match.match("src/lib/foo/foo.cpp"));
         ASSERT(!match.match("src/lib/foo/bar/foo.cpp"));
+    }
+
+    void pathiterator() const {
+        using PathIterator = PathMatch::PathIterator;
+        ASSERT_EQUALS("/hello/world", PathIterator("/hello/universe/.", "../world//").read());
+        ASSERT_EQUALS("/", PathIterator("//./..//.///.", "../../..///").read());
+        ASSERT_EQUALS("/foo/bar", PathIterator(nullptr, "/foo/bar/.").read());
+        ASSERT_EQUALS("/foo/bar", PathIterator("/foo/bar/.", nullptr).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator("/foo", "bar").read());
+        ASSERT_EQUALS("", PathIterator("", "").read());
+        ASSERT_EQUALS("", PathIterator("", nullptr).read());
+        ASSERT_EQUALS("", PathIterator(nullptr, "").read());
+        ASSERT_EQUALS("", PathIterator(nullptr, nullptr).read());
+        ASSERT_EQUALS("c:/windows/system32", PathIterator("C:", "Windows\\System32\\Drivers\\..\\.", true).read());
+        ASSERT_EQUALS("C:", PathIterator("C:\\Program Files\\", "..").read());
     }
 };
 

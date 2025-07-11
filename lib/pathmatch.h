@@ -21,9 +21,13 @@
 
 #include "config.h"
 
+#include <cctype>
 #include <cstdint>
+#include <cstdio>
 #include <string>
 #include <vector>
+
+#include "path.h"
 
 /// @addtogroup CLI
 /// @{
@@ -58,9 +62,8 @@ class CPPCHECKLIB PathMatch {
 public:
 
     /**
-     * @brief Case sensitivity mode.
+     * @brief Match mode.
      *
-     * platform: Use the platform default.
      * scase: Case sensitive.
      * icase: Case insensitive.
      **/
@@ -69,6 +72,9 @@ public:
         icase,
     };
 
+    /**
+     * @brief The default mode for the current platform.
+     **/
 #ifdef _WIN32
     static constexpr Mode platform_mode = Mode::icase;
 #else
@@ -99,13 +105,235 @@ public:
      * @param path Path to match.
      * @param basepath Path to which the pattern and path is relative, when applicable.
      * @param mode Case sensitivity mode.
+     * @return true if the pattern matches the path, false otherwise.
      */
     static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Mode mode = platform_mode);
 
 private:
+    friend class TestPathMatch;
+    class PathIterator;
+
     std::vector<std::string> mPatterns;
     std::string mBasepath;
     Mode mMode;
+};
+
+/**
+ * A more correct and less convenient name for this class would be PathStringsCanonicalReverseIterator.
+ *
+ * This class takes two path strings and iterates their concatenation in reverse while doing canonicalization,
+ * i.e. collapsing double-dots, removing extra slashes, dot-slashes, and trailing slashes, as well as converting
+ * native slashes to forward slashes and optionally converting characters to lowercase.
+ *
+ * Both strings are optional. If both strings are present, then they're concatenated with a slash
+ * (subject to canonicalization).
+ *
+ * Double-dots at the root level are removed. The root slash is preserved, other trailing slashes are removed.
+ *
+ * Doing the iteration in reverse allows canonicalization to be performed without lookahead. This is useful
+ * for comparing path strings, potentially relative to different base paths, without having to do prior string
+ * processing or extra allocations.
+ *
+ * The length of the output is at most strlen(a) + strlen(b) + 1.
+ *
+ * Example:
+ *   - input:  "/hello/universe/.", "../world//"
+ *   - output: "dlrow/olleh/"
+ **/
+class PathMatch::PathIterator {
+public:
+    /* Create from a pattern and base path */
+    static PathIterator from_pattern(const std::string &pattern, const std::string &basepath, bool icase)
+    {
+        if (!pattern.empty() && pattern[0] == '.')
+            return PathIterator(basepath.c_str(), pattern.c_str(), icase);
+        return PathIterator(pattern.c_str(), nullptr, icase);
+    }
+
+    /* Create from path and base path */
+    static PathIterator from_path(const std::string &path, const std::string &basepath, bool icase)
+    {
+        if (Path::isAbsolute(path))
+            return PathIterator(path.c_str(), nullptr, icase);
+        return PathIterator(basepath.c_str(), path.c_str(), icase);
+    }
+
+    /* Constructor */
+    explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, bool lowercase = false) :
+        s{path_a, path_b}, lcase(lowercase)
+    {
+        for (int i = 0; i < 2; i++) {
+            e[i] = s[i];
+
+            if (s[i] == nullptr || *s[i] == '\0')
+                continue;
+
+            if (st.l != 0)
+                st.l++;
+
+            while (*e[i] != '\0') {
+                e[i]++;
+                st.l++;
+            }
+
+            st.p = e[i];
+        }
+
+        if (st.l == 0)
+            st.c = '\0';
+
+        skips(false);
+    }
+
+    /* Position struct */
+    struct Pos {
+        /* String pointer */
+        const char *p;
+        /* Raw characters left */
+        std::size_t l;
+        /* Buffered character */
+        int c {EOF};
+    };
+
+    /* Save the current position */
+    const Pos &getpos() const
+    {
+        return st;
+    }
+
+    /* Restore a saved position */
+    void setpos(const Pos &pos)
+    {
+        st = pos;
+    }
+
+    /* Read the current character */
+    char operator*() const
+    {
+        return current();
+    }
+
+    /* Go to the next character */
+    void operator++()
+    {
+        advance();
+    }
+
+    /* Consume remaining characters into an std::string and reverse, use for testing */
+    std::string read()
+    {
+        std::string s;
+
+        while (current() != '\0') {
+            s.insert(0, 1, current());
+            advance();
+        }
+
+        return s;
+    }
+
+private:
+    /* Read the current character */
+    char current() const
+    {
+        if (st.c != EOF)
+            return st.c;
+
+        char c = st.p[-1];
+
+        if (c == '\\')
+            return '/';
+
+        if (lcase)
+            return std::tolower(c);
+
+        return c;
+    }
+
+    /* Do canonicalization on a path component boundary */
+    void skips(bool leadsep)
+    {
+        while (st.l != 0) {
+            Pos rst = st;
+
+            if (leadsep) {
+                if (current() != '/')
+                    break;
+                nextc();
+            }
+
+            char c = current();
+            if (c == '.') {
+                nextc();
+                c = current();
+                if (c == '.') {
+                    nextc();
+                    c = current();
+                    if (c == '/') {
+                        /* Skip '<name>/../' */
+                        nextc();
+                        skips(false);
+                        while (st.l != 0 && current() != '/')
+                            nextc();
+                        continue;
+                    }
+                } else if (c == '/') {
+                    /* Skip '/./' */
+                    continue;
+                } else if (c == '\0') {
+                    /* Skip leading './' */
+                    break;
+                }
+            } else if (c == '/' && st.l != 1) {
+                /* Skip double separator (keep root) */
+                nextc();
+                leadsep = false;
+                continue;
+            }
+
+            st = rst;
+            break;
+        }
+    }
+
+    /* Go to the next character, doing skips on path separators */
+    void advance()
+    {
+        nextc();
+
+        if (current() == '/')
+            skips(true);
+    }
+
+    /* Go to the next character */
+    void nextc()
+    {
+        if (st.l == 0)
+            return;
+
+        st.l--;
+
+        if (st.l == 0)
+            st.c = '\0';
+        else if (st.c != EOF) {
+            st.c = EOF;
+        } else {
+            st.p--;
+            if (st.p == s[1]) {
+                st.p = e[0];
+                st.c = '/';
+            }
+        }
+    }
+
+    /* String start pointers */
+    const char *s[2] {};
+    /* String end pointers */
+    const char *e[2] {};
+    /* Current position */
+    Pos st {};
+    /* Lowercase conversion flag */
+    bool lcase;
 };
 
 /// @}
