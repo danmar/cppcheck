@@ -222,14 +222,14 @@ public:
     /* Consume remaining characters into an std::string and reverse, use for testing */
     std::string read()
     {
-        std::string s;
+        std::string str;
 
         while (current() != '\0') {
-            s.insert(0, 1, current());
+            str.insert(0, 1, current());
             advance();
         }
 
-        return s;
+        return str;
     }
 
 private:
