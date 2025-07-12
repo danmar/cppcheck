@@ -171,7 +171,7 @@ ifndef INCLUDE_FOR_CLI
 endif
 
 ifndef INCLUDE_FOR_TEST
-    INCLUDE_FOR_TEST=-Ilib -Ifrontend -Icli -isystem externals/simplecpp -isystem externals/tinyxml2
+    INCLUDE_FOR_TEST=-Ilib -Ifrontend -Icli -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2
 endif
 
 BIN=$(DESTDIR)$(PREFIX)/bin
@@ -264,6 +264,7 @@ CLIOBJ =      cli/cmdlineparser.o \
               cli/filelister.o \
               cli/main.o \
               cli/processexecutor.o \
+              cli/sarifreport.o \
               cli/sehwrapper.o \
               cli/signalhandler.o \
               cli/singleexecutor.o \
@@ -316,6 +317,7 @@ TESTOBJ =     test/fixture.o \
               test/testpreprocessor.o \
               test/testprocessexecutor.o \
               test/testprogrammemory.o \
+              test/testsarifreport.o \
               test/testsettings.o \
               test/testsimplifytemplate.o \
               test/testsimplifytokens.o \
@@ -356,7 +358,7 @@ cppcheck: $(EXTOBJ) $(LIBOBJ) $(FEOBJ) $(CLIOBJ)
 
 all:	cppcheck testrunner
 
-testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) $(FEOBJ) cli/cmdlineparser.o cli/cppcheckexecutor.o cli/executor.o cli/filelister.o cli/processexecutor.o cli/sehwrapper.o cli/signalhandler.o cli/singleexecutor.o cli/stacktrace.o cli/threadexecutor.o
+testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) $(FEOBJ) cli/cmdlineparser.o cli/cppcheckexecutor.o cli/executor.o cli/filelister.o cli/processexecutor.o cli/sarifreport.o cli/sehwrapper.o cli/signalhandler.o cli/singleexecutor.o cli/stacktrace.o cli/threadexecutor.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 test:	all
@@ -666,7 +668,7 @@ frontend/frontend.o: frontend/frontend.cpp frontend/frontend.h lib/addoninfo.h l
 cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlinelogger.h cli/cmdlineparser.h cli/filelister.h externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h lib/xml.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cmdlinelogger.h cli/cmdlineparser.h cli/cppcheckexecutor.h cli/executor.h cli/processexecutor.h cli/sehwrapper.h cli/signalhandler.h cli/singleexecutor.h cli/threadexecutor.h externals/picojson/picojson.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/checkers.h lib/checkersreport.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cmdlinelogger.h cli/cmdlineparser.h cli/cppcheckexecutor.h cli/executor.h cli/processexecutor.h cli/sarifreport.h cli/sehwrapper.h cli/signalhandler.h cli/singleexecutor.h cli/threadexecutor.h externals/picojson/picojson.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/checkers.h lib/checkersreport.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cppcheckexecutor.cpp
 
 cli/executor.o: cli/executor.cpp cli/executor.h lib/addoninfo.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
@@ -680,6 +682,9 @@ cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/config.h lib/errortypes.h li
 
 cli/processexecutor.o: cli/processexecutor.cpp cli/executor.h cli/processexecutor.h lib/addoninfo.h lib/check.h lib/checkers.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/filesettings.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/processexecutor.cpp
+
+cli/sarifreport.o: cli/sarifreport.cpp cli/sarifreport.h externals/picojson/picojson.h lib/addoninfo.h lib/check.h lib/checkers.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/json.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h
+	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/sarifreport.cpp
 
 cli/sehwrapper.o: cli/sehwrapper.cpp cli/sehwrapper.h lib/config.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/sehwrapper.cpp
@@ -833,6 +838,9 @@ test/testprocessexecutor.o: test/testprocessexecutor.cpp cli/executor.h cli/proc
 
 test/testprogrammemory.o: test/testprogrammemory.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/programmemory.h lib/settings.h lib/standards.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testprogrammemory.cpp
+
+test/testsarifreport.o: test/testsarifreport.cpp cli/sarifreport.h externals/picojson/picojson.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/json.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/utils.h test/fixture.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testsarifreport.cpp
 
 test/testsettings.o: test/testsettings.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testsettings.cpp
