@@ -109,18 +109,17 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    /* skipped: "security-severity" caused error when uploading to github
-                       double securitySeverity = 0;
-                       if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
+                    double securitySeverity = 0;
+                    if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
                         securitySeverity = 9.9; // We see undefined behavior
-                       //else if (finding.severity == Severity::warning)
-                       //    securitySeverity = 5.1; // We see potential undefined behavior
-                       if (securitySeverity > 0.5) {
-                        properties["security-severity"] = picojson::value(securitySeverity);
+                    //else if (finding.severity == Severity::warning)
+                    //    securitySeverity = 5.1; // We see potential undefined behavior
+                    if (securitySeverity > 0.5) {
+                        // skipped: "security-severity" caused error when uploading to github
+                        // properties["security-severity"] = picojson::value(securitySeverity);
                         const picojson::array tags{picojson::value("security")};
                         properties["tags"] = picojson::value(tags);
-                       }
-                     */
+                    }
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
