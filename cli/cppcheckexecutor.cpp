@@ -109,7 +109,8 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    double securitySeverity = 0;
+                    /* skipped: "security-severity" caused error when uploading to github
+		    double securitySeverity = 0;
                     if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
                         securitySeverity = 9.9; // We see undefined behavior
                     //else if (finding.severity == Severity::warning)
@@ -119,6 +120,7 @@ namespace {
                         const picojson::array tags{picojson::value("security")};
                         properties["tags"] = picojson::value(tags);
                     }
+		    */
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
@@ -139,8 +141,8 @@ namespace {
                 artifactLocation["uri"] = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
-                region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
-                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column));
+                region["startLine"] = picojson::value(static_cast<int64_t>(std::max(1,location.line)));
+                region["startColumn"] = picojson::value(static_cast<int64_t>(std::max(1U,location.column)));
                 region["endLine"] = region["startLine"];
                 region["endColumn"] = region["startColumn"];
                 physicalLocation["region"] = picojson::value(region);

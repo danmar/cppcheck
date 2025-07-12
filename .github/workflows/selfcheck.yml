@@ -187,3 +187,41 @@ jobs:
         with:
           name: Callgrind Output
           path: ./callgrind.*
+
+  build_extra: # extra warnings
+    # certain suppressed warnings are saved in sarif report that is uploaded to github
+    # to allow manual inspection
+    # these warnings do not make CI red, by intention.
+    # * tests the github integration
+    # * more comfortable release procedure
+
+    strategy:
+      fail-fast: false # Prefer quick result
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build Cppcheck
+        run: |
+          make CXXFLAGS=-O2 MATCOMPILER=yes -j$(nproc)
+
+      - name: Run Cppcheck
+        run: |
+          ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=normalCheckLevelMaxBranches cli gui/*.cpp lib --output-format=sarif 2> results.sarif
+
+      - name: Results
+        run: |
+          cat results.sarif
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: results.sarif
+
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
