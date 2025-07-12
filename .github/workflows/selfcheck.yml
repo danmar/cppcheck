@@ -190,7 +190,7 @@ jobs:
 
   build_sarif_github:
     # Perform selfcheck and upload results to github using sarif format
-    # Results will be shown here: https://github.com/danmar/cppcheck/security/code-scanning
+    # Results are shown here: https://github.com/danmar/cppcheck/security/code-scanning
     # Motivation:
     # * Non-inline warnings are not suppressed, we will need to double check warnings using the github interface (this simplifies the release process)
     # * Tests that github integration works
