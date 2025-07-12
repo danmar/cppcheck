@@ -187,3 +187,38 @@ jobs:
         with:
           name: Callgrind Output
           path: ./callgrind.*
+
+  build_sarif_github:
+    # Perform selfcheck and upload results to github using sarif format
+    # Results are shown here: https://github.com/danmar/cppcheck/security/code-scanning
+
+    strategy:
+      fail-fast: false # Prefer quick result
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build Cppcheck
+        run: |
+          make CXXFLAGS=-O2 MATCOMPILER=yes -j$(nproc)
+
+      - name: Run Cppcheck
+        run: |
+          ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr cli frontend gui/*.cpp lib --output-format=sarif 2> results.sarif
+
+      - name: Results
+        run: |
+          cat results.sarif
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: results.sarif
+
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
