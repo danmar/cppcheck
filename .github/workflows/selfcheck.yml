@@ -188,12 +188,9 @@ jobs:
           name: Callgrind Output
           path: ./callgrind.*
 
-  build_extra: # extra warnings
-    # certain suppressed warnings are saved in sarif report that is uploaded to github
-    # to allow manual inspection
-    # these warnings do not make CI red, by intention.
-    # * tests the github integration
-    # * more comfortable release procedure
+  build_sarif_github:
+    # generate sarif report and upload it to github
+    # tests the github integration
 
     strategy:
       fail-fast: false # Prefer quick result
@@ -211,7 +208,7 @@ jobs:
 
       - name: Run Cppcheck
         run: |
-          ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=normalCheckLevelMaxBranches cli gui/*.cpp lib --output-format=sarif 2> results.sarif
+          ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr cli gui/*.cpp lib --output-format=sarif 2> results.sarif
 
       - name: Results
         run: |
