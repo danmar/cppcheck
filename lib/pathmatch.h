@@ -34,24 +34,25 @@
 
 /**
  *  Path matching rules:
- *  - All patterns are simplified first (path separators vary by platform):
+ *  - All patterns are canonicalized (path separators vary by platform):
  *    - '/./' => '/'
  *    - '/dir/../' => '/'
  *    - '//' => '/'
- *    - Trailing slashes are removed
+ *    - Trailing slashes are removed (root slash is preserved)
  *  - Patterns can contain globs:
  *    - '**' matches any number of characters including path separators.
  *    - '*' matches any number of characters except path separators.
  *    - '?' matches any single character except path separators.
  *  - If a pattern looks like an absolute path (e.g. starts with '/', but varies by platform):
- *    - Match all files where the pattern matches the start of the file's simplified absolute path up until a path
+ *    - Match all files where the pattern matches the start of the file's canonical absolute path up until a path
  *      separator or the end of the pathname.
- *  - If a pattern starts with '.':
+ *  - If a pattern looks like a relative path, i.e. is '.' or '..', or
+ *    starts with '.' or '..' followed by a path separator:
  *    - The pattern is interpreted as a path relative to `basepath` and then converted to an absolute path and
  *      treated as such according to the above procedure. If the pattern is relative to some other directory, it should
  *      be modified to be relative to `basepath` first (this should be done with patterns in project files, for example).
  *  - Otherwise:
- *    - Match all files where the pattern matches any part of the file's simplified absolute path up until a
+ *    - Match all files where the pattern matches any part of the file's canonical absolute path up until a
  *      path separator or the end of the pathname, and the matching part directly follows a path separator.
  **/
 
@@ -66,7 +67,7 @@ public:
      *
      * scase: Case sensitive.
      * icase: Case insensitive.
-     **/
+     */
     enum class Mode : std::uint8_t {
         scase,
         icase,
@@ -74,7 +75,7 @@ public:
 
     /**
      * @brief The default mode for the current platform.
-     **/
+     */
 #ifdef _WIN32
     static constexpr Mode platform_mode = Mode::icase;
 #else
@@ -109,6 +110,44 @@ public:
      */
     static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Mode mode = platform_mode);
 
+    /**
+     * @brief Check if a pattern is a relative path name.
+     *
+     * @param pattern Pattern to check.
+     * @return true if the pattern has the form of a relative path name pattern.
+     */
+    static bool isRelativePattern(const std::string &pattern)
+    {
+        if (pattern.empty() || pattern[0] != '.')
+            return false;
+
+        if (pattern.size() < 2 || pattern[1] == '/' || pattern[1] == '\\')
+            return true;
+
+        if (pattern[1] != '.')
+            return false;
+
+        if (pattern.size() < 3 || pattern[2] == '/' || pattern[2] == '\\')
+            return true;
+
+        return false;
+    }
+
+    /**
+     * @brief Join a pattern with a base path.
+     *
+     * @param basepath The base path to join the pattern to.
+     * @param pattern The pattern to join.
+     * @return The pattern appended to the base path with a separator if the pattern is a relative
+     * path name, otherwise just returns pattern.
+     */
+    static std::string joinRelativePattern(const std::string &basepath, const std::string &pattern)
+    {
+        if (isRelativePattern(pattern))
+            return Path::join(basepath, pattern);
+        return pattern;
+    }
+
 private:
     friend class TestPathMatch;
     class PathIterator;
@@ -142,16 +181,16 @@ private:
  **/
 class PathMatch::PathIterator {
 public:
-    /* Create from a pattern and base path, patterns must begin with '.' to be considered relative */
-    static PathIterator from_pattern(const std::string &pattern, const std::string &basepath, bool icase)
+    /* Create from a pattern and base path */
+    static PathIterator fromPattern(const std::string &pattern, const std::string &basepath, bool icase)
     {
-        if (!pattern.empty() && pattern[0] == '.')
+        if (isRelativePattern(pattern))
             return PathIterator(basepath.c_str(), pattern.c_str(), icase);
         return PathIterator(pattern.c_str(), nullptr, icase);
     }
 
     /* Create from path and base path */
-    static PathIterator from_path(const std::string &path, const std::string &basepath, bool icase)
+    static PathIterator fromPath(const std::string &path, const std::string &basepath, bool icase)
     {
         if (Path::isAbsolute(path))
             return PathIterator(path.c_str(), nullptr, icase);
@@ -270,7 +309,7 @@ private:
                     nextc();
                     c = current();
                     if (c == '/') {
-                        /* Skip '<name>/../' */
+                        /* Skip 'dir/../' */
                         nextc();
                         skips(false);
                         while (mPos.l != 0 && current() != '/')

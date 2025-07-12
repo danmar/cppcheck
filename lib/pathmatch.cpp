@@ -47,12 +47,12 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
 
     /* A "real" path is absolute or relative to the base path. A pattern that isn't "real" can match at any
      * path component boundary. */
-    bool real = Path::isAbsolute(pattern) || pattern[0] == '.';
+    bool real = Path::isAbsolute(pattern) || isRelativePattern(pattern);
 
     /* Pattern iterator */
-    PathIterator s = PathIterator::from_pattern(pattern, basepath, mode == Mode::icase);
+    PathIterator s = PathIterator::fromPattern(pattern, basepath, mode == Mode::icase);
     /* Path iterator */
-    PathIterator t = PathIterator::from_path(path, basepath, mode == Mode::icase);
+    PathIterator t = PathIterator::fromPath(path, basepath, mode == Mode::icase);
     /* Pattern restart position */
     PathIterator p = s;
     /* Path restart position */

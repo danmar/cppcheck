@@ -1254,7 +1254,7 @@ static std::list<std::string> readXmlStringList(const tinyxml2::XMLElement *node
             continue;
         const char *attr = attribute ? child->Attribute(attribute) : child->GetText();
         if (attr)
-            ret.push_back(joinRelativePath(path, attr));
+            ret.emplace_back(joinRelativePath(path, attr));
     }
     return ret;
 }
@@ -1266,12 +1266,8 @@ static std::list<std::string> readXmlPathMatchList(const tinyxml2::XMLElement *n
         if (strcmp(child->Name(), name) != 0)
             continue;
         const char *attr = attribute ? child->Attribute(attribute) : child->GetText();
-        if (attr) {
-            if (attr[0] == '.')
-                ret.push_back(joinRelativePath(path, attr));
-            else
-                ret.emplace_back(attr);
-        }
+        if (attr)
+            ret.emplace_back(PathMatch::joinRelativePattern(path, attr));
     }
     return ret;
 }
