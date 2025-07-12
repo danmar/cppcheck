@@ -226,6 +226,7 @@
     <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
+    <ClInclude Include="sarifreport.h" />
     <ClInclude Include="sehwrapper.h" />
     <ClInclude Include="signalhandler.h" />
     <ClInclude Include="singleexecutor.h" />
@@ -250,6 +251,7 @@
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processexecutor.cpp" />
+    <ClCompile Include="sarifreport.cpp" />
     <ClCompile Include="sehwrapper.cpp" />
     <ClCompile Include="signalhandler.cpp" />
     <ClCompile Include="singleexecutor.cpp" />

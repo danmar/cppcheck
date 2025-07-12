@@ -29,6 +29,7 @@
     <ClCompile Include="..\cli\executor.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
+    <ClCompile Include="..\cli\sarifreport.cpp" />
     <ClCompile Include="..\cli\sehwrapper.cpp" />
     <ClCompile Include="..\cli\signalhandler.cpp" />
     <ClCompile Include="..\cli\singleexecutor.cpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testprocessexecutor.cpp" />
     <ClCompile Include="testprogrammemory.cpp" />
+    <ClCompile Include="testsarifreport.cpp" />
     <ClCompile Include="testsettings.cpp" />
     <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
@@ -122,6 +124,7 @@
     <ClInclude Include="..\cli\executor.h" />
     <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\cli\processexecutor.h" />
+    <ClInclude Include="..\cli\sarifreport.h" />
     <ClInclude Include="..\cli\sehwrapper.h" />
     <ClInclude Include="..\cli\signalhandler.h" />
     <ClInclude Include="..\cli\singleexecutor.h" />
