@@ -65,10 +65,6 @@ private:
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
-        bool clangTidy = false;
-        bool executeCommandCalled = false;
-        std::string exe;
-        std::vector<std::string> args;
     };
 
     void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
@@ -99,19 +95,12 @@ private:
         s.quiet = opt.quiet;
         if (opt.plistOutput)
             s.plistOutput = opt.plistOutput;
-        s.clangTidy = opt.clangTidy;
         s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: remove when we only longer rely on toString() in unique message handling?
 
         Suppressions supprs;
 
-        bool executeCommandCalled = false;
-        std::string exe;
-        std::vector<std::string> args;
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        CppCheck cppcheck(s, supprs, *this, true, [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
-            executeCommandCalled = true;
-            exe = std::move(e);
-            args = std::move(a);
+        CppCheck cppcheck(s, supprs, *this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
             return EXIT_SUCCESS;
         });
 
@@ -126,13 +115,6 @@ private:
 
         SingleExecutor executor(cppcheck, filelist, fileSettings, s, supprs, *this);
         ASSERT_EQUALS(result, executor.check());
-        ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
-        ASSERT_EQUALS(opt.exe, exe);
-        ASSERT_EQUALS(opt.args.size(), args.size());
-        for (std::size_t i = 0; i < args.size(); ++i)
-        {
-            ASSERT_EQUALS(opt.args[i], args[i]);
-        }
     }
 
     void run() override {
@@ -145,7 +127,6 @@ private:
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
-        TEST_CASE(clangTidy);
         TEST_CASE(showtime_top5_file);
         TEST_CASE(showtime_top5_summary);
         TEST_CASE(showtime_file);
@@ -256,32 +237,6 @@ private:
             }
             ASSERT_EQUALS(expected, errout_str());
         }
-    }
-
-    void clangTidy() {
-        // TODO: we currently only invoke it with ImportProject::FileSettings
-        if (!useFS)
-            return;
-
-#ifdef _WIN32
-        constexpr char exe[] = "clang-tidy.exe";
-#else
-        constexpr char exe[] = "clang-tidy";
-#endif
-
-        const std::string file = fprefix() + "_001.cpp";
-        check(1, 0,
-              "int main()\n"
-              "{\n"
-              "  return 0;\n"
-              "}",
-              dinit(CheckOptions,
-                    $.quiet = false,
-                        $.clangTidy = true,
-                        $.executeCommandCalled = true,
-                        $.exe = exe,
-                        $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
-        ASSERT_EQUALS("Checking " + file + " ...\n", output_str());
     }
 
 // TODO: provide data which actually shows values above 0

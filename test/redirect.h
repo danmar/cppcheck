@@ -43,6 +43,7 @@ public:
         std::cerr.rdbuf(_err.rdbuf()); // assign streambuf to cerr
     }
 
+    // TODO: if an assert failed previously this will mask that failure
     /** Revert cout and cerr behaviour */
     ~RedirectOutputError() noexcept(false) {
         std::cout.rdbuf(_oldCout); // restore cout's original streambuf
