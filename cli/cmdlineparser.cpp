@@ -59,6 +59,10 @@
 #ifdef HAVE_RULES
 // xml is used for rules
 #include "xml.h"
+
+#ifdef _MSC_VER
+#pragma message("The usage of rules is deprecated and will be removed in a future Cppcheck version. Please use addons instead.")
+#endif
 #endif
 
 static bool addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
@@ -1258,6 +1262,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
+            mLogger.printMessage("'--rule' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.");
+
             mSettings.rules.emplace_back(std::move(rule));
 #else
             mLogger.printError("Option --rule cannot be used as Cppcheck has not been built with rules support.");
@@ -1342,6 +1348,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
                     mSettings.rules.emplace_back(std::move(rule));
                 }
+
+                mLogger.printMessage("'--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.");
             } else {
                 mLogger.printError("unable to load rule-file '" + ruleFile + "' (" + tinyxml2::XMLDocument::ErrorIDToName(err) + ").");
                 return Result::Fail;

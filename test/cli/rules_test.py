@@ -32,6 +32,7 @@ void f()
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0
     assert stdout.splitlines() == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: \\}\\s*catch\\s*\\(.*\\)\\s*\\{\\s*\\}'
     ]
@@ -61,6 +62,7 @@ void f()
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0
     assert stdout.splitlines() == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: .*',
         'Checking {}: DEF_2=1...'.format(test_file)
@@ -95,6 +97,7 @@ void f()
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0
     assert stdout.splitlines() == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule:  \\. find \\( "[^"]+?" \\) == \\d+ '
     ]
@@ -124,6 +127,7 @@ void f(const char* s)
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0
     assert stdout.splitlines() == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule:  if \\( ([!] )*?(strlen) \\( \\w+? \\) ([>] [0] )*?\\) { '
     ]
@@ -151,6 +155,7 @@ void f()
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0
     assert stdout.splitlines() == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule: (\\b\\w+\\b) \\* (\\b\\w+\\b) = 0 ;'
     ]
@@ -178,6 +183,7 @@ void f(const char* p)
     ret, stdout, stderr = cppcheck(args)
     assert ret == 0
     assert stdout.splitlines() == [
+        "cppcheck: '--rule-file' has been deprecated and will be removed in a future Cppcheck version. Please use an addon instead.",
         'Checking {} ...'.format(test_file),
         'Processing rule:  [;{}] [*] \\w+? (\\+\\+|\\-\\-) ; '
     ]
