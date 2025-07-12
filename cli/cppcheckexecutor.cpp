@@ -115,7 +115,8 @@ namespace {
                     //else if (finding.severity == Severity::warning)
                     //    securitySeverity = 5.1; // We see potential undefined behavior
                     if (securitySeverity > 0.5) {
-                        properties["security-severity"] = picojson::value(securitySeverity);
+                        // skipped: "security-severity" caused error when uploading to github
+                        // properties["security-severity"] = picojson::value(securitySeverity);
                         const picojson::array tags{picojson::value("security")};
                         properties["tags"] = picojson::value(tags);
                     }
@@ -139,8 +140,8 @@ namespace {
                 artifactLocation["uri"] = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
-                region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
-                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column));
+                region["startLine"] = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
+                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column < 1 ? 1 : location.column));
                 region["endLine"] = region["startLine"];
                 region["endColumn"] = region["startColumn"];
                 physicalLocation["region"] = picojson::value(region);
