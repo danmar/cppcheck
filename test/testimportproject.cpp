@@ -446,7 +446,7 @@ private:
         project.fileSettings = {std::move(fs1), std::move(fs2)};
 
         project.ignorePaths({"*foo", "bar*"});
-        ASSERT_EQUALS(2, project.fileSettings.size());
+        ASSERT_EQUALS(1, project.fileSettings.size());
 
         project.ignorePaths({"foo/*"});
         ASSERT_EQUALS(1, project.fileSettings.size());

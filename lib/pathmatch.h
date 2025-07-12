@@ -21,11 +21,40 @@
 
 #include "config.h"
 
+#include <cctype>
+#include <cstdint>
+#include <cstdio>
 #include <string>
 #include <vector>
 
+#include "path.h"
+
 /// @addtogroup CLI
 /// @{
+
+/**
+ *  Path matching rules:
+ *  - All patterns are canonicalized (path separators vary by platform):
+ *    - '/./' => '/'
+ *    - '/dir/../' => '/'
+ *    - '//' => '/'
+ *    - Trailing slashes are removed (root slash is preserved)
+ *  - Patterns can contain globs:
+ *    - '**' matches any number of characters including path separators.
+ *    - '*' matches any number of characters except path separators.
+ *    - '?' matches any single character except path separators.
+ *  - If a pattern looks like an absolute path (e.g. starts with '/', but varies by platform):
+ *    - Match all files where the pattern matches the start of the file's canonical absolute path up until a path
+ *      separator or the end of the pathname.
+ *  - If a pattern looks like a relative path, i.e. is '.' or '..', or
+ *    starts with '.' or '..' followed by a path separator:
+ *    - The pattern is interpreted as a path relative to `basepath` and then converted to an absolute path and
+ *      treated as such according to the above procedure. If the pattern is relative to some other directory, it should
+ *      be modified to be relative to `basepath` first (this should be done with patterns in project files, for example).
+ *  - Otherwise:
+ *    - Match all files where the pattern matches any part of the file's canonical absolute path up until a
+ *      path separator or the end of the pathname, and the matching part directly follows a path separator.
+ **/
 
 /**
  * @brief Simple path matching for ignoring paths in CLI.
@@ -34,39 +63,316 @@ class CPPCHECKLIB PathMatch {
 public:
 
     /**
-     * The constructor.
+     * @brief Match mode.
      *
-     * If a path is a directory it needs to end with a file separator.
-     *
-     * @param paths List of masks.
-     * @param caseSensitive Match the case of the characters when
-     *   matching paths?
+     * scase: Case sensitive.
+     * icase: Case insensitive.
      */
-    explicit PathMatch(std::vector<std::string> paths, bool caseSensitive = true);
+    enum class Mode : std::uint8_t {
+        scase,
+        icase,
+    };
 
     /**
-     * @brief Match path against list of masks.
+     * @brief The default mode for the current platform.
+     */
+#ifdef _WIN32
+    static constexpr Mode platform_mode = Mode::icase;
+#else
+    static constexpr Mode platform_mode = Mode::scase;
+#endif
+
+    /**
+     * The constructor.
      *
-     * If you want to match a directory the given path needs to end with a path separator.
+     * @param patterns List of patterns.
+     * @param basepath Path to which patterns and matched paths are relative, when applicable.
+     * @param mode Case sensitivity mode.
+     */
+    explicit PathMatch(std::vector<std::string> patterns = {}, std::string basepath = std::string(), Mode mode = platform_mode);
+
+    /**
+     * @brief Match path against list of patterns.
      *
      * @param path Path to match.
      * @return true if any of the masks match the path, false otherwise.
      */
     bool match(const std::string &path) const;
 
-protected:
+    /**
+     * @brief Match path against a single pattern.
+     *
+     * @param pattern Pattern to use.
+     * @param path Path to match.
+     * @param basepath Path to which the pattern and path is relative, when applicable.
+     * @param mode Case sensitivity mode.
+     * @return true if the pattern matches the path, false otherwise.
+     */
+    static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Mode mode = platform_mode);
 
     /**
-     * @brief Remove filename part from the path.
-     * @param path Path to edit.
-     * @return path without filename part.
+     * @brief Check if a pattern is a relative path name.
+     *
+     * @param pattern Pattern to check.
+     * @return true if the pattern has the form of a relative path name pattern.
      */
-    static std::string removeFilename(const std::string &path);
+    static bool isRelativePattern(const std::string &pattern)
+    {
+        if (pattern.empty() || pattern[0] != '.')
+            return false;
+
+        if (pattern.size() < 2 || pattern[1] == '/' || pattern[1] == '\\')
+            return true;
+
+        if (pattern[1] != '.')
+            return false;
+
+        if (pattern.size() < 3 || pattern[2] == '/' || pattern[2] == '\\')
+            return true;
+
+        return false;
+    }
+
+    /**
+     * @brief Join a pattern with a base path.
+     *
+     * @param basepath The base path to join the pattern to.
+     * @param pattern The pattern to join.
+     * @return The pattern appended to the base path with a separator if the pattern is a relative
+     * path name, otherwise just returns pattern.
+     */
+    static std::string joinRelativePattern(const std::string &basepath, const std::string &pattern)
+    {
+        if (isRelativePattern(pattern))
+            return Path::join(basepath, pattern);
+        return pattern;
+    }
 
 private:
-    std::vector<std::string> mPaths;
-    bool mCaseSensitive;
-    std::vector<std::string> mWorkingDirectory;
+    friend class TestPathMatch;
+    class PathIterator;
+
+    std::vector<std::string> mPatterns;
+    std::string mBasepath;
+    Mode mMode;
+};
+
+/**
+ * A more correct and less convenient name for this class would be PathStringsCanonicalReverseIterator.
+ *
+ * This class takes two path strings and iterates their concatenation in reverse while doing canonicalization,
+ * i.e. collapsing double-dots, removing extra slashes, dot-slashes, and trailing slashes, as well as converting
+ * native slashes to forward slashes and optionally converting characters to lowercase.
+ *
+ * Both strings are optional. If both strings are present, then they're concatenated with a slash
+ * (subject to canonicalization).
+ *
+ * Double-dots at the root level are removed. The root slash is preserved, other trailing slashes are removed.
+ *
+ * Doing the iteration in reverse allows canonicalization to be performed without lookahead. This is useful
+ * for comparing path strings, potentially relative to different base paths, without having to do prior string
+ * processing or extra allocations.
+ *
+ * The length of the output is at most strlen(a) + strlen(b) + 1.
+ *
+ * Example:
+ *   - input:  "/hello/universe/.", "../world//"
+ *   - output: "dlrow/olleh/"
+ **/
+class PathMatch::PathIterator {
+public:
+    /* Create from a pattern and base path */
+    static PathIterator fromPattern(const std::string &pattern, const std::string &basepath, bool icase)
+    {
+        if (isRelativePattern(pattern))
+            return PathIterator(basepath.c_str(), pattern.c_str(), icase);
+        return PathIterator(pattern.c_str(), nullptr, icase);
+    }
+
+    /* Create from path and base path */
+    static PathIterator fromPath(const std::string &path, const std::string &basepath, bool icase)
+    {
+        if (Path::isAbsolute(path))
+            return PathIterator(path.c_str(), nullptr, icase);
+        return PathIterator(basepath.c_str(), path.c_str(), icase);
+    }
+
+    /* Constructor */
+    explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, bool lower = false) :
+        mStart{path_a, path_b}, mLower(lower)
+    {
+        for (int i = 0; i < 2; i++) {
+            mEnd[i] = mStart[i];
+
+            if (mStart[i] == nullptr || *mStart[i] == '\0')
+                continue;
+
+            if (mPos.l != 0)
+                mPos.l++;
+
+            while (*mEnd[i] != '\0') {
+                mEnd[i]++;
+                mPos.l++;
+            }
+
+            mPos.p = mEnd[i];
+        }
+
+        if (mPos.l == 0)
+            mPos.c = '\0';
+
+        skips(false);
+    }
+
+    /* Position struct */
+    struct Pos {
+        /* String pointer */
+        const char *p;
+        /* Raw characters left */
+        std::size_t l;
+        /* Buffered character */
+        int c {EOF};
+    };
+
+    /* Save the current position */
+    const Pos &getpos() const
+    {
+        return mPos;
+    }
+
+    /* Restore a saved position */
+    void setpos(const Pos &pos)
+    {
+        mPos = pos;
+    }
+
+    /* Read the current character */
+    char operator*() const
+    {
+        return current();
+    }
+
+    /* Go to the next character */
+    void operator++()
+    {
+        advance();
+    }
+
+    /* Consume remaining characters into an std::string and reverse, use for testing */
+    std::string read()
+    {
+        std::string str;
+
+        while (current() != '\0') {
+            str.insert(0, 1, current());
+            advance();
+        }
+
+        return str;
+    }
+
+private:
+    /* Read the current character */
+    char current() const
+    {
+        if (mPos.c != EOF)
+            return mPos.c;
+
+        char c = mPos.p[-1];
+
+        if (c == '\\')
+            return '/';
+
+        if (mLower)
+            return std::tolower(c);
+
+        return c;
+    }
+
+    /* Do canonicalization on a path component boundary */
+    void skips(bool leadsep)
+    {
+        while (mPos.l != 0) {
+            Pos pos = mPos;
+
+            if (leadsep) {
+                if (current() != '/')
+                    break;
+                nextc();
+            }
+
+            char c = current();
+            if (c == '.') {
+                nextc();
+                c = current();
+                if (c == '.') {
+                    nextc();
+                    c = current();
+                    if (c == '/') {
+                        /* Skip 'dir/../' */
+                        nextc();
+                        skips(false);
+                        while (mPos.l != 0 && current() != '/')
+                            nextc();
+                        continue;
+                    }
+                } else if (c == '/') {
+                    /* Skip '/./' */
+                    continue;
+                } else if (c == '\0') {
+                    /* Skip leading './' */
+                    break;
+                }
+            } else if (c == '/' && mPos.l != 1) {
+                /* Skip double separator (keep root) */
+                nextc();
+                leadsep = false;
+                continue;
+            }
+
+            mPos = pos;
+            break;
+        }
+    }
+
+    /* Go to the next character, doing skips on path separators */
+    void advance()
+    {
+        nextc();
+
+        if (current() == '/')
+            skips(true);
+    }
+
+    /* Go to the next character */
+    void nextc()
+    {
+        if (mPos.l == 0)
+            return;
+
+        mPos.l--;
+
+        if (mPos.l == 0)
+            mPos.c = '\0';
+        else if (mPos.c != EOF) {
+            mPos.c = EOF;
+        } else {
+            mPos.p--;
+            if (mPos.p == mStart[1]) {
+                mPos.p = mEnd[0];
+                mPos.c = '/';
+            }
+        }
+    }
+
+    /* String start pointers */
+    const char *mStart[2] {};
+    /* String end pointers */
+    const char *mEnd[2] {};
+    /* Current position */
+    Pos mPos {};
+    /* Lowercase conversion flag */
+    bool mLower;
 };
 
 /// @}
