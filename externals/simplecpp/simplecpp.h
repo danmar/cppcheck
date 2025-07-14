@@ -27,10 +27,6 @@
 #  define SIMPLECPP_LIB
 #endif
 
-#if (__cplusplus < 201103L) && !defined(__APPLE__)
-#define nullptr NULL
-#endif
-
 #if defined(_MSC_VER)
 #  pragma warning(push)
 // suppress warnings about "conversion from 'type1' to 'type2', possible loss of data"
@@ -214,14 +210,10 @@ namespace simplecpp {
         /** generates a token list from the given filename parameter */
         TokenList(const std::string &filename, std::vector<std::string> &filenames, OutputList *outputList = nullptr);
         TokenList(const TokenList &other);
-#if __cplusplus >= 201103L
         TokenList(TokenList &&other);
-#endif
         ~TokenList();
         TokenList &operator=(const TokenList &other);
-#if __cplusplus >= 201103L
         TokenList &operator=(TokenList &&other);
-#endif
 
         void clear();
         bool empty() const {
@@ -393,10 +385,6 @@ namespace simplecpp {
 
 #if defined(_MSC_VER)
 #  pragma warning(pop)
-#endif
-
-#if (__cplusplus < 201103L) && !defined(__APPLE__)
-#undef nullptr
 #endif
 
 #endif
