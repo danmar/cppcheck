@@ -130,9 +130,7 @@ public:
 
         std::string getText() const;
 
-        bool isWildcard() const {
-            return fileName.find_first_of("?*") != std::string::npos;
-        }
+        bool isWildcard() const;
 
         bool isLocal() const {
             return !fileName.empty() && !isWildcard();
