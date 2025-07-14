@@ -33,7 +33,6 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <time.h>
 #include <string.h>
 #include <strings.h>
 #if defined(__APPLE__)
@@ -47,6 +46,7 @@
 #include <wchar.h>
 #include <sys/stat.h>
 #include <utime.h>
+#include <stddef.h>
 
 
 #if !defined(__APPLE__)

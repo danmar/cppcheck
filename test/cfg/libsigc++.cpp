@@ -7,7 +7,10 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <sigc++/sigc++.h>
+#include <sigc++/sigc++.h> // IWYU pragma: keep
+#include <sigc++/functors/mem_fun.h>
+#include <sigc++/functors/slot.h>
+#include <sigc++/trackable.h>
 
 struct struct1 : public sigc::trackable {
     void func1(int) const {}

@@ -46,6 +46,8 @@ CXX_OPT=("-fsyntax-only" "-w" "-std=c++2a")
 CC=gcc
 CC_OPT=("-fsyntax-only" "-w" "-std=c11")
 
+IWYU_OPTS=("-Xiwyu" "--no_fwd_decls" "-Xiwyu" "--update_comments")
+
 function get_pkg_config_cflags {
     # TODO: get rid of the error enabling/disabling?
     set +e
@@ -63,16 +65,31 @@ function get_pkg_config_cflags {
     echo "$PKGCONFIG"
 }
 
+function iwyu_run {
+    # TODO: convert -I includes provided by pkg-config to -isystem so IWYU does not produce warnings for system headers
+    ${IWYU} "${IWYU_OPTS[@]}" "${IWYU_CLANG_INC}" "$@"
+}
+
 function cc_syntax {
-    ${CC} "${CC_OPT[@]}" "$@"
+    if [ -z "$IWYU" ]; then
+        ${CC} "${CC_OPT[@]}" "$@"
+    else
+        iwyu_run "${CC_OPT[@]}" "$@"
+    fi
 }
 
 function cxx_syntax {
-    ${CXX} "${CXX_OPT[@]}" "$@"
+    if [ -z "$IWYU" ]; then
+        ${CXX} "${CXX_OPT[@]}" "$@"
+    else
+        iwyu_run "${CXX_OPT[@]}" "$@"
+    fi
 }
 
 function cppcheck_run {
-    "${CPPCHECK}" "${CPPCHECK_OPT[@]}" "$@"
+    if [ -z "$IWYU" ]; then
+        "${CPPCHECK}" "${CPPCHECK_OPT[@]}" "$@"
+    fi
 }
 
 # posix.c
@@ -90,10 +107,19 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test Qt5Gui)
-        if [ -n "$QTCONFIG" ]; then
+        # TODO: check syntax with Qt5 and Qt6?
+        QTCONFIG=$(get_pkg_config_cflags Qt6Core Qt6Test Qt6Gui)
+        if [ -z "$QTCONFIG" ]; then
+          QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test Qt5Gui)
+          if [ -n "$QTCONFIG" ]; then
             QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test Qt5Gui)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
+          fi
+        else
+          QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt6Core Qt6Test Qt6Gui)
+          QTCONFIG="${QTCONFIG} -fPIC"
+        fi
+        if [ -n "$QTCONFIG" ]; then
             # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <QString>" | ${CXX} "${CXX_OPT[@]}" ${QTCONFIG} -x c++ -
@@ -239,6 +265,7 @@ function sqlite3_fn {
 
 # openmp.c
 function openmp_fn {
+    # TODO: omp.h not found with IWYU
     # MacOS compiler has no OpenMP by default
     if ! command -v sw_vers; then
       echo "OpenMP assumed to be present, checking syntax with ${CC} now."
