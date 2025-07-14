@@ -87,6 +87,7 @@ SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer)
     createSymbolDatabaseEnums();
     createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
+    createTokenRefs();
     createSymbolDatabaseExprIds();
     debugSymbolDatabase();
 }
@@ -1653,16 +1654,20 @@ namespace {
                 key.parentOp += type;
             }
 
-            for (const auto& ref: followAllReferences(op1)) {
-                if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
-                    key.operand1 = ref.token->exprId();
-                    break;
+            if (op1) {
+                for (const auto& ref: op1->refs()) {
+                    if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                        key.operand1 = ref.token->exprId();
+                        break;
+                    }
                 }
             }
-            for (const auto& ref: followAllReferences(op2)) {
-                if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
-                    key.operand2 = ref.token->exprId();
-                    break;
+            if (op2) {
+                for (const auto& ref: op2->refs()) {
+                    if (ref.token->exprId() != 0) { // cppcheck-suppress useStlAlgorithm
+                        key.operand2 = ref.token->exprId();
+                        break;
+                    }
                 }
             }
 
@@ -1689,6 +1694,15 @@ namespace {
             tok = tok->astParent();
         }
     }
+}
+
+void SymbolDatabase::createTokenRefs()
+{
+    for (const Token* tok = mTokenizer.list.front(); tok != mTokenizer.list.back(); tok = tok->next()) {
+        tok->refs(true);
+        tok->refs(false);
+    }
+    // TODO: debug output
 }
 
 void SymbolDatabase::createSymbolDatabaseExprIds()

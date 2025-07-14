@@ -2636,6 +2636,8 @@ TokenImpl::~TokenImpl()
     delete mOriginalName;
     delete mValueType;
     delete mValues;
+    delete mRefs;
+    delete mRefsTemp;
 
     if (mTemplateSimplifierPointers) {
         for (auto *templateSimplifierPointer : *mTemplateSimplifierPointers) {
@@ -2719,4 +2721,19 @@ Token* findLambdaEndScope(Token* tok)
 }
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
+}
+
+const SmallVector<ReferenceToken>& Token::refs(bool temporary) const
+{
+    if (temporary) {
+        if (!mImpl->mRefsTemp)
+            mImpl->mRefsTemp = new SmallVector<ReferenceToken>(followAllReferences(this, true));
+        assert(*mImpl->mRefsTemp == followAllReferences(this, true));
+        return *mImpl->mRefsTemp;
+    }
+
+    if (!mImpl->mRefs)
+        mImpl->mRefs = new SmallVector<ReferenceToken>(followAllReferences(this, false));
+    assert(*mImpl->mRefs == followAllReferences(this, false));
+    return *mImpl->mRefs;
 }
