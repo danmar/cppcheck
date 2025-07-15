@@ -213,7 +213,8 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
                 return matchglobs(mSettings.fileFilters, fs.filename());
             });
             if (fileSettings.empty()) {
-                mLogger.printError("could not find any files matching the filter.");
+                for (const std::string& f: mSettings.fileFilters)
+                    mLogger.printError("could not find any files matching the filter:" + f);
                 return false;
             }
         }
@@ -285,7 +286,8 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         if (!mSettings.fileFilters.empty()) {
             files = filterFiles(mSettings.fileFilters, filesResolved);
             if (files.empty()) {
-                mLogger.printError("could not find any files matching the filter.");
+                for (const std::string& f: mSettings.fileFilters)
+                    mLogger.printError("could not find any files matching the filter:" + f);
                 return false;
             }
         }

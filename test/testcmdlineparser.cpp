@@ -208,6 +208,7 @@ private:
         TEST_CASE(fileFilterFileWithDetailsSimplifiedPath);
         TEST_CASE(fileFilterFileWithDetailsCase);
         TEST_CASE(fileFilterStdin);
+        TEST_CASE(fileFilterNoMatch);
         TEST_CASE(fileList);
         TEST_CASE(fileListNoFile);
         TEST_CASE(fileListStdin);
@@ -1224,6 +1225,16 @@ private:
         ASSERT_EQUALS(2U, settings->fileFilters.size());
         ASSERT_EQUALS("file1.c", settings->fileFilters[0]);
         ASSERT_EQUALS("file2.cpp", settings->fileFilters[1]);
+    }
+
+    void fileFilterNoMatch() {
+        REDIRECT;
+        RedirectInput input("notexist1.c\nnotexist2.cpp\n");
+        const char * const argv[] = {"cppcheck", "--file-filter=-", "."};
+        ASSERT(!fillSettingsFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: could not find any files matching the filter:notexist1.c\n"
+                      "cppcheck: error: could not find any files matching the filter:notexist2.cpp\n",
+                      logger->str());
     }
 
     void fileList() {
