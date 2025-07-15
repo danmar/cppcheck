@@ -29,8 +29,7 @@ class TestSarif : public TestFixture
 {
 public:
     TestSarif() : TestFixture("TestSarif")
-    {
-    }
+    {}
 
 private:
     // Shared test code with various error types
@@ -1172,7 +1171,7 @@ int main() {
         if (!foundRule)
         {
             std::cout << "INFO: passedByValue rule not found in test output - this is expected if the rule conditions "
-                         "are not met"
+                "are not met"
                       << std::endl;
         }
     }
@@ -1253,7 +1252,7 @@ int main() {
         if (!foundRule)
         {
             std::cout << "INFO: uninitMemberVar rule not found in test output - this is expected if the rule "
-                         "conditions are not met"
+                "conditions are not met"
                       << std::endl;
         }
     }
@@ -1415,7 +1414,7 @@ int main() {
         if (!foundRule)
         {
             std::cout << "INFO: returnByReference rule not found in test output - this is expected if the rule "
-                         "conditions are not met"
+                "conditions are not met"
                       << std::endl;
         }
     }
