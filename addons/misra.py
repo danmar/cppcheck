@@ -2074,7 +2074,9 @@ class MisraChecker:
                 self.reportError(token, 7, 2)
 
     def misra_7_3(self, rawTokens):
-        compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
+        # Match decimal digits, hex digits, decimal point, and e/E p/P floating
+        # point constant exponent separators.
+        compiled = re.compile(r'^(0[xX])?[0-9a-fA-FpP.]+[Uu]*l+[Uu]*$')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
