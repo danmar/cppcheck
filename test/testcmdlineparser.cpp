@@ -3345,7 +3345,7 @@ private:
         const char * const argv[] = {"cppcheck", "-isrc\\file.cpp", "src/file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src\\file.cpp", parser->getIgnoredPaths()[0]);
+        ASSERT_EQUALS("src/file.cpp", parser->getIgnoredPaths()[0]);
         ASSERT_EQUALS(1, parser->getPathNames().size());
         ASSERT_EQUALS("src/file.cpp", parser->getPathNames()[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
@@ -3367,7 +3367,7 @@ private:
         const char * const argv[] = {"cppcheck", "-isrc\\", "src\\file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
         ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src\\", parser->getIgnoredPaths()[0]);
+        ASSERT_EQUALS("src/", parser->getIgnoredPaths()[0]);
         ASSERT_EQUALS(1, parser->getPathNames().size());
         ASSERT_EQUALS("src/file.cpp", parser->getPathNames()[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
