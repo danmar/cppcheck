@@ -29,4 +29,5 @@ Other:
 - Fixed --file-filter matching of looked up files in provided paths.
 - Split up cstyleCast checker; dangerous casts produce portability/warning reports, safe casts produce style reports.
 - Removed deprecated '--showtime=' value 'top5'. Please use 'top5_file' or 'top5_summary' instead.
+- Updated path matching syntax for -i, --file-filter, suppressions, GUI excludes, and project file excludes.
 -
