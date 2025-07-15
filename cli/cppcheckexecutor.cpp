@@ -342,11 +342,19 @@ namespace {
 
         static std::string getRuleShortDescription(const ErrorMessage& finding)
         {
+            // Use the generic message if available, otherwise fall back to the original approach
+            if (!finding.genericMessage().empty()) {
+                return finding.genericMessage();
+            }
             return SarifRuleCache::getRuleDescription(finding.id, false);
         }
 
         static std::string getRuleFullDescription(const ErrorMessage& finding)
         {
+            // Use the generic message if available, otherwise fall back to the original approach
+            if (!finding.genericMessage().empty()) {
+                return finding.genericMessage();
+            }
             return SarifRuleCache::getRuleDescription(finding.id, true);
         }
 
