@@ -83,279 +83,12 @@
 #endif
 
 namespace {
-    class SarifRuleCache
-    {
-    public:
-        // Get generic rule description for a given rule ID
-        static std::string getRuleDescription(const std::string& ruleId, bool fullDescription)
-        {
-            static std::unordered_map<std::string, std::pair<std::string, std::string>> ruleCache;
-            static bool cacheInitialized = false;
-
-            if (!cacheInitialized)
-            {
-                initializeRuleCache(ruleCache);
-                cacheInitialized = true;
-            }
-
-            const auto it = ruleCache.find(ruleId);
-            if (it != ruleCache.end())
-            {
-                const std::string& description = fullDescription ? it->second.second : it->second.first;
-                // Convert instance-specific descriptions to generic ones
-                return makeGeneric(description);
-            }
-
-            // Fallback for rules not found in cache
-            return "Cppcheck rule " + ruleId;
-        }
-
-    private:
-        // Convert instance-specific descriptions to generic ones
-        static std::string makeGeneric(const std::string& description)
-        {
-            std::string result = description;
-
-            // === GENERAL PATTERNS ===
-            // NOTE: The order of these replacements matters! Also try to avoid ruleID specific patterns
-
-            // 1. Format string patterns - handle printf/scanf argument type mismatches
-            result = std::regex_replace(
-                result,
-                std::regex(
-                    R"(%[a-zA-Z]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)"),
-                "Format specifier in format string requires different argument type than provided.");
-            result = std::regex_replace(
-                result,
-                std::regex(R"(%\w+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)"),
-                "Format specifier requires different argument type than provided.");
-
-            // Handle more variations of format string patterns
-            result = std::regex_replace(
-                result,
-                std::regex(R"(%[a-zA-Z0-9]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)"),
-                "Format specifier in format string requires different argument type than provided.");
-            result = std::regex_replace(
-                result,
-                std::regex(R"(%[a-zA-Z0-9]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is [^.]*\.)"),
-                "Format specifier requires different argument type than provided.");
-
-            // 2. Array access and bounds patterns
-            result = std::regex_replace(result,
-                                        std::regex(R"(Array '[^']*' accessed at index \d+[^.]*\.)"),
-                                        "Array accessed at index that is out of bounds.");
-            result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[\d+\]')"), "'array'");
-
-            // 3. Memory and resource patterns
-            result = std::regex_replace(result, std::regex(R"(Memory leak:.*$)"), "Memory leak");
-            result =
-                std::regex_replace(result, std::regex(R"(Null pointer dereference:.*$)"), "Null pointer dereference");
-            result = std::regex_replace(
-                result, std::regex(R"(Access of moved variable '[^']*'\.)"), "Access of moved variable.");
-
-            // 4. Function and parameter patterns
-            result = std::regex_replace(result,
-                                        std::regex(R"(Function parameter '[^']*' should be passed)"),
-                                        "Function parameter should be passed");
-            result =
-                std::regex_replace(result,
-                                   std::regex(R"(Return value of function [a-zA-Z_][a-zA-Z0-9_]*\(\) is not used)"),
-                                   "Return value of function is not used");
-            result =
-                std::regex_replace(result,
-                                   std::regex(R"(Function '[^']*' should return member '[^']*' by const reference\.)"),
-                                   "Function should return member by const reference.");
-
-            // 5. Member variable patterns (including class scope)
-            result = std::regex_replace(result,
-                                        std::regex(R"(Member variable '[^:]*::[^']*' is not initialized)"),
-                                        "Member variable is not initialized");
-
-            // 6. Iterator and container patterns
-            result = std::regex_replace(
-                result,
-                std::regex(
-                    R"(Either the condition '[^']*' is redundant or there is possible dereference of an invalid iterator: [^.]*\.)"),
-                "Either the condition is redundant or there is possible dereference of an invalid iterator.");
-            result = std::regex_replace(result,
-                                        std::regex(R"(Range variable '[^']*' should be declared)"),
-                                        "Range variable should be declared");
-
-            // 7. STL container operation patterns
-            result = std::regex_replace(
-                result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[[^]]*\]=[^;]*;)"), "'container[key]=value;'");
-            result = std::regex_replace(result,
-                                        std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*\([^)]*\);)"),
-                                        "'container.method();'");
-
-            // Handle stlFindInsert patterns - "Instead of '...' consider using '...'"
-            result = std::regex_replace(
-                result,
-                std::regex(R"(Instead of '[^']*' consider using '[^']*'\.)"),
-                "Instead of 'container operation' consider using 'alternative method'.");
-            result = std::regex_replace(
-                result,
-                std::regex(R"(Instead of '[^']*' consider using '[^']*';)"),
-                "Instead of 'container operation' consider using 'alternative method';");
-
-            // 8. Type casting patterns
-            result = std::regex_replace(
-                result,
-                std::regex(
-                    R"(Casting between [a-zA-Z_][a-zA-Z0-9_\s\*]+ and [a-zA-Z_][a-zA-Z0-9_\s\*]+ which have an incompatible binary data representation\.)"),
-                "Casting between incompatible pointer types which have an incompatible binary data representation.");
-
-            // Handle more specific type casting patterns
-            result = std::regex_replace(
-                result,
-                std::regex(R"(Casting between [^.]+ and [^.]+ which have)"),
-                "Casting between types which have");
-
-            // 9. Uninitialized variable patterns
-            result = std::regex_replace(
-                result, std::regex(R"(Uninitialized variable: [a-zA-Z_][a-zA-Z0-9_]*)"), "Uninitialized variable");
-
-            // 10. Assert and condition patterns
-            result = std::regex_replace(result, std::regex(R"(assert\([^)]+\))"), "assert(condition)");
-            result = std::regex_replace(result, std::regex(R"(for expression '[^']*')"), "for expression");
-
-            // === GENERIC VARIABLE/IDENTIFIER REPLACEMENT ===
-
-            // Handle common variable/function patterns by removing quoted names entirely
-            result = std::regex_replace(result, std::regex(R"(Variable '[^']*' is)"), "Variable is");
-            result = std::regex_replace(result, std::regex(R"(variable '[^']*' is)"), "variable is");
-            result = std::regex_replace(result, std::regex(R"(Variable '[^']*' )"), "Variable ");
-            result = std::regex_replace(result, std::regex(R"(variable '[^']*' )"), "variable ");
-            result = std::regex_replace(result, std::regex(R"(Function '[^']*' )"), "Function ");
-            result = std::regex_replace(result, std::regex(R"(function '[^']*' )"), "function ");
-            result = std::regex_replace(result, std::regex(R"(Parameter '[^']*' )"), "Parameter ");
-            result = std::regex_replace(result, std::regex(R"(parameter '[^']*' )"), "parameter ");
-
-            // Handle "of 'varname'" -> "of variable"
-            result = std::regex_replace(result, std::regex(R"( of '[^']*')"), " of variable");
-
-            // Handle trailing quoted variable names at end of sentences
-            result = std::regex_replace(result, std::regex(R"(: '[^']*'$)"), "");
-            result = std::regex_replace(result, std::regex(R"(: '[^']*'\.)"), ".");
-
-            // Replace remaining single-quoted identifiers with generic terms
-            // Only replace if they look like variable names (start with letter/underscore)
-            result = std::regex_replace(result, std::regex(R"('\b[a-zA-Z_][a-zA-Z0-9_]*\b')"), "'variable'");
-
-            // === CLEANUP PATTERNS ===
-
-            // Clean up redundant 'variable' references
-            result = std::regex_replace(result, std::regex(R"(Variable 'variable')"), "Variable");
-            result = std::regex_replace(result, std::regex(R"(variable 'variable')"), "variable");
-            result = std::regex_replace(result, std::regex(R"(Function 'variable')"), "Function");
-            result = std::regex_replace(result, std::regex(R"(function 'variable')"), "function");
-            result = std::regex_replace(result, std::regex(R"(Parameter 'variable')"), "Parameter");
-            result = std::regex_replace(result, std::regex(R"(parameter 'variable')"), "parameter");
-            result = std::regex_replace(
-                result, std::regex(R"(Memory pointed to by 'variable')"), "Memory pointed to by variable");
-
-            // Handle include file patterns with empty angle brackets
-            result = std::regex_replace(result, std::regex(R"(Include file: <> )"), "Include file: ");
-
-            // Number patterns - replace specific numbers with generic terms
-            result = std::regex_replace(result, std::regex(R"( \d+ )"), " N ");
-            result = std::regex_replace(result, std::regex(R"( at index \d+)"), " at index N");
-
-            // Clean up any remaining empty quotes and redundant spaces
-            result = std::regex_replace(result, std::regex(R"(\s''\s)"), " ");
-            result = std::regex_replace(result, std::regex(R"(^''\s)"), "");
-            result = std::regex_replace(result, std::regex(R"(\s''$)"), "");
-
-            // Clean up multiple spaces
-            result = std::regex_replace(result, std::regex(R"(\s+)"), " ");
-
-            // Trim leading and trailing whitespace
-            result = std::regex_replace(result, std::regex(R"(^\s+|\s+$)"), "");
-
-            return result;
-        }
-
-    private:
-        // Error logger that captures error messages for building the rule cache
-        class RuleCacheLogger : public ErrorLogger
-        {
-        public:
-            explicit RuleCacheLogger(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache)
-                : mCache(cache)
-            {}
-
-            void reportErr(const ErrorMessage& msg) override
-            {
-                if (!msg.id.empty())
-                {
-                    // Store both short and verbose messages for each rule ID
-                    const std::string shortMsg   = msg.shortMessage();
-                    const std::string verboseMsg = msg.verboseMessage();
-
-                    // Only store if we don't already have this rule or if we get a better description
-                    if (mCache.find(msg.id) == mCache.end())
-                    {
-                        mCache[msg.id] = std::make_pair(shortMsg.empty() ? "Cppcheck rule " + msg.id : shortMsg,
-                                                        verboseMsg.empty() ? shortMsg : verboseMsg);
-                    }
-                }
-            }
-
-            void reportOut(const std::string&, Color) override
-            {}
-            void reportMetric(const std::string&) override
-            {}
-
-        private:
-            std::unordered_map<std::string, std::pair<std::string, std::string>>& mCache;
-        };
-
-        // Initialize the rule cache by leveraging the same mechanism as --errorlist
-        static void initializeRuleCache(std::unordered_map<std::string, std::pair<std::string, std::string>>& cache)
-        {
-            RuleCacheLogger logger(cache);
-
-            // Use the same approach as CppCheck::getErrorMessages to get all possible error messages
-            Settings settings;
-            settings.addEnabled("all");
-
-            // Call getErrorMessages on all registered Check classes to get generic descriptions
-            for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
-            {
-                (*it)->getErrorMessages(&logger, &settings);
-            }
-
-            // Also get error messages from other components
-            CheckUnusedFunctions::getErrorMessages(logger);
-            Preprocessor::getErrorMessages(logger, settings);
-            Tokenizer::getErrorMessages(logger, settings);
-        }
-    };
-
     class SarifReport
     {
     public:
         void addFinding(ErrorMessage msg)
         {
             mFindings.push_back(std::move(msg));
-        }
-
-        static std::string getRuleShortDescription(const ErrorMessage& finding)
-        {
-            // Use the generic message if available, otherwise fall back to the original approach
-            if (!finding.genericMessage().empty()) {
-                return finding.genericMessage();
-            }
-            return SarifRuleCache::getRuleDescription(finding.id, false);
-        }
-
-        static std::string getRuleFullDescription(const ErrorMessage& finding)
-        {
-            // Use the generic message if available, otherwise fall back to the original approach
-            if (!finding.genericMessage().empty()) {
-                return finding.genericMessage();
-            }
-            return SarifRuleCache::getRuleDescription(finding.id, true);
         }
 
         picojson::array serializeRules() const
@@ -372,32 +105,27 @@ namespace {
                     picojson::object rule;
                     rule["id"]   = picojson::value(finding.id);
                     // rule.name
-                    rule["name"] = picojson::value(SarifReport::getRuleShortDescription(finding));
+                    rule["name"] = picojson::value(finding.genericMessage());
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(SarifReport::getRuleShortDescription(finding));
+                    shortDescription["text"] = picojson::value(finding.genericMessage());
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(SarifReport::getRuleFullDescription(finding));
+                    fullDescription["text"] = picojson::value(finding.genericMessage());
                     rule["fullDescription"] = picojson::value(fullDescription);
                     // rule.help.text
                     picojson::object help;
-                    help["text"] = picojson::value(SarifReport::getRuleFullDescription(finding));
+                    help["text"] = picojson::value(finding.genericMessage());
                     rule["help"] = picojson::value(help);
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-
-                    // Add CWE tag if available
+                    // rule.properties.security-severity, rule.properties.tags
                     picojson::array tags;
-                    if (finding.cwe.id > 0)
-                    {
-                        tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
-                    }
 
-                    // Only set security-severity for findings that are actually security-related
-                    if (isSecurityRelatedFinding(finding.id))
+                    // If we have a CWE ID, treat it as security-related (CWE is the authoritative source for security weaknesses)
+                    if (finding.cwe.id > 0)
                     {
                         double securitySeverity = 0;
                         if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
@@ -421,6 +149,7 @@ namespace {
                         if (securitySeverity > 0.0)
                         {
                             properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
+                            tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
                             tags.emplace_back(picojson::value("security"));
                         }
                     }
@@ -522,80 +251,6 @@ namespace {
         }
 
     private:
-        static bool isSecurityRelatedFinding(const std::string& ruleId)
-        {
-            // Security-related findings that have actual security implications
-            static const std::unordered_set<std::string> securityRelatedIds = {
-                // Memory safety issues
-                "nullPointer",
-                "nullPointerArithmetic",
-                "nullPointerRedundantCheck",
-                "nullPointerDefaultArg",
-                "nullPointerOutOfMemory",
-                "nullPointerOutOfResources",
-                "memleak",
-                "memleakOnRealloc",
-                "resourceLeak",
-                "leakReturnValNotUsed",
-                "leakUnsafeArgAlloc",
-                "deallocret",
-                "deallocuse",
-                "doubleFree",
-                "mismatchAllocDealloc",
-                "autovarInvalidDeallocation",
-
-                // Buffer overflow and array bounds issues
-                "arrayIndexOutOfBounds",
-                "arrayIndexOutOfBoundsCond",
-                "bufferAccessOutOfBounds",
-                "pointerOutOfBounds",
-                "pointerOutOfBoundsCond",
-                "negativeIndex",
-                "objectIndex",
-                "argumentSize",
-                "stringLiteralWrite",
-                "bufferOverflow",
-                "pointerArithmetic",
-
-                // Uninitialized data issues
-                "uninitvar",
-                "uninitdata",
-                "uninitStructMember",
-
-                // Use after free and lifetime issues
-                "danglingLifetime",
-                "returnDanglingLifetime",
-                "danglingReference",
-                "danglingTempReference",
-                "danglingTemporaryLifetime",
-                "invalidLifetime",
-                "useClosedFile",
-
-                // Format string vulnerabilities
-                "wrongPrintfScanfArgNum",
-                "invalidScanfFormatWidth",
-                "invalidscanf",
-                "invalidFunctionArg",
-
-                // Integer overflow and underflow
-                "integerOverflow",
-                "floatConversionOverflow",
-                "negativeMemoryAllocationSize",
-
-                // File and resource handling
-                "IOWithoutPositioning",
-                "incompatibleFileOpen",
-                "writeReadOnlyFile",
-
-                // Other security-relevant issues
-                "zerodiv",
-                "zerodivcond",
-                "invalidLengthModifierError",
-                "preprocessorErrorDirective"};
-
-            return securityRelatedIds.find(ruleId) != securityRelatedIds.end();
-        }
-
         static std::string sarifSeverity(const ErrorMessage& errmsg)
         {
             if (ErrorLogger::isCriticalErrorId(errmsg.id))

@@ -221,11 +221,43 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
 }
 
 // Convert instance-specific messages to generic ones
-static std::string makeGeneric(const std::string& message)
+static std::string makeGeneric(const std::string &message)
 {
     std::string result = message;
 
-    // Replace variable names in single quotes with generic terms
+    // Handle format string patterns first (these are complex and specific)
+    result = std::regex_replace(
+        result,
+        std::regex(
+            R"(%[a-zA-Z0-9]+ in format string \(no\. \d+\) requires '[^']*' but the argument type is '[^']*'\.)"),
+        "Format specifier in format string requires different argument type than provided.");
+    result = std::regex_replace(
+        result,
+        std::regex(R"(%[a-zA-Z0-9]+ in format string \(no\. N\) requires '[^']*' but the argument type is '[^']*'\.)"),
+        "Format specifier in format string requires different argument type than provided.");
+
+    // Handle specific pointer casting patterns
+    // Handle multi-word types like "unsigned char", "const float", etc.
+    result = std::regex_replace(
+        result,
+        std::regex(
+            R"(Casting between (?:(?:const|unsigned|signed)\s+)*[a-zA-Z_][a-zA-Z0-9_]*\s*\*\s*and (?:(?:const|unsigned|signed)\s+)*[a-zA-Z_][a-zA-Z0-9_]*\s*\*\s*which have)"),
+        "Casting between incompatible pointer types which have");
+
+    // Handle iterator condition patterns - be specific about the pattern
+    result = std::regex_replace(
+        result,
+        std::regex(
+            R"(Either the condition '[^']*' is redundant or there is possible dereference of an invalid iterator: [^\.]*\.)"),
+        "Either the condition is redundant or there is possible dereference of an invalid iterator.");
+    result = std::regex_replace(
+        result,
+        std::regex(
+            R"(Either the condition '[^']*' is redundant or there is possible dereference of an invalid iterator\.)"),
+        "Either the condition is redundant or there is possible dereference of an invalid iterator.");
+
+    // Handle patterns that can result in empty quotes first
+    // Replace "Variable 'name'" -> "Variable" (avoiding empty quotes)
     result = std::regex_replace(result, std::regex(R"(Variable '[^']*')"), "Variable");
     result = std::regex_replace(result, std::regex(R"(variable '[^']*')"), "variable");
     result = std::regex_replace(result, std::regex(R"(Function '[^']*')"), "Function");
@@ -234,31 +266,63 @@ static std::string makeGeneric(const std::string& message)
     result = std::regex_replace(result, std::regex(R"(parameter '[^']*')"), "parameter");
     result = std::regex_replace(result, std::regex(R"(Member variable '[^']*')"), "Member variable");
     result = std::regex_replace(result, std::regex(R"(member variable '[^']*')"), "member variable");
-    
-    // Replace class::member patterns
+
+    // Handle patterns like "Memory pointed to by 'var'" -> "Memory pointed to by variable"
+    result = std::regex_replace(result, std::regex(R"(Memory pointed to by '[^']*')"), "Memory pointed to by variable");
+    result = std::regex_replace(result, std::regex(R"(Dereferencing '[^']*')"), "Dereferencing variable");
+    result = std::regex_replace(
+        result, std::regex(R"(assignment of '[^']*' to itself)"), "assignment of variable to itself");
+    result = std::regex_replace(result,
+                                std::regex(R"(Redundant assignment of '[^']*' to itself)"),
+                                "Redundant assignment of variable to itself");
+
+    // Handle function return patterns
+    result = std::regex_replace(
+        result, std::regex(R"(Function '[^']*' should return member '[^']*' by)"), "Function should return member by");
+    result = std::regex_replace(
+        result, std::regex(R"(Function should return member '[^']*' by)"), "Function should return member by");
+
+    // Handle class::member patterns
     result = std::regex_replace(result, std::regex(R"('[^:]*::[^']*')"), "'ClassName::member'");
-    
+
+    // Handle array patterns - be more specific to avoid overly generic results
+    result = std::regex_replace(result, std::regex(R"(Array '[^']*\[.*?\]')"), "Array 'array[index]'");
+    result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*\[.*?\]')"), "'array[index]'");
+
     // Replace specific numbers with generic terms
-    result = std::regex_replace(result, std::regex(R"(\d+)"), "N");
-    
+    result = std::regex_replace(result, std::regex(R"(\b\d+\b)"), "N");
+
     // Replace array access patterns
     result = std::regex_replace(result, std::regex(R"(\[[^\]]+\])"), "[index]");
-    
-    // Replace remaining single-quoted identifiers
+
+    // Replace remaining single-quoted identifiers, but be careful about empty results
     result = std::regex_replace(result, std::regex(R"('[a-zA-Z_][a-zA-Z0-9_]*')"), "'identifier'");
-    
+
     // Clean up redundant patterns
     result = std::regex_replace(result, std::regex(R"(Variable 'identifier')"), "Variable");
     result = std::regex_replace(result, std::regex(R"(Function 'identifier')"), "Function");
     result = std::regex_replace(result, std::regex(R"(Parameter 'identifier')"), "Parameter");
     result = std::regex_replace(result, std::regex(R"(Member variable 'identifier')"), "Member variable");
-    
+
+    // Clean up empty quotes that may have been created by replacements
+    result = std::regex_replace(result, std::regex(R"(\s*''\s*)"), " ");
+    result = std::regex_replace(result, std::regex(R"(^''\s*)"), "");
+    result = std::regex_replace(result, std::regex(R"(\s*''$)"), "");
+    result = std::regex_replace(result, std::regex(R"(\s+'')"), "");
+    result = std::regex_replace(result, std::regex(R"(''\s+)"), "");
+    result = std::regex_replace(result, std::regex(R"('')"), "");
+
+    // Clean up trailing colons that don't reference anything
+    // Examples: "Null pointer dereference:" -> "Null pointer dereference"
+    //           "Memory leak:" -> "Memory leak"
+    result = std::regex_replace(result, std::regex(R"(:\s*$)"), "");
+
     // Clean up multiple spaces
     result = std::regex_replace(result, std::regex(R"(\s+)"), " ");
-    
+
     // Trim whitespace
     result = std::regex_replace(result, std::regex(R"(^\s+|\s+$)"), "");
-    
+
     return result;
 }
 
