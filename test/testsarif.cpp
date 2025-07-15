@@ -249,7 +249,7 @@ int main() {
         TEST_CASE(sarifCweTags);
         TEST_CASE(sarifRuleCoverage);
         TEST_CASE(sarifSeverityLevels);
-        TEST_CASE(sarifNonSecurityRules);
+        TEST_CASE(sarifSecurityRules);
         TEST_CASE(sarifInvalidScanfArgTypeGeneric);
         TEST_CASE(sarifPassedByValueGeneric);
         TEST_CASE(sarifUninitMemberVarGeneric);
@@ -895,7 +895,7 @@ int main() {
         }
     }
 
-    void sarifNonSecurityRules()
+    void sarifSecurityRules()
     {
         const std::string sarif = runCppcheckSarif(testCode);
 
