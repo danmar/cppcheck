@@ -6544,6 +6544,17 @@ private:
               "}\n",
               dinit(CheckOptions, $.inconclusive = true));
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int i; };\n"
+              "void f() {\n"
+              "    std::vector<std::unique_ptr<S>> v;\n"
+              "    for (int i = 0; i < 5; ++i) {\n"
+              "        std::unique_ptr<S>& r{ v.emplace_back(std::make_unique<S>()) };\n"
+              "        r->i = 1;\n"
+              "    }\n"
+              "}\n",
+              dinit(CheckOptions, $.inconclusive = true));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void findInsert() {
