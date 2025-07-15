@@ -3902,6 +3902,9 @@ private:
                       "[test.cpp:7:10]: (style) Parameter 't' can be declared as reference to const [constParameterReference]\n"
                       "[test.cpp:10:25]: (style) Parameter 'v' can be declared as reference to const [constParameterReference]\n",
                       errout_str());
+
+        check("void push(V& v) { v.push_back({ .x = 1 }); }"); // #14010
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {
