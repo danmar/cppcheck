@@ -750,8 +750,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             int selectedFiles = 0;
             int selectedResults = 0;
 
-            for (auto index : mSelectionModel->selectedRows()) {
-                auto *item = mModel.itemFromIndex(index);
+            for (auto row : mSelectionModel->selectedRows()) {
+                auto *item = mModel.itemFromIndex(row);
                 if (!item->parent())
                     selectedFiles++;
                 else if (!item->parent()->parent())
