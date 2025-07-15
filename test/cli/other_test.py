@@ -988,7 +988,7 @@ def test_file_filter_no_match(tmpdir):
 
     args = ['--file-filter=*.c', test_file]
     out_lines = [
-        'cppcheck: error: could not find any files matching the filter.'
+        'cppcheck: error: could not find any files matching the filter:*.c'
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
