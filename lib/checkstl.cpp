@@ -1202,7 +1202,8 @@ void CheckStl::invalidContainer()
                         if (info.tok->variable()->isReference() && !isVariableDecl(info.tok) &&
                             reaches(info.tok->variable()->nameToken(), tok, nullptr)) {
 
-                            if (assignExpr && Token::Match(assignExpr->astOperand1(), "& %varid%", info.tok->varId())) { // TODO: fix AST
+                            if ((assignExpr && Token::Match(assignExpr->astOperand1(), "& %varid%", info.tok->varId())) || // TODO: fix AST
+                                Token::Match(assignExpr, "& %varid% {|(", info.tok->varId())) {
                                 return false;
                             }
 
