@@ -747,21 +747,35 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
             }
 
+            int selectedFiles = 0;
+            int selectedResults = 0;
+
+            for (auto row : mSelectionModel->selectedRows()) {
+                auto *item = mModel.itemFromIndex(row);
+                if (!item->parent())
+                    selectedFiles++;
+                else if (!item->parent()->parent())
+                    selectedResults++;
+            }
+
             //Create an action for the application
-            auto *recheckAction          = new QAction(tr("Recheck"), &menu);
+            auto *recheckAction          = new QAction(tr("Recheck %1 file(s)").arg(selectedFiles), &menu);
             auto *copyAction             = new QAction(tr("Copy"), &menu);
-            auto *hide                   = new QAction(tr("Hide"), &menu);
+            auto *hide                   = new QAction(tr("Hide %1 result(s)").arg(selectedResults), &menu);
             auto *hideallid              = new QAction(tr("Hide all with id"), &menu);
             auto *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
-            if (multipleSelection) {
-                hideallid->setDisabled(true);
-                opencontainingfolder->setDisabled(true);
-            }
-            if (mThread->isChecking())
+            if (selectedFiles == 0 || mThread->isChecking())
                 recheckAction->setDisabled(true);
-            else
-                recheckAction->setDisabled(false);
+
+            if (selectedResults == 0)
+                hide->setDisabled(true);
+
+            if (selectedResults == 0 || multipleSelection)
+                hideallid->setDisabled(true);
+
+            if (multipleSelection)
+                opencontainingfolder->setDisabled(true);
 
             menu.addAction(recheckAction);
             menu.addSeparator();
@@ -774,7 +788,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             {
                 QVariantMap itemdata = mContextItem->data().toMap();
                 const QString messageId = itemdata[ERRORID].toString();
-                suppress->setEnabled(!ErrorLogger::isCriticalErrorId(messageId.toStdString()));
+
+                if (selectedResults == 0 || ErrorLogger::isCriticalErrorId(messageId.toStdString()))
+                    suppress->setDisabled(true);
             }
             menu.addAction(suppress);
             connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
