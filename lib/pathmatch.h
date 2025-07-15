@@ -209,8 +209,12 @@ public:
     explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, Syntax syntax = platform_syntax) :
         mStart{path_a, path_b}, mSyntax(syntax)
     {
-        const auto issep = [syntax] (char c) { return c == '/' || (syntax == Syntax::windows && c == '\\'); };
-        const auto isdrive = [] (char c) { return (c >= 'A' && c <= 'Z' ) || (c >= 'a' && c <= 'z'); };
+        const auto issep = [syntax] (char c) {
+            return c == '/' || (syntax == Syntax::windows && c == '\\');
+        };
+        const auto isdrive = [] (char c) {
+            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+        };
 
         for (int i = 0; i < 2; i++) {
             const char *&p = mEnd[i];
