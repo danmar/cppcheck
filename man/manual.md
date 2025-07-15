@@ -122,13 +122,17 @@ check:
 
 All files under src/a and src/b are then checked.
 
-The second option is to use -i, which specifies the files/paths to ignore. With this command no files in src/c are 
-checked:
+The second option is to use -i, which specifies a pattern of path names to ignore. With this command no files in src/c 
+are checked:
 
     cppcheck -isrc/c src
 
-This option is only valid when supplying an input directory. To ignore multiple directories supply the -i flag for each 
-directory individually. The following command ignores both the src/b and src/c directories:
+The above pattern matches any path that has a component named src anywhere, which is directly followed by a component 
+named c. c can be a file or a directory, in which case all files below c are ignored. Patterns can also be absolute 
+paths, or relative to the current directory if the first path component is dot or dot-dot. The glob characters ?, \* 
+and \*\* are allowed. ? matches one character, \* and \*\* match any number of characters. \*\* matches path 
+separators, where as ? and \* does not. Multiple patterns can be used by supplying the -i flag multiple times. The 
+following command ignores everything in both the src/b and src/c directories:
 
     cppcheck -isrc/b -isrc/c
 
