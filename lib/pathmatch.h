@@ -226,22 +226,22 @@ public:
             if (mPos.l == 0) {
                 /* Check length of root component */
                 if (issep(p[0])) {
-                    mPos.l++;
+                    mRootLength++;
                     if (syntax == Syntax::windows && issep(p[1])) {
-                        mPos.l++;
+                        mRootLength++;
                         if (p[2] == '.' || p[2] == '?') {
-                            mPos.l++;
+                            mRootLength++;
                             if (issep(p[3]))
-                                mPos.l++;
+                                mRootLength++;
                         }
                     }
                 } else if (syntax == Syntax::windows && isdrive(p[0]) && p[1] == ':') {
-                    mPos.l += 2;
+                    mRootLength += 2;
                     if (issep(p[2]))
-                        mPos.l++;
+                        mRootLength++;
                 }
-                p += mPos.l;
-                mRootLength = mPos.l;
+                p += mRootLength;
+                mPos.l = mRootLength;
             } else {
                 /* Add path separator */
                 mPos.l++;
@@ -252,7 +252,7 @@ public:
                 mPos.l++;
             }
 
-            mPos.p = p;
+            mPos.p = p - 1;
         }
 
         if (mPos.l == 0)
@@ -315,7 +315,7 @@ private:
         if (mPos.c != EOF)
             return mPos.c;
 
-        char c = mPos.p[-1];
+        char c = *mPos.p;
 
         if (mSyntax == Syntax::windows) {
             if (c == '\\')
@@ -394,11 +394,11 @@ private:
         else if (mPos.c != EOF) {
             mPos.c = EOF;
         } else {
-            mPos.p--;
             if (mPos.p == mStart[1]) {
                 mPos.p = mEnd[0];
                 mPos.c = '/';
             }
+            mPos.p--;
         }
     }
 
