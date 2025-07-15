@@ -173,24 +173,19 @@ std::string Path::getCurrentExecutablePath(const char* fallback)
     return success ? std::string(buf) : std::string(fallback);
 }
 
-static bool issep(char c)
-{
-    return c == '/' || c == '\\';
-}
-
 bool Path::isAbsolute(const std::string& path)
 {
 #ifdef _WIN32
     if (path.length() < 2)
         return false;
 
-    if (issep(path[0]) && issep(path[1]))
+    if ((path[0] == '\\' || path[0] == '/') && (path[1] == '\\' || path[1] == '/'))
         return true;
 
     // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
-    return std::isalpha(path[0]) && path[1] == ':' && issep(path[2]);
+    return std::isalpha(path[0]) && path[1] == ':' && (path[2] == '\\' || path[2] == '/');
 #else
-    return !path.empty() && issep(path[0]);
+    return !path.empty() && path[0] == '/';
 #endif
 }
 

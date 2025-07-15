@@ -1613,6 +1613,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         return Result::Fail;
     }
 
+    for (auto& path : mIgnoredPaths)
+    {
+        path = Path::removeQuotationMarks(std::move(path));
+        path = Path::fromNativeSeparators(std::move(path));
+    }
+
     if (!project.guiProject.pathNames.empty())
         mPathNames = project.guiProject.pathNames;
 
@@ -2138,7 +2144,7 @@ std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::str
     std::list<FileWithDetails> files;
     PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
     std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
-        return filtermatcher.match(entry.path()) || filtermatcher.match(entry.spath());
+        return filtermatcher.match(entry.path());
     });
     return files;
 }

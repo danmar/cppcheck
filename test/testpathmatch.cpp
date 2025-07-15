@@ -28,6 +28,8 @@ public:
     TestPathMatch() : TestFixture("TestPathMatch") {}
 
 private:
+    static constexpr auto unix = PathMatch::Syntax::unix;
+    static constexpr auto windows = PathMatch::Syntax::windows;
 #ifdef _WIN32
     const std::string basepath{"C:\\test"};
 #else
@@ -105,12 +107,12 @@ private:
     }
 
     void onemasksamepathdifferentslash() const {
-        PathMatch srcMatcher2({"src\\"}, basepath);
+        PathMatch srcMatcher2({"src\\"}, basepath, windows);
         ASSERT(srcMatcher2.match("src/"));
     }
 
     void onemasksamepathdifferentcase() const {
-        PathMatch match({"sRc/"}, basepath, PathMatch::Mode::icase);
+        PathMatch match({"sRc/"}, basepath, windows);
         ASSERT(match.match("srC/"));
     }
 
@@ -186,7 +188,7 @@ private:
     }
 
     void filemaskdifferentcase() const {
-        PathMatch match({"foo.cPp"}, basepath, PathMatch::Mode::icase);
+        PathMatch match({"foo.cPp"}, basepath, windows);
         ASSERT(match.match("fOo.cpp"));
     }
 
@@ -252,18 +254,33 @@ private:
     }
 
     void pathiterator() const {
+        /* See https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats
+         * for information on Windows path syntax. */
         using PathIterator = PathMatch::PathIterator;
-        ASSERT_EQUALS("/hello/world", PathIterator("/hello/universe/.", "../world//").read());
-        ASSERT_EQUALS("/", PathIterator("//./..//.///.", "../../..///").read());
-        ASSERT_EQUALS("/foo/bar", PathIterator(nullptr, "/foo/bar/.").read());
-        ASSERT_EQUALS("/foo/bar", PathIterator("/foo/bar/.", nullptr).read());
-        ASSERT_EQUALS("/foo/bar", PathIterator("/foo", "bar").read());
-        ASSERT_EQUALS("", PathIterator("", "").read());
-        ASSERT_EQUALS("", PathIterator("", nullptr).read());
-        ASSERT_EQUALS("", PathIterator(nullptr, "").read());
-        ASSERT_EQUALS("", PathIterator(nullptr, nullptr).read());
-        ASSERT_EQUALS("c:/windows/system32", PathIterator("C:", "Windows\\System32\\Drivers\\..\\.", true).read());
-        ASSERT_EQUALS("C:", PathIterator("C:\\Program Files\\", "..").read());
+        ASSERT_EQUALS("/", PathIterator("/", nullptr, unix).read());
+        ASSERT_EQUALS("/", PathIterator("//", nullptr, unix).read());
+        ASSERT_EQUALS("/", PathIterator("/", "/", unix).read());
+        ASSERT_EQUALS("/hello/world", PathIterator("/hello/universe/.", "../world//", unix).read());
+        ASSERT_EQUALS("/", PathIterator("//./..//.///.", "../../..///", unix).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator(nullptr, "/foo/bar/.", unix).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator("/foo/bar/.", nullptr, unix).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator("/foo", "bar", unix).read());
+        ASSERT_EQUALS("", PathIterator("", "", unix).read());
+        ASSERT_EQUALS("", PathIterator("", nullptr, unix).read());
+        ASSERT_EQUALS("", PathIterator(nullptr, "", unix).read());
+        ASSERT_EQUALS("", PathIterator(nullptr, nullptr, unix).read());
+        ASSERT_EQUALS("c:", PathIterator("C:", nullptr, windows).read());
+        /* C: without slash is a bit ambigous. It should probably not be considered a root because it's
+         * not fully qualified (it designates the current directory on the C drive),
+         * so this test could be considered to be unspecified behavior. */
+        ASSERT_EQUALS("c:", PathIterator("C:", "../..", windows).read());
+        ASSERT_EQUALS("c:/windows/system32", PathIterator("C:", "Windows\\System32\\Drivers\\..\\.", windows).read());
+        ASSERT_EQUALS("c:/", PathIterator("C:\\Program Files\\", "..", windows).read());
+        ASSERT_EQUALS("//./", PathIterator("\\\\.\\C:\\", "../..", windows).read());
+        ASSERT_EQUALS("//./", PathIterator("\\\\.\\", "..\\..", windows).read());
+        ASSERT_EQUALS("//?/", PathIterator("\\\\?\\", "..\\..", windows).read());
+        /* The server and share should actually be considered part of the root and not be removed */
+        ASSERT_EQUALS("//", PathIterator("\\\\Server\\Share\\Directory", "../..\\../..", windows).read());
     }
 };
 

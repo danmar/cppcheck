@@ -100,7 +100,7 @@ def test_gui_project_loads_compile_commands_2(tmp_path):
     proj_dir = tmp_path / 'proj2'
     shutil.copytree(__proj_dir, proj_dir)
     __create_compile_commands(proj_dir)
-    exclude_path_1 = 'proj2/b/'
+    exclude_path_1 = 'proj2/b'
     create_gui_project_file(os.path.join(proj_dir, 'test.cppcheck'),
                             import_project='compile_commands.json',
                             exclude_paths=[exclude_path_1])
@@ -157,7 +157,7 @@ def test_gui_project_loads_relative_vs_solution_2(tmp_path):
 def test_gui_project_loads_relative_vs_solution_with_exclude(tmp_path):
     proj_dir = tmp_path / 'proj2'
     shutil.copytree(__proj_dir, proj_dir)
-    create_gui_project_file(os.path.join(tmp_path, 'test.cppcheck'), root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b/'])
+    create_gui_project_file(os.path.join(tmp_path, 'test.cppcheck'), root_path='proj2', import_project='proj2/proj2.sln', exclude_paths=['b'])
     ret, stdout, stderr = cppcheck(['--project=test.cppcheck'], cwd=tmp_path)
     assert ret == 0, stdout
     assert stderr == __ERR_A

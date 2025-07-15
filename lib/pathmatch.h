@@ -33,53 +33,58 @@
 /// @{
 
 /**
- *  Path matching rules:
- *  - All patterns are canonicalized (path separators vary by platform):
- *    - '/./' => '/'
- *    - '/dir/../' => '/'
- *    - '//' => '/'
- *    - Trailing slashes are removed (root slash is preserved)
- *  - Patterns can contain globs:
- *    - '**' matches any number of characters including path separators.
- *    - '*' matches any number of characters except path separators.
- *    - '?' matches any single character except path separators.
- *  - If a pattern looks like an absolute path (e.g. starts with '/', but varies by platform):
- *    - Match all files where the pattern matches the start of the file's canonical absolute path up until a path
- *      separator or the end of the pathname.
- *  - If a pattern looks like a relative path, i.e. is '.' or '..', or
- *    starts with '.' or '..' followed by a path separator:
- *    - The pattern is interpreted as a path relative to `basepath` and then converted to an absolute path and
- *      treated as such according to the above procedure. If the pattern is relative to some other directory, it should
- *      be modified to be relative to `basepath` first (this should be done with patterns in project files, for example).
- *  - Otherwise:
- *    - Match all files where the pattern matches any part of the file's canonical absolute path up until a
- *      path separator or the end of the pathname, and the matching part directly follows a path separator.
+ * Path matching rules:
+ * - All patterns are canonicalized (path separators vary by platform):
+ *   - '/./' => '/'
+ *   - '/dir/../' => '/'
+ *   - '//' => '/'
+ *   - Trailing slashes are removed (root slash is preserved)
+ * - Patterns can contain globs:
+ *   - '**' matches any number of characters including path separators.
+ *   - '*' matches any number of characters except path separators.
+ *   - '?' matches any single character except path separators.
+ * - If a pattern looks like an absolute path (e.g. starts with '/', but varies by platform):
+ *   - Match all files where the pattern matches the start of the file's canonical absolute path up until a path
+ *     separator or the end of the pathname.
+ * - If a pattern looks like a relative path, i.e. is '.' or '..', or
+ *   starts with '.' or '..' followed by a path separator:
+ *   - The pattern is interpreted as a path relative to `basepath` and then converted to an absolute path and
+ *     treated as such according to the above procedure. If the pattern is relative to some other directory, it should
+ *     be modified to be relative to `basepath` first (this should be done with patterns in project files, for example).
+ * - Otherwise:
+ *   - Match all files where the pattern matches any part of the file's canonical absolute path up until a
+ *     path separator or the end of the pathname, and the matching part directly follows a path separator.
+ *
+ * TODO: Handle less common windows windows syntaxes:
+ *   - Drive-specific relative path: C:dir\foo.cpp
+ *   - Root-relative path: \dir\foo.cpp
  **/
 
 /**
- * @brief Simple path matching for ignoring paths in CLI.
+ * @brief Syntactic path matching for ignoring paths in CLI.
  */
 class CPPCHECKLIB PathMatch {
 public:
 
     /**
-     * @brief Match mode.
+     * @brief Path syntax.
      *
-     * scase: Case sensitive.
-     * icase: Case insensitive.
+     * windows: Case insensitive, forward and backward slashes, UNC or drive letter root.
+     * unix: Case sensitive, forward slashes, slash root.
+     *
      */
-    enum class Mode : std::uint8_t {
-        scase,
-        icase,
+    enum class Syntax : std::uint8_t {
+        windows,
+        unix,
     };
 
     /**
-     * @brief The default mode for the current platform.
+     * @brief The default syntax for the current platform.
      */
 #ifdef _WIN32
-    static constexpr Mode platform_mode = Mode::icase;
+    static constexpr Syntax platform_syntax = Syntax::windows;
 #else
-    static constexpr Mode platform_mode = Mode::scase;
+    static constexpr Syntax platform_syntax = Syntax::unix;
 #endif
 
     /**
@@ -87,9 +92,9 @@ public:
      *
      * @param patterns List of patterns.
      * @param basepath Path to which patterns and matched paths are relative, when applicable.
-     * @param mode Case sensitivity mode.
+     * @param syntax Path syntax.
      */
-    explicit PathMatch(std::vector<std::string> patterns = {}, std::string basepath = std::string(), Mode mode = platform_mode);
+    explicit PathMatch(std::vector<std::string> patterns = {}, std::string basepath = std::string(), Syntax syntax = platform_syntax);
 
     /**
      * @brief Match path against list of patterns.
@@ -105,10 +110,10 @@ public:
      * @param pattern Pattern to use.
      * @param path Path to match.
      * @param basepath Path to which the pattern and path is relative, when applicable.
-     * @param mode Case sensitivity mode.
+     * @param syntax Path syntax.
      * @return true if the pattern matches the path, false otherwise.
      */
-    static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Mode mode = platform_mode);
+    static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Syntax syntax = platform_syntax);
 
     /**
      * @brief Check if a pattern is a relative path name.
@@ -152,9 +157,12 @@ private:
     friend class TestPathMatch;
     class PathIterator;
 
+    /* List of patterns */
     std::vector<std::string> mPatterns;
+    /* Base path to with patterns and paths are relative */
     std::string mBasepath;
-    Mode mMode;
+    /* The syntax to use */
+    Syntax mSyntax;
 };
 
 /**
@@ -167,7 +175,7 @@ private:
  * Both strings are optional. If both strings are present, then they're concatenated with a slash
  * (subject to canonicalization).
  *
- * Double-dots at the root level are removed. The root slash is preserved, other trailing slashes are removed.
+ * Double-dots at the root level are removed. Trailing slashes are removed, the root is preserved.
  *
  * Doing the iteration in reverse allows canonicalization to be performed without lookahead. This is useful
  * for comparing path strings, potentially relative to different base paths, without having to do prior string
@@ -182,40 +190,65 @@ private:
 class PathMatch::PathIterator {
 public:
     /* Create from a pattern and base path */
-    static PathIterator fromPattern(const std::string &pattern, const std::string &basepath, bool icase)
+    static PathIterator fromPattern(const std::string &pattern, const std::string &basepath, Syntax syntax)
     {
         if (isRelativePattern(pattern))
-            return PathIterator(basepath.c_str(), pattern.c_str(), icase);
-        return PathIterator(pattern.c_str(), nullptr, icase);
+            return PathIterator(basepath.c_str(), pattern.c_str(), syntax);
+        return PathIterator(pattern.c_str(), nullptr, syntax);
     }
 
     /* Create from path and base path */
-    static PathIterator fromPath(const std::string &path, const std::string &basepath, bool icase)
+    static PathIterator fromPath(const std::string &path, const std::string &basepath, Syntax syntax)
     {
         if (Path::isAbsolute(path))
-            return PathIterator(path.c_str(), nullptr, icase);
-        return PathIterator(basepath.c_str(), path.c_str(), icase);
+            return PathIterator(path.c_str(), nullptr, syntax);
+        return PathIterator(basepath.c_str(), path.c_str(), syntax);
     }
 
     /* Constructor */
-    explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, bool lower = false) :
-        mStart{path_a, path_b}, mLower(lower)
+    explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, Syntax syntax = platform_syntax) :
+        mStart{path_a, path_b}, mSyntax(syntax)
     {
-        for (int i = 0; i < 2; i++) {
-            mEnd[i] = mStart[i];
+        const auto issep = [syntax] (char c) { return c == '/' || (syntax == Syntax::windows && c == '\\'); };
+        const auto isdrive = [] (char c) { return (c >= 'A' && c <= 'Z' ) || (c >= 'a' && c <= 'z'); };
 
-            if (mStart[i] == nullptr || *mStart[i] == '\0')
+        for (int i = 0; i < 2; i++) {
+            const char *&p = mEnd[i];
+            p = mStart[i];
+
+            if (p == nullptr || *p == '\0')
                 continue;
 
-            if (mPos.l != 0)
-                mPos.l++;
-
-            while (*mEnd[i] != '\0') {
-                mEnd[i]++;
+            if (mPos.l == 0) {
+                /* Check length of root component */
+                if (issep(p[0])) {
+                    mPos.l++;
+                    if (syntax == Syntax::windows && issep(p[1])) {
+                        mPos.l++;
+                        if (p[2] == '.' || p[2] == '?') {
+                            mPos.l++;
+                            if (issep(p[3]))
+                                mPos.l++;
+                        }
+                    }
+                } else if (syntax == Syntax::windows && isdrive(p[0]) && p[1] == ':') {
+                    mPos.l += 2;
+                    if (issep(p[2]))
+                        mPos.l++;
+                }
+                p += mPos.l;
+                mRootLength = mPos.l;
+            } else {
+                /* Add path separator */
                 mPos.l++;
             }
 
-            mPos.p = mEnd[i];
+            while (*p != '\0') {
+                p++;
+                mPos.l++;
+            }
+
+            mPos.p = p;
         }
 
         if (mPos.l == 0)
@@ -280,11 +313,11 @@ private:
 
         char c = mPos.p[-1];
 
-        if (c == '\\')
-            return '/';
-
-        if (mLower)
+        if (mSyntax == Syntax::windows) {
+            if (c == '\\')
+                return '/';
             return std::tolower(c);
+        }
 
         return c;
     }
@@ -292,7 +325,7 @@ private:
     /* Do canonicalization on a path component boundary */
     void skips(bool leadsep)
     {
-        while (mPos.l != 0) {
+        while (mPos.l > mRootLength) {
             Pos pos = mPos;
 
             if (leadsep) {
@@ -312,7 +345,7 @@ private:
                         /* Skip 'dir/../' */
                         nextc();
                         skips(false);
-                        while (mPos.l != 0 && current() != '/')
+                        while (mPos.l > mRootLength && current() != '/')
                             nextc();
                         continue;
                     }
@@ -323,7 +356,7 @@ private:
                     /* Skip leading './' */
                     break;
                 }
-            } else if (c == '/' && mPos.l != 1) {
+            } else if (c == '/') {
                 /* Skip double separator (keep root) */
                 nextc();
                 leadsep = false;
@@ -371,8 +404,10 @@ private:
     const char *mEnd[2] {};
     /* Current position */
     Pos mPos {};
-    /* Lowercase conversion flag */
-    bool mLower;
+    /* Length of the root component */
+    std::size_t mRootLength {};
+    /* Syntax */
+    Syntax mSyntax;
 };
 
 /// @}

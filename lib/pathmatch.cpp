@@ -26,18 +26,18 @@
 #include <vector>
 
 
-PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Mode mode) :
-    mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mMode(mode)
+PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Syntax syntax) :
+    mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mSyntax(syntax)
 {}
 
 bool PathMatch::match(const std::string &path) const
 {
     return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
-        return match(pattern, path, mBasepath, mMode);
+        return match(pattern, path, mBasepath, mSyntax);
     });
 }
 
-bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Mode mode)
+bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Syntax syntax)
 {
     if (pattern.empty())
         return false;
@@ -50,9 +50,9 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
     bool real = Path::isAbsolute(pattern) || isRelativePattern(pattern);
 
     /* Pattern iterator */
-    PathIterator s = PathIterator::fromPattern(pattern, basepath, mode == Mode::icase);
+    PathIterator s = PathIterator::fromPattern(pattern, basepath, syntax);
     /* Path iterator */
-    PathIterator t = PathIterator::fromPath(path, basepath, mode == Mode::icase);
+    PathIterator t = PathIterator::fromPath(path, basepath, syntax);
     /* Pattern restart position */
     PathIterator p = s;
     /* Path restart position */
