@@ -1764,17 +1764,14 @@ def test_ignore_file_append(tmpdir):
     __test_ignore_file(tmpdir, 'test.cpp', append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_back(tmpdir):
     __test_ignore_file(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_front(tmpdir):
     __test_ignore_file(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_placeholder(tmpdir):
     __test_ignore_file(tmpdir, 't?st.cpp')
 
@@ -1787,12 +1784,10 @@ def test_ignore_file_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src/test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.c*')
 
@@ -1805,12 +1800,10 @@ def test_ignore_path_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src*/')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src*\\')
 
@@ -1880,17 +1873,14 @@ def test_ignore_project_file_cli_append(tmpdir):
     __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp', append_cli=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_back(tmpdir):
     __test_ignore_project(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_front(tmpdir):
     __test_ignore_project(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_placeholder(tmpdir):
     __test_ignore_project(tmpdir, 't?st.cpp')
 
@@ -1959,18 +1949,15 @@ def __test_ignore_project_2(tmpdir, extra_args, append=False, inject_path=False)
     assert stdout.splitlines() == lines_exp
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_append(tmpdir):
     # make sure it also matches when specified after project
     __test_ignore_project_2(tmpdir, ['-itest.cpp'], append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_wildcard_back(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.c*'])
 
@@ -1979,27 +1966,22 @@ def test_ignore_project_2_file_wildcard_front(tmpdir):
     __test_ignore_project_2(tmpdir, ['-i*test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_placeholder(tmpdir):
     __test_ignore_project_2(tmpdir, ['-it?st.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_relative_wildcard(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.c*'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.c*'])
 
@@ -2012,12 +1994,10 @@ def test_ignore_project_2_path_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
 def test_ignore_project_2_path_relative_wildcard(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc*/'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
 def test_ignore_project_2_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc*\\'])
 
@@ -2498,7 +2478,6 @@ def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
 
 
-@pytest.mark.xfail(strict=True)  # #13437 - TODO: suppression needs to match the whole input path
 def test_addon_suppr_cli_file_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:test.c:3'])
 

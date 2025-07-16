@@ -10,6 +10,8 @@ GUI:
 -
 
 Changed interface:
+- Updated path matching syntax for -i, --file-filter, suppressions, GUI excludes, and project file excludes.
+Old patterns that use a `*` may need to use `**` instead if it is intended to match path separators. More details can be seen in the manual.
 -
 
 Deprecations:

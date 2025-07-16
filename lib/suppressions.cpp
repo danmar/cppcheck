@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "path.h"
+#include "pathmatch.h"
 #include "utils.h"
 #include "token.h"
 #include "tokenize.h"
@@ -396,12 +397,12 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
         if (!errorId.empty() && !matchglob(errorId, errmsg.errorId))
             return Result::Checked;
     } else {
-        if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
-            return Result::None;
         if ((SuppressionList::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
             if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
                 return Result::None;
         }
+        if (!fileName.empty() && fileName != errmsg.getFileName() && !PathMatch::match(fileName, errmsg.getFileName()))
+            return Result::None;
         if (hash > 0 && hash != errmsg.hash)
             return Result::Checked;
         // the empty check is a hack to allow wildcard suppressions on IDs to be marked as checked

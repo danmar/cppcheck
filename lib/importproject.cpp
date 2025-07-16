@@ -19,6 +19,7 @@
 #include "importproject.h"
 
 #include "path.h"
+#include "pathmatch.h"
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
@@ -42,30 +43,11 @@
 
 #include "json.h"
 
-// TODO: align the exclusion logic with PathMatch
-// TODO: PathMatch lacks glob support
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
+    PathMatch matcher(ipaths, Path::getCurrentPath());
     for (auto it = fileSettings.cbegin(); it != fileSettings.cend();) {
-        bool ignore = false;
-        for (std::string i : ipaths) {
-            if (it->filename().size() > i.size() && it->filename().compare(0,i.size(),i)==0) {
-                ignore = true;
-                break;
-            }
-            if (isValidGlobPattern(i) && matchglob(i, it->filename())) {
-                ignore = true;
-                break;
-            }
-            if (!Path::isAbsolute(i)) {
-                i = mPath + i;
-                if (it->filename().size() > i.size() && it->filename().compare(0,i.size(),i)==0) {
-                    ignore = true;
-                    break;
-                }
-            }
-        }
-        if (ignore) {
+        if (matcher.match(it->filename())) {
             if (debug)
                 std::cout << "ignored path: " << it->filename() << std::endl;
             it = fileSettings.erase(it);
@@ -858,8 +840,9 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
     }
 
     // Project files
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
     for (const std::string &cfilename : compileList) {
-        if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
+        if (!fileFilters.empty() && !filtermatcher.match(cfilename))
             continue;
 
         for (const ProjectConfiguration &p : projectConfigurationList) {
@@ -937,6 +920,8 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     SharedItemsProject result;
     result.pathToProjectFile = filename;
 
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
+
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
@@ -957,8 +942,8 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
                         std::string file(include);
                         findAndReplace(file, "$(MSBuildThisFileDirectory)", "./");
 
-                        // Don't include file if it matches the filter
-                        if (!fileFilters.empty() && !matchglobs(fileFilters, file))
+                        // Skip file if it doesn't match the filter
+                        if (!fileFilters.empty() && !filtermatcher.match(file))
                             continue;
 
                         result.sourceFiles.emplace_back(file);
@@ -1269,7 +1254,20 @@ static std::list<std::string> readXmlStringList(const tinyxml2::XMLElement *node
             continue;
         const char *attr = attribute ? child->Attribute(attribute) : child->GetText();
         if (attr)
-            ret.push_back(joinRelativePath(path, attr));
+            ret.emplace_back(joinRelativePath(path, attr));
+    }
+    return ret;
+}
+
+static std::list<std::string> readXmlPathMatchList(const tinyxml2::XMLElement *node, const std::string &path, const char name[], const char attribute[])
+{
+    std::list<std::string> ret;
+    for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+        if (strcmp(child->Name(), name) != 0)
+            continue;
+        const char *attr = attribute ? child->Attribute(attribute) : child->GetText();
+        if (attr)
+            ret.emplace_back(PathMatch::joinRelativePattern(path, attr));
     }
     return ret;
 }
@@ -1339,13 +1337,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         else if (strcmp(name, CppcheckXml::PathsElementName) == 0)
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(name, CppcheckXml::ExcludeElementName) == 0)
-            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib); // TODO: append instead of overwrite
+            guiProject.excludedPaths = readXmlPathMatchList(node, path, CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::FunctionContracts) == 0)
             ;
         else if (strcmp(name, CppcheckXml::VariableContractsElementName) == 0)
             ;
         else if (strcmp(name, CppcheckXml::IgnoreElementName) == 0)
-            guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib); // TODO: append instead of overwrite
+            guiProject.excludedPaths = readXmlPathMatchList(node, path, CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr); // TODO: append instead of overwrite
         else if (strcmp(name, CppcheckXml::SuppressionsElementName) == 0) {
