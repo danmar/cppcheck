@@ -10,6 +10,8 @@ GUI:
 -
 
 Changed interface:
+- Updated path matching syntax for -i, --file-filter, suppressions, GUI excludes, and project file excludes.
+Old patterns that use a `*` may need to use `**` instead if it is intended to match path separators. More details can be seen in the manual.
 -
 
 Deprecations:
@@ -29,5 +31,4 @@ Other:
 - Fixed --file-filter matching of looked up files in provided paths.
 - Split up cstyleCast checker; dangerous casts produce portability/warning reports, safe casts produce style reports.
 - Removed deprecated '--showtime=' value 'top5'. Please use 'top5_file' or 'top5_summary' instead.
-- Updated path matching syntax for -i, --file-filter, suppressions, GUI excludes, and project file excludes.
 -
