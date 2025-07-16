@@ -1130,7 +1130,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
-            projectType = project.import(projectFile, &mSettings, &mSuppressions);
+            projectType = project.import(projectFile, &mSettings, &mSuppressions, isCppcheckPremium());
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                 for (const std::string &lib : project.guiProject.libraries)
                     mSettings.libraries.emplace_back(lib);

@@ -183,7 +183,7 @@ void ImportProject::fsSetIncludePaths(FileSettings& fs, const std::string &basep
     }
 }
 
-ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings, Suppressions *supprs)
+ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings, Suppressions *supprs, bool premium)
 {
     std::ifstream fin(filename);
     if (!fin.is_open())
@@ -219,7 +219,7 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
             return ImportProject::Type::BORLAND;
         }
     } else if (settings && supprs && endsWith(filename, ".cppcheck")) {
-        if (importCppcheckGuiProject(fin, *settings, *supprs)) {
+        if (importCppcheckGuiProject(fin, *settings, *supprs, premium)) {
             setRelativePaths(filename);
             return ImportProject::Type::CPPCHECK_GUI;
         }
@@ -1289,7 +1289,7 @@ static std::string istream_to_string(std::istream &istr)
     return std::string(std::istreambuf_iterator<char>(istr), eos);
 }
 
-bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs)
+bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs, bool premium)
 {
     tinyxml2::XMLDocument doc;
     const std::string xmldata = istream_to_string(istr);
@@ -1373,6 +1373,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         else if (strcmp(name, CppcheckXml::AddonsElementName) == 0) {
             const auto& addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
             temp.addons.insert(addons.cbegin(), addons.cend());
+            if (premium) {
+                auto it = temp.addons.find("misra");
+                if (it != temp.addons.end()) {
+                    temp.addons.erase(it);
+                    temp.premiumArgs += " --misra-c-2012";
+                }
+            }
         }
         else if (strcmp(name, CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
