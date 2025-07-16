@@ -105,18 +105,18 @@ namespace {
                     picojson::object rule;
                     rule["id"]   = picojson::value(finding.id);
                     // rule.name
-                    rule["name"] = picojson::value(finding.genericMessage());
+                    rule["name"] = picojson::value("");
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(finding.genericMessage());
+                    shortDescription["text"] = picojson::value("");
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(finding.genericMessage());
+                    fullDescription["text"] = picojson::value("");
                     rule["fullDescription"] = picojson::value(fullDescription);
                     // rule.help.text
                     picojson::object help;
-                    help["text"] = picojson::value(finding.genericMessage());
+                    help["text"] = picojson::value("");
                     rule["help"] = picojson::value(help);
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
