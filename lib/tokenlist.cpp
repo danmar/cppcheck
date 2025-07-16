@@ -831,7 +831,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if ((state.cpp && iscpp11init(tok)) || Token::simpleMatch(tok->previous(), "] {")) {
             Token *const end = tok->link();
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
-                if (Token::Match(tok->tokAt(-1), "!!, { . %name% =|{")) {
+                if (Token::Match(tok->tokAt(-1), "!!, { . %name% =|{") && !Token::simpleMatch(tok->tokAt(-1), "(")) {
                     const int inArrayAssignment = state.inArrayAssignment;
                     state.inArrayAssignment = 1;
                     compileBinOp(tok, state, compileExpression);
