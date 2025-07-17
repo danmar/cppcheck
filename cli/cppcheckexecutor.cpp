@@ -118,8 +118,7 @@ namespace {
                     picojson::array tags;
 
                     // If we have a CWE ID, treat it as security-related (CWE is the authoritative source for security weaknesses)
-                    if (finding.cwe.id > 0)
-                    {
+                    if (finding.cwe.id > 0) {
                         double securitySeverity = 0;
                         if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id)) {
                             securitySeverity = 9.9; // critical = 9.0+
@@ -202,8 +201,7 @@ namespace {
             return results;
         }
 
-        picojson::value serializeRuns(const std::string& productName, const std::string& version) const
-        {
+        picojson::value serializeRuns(const std::string& productName, const std::string& version) const {
             picojson::object driver;
             driver["name"] = picojson::value(productName);
             driver["semanticVersion"] = picojson::value(version);
@@ -237,8 +235,7 @@ namespace {
         static std::string sarifSeverity(const ErrorMessage& errmsg) {
             if (ErrorLogger::isCriticalErrorId(errmsg.id))
                 return "error";
-            switch (errmsg.severity)
-            {
+            switch (errmsg.severity) {
             case Severity::error:
             case Severity::warning:
                 return "error";
