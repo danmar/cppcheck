@@ -4,6 +4,7 @@
 import os
 import sys
 import pytest
+import glob
 import json
 import subprocess
 
@@ -3326,6 +3327,35 @@ def test_preprocess_enforced_cpp(tmp_path):  # #10989
     assert stderr.splitlines() == [
         '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
     ]
+
+
+def test_preprocess_system_include(tmp_path): # #13928
+    g = glob.glob('/usr/include/c++/*/string')
+    if len(g) != 1:
+        pytest.skip('<string> header file not found')
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write('#include <string>\n'
+                ';\n')
+
+    def has_missing_include_string_warning(e):
+        return '<string>' in e
+
+    g0 = str(g[0])
+    args = [
+        '--enable=missingInclude',
+        str(test_file)
+    ]
+
+    # include path not provided => missing include warning about <string>
+    _, _, stderr = cppcheck(args)
+    assert has_missing_include_string_warning(stderr), stderr
+
+    # include path provided => no missing include warning about <string>
+    args.append('-I' + g0[:g0.rfind('/')])
+    _, _, stderr = cppcheck(args)
+    assert not has_missing_include_string_warning(stderr), stderr
 
 
 # TODO: test with --xml
