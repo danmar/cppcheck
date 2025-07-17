@@ -488,11 +488,11 @@ void g_variant_test() {
     g_variant_builder_add(&builder, "{sv}", "UInt32", g_variant_new_uint32(32));
     g_variant_builder_add(&builder, "{sv}", "UInt64", g_variant_new_uint64(64));
     g_variant_builder_add(&builder, "{sv}", "Boolean",
-                          g_variant_new_boolean(TRUE));
+                            g_variant_new_boolean(TRUE));
     g_variant_builder_add(&builder, "{sv}", "TakenString",
-                          g_variant_new_take_string(g_strdup("Owned string")));
+                            g_variant_new_take_string(g_strdup("Owned string")));
     g_variant_builder_add(&builder, "{sv}", "PrintfString",
-                          g_variant_new_printf("Formatted %d", 1));
+                            g_variant_new_printf("Formatted %d", 1));
     g_variant_builder_add_value(
         &builder, g_variant_new("{sv}", "String",
                                 g_variant_new_string("Owned string 2")));

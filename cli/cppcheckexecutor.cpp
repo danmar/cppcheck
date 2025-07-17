@@ -78,30 +78,25 @@
 #endif
 
 namespace {
-    class SarifReport
-    {
+    class SarifReport {
     public:
-        void addFinding(ErrorMessage msg)
-        {
+        void addFinding(ErrorMessage msg) {
             mFindings.push_back(std::move(msg));
         }
 
-        picojson::array serializeRules() const
-        {
+        picojson::array serializeRules() const {
             picojson::array ret;
             std::set<std::string> ruleIds;
-            for (const auto& finding : mFindings)
-            {
+            for (const auto& finding : mFindings) {
                 // github only supports findings with locations
                 if (finding.callStack.empty())
                     continue;
-                if (ruleIds.insert(finding.id).second)
-                {
+                if (ruleIds.insert(finding.id).second) {
                     // setting name and description to empty strings will make github default
                     // to the instance specific violation message and not rule description,
                     // this makes it so not all the violations have the same description.
                     picojson::object rule;
-                    rule["id"]   = picojson::value(finding.id);
+                    rule["id"] = picojson::value(finding.id);
                     // rule.name
                     rule["name"] = picojson::value("");
                     // rule.shortDescription.text
@@ -126,35 +121,31 @@ namespace {
                     if (finding.cwe.id > 0)
                     {
                         double securitySeverity = 0;
-                        if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
-                        {
+                        if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id)) {
                             securitySeverity = 9.9; // critical = 9.0+
                         }
-                        else if (finding.severity == Severity::warning)
-                        {
+                        else if (finding.severity == Severity::warning) {
                             securitySeverity = 8.5; // high = 7.0 to 8.9
                         }
                         else if (finding.severity == Severity::performance || finding.severity == Severity::portability ||
-                                 finding.severity == Severity::style)
-                        {
+                                 finding.severity == Severity::style) {
                             securitySeverity = 5.5; // medium = 4.0 to 6.9
                         }
                         else if (finding.severity == Severity::information || finding.severity == Severity::internal ||
-                                 finding.severity == Severity::debug || finding.severity == Severity::none)
-                        {
+                                 finding.severity == Severity::debug || finding.severity == Severity::none) {
                             securitySeverity = 2.0; // low = 0.1 to 3.9
                         }
-                        if (securitySeverity > 0.0)
-                        {
-                            properties["security-severity"] = picojson::value(std::to_string(securitySeverity));
+                        if (securitySeverity > 0.0) {
+                            std::ostringstream ss;
+                            ss << securitySeverity;
+                            properties["security-severity"] = picojson::value(ss.str());
                             tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
                             tags.emplace_back(picojson::value("security"));
                         }
                     }
 
                     // Add tags array if it has any content
-                    if (!tags.empty())
-                    {
+                    if (!tags.empty()) {
                         properties["tags"] = picojson::value(tags);
                     }
 
@@ -173,14 +164,12 @@ namespace {
             return ret;
         }
 
-        static picojson::array serializeLocations(const ErrorMessage& finding)
-        {
+        static picojson::array serializeLocations(const ErrorMessage& finding) {
             picojson::array ret;
-            for (const auto& location : finding.callStack)
-            {
+            for (const auto& location : finding.callStack) {
                 picojson::object physicalLocation;
                 picojson::object artifactLocation;
-                artifactLocation["uri"]              = picojson::value(location.getfile(false));
+                artifactLocation["uri"] = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
                 region["startLine"]   = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
@@ -195,21 +184,19 @@ namespace {
             return ret;
         }
 
-        picojson::array serializeResults() const
-        {
+        picojson::array serializeResults() const {
             picojson::array results;
-            for (const auto& finding : mFindings)
-            {
+            for (const auto& finding : mFindings) {
                 // github only supports findings with locations
                 if (finding.callStack.empty())
                     continue;
                 picojson::object res;
-                res["level"]     = picojson::value(sarifSeverity(finding));
+                res["level"] = picojson::value(sarifSeverity(finding));
                 res["locations"] = picojson::value(serializeLocations(finding));
                 picojson::object message;
                 message["text"] = picojson::value(finding.shortMessage());
-                res["message"]  = picojson::value(message);
-                res["ruleId"]   = picojson::value(finding.id);
+                res["message"] = picojson::value(message);
+                res["ruleId"] = picojson::value(finding.id);
                 results.emplace_back(res);
             }
             return results;
@@ -218,39 +205,36 @@ namespace {
         picojson::value serializeRuns(const std::string& productName, const std::string& version) const
         {
             picojson::object driver;
-            driver["name"]            = picojson::value(productName);
+            driver["name"] = picojson::value(productName);
             driver["semanticVersion"] = picojson::value(version);
-            driver["informationUri"]  = picojson::value("https://cppcheck.sourceforge.io");
-            driver["rules"]           = picojson::value(serializeRules());
+            driver["informationUri"] = picojson::value("https://cppcheck.sourceforge.io");
+            driver["rules"] = picojson::value(serializeRules());
             picojson::object tool;
             tool["driver"] = picojson::value(driver);
             picojson::object run;
-            run["tool"]    = picojson::value(tool);
+            run["tool"] = picojson::value(tool);
             run["results"] = picojson::value(serializeResults());
             picojson::array runs{picojson::value(run)};
             return picojson::value(runs);
         }
 
-        std::string serialize(std::string productName) const
-        {
+        std::string serialize(std::string productName) const {
             const auto nameAndVersion = Settings::getNameAndVersion(productName);
-            productName               = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
-            std::string version       = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
+            productName = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
+            std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
             if (version.find(' ') != std::string::npos)
                 version.erase(version.find(' '), std::string::npos);
 
             picojson::object doc;
             doc["version"] = picojson::value("2.1.0");
-            doc["$schema"] = picojson::value(
-                "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
+            doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
             doc["runs"] = serializeRuns(productName, version);
 
             return picojson::value(doc).serialize(true);
         }
 
     private:
-        static std::string sarifSeverity(const ErrorMessage& errmsg)
-        {
+        static std::string sarifSeverity(const ErrorMessage& errmsg) {
             if (ErrorLogger::isCriticalErrorId(errmsg.id))
                 return "error";
             switch (errmsg.severity)
@@ -271,8 +255,7 @@ namespace {
             return "note";
         }
 
-        static std::string sarifPrecision(const ErrorMessage& errmsg)
-        {
+        static std::string sarifPrecision(const ErrorMessage& errmsg) {
             if (errmsg.certainty == Certainty::inconclusive)
                 return "medium";
             return "high";

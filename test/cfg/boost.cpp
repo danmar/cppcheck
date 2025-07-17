@@ -145,8 +145,8 @@ void test_BOOST_FOREACH_3(std::vector<int> data)
 void test_BOOST_FOREACH_4(std::vector<int> data)
 {
     BOOST_FOREACH(const int& i, data)
-    // cppcheck-suppress invalidContainerLoop
-    data.clear();
+        // cppcheck-suppress invalidContainerLoop
+        data.clear();
 }
 
 // Container returned as result of a function -> Be quiet
@@ -155,7 +155,7 @@ void test_BOOST_FOREACH_5()
 {
     std::set<int> data;
     BOOST_FOREACH(const int& i, get_data())
-    data.insert(i);
+        data.insert(i);
 }
 
 // Break after modification (#4788)

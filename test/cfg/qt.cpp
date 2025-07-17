@@ -860,5 +860,5 @@ int qdateIsValid()
 {
     QDate qd(1,1,2025);
     Q_ASSERT(qd.isValid()); // Should not warn here with assertWithSideEffect
-    return qd.month();
+    return qd.month(); 
 }

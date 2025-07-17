@@ -90,12 +90,12 @@ int ignoredReturnValue_std_clamp(const int x)
 void knownConditionTrueFalse_std_clamp(const int x)
 {
     // cppcheck-suppress knownConditionTrueFalse
-    if (std::clamp(-2, -1, 1) == -1) {}
+    if(std::clamp(-2, -1, 1) == -1){}
     // cppcheck-suppress knownConditionTrueFalse
-    if (std::clamp(2, -1, 1) == 1) {}
+    if(std::clamp(2, -1, 1) == 1){}
     // cppcheck-suppress knownConditionTrueFalse
-    if (std::clamp(0, -1, 1) == 0) {}
-    if (std::clamp(x, 0, 2)) {}
+    if(std::clamp(0, -1, 1) == 0){}
+    if(std::clamp(x, 0, 2)){}
 }
 #endif // __cpp_lib_clamp
 

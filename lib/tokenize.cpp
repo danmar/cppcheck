@@ -10967,10 +10967,10 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
     const auto& directives = mDirectives;
     return std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
         return startsWith(d.str, "#if") &&
-        d.linenr >= start->linenr() &&
-        d.linenr <= end->linenr() &&
-        start->fileIndex() < list.getFiles().size() &&
-        d.file == list.getFiles()[start->fileIndex()];
+               d.linenr >= start->linenr() &&
+               d.linenr <= end->linenr() &&
+               start->fileIndex() < list.getFiles().size() &&
+               d.file == list.getFiles()[start->fileIndex()];
     });
 }
 
