@@ -114,7 +114,7 @@ namespace ValueFlow
     {
         const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
 
-        return getSizeOf(valueType, settings);
+        return getSizeOf(valueType, settings, ValueFlow::Accuracy::ExactOrZero);
     }
 
     // Handle various constants..
@@ -124,7 +124,9 @@ namespace ValueFlow
             try {
                 MathLib::bigint signedValue = MathLib::toBigNumber(tok);
                 const ValueType* vt = tok->valueType();
-                if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0 && getSizeOf(*vt, settings) < sizeof(MathLib::bigint)) {
+                if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0
+                    && getSizeOf(*vt, settings, ValueFlow::Accuracy::ExactOrZero)
+                    < sizeof(MathLib::bigint)) {
                     MathLib::bigint minValue{}, maxValue{};
                     if (getMinMaxValues(tok->valueType(), settings.platform, minValue, maxValue))
                         signedValue += maxValue + 1;
@@ -148,7 +150,7 @@ namespace ValueFlow
             if (!tok->isTemplateArg())
                 value.setKnown();
             setTokenValue(tok, std::move(value), settings);
-        } else if (tok->str() == "NULL" || (tok->isCpp() && tok->str() == "nullptr")) {
+        } else if (tok->str() == "NULL" || ((tok->isCpp() || settings.standards.c >= Standards::C23) && tok->str() == "nullptr")) {
             Value value(0);
             if (!tok->isTemplateArg())
                 value.setKnown();
@@ -158,7 +160,9 @@ namespace ValueFlow
                 (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
                  (tok->next()->astOperand2()->variable() && !tok->next()->astOperand2()->variable()->isArray())) &&
                 !tok->next()->astOperand2()->valueType()->isEnum()) { // <- TODO this is a bailout, handle enum with non-int types
-                const size_t sz = getSizeOf(*tok->next()->astOperand2()->valueType(), settings);
+                const size_t sz = getSizeOf(*tok->next()->astOperand2()->valueType(),
+                                            settings,
+                                            ValueFlow::Accuracy::ExactOrZero);
                 if (sz) {
                     Value value(sz);
                     value.setKnown();
@@ -177,7 +181,8 @@ namespace ValueFlow
             }
             if (Token::simpleMatch(tok, "sizeof ( *")) {
                 const ValueType *vt = tok->tokAt(2)->valueType();
-                const size_t sz = vt ? getSizeOf(*vt, settings) : 0;
+                const size_t sz = vt ? getSizeOf(*vt, settings, ValueFlow::Accuracy::ExactOrZero)
+                                     : 0;
                 if (sz > 0) {
                     Value value(sz);
                     if (!tok2->isTemplateArg() && settings.platform.type != Platform::Type::Unspecified)
@@ -238,7 +243,9 @@ namespace ValueFlow
                         if (var->type()->classScope && var->type()->classScope->enumType)
                             size = getSizeOfType(var->type()->classScope->enumType, settings);
                     } else if (var->valueType()) {
-                        size = getSizeOf(*var->valueType(), settings);
+                        size = getSizeOf(*var->valueType(),
+                                         settings,
+                                         ValueFlow::Accuracy::ExactOrZero);
                     } else if (!var->type()) {
                         size = getSizeOfType(var->typeStartToken(), settings);
                     }
@@ -287,7 +294,7 @@ namespace ValueFlow
                 }
             } else if (!tok2->type()) {
                 const ValueType& vt = ValueType::parseDecl(tok2, settings);
-                size_t sz = getSizeOf(vt, settings);
+                size_t sz = getSizeOf(vt, settings, ValueFlow::Accuracy::ExactOrZero);
                 const Token* brac = tok2->astParent();
                 while (Token::simpleMatch(brac, "[")) {
                     const Token* num = brac->astOperand2();

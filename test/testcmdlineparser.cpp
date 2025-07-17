@@ -22,6 +22,8 @@
 #include "config.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "filesettings.h"
+#include "fixture.h"
 #include "helpers.h"
 #include "path.h"
 #include "platform.h"
@@ -29,7 +31,6 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "fixture.h"
 #include "timer.h"
 #include "utils.h"
 
@@ -207,6 +208,7 @@ private:
         TEST_CASE(fileFilterFileWithDetailsSimplifiedPath);
         TEST_CASE(fileFilterFileWithDetailsCase);
         TEST_CASE(fileFilterStdin);
+        TEST_CASE(fileFilterNoMatch);
         TEST_CASE(fileList);
         TEST_CASE(fileListNoFile);
         TEST_CASE(fileListStdin);
@@ -271,6 +273,7 @@ private:
         TEST_CASE(platformUnspecified);
         TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
+        TEST_CASE(platformEmpty);
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld);
@@ -462,6 +465,10 @@ private:
         TEST_CASE(debugSymdb);
         TEST_CASE(debugAst);
         TEST_CASE(debugValueflow);
+        TEST_CASE(debugNormal);
+        TEST_CASE(debugNormalVerbose);
+        TEST_CASE(debug);
+        TEST_CASE(debugVerbose);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -502,6 +509,7 @@ private:
         TEST_CASE(reportTypeCertC);
         TEST_CASE(reportTypeMisraC2012);
         TEST_CASE(reportTypeMisraC2023);
+        TEST_CASE(reportTypeMisraC2025);
         TEST_CASE(reportTypeMisraCpp2008);
         TEST_CASE(reportTypeMisraCpp2023);
         TEST_CASE(invalidReportType);
@@ -765,14 +773,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::None, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::None, parser->mEnforcedLang);
     }
 
     void enforceLanguage2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::CPP, parser->mEnforcedLang);
     }
 
     void enforceLanguage3() {
@@ -793,14 +801,14 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::CPP, parser->mEnforcedLang);
     }
 
     void enforceLanguage6() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Standards::Language::C, settings->enforcedLang);
+        ASSERT_EQUALS(Standards::Language::C, parser->mEnforcedLang);
     }
 
     void enforceLanguage7() {
@@ -1217,6 +1225,16 @@ private:
         ASSERT_EQUALS(2U, settings->fileFilters.size());
         ASSERT_EQUALS("file1.c", settings->fileFilters[0]);
         ASSERT_EQUALS("file2.cpp", settings->fileFilters[1]);
+    }
+
+    void fileFilterNoMatch() {
+        REDIRECT;
+        RedirectInput input("notexist1.c\nnotexist2.cpp\n");
+        const char * const argv[] = {"cppcheck", "--file-filter=-", "."};
+        ASSERT(!fillSettingsFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: could not find any files matching the filter:notexist1.c\n"
+                      "cppcheck: error: could not find any files matching the filter:notexist2.cpp\n",
+                      logger->str());
     }
 
     void fileList() {
@@ -1676,6 +1694,7 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Unix32, settings->platform.type);
+        ASSERT_EQUALS("cppcheck: The platform 'unix32-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix32 --funsigned-char' instead\n", logger->str());
     }
 
     void platformUnix64() {
@@ -1692,6 +1711,7 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Unix64, settings->platform.type);
+        ASSERT_EQUALS("cppcheck: The platform 'unix64-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix64 --funsigned-char' instead\n", logger->str());
     }
 
     void platformNative() {
@@ -1723,6 +1743,13 @@ private:
         const char * const argv[] = {"cppcheck", "--platform=win128", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'win128'.\n", logger->str());
+    }
+
+    void platformEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: empty platform specified.\n", logger->str());
     }
 
     void plistEmpty() {
@@ -2015,9 +2042,8 @@ private:
     void showtimeTop5() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
-        ASSERT_EQUALS("cppcheck: --showtime=top5 is deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.\n", logger->str());
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top5'. Supported modes: file, file-total, summary, top5_file, top5_summary.\n", logger->str());
     }
 
     void showtimeTop5File() {
@@ -2052,7 +2078,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top10", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.\n", logger->str());
+        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5_file, top5_summary.\n", logger->str());
     }
 
     void errorlist() {
@@ -3136,6 +3162,7 @@ private:
         const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->analyzeAllVsConfigs);
+        ASSERT(parser->mAnalyzeAllVsConfigsSetOnCmdLine);
     }
 
     void noAnalyzeAllVsConfigs() {
@@ -3143,6 +3170,7 @@ private:
         const char * const argv[] = {"cppcheck", "--no-analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
+        ASSERT(parser->mAnalyzeAllVsConfigsSetOnCmdLine);
     }
 
     void noAnalyzeAllVsConfigs2() {
@@ -3150,6 +3178,7 @@ private:
         const char * const argv[] = {"cppcheck", "--analyze-all-vs-configs", "--no-analyze-all-vs-configs", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: --no-analyze-all-vs-configs has no effect - no Visual Studio project provided.\n", logger->str());
+        ASSERT(parser->mAnalyzeAllVsConfigsSetOnCmdLine);
     }
 
     void debugSymdb() {
@@ -3171,6 +3200,50 @@ private:
         const char * const argv[] = {"cppcheck", "--debug-valueflow", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->debugvalueflow);
+    }
+
+    void debugNormal() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-normal", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
+        ASSERT_EQUALS(false, settings->debugast);
+        ASSERT_EQUALS(false, settings->debugsymdb);
+    }
+
+    void debugNormalVerbose() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-normal", "--verbose", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugast);
+        ASSERT_EQUALS(true, settings->debugsymdb);
+    }
+
+    void debug() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
+        ASSERT_EQUALS(false, settings->debugast);
+        ASSERT_EQUALS(false, settings->debugsymdb);
+    }
+
+    void debugVerbose() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug", "--verbose", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugnormal);
+        ASSERT_EQUALS(false, settings->debugSimplified);
+        ASSERT_EQUALS(true, settings->debugvalueflow);
+        ASSERT_EQUALS(true, settings->debugast);
+        ASSERT_EQUALS(true, settings->debugsymdb);
     }
 
     void ignorepaths1() {
@@ -3451,14 +3524,21 @@ private:
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=misra-c-2012", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS_ENUM(ReportType::misraC, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::misraC2012, settings->reportType);
     }
 
     void reportTypeMisraC2023() {
         REDIRECT;
         const char *const argv[] = { "cppcheck", "--report-type=misra-c-2023", "file.cpp" };
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS_ENUM(ReportType::misraC, settings->reportType);
+        ASSERT_EQUALS_ENUM(ReportType::misraC2023, settings->reportType);
+    }
+
+    void reportTypeMisraC2025() {
+        REDIRECT;
+        const char *const argv[] = { "cppcheck", "--report-type=misra-c-2025", "file.cpp" };
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS_ENUM(ReportType::misraC2025, settings->reportType);
     }
 
     void reportTypeMisraCpp2008() {

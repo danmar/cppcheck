@@ -19,8 +19,8 @@
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "path.h"
 #include "settings.h"
+#include "standards.h"
 #include "templatesimplifier.h"
 #include "token.h"
 #include "tokenize.h"
@@ -220,6 +220,7 @@ private:
         TEST_CASE(template179);
         TEST_CASE(template180);
         TEST_CASE(template181);
+        TEST_CASE(template182); // #13770
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_3);
@@ -4636,6 +4637,15 @@ private:
         ASSERT_EQUALS(exp2, tok(code2));
     }
 
+    void template182() {
+        const char code[] = "template <class...>\n"
+                            "auto f() {\n"
+                            "    return [](auto&&...) {};\n"
+                            "}\n";
+        const char exp[] = "template < class ... > auto f ( ) { return [ ] ( auto && ... ) { } ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -6334,6 +6344,20 @@ private:
                                 "} "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
+
+        const char code2[] = "template <typename T>\n" // #13929
+                             "struct S {};\n"
+                             "template <typename T, template<typename...> typename C = S>\n"
+                             "struct A {\n"
+                             "    using x = C<T>;\n"
+                             "};\n"
+                             "A<int> a;\n";
+        const char expected2[] = "template < typename T > "
+                                 "struct S { } ; "
+                                 "struct A<int,S> ; "
+                                 "A<int,S> a ; "
+                                 "struct A<int,S> { } ;";
+        ASSERT_EQUALS(expected2, tok(code2));
     }
 
     void template_variable_1() {

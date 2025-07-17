@@ -139,7 +139,7 @@ label.checkBtn > input {
 
 table.summaryTable td { padding: 0 5px 0 5px; }
 
-.statHeader, .severityHeader {
+.statHeader, .severityHeader, .classificationHeader {
     font-weight: bold;
 }
 
@@ -201,7 +201,7 @@ table.summaryTable td { padding: 0 5px 0 5px; }
     padding-right: 6px;
 }
 
-.id-filtered, .severity-filtered, .file-filtered, .tool-filtered, .text-filtered {
+.id-filtered, .severity-filtered, .classification-filtered, .file-filtered, .tool-filtered, .text-filtered {
     visibility: collapse;
 }
 """
@@ -278,7 +278,18 @@ HTML_HEAD = """
 
         updateFileRows();
       }
+      
+      function toggleClassification(cb) {
+        cb.parentElement.classList.toggle("unchecked", !cb.checked);
+        var elements = document.querySelectorAll(".class_" + cb.id);
 
+        for (var i = 0, len = elements.length; i < len; i++) {
+          elements[i].classList.toggle("classification-filtered", !cb.checked);
+        }
+
+        updateFileRows();
+      }
+    
       function toggleTool(cb) {
         cb.parentElement.classList.toggle("unchecked", !cb.checked);
 
@@ -340,7 +351,7 @@ HTML_HEAD = """
         var elements = document.querySelectorAll(".fileEntry");
 
         for (var i = 0, len = elements.length; i < len; i++) {
-          var visible = elements[i].querySelector(".issue:not(.id-filtered):not(.severity-filtered):not(.tool-filtered):not(.text-filtered)");
+          var visible = elements[i].querySelector(".issue:not(.id-filtered):not(.severity-filtered):not(.classification-filtered):not(.tool-filtered):not(.text-filtered)");
           elements[i].classList.toggle("file-filtered", !visible);
         }
       }
@@ -372,7 +383,7 @@ HTML_FOOTER = """
     </div>
     <div id="footer" class="footer">
       <p>
-        Created by Cppcheck %s (<a href="https://cppcheck.sourceforge.io">Sourceforge</a>, <a href="irc://irc.freenode.net/cppcheck">IRC</a>)
+        Created by Cppcheck %s (<a href="https://cppcheck.sourceforge.io">Sourceforge</a>, <a href="irc://irc.libera.chat/#cppcheck">IRC</a>)
       </p>
     </div>
     </div>
@@ -399,20 +410,27 @@ def html_escape(text):
 
 def filter_button(enabled_filters, id, function):
     enabled = enabled_filters.get(id, False)
+    if not id:
+        id = 'None'
     return '\n        <label class="checkBtn%s"><input type="checkbox" onclick="%s(this)" id="%s"%s/>%s</label>'\
           % (' disabled' if not enabled else '', function, id, 'checked' if enabled else 'disabled', id)
 
 def filter_bar(enabled):
+    severity_bar = ''.join([filter_button(enabled, severity, 'toggleSeverity') for severity in ['error', 'warning', 'portability', 'performance', 'style', 'information']]) + '\n        | '
+    classification_bar = ''.join([filter_button(enabled, _class, 'toggleClassification') for _class in ['Mandatory', 'Required', 'Advisory', 'Document', 'Disapplied', 'L1','L2','L3','']]) + '\n        | '
+    if "checked/>" not in severity_bar:
+        severity_bar = ''
+    if "checked/>" not in classification_bar:
+        classification_bar = ''
     return ''.join([
      '      <div id="filters">\n'
-    ,''.join([filter_button(enabled, severity, 'toggleSeverity') for severity in ['error', 'warning', 'portability', 'performance', 'style', 'information']])
-    ,'\n        | '
+    ,severity_bar
+    , classification_bar
     ,''.join([filter_button(enabled, tool, 'toggleTool') for tool in ['cppcheck', 'clang-tidy']])
     ,'\n        | '
     ,'\n        <label class="severityHeader">File: <input type="search" oninput="filterFile(this.value)"/></label>'
     ,'\n        <label class="severityHeader">Filter: <input type="search" oninput="filterText(this.value)"/></label>'
     ,'\n      </div>\n'])
-
 def git_blame(errors, path, file, blame_options):
     last_line= errors[-1]['line']
     if last_line == 0:
@@ -423,9 +441,8 @@ def git_blame(errors, path, file, blame_options):
     full_path = os.path.join(path, file)
     path, filename = os.path.split(full_path)
 
-    cwd = os.getcwd()
-    if path:
-        os.chdir(path)
+    if not path:
+        path = None  # make sure this is None
 
     cmd_args = ['git', 'blame', '-L %d,%d' % (first_line, last_line)]
     if '-w' in blame_options:
@@ -435,12 +452,10 @@ def git_blame(errors, path, file, blame_options):
     cmd_args = cmd_args + ['--porcelain', '--incremental', '--', filename]
 
     try:
-        result = subprocess.check_output(cmd_args)
+        result = subprocess.check_output(cmd_args, cwd=path)
         result = result.decode(locale.getpreferredencoding())
     except:
         return []
-    finally:
-        os.chdir(cwd)
 
     if result.startswith('fatal'):
         return []
@@ -471,14 +486,20 @@ def blame_lookup(blame_data, line):
     return next((data for start, end, data in blame_data if line >= start and line < end), {})
 
 
-def tr_str(td_th, line, id, cwe, severity, message, timestamp, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
+def tr_str(td_th, line, id, cwe, severity, classification, guideline, message, timestamp, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
     ret = ''
+    items = [id, cwe]
+    if severity:
+        items.append(severity)
+    if classification:
+        items.extend([classification, guideline])
     if htmlfile:
         ret += '<%s><a href="%s#line-%d">%d</a></%s>' % (td_th, htmlfile, line, line, td_th)
-        for item in (id, cwe, severity):
+        for item in items:
             ret += '<%s>%s</%s>' % (td_th, item, td_th)
     else:
-        for item in (line, id, cwe, severity):
+        items.insert(0,line)
+        for item in items:
             ret += '<%s>%s</%s>' % (td_th, item, td_th)
     if message_class:
         message_attribute = ' class="%s"' % message_class
@@ -561,6 +582,7 @@ class CppCheckHandler(XmlContentHandler):
         self.version = '1'
         self.versionCppcheck = ''
         self.timestamp = ''
+        self.report_type = False
 
     def startElement(self, name, attributes):
         if name == 'results':
@@ -574,7 +596,10 @@ class CppCheckHandler(XmlContentHandler):
     def handleVersion1(self, name, attributes):
         if name != 'error':
             return
-
+        att_class = attributes.get('classification', '')
+        att_guide = attributes.get('guideline', '')
+        if att_class and not self.report_type:
+            self.report_type = True
         self.errors.append({
             'file': attributes.get('file', ''),
             'line': int(attributes.get('line', 0)),
@@ -584,6 +609,8 @@ class CppCheckHandler(XmlContentHandler):
             }],
             'id': attributes['id'],
             'severity': attributes['severity'],
+            'classification': att_class,
+            'guideline': att_guide,
             'timestamp': self.timestamp,
             'msg': attributes['msg']
         })
@@ -592,12 +619,18 @@ class CppCheckHandler(XmlContentHandler):
         if name == 'cppcheck':
             self.versionCppcheck = attributes['version']
         if name == 'error':
+            att_class = attributes.get('classification', '')
+            att_guide = attributes.get('guideline', '')
+            if att_class and not self.report_type:
+                self.report_type = True
             error = {
                 'locations': [],
                 'file': '',
                 'line': 0,
                 'id': attributes['id'],
+                'classification': att_class,
                 'severity': attributes['severity'],
+                'guideline': att_guide,
                 'timestamp': self.timestamp,
                 'msg': attributes['msg'],
                 'verbose': attributes.get('verbose')
@@ -623,7 +656,6 @@ class CppCheckHandler(XmlContentHandler):
                 'line': line,
                 'info': attributes.get('info')
             })
-
 def main() -> None:
     # Configure all the options this little utility is using.
     parser = argparse.ArgumentParser()
@@ -669,7 +701,6 @@ def main() -> None:
         parser.error('No report directory set.')
 
     # Get the directory where source code files are located.
-    cwd = os.getcwd()
     source_dir = os.getcwd()
     if options.source_dir:
         source_dir = options.source_dir
@@ -751,6 +782,8 @@ def main() -> None:
                     if location.get('info'):
                         newError['msg'] = location['info']
                         newError['severity'] = 'information'
+                        newError['classification'] = ''
+                        newError['guideline'] = ''
                         del newError['verbose']
 
                     errors.append(newError)
@@ -832,7 +865,12 @@ def main() -> None:
         for filename, data in sorted(files.items()):
             for error in data['errors']:
                 stats.append(error['id'])  # get the stats
-                filter_enabled[error['severity']] = True
+                if contentHandler.report_type:
+                    filter_enabled[error['severity']] = False
+                    filter_enabled[error['classification']] = True
+                else:
+                    filter_enabled[error['severity']] = True
+                    filter_enabled[error['classification']] = False
                 filter_enabled['clang-tidy' if error['id'].startswith('clang-tidy-') else 'cppcheck'] = True
                 stats_count += 1
 
@@ -877,9 +915,15 @@ def main() -> None:
         output_file.write(HTML_MENU_END.replace("content", "content_index", 1))
 
         output_file.write('\n       <table class=\"summaryTable\">')
-        output_file.write(
-            '\n       %s' %
-            tr_str('th', 'Line', 'Id', 'CWE', 'Severity', 'Message', 'Timestamp', 'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
+        if contentHandler.report_type:
+            output_file.write(
+                '\n       %s' %
+                tr_str('th', 'Line', 'Id', 'CWE', '', 'Classification', 'Guideline', 'Message', 'Timestamp',
+                       'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
+        else:
+            output_file.write(
+                '\n       %s' %
+                tr_str('th', 'Line', 'Id', 'CWE', 'Severity', '', '', 'Message', 'Timestamp', 'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
 
         for filename, data in sorted(files.items()):
             file_error = filename in decode_errors or filename.endswith('*')
@@ -916,13 +960,20 @@ def main() -> None:
                     message_class = error['severity']
 
                 line = error["line"] if is_file else ""
-
+                _severity = error.get('severity', '')
+                _classification = error.get('classification', '')
+                _guideline = error.get('guideline', '')
+                if contentHandler.report_type:
+                    _severity = ''
+                    if not _classification:
+                        _classification = 'None'
+                        _guideline = 'None'
                 output_file.write(
                     '\n         %s' %
-                    tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"], error["timestamp"],
+                    tr_str('td', line, error["id"], cwe_url, _severity, _classification, _guideline, error["msg"], error["timestamp"],
                            git_blame_dict.get('author', 'Unknown'), git_blame_dict.get('author-mail', '---'),
                            git_blame_dict.get('author-time', '---'),
-                           tr_class=to_css_selector(error["id"]) + ' sev_' + error["severity"] + ' issue',
+                           tr_class=to_css_selector(error["id"]) + ' sev_' + _severity  +' class_' + _classification + ' issue',
                            message_class=message_class,
                            add_author=add_author_information,
                            htmlfile=htmlfile))
@@ -935,7 +986,6 @@ def main() -> None:
         sys.stderr.write("\nConsider changing source-encoding (for example: \"htmlreport ... --source-encoding=\"iso8859-1\"\"\n")
 
     print('Creating style.css file')
-    os.chdir(cwd)       # going back to the cwd to find style.css
     with io.open(os.path.join(options.report_dir, 'style.css'), 'w') as css_file:
         css_file.write(STYLE_FILE)
 

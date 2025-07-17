@@ -31,7 +31,6 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
-#include <QtGlobal>
 
 class ErrorItem;
 class ImportProject;
@@ -50,9 +49,8 @@ public:
 
     /**
      * @brief Get next unprocessed file
-     * @return File path
      */
-    QString getNextFile();
+    void getNextFile(const FileWithDetails*& file);
 
     void getNextFileSettings(const FileSettings*& fs);
 
@@ -60,7 +58,7 @@ public:
      * @brief Set list of files to check
      * @param files List of files to check
      */
-    void setFiles(const QStringList &files);
+    void setFiles(std::list<FileWithDetails> files);
 
     void setProject(const ImportProject &prj);
 
@@ -81,6 +79,10 @@ public:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
+    void reportMetric(const std::string &metric) override
+    {
+        (void) metric;
+    }
 
 public slots:
 
@@ -134,10 +136,11 @@ protected:
      * @brief List of files to check
      *
      */
-    QStringList mFiles;
+    std::list<FileWithDetails> mFiles;
+    std::list<FileWithDetails>::const_iterator mItNextFile{mFiles.cbegin()};
 
     std::list<FileSettings> mFileSettings;
-    std::list<FileSettings>::const_iterator mItNextFileSettings;
+    std::list<FileSettings>::const_iterator mItNextFileSettings{mFileSettings.cbegin()};
 
     /**
      * @brief Max progress

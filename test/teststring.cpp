@@ -24,7 +24,6 @@
 #include "fixture.h"
 
 #include <string>
-#include <vector>
 
 class TestString : public TestFixture {
 public:

@@ -23,6 +23,7 @@
 #include "platforms.h"
 
 #include <cstdint>
+#include <list>
 
 #include <QFileDialog>
 #include <QMainWindow>
@@ -45,6 +46,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class Settings;
 struct Suppressions;
+class FileWithDetails;
 namespace Ui {
     class MainWindow;
 }
@@ -422,6 +424,9 @@ private:
      * @param project Full path of the project file to remove.
      */
     void removeProjectMRU(const QString &project);
+
+    /** @brief Generate list of detailed files from list of filenames. */
+    std::list<FileWithDetails> enrichFilesForAnalysis(const QStringList& fileNames, const Settings& settings) const;
 
     /** @brief Program settings */
     QSettings *mSettings;

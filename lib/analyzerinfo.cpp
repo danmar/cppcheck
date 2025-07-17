@@ -24,6 +24,7 @@
 #include "utils.h"
 
 #include <cstring>
+#include <exception>
 #include <map>
 #include <sstream>
 
@@ -83,20 +84,25 @@ void AnalyzerInformation::close()
     }
 }
 
-static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, std::list<ErrorMessage> &errors)
+bool AnalyzerInformation::skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors)
 {
-    tinyxml2::XMLDocument doc;
-    const tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
-    if (error != tinyxml2::XML_SUCCESS)
-        return false;
-
-    const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
+    const tinyxml2::XMLElement * const rootNode = analyzerInfoDoc.FirstChildElement();
     if (rootNode == nullptr)
         return false;
 
     const char *attr = rootNode->Attribute("hash");
     if (!attr || attr != std::to_string(hash))
         return false;
+
+    // Check for invalid license error or internal error, in which case we should retry analysis
+    for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+        if (std::strcmp(e->Name(), "error") == 0 &&
+            (e->Attribute("id", "premium-invalidLicense") ||
+             e->Attribute("id", "premium-internalError") ||
+             e->Attribute("id", "internalError")
+            ))
+            return false;
+    }
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "error") == 0)
@@ -147,7 +153,9 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
 
     mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
 
-    if (skipAnalysis(mAnalyzerInfoFile, hash, errors))
+    tinyxml2::XMLDocument analyzerInfoDoc;
+    const tinyxml2::XMLError xmlError = analyzerInfoDoc.LoadFile(mAnalyzerInfoFile.c_str());
+    if (xmlError == tinyxml2::XML_SUCCESS && skipAnalysis(analyzerInfoDoc, hash, errors))
         return false;
 
     mOutputStream.open(mAnalyzerInfoFile);

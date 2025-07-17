@@ -70,6 +70,7 @@ private:
         TEST_CASE(structmember25);
         TEST_CASE(structmember26); // #13345
         TEST_CASE(structmember27); // #13367
+        TEST_CASE(structmember28);
         TEST_CASE(structmember_macro);
         TEST_CASE(structmember_template_argument); // #13887 - do not report that member used in template argument is unused
         TEST_CASE(classmember);
@@ -1996,6 +1997,14 @@ private:
                                "}\n");
         ASSERT_EQUALS("", // don't crash
                       errout_str());
+    }
+
+    void structmember28() {
+        checkStructMemberUsage("struct S {\n"
+                               "    unsigned int a : 16;\n"
+                               "    unsigned int : 16;\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2:18]: (style) struct member 'S::a' is never used. [unusedStructMember]\n", errout_str());
     }
 
     void structmember_macro() {

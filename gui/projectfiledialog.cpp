@@ -59,13 +59,14 @@
 #include <QSpinBox>
 #include <QVariant>
 
-static constexpr char ADDON_MISRA[]   = "misra";
-static constexpr char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
-static constexpr char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
-static constexpr char CODING_STANDARD_MISRA_CPP_2023[] = "misra-cpp-2023";
-static constexpr char CODING_STANDARD_CERT_C[] = "cert-c-2016";
-static constexpr char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
-static constexpr char CODING_STANDARD_AUTOSAR[] = "autosar";
+const char ADDON_MISRA[]   = "misra";
+const char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
+const char CODING_STANDARD_MISRA_C_2025[] = "misra-c-2025";
+const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
+const char CODING_STANDARD_MISRA_CPP_2023[] = "misra-cpp-2023";
+const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
+const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
+const char CODING_STANDARD_AUTOSAR[] = "autosar";
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -396,7 +397,14 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     const QString &misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
     mUI->mEditMisraFile->setText(misraFile);
     mUI->mMisraVersion->setVisible(mPremium);
-    mUI->mMisraVersion->setCurrentIndex(projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_C_2023));
+    if (projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_C_2023))
+        mUI->mMisraVersion->setCurrentIndex(1);
+    else if (projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_C_2025))
+        mUI->mMisraVersion->setCurrentIndex(2);
+    else if (projectFile->getAddons().contains(ADDON_MISRA))
+        mUI->mMisraVersion->setCurrentIndex(0);
+    else
+        mUI->mMisraVersion->setCurrentIndex(-1);
     if (mPremium) {
         mUI->mLabelMisraFile->setVisible(false);
         mUI->mEditMisraFile->setVisible(false);
@@ -519,6 +527,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_CERT_CPP;
     if (mPremium && mUI->mMisraVersion->currentIndex() == 1)
         codingStandards << CODING_STANDARD_MISRA_C_2023;
+    if (mPremium && mUI->mMisraVersion->currentIndex() == 2)
+        codingStandards << CODING_STANDARD_MISRA_C_2025;
     if (mUI->mMisraCpp->isChecked() && mUI->mMisraCppVersion->currentIndex() == 0)
         codingStandards << CODING_STANDARD_MISRA_CPP_2008;
     if (mUI->mMisraCpp->isChecked() && mUI->mMisraCppVersion->currentIndex() == 1)

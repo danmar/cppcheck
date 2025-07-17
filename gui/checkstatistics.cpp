@@ -30,10 +30,7 @@ CheckStatistics::CheckStatistics(QObject *parent)
 
 static void addItem(QMap<QString,unsigned> &m, const QString &key)
 {
-    if (m.contains(key))
-        m[key]++;
-    else
-        m[key] = 0;
+    m[key]++;
 }
 
 void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)

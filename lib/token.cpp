@@ -23,7 +23,6 @@
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
-#include "simplecpp.h"
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -47,6 +46,8 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
+
+#include <simplecpp.h>
 
 namespace {
     struct less {
@@ -784,7 +785,7 @@ nonneg int Token::getStrSize(const Token *tok, const Settings &settings)
     if (tok->valueType()) {
         ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        sizeofType = ValueFlow::getSizeOf(vt, settings);
+        sizeofType = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::ExactOrZero);
     }
     return getStrArraySize(tok) * sizeofType;
 }
@@ -1655,7 +1656,7 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
     }
 }
 
-void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
+void Token::printAst(bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
 {
     if (!xml)
         out << "\n\n##AST" << std::endl;
@@ -1672,10 +1673,8 @@ void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fil
                     << "\" column=\"" << tok->column() << "\">" << std::endl;
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
-            } else if (verbose)
+            } else
                 out << "[" << fileNames[tok->fileIndex()] << ":" << tok->linenr() << "]" << std::endl << tok->astStringVerbose() << std::endl;
-            else
-                out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
                 tok = tok->link();
         }

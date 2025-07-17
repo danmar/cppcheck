@@ -20,6 +20,7 @@
 
 #include "checkthread.h"
 #include "common.h"
+#include "filesettings.h"
 #include "resultsview.h"
 #include "settings.h"
 
@@ -38,9 +39,7 @@
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent)
-{
-    setThreadCount(1);
-}
+{}
 
 ThreadHandler::~ThreadHandler()
 {
@@ -54,13 +53,13 @@ void ThreadHandler::clearFiles()
     mAnalyseWholeProgram = false;
     mCtuInfo.clear();
     mAddonsAndTools.clear();
-    mSuppressions.clear();
+    mSuppressionsUI.clear();
 }
 
-void ThreadHandler::setFiles(const QStringList &files)
+void ThreadHandler::setFiles(std::list<FileWithDetails> files)
 {
-    mResults.setFiles(files);
     mLastFiles = files;
+    mResults.setFiles(std::move(files));
 }
 
 void ThreadHandler::setProject(const ImportProject &prj)
@@ -76,11 +75,19 @@ void ThreadHandler::setCheckFiles(bool all)
     }
 }
 
-void ThreadHandler::setCheckFiles(const QStringList& files)
+void ThreadHandler::setCheckFiles(std::list<FileWithDetails> files)
 {
     if (mRunningThreadCount == 0) {
-        mResults.setFiles(files);
+        mResults.setFiles(std::move(files));
     }
+}
+
+void ThreadHandler::setupCheckThread(CheckThread &thread) const
+{
+    thread.setAddonsAndTools(mCheckAddonsAndTools);
+    thread.setSuppressions(mSuppressionsUI);
+    thread.setClangIncludePaths(mClangIncludePaths);
+    thread.setSettings(mCheckSettings, mCheckSuppressions);
 }
 
 void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppressions>& supprs)
@@ -91,25 +98,25 @@ void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppre
         return;
     }
 
-    setThreadCount(settings.jobs);
+    mCheckSettings = settings;
+    mCheckSuppressions = supprs;
+
+    createThreads(mCheckSettings.jobs);
 
     mRunningThreadCount = mThreads.size();
     mRunningThreadCount = std::min(mResults.getFileCount(), mRunningThreadCount);
 
-    QStringList addonsAndTools = mAddonsAndTools;
-    for (const std::string& addon: settings.addons) {
+    mCheckAddonsAndTools = mAddonsAndTools;
+    for (const std::string& addon: mCheckSettings.addons) {
         QString s = QString::fromStdString(addon);
-        if (!addonsAndTools.contains(s))
-            addonsAndTools << s;
+        if (!mCheckAddonsAndTools.contains(s))
+            mCheckAddonsAndTools << s;
     }
 
     mCtuInfo.clear();
 
     for (int i = 0; i < mRunningThreadCount; i++) {
-        mThreads[i]->setAddonsAndTools(addonsAndTools);
-        mThreads[i]->setSuppressions(mSuppressions);
-        mThreads[i]->setClangIncludePaths(mClangIncludePaths);
-        mThreads[i]->setSettings(settings, supprs);
+        setupCheckThread(*mThreads[i]);
         mThreads[i]->start();
     }
 
@@ -123,14 +130,12 @@ void ThreadHandler::check(const Settings &settings, const std::shared_ptr<Suppre
 
 bool ThreadHandler::isChecking() const
 {
-    return mRunningThreadCount > 0;
+    return mRunningThreadCount > 0 || mAnalyseWholeProgram;
 }
 
-void ThreadHandler::setThreadCount(const int count)
+void ThreadHandler::createThreads(const int count)
 {
-    if (mRunningThreadCount > 0 ||
-        count == mThreads.size() ||
-        count <= 0) {
+    if (mRunningThreadCount > 0 || count <= 0) {
         return;
     }
 
@@ -140,9 +145,9 @@ void ThreadHandler::setThreadCount(const int count)
     for (int i = mThreads.size(); i < count; i++) {
         mThreads << new CheckThread(mResults);
         connect(mThreads.last(), &CheckThread::done,
-                this, &ThreadHandler::threadDone);
+                this, &ThreadHandler::threadDone, Qt::QueuedConnection);
         connect(mThreads.last(), &CheckThread::fileChecked,
-                &mResults, &ThreadResult::fileChecked);
+                &mResults, &ThreadResult::fileChecked, Qt::QueuedConnection);
     }
 }
 
@@ -151,7 +156,7 @@ void ThreadHandler::removeThreads()
 {
     for (CheckThread* thread : mThreads) {
         if (thread->isRunning()) {
-            thread->terminate();
+            thread->stop();
             thread->wait();
         }
         disconnect(thread, &CheckThread::done,
@@ -162,19 +167,23 @@ void ThreadHandler::removeThreads()
     }
 
     mThreads.clear();
-    mAnalyseWholeProgram = false;
 }
 
 void ThreadHandler::threadDone()
 {
-    if (mRunningThreadCount == 1 && mAnalyseWholeProgram) {
+    mRunningThreadCount--;
+
+    // TODO: also run with projects?
+    if (mRunningThreadCount == 0 && mAnalyseWholeProgram) {
+        createThreads(1);
+        mRunningThreadCount = 1;
+        setupCheckThread(*mThreads[0]);
         mThreads[0]->analyseWholeProgram(mLastFiles, mCtuInfo);
         mAnalyseWholeProgram = false;
         mCtuInfo.clear();
         return;
     }
 
-    mRunningThreadCount--;
     if (mRunningThreadCount == 0) {
         emit done();
 
@@ -185,6 +194,9 @@ void ThreadHandler::threadDone()
             mLastCheckTime = mCheckStartTime;
             mCheckStartTime = QDateTime();
         }
+
+        mCheckAddonsAndTools.clear();
+        mCheckSuppressions.reset();
     }
 }
 
@@ -215,7 +227,7 @@ void ThreadHandler::initialize(const ResultsView *view)
 
 void ThreadHandler::loadSettings(const QSettings &settings)
 {
-    setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
+    createThreads(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }
 
 void ThreadHandler::saveSettings(QSettings &settings) const
@@ -225,7 +237,7 @@ void ThreadHandler::saveSettings(QSettings &settings) const
 
 bool ThreadHandler::hasPreviousFiles() const
 {
-    return !mLastFiles.isEmpty();
+    return !mLastFiles.empty();
 }
 
 int ThreadHandler::getPreviousFilesCount() const
@@ -238,7 +250,7 @@ int ThreadHandler::getPreviousScanDuration() const
     return mScanDuration;
 }
 
-QStringList ThreadHandler::getReCheckFiles(bool all) const
+std::list<FileWithDetails> ThreadHandler::getReCheckFiles(bool all) const
 {
     if (mLastCheckTime.isNull() || all)
         return mLastFiles;
@@ -246,11 +258,10 @@ QStringList ThreadHandler::getReCheckFiles(bool all) const
     std::set<QString> modified;
     std::set<QString> unmodified;
 
-    QStringList files;
-    for (int i = 0; i < mLastFiles.size(); ++i) {
-        if (needsReCheck(mLastFiles[i], modified, unmodified))
-            files.push_back(mLastFiles[i]);
-    }
+    std::list<FileWithDetails> files;
+    std::copy_if(mLastFiles.cbegin(), mLastFiles.cend(), std::back_inserter(files), [&](const FileWithDetails &f) {
+        return needsReCheck(QString::fromStdString(f.path()), modified, unmodified);
+    });
     return files;
 }
 

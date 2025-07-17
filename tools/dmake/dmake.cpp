@@ -89,6 +89,8 @@ static void getDeps(std::string filename, std::vector<std::string> &depfiles)
          * Files are searched according to the following priority:
          * [test, tools] -> cli -> lib -> externals
          */
+        if (startsWith(filename, "frontend/"))
+            getDeps("lib" + filename.substr(filename.find('/')), depfiles);
         if (startsWith(filename, "cli/"))
             getDeps("lib" + filename.substr(filename.find('/')), depfiles);
         else if (startsWith(filename, "test/"))
@@ -168,7 +170,7 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
     std::list<FileWithDetails> filelist;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
-    const PathMatch matcher(masks);
+    const PathMatch matcher(masks, Path::getCurrentPath());
     std::string err = FileLister::addFiles(filelist, path, extra, recursive, matcher);
     if (!err.empty())
         return err;
@@ -432,6 +434,13 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    std::vector<std::string> frontendfiles;
+    err = getCppFiles(frontendfiles, "frontend/", false);
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return EXIT_FAILURE;
+    }
+
     std::vector<std::string> clifiles;
     err = getCppFiles(clifiles, "cli/", false);
     if (!err.empty()) {
@@ -453,7 +462,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (libfiles.empty() && clifiles.empty() && testfiles.empty()) {
+    if (libfiles.empty() && frontendfiles.empty() && clifiles.empty() && testfiles.empty()) {
         std::cerr << "No files found. Are you in the correct directory?" << std::endl;
         return EXIT_FAILURE;
     }
@@ -481,6 +490,13 @@ int main(int argc, char **argv)
     libfiles_h.emplace("vf_analyze.h");
     libfiles_h.emplace("xml.h");
 
+    std::vector<std::string> frontendfiles_h;
+    for (const std::string &frontendfile : frontendfiles) {
+        std::string fname(frontendfile.substr(9));
+        fname.erase(fname.find(".cpp"));
+        frontendfiles_h.emplace_back(fname + ".h");
+    }
+
     std::vector<std::string> clifiles_h;
     for (const std::string &clifile : clifiles) {
         std::string fname(clifile.substr(4));
@@ -504,9 +520,17 @@ int main(int argc, char **argv)
             const std::string c = clifile.substr(4);
             outstr += make_vcxproj_cl_entry(c, c == "executor.cpp" ? Precompile : Compile);
         }
+        for (const std::string &frontendfile: frontendfiles) {
+            const std::string c = "..\\frontend\\" + frontendfile.substr(9);
+            outstr += make_vcxproj_cl_entry(c, Compile);
+        }
     }, [&](std::string &outstr){
         for (const std::string &clifile_h: clifiles_h) {
             outstr += make_vcxproj_cl_entry(clifile_h, Include);
+        }
+        for (const std::string &frontendfile_h: frontendfiles_h) {
+            const std::string h = "..\\frontend\\" + frontendfile_h;
+            outstr += make_vcxproj_cl_entry(h, Include);
         }
     });
 
@@ -535,6 +559,11 @@ int main(int argc, char **argv)
             outstr += make_vcxproj_cl_entry(c, Compile);
         }
 
+        for (const std::string &frontendfile: frontendfiles) {
+            const std::string c = "..\\frontend\\" + frontendfile.substr(9);
+            outstr += make_vcxproj_cl_entry(c, Compile);
+        }
+
         for (const std::string &testfile: testfiles) {
             const std::string t = testfile.substr(5);
             outstr += make_vcxproj_cl_entry(t, t == "fixture.cpp" ? Precompile : Compile);
@@ -543,6 +572,11 @@ int main(int argc, char **argv)
         for (const std::string &clifile_h: clifiles_h) {
             const std::string c = R"(..\cli\)" + clifile_h;
             outstr += make_vcxproj_cl_entry(c, Include);
+        }
+
+        for (const std::string &frontendfile_h: frontendfiles_h) {
+            const std::string h = "..\\frontend\\" + frontendfile_h;
+            outstr += make_vcxproj_cl_entry(h, Include);
         }
 
         for (const std::string &testfile_h: testfiles_h) {
@@ -718,8 +752,9 @@ int main(int argc, char **argv)
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
     makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
-    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(fout, "INCLUDE_FOR_FE", "-Ilib");
+    makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Ifrontend -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Ifrontend -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
 
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
@@ -730,12 +765,13 @@ int main(int argc, char **argv)
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =      " << objfiles(libfiles_prio) << "\n\n";
     fout << "EXTOBJ =      " << objfiles(extfiles) << "\n\n";
+    fout << "FEOBJ =       " << objfiles(frontendfiles) << "\n\n";
     fout << "CLIOBJ =      " << objfiles(clifiles) << "\n\n";
     fout << "TESTOBJ =     " << objfiles(testfiles) << "\n\n";
 
     fout << ".PHONY: run-dmake tags\n\n";
     fout << "\n###### Targets\n\n";
-    fout << "cppcheck: $(EXTOBJ) $(LIBOBJ) $(CLIOBJ)\n";
+    fout << "cppcheck: $(EXTOBJ) $(LIBOBJ) $(FEOBJ) $(CLIOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
     std::string testrunner_clifiles_o;
@@ -746,7 +782,7 @@ int main(int argc, char **argv)
         const std::string o = clifile.substr(0, clifile.length()-3) + 'o';
         testrunner_clifiles_o += o;
     }
-    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ)" << testrunner_clifiles_o << "\n";
+    fout << "testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) $(FEOBJ)" << testrunner_clifiles_o << "\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
@@ -835,6 +871,7 @@ int main(int argc, char **argv)
     fout << "\n###### Build\n\n";
 
     compilefiles(fout, libfiles_prio, "${INCLUDE_FOR_LIB}");
+    compilefiles(fout, frontendfiles, "${INCLUDE_FOR_FE}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, extfiles, "");

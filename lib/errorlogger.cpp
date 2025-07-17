@@ -128,17 +128,17 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
     : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
-    for (const ErrorPathItem& e: errorPath) {
+    for (ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
         // --errorlist can provide null values here
         if (!tok)
             continue;
 
-        const std::string& path_info = e.second;
+        std::string& path_info = e.second;
 
         std::string info;
         if (startsWith(path_info,"$symbol:") && path_info.find('\n') < path_info.size()) {
@@ -147,7 +147,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
             info = replaceStr(path_info.substr(pos+1), "$symbol", symbolName);
         }
         else {
-            info = path_info;
+            info = std::move(path_info);
         }
 
         callStack.emplace_back(tok, std::move(info), tokenList);
@@ -508,7 +508,7 @@ std::string ErrorMessage::toXML() const
 
     for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", it->getfile().c_str());
+        printer.PushAttribute("file", it->getfile(false).c_str());
         printer.PushAttribute("line", std::max(it->line,0));
         printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
@@ -701,13 +701,20 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLoc
     return str;
 }
 
+ErrorMessage::FileLocation::FileLocation(const std::string &file, int line, unsigned int column)
+    : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(Path::simplifyPath(file))
+{}
+
+ErrorMessage::FileLocation::FileLocation(const std::string &file, std::string info, int line, unsigned int column)
+    : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(Path::simplifyPath(file)), mInfo(std::move(info))
+{}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok)))
 {}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, std::string info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(std::move(info))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok))), mInfo(std::move(info))
 {}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
@@ -938,39 +945,60 @@ std::string getClassification(const std::string &guideline, ReportType reportTyp
         return getClassification(checkers::certCInfo, guideline);
     case ReportType::certCpp:
         return getClassification(checkers::certCppInfo, guideline);
-    case ReportType::misraC:
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
     {
-        auto components = splitString(guideline, '.');
+        const bool isDirective = guideline.rfind("Dir ", 0) == 0;
+
+        const std::size_t offset = isDirective ? 4 : 0;
+        auto components = splitString(guideline.substr(offset), '.');
         if (components.size() != 2)
             return "";
 
         const int a = std::stoi(components[0]);
         const int b = std::stoi(components[1]);
 
-        const std::vector<checkers::MisraInfo> &info = checkers::misraC2012Rules;
-        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::MisraInfo &i) {
+        const std::vector<checkers::MisraInfo> *info = nullptr;
+        switch (reportType) {
+        case ReportType::misraC2012:
+            info = isDirective ? &checkers::misraC2012Directives : &checkers::misraC2012Rules;
+            break;
+        case ReportType::misraC2023:
+            info = isDirective ? &checkers::misraC2023Directives : &checkers::misraC2023Rules;
+            break;
+        case ReportType::misraC2025:
+            info = isDirective ? &checkers::misraC2025Directives : &checkers::misraC2025Rules;
+            break;
+        default:
+            cppcheck::unreachable();
+        }
+
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) {
                 return i.a == a && i.b == b;
             });
 
-        if (it == info.cend())
-            return "";
-
-        return it->str;
+        return it == info->cend() ? "" : it->str;
     }
     case ReportType::misraCpp2008:
     case ReportType::misraCpp2023:
     {
-        char delim;
         const std::vector<checkers::MisraCppInfo> *info;
+        std::vector<std::string> components;
+
         if (reportType == ReportType::misraCpp2008) {
-            delim = '-';
             info = &checkers::misraCpp2008Rules;
+            components = splitString(guideline, '-');
         } else {
-            delim = '.';
-            info = &checkers::misraCpp2023Rules;
+            if (guideline.rfind("Dir ", 0) == 0) {
+                components = splitString(guideline.substr(4), '.');
+                info = &checkers::misraCpp2023Directives;
+            } else {
+                components = splitString(guideline, '.');
+                info = &checkers::misraCpp2023Rules;
+            }
         }
 
-        auto components = splitString(guideline, delim);
         if (components.size() != 3)
             return "";
 
@@ -1015,24 +1043,29 @@ std::string getGuideline(const std::string &errId, ReportType reportType,
                            guideline.begin(), static_cast<int (*)(int)>(std::toupper));
         }
         break;
-    case ReportType::misraC:
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
         if (errId.rfind("misra-c20", 0) == 0 || errId.rfind("premium-misra-c-20", 0) == 0)
             guideline = errId.substr(errId.rfind('-') + 1);
         break;
     case ReportType::misraCpp2008:
-        if (errId.rfind("misra-cpp-2008-", 0) == 0)
-            guideline = errId.substr(15);
+        if (errId.rfind("premium-misra-cpp-2008", 0) == 0)
+            guideline = errId.substr(23);
         break;
     case ReportType::misraCpp2023:
-        if (errId.rfind("misra-cpp-2023-", 0) == 0)
-            guideline = errId.substr(15);
+        if (errId.rfind("premium-misra-cpp-2023", 0) == 0)
+            guideline = errId.substr(errId.rfind('-') + 1);
         break;
     default:
         break;
     }
 
-    if (!guideline.empty())
+    if (!guideline.empty()) {
+        if (errId.find("-dir-") != std::string::npos)
+            guideline = "Dir " + guideline;
         return guideline;
+    }
 
     auto it = guidelineMapping.find(errId);
 
@@ -1067,7 +1100,9 @@ std::map<std::string, std::string> createGuidelineMapping(ReportType reportType)
         idMapping1 = &checkers::idMappingCertC;
         ext1 = "-C";
         break;
-    case ReportType::misraC:
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
         idMapping1 = &checkers::idMappingMisraC;
         break;
     case ReportType::misraCpp2008:

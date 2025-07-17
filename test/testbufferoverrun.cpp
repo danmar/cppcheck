@@ -29,7 +29,6 @@
 #include <cstddef>
 #include <list>
 #include <string>
-#include <vector>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -5245,7 +5244,7 @@ private:
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckBufferOverrun>();
-        fileInfo.push_back(c.getFileInfo(tokenizer, settings0));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings0, ""));
         c.analyseWholeProgram(*ctu, fileInfo, settings0, *this); // TODO: check result
         while (!fileInfo.empty()) {
             delete fileInfo.back();

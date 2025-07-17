@@ -63,7 +63,10 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     QSettings settings;
     mTempApplications->copy(list);
 
+    int maxjobs = QThread::idealThreadCount();
+
     mUI->mJobs->setText(settings.value(SETTINGS_CHECK_THREADS, 1).toString());
+    mUI->mJobs->setValidator(new QIntValidator(1, maxjobs, this));
     mUI->mForce->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FORCE, false).toBool()));
     mUI->mShowFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
     mUI->mShowNoErrorsMessage->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
@@ -119,11 +122,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mListWidget->setSortingEnabled(false);
     populateApplicationList();
 
-    const int count = QThread::idealThreadCount();
-    if (count != -1)
-        mUI->mLblIdealThreads->setText(QString::number(count));
-    else
-        mUI->mLblIdealThreads->setText(tr("N/A"));
+    mUI->mLblMaxThreads->setText(QString::number(maxjobs));
 
     loadSettings();
     initTranslationsList();
@@ -179,13 +178,9 @@ void SettingsDialog::saveSettings() const
 
 void SettingsDialog::saveSettingValues() const
 {
-    int jobs = mUI->mJobs->text().toInt();
-    if (jobs <= 0) {
-        jobs = 1;
-    }
-
     QSettings settings;
-    settings.setValue(SETTINGS_CHECK_THREADS, jobs);
+    if (mUI->mJobs->hasAcceptableInput())
+        settings.setValue(SETTINGS_CHECK_THREADS, mUI->mJobs->text().toInt());
     saveCheckboxValue(&settings, mUI->mForce, SETTINGS_CHECK_FORCE);
     saveCheckboxValue(&settings, mUI->mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
     saveCheckboxValue(&settings, mUI->mSaveFullPath, SETTINGS_SAVE_FULL_PATH);

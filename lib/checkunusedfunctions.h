@@ -57,7 +57,7 @@ public:
     static void analyseWholeProgram(const Settings &settings, ErrorLogger& errorLogger, const std::string &buildDir);
 
     static void getErrorMessages(ErrorLogger &errorLogger) {
-        unusedFunctionError(errorLogger, "", 0, 0, "funcName");
+        unusedFunctionError(errorLogger, "", 0, 0, 0, "funcName");
     }
 
     // Return true if an error is reported.
@@ -67,13 +67,14 @@ public:
 
 private:
     static void unusedFunctionError(ErrorLogger& errorLogger,
-                                    const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
+                                    const std::string &filename, nonneg int fileIndex, nonneg int lineNumber, nonneg int column,
                                     const std::string &funcname);
 
     struct CPPCHECKLIB FunctionUsage {
         std::string filename;
-        unsigned int lineNumber{};
-        unsigned int fileIndex{};
+        nonneg int lineNumber{};
+        nonneg int column{};
+        nonneg int fileIndex{};
         bool usedSameFile{};
         bool usedOtherFile{};
         bool isC{};
@@ -87,7 +88,8 @@ private:
         explicit FunctionDecl(const Function *f);
         std::string functionName;
         nonneg int fileIndex;
-        unsigned int lineNumber;
+        nonneg int lineNumber;
+        nonneg int column;
     };
     std::list<FunctionDecl> mFunctionDecl;
     std::set<std::string> mFunctionCalls;

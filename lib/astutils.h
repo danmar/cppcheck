@@ -25,7 +25,6 @@
 #include <cstdint>
 #include <functional>
 #include <list>
-#include <stack>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -64,29 +63,29 @@ void visitAstNodes(T *ast, const TFunc &visitor)
 
     // the size of 8 was determined in tests to be sufficient to avoid excess allocations. also add 1 as a buffer.
     // we might need to increase that value in the future.
-    std::stack<T *, SmallVector<T *, 8 + 1>> tokens;
+    SmallVector<T *, 8 + 1> tokens;
     T *tok = ast;
     do {
         const ChildrenToVisit c = visitor(tok);
-
         if (c == ChildrenToVisit::done)
             break;
+
         if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
             T *t2 = tok->astOperand2();
             if (t2)
-                tokens.push(t2);
+                tokens.push_back(t2);
         }
         if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
             T *t1 = tok->astOperand1();
             if (t1)
-                tokens.push(t1);
+                tokens.push_back(t1);
         }
 
         if (tokens.empty())
             break;
 
-        tok = tokens.top();
-        tokens.pop();
+        tok = tokens.back();
+        tokens.pop_back();
     } while (true);
 }
 

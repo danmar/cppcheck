@@ -24,18 +24,19 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <time.h>
 #include <stdbool.h>
-#include <stdint.h>
 #ifndef __STDC_NO_THREADS__
 #include <threads.h>
 #endif
 #include <inttypes.h>
 #include <float.h>
 #include <stdarg.h>
-#include <sys/types.h>
 #include <assert.h>
 #include <alloca.h>
 #include <locale.h>
 #include <signal.h>
+#include <complex.h>
+#include <math.h>
+#include <stddef.h>
 
 size_t invalidFunctionArgStr_wcslen(void)
 {

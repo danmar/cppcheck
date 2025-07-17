@@ -31,9 +31,11 @@ enum class ReportType : std::uint8_t {
     autosar = 1,
     certC = 2,
     certCpp = 3,
-    misraC = 4,
+    misraC2012 = 4,
     misraCpp2008 = 5,
     misraCpp2023 = 6,
+    misraC2023 = 7,
+    misraC2025 = 8,
 };
 
 namespace checkers {
@@ -61,10 +63,13 @@ namespace checkers {
 
     extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Directives;
     extern CPPCHECKLIB const std::vector<MisraInfo> misraC2012Rules;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2023Directives;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2023Rules;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2025Directives;
+    extern CPPCHECKLIB const std::vector<MisraInfo> misraC2025Rules;
     extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2008Rules;
+    extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2023Directives;
     extern CPPCHECKLIB const std::vector<MisraCppInfo> misraCpp2023Rules;
-
-    extern CPPCHECKLIB const std::map<std::string, std::string> misraRuleSeverity;
 
     struct CPPCHECKLIB IdMapping {
         const char* guideline;

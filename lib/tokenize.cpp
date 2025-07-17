@@ -2257,6 +2257,9 @@ void Tokenizer::simplifyTypedefCpp()
                             if (!tok2->next())
                                 syntaxError(tok2);
 
+                            if (Token::Match(tok2, "] ; %name% = {") && tok2->next()->isSplittedVarDeclEq())
+                                tok2->deleteNext(2);
+
                             if (tok2->str() == "=") {
                                 if (tok2->strAt(1) == "{")
                                     tok2 = tok2->linkAt(1)->next();
@@ -5938,7 +5941,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 }
 //---------------------------------------------------------------------------
 
-// TODO: do not depend on --verbose
 void Tokenizer::printDebugOutput(std::ostream &out) const
 {
     if (!list.front())
@@ -5959,14 +5961,14 @@ void Tokenizer::printDebugOutput(std::ostream &out) const
     if (mSymbolDatabase) {
         if (xml)
             mSymbolDatabase->printXml(out);
-        else if (mSettings.debugsymdb || (mSettings.debugnormal && mSettings.verbose))
+        else if (mSettings.debugsymdb)
             mSymbolDatabase->printOut("Symbol database");
     }
 
-    if (mSettings.debugast || (mSettings.debugnormal && mSettings.verbose))
-        list.front()->printAst(mSettings.verbose, xml, list.getFiles(), out);
+    if (mSettings.debugast)
+        list.front()->printAst(xml, list.getFiles(), out);
 
-    if (mSettings.debugnormal || mSettings.debugvalueflow)
+    if (mSettings.debugvalueflow)
         list.front()->printValueFlow(list.getFiles(), xml, out);
 
     if (xml)
@@ -6100,6 +6102,8 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeFallthrough=\"true\"";
         if (tok->isInitBracket())
             outs += " isInitBracket=\"true\"";
+        if (tok->isAnonymous())
+            outs += " isAnonymous=\"true\"";
         if (tok->hasAttributeAlignas()) {
             const std::vector<std::string>& a = tok->getAttributeAlignas();
             outs += " alignas=\"" + ErrorLogger::toxml(a[0]) + "\"";
@@ -6199,8 +6203,23 @@ void Tokenizer::dump(std::ostream &out) const
             outs += "\" ";
             outs += "std-string-like=\"";
             outs += bool_to_string(c->stdStringLike);
-            outs += "\"/>";
-            outs += '\n';
+            outs += "\"";
+            if (c->functions.empty()) {
+                outs += "/>\n";
+                continue;
+            }
+            outs += ">\n";
+            for (const auto& fp: c->functions) {
+                std::string action;
+                std::string yield;
+                if (fp.second.action != Library::Container::Action::NO_ACTION)
+                    action = " action=\"" + Library::Container::toString(fp.second.action) + "\"";
+                if (fp.second.yield != Library::Container::Yield::NO_YIELD)
+                    yield = " yield=\"" + Library::Container::toString(fp.second.yield) + "\"";
+                if (!action.empty() || !yield.empty())
+                    outs += "      <f name=\"" + fp.first + "\"" + action + yield + "/>\n";
+            }
+            outs += "    </container>\n";
         }
         outs += "  </containers>";
         outs += '\n';
@@ -7721,8 +7740,11 @@ void Tokenizer::simplifyInitVar()
             continue;
 
         if (Token::Match(tok, "%type% *|&| %name% (|{")) {
+            bool isNamespace = Token::simpleMatch(tok, "namespace");
             while (tok && !Token::Match(tok, "(|{"))
                 tok = tok->next();
+            if (isNamespace)
+                continue;
             if (tok)
                 tok->isInitBracket(true);
             /* tok = initVar(tok);
@@ -8033,7 +8055,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             while (Token::Match(tok2, "%type%|static|const|extern") && tok2->str() != "operator") {
                 tok2 = tok2->previous();
             }
-            if (tok2 && !Token::Match(tok2, "[;,{]")) {
+            if (tok2 && !Token::Match(tok2, "[;{]")) {
                 // Not a variable declaration
             } else {
                 tok->deleteThis();
@@ -8571,7 +8593,7 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok->linkAt(1)->previous());
 
         // UNKNOWN_MACRO(return)
-        else if (!tok->isKeyword() && Token::Match(tok, "%name% throw|return"))
+        else if (!tok->isKeyword() && (Token::Match(tok, "%name% return") || (isCPP() && Token::Match(tok, "%name% throw"))))
             unknownMacroError(tok);
 
         // Assign/increment/decrement literal
@@ -8814,7 +8836,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "[;([{] %comp%|%oror%|%or%|%|/"))
             syntaxError(tok);
-        if (Token::Match(tok, "%cop%|= ]") && !(cpp && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
+        if (Token::Match(tok, "%cop%|= ]") && !Token::simpleMatch(tok, "*") && !(cpp && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(cpp && Token::simpleMatch(tok->previous(), "operator")))
             syntaxError(tok);
@@ -9964,12 +9986,8 @@ void Tokenizer::simplifyAt()
 // Simplify bitfields
 void Tokenizer::simplifyBitfields()
 {
-    bool goback = false;
+    std::size_t anonymousBitfieldCounter = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (goback) {
-            goback = false;
-            tok = tok->previous();
-        }
         Token *last = nullptr;
 
         if (Token::simpleMatch(tok, "for ("))
@@ -9990,6 +10008,14 @@ void Tokenizer::simplifyBitfields()
             }
         }
 
+        const auto tooLargeError = [this](const Token *tok) {
+            const MathLib::bigint max = std::numeric_limits<short>::max();
+            reportError(tok,
+                        Severity::warning,
+                        "tooLargeBitField",
+                        "Bit-field size exceeds max number of bits " + std::to_string(max));
+        };
+
         Token* typeTok = tok->next();
         while (Token::Match(typeTok, "const|volatile"))
             typeTok = typeTok->next();
@@ -9998,7 +10024,8 @@ void Tokenizer::simplifyBitfields()
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = typeTok->next();
             if (Token::Match(tok1, "%name% : %num% [;=]"))
-                tok1->setBits(static_cast<unsigned char>(MathLib::toBigNumber(tok1->tokAt(2))));
+                if (!tok1->setBits(MathLib::toBigNumber(tok1->tokAt(2))))
+                    tooLargeError(tok1->tokAt(2));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
@@ -10019,8 +10046,18 @@ void Tokenizer::simplifyBitfields()
             }
         } else if (Token::Match(typeTok, "%type% : %num%|%bool% ;") &&
                    typeTok->str() != "default") {
-            tok->deleteNext(4 + tokDistance(tok, typeTok) - 1);
-            goback = true;
+            const std::size_t id = anonymousBitfieldCounter++;
+            const std::string name = "anonymous@" + std::to_string(id);
+            Token *newTok = typeTok->insertToken(name);
+            newTok->isAnonymous(true);
+            bool failed;
+            if (newTok->tokAt(2)->isBoolean())
+                failed = !newTok->setBits(newTok->strAt(2) == "true");
+            else
+                failed = !newTok->setBits(MathLib::toBigNumber(newTok->tokAt(2)));
+            if (failed)
+                tooLargeError(newTok->tokAt(2));
+            newTok->deleteNext(2);
         }
 
         if (last && last->str() == ",") {
@@ -10288,7 +10325,7 @@ void Tokenizer::simplifyBorland()
 void Tokenizer::createSymbolDatabase()
 {
     if (!mSymbolDatabase)
-        mSymbolDatabase = new SymbolDatabase(*this, mSettings, mErrorLogger);
+        mSymbolDatabase = new SymbolDatabase(*this);
     mSymbolDatabase->validate();
 }
 

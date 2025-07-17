@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "addoninfo.h"
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -23,15 +24,19 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "path.h"
+#include "preprocessor.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
 
-#include "simplecpp.h"
-
 #include <algorithm>
+#include <cstddef>
 #include <list>
+#include <sstream>
 #include <string>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestCppcheck : public TestFixture {
 public:
@@ -52,6 +57,10 @@ private:
             ids.push_back(msg.id);
             errmsgs.push_back(msg);
         }
+
+        void reportMetric(const std::string &metric) override {
+            (void) metric;
+        }
     };
 
     void run() override {
@@ -64,6 +73,7 @@ private:
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
+        TEST_CASE(premiumResultsCache);
     }
 
     void getErrorMessages() const {
@@ -258,10 +268,12 @@ private:
 
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
-            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2012-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2023-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-dir-0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2008-0-0-0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2023-0.0.0"));
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
             ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
         }
@@ -271,12 +283,13 @@ private:
 
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
 
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("misra-c2023-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2012-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c2023-0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2008-0.0.0"));
-            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++2023-0.0.0"));
+            ASSERT_EQUALS(false, cppcheck.isPremiumCodingStandardId("misra-c2012-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2012-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2023-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c-2025-dir-0.0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2008-0-0-0"));
+            ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-misra-c++-2023-0.0.0"));
             ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-cert-int50-cpp"));
             ASSERT_EQUALS(true, cppcheck.isPremiumCodingStandardId("premium-autosar-0-0-0"));
         }
@@ -318,6 +331,40 @@ private:
             const std::string expected = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
         }
+    }
+
+    void premiumResultsCache() const {
+        // Trac #13889 - cached misra results are shown after removing --premium=misra-c-2012 option
+
+        Settings settings;
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+
+        std::vector<std::string> files;
+
+        std::istringstream istr("void f();\nint x;\n");
+        const simplecpp::TokenList tokens(istr, files, "m1.c");
+
+        Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
+        ASSERT(preprocessor.loadFiles(tokens, files));
+
+        AddonInfo premiumaddon;
+        premiumaddon.name = "premiumaddon.json";
+        premiumaddon.executable = "premiumaddon";
+
+        settings.cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
+        settings.addons.insert(premiumaddon.name);
+        settings.addonInfos.push_back(premiumaddon);
+
+        settings.premiumArgs = "misra-c-2012";
+        CppCheck check(settings, supprs, errorLogger, false, {});
+        const size_t hash1 = check.calculateHash(preprocessor, tokens);
+
+        settings.premiumArgs = "";
+        const size_t hash2 = check.calculateHash(preprocessor, tokens);
+
+        // cppcheck-suppress knownConditionTrueFalse
+        ASSERT(hash1 != hash2);
     }
 
     // TODO: test suppressions

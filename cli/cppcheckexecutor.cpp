@@ -109,12 +109,12 @@ namespace {
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    double securitySeverity = 0;
+                    const char* securitySeverity = nullptr;
                     if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
-                        securitySeverity = 9.9; // We see undefined behavior
+                        securitySeverity = "9.9"; // We see undefined behavior
                     //else if (finding.severity == Severity::warning)
                     //    securitySeverity = 5.1; // We see potential undefined behavior
-                    if (securitySeverity > 0.5) {
+                    if (securitySeverity) {
                         properties["security-severity"] = picojson::value(securitySeverity);
                         const picojson::array tags{picojson::value("security")};
                         properties["tags"] = picojson::value(tags);
@@ -139,8 +139,8 @@ namespace {
                 artifactLocation["uri"] = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
-                region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
-                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column));
+                region["startLine"] = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
+                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column < 1 ? 1 : location.column));
                 region["endLine"] = region["startLine"];
                 region["endColumn"] = region["startColumn"];
                 physicalLocation["region"] = picojson::value(region);
@@ -281,6 +281,23 @@ namespace {
          */
         void reportErr(const std::string &errmsg);
 
+        void reportMetric(const std::string &metric) override
+        {
+            mFileMetrics.push_back(metric);
+        }
+
+        void reportMetrics()
+        {
+            if (!mFileMetrics.empty()) {
+                auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+                out << "    <metrics>" << std::endl;
+                for (const auto &metric : mFileMetrics) {
+                    out << "        " << metric << std::endl;
+                }
+                out << "    </metrics>" << std::endl;
+            }
+        }
+
         /**
          * @brief Write the checkers report
          */
@@ -353,6 +370,11 @@ namespace {
          * Coding standard guideline mapping
          */
         std::map<std::string, std::string> mGuidelineMapping;
+
+        /**
+         * File metrics
+         */
+        std::vector<std::string> mFileMetrics;
     };
 }
 
@@ -373,8 +395,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
-
-    settings.setMisraRuleTexts(executeCommand);
 
     const int ret = check_wrapper(settings, supprs);
 
@@ -487,6 +507,8 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
     stdLogger.writeCheckersReport(supprs);
 
     if (settings.outputFormat == Settings::OutputFormat::xml) {
+        if (settings.xml_version == 3)
+            stdLogger.reportMetrics();
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
@@ -690,9 +712,10 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
             joinedArgs += arg;
     }
 
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+    std::string cmd = exe + " " + joinedArgs + " " + redirect;
 
 #ifdef _WIN32
+    cmd = "\"" + cmd + "\"";
     FILE* p = _popen(cmd.c_str(), "r");
 #else
     FILE *p = popen(cmd.c_str(), "r");

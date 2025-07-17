@@ -22,7 +22,6 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "path.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenlist.h"
@@ -196,24 +195,20 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
 
     const bool is_abs_path = Path::isAbsolute(path);
 
+    std::string fullfilename(path);
+
+    // TODO: what if the extension is not .cfg?
+    // only append extension when we provide the library name and not a path - TODO: handle relative paths?
+    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
+        fullfilename += ".cfg";
+
     std::string absolute_path;
     // open file..
     tinyxml2::XMLDocument doc;
     if (debug)
-        std::cout << "looking for library '" + std::string(path) + "'" << std::endl;
-    tinyxml2::XMLError error = xml_LoadFile(doc, path);
+        std::cout << "looking for library '" + fullfilename + "'" << std::endl;
+    tinyxml2::XMLError error = xml_LoadFile(doc, fullfilename.c_str());
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
-        // failed to open file.. is there no extension?
-        std::string fullfilename(path);
-        if (Path::getFilenameExtension(fullfilename).empty()) {
-            fullfilename += ".cfg";
-            if (debug)
-                std::cout << "looking for library '" + fullfilename + "'" << std::endl;
-            error = xml_LoadFile(doc, fullfilename.c_str());
-            if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-                absolute_path = Path::getAbsoluteFilePath(fullfilename);
-        }
-
         // only perform further lookups when the given path was not absolute
         if (!is_abs_path && error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         {
@@ -240,7 +235,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
             }
         }
     } else
-        absolute_path = Path::getAbsoluteFilePath(path);
+        absolute_path = Path::getAbsoluteFilePath(fullfilename);
 
     if (error == tinyxml2::XML_SUCCESS) {
         if (mData->mFiles.find(absolute_path) == mData->mFiles.end()) {
@@ -312,6 +307,66 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
     if (actionName == "change")
         return Container::Action::CHANGE;
     return Container::Action::NO_ACTION;
+}
+
+std::string Library::Container::toString(Library::Container::Yield yield)
+{
+    switch (yield) {
+    case Library::Container::Yield::AT_INDEX:
+        return "at_index";
+    case Library::Container::Yield::ITEM:
+        return "item";
+    case Library::Container::Yield::BUFFER:
+        return "buffer";
+    case Library::Container::Yield::BUFFER_NT:
+        return "buffer-nt";
+    case Library::Container::Yield::START_ITERATOR:
+        return "start-iterator";
+    case Library::Container::Yield::END_ITERATOR:
+        return "end-iterator";
+    case Library::Container::Yield::ITERATOR:
+        return "iterator";
+    case Library::Container::Yield::SIZE:
+        return "size";
+    case Library::Container::Yield::EMPTY:
+        return "empty";
+    case Library::Container::Yield::NO_YIELD:
+        break;
+    }
+    return "";
+}
+
+std::string Library::Container::toString(Library::Container::Action action)
+{
+    switch (action) {
+    case Library::Container::Action::RESIZE:
+        return "resize";
+    case Library::Container::Action::CLEAR:
+        return "clear";
+    case Library::Container::Action::PUSH:
+        return "push";
+    case Library::Container::Action::POP:
+        return "pop";
+    case Library::Container::Action::FIND:
+        return "find";
+    case Library::Container::Action::FIND_CONST:
+        return "find-const";
+    case Library::Container::Action::INSERT:
+        return "insert";
+    case Library::Container::Action::ERASE:
+        return "erase";
+    case Library::Container::Action::APPEND:
+        return "append";
+    case Library::Container::Action::CHANGE_CONTENT:
+        return "change-content";
+    case Library::Container::Action::CHANGE:
+        return "change";
+    case Library::Container::Action::CHANGE_INTERNAL:
+        return "change-internal";
+    case Library::Container::Action::NO_ACTION:
+        break;
+    }
+    return "";
 }
 
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
@@ -941,7 +996,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         const char *argattr = argnode->Attribute("arg");
                         if (!argattr)
                             return Error(ErrorCode::MISSING_ATTRIBUTE, "arg");
-                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]> '9')
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, argattr);
 
                         ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
@@ -950,7 +1005,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             const char *arg2attr = argnode->Attribute("arg2");
                             if (!arg2attr)
                                 return Error(ErrorCode::MISSING_ATTRIBUTE, "arg2");
-                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]> '9')
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, arg2attr);
                             ac.minsizes.back().arg2 = arg2attr[0] - '0';
                         }

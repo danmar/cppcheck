@@ -115,24 +115,26 @@ struct ValueFlowAnalyzer : Analyzer {
 
     ConditionState analyzeCondition(const Token* tok, int depth = 20) const
     {
-        ConditionState result;
         if (!tok)
-            return result;
+            return {};
         if (depth < 0)
-            return result;
+            return {};
         depth--;
         if (analyze(tok, Direction::Forward).isRead()) {
+            ConditionState result;
             result.dependent = true;
             result.unknown = false;
             return result;
         }
         if (tok->hasKnownIntValue() || tok->isLiteral()) {
+            ConditionState result;
             result.dependent = false;
             result.unknown = false;
             return result;
         }
         if (Token::Match(tok, "%cop%")) {
             if (isLikelyStream(tok->astOperand1())) {
+                ConditionState result;
                 result.dependent = false;
                 return result;
             }
@@ -142,6 +144,7 @@ struct ValueFlowAnalyzer : Analyzer {
             ConditionState rhs = analyzeCondition(tok->astOperand2(), depth - 1);
             if (rhs.isUnknownDependent())
                 return rhs;
+            ConditionState result;
             if (Token::Match(tok, "%comp%"))
                 result.dependent = lhs.dependent && rhs.dependent;
             else
@@ -154,6 +157,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (Token::Match(tok->tokAt(-2), ". %name% (")) {
                 args.push_back(tok->tokAt(-2)->astOperand1());
             }
+            ConditionState result;
             result.dependent = std::any_of(args.cbegin(), args.cend(), [&](const Token* arg) {
                 ConditionState cs = analyzeCondition(arg, depth - 1);
                 return cs.dependent;
@@ -167,6 +171,7 @@ struct ValueFlowAnalyzer : Analyzer {
         }
 
         std::unordered_map<nonneg int, const Token*> symbols = getSymbols(tok);
+        ConditionState result;
         result.dependent = false;
         for (auto&& p : symbols) {
             const Token* arg = p.second;
@@ -202,12 +207,11 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     virtual Action isModified(const Token* tok) const {
-        const Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
             // Moving a moved value won't change the moved value
             if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
-                return read;
+                return Action::Read;
             // Inserting elements to container won't change the lifetime
             if (astIsContainer(tok) && value->isLifetimeValue() &&
                 contains({Library::Container::Action::PUSH,
@@ -215,16 +219,16 @@ struct ValueFlowAnalyzer : Analyzer {
                           Library::Container::Action::APPEND,
                           Library::Container::Action::CHANGE_INTERNAL},
                          astContainerAction(tok, getSettings().library)))
-                return read;
+                return Action::Read;
         }
         bool inconclusive = false;
         if (isVariableChangedByFunctionCall(tok, getIndirect(tok), getSettings(), &inconclusive))
-            return read | Action::Invalid;
+            return Action::Read | Action::Invalid;
         if (inconclusive)
-            return read | Action::Inconclusive;
+            return Action::Read | Action::Inconclusive;
         if (isVariableChanged(tok, getIndirect(tok), getSettings())) {
             if (Token::Match(tok->astParent(), "*|[|.|++|--"))
-                return read | Action::Invalid;
+                return Action::Read | Action::Invalid;
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
@@ -234,7 +238,7 @@ struct ValueFlowAnalyzer : Analyzer {
             }
             return Action::Invalid;
         }
-        return read;
+        return Action::Read;
     }
 
     virtual Action isAliasModified(const Token* tok, int indirect = -1) const {
@@ -351,7 +355,9 @@ struct ValueFlowAnalyzer : Analyzer {
             /* Truncate value */
             const ValueType *dst = tok->valueType();
             if (dst) {
-                const size_t sz = ValueFlow::getSizeOf(*dst, settings);
+                const size_t sz = ValueFlow::getSizeOf(*dst,
+                                                       settings,
+                                                       ValueFlow::Accuracy::ExactOrZero);
                 if (sz > 0 && sz < sizeof(MathLib::biguint)) {
                     MathLib::bigint newvalue = ValueFlow::truncateIntValue(value->intvalue, sz, dst->sign);
 
@@ -1551,17 +1557,16 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
     }
 
     Action isModified(const Token* tok) const override {
-        Action read = Action::Read;
         // An iterator won't change the container size
         if (astIsIterator(tok))
-            return read;
+            return Action::Read;
         if (Token::Match(tok->astParent(), "%assign%") && astIsLHS(tok))
             return Action::Invalid;
         if (isLikelyStreamRead(tok->astParent()))
             return Action::Invalid;
         if (astIsContainer(tok) && ValueFlow::isContainerSizeChanged(tok, getIndirect(tok), getSettings()))
-            return read | Action::Invalid;
-        return read;
+            return Action::Read | Action::Invalid;
+        return Action::Read;
     }
 };
 

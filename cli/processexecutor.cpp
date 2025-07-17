@@ -78,7 +78,7 @@ ProcessExecutor::ProcessExecutor(const std::list<FileWithDetails> &files, const 
 namespace {
     class PipeWriter : public ErrorLogger {
     public:
-        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2',REPORT_SUPPR_INLINE='3',REPORT_SUPPR='4',CHILD_END='5'};
+        enum PipeSignal : std::uint8_t {REPORT_OUT='1',REPORT_ERROR='2',REPORT_SUPPR_INLINE='3',REPORT_SUPPR='4',CHILD_END='5',REPORT_METRIC='6'};
 
         explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
@@ -100,6 +100,10 @@ namespace {
             }
         }
 
+        void reportMetric(const std::string &metric) override {
+            writeToPipe(REPORT_METRIC, metric);
+        }
+
         void writeEnd(const std::string& str) const {
             writeToPipe(CHILD_END, str);
         }
@@ -112,6 +116,8 @@ namespace {
             suppr_str += suppr.checked ? "1" : "0";
             suppr_str += ";";
             suppr_str += suppr.matched ? "1" : "0";
+            suppr_str += ";";
+            suppr_str += suppr.extraComment;
             return suppr_str;
         }
 
@@ -179,7 +185,8 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         type != PipeWriter::REPORT_ERROR &&
         type != PipeWriter::REPORT_SUPPR_INLINE &&
         type != PipeWriter::REPORT_SUPPR &&
-        type != PipeWriter::CHILD_END) {
+        type != PipeWriter::CHILD_END &&
+        type != PipeWriter::REPORT_METRIC) {
         std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") invalid type " << int(type) << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -234,7 +241,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         if (!buf.empty()) {
             // TODO: avoid string splitting
             auto parts = splitString(buf, ';');
-            if (parts.size() != 3)
+            if (parts.size() < 4)
             {
                 // TODO: make this non-fatal
                 std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") adding of inline suppression failed - insufficient data" << std::endl;
@@ -244,6 +251,10 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
             suppr.isInline = (type == PipeWriter::REPORT_SUPPR_INLINE);
             suppr.checked = parts[1] == "1";
             suppr.matched = parts[2] == "1";
+            suppr.extraComment = parts[3];
+            for (std::size_t i = 4; i < parts.size(); i++) {
+                suppr.extraComment += ";" + parts[i];
+            }
             const std::string err = mSuppressions.nomsg.addSuppression(suppr);
             if (!err.empty()) {
                 // TODO: only update state if it doesn't exist - otherwise propagate error
@@ -256,6 +267,8 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     } else if (type == PipeWriter::CHILD_END) {
         result += std::stoi(buf);
         res = false;
+    } else if (type == PipeWriter::REPORT_METRIC) {
+        mErrorLogger.reportMetric(buf);
     }
 
     return res;

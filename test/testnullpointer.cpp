@@ -24,12 +24,12 @@
 #include "helpers.h"
 #include "library.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 
 #include <cstddef>
 #include <list>
 #include <string>
-#include <vector>
 
 class TestNullPointer : public TestFixture {
 public:
@@ -141,6 +141,7 @@ private:
         TEST_CASE(nullpointer102);
         TEST_CASE(nullpointer103);
         TEST_CASE(nullpointer104); // #13881
+        TEST_CASE(nullpointer105); // #13861
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -182,12 +183,13 @@ private:
         CheckOptions() = default;
         bool inconclusive = false;
         bool cpp = true;
+        Standards::cstd_t cstd = Standards::CLatest;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).c(options.cstd).build();
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);
@@ -1330,8 +1332,11 @@ private:
         check(code); // C++ file => nullptr means NULL
         ASSERT_EQUALS("[test.cpp:4:11]: (error) Null pointer dereference: i [nullPointer]\n", errout_str());
 
-        check(code, dinit(CheckOptions, $.cpp = false)); // C file => nullptr does not mean NULL
+        check(code, dinit(CheckOptions, $.cpp = false, $.cstd = Standards::C17)); // C17 file => nullptr does not mean NULL
         ASSERT_EQUALS("", errout_str());
+
+        check(code, dinit(CheckOptions, $.cpp = false));
+        ASSERT_EQUALS("[test.c:4:11]: (error) Null pointer dereference: i [nullPointer]\n", errout_str());
     }
 
     void nullpointer15() {  // #3560
@@ -2925,6 +2930,17 @@ private:
         check("using std::max;\n"
               "void f(int i) {\n"
               "    const size_t maxlen = i == 1 ? 8 : (std::numeric_limits<std::size_t>::max());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void nullpointer105() // #13861
+    {
+        check("struct AB { int a; int b; };\n"
+              "namespace ns { typedef AB S[10]; }\n"
+              "void foo(void) {\n"
+              "    ns::S x = {0};\n"
+              "    x[1].a = 2;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
@@ -4587,7 +4603,7 @@ private:
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckNullPointer>();
-        fileInfo.push_back(c.getFileInfo(tokenizer, settings));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings, ""));
         c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
         while (!fileInfo.empty()) {
             delete fileInfo.back();

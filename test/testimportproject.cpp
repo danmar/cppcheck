@@ -21,7 +21,9 @@
 #include "importproject.h"
 #include "redirect.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
+#include "xml.h"
 
 #include <list>
 #include <map>
@@ -34,10 +36,8 @@ class TestImporter : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
-
-    bool sourceFileExists(const std::string & /*file*/) override {
-        return true;
-    }
+    using ImportProject::importVcxproj;
+    using ImportProject::SharedItemsProject;
 };
 
 
@@ -70,7 +70,9 @@ private:
         TEST_CASE(importCompileCommandsDirectoryMissing); // 'directory' field missing
         TEST_CASE(importCompileCommandsDirectoryInvalid); // 'directory' field not a string
         TEST_CASE(importCppcheckGuiProject);
+        TEST_CASE(importCppcheckGuiProjectPremiumMisra);
         TEST_CASE(ignorePaths);
+        TEST_CASE(testVcxprojUnicode);
     }
 
     void setDefines() const {
@@ -430,12 +432,32 @@ private:
         Settings s;
         Suppressions supprs;
         TestImporter project;
-        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs, false));
         ASSERT_EQUALS(1, project.guiProject.pathNames.size());
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());
         ASSERT_EQUALS("lib/", s.includePaths.front());
         ASSERT_EQUALS(true, s.inlineSuppressions);
+    }
+
+    void importCppcheckGuiProjectPremiumMisra() const {
+        REDIRECT;
+        constexpr char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                               "<project>\n"
+                               "    <paths>\n"
+                               "        <dir name=\"m1.c\"/>\n"
+                               "    </paths>\n"
+                               "    <addons>\n"
+                               "        <addon>misra</addon>\n"  // <- Premium: add premium argument misra-c-2012
+                               "    </addons>\n"
+                               "</project>";
+        std::istringstream istr(xml);
+        Settings s;
+        Suppressions supprs;
+        TestImporter project;
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs, true));
+        ASSERT_EQUALS("--misra-c-2012", s.premiumArgs);
+        ASSERT(s.addons.empty());
     }
 
     void ignorePaths() const {
@@ -445,7 +467,7 @@ private:
         project.fileSettings = {std::move(fs1), std::move(fs2)};
 
         project.ignorePaths({"*foo", "bar*"});
-        ASSERT_EQUALS(2, project.fileSettings.size());
+        ASSERT_EQUALS(1, project.fileSettings.size());
 
         project.ignorePaths({"foo/*"});
         ASSERT_EQUALS(1, project.fileSettings.size());
@@ -453,6 +475,59 @@ private:
 
         project.ignorePaths({ "*e/r*" });
         ASSERT_EQUALS(0, project.fileSettings.size());
+    }
+
+    void testVcxprojUnicode() const
+    {
+        const char vcxproj[] = R"-(
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <!-- Only to test that the last configuration entry overwrites this -->
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+</Project>
+)-";
+        tinyxml2::XMLDocument doc;
+        ASSERT_EQUALS(tinyxml2::XML_SUCCESS, doc.Parse(vcxproj, sizeof(vcxproj)));
+        TestImporter project;
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
+        std::vector<TestImporter::SharedItemsProject> cache;
+        ASSERT_EQUALS(project.importVcxproj("test.vcxproj", doc, variables, {}, {}, cache), true);
+        ASSERT_EQUALS(project.fileSettings.size(), 2);
+        ASSERT(project.fileSettings.front().defines.find(";UNICODE=1;") != std::string::npos);
+        ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1") != std::string::npos);
+        ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1;") == std::string::npos); // No duplicates
+        ASSERT_EQUALS(project.fileSettings.front().useMfc, false);
+        ASSERT(project.fileSettings.back().defines.find(";UNICODE=1;") == std::string::npos);
+        ASSERT(project.fileSettings.back().defines.find(";_UNICODE=1") == std::string::npos);
+        ASSERT_EQUALS(project.fileSettings.back().useMfc, true);
     }
 
     // TODO: test fsParseCommand()

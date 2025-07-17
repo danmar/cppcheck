@@ -105,8 +105,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const Setting
                 usage.usedOtherFile = true;
             }
 
-            if (!usage.lineNumber)
+            if (!usage.lineNumber) {
                 usage.lineNumber = func->token->linenr();
+                usage.column = func->token->column();
+            }
             usage.isC = func->token->isC();
             usage.isStatic = func->isStatic();
 
@@ -341,13 +343,14 @@ static bool isOperatorFunction(const std::string & funcName)
 
 static void staticFunctionError(ErrorLogger& errorLogger,
                                 const std::string &filename,
-                                unsigned int fileIndex,
-                                unsigned int lineNumber,
+                                nonneg int fileIndex,
+                                nonneg int lineNumber,
+                                nonneg int column,
                                 const std::string &funcname)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        locationList.emplace_back(filename, lineNumber, 0);
+        locationList.emplace_back(filename, lineNumber, column);
         locationList.back().fileIndex = fileIndex;
     }
 
@@ -366,7 +369,8 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
 {
     logChecker("CheckUnusedFunctions::check"); // unusedFunction
 
-    using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
+    // filename, fileindex, line, column
+    using ErrorParams = std::tuple<std::string, nonneg int, nonneg int, nonneg int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order
     std::vector<ErrorParams> staticFunctionErrors;
 
@@ -382,33 +386,33 @@ bool CheckUnusedFunctions::check(const Settings& settings, ErrorLogger& errorLog
             std::string filename;
             if (func.filename != "+")
                 filename = func.filename;
-            errors.emplace_back(filename, func.fileIndex, func.lineNumber, it->first);
+            errors.emplace_back(filename, func.fileIndex, func.lineNumber, func.column, it->first);
         } else if (func.isC && !func.isStatic && !func.usedOtherFile) {
             std::string filename;
             if (func.filename != "+")
                 filename = func.filename;
-            staticFunctionErrors.emplace_back(filename, func.fileIndex, func.lineNumber, it->first);
+            staticFunctionErrors.emplace_back(filename, func.fileIndex, func.lineNumber, func.column, it->first);
         }
     }
 
     std::sort(errors.begin(), errors.end());
     for (const auto& e : errors)
-        unusedFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e));
+        unusedFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e), std::get<4>(e));
 
     std::sort(staticFunctionErrors.begin(), staticFunctionErrors.end());
     for (const auto& e : staticFunctionErrors)
-        staticFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e));
+        staticFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e), std::get<4>(e));
 
     return !errors.empty();
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
-                                               const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
+                                               const std::string &filename, nonneg int fileIndex, nonneg int lineNumber, nonneg int column,
                                                const std::string &funcname)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        locationList.emplace_back(filename, lineNumber, 0);
+        locationList.emplace_back(filename, lineNumber, column);
         locationList.back().fileIndex = fileIndex;
     }
 
@@ -417,7 +421,10 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger& errorLogger,
 }
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
-    : functionName(f->name()), fileIndex(f->token->fileIndex()), lineNumber(f->token->linenr())
+    : functionName(f->name())
+    , fileIndex(f->token->fileIndex())
+    , lineNumber(f->token->linenr())
+    , column(f->token->column())
 {}
 
 std::string CheckUnusedFunctions::analyzerInfo(const Tokenizer &tokenizer) const
@@ -427,7 +434,9 @@ std::string CheckUnusedFunctions::analyzerInfo(const Tokenizer &tokenizer) const
         ret << "    <functiondecl"
             << " file=\"" << ErrorLogger::toxml(tokenizer.list.getFiles()[functionDecl.fileIndex]) << '\"'
             << " functionName=\"" << ErrorLogger::toxml(functionDecl.functionName) << '\"'
-            << " lineNumber=\"" << functionDecl.lineNumber << "\"/>\n";
+            << " lineNumber=\"" << functionDecl.lineNumber << '\"'
+            << " column=\"" << functionDecl.column << '\"'
+            << "/>\n";
     }
     for (const std::string &fc : mFunctionCalls) {
         ret << "    <functioncall functionName=\"" << ErrorLogger::toxml(fc) << "\"/>\n";
@@ -437,13 +446,15 @@ std::string CheckUnusedFunctions::analyzerInfo(const Tokenizer &tokenizer) const
 
 namespace {
     struct Location {
-        Location() : lineNumber(0) {}
-        Location(std::string f, const int l) : fileName(std::move(f)), lineNumber(l) {}
+        Location() : lineNumber(0), column(0) {}
+        Location(std::string f, nonneg int l, nonneg int c) : fileName(std::move(f)), lineNumber(l), column(c) {}
         std::string fileName;
-        int lineNumber;
+        nonneg int lineNumber;
+        nonneg int column;
     };
 }
 
+// TODO: bail out on unexpected data
 void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLogger &errorLogger, const std::string &buildDir)
 {
     std::map<std::string, Location> decls;
@@ -490,8 +501,9 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                     const char* lineNumber = e2->Attribute("lineNumber");
                     if (lineNumber) {
                         const char* file = e2->Attribute("file");
+                        const char* column = default_if_null(e2->Attribute("column"), "0");
                         // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
-                        decls[functionName] = Location(file ? file : sourcefile, strToInt<int>(lineNumber));
+                        decls[functionName] = Location(file ? file : sourcefile, strToInt<int>(lineNumber), strToInt<int>(column));
                     }
                 }
             }
@@ -506,7 +518,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
 
         if (calls.find(functionName) == calls.end() && !isOperatorFunction(functionName)) {
             const Location &loc = decl->second;
-            unusedFunctionError(errorLogger, loc.fileName, /*fileIndex*/ 0, loc.lineNumber, functionName);
+            unusedFunctionError(errorLogger, loc.fileName, /*fileIndex*/ 0, loc.lineNumber, loc.column, functionName);
         }
     }
 }
@@ -516,8 +528,10 @@ void CheckUnusedFunctions::updateFunctionData(const CheckUnusedFunctions& check)
     for (const auto& entry : check.mFunctions)
     {
         FunctionUsage &usage = mFunctions[entry.first];
-        if (!usage.lineNumber)
+        if (!usage.lineNumber) {
             usage.lineNumber = entry.second.lineNumber;
+            usage.column = entry.second.column;
+        }
         // TODO: why always overwrite this but not the filename and line?
         usage.fileIndex = entry.second.fileIndex;
         if (usage.filename.empty())

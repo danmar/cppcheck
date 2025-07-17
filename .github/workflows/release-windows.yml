@@ -27,7 +27,7 @@ jobs:
     env:
       # see https://www.pcre.org/original/changelog.txt
       PCRE_VERSION: 8.45
-      QT_VERSION: 6.9.0
+      QT_VERSION: 6.9.1
 
     steps:
       - uses: actions/checkout@v4
@@ -121,7 +121,6 @@ jobs:
           @echo on
           move build\bin\Release win_installer\files || exit /b !errorlevel!
           copy AUTHORS win_installer\files\authors.txt || exit /b !errorlevel!
-          copy readme.txt win_installer\files\ || exit /b !errorlevel!
           copy win_installer\GPLv3.txt win_installer\files\ || exit /b !errorlevel!
           copy externals\picojson\LICENSE win_installer\files\picojson-license.txt || exit /b !errorlevel!
           copy externals\simplecpp\LICENSE win_installer\files\simplecpp-license.txt || exit /b !errorlevel!

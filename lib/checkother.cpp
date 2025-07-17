@@ -742,22 +742,22 @@ void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const 
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    const ErrorPath errorPath = { ErrorPathItem(tok1, var + " is assigned"), ErrorPathItem(tok2, var + " is overwritten") };
+    ErrorPath errorPath = { ErrorPathItem(tok1, var + " is assigned"), ErrorPathItem(tok2, var + " is overwritten") };
     if (inconclusive)
-        reportError(errorPath, Severity::style, "redundantAssignment",
+        reportError(std::move(errorPath), Severity::style, "redundantAssignment",
                     "$symbol:" + var + "\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used if variable is no semaphore variable.\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used. Make sure that this variable is not used like a semaphore in a threading environment before simplifying this code.", CWE563, Certainty::inconclusive);
     else
-        reportError(errorPath, Severity::style, "redundantAssignment",
+        reportError(std::move(errorPath), Severity::style, "redundantAssignment",
                     "$symbol:" + var + "\n"
                     "Variable '$symbol' is reassigned a value before the old one has been used.", CWE563, Certainty::normal);
 }
 
 void CheckOther::redundantInitializationError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)
 {
-    const ErrorPath errorPath = { ErrorPathItem(tok1, var + " is initialized"), ErrorPathItem(tok2, var + " is overwritten") };
-    reportError(errorPath, Severity::style, "redundantInitialization",
+    ErrorPath errorPath = { ErrorPathItem(tok1, var + " is initialized"), ErrorPathItem(tok2, var + " is overwritten") };
+    reportError(std::move(errorPath), Severity::style, "redundantInitialization",
                 "$symbol:" + var + "\nRedundant initialization for '$symbol'. The initialized value is overwritten before it is read.",
                 CWE563,
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
@@ -765,8 +765,8 @@ void CheckOther::redundantInitializationError(const Token *tok1, const Token* to
 
 void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
 {
-    const ErrorPath errorPath = { ErrorPathItem(tok1, "$symbol is assigned"), ErrorPathItem(tok2, "$symbol is overwritten") };
-    reportError(errorPath, Severity::style, "redundantAssignInSwitch",
+    ErrorPath errorPath = { ErrorPathItem(tok1, "$symbol is assigned"), ErrorPathItem(tok2, "$symbol is overwritten") };
+    reportError(std::move(errorPath), Severity::style, "redundantAssignInSwitch",
                 "$symbol:" + var + "\n"
                 "Variable '$symbol' is reassigned a value before the old one has been used. 'break;' missing?", CWE563, Certainty::normal);
 }
@@ -775,7 +775,7 @@ void CheckOther::redundantAssignmentSameValueError(const Token *tok, const Value
 {
     auto errorPath = val->errorPath;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::style, "redundantAssignment",
+    reportError(std::move(errorPath), Severity::style, "redundantAssignment",
                 "$symbol:" + var + "\n"
                 "Variable '$symbol' is assigned an expression that holds the same value.", CWE563, Certainty::normal);
 }
@@ -1522,7 +1522,7 @@ static bool isLargeContainer(const Variable* var, const Settings& settings)
         return false;
     }
     const ValueType vtElem = ValueType::parseDecl(vt->containerTypeToken, settings);
-    const auto elemSize = std::max<std::size_t>(ValueFlow::getSizeOf(vtElem, settings), 1);
+    const auto elemSize = std::max<std::size_t>(ValueFlow::getSizeOf(vtElem, settings, ValueFlow::Accuracy::LowerBound), 1);
     const auto arraySize = var->dimension(0) * elemSize;
     return arraySize > maxByValueSize;
 }
@@ -1562,7 +1562,7 @@ void CheckOther::checkPassByReference()
                 // Ensure that it is a large object.
                 if (!var->type()->classScope)
                     inconclusive = true;
-                else if (!var->valueType() || ValueFlow::getSizeOf(*var->valueType(), *mSettings) <= 2 * mSettings->platform.sizeof_pointer)
+                else if (!var->valueType() || ValueFlow::getSizeOf(*var->valueType(), *mSettings, ValueFlow::Accuracy::LowerBound) <= 2 * mSettings->platform.sizeof_pointer)
                     continue;
             }
             else
@@ -1610,7 +1610,7 @@ void CheckOther::passedByValueError(const Variable* var, bool inconclusive, bool
         msg += "\nVariable '$symbol' is used to iterate by value. It could be declared as a const reference which is usually faster and recommended in C++.";
     else
         msg += "\nParameter '$symbol' is passed by value. It could be passed as a const reference which is usually faster and recommended in C++.";
-    reportError(errorPath, Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::performance, id.c_str(), msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 static bool isVariableMutableInInitializer(const Token* start, const Token * end, nonneg int varid)
@@ -1998,7 +1998,7 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
         id += "Pointer";
     }
 
-    reportError(errorPath, Severity::style, id.c_str(), message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -2401,7 +2401,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
         return;
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Division by zero");
+    ErrorPath errorPath = getErrorPath(tok, value, "Division by zero");
 
     std::ostringstream errmsg;
     if (value->condition) {
@@ -2411,7 +2411,7 @@ void CheckOther::zerodivError(const Token *tok, const ValueFlow::Value *value)
     } else
         errmsg << "Division by zero.";
 
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 value->errorSeverity() ? Severity::error : Severity::warning,
                 value->condition ? "zerodivcond" : "zerodiv",
                 errmsg.str(), CWE369, value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
@@ -2632,7 +2632,7 @@ void CheckOther::duplicateBranchError(const Token *tok1, const Token *tok2, Erro
     errors.emplace_back(tok2, "");
     errors.emplace_back(tok1, "");
 
-    reportError(errors, Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
+    reportError(std::move(errors), Severity::style, "duplicateBranch", "Found duplicate branches for 'if' and 'else'.\n"
                 "Finding the same code in an 'if' and related 'else' branch is suspicious and "
                 "might indicate a cut and paste or logic error. Please examine this code "
                 "carefully to determine if it is correct.", CWE398, Certainty::inconclusive);
@@ -2975,7 +2975,7 @@ void CheckOther::oppositeExpressionError(const Token *opTok, ErrorPath errors)
 
     const std::string& op = opTok ? opTok->str() : "&&";
 
-    reportError(errors, Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"
+    reportError(std::move(errors), Severity::style, "oppositeExpression", "Opposite expression on both sides of \'" + op + "\'.\n"
                 "Finding the opposite expression on both sides of an operator is suspicious and might "
                 "indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, Certainty::normal);
@@ -3003,7 +3003,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     if (expr1 != expr2 && !Token::Match(tok1, "%num%|NULL|nullptr") && !Token::Match(tok2, "%num%|NULL|nullptr"))
         msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
 
-    reportError(errors, Severity::style, id, msg +
+    reportError(std::move(errors), Severity::style, id, msg +
                 (std::string(".\nFinding the same expression ") + (hasMultipleExpr ? "more than once in a condition" : "on both sides of an operator")) +
                 " is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, Certainty::normal);
@@ -3026,7 +3026,7 @@ void CheckOther::duplicateAssignExpressionError(const Token *tok1, const Token *
 void CheckOther::duplicateExpressionTernaryError(const Token *tok, ErrorPath errors)
 {
     errors.emplace_back(tok, "");
-    reportError(errors, Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
+    reportError(std::move(errors), Severity::style, "duplicateExpressionTernary", "Same expression in both branches of ternary operator.\n"
                 "Finding the same expression in both branches of ternary operator is suspicious as "
                 "the same code is executed regardless of the condition.", CWE398, Certainty::normal);
 }
@@ -3283,7 +3283,7 @@ void CheckOther::checkRedundantCopy()
                 const Token* varTok = fScope->bodyEnd->tokAt(-2);
                 if (varTok->variable() && !varTok->variable()->isGlobal() &&
                     (!varTok->variable()->type() || !varTok->variable()->type()->classScope ||
-                     (varTok->variable()->valueType() && ValueFlow::getSizeOf(*varTok->variable()->valueType(), *mSettings) > 2 * mSettings->platform.sizeof_pointer)))
+                     (varTok->variable()->valueType() && ValueFlow::getSizeOf(*varTok->variable()->valueType(), *mSettings, ValueFlow::Accuracy::LowerBound) > 2 * mSettings->platform.sizeof_pointer)))
                     redundantCopyError(startTok, startTok->str());
             }
         }
@@ -3403,7 +3403,7 @@ void CheckOther::checkIncompleteArrayFill()
                 if (size == 0 && var->valueType()->pointer)
                     size = mSettings->platform.sizeof_pointer;
                 else if (size == 0 && var->valueType())
-                    size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
+                    size = ValueFlow::getSizeOf(*var->valueType(), *mSettings, ValueFlow::Accuracy::LowerBound);
                 const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
                 if ((size != 1 && size != 100 && size != 0) || var->isPointer()) {
                     if (printWarning)
@@ -3868,8 +3868,8 @@ void CheckOther::accessMovedError(const Token *tok, const std::string &varname, 
         return;
     }
     const std::string errmsg("$symbol:" + varname + "\nAccess of " + kindString + " variable '$symbol'.");
-    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::warning, errorId, errmsg, CWE672, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(std::move(errorPath), Severity::warning, errorId, errmsg, CWE672, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 
@@ -4071,7 +4071,7 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, const std:
     const std::string Type = char(std::toupper(type[0])) + type.substr(1);
     const std::string id = "shadow" + Type;
     const std::string message = "$symbol:" + varname + "\nLocal variable \'$symbol\' shadows outer " + type;
-    reportError(errorPath, Severity::style, id.c_str(), message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::style, id.c_str(), message, CWE398, Certainty::normal);
 }
 
 static bool isVariableExpression(const Token* tok)
@@ -4198,8 +4198,8 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
         errmsg += "Constant literal calculation disable/hide variable expression '" + varexpr + "'.";
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::style, id, errmsg, CWE570, Certainty::normal);
+    ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(std::move(errorPath), Severity::style, id, errmsg, CWE570, Certainty::normal);
 }
 
 void CheckOther::checkKnownPointerToBool()
@@ -4241,8 +4241,8 @@ void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Valu
     std::string cond = bool_to_string(!!value->intvalue);
     const std::string& expr = tok->expressionString();
     std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
-    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
-    reportError(errorPath, Severity::style, "knownPointerToBool", errmsg, CWE570, Certainty::normal);
+    ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(std::move(errorPath), Severity::style, "knownPointerToBool", errmsg, CWE570, Certainty::normal);
 }
 
 void CheckOther::checkComparePointers()
@@ -4303,7 +4303,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        errorPath, Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
+        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
 }
 
 void CheckOther::checkModuloOfOne()
@@ -4346,7 +4346,7 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         bufToken = expr->astOperand1()->astOperand1();
         offsetToken = expr->astOperand1()->astOperand2();
         if (expr->astOperand1()->valueType())
-            elementSize =  ValueFlow::getSizeOf(*expr->astOperand1()->valueType(), settings);
+            elementSize =  ValueFlow::getSizeOf(*expr->astOperand1()->valueType(), settings, ValueFlow::Accuracy::LowerBound);
     } else if (Token::Match(expr, "+|-") && expr->isBinaryOp()) {
         const bool pointer1 = (expr->astOperand1()->valueType() && expr->astOperand1()->valueType()->pointer > 0);
         const bool pointer2 = (expr->astOperand2()->valueType() && expr->astOperand2()->valueType()->pointer > 0);
@@ -4355,13 +4355,13 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
             offsetToken = expr->astOperand2();
             auto vt = *expr->astOperand1()->valueType();
             --vt.pointer;
-            elementSize = ValueFlow::getSizeOf(vt, settings);
+            elementSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::LowerBound);
         } else if (!pointer1 && pointer2) {
             bufToken = expr->astOperand2();
             offsetToken = expr->astOperand1();
             auto vt = *expr->astOperand2()->valueType();
             --vt.pointer;
-            elementSize = ValueFlow::getSizeOf(vt, settings);
+            elementSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::LowerBound);
         } else {
             return false;
         }
@@ -4370,7 +4370,7 @@ static bool getBufAndOffset(const Token *expr, const Token *&buf, MathLib::bigin
         *offset = 0;
         auto vt = *expr->valueType();
         --vt.pointer;
-        elementSize = ValueFlow::getSizeOf(vt, settings);
+        elementSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::LowerBound);
         if (elementSize > 0) {
             *offset *= elementSize;
             if (sizeValue)

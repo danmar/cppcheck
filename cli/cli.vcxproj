@@ -85,7 +85,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\frontend;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -114,7 +114,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\frontend;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -143,7 +143,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\frontend;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;TINYXML2_IMPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -181,7 +181,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\lib;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\lib;..\frontend;..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <Optimization>MaxSpeed</Optimization>
       <PreprocessorDefinitions>CPPCHECKLIB_IMPORT;TINYXML2_IMPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -231,6 +231,7 @@
     <ClInclude Include="singleexecutor.h" />
     <ClInclude Include="stacktrace.h" />
     <ClInclude Include="threadexecutor.h" />
+    <ClInclude Include="..\frontend\frontend.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\cppcheck.vcxproj">
@@ -254,6 +255,7 @@
     <ClCompile Include="singleexecutor.cpp" />
     <ClCompile Include="stacktrace.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
+    <ClCompile Include="..\frontend\frontend.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

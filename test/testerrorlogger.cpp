@@ -21,6 +21,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "fixture.h"
+#include "helpers.h"
 #include "suppressions.h"
 
 #include <list>
@@ -43,6 +44,7 @@ private:
     void run() override {
         TEST_CASE(PatternSearchReplace);
         TEST_CASE(FileLocationConstruct);
+        TEST_CASE(FileLocationConstructFile);
         TEST_CASE(FileLocationSetFile);
         TEST_CASE(FileLocationSetFile2);
         TEST_CASE(ErrorMessageConstruct);
@@ -55,7 +57,7 @@ private:
         TEST_CASE(CustomFormatLocations);
         TEST_CASE(ToXmlV2);
         TEST_CASE(ToXmlV2RemarkComment);
-        TEST_CASE(ToXmlV2Locations);
+        TEST_CASE(ToXmlLocations);
         TEST_CASE(ToXmlV2Encoding);
         TEST_CASE(FromXmlV2);
         TEST_CASE(ToXmlV3);
@@ -75,8 +77,7 @@ private:
 
         TEST_CASE(isCriticalErrorId);
 
-        TEST_CASE(ErrorMessageReportTypeMisraC);
-        TEST_CASE(ErrorMessageReportTypeCertC);
+        TEST_CASE(TestReportType);
     }
 
     void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
@@ -115,20 +116,116 @@ private:
     }
 
     void FileLocationConstruct() const {
-        const ErrorMessage::FileLocation loc("foo.cpp", 1, 2);
-        ASSERT_EQUALS("foo.cpp", loc.getOrigFile());
-        ASSERT_EQUALS("foo.cpp", loc.getfile());
-        ASSERT_EQUALS(1, loc.line);
-        ASSERT_EQUALS(2, loc.column);
-        ASSERT_EQUALS("[foo.cpp:1]", loc.stringify(false));
-        ASSERT_EQUALS("[foo.cpp:1:2]", loc.stringify(true));
+        {
+            const ErrorMessage::FileLocation loc("foo.cpp", 1, 2);
+            ASSERT_EQUALS("foo.cpp", loc.getOrigFile(false));
+            ASSERT_EQUALS("foo.cpp", loc.getfile(false));
+            ASSERT_EQUALS(1, loc.line);
+            ASSERT_EQUALS(2, loc.column);
+            ASSERT_EQUALS("[foo.cpp:1]", loc.stringify(false));
+            ASSERT_EQUALS("[foo.cpp:1:2]", loc.stringify(true));
+            ASSERT_EQUALS("", loc.getinfo());
+        }
+        {
+            const ErrorMessage::FileLocation loc("foo.cpp", "info", 1, 2);
+            ASSERT_EQUALS("foo.cpp", loc.getOrigFile(false));
+            ASSERT_EQUALS("foo.cpp", loc.getfile(false));
+            ASSERT_EQUALS(1, loc.line);
+            ASSERT_EQUALS(2, loc.column);
+            ASSERT_EQUALS("[foo.cpp:1]", loc.stringify(false));
+            ASSERT_EQUALS("[foo.cpp:1:2]", loc.stringify(true));
+            ASSERT_EQUALS("info", loc.getinfo());
+        }
+        {
+            const SimpleTokenList tokenlist("a", "dir/a.cpp");
+            {
+                const ErrorMessage::FileLocation loc(tokenlist.front(), &tokenlist.get());
+                ASSERT_EQUALS("dir/a.cpp", loc.getOrigFile(false));
+                ASSERT_EQUALS("dir/a.cpp", loc.getfile(false));
+                ASSERT_EQUALS(1, loc.line);
+                ASSERT_EQUALS(1, loc.column);
+#if defined(_WIN32)
+                ASSERT_EQUALS("[dir\\a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir\\a.cpp:1:1]", loc.stringify(true));
+#else
+                ASSERT_EQUALS("[dir/a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir/a.cpp:1:1]", loc.stringify(true));
+#endif
+                ASSERT_EQUALS("", loc.getinfo());
+            }
+            {
+                const ErrorMessage::FileLocation loc(tokenlist.front(), "info", &tokenlist.get());
+                ASSERT_EQUALS("dir/a.cpp", loc.getOrigFile(false));
+                ASSERT_EQUALS("dir/a.cpp", loc.getfile(false));
+                ASSERT_EQUALS(1, loc.line);
+                ASSERT_EQUALS(1, loc.column);
+#if defined(_WIN32)
+                ASSERT_EQUALS("[dir\\a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir\\a.cpp:1:1]", loc.stringify(true));
+#else
+                ASSERT_EQUALS("[dir/a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir/a.cpp:1:1]", loc.stringify(true));
+#endif
+                ASSERT_EQUALS("info", loc.getinfo());
+            }
+        }
+        {
+            const SimpleTokenList tokenlist("a", "dir\\a.cpp");
+            {
+                const ErrorMessage::FileLocation loc(tokenlist.front(), &tokenlist.get());
+                ASSERT_EQUALS("dir\\a.cpp", loc.getOrigFile(false));
+                ASSERT_EQUALS("dir/a.cpp", loc.getfile(false));
+                ASSERT_EQUALS(1, loc.line);
+                ASSERT_EQUALS(1, loc.column);
+#if defined(_WIN32)
+                ASSERT_EQUALS("[dir\\a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir\\a.cpp:1:1]", loc.stringify(true));
+#else
+                ASSERT_EQUALS("[dir/a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir/a.cpp:1:1]", loc.stringify(true));
+#endif
+                ASSERT_EQUALS("", loc.getinfo());
+            }
+            {
+                const ErrorMessage::FileLocation loc(tokenlist.front(), "info", &tokenlist.get());
+                ASSERT_EQUALS("dir\\a.cpp", loc.getOrigFile(false));
+                ASSERT_EQUALS("dir/a.cpp", loc.getfile(false));
+                ASSERT_EQUALS(1, loc.line);
+                ASSERT_EQUALS(1, loc.column);
+#if defined(_WIN32)
+                ASSERT_EQUALS("[dir\\a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir\\a.cpp:1:1]", loc.stringify(true));
+#else
+                ASSERT_EQUALS("[dir/a.cpp:1]", loc.stringify(false));
+                ASSERT_EQUALS("[dir/a.cpp:1:1]", loc.stringify(true));
+#endif
+                ASSERT_EQUALS("info", loc.getinfo());
+            }
+        }
+    }
+
+    void FileLocationConstructFile() const {
+        ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation("dir/a.cpp", 1, 1).getfile(false));
+        ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation("dir\\a.cpp", 1, 1).getfile(false));
+        ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation("dir/a.cpp", "info", 1, 1).getfile(false));
+        ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation("dir\\a.cpp", "info", 1, 1).getfile(false));
+        {
+            const SimpleTokenList tokenlist("a", "dir/a.cpp");
+            ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), &tokenlist.get()).getfile(false));
+            ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), "info", &tokenlist.get()).getfile(false));
+        }
+        {
+            const SimpleTokenList tokenlist("a", "dir\\a.cpp");
+            ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), &tokenlist.get()).getfile(false));
+            ASSERT_EQUALS("dir/a.cpp", ErrorMessage::FileLocation(tokenlist.front(), "info", &tokenlist.get()).getfile(false));
+        }
     }
 
     void FileLocationSetFile() const {
         ErrorMessage::FileLocation loc("foo1.cpp", 0, 0);
         loc.setfile("foo.cpp");
-        ASSERT_EQUALS("foo1.cpp", loc.getOrigFile());
-        ASSERT_EQUALS("foo.cpp", loc.getfile());
+        ASSERT_EQUALS("foo1.cpp", loc.getOrigFile(false));
+        ASSERT_EQUALS("foo.cpp", loc.getfile(false));
         ASSERT_EQUALS(0, loc.line);
         ASSERT_EQUALS(0, loc.column);
         // TODO: the following looks wrong - there is no line or column 0
@@ -139,8 +236,8 @@ private:
     void FileLocationSetFile2() const {
         ErrorMessage::FileLocation loc("foo1.cpp", SuppressionList::Suppression::NO_LINE, 0); // TODO: should not depend on Suppression
         loc.setfile("foo.cpp");
-        ASSERT_EQUALS("foo1.cpp", loc.getOrigFile());
-        ASSERT_EQUALS("foo.cpp", loc.getfile());
+        ASSERT_EQUALS("foo1.cpp", loc.getOrigFile(false));
+        ASSERT_EQUALS("foo.cpp", loc.getfile(false));
         ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, loc.line);
         ASSERT_EQUALS(0, loc.column);
         ASSERT_EQUALS("[foo.cpp]", loc.stringify(false));
@@ -217,30 +314,32 @@ private:
         }
     }
 
-    void ErrorMessageReportTypeMisraC() const {
+    #define testReportType(reportType, severity, errorId, expectedClassification, expectedGuideline) \
+        testReportType_(__FILE__, __LINE__, reportType, severity, errorId, expectedClassification, expectedGuideline)
+    void testReportType_(const char *file, int line, ReportType reportType, Severity severity, const std::string &errorId,
+                         const std::string &expectedClassification, const std::string &expectedGuideline) const
+    {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
-        const auto reportType = ReportType::misraC;
         const auto mapping = createGuidelineMapping(reportType);
-        const std::string format = "{severity} {id}";
-        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "unusedVariable", Certainty::normal);
+
+        ErrorMessage msg(std::move(locs), emptyString, severity, "", errorId, Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
         msg.classification = getClassification(msg.guideline, reportType);
-        ASSERT_EQUALS("Advisory", msg.classification);
-        ASSERT_EQUALS("2.8", msg.guideline);
-        ASSERT_EQUALS("Advisory 2.8", msg.toString(true, format, ""));
+
+        ASSERT_EQUALS_LOC(expectedClassification, msg.classification, file, line);
+        ASSERT_EQUALS_LOC(expectedGuideline, msg.guideline, file, line);
     }
 
-    void ErrorMessageReportTypeCertC() const {
-        std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
-        const auto reportType = ReportType::certC;
-        const auto mapping = createGuidelineMapping(reportType);
-        const std::string format = "{severity} {id}";
-        ErrorMessage msg(std::move(locs), emptyString, Severity::error, "", "resourceLeak", Certainty::normal);
-        msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
-        msg.classification = getClassification(msg.guideline, reportType);
-        ASSERT_EQUALS("L3", msg.classification);
-        ASSERT_EQUALS("FIO42-C", msg.guideline);
-        ASSERT_EQUALS("L3 FIO42-C", msg.toString(true, format, ""));
+    void TestReportType() const {
+        testReportType(ReportType::misraC2012, Severity::error, "unusedVariable", "Advisory", "2.8");
+        testReportType(ReportType::misraCpp2023, Severity::warning, "premium-misra-cpp-2023-6.8.4", "Advisory", "6.8.4");
+        testReportType(ReportType::misraCpp2023, Severity::style, "premium-misra-cpp-2023-19.6.1", "Advisory", "19.6.1");
+        testReportType(ReportType::misraCpp2023, Severity::style, "premium-misra-cpp-2023-dir-0.3.1", "Advisory", "Dir 0.3.1");
+        testReportType(ReportType::misraCpp2023, Severity::style, "premium-misra-cpp-2023-dir-0.3.2", "Required", "Dir 0.3.2");
+        testReportType(ReportType::misraCpp2008, Severity::style, "premium-misra-cpp-2008-3-4-1", "Required", "3-4-1");
+        testReportType(ReportType::misraC2012, Severity::style, "premium-misra-c-2012-dir-4.6", "Advisory", "Dir 4.6");
+        testReportType(ReportType::misraC2012, Severity::style, "misra-c2012-dir-4.6", "Advisory", "Dir 4.6");
+        testReportType(ReportType::certC, Severity::error, "resourceLeak", "L3", "FIO42-C");
     }
 
     void CustomFormat() const {
@@ -295,26 +394,31 @@ private:
         ASSERT_EQUALS("        <error id=\"id\" severity=\"warning\" msg=\"\" verbose=\"\" remark=\"remark\"/>", msg.toXML());
     }
 
-    void ToXmlV2Locations() const {
-        std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8_i };
+    void ToXmlLocations() const {
+        const ErrorMessage::FileLocation dir1loc{"dir1/a.cpp", 1, 1};
+        const ErrorMessage::FileLocation dir2loc{"dir2\\a.cpp", 1, 1};
+        ErrorMessage::FileLocation dir3loc{"dir/a.cpp", 1, 1};
+        dir3loc.setfile("dir3/a.cpp");
+        ErrorMessage::FileLocation dir4loc{"dir/a.cpp", 1, 1};
+        dir4loc.setfile("dir4\\a.cpp");
+        std::list<ErrorMessage::FileLocation> locs = { dir4loc, dir3loc, dir2loc, dir1loc, fooCpp5, barCpp8_i };
+
         ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
-        std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
-        header += "    <cppcheck version=\"";
-        header += CppCheck::version();
-        header += "\"/>\n    <errors>";
-        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader(""));
-        ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter(2));
-        std::string message("        <error id=\"errorId\" severity=\"error\"");
-        message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
+        std::string message;
+        message += "        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>\n";
-        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n        </error>";
+        message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n";
+        message += "            <location file=\"dir1/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location file=\"dir2/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location file=\"dir3/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location file=\"dir4/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "        </error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
 
     void ToXmlV2Encoding() const {
         {
-            std::list<ErrorMessage::FileLocation> locs;
-            ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", Certainty::normal);
+            ErrorMessage msg({}, "", Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", Certainty::normal);
             const std::string expected("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
             ASSERT_EQUALS(expected, msg.toXML());
         }
@@ -354,10 +458,10 @@ private:
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS(456u, msg.hash);
         ASSERT_EQUALS(2u, msg.callStack.size());
-        ASSERT_EQUALS("foo.cpp", msg.callStack.front().getfile());
+        ASSERT_EQUALS("foo.cpp", msg.callStack.front().getfile(false));
         ASSERT_EQUALS(5, msg.callStack.front().line);
         ASSERT_EQUALS(2u, msg.callStack.front().column);
-        ASSERT_EQUALS("bar.cpp", msg.callStack.back().getfile());
+        ASSERT_EQUALS("bar.cpp", msg.callStack.back().getfile(false));
         ASSERT_EQUALS(8, msg.callStack.back().line);
         ASSERT_EQUALS(1u, msg.callStack.back().column);
     }
@@ -388,8 +492,7 @@ private:
 
     void SerializeInconclusiveMessage() const {
         // Inconclusive error message
-        std::list<ErrorMessage::FileLocation> locs;
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg({}, "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
         msg.file0 = "test.cpp";
 
         const std::string msg_str = msg.serialize();
@@ -487,8 +590,7 @@ private:
     }
 
     void SerializeSanitize() const {
-        std::list<ErrorMessage::FileLocation> locs;
-        ErrorMessage msg(std::move(locs), "", Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
+        ErrorMessage msg({}, "", Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
         msg.file0 = "1.c";
 
         const std::string msg_str = msg.serialize();

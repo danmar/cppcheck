@@ -110,7 +110,7 @@ public:
         std::string file0;
     };
 
-    virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/) const {
+    virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/, const std::string& /*currentConfig*/) const {
         return nullptr;
     }
 
@@ -143,14 +143,9 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg) {
-        reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
-    }
-
-    /** report an error */
     void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
 
-    void reportError(const ErrorPath &errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
+    void reportError(ErrorPath errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
 
     /** log checker */
     void logChecker(const char id[]);

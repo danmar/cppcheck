@@ -15,12 +15,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "clangimport.h"
+#include "fixture.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "fixture.h"
+#include "tokenlist.h"
 
 #include <cstdint>
 #include <list>

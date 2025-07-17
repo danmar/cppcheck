@@ -302,6 +302,20 @@ struct misra_7_3_s
 {
   uint32_t ul_clka;
   uint32_t test123l;
+  float t = 6.02E23l; // 7.3
+  float t1 = 6.02E23L;
+  float u = 0xa1B2.p12l; // 7.3
+  float u1 = 0xa1B2.p12L;
+  float v = 0xa1B2.P12l; // 7.3
+  float v1 = 0xa1B2.P12L;
+  float w = 6.02e23l; // 7.3
+  float w1 = 6.02e23L;
+  unsigned long  x = 0xabcul; // 7.3
+  unsigned long x1 = 0xabcuL;
+  unsigned long y = 0xABCUl; // 7.3
+  unsigned long y1 = 0xABCUL;
+  unsigned long z = 0XdeadBeEfUl; // 7.3
+  unsigned long z1 = 0XdeadBeEfUL;
 };
 
 static void misra_7_3(void) {

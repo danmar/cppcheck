@@ -20,7 +20,6 @@
 #include "options.h"
 #include "utils.h"
 
-#include <functional>
 #include <set>
 #include <string>
 

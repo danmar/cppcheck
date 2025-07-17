@@ -157,7 +157,7 @@ void TestResultsTree::testReportType() const
     QCOMPARE(report.output, "id1,,\nunusedVariable,,");
 
     // switch to Misra C report and check that "id1" is not shown
-    tree.setReportType(ReportType::misraC);
+    tree.setReportType(ReportType::misraC2012);
     tree.saveResults(&report);
     QCOMPARE(report.output, "unusedVariable,Advisory,2.8");
 
@@ -187,7 +187,7 @@ void TestResultsTree::testGetGuidelineError() const
 
     // normal report with 2 errors
     ResultsTree tree(nullptr);
-    tree.setReportType(ReportType::misraC);
+    tree.setReportType(ReportType::misraC2012);
     tree.addErrorItem(createErrorItem(Severity::error, "id1")); // error severity => guideline 1.3
     tree.saveResults(&report);
     QCOMPARE(report.output, "id1,Required,1.3");

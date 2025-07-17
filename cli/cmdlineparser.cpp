@@ -39,6 +39,8 @@
 #include "timer.h"
 #include "utils.h"
 
+#include "frontend.h"
+
 #include <algorithm>
 #include <cassert>
 #include <climits>
@@ -128,6 +130,12 @@ namespace {
             reportOut(msg.toXML());
         }
 
+        void reportMetric(const std::string &metric) override
+        {
+            /* Not used here */
+            (void) metric;
+        }
+
         void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
         {}
     };
@@ -201,11 +209,13 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::list<FileSettings> fileSettings;
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
+            PathMatch filtermatcher(mSettings.fileFilters, Path::getCurrentPath());
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
-                return matchglobs(mSettings.fileFilters, fs.filename());
+                return filtermatcher.match(fs.filename());
             });
             if (fileSettings.empty()) {
-                mLogger.printError("could not find any files matching the filter.");
+                for (const std::string& f: mSettings.fileFilters)
+                    mLogger.printError("could not find any files matching the filter:" + f);
                 return false;
             }
         }
@@ -215,40 +225,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
         mFileSettings.clear();
 
-        if (mSettings.enforcedLang != Standards::Language::None)
-        {
-            // apply enforced language
-            for (auto& fs : fileSettings)
-            {
-                if (mSettings.library.markupFile(fs.filename()))
-                    continue;
-                fs.file.setLang(mSettings.enforcedLang);
-            }
-        }
-        else
-        {
-            // identify files
-            for (auto& fs : fileSettings)
-            {
-                if (mSettings.library.markupFile(fs.filename()))
-                    continue;
-                assert(fs.file.lang() == Standards::Language::None);
-                bool header = false;
-                fs.file.setLang(Path::identify(fs.filename(), mSettings.cppHeaderProbe, &header));
-                // unknown extensions default to C++
-                if (!header && fs.file.lang() == Standards::Language::None)
-                    fs.file.setLang(Standards::Language::CPP);
-            }
-        }
-
-        // enforce the language since markup files are special and do not adhere to the enforced language
-        for (auto& fs : fileSettings)
-        {
-            if (mSettings.library.markupFile(fs.filename())) {
-                assert(fs.file.lang() == Standards::Language::None);
-                fs.file.setLang(Standards::Language::C);
-            }
-        }
+        frontend::applyLang(fileSettings, mSettings, mEnforcedLang);
 
         // sort the markup last
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(mFileSettings), [&](const FileSettings &fs) {
@@ -267,16 +244,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
     if (!pathnamesRef.empty()) {
         std::list<FileWithDetails> filesResolved;
-        // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
-#if defined(_WIN32)
-        // For Windows we want case-insensitive path matching
-        const bool caseSensitive = false;
-#else
-        const bool caseSensitive = true;
-#endif
         // Execute recursiveAddFiles() to each given file parameter
         // TODO: verbose log which files were ignored?
-        const PathMatch matcher(ignored, caseSensitive);
+        const PathMatch matcher(ignored, Path::getCurrentPath());
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher, mSettings.debugignore);
             if (!err.empty()) {
@@ -310,7 +280,8 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         if (!mSettings.fileFilters.empty()) {
             files = filterFiles(mSettings.fileFilters, filesResolved);
             if (files.empty()) {
-                mLogger.printError("could not find any files matching the filter.");
+                for (const std::string& f: mSettings.fileFilters)
+                    mLogger.printError("could not find any files matching the filter:" + f);
                 return false;
             }
         }
@@ -318,40 +289,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
             files = std::move(filesResolved);
         }
 
-        if (mSettings.enforcedLang != Standards::Language::None)
-        {
-            // apply enforced language
-            for (auto& f : files)
-            {
-                if (mSettings.library.markupFile(f.path()))
-                    continue;
-                f.setLang(mSettings.enforcedLang);
-            }
-        }
-        else
-        {
-            // identify remaining files
-            for (auto& f : files)
-            {
-                if (f.lang() != Standards::Language::None)
-                    continue;
-                if (mSettings.library.markupFile(f.path()))
-                    continue;
-                bool header = false;
-                f.setLang(Path::identify(f.path(), mSettings.cppHeaderProbe, &header));
-                // unknown extensions default to C++
-                if (!header && f.lang() == Standards::Language::None)
-                    f.setLang(Standards::Language::CPP);
-            }
-        }
-
-        // enforce the language since markup files are special and do not adhere to the enforced language
-        for (auto& f : files)
-        {
-            if (mSettings.library.markupFile(f.path())) {
-                f.setLang(Standards::Language::C);
-            }
-        }
+        frontend::applyLang(files, mSettings, mEnforcedLang);
 
         // sort the markup last
         std::copy_if(files.cbegin(), files.cend(), std::inserter(mFiles, mFiles.end()), [&](const FileWithDetails& entry) {
@@ -440,10 +378,16 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     bool def = false;
     bool maxconfigs = false;
+    bool debug = false;
 
     ImportProject::Type projectType = ImportProject::Type::NONE;
     ImportProject project;
     std::string vsConfig;
+
+    std::string platform;
+    char defaultSign = '\0';
+
+    std::vector<std::string> lookupPaths{argv[0]};
 
     bool executorAuto = true;
 
@@ -544,8 +488,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
             mSettings.addonPython.assign(argv[i]+15);
 
-        else if (std::strcmp(argv[i],"--analyze-all-vs-configs") == 0)
+        else if (std::strcmp(argv[i],"--analyze-all-vs-configs") == 0) {
             mSettings.analyzeAllVsConfigs = true;
+            mAnalyzeAllVsConfigsSetOnCmdLine = true;
+        }
 
         // Check configuration
         else if (std::strcmp(argv[i], "--check-config") == 0)
@@ -659,7 +605,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         // Show --debug output after the first simplifications
         else if (std::strcmp(argv[i], "--debug") == 0 ||
                  std::strcmp(argv[i], "--debug-normal") == 0)
-            mSettings.debugnormal = true;
+            debug = true;
 
         // Show debug warnings for lookup for configuration files
         else if (std::strcmp(argv[i], "--debug-lookup") == 0)
@@ -839,10 +785,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.force = true;
 
         else if (std::strcmp(argv[i], "--fsigned-char") == 0)
-            mSettings.platform.defaultSign = 's';
+            defaultSign = 's';
 
         else if (std::strcmp(argv[i], "--funsigned-char") == 0)
-            mSettings.platform.defaultSign = 'u';
+            defaultSign = 'u';
 
         // Ignored paths
         else if (std::strncmp(argv[i], "-i", 2) == 0) {
@@ -977,9 +923,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             if (str == "c")
-                mSettings.enforcedLang = Standards::Language::C;
+                mEnforcedLang = Standards::Language::C;
             else if (str == "c++")
-                mSettings.enforcedLang = Standards::Language::CPP;
+                mEnforcedLang = Standards::Language::CPP;
             else {
                 mLogger.printError("unknown language '" + str + "' enforced.");
                 return Result::Fail;
@@ -1030,8 +976,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
         }
 
-        else if (std::strcmp(argv[i],"--no-analyze-all-vs-configs") == 0)
+        else if (std::strcmp(argv[i],"--no-analyze-all-vs-configs") == 0) {
             mSettings.analyzeAllVsConfigs = false;
+            mAnalyzeAllVsConfigsSetOnCmdLine = true;
+        }
 
         else if (std::strcmp(argv[i], "--no-check-headers") == 0)
             mSettings.checkHeaders = false;
@@ -1088,22 +1036,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // Specify platform
         else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
-            const std::string platform(11+argv[i]);
-
-            std::string errstr;
-            const std::vector<std::string> paths = {argv[0]};
-            if (!mSettings.platform.set(platform, errstr, paths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
-                mLogger.printError(errstr);
+            std::string p = 11 + argv[i];
+            if (p.empty()) {
+                mLogger.printError("empty platform specified.");
                 return Result::Fail;
             }
-
-            // TODO: remove
-            // these are loaded via external files and thus have Settings::PlatformFile set instead.
-            // override the type so they behave like the regular platforms.
-            if (platform == "unix32-unsigned")
-                mSettings.platform.type = Platform::Type::Unix32;
-            else if (platform == "unix64-unsigned")
-                mSettings.platform.type = Platform::Type::Unix64;
+            platform = std::move(p);
         }
 
         // Write results in results.plist
@@ -1136,9 +1074,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 "cert-c-2016",
                 "cert-c++-2016",
                 "cert-cpp-2016",
+                "cert-c",
+                "cert-c++",
                 "metrics",
                 "misra-c-2012",
                 "misra-c-2023",
+                "misra-c-2025",
                 "misra-c++-2008",
                 "misra-cpp-2008",
                 "misra-c++-2023",
@@ -1185,7 +1126,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
-            projectType = project.import(projectFile, &mSettings, &mSuppressions);
+            projectType = project.import(projectFile, &mSettings, &mSuppressions, isCppcheckPremium());
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                 for (const std::string &lib : project.guiProject.libraries)
                     mSettings.libraries.emplace_back(lib);
@@ -1193,17 +1134,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 const auto& excludedPaths = project.guiProject.excludedPaths;
                 std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
-                std::string platform(project.guiProject.platform);
+                if (!project.guiProject.platform.empty())
+                    platform = project.guiProject.platform;
 
-                // keep existing platform from command-line intact
-                if (!platform.empty()) {
-                    std::string errstr;
-                    const std::vector<std::string> paths = {projectFile, argv[0]};
-                    if (!mSettings.platform.set(platform, errstr, paths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
-                        mLogger.printError(errstr);
-                        return Result::Fail;
-                    }
-                }
+                // look for external files relative to project first
+                lookupPaths.insert(lookupPaths.cbegin(), projectFile);
 
                 const auto& projectFileGui = project.guiProject.projectFile;
                 if (!projectFileGui.empty()) {
@@ -1292,8 +1227,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.reportType = ReportType::certC;
             } else if (typeStr == "cert-cpp-2016") {
                 mSettings.reportType = ReportType::certCpp;
-            } else if (typeStr == "misra-c-2012" || typeStr == "misra-c-2023") {
-                mSettings.reportType = ReportType::misraC;
+            } else if (typeStr == "misra-c-2012") {
+                mSettings.reportType = ReportType::misraC2012;
+            } else if (typeStr == "misra-c-2023") {
+                mSettings.reportType = ReportType::misraC2023;
+            } else if (typeStr == "misra-c-2025") {
+                mSettings.reportType = ReportType::misraC2025;
             } else if (typeStr == "misra-cpp-2008") {
                 mSettings.reportType = ReportType::misraCpp2008;
             } else if (typeStr == "misra-cpp-2023") {
@@ -1422,10 +1361,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
             else if (showtimeMode == "summary")
                 mSettings.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
-            else if (showtimeMode == "top5") {
-                mSettings.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE;
-                mLogger.printMessage("--showtime=top5 is deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.");
-            }
             else if (showtimeMode == "top5_file")
                 mSettings.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE;
             else if (showtimeMode == "top5_summary")
@@ -1437,7 +1372,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
             else {
-                mLogger.printError("unrecognized --showtime mode: '" + showtimeMode + "'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.");
+                mLogger.printError("unrecognized --showtime mode: '" + showtimeMode + "'. Supported modes: file, file-total, summary, top5_file, top5_summary.");
                 return Result::Fail;
             }
         }
@@ -1601,9 +1536,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     if (mSettings.force)
         mSettings.maxConfigs = INT_MAX;
-
     else if ((def || mSettings.preprocessOnly) && !maxconfigs)
         mSettings.maxConfigs = 1U;
+
+    if (debug) {
+        mSettings.debugnormal = true;
+        mSettings.debugvalueflow = true;
+        if (mSettings.verbose) {
+            mSettings.debugast = true;
+            mSettings.debugsymdb = true;
+        }
+    }
 
     if (mSettings.jobs > 1 && mSettings.buildDir.empty()) {
         // TODO: bail out instead?
@@ -1624,14 +1567,40 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         project.ignoreOtherConfigs(vsConfig);
     }
 
-    if (!mSettings.analyzeAllVsConfigs) {
-        if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
-            mLogger.printError("--no-analyze-all-vs-configs has no effect - no Visual Studio project provided.");
+    if (!platform.empty())
+    {
+        std::string errstr;
+        if (!mSettings.platform.set(platform, errstr, lookupPaths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
+            mLogger.printError(errstr);
             return Result::Fail;
         }
 
-        // TODO: bail out when this does nothing
-        project.selectOneVsConfig(mSettings.platform.type);
+        // TODO: remove
+        // these are loaded via external files and thus have Settings::PlatformFile set instead.
+        // override the type so they behave like the regular platforms.
+        if (platform == "unix32-unsigned") {
+            mSettings.platform.type = Platform::Type::Unix32;
+            mLogger.printMessage("The platform 'unix32-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix32 --funsigned-char' instead");
+        }
+        else if (platform == "unix64-unsigned") {
+            mSettings.platform.type = Platform::Type::Unix64;
+            mLogger.printMessage("The platform 'unix64-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix64 --funsigned-char' instead");
+        }
+    }
+
+    if (defaultSign != '\0')
+        mSettings.platform.defaultSign = defaultSign;
+
+    if (!mSettings.analyzeAllVsConfigs) {
+        if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
+            if (mAnalyzeAllVsConfigsSetOnCmdLine) {
+                mLogger.printError("--no-analyze-all-vs-configs has no effect - no Visual Studio project provided.");
+                return Result::Fail;
+            }
+        } else {
+            // TODO: bail out when this does nothing
+            project.selectOneVsConfig(mSettings.platform.type);
+        }
     }
 
     if (!mSettings.buildDir.empty() && !Path::isDirectory(mSettings.buildDir)) {
@@ -1649,19 +1618,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     for (auto& path : mIgnoredPaths)
     {
         path = Path::removeQuotationMarks(std::move(path));
-        path = Path::simplifyPath(std::move(path));
-
-        bool isdir = false;
-        if (!Path::exists(path, &isdir) && mSettings.debugignore) {
-            // FIXME: this is misleading because we match from the end of the path so it does not require to exist
-            //std::cout << "path to ignore does not exist: " << path << std::endl;
-        }
-        // TODO: this only works when it exists
-        if (isdir) {
-            // If directory name doesn't end with / or \, add it
-            if (!endsWith(path, '/'))
-                path += '/';
-        }
+        path = Path::fromNativeSeparators(std::move(path));
     }
 
     if (!project.guiProject.pathNames.empty())
@@ -1819,10 +1776,9 @@ void CmdLineParser::printHelp() const
         "                         this is not needed.\n"
         "    --include=<file>\n"
         "                         Force inclusion of a file before the checked file.\n"
-        "    -i <dir or file>     Give a source file or source file directory to exclude\n"
-        "                         from the check. This applies only to source files so\n"
-        "                         header files included by source files are not matched.\n"
-        "                         Directory name is matched to all parts of the path.\n"
+        "    -i <str>             Exclude source files or directories matching str from\n"
+        "                         the check. This applies only to source files so header\n"
+        "                         files included by source files are not matched.\n"
         "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
         "                         inconclusive.\n"
         "                         There are false positives with this option. Each result\n"
@@ -1899,10 +1855,11 @@ void CmdLineParser::printHelp() const
             "    --premium=<option>\n"
             "                         Coding standards:\n"
             "                          * autosar           Autosar (partial)\n"
-            "                          * cert-c-2016       Cert C 2016 checking\n"
-            "                          * cert-c++-2016     Cert C++ 2016 checking\n"
+            "                          * cert-c            Cert C checking\n"
+            "                          * cert-c++          Cert C++ checking\n"
             "                          * misra-c-2012      Misra C 2012\n"
             "                          * misra-c-2023      Misra C 2023\n"
+            "                          * misra-c-2025      Misra C 2025\n"
             "                          * misra-c++-2008    Misra C++ 2008\n"
             "                          * misra-c++-2023    Misra C++ 2023\n"
             "                         Other:\n"
@@ -1943,6 +1900,7 @@ void CmdLineParser::printHelp() const
         "                          * cert-cpp-2016    Cert C++ 2016\n"
         "                          * misra-c-2012     Misra C 2012\n"
         "                          * misra-c-2023     Misra C 2023\n"
+        "                          * misra-c-2025     Misra C 2025\n"
         "                          * misra-cpp-2008   Misra C++ 2008\n"
         "                          * misra-cpp-2023   Misra C++ 2023\n"
         "    --rule=<rule>        Match regular expression.\n"
@@ -1965,8 +1923,6 @@ void CmdLineParser::printHelp() const
         "                                 Show the top 5 for each processed file\n"
         "                          * top5_summary\n"
         "                                 Show the top 5 summary at the end\n"
-        "                          * top5\n"
-        "                                 Alias for top5_file (deprecated)\n"
         "    --std=<id>           Set standard.\n"
         "                         The available options are:\n"
         "                          * c89\n"
@@ -2187,13 +2143,9 @@ bool CmdLineParser::loadCppcheckCfg()
 std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::string>& fileFilters,
                                                       const std::list<FileWithDetails>& filesResolved) {
     std::list<FileWithDetails> files;
-#ifdef _WIN32
-    constexpr bool caseInsensitive = true;
-#else
-    constexpr bool caseInsensitive = false;
-#endif
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
     std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
-        return matchglobs(fileFilters, entry.path(), caseInsensitive) || matchglobs(fileFilters, entry.spath(), caseInsensitive);
+        return filtermatcher.match(entry.path());
     });
     return files;
 }

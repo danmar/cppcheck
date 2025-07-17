@@ -231,6 +231,9 @@ void CheckClass::constructors()
                 if (usage.assign || usage.init || var.isStatic())
                     continue;
 
+                if (!var.nameToken() || var.nameToken()->isAnonymous())
+                    continue;
+
                 if (var.valueType() && var.valueType()->pointer == 0 && var.type() && var.type()->needInitialization == Type::NeedInitialization::False && var.type()->derivedFrom.empty())
                     continue;
 
@@ -241,11 +244,19 @@ void CheckClass::constructors()
                 if (!var.isPointer() && !var.isPointerArray() && var.isClass() && func.type == FunctionType::eConstructor) {
                     // Unknown type so assume it is initialized
                     if (!var.type()) {
-                        if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken && var.getTypeName() == "std::array") {
-                            const Token* ctt = var.valueType()->containerTypeToken;
-                            if (!ctt->isStandardType() &&
-                                (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
-                                !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
+                        if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken) {
+                            if (var.valueType()->type == ValueType::Type::ITERATOR)
+                            {
+                                // needs initialization
+                            }
+                            else if (var.getTypeName() == "std::array") {
+                                const Token* ctt = var.valueType()->containerTypeToken;
+                                if (!ctt->isStandardType() &&
+                                    (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
+                                    !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
+                                    continue;
+                            }
+                            else
                                 continue;
                         }
                         else
@@ -319,6 +330,11 @@ void CheckClass::constructors()
     }
 }
 
+static bool isPermissibleConversion(const std::string& type)
+{
+    return type == "std::initializer_list" || type == "std::nullptr_t";
+}
+
 void CheckClass::checkExplicitConstructors()
 {
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("noExplicitConstructor"))
@@ -357,7 +373,7 @@ void CheckClass::checkExplicitConstructors()
                 func.type != FunctionType::eCopyConstructor &&
                 func.type != FunctionType::eMoveConstructor &&
                 !(func.templateDef && Token::simpleMatch(func.argumentList.front().typeEndToken(), "...")) &&
-                func.argumentList.front().getTypeName() != "std::initializer_list") {
+                !isPermissibleConversion(func.argumentList.front().getTypeName())) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == ScopeType::eStruct);
             }
         }
@@ -2362,6 +2378,14 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 
 const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map", "std :: map|unordered_map <" }; // start pattern
 
+static bool isNonConstPtrCast(const Token* tok)
+{
+    if (!tok || !tok->isCast())
+        return false;
+    const ValueType* vt = tok->valueType();
+    return !vt || (vt->pointer > 0 && !vt->isConst(vt->pointer));
+}
+
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
@@ -2452,9 +2476,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             }
 
             // non const pointer cast
-            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() &&
-                !(tok1->astParent()->valueType() &&
-                  (tok1->astParent()->valueType()->pointer == 0 || tok1->astParent()->valueType()->isConst(tok1->astParent()->valueType()->pointer))))
+            if (tok1->valueType() && tok1->valueType()->pointer > 0 && isNonConstPtrCast(tok1->astParent()))
                 return false;
 
             const Token* lhs = tok1->previous();
@@ -2465,6 +2487,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
                 lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
+                const Token* parent = lhs->astParent();
+                while (Token::Match(parent, "[+(]")) {
+                    if (isNonConstPtrCast(parent))
+                        return false;
+                    parent = parent->astParent();
+                }
                 const Token* const top = lhs->astTop();
                 if (top->isAssignmentOp()) {
                     if (Token::simpleMatch(top->astOperand2(), "{") && !top->astOperand2()->previous()->function()) // TODO: check usage in init list
@@ -2961,7 +2989,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
         }
     }
 
-    reportError(errorPath, Severity::style, "virtualCallInConstructor",
+    reportError(std::move(errorPath), Severity::style, "virtualCallInConstructor",
                 "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + std::to_string(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
 }
 
@@ -2979,7 +3007,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     if (!errorPath.empty())
         errorPath.back().second = purefuncname + " is a pure virtual function without body";
 
-    reportError(errorPath, Severity::warning, "pureVirtualCall",
+    reportError(std::move(errorPath), Severity::warning, "pureVirtualCall",
                 "$symbol:" + purefuncname +"\n"
                 "Call of pure virtual function '$symbol' in " + scopeFunctionTypeName + ".\n"
                 "Call of pure virtual function '$symbol' in " + scopeFunctionTypeName + ". The call will fail during runtime.", CWE(0U), Certainty::normal);
@@ -3110,7 +3138,7 @@ void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
     const std::string message = "The " + std::string(derivedIsStruct ? "struct" : "class") + " '" + derivedName +
                                 "' defines member " + member + " with name '" + memberName + "' also defined in its parent " +
                                 std::string(baseIsStruct ? "struct" : "class") + " '" + baseName + "'.";
-    reportError(errorPath, Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, Certainty::normal);
+    reportError(std::move(errorPath), Severity::warning, "duplInheritedMember", symbols + '\n' + message, CWE398, Certainty::normal);
 }
 
 
@@ -3220,7 +3248,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
         errorPath.emplace_back(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class");
     }
 
-    reportError(errorPath, Severity::style, "missingOverride",
+    reportError(std::move(errorPath), Severity::style, "missingOverride",
                 "$symbol:" + functionName + "\n"
                 "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but is not marked with a 'override' specifier.",
                 CWE(0U) /* Unknown CWE! */,
@@ -3244,7 +3272,7 @@ void CheckClass::uselessOverrideError(const Function *funcInBase, const Function
     }
     else
         errStr += "just delegates back to the base class.";
-    reportError(errorPath, Severity::style, "uselessOverride",
+    reportError(std::move(errorPath), Severity::style, "uselessOverride",
                 "$symbol:" + functionName +
                 errStr,
                 CWE(0U) /* Unknown CWE! */,
@@ -3404,7 +3432,9 @@ void CheckClass::checkReturnByReference()
                 const bool isView = isContainer && var->valueType()->container->view;
                 bool warn = isContainer && !isView;
                 if (!warn && !isView) {
-                    const std::size_t size = ValueFlow::getSizeOf(*var->valueType(), *mSettings);
+                    const std::size_t size = ValueFlow::getSizeOf(*var->valueType(),
+                                                                  *mSettings,
+                                                                  ValueFlow::Accuracy::LowerBound);
                     if (size > 2 * mSettings->platform.sizeof_pointer)
                         warn = true;
                 }
@@ -3513,10 +3543,10 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
 void CheckClass::thisUseAfterFree(const Token *self, const Token *free, const Token *use)
 {
     std::string selfPointer = self ? self->str() : "ptr";
-    const ErrorPath errorPath = { ErrorPathItem(self, "Assuming '" + selfPointer + "' is used as 'this'"), ErrorPathItem(free, "Delete '" + selfPointer + "', invalidating 'this'"), ErrorPathItem(use, "Call method when 'this' is invalid") };
+    ErrorPath errorPath = { ErrorPathItem(self, "Assuming '" + selfPointer + "' is used as 'this'"), ErrorPathItem(free, "Delete '" + selfPointer + "', invalidating 'this'"), ErrorPathItem(use, "Call method when 'this' is invalid") };
     const std::string usestr = use ? use->str() : "x";
     const std::string usemsg = use && use->function() ? ("Calling method '" + usestr + "()'") : ("Using member '" + usestr + "'");
-    reportError(errorPath, Severity::warning, "thisUseAfterFree",
+    reportError(std::move(errorPath), Severity::warning, "thisUseAfterFree",
                 "$symbol:" + selfPointer + "\n" +
                 usemsg + " when 'this' might be invalid",
                 CWE(0), Certainty::normal);
@@ -3570,6 +3600,7 @@ namespace
         struct NameLoc {
             std::string className;
             std::string fileName;
+            std::string configuration;
             int lineNumber;
             int column;
             std::size_t hash;
@@ -3589,6 +3620,7 @@ namespace
             for (const NameLoc &nameLoc: classDefinitions) {
                 ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
                        "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+                       "\" configuration=\"" + ErrorLogger::toxml(nameLoc.configuration) +
                        "\" line=\"" + std::to_string(nameLoc.lineNumber) +
                        "\" col=\"" + std::to_string(nameLoc.column) +
                        "\" hash=\"" + std::to_string(nameLoc.hash) +
@@ -3599,7 +3631,7 @@ namespace
     };
 }
 
-Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/) const
+Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Settings& /*settings*/, const std::string& currentConfig) const
 {
     if (!tokenizer.isCPP())
         return nullptr;
@@ -3656,6 +3688,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Setti
             }
         }
         nameLoc.hash = std::hash<std::string> {}(def);
+        nameLoc.configuration = currentConfig;
 
         classDefinitions.push_back(std::move(nameLoc));
     }
@@ -3676,13 +3709,15 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
             continue;
         const char *name = e->Attribute("name");
         const char *file = e->Attribute("file");
+        const char *configuration = e->Attribute("configuration");
         const char *line = e->Attribute("line");
         const char *col = e->Attribute("col");
         const char *hash = e->Attribute("hash");
-        if (name && file && line && col && hash) {
+        if (name && file && configuration && line && col && hash) {
             MyFileInfo::NameLoc nameLoc;
             nameLoc.className = name;
             nameLoc.fileName = file;
+            nameLoc.configuration = configuration;
             nameLoc.lineNumber = strToInt<int>(line);
             nameLoc.column = strToInt<int>(col);
             nameLoc.hash = strToInt<std::size_t>(hash);
@@ -3723,6 +3758,8 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<C
                 continue;
             }
             if (it->second.hash == nameLoc.hash)
+                continue;
+            if (it->second.fileName == nameLoc.fileName && it->second.configuration != nameLoc.configuration)
                 continue;
             // Same location, sometimes the hash is different wrongly (possibly because of different token simplifications).
             if (it->second.isSameLocation(nameLoc))

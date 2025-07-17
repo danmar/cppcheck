@@ -38,6 +38,7 @@
 #include <cctype>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -463,12 +464,12 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     if (!mSettings->isEnabled(value, inconclusive) && !mSettings->isPremiumEnabled("nullPointer"))
         return;
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
 
@@ -485,7 +486,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
-        reportError(errorPath,
+        reportError(std::move(errorPath),
                     value->isKnown() ? Severity::error : Severity::warning,
                     id.c_str(),
                     errmsg,
@@ -561,8 +562,8 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
         id += "OutOfResources";
     }
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-    reportError(errorPath,
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(std::move(errorPath),
                 Severity::error,
                 id.c_str(),
                 errmsg,
@@ -580,8 +581,8 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
     } else {
         errmsg = ValueFlow::eitherTheConditionIsRedundant(condition) + " or there is pointer arithmetic with NULL pointer.";
     }
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-    reportError(errorPath,
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(std::move(errorPath),
                 Severity::warning,
                 "nullPointerArithmeticRedundantCheck",
                 errmsg,
@@ -620,7 +621,7 @@ namespace
     };
 }
 
-Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
+Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
     if (unsafeUsage.empty())
@@ -667,7 +668,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                     break;
 
                 ValueFlow::Value::UnknownFunctionReturn unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::no;
-                const std::list<ErrorMessage::FileLocation> &locationList =
+                std::list<ErrorMessage::FileLocation> locationList =
                     CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                                 unsafeUsage,
                                                 callsMap,
@@ -689,12 +690,12 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::
                     message = "If resource allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
                 }
 
-                const ErrorMessage errmsg(locationList,
-                                          fi->file0,
-                                          warning ? Severity::warning : Severity::error,
-                                          message,
-                                          std::move(id),
-                                          CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+                ErrorMessage errmsg(std::move(locationList),
+                                    fi->file0,
+                                    warning ? Severity::warning : Severity::error,
+                                    message,
+                                    std::move(id),
+                                    CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
                 errorLogger.reportErr(errmsg);
 
                 foundErrors = true;

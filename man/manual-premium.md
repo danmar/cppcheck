@@ -1240,6 +1240,10 @@ Command to activate Misra C 2023 checkers:
 
     cppcheck --premium=misra-c-2023 ....
 
+Command to activate Misra C 2025 checkers:
+
+    cppcheck --premium=misra-c-2025 ....
+
 Command to activate Misra C++ 2008 checkers:
 
     cppcheck --premium=misra-c++-2008 ....
@@ -1276,21 +1280,6 @@ Description of the options:
 
 ## Licenses
 
-### Individual license
-
-A license that is connected to your computer.
-
-After installing you run a register tool that will create a license file
-which is locked to your computer.
-
-### Enterprise license
-
-You receive a license file. Copy that to one of these paths:
-
-- Windows:
-  - C:\\ProgramData\\Cppcheck Solutions AB\\
-
-- Linux:
-  - /etc/cppcheckpremium/
-  - ~/.cppcheckpremium/
+Information about Cppcheck Premium licenses:
+https://www.cppcheck.com/plans-pricing
 

@@ -19,74 +19,119 @@
 #include "pathmatch.h"
 
 #include "path.h"
-#include "utils.h"
 
-#include <cstddef>
-#include <utility>
+#include <algorithm>
+#include <stack>
+#include <string>
+#include <vector>
 
-PathMatch::PathMatch(std::vector<std::string> paths, bool caseSensitive)
-    : mPaths(std::move(paths)), mCaseSensitive(caseSensitive)
-{
-    for (std::string& p : mPaths)
-    {
-        p = Path::fromNativeSeparators(p);
-        if (!mCaseSensitive)
-            strTolower(p);
-    }
-    // TODO: also make lowercase?
-    mWorkingDirectory.push_back(Path::fromNativeSeparators(Path::getCurrentPath()));
-}
+
+PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Syntax syntax) :
+    mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mSyntax(syntax)
+{}
 
 bool PathMatch::match(const std::string &path) const
 {
-    if (path.empty())
-        return false;
-
-    std::string findpath = Path::fromNativeSeparators(path);
-    if (!mCaseSensitive)
-        strTolower(findpath);
-    std::string finddir;
-    if (!endsWith(findpath,'/'))
-        finddir = removeFilename(findpath);
-    else
-        finddir = findpath;
-
-    const bool is_absolute = Path::isAbsolute(path);
-
-    // TODO: align the match logic with ImportProject::ignorePaths()
-    for (auto i = mPaths.cbegin(); i != mPaths.cend(); ++i) {
-        const std::string pathToMatch((!is_absolute && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
-
-        // Filtering directory name
-        if (endsWith(pathToMatch,'/')) {
-            if (pathToMatch.length() > finddir.length())
-                continue;
-            // Match relative paths starting with mask
-            // -isrc matches src/foo.cpp
-            if (finddir.compare(0, pathToMatch.size(), pathToMatch) == 0)
-                return true;
-            // Match only full directory name in middle or end of the path
-            // -isrc matches myproject/src/ but does not match
-            // myproject/srcfiles/ or myproject/mysrc/
-            if (finddir.find("/" + pathToMatch) != std::string::npos)
-                return true;
-        }
-        // Filtering filename
-        else {
-            if (pathToMatch.length() > findpath.length())
-                continue;
-            // Check if path ends with mask
-            // -ifoo.cpp matches (./)foo.c, src/foo.cpp and proj/src/foo.cpp
-            // -isrc/file.cpp matches src/foo.cpp and proj/src/foo.cpp
-            if (findpath.compare(findpath.size() - pathToMatch.size(), findpath.size(), pathToMatch) == 0)
-                return true;
-        }
-    }
-    return false;
+    return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
+        return match(pattern, path, mBasepath, mSyntax);
+    });
 }
 
-std::string PathMatch::removeFilename(const std::string &path)
+bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Syntax syntax)
 {
-    const std::size_t ind = path.find_last_of('/');
-    return path.substr(0, ind + 1);
+    if (pattern.empty())
+        return false;
+
+    if (pattern == "*" || pattern == "**")
+        return true;
+
+    /* A "real" path is absolute or relative to the base path. A pattern that isn't "real" can match at any
+     * path component boundary. */
+    bool real = Path::isAbsolute(pattern) || isRelativePattern(pattern);
+
+    /* Pattern iterator */
+    PathIterator s = PathIterator::fromPattern(pattern, basepath, syntax);
+    /* Path iterator */
+    PathIterator t = PathIterator::fromPath(path, basepath, syntax);
+    /* Pattern restart position */
+    PathIterator p = s;
+    /* Path restart position */
+    PathIterator q = t;
+
+    /* Backtrack stack */
+    std::stack<std::pair<PathIterator::Pos, PathIterator::Pos>> b;
+
+    for (;;) {
+        switch (*s) {
+        /* Star or star-star, matches any number of characters */
+        case '*': {
+            bool slash = false;
+            ++s;
+            if (*s == '*') {
+                /* Star-star matches slashes as well */
+                slash = true;
+                ++s;
+            }
+            /* Add backtrack for matching zero characters */
+            b.emplace(s.getpos(), t.getpos());
+            while (*t != '\0' && (slash || *t != '/')) {
+                if (*s == *t) {
+                    /* Could stop here, but do greedy match and add
+                     * backtrack instead */
+                    b.emplace(s.getpos(), t.getpos());
+                }
+                ++t;
+            }
+            continue;
+        }
+        /* Single character wildcard */
+        case '?': {
+            if (*t != '\0' && *t != '/') {
+                ++s;
+                ++t;
+                continue;
+            }
+            break;
+        }
+        /* Start of pattern; matches start of path, or a path separator if the
+         * pattern is not "real" (an absolute or relative path). */
+        case '\0': {
+            if (*t == '\0' || (*t == '/' && !real))
+                return true;
+            break;
+        }
+        /* Literal character */
+        default: {
+            if (*s == *t) {
+                ++s;
+                ++t;
+                continue;
+            }
+            break;
+        }
+        }
+
+        /* No match, try to backtrack */
+        if (!b.empty()) {
+            const auto &bp = b.top();
+            b.pop();
+            s.setpos(bp.first);
+            t.setpos(bp.second);
+            continue;
+        }
+
+        /* Couldn't backtrack, try matching from the next path separator */
+        while (*q != '\0' && *q != '/')
+            ++q;
+
+        if (*q == '/') {
+            ++q;
+            s = p;
+            t = q;
+            continue;
+        }
+
+        /* No more path seperators to try from */
+        return false;
+    }
 }

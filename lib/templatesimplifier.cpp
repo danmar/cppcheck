@@ -2099,7 +2099,7 @@ void TemplateSimplifier::expandTemplate(
                     Token * const beforeTypeToken = mTokenList.back();
                     bool pointerType = false;
                     const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
-                    if (isVariadicTemplateArg && mTypesUsedInTemplateInstantiation.size() > 1 && !Token::simpleMatch(tok3->next(), "..."))
+                    if (isVariadicTemplateArg && mTypesUsedInTemplateInstantiation.size() > 1 && !Token::Match(tok3->next(), "...|<"))
                         continue;
                     if (isVariadicTemplateArg && Token::Match(tok3, "%name% ... %name%"))
                         tok3 = tok3->tokAt(2);
@@ -4061,7 +4061,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             if (Token::Match(tok, "( ... %op%")) {
                 op = tok->tokAt(2);
                 args = tok->link()->previous();
-            } else if (Token::Match(tok, "( %name% %op% ...")) {
+            } else if (Token::Match(tok, "( %name% %op% ...") && !Token::simpleMatch(tok->previous(), "] (")) {
                 op = tok->tokAt(2);
                 args = tok->link()->previous()->isName() ? nullptr : tok->next();
             } else if (Token::Match(tok->link()->tokAt(-3), "%op% ... )")) {

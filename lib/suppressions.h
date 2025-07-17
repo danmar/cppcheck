@@ -151,6 +151,7 @@ public:
 
         std::string errorId;
         std::string fileName;
+        std::string extraComment;
         int lineNumber = NO_LINE;
         int lineBegin = NO_LINE;
         int lineEnd = NO_LINE;

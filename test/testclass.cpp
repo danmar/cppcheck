@@ -190,6 +190,7 @@ private:
         TEST_CASE(const97);
         TEST_CASE(const98);
         TEST_CASE(const99);
+        TEST_CASE(const100);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -504,6 +505,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Class 'Color' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]\n"
                       "[test.cpp:4:5]: (style) Class 'Color' has a constructor with 1 argument that is not explicit. [noExplicitConstructor]\n",
                       errout_str());
+
+        checkExplicitConstructors("template <typename T>\n" // #13878
+                                  "struct S {\n"
+                                  "    S(std::nullptr_t) {}\n"
+                                  "    explicit S(T* p) : m(p) {}\n"
+                                  "    T* m{};\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
 #define checkDuplInheritedMembers(...) checkDuplInheritedMembers_( __FILE__, __LINE__, __VA_ARGS__)
@@ -6835,9 +6844,19 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout_str());
     }
-
-
+  
     void const99() {
+        checkConst("typedef void (*InitFunc)(void**);\n" // #13953
+                   "struct S {\n"
+                   "    int *m;\n"
+                   "    void f(InitFunc func) {\n"
+                   "        func(reinterpret_cast<void**>(&m));\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void const100() {
         checkConst("struct S {\n" // #14023
                    "    void f() { ++i; }\n"
                    "    void f() const {}\n"
@@ -9095,7 +9114,7 @@ private:
             const std::string filename = std::to_string(fileInfo.size()) + ".cpp";
             SimpleTokenizer tokenizer{settingsDefault, *this, filename};
             ASSERT(tokenizer.tokenize(c));
-            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault));
+            fileInfo.push_back(check.getFileInfo(tokenizer, settingsDefault, ""));
         }
 
         // Check code..
@@ -9141,7 +9160,7 @@ private:
 
         // Check..
         const Check& c = getCheck<CheckClass>();
-        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1);
+        Check::FileInfo * fileInfo = (c.getFileInfo)(tokenizer, settings1, "");
 
         delete fileInfo;
     }

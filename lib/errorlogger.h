@@ -29,7 +29,6 @@
 #include <list>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 #include <map>
 
@@ -57,12 +56,8 @@ public:
      */
     class CPPCHECKLIB WARN_UNUSED FileLocation {
     public:
-        FileLocation(const std::string &file, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
-
-        FileLocation(const std::string &file, std::string info, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(std::move(info)) {}
-
+        FileLocation(const std::string &file, int line, unsigned int column);
+        FileLocation(const std::string &file, std::string info, int line, unsigned int column);
         FileLocation(const Token* tok, const TokenList* tokenList);
         FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
 
@@ -130,7 +125,7 @@ public:
                  const std::string& msg,
                  const CWE &cwe,
                  Certainty certainty);
-    ErrorMessage(const ErrorPath &errorPath,
+    ErrorMessage(ErrorPath errorPath,
                  const TokenList *tokenList,
                  Severity severity,
                  const char id[],
@@ -244,6 +239,13 @@ public:
      * @param msg Location and other information about the found error.
      */
     virtual void reportErr(const ErrorMessage &msg) = 0;
+
+    /**
+     * Information about file metrics reported by addons.
+     *
+     * @param metric The file metric to report, as an XML object.
+     */
+    virtual void reportMetric(const std::string &metric) = 0;
 
     /**
      * Report progress to client

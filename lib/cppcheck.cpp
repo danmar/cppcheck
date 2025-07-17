@@ -257,6 +257,11 @@ private:
         mErrorLogger.reportOut(outmsg, c);
     }
 
+    void reportMetric(const std::string &metric) override
+    {
+        mErrorLogger.reportMetric(metric);
+    }
+
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override
     {
         mErrorLogger.reportProgress(filename, stage, value);
@@ -727,7 +732,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
                              mSettings,
                              &s_timerResults);
         tokenizer.printDebugOutput(std::cout);
-        checkNormalTokens(tokenizer, nullptr); // TODO: provide analyzer information
+        checkNormalTokens(tokenizer, nullptr, ""); // TODO: provide analyzer information
 
         // create dumpfile
         std::ofstream fdump;
@@ -845,19 +850,24 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
-static std::size_t calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const Settings& settings, const Suppressions& supprs)
+std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens) const
 {
     std::ostringstream toolinfo;
-    toolinfo << (settings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : settings.cppcheckCfgProductName);
-    toolinfo << (settings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::style) ? 's' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
-    toolinfo << (settings.severity.isEnabled(Severity::information) ? 'i' : ' ');
-    toolinfo << settings.userDefines;
-    toolinfo << std::to_string(static_cast<std::uint8_t>(settings.checkLevel));
+    toolinfo << (mSettings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : mSettings.cppcheckCfgProductName);
+    toolinfo << (mSettings.severity.isEnabled(Severity::warning) ? 'w' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::style) ? 's' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::performance) ? 'p' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
+    toolinfo << (mSettings.severity.isEnabled(Severity::information) ? 'i' : ' ');
+    toolinfo << mSettings.userDefines;
+    toolinfo << std::to_string(static_cast<std::uint8_t>(mSettings.checkLevel));
+    for (const auto &a : mSettings.addonInfos) {
+        toolinfo << a.name;
+        toolinfo << a.args;
+    }
+    toolinfo << mSettings.premiumArgs;
     // TODO: do we need to add more options?
-    supprs.nomsg.dump(toolinfo);
+    mSuppressions.nomsg.dump(toolinfo);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
@@ -917,7 +927,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     simplecpp::TokenList tokens(*fileStream, files, file.spath());
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger, Standards::Language::C);
-                        hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
+                        hash = calculateHash(preprocessor, tokens);
                     }
                     tokenlist.createTokens(std::move(tokens));
                 }
@@ -926,7 +936,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     simplecpp::TokenList tokens(file.spath(), files);
                     if (analyzerInformation) {
                         const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
-                        hash = calculateHash(preprocessor, tokens, mSettings, mSuppressions);
+                        hash = calculateHash(preprocessor, tokens);
                     }
                     tokenlist.createTokens(std::move(tokens));
                 }
@@ -1010,7 +1020,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1, mSettings, mSuppressions);
+            const std::size_t hash = calculateHash(preprocessor, tokens1);
             std::list<ErrorMessage> errors;
             if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
                 while (!errors.empty()) {
@@ -1203,7 +1213,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     }
 
                     // Check normal tokens
-                    checkNormalTokens(tokenizer, analyzerInformation.get());
+                    checkNormalTokens(tokenizer, analyzerInformation.get(), currentConfig);
                 } catch (const InternalError &e) {
                     ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                     mErrorLogger.reportErr(errmsg);
@@ -1327,7 +1337,7 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 // CppCheck - A function that checks a normal token list
 //---------------------------------------------------------------------------
 
-void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation)
+void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig)
 {
     CheckUnusedFunctions unusedFunctionsChecker;
 
@@ -1392,7 +1402,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
         if (!doUnusedFunctionOnly) {
             // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
-                if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings)) {
+                if (Check::FileInfo * const fi = check->getFileInfo(tokenizer, mSettings, currentConfig)) {
                     if (analyzerInformation)
                         analyzerInformation->setFileInfo(check->name(), fi->toString());
                     if (mSettings.useSingleJob())
@@ -1579,7 +1589,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
         if (!re) {
             if (pcreCompileErrorStr) {
                 const std::string msg = "pcre_compile failed: " + std::string(pcreCompileErrorStr);
-                const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
+                const ErrorMessage errmsg({},
                                           "",
                                           Severity::error,
                                           msg,
@@ -1600,7 +1610,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
         // It is NULL if everything works, and points to an error string otherwise.
         if (pcreStudyErrorStr) {
             const std::string msg = "pcre_study failed: " + std::string(pcreStudyErrorStr);
-            const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
+            const ErrorMessage errmsg({},
                                       "",
                                       Severity::error,
                                       msg,
@@ -1623,7 +1633,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
             if (pcreExecRet < 0) {
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
-                    const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
+                    const ErrorMessage errmsg({},
                                               "",
                                               Severity::error,
                                               std::string("pcre_exec failed: ") + errorMessage,
@@ -1727,8 +1737,6 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             mErrorLogger.reportErr(errmsg);
         }
 
-        const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
-
         for (const picojson::value& res : results) {
             // TODO: get rid of copy?
             // this is a copy so we can access missing fields and get a default value
@@ -1764,10 +1772,27 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
                 }
             }
 
+            if (obj.count("metric") > 0) {
+                picojson::object metric_json = obj["metric"].get<picojson::object>();
+
+                std::string metric = "<metric";
+
+                for (auto pair : metric_json) {
+                    const std::string id = pair.first;
+                    if (pair.second.is<std::int64_t>())
+                        metric += " " + id + "=\"" + std::to_string(pair.second.get<std::int64_t>()) + "\"";
+                    else if (pair.second.is<std::string>())
+                        metric += " " + id + "=\"" + ErrorLogger::toxml(pair.second.get<std::string>()) + "\"";
+                }
+
+                metric += "/>";
+                mErrorLogger.reportMetric(metric);
+
+                continue;
+            }
+
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
-            if (misraC2023 && startsWith(errmsg.id, "misra-c2012-"))
-                errmsg.id = "misra-c2023-" + errmsg.id.substr(12);
-            errmsg.setmsg(mSettings.getMisraRuleText(errmsg.id, obj["message"].get<std::string>()));
+            errmsg.setmsg(obj["message"].get<std::string>());
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = severityFromString(severity);
             if (errmsg.severity == Severity::none || errmsg.severity == Severity::internal) {
@@ -2064,9 +2089,10 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
             // cppcheck-suppress shadowFunction - TODO: fix this
             for (const Check *check : Check::instances()) {
                 if (checkClassAttr == check->name()) {
-                    Check::FileInfo* fi = check->loadFileInfoFromXml(e);
-                    fi->file0 = filesTxtInfo.sourceFile;
-                    fileInfoList.push_back(fi);
+                    if (Check::FileInfo* fi = check->loadFileInfoFromXml(e)) {
+                        fi->file0 = filesTxtInfo.sourceFile;
+                        fileInfoList.push_back(fi);
+                    }
                 }
             }
         }
@@ -2098,10 +2124,8 @@ void CppCheck::printTimerResults(SHOWTIME_MODES mode)
 }
 
 bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
-    if (mSettings.premiumArgs.find("--misra") != std::string::npos) {
-        if (startsWith(id, "misra-") || startsWith(id, "premium-misra-"))
-            return true;
-    }
+    if (mSettings.premiumArgs.find("--misra") != std::string::npos && startsWith(id, "premium-misra-"))
+        return true;
     if (mSettings.premiumArgs.find("--cert") != std::string::npos && startsWith(id, "premium-cert-"))
         return true;
     if (mSettings.premiumArgs.find("--autosar") != std::string::npos && startsWith(id, "premium-autosar-"))

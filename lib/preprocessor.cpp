@@ -721,13 +721,18 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
-    // TODO: use mSettings.standards.stdValue instead
     if (lang == Standards::Language::CPP) {
-        dui.std = mSettings.standards.getCPP();
+        dui.std = mSettings.standards.stdValueCPP;
+        if (dui.std.empty()) {
+            dui.std = mSettings.standards.getCPP();
+        }
         splitcfg(mSettings.platform.getLimitsDefines(Standards::getCPP(dui.std)), dui.defines, "");
     }
     else if (lang == Standards::Language::C) {
-        dui.std = mSettings.standards.getC();
+        dui.std = mSettings.standards.stdValueC;
+        if (dui.std.empty()) {
+            dui.std = mSettings.standards.getC();
+        }
         splitcfg(mSettings.platform.getLimitsDefines(Standards::getC(dui.std)), dui.defines, "");
     }
     dui.clearIncludeCache = mSettings.clearIncludeCache;

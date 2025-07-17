@@ -43,6 +43,7 @@ public:
     void reportProgress(const std::string& /*filename*/,
                         const char /*stage*/[],
                         const std::size_t /*value*/) override {}
+    void reportMetric(const std::string & /*metric*/) override {}
 };
 
 static Settings create_settings()

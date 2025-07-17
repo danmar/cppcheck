@@ -34,6 +34,10 @@ static std::string getFullPath(const std::string &fileName, const std::string &e
     if (Path::isFile(fileName))
         return fileName;
 
+    const bool is_abs_path = Path::isAbsolute(fileName);
+    if (is_abs_path)
+        return "";
+
     const std::string exepath = Path::getPathFromFilename(exename);
     if (debug)
         std::cout << "looking for addon '" << (exepath + fileName) << "'" << std::endl;

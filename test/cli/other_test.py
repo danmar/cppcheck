@@ -4,6 +4,7 @@
 import os
 import sys
 import pytest
+import glob
 import json
 import subprocess
 
@@ -241,6 +242,35 @@ def test_execute_addon_failure_json_notexist(tmpdir):
     _, _, stderr = cppcheck(args)
     ec = 1 if os.name == 'nt' else 127
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows specific issue")
+def test_execute_addon_path_with_spaces(tmpdir):
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    addon_dir = os.path.join(tmpdir, 'A Folder')
+    addon_script = os.path.join(addon_dir, 'addon.bat')
+
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({'executable': addon_script }))
+
+    os.makedirs(addon_dir, exist_ok=True)
+
+    with open(addon_script, 'wt') as f:
+        f.write('@echo {"file":"1.c","linenr":1,"column":1,"severity":"error","message":"hello world","errorId":"hello","addon":"test"}')
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = [
+        '--addon={}'.format(addon_json),
+        test_file,
+    ]
+
+    _, _, stderr = cppcheck(args)
+
+    # Make sure the full command is used
+    assert '1.c:1:1: error: hello world [test-hello]\n' in stderr
 
 
 def test_execute_addon_failure_json_ctu_notexist(tmpdir):
@@ -858,7 +888,7 @@ def __test_unused_function_include(tmpdir, extra_args):
     args += extra_args
 
     _, _, stderr = cppcheck(args)
-    assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
+    assert stderr == "{}:4:26: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
 
 
 def test_unused_function_include(tmpdir):
@@ -959,7 +989,7 @@ def test_file_filter_no_match(tmpdir):
 
     args = ['--file-filter=*.c', test_file]
     out_lines = [
-        'cppcheck: error: could not find any files matching the filter.'
+        'cppcheck: error: could not find any files matching the filter:*.c'
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
@@ -1735,17 +1765,14 @@ def test_ignore_file_append(tmpdir):
     __test_ignore_file(tmpdir, 'test.cpp', append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_back(tmpdir):
     __test_ignore_file(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_front(tmpdir):
     __test_ignore_file(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_placeholder(tmpdir):
     __test_ignore_file(tmpdir, 't?st.cpp')
 
@@ -1758,12 +1785,10 @@ def test_ignore_file_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src/test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.c*')
 
@@ -1776,12 +1801,10 @@ def test_ignore_path_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src*/')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src*\\')
 
@@ -1851,17 +1874,14 @@ def test_ignore_project_file_cli_append(tmpdir):
     __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp', append_cli=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_back(tmpdir):
     __test_ignore_project(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_front(tmpdir):
     __test_ignore_project(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_placeholder(tmpdir):
     __test_ignore_project(tmpdir, 't?st.cpp')
 
@@ -1930,18 +1950,15 @@ def __test_ignore_project_2(tmpdir, extra_args, append=False, inject_path=False)
     assert stdout.splitlines() == lines_exp
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_append(tmpdir):
     # make sure it also matches when specified after project
     __test_ignore_project_2(tmpdir, ['-itest.cpp'], append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_wildcard_back(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.c*'])
 
@@ -1950,27 +1967,22 @@ def test_ignore_project_2_file_wildcard_front(tmpdir):
     __test_ignore_project_2(tmpdir, ['-i*test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_placeholder(tmpdir):
     __test_ignore_project_2(tmpdir, ['-it?st.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_relative_wildcard(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.c*'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.c*'])
 
@@ -1983,12 +1995,10 @@ def test_ignore_project_2_path_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
 def test_ignore_project_2_path_relative_wildcard(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc*/'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
 def test_ignore_project_2_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc*\\'])
 
@@ -2390,6 +2400,7 @@ void f(const void* p)
     exitcode_1, stdout_1, stderr_1 = cppcheck(args)
     assert exitcode_1 == 0, stdout_1
     assert stdout_1 == ''
+    test_file_exp = str(test_file).replace('\\', '/')
     assert (stderr_1 ==
 '''<?xml version="1.0" encoding="UTF-8"?>
 <results version="2">
@@ -2402,7 +2413,7 @@ void f(const void* p)
         </error>
     </errors>
 </results>
-'''.format(version_str, str(test_file).replace('\\', '/'), test_file, test_file))  # TODO: the slashes are inconsistent
+'''.format(version_str, test_file_exp, test_file_exp, test_file_exp))
 
 
 def test_internal_error_loc_int(tmp_path):
@@ -2468,7 +2479,6 @@ def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
 
 
-@pytest.mark.xfail(strict=True)  # #13437 - TODO: suppression needs to match the whole input path
 def test_addon_suppr_cli_file_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:test.c:3'])
 
@@ -2700,8 +2710,9 @@ def test_debug_verbose_xml(tmp_path):
     assert len(ast_elem) == 1
 
 
+# TODO: remove interaction with --debug?
 # TODO: test with --xml
-def __test_debug_template(tmp_path, verbose):
+def __test_debug_template(tmp_path, verbose=False, debug=False):
     test_file = tmp_path / 'test.cpp'
     with open(test_file, "w") as f:
         f.write(
@@ -2721,14 +2732,31 @@ void f()
 
     if verbose:
         args += ['--verbose']
+    if debug:
+        args += ['--debug']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0, stdout
-    assert stdout.find('##file ') == -1
-    assert stdout.find('##Value flow') == -1
-    assert stdout.find('### Symbol database ###') == -1
-    assert stdout.find('##AST') == -1
-    assert stdout.find('### Template Simplifier pass ') != -1
+    if debug:
+        assert stdout.find('##file ') != -1
+    else:
+        assert stdout.find('##file ') == -1
+    if debug:
+        assert stdout.find('##Value flow') != -1
+    else:
+        assert stdout.find('##Value flow') == -1
+    if debug and verbose:
+        assert stdout.find('### Symbol database ###') != -1
+    else:
+        assert stdout.find('### Symbol database ###') == -1
+    if debug and verbose:
+        assert stdout.find('##AST') != -1
+    else:
+        assert stdout.find('##AST') == -1
+    if debug:
+        assert stdout.count('### Template Simplifier pass ') == 2
+    else:
+        assert stdout.count('### Template Simplifier pass ') == 1
     assert stderr.splitlines() == [
         '{}:4:13: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
     ]
@@ -2736,12 +2764,22 @@ void f()
 
 
 def test_debug_template(tmp_path):
-    __test_debug_template(tmp_path, False)
+    __test_debug_template(tmp_path, verbose=False)
 
 
 def test_debug_template_verbose_nodiff(tmp_path):
     # make sure --verbose does not change the output
-    assert __test_debug_template(tmp_path, False) == __test_debug_template(tmp_path, True)
+    assert __test_debug_template(tmp_path, verbose=False) == __test_debug_template(tmp_path, verbose=True)
+
+
+def test_debug_template_debug(tmp_path):
+    __test_debug_template(tmp_path, debug=True)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_template_debug_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_template(tmp_path, debug=True, verbose=False) == __test_debug_template(tmp_path, debug=True, verbose=True)
 
 
 def test_file_ignore_2(tmp_path):  # #13570
@@ -3291,6 +3329,34 @@ def test_preprocess_enforced_cpp(tmp_path):  # #10989
     ]
 
 
+def test_preprocess_system_include(tmp_path): # #13928
+    g = glob.glob('/usr/include/c++/*/string')
+    if len(g) != 1:
+        pytest.skip('<string> header file not found')
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write('#include <string>\n'
+                ';\n')
+
+    def has_missing_include_string_warning(e):
+        return '<string>' in e
+
+    args = [
+        '--enable=missingInclude',
+        str(test_file)
+    ]
+
+    # include path not provided => missing include warning about <string>
+    _, _, stderr = cppcheck(args)
+    assert has_missing_include_string_warning(stderr), stderr
+
+    # include path provided => no missing include warning about <string>
+    args.append('-I' + os.path.dirname(str(g[0])))
+    _, _, stderr = cppcheck(args)
+    assert not has_missing_include_string_warning(stderr), stderr
+
+
 # TODO: test with --xml
 def __test_debug_normal(tmp_path, verbose):
     test_file = tmp_path / 'test.c'
@@ -3466,7 +3532,6 @@ def test_debug_ast(tmp_path):
     __test_debug_ast(tmp_path, False)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
 def test_debug_ast_verbose_nodiff(tmp_path):
     # make sure --verbose does not change the output
     assert __test_debug_ast(tmp_path, False) == __test_debug_ast(tmp_path, True)

@@ -18,10 +18,15 @@
 
 
 #include "analyzerinfo.h"
+#include "errorlogger.h"
 #include "filesettings.h"
 #include "fixture.h"
+#include "standards.h"
 
+#include <list>
 #include <sstream>
+
+#include "xml.h"
 
 class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
 public:
@@ -34,6 +39,7 @@ private:
         TEST_CASE(duplicateFile);
         TEST_CASE(filesTextDuplicateFile);
         TEST_CASE(parse);
+        TEST_CASE(skipAnalysis);
     }
 
     void getAnalyzerInfoFile() const {
@@ -94,6 +100,135 @@ private:
         ASSERT_EQUALS("", info.cfg);
         ASSERT_EQUALS(0, info.fileIndex);
         ASSERT_EQUALS("C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp", info.sourceFile);
+    }
+
+    void skipAnalysis() const {
+        // Matching hash with license error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"premium-invalidLicense\" severity=\"error\" msg=\"Invalid license: No license file was found, contact sales@cppchecksolutions.com\" verbose=\"Invalid license: No license file was found, contact sales@cppchecksolutions.com\" file0=\"test.c\">"
+                "<location file=\"Cppcheck Premium\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Matching hash with premium internal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"premium-internalError\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
+                "<location file=\"Cppcheck\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Matching hash with internal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"internalError\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
+                "<location file=\"Cppcheck\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Matching hash with normal error (skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"nullPointer\" severity=\"error\" msg=\"Null pointer dereference: ptr\" verbose=\"Null pointer dereference: ptr\" cwe=\"476\" file0=\"test.c\">"
+                "<location file=\"test.c\" line=\"4\" column=\"3\" info=\"Null pointer dereference\"/>"
+                "<location file=\"test.c\" line=\"3\" column=\"12\" info=\"Assignment &apos;ptr=NULL&apos;, assigned value is 0\"/>"
+                "<symbol>ptr</symbol>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(true, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(1, errorList.size());
+        }
+
+        // Matching hash with no error (skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(true, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Different hash with normal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"nullPointer\" severity=\"error\" msg=\"Null pointer dereference: ptr\" verbose=\"Null pointer dereference: ptr\" cwe=\"476\" file0=\"test.c\">"
+                "<location file=\"test.c\" line=\"4\" column=\"3\" info=\"Null pointer dereference\"/>"
+                "<location file=\"test.c\" line=\"3\" column=\"12\" info=\"Assignment &apos;ptr=NULL&apos;, assigned value is 0\"/>"
+                "<symbol>ptr</symbol>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 99, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Empty document (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse("");
+            ASSERT_EQUALS(tinyxml2::XML_ERROR_EMPTY_DOCUMENT, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
     }
 };
 

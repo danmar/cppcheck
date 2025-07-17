@@ -24,6 +24,7 @@
 #include "check.h"
 #include "config.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <functional>
@@ -42,6 +43,7 @@ class AnalyzerInformation;
 class ErrorLogger;
 class Settings;
 struct Suppressions;
+class Preprocessor;
 
 namespace simplecpp { class TokenList; }
 
@@ -163,6 +165,15 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
+     * @brief Calculate hash used to detect when a file needs to be reanalyzed.
+     *
+     * @param preprocessor  Preprocessor used to calculate the hash.
+     * @param tokens        Token list from preprocessed file.
+     * @return hash
+     */
+    std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens) const;
+
+    /**
      * @brief Check a file using stream
      * @param file the file
      * @param cfgname  cfg name
@@ -176,7 +187,7 @@ private:
      * @param tokenizer tokenizer instance
      * @param analyzerInformation the analyzer infomation
      */
-    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation);
+    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig);
 
     /**
      * Execute addons

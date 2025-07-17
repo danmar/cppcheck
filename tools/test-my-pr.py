@@ -52,7 +52,7 @@ if __name__ == "__main__":
     main_dir = os.path.join(work_path, 'tree-main')
 
     lib.set_jobs('-j' + str(args.j))
-    result_file = os.path.join(work_path, args.o)
+    result_file = os.path.abspath(os.path.join(work_path, args.o))
     (f, ext) = os.path.splitext(result_file)
     timing_file = f + '_timing' + ext
     your_repo_dir = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
@@ -75,8 +75,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-        os.chdir(your_repo_dir)
-        commit_id = (subprocess.check_output(['git', 'merge-base', 'origin/main', 'HEAD'])).strip().decode('ascii')
+        commit_id = (subprocess.check_output(['git', 'merge-base', 'origin/main', 'HEAD'], cwd=your_repo_dir)).strip().decode('ascii')
         with open(result_file, 'a') as myfile:
             myfile.write('Common ancestor: ' + commit_id + '\n\n')
         package_width = '140'
@@ -85,7 +84,6 @@ if __name__ == "__main__":
             myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
                 'Package', 'main', 'your', 'Factor', package_width=package_width, timing_width=timing_width))
 
-        os.chdir(main_dir)
         subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', commit_id])
         subprocess.check_call(['git', 'checkout', '-f', commit_id])
     except BaseException as e:

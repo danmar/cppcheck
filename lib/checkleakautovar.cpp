@@ -413,8 +413,6 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         // assignment..
         if (const Token* const tokAssignOp = isInit ? varTok : isAssignment(varTok)) {
 
-            if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
-                continue;
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% +|;|?|%comp%")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
@@ -730,8 +728,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC, ftok);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
-            if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
-                continue;
+
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
             tok = ftok->linkAt(1);
@@ -886,7 +883,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 while (rhs->isCast()) {
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
-                if (rhs->varId() == tok->varId() && isAssignment) {
+                if ((rhs->str() == "." || rhs->varId() == tok->varId()) && isAssignment) {
                     // simple assignment
                     varInfo.erase(tok->varId());
                 } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
@@ -1023,6 +1020,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         while (arg && arg->isCast())
             arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
         const Token * const argTypeStartTok = arg;
+
+        if (Token::simpleMatch(arg, "."))
+            arg = arg->next();
 
         while (Token::Match(arg, "%name% .|:: %name%"))
             arg = arg->tokAt(2);

@@ -36,6 +36,9 @@
 
 class Settings;
 struct Suppressions;
+namespace tinyxml2 {
+    class XMLDocument;
+}
 
 /// @addtogroup Core
 /// @{
@@ -52,6 +55,7 @@ namespace cppcheck {
  * @brief Importing project settings.
  */
 class CPPCHECKLIB WARN_UNUSED ImportProject {
+    friend class TestImporter;
 public:
     enum class Type : std::uint8_t {
         NONE,
@@ -94,11 +98,10 @@ public:
     void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
+    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr, bool premium=false);
 protected:
     bool importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
-    virtual bool sourceFileExists(const std::string &file);
+    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs, bool premium);
 
 private:
     struct SharedItemsProject {
@@ -111,6 +114,7 @@ private:
     bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
     static SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importBcb6Prj(const std::string &projectFilename);
 
     static void printError(const std::string &message);

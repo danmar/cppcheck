@@ -23,7 +23,6 @@
 
 #include <cstddef>
 #include <string>
-#include <vector>
 
 class TestLeakAutoVar : public TestFixture {
 public:
@@ -108,6 +107,8 @@ private:
         TEST_CASE(doublefree15);
         TEST_CASE(doublefree16);
         TEST_CASE(doublefree17); // #8109: delete with comma operator
+        TEST_CASE(doublefree18);
+        TEST_CASE(doublefree19); // #13960
 
         // exit
         TEST_CASE(exit1);
@@ -1799,6 +1800,30 @@ private:
               "    delete (b, c);\n"
               "}\n", dinit(CheckOptions, $.cpp = true));
         ASSERT_EQUALS("[test.cpp:5:5] -> [test.cpp:6:16]: (error) Memory pointed to by 'c' is freed twice. [doubleFree]\n", errout_str());
+    }
+
+    void doublefree18() {
+        check("typedef struct {\n" // #13918
+              "    FILE * fp;\n"
+              "} S;\n"
+              "void f(S* s, FILE* x) {\n"
+              "    if (fclose(s->fp)) {}\n"
+              "    s->fp = x;\n"
+              "    if (fclose(s->fp)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void doublefree19() {
+        check("struct S {\n"
+              "  void *x;\n"
+              "};\n"
+              "void f(struct S *p)\n"
+              "{\n"
+              "  free(p->x);\n"
+              "  free(p->x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:6:3] -> [test.c:7:3]: (error) Memory pointed to by 'x' is freed twice. [doubleFree]\n", errout_str());
     }
 
     void exit1() {

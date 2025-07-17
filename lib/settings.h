@@ -32,9 +32,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
-#include <functional>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <tuple>
@@ -235,9 +233,6 @@ public:
 
     /** @brief Do not filter duplicated errors. */
     bool emitDuplicates{};
-
-    /** @brief Name of the language that is enforced. Empty per default. */
-    Standards::Language enforcedLang{};
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
@@ -543,17 +538,12 @@ public:
 
     void setCheckLevel(CheckLevel level);
 
-    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
-    void setMisraRuleTexts(const ExecuteCmdFn& executeCommand);
-    void setMisraRuleTexts(const std::string& data);
-    std::string getMisraRuleText(const std::string& id, const std::string& text) const;
 
     static ExecutorType defaultExecutor();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
-    std::map<std::string, std::string> mMisraRuleTexts;
 };
 
 /// @}

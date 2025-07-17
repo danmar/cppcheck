@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -75,7 +75,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -155,7 +155,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -189,7 +189,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -223,7 +223,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -247,7 +247,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, macos-15]
         include:
           - xdist_n: auto
           # FIXME: test_color_tty fails with xdist
@@ -284,15 +284,29 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils python3 pcre gnu-sed
+          brew install coreutils pcre gnu-sed
 
-      - name: Install missing Python packages
+      - name: Install missing Python packages on ubuntu
+        if: contains(matrix.os, 'ubuntu')
         run: |
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
           python3 -m pip install pytest-xdist
           python3 -m pip install psutil
+
+      # we need to use -break-system-packages --user because the common approaches do not work.
+      # using pip works but it appears to install the packages into a different Python installation so they are not found later on.
+      # using python3 -m pip without the additional flags fails since the packages are being managed by a different tool (brew) and that lacks some of the packages.
+      # using pipx also does not work.
+      - name: Install missing Python packages on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          python3 -m pip install --break-system-packages --user pip --upgrade
+          python3 -m pip install --break-system-packages --user pytest
+          python3 -m pip install --break-system-packages --user pytest-timeout
+          python3 -m pip install --break-system-packages --user pytest-xdist
+          python3 -m pip install --break-system-packages --user psutil
 
       - name: Build cppcheck
         run: |
@@ -523,13 +537,15 @@ jobs:
           ./cppcheck $selfcheck_options externals || ec=1
           # self check lib/cli
           mkdir b1
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json frontend || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json -Ifrontend cli || ec=1
           ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b1 --addon=naming.json --enable=internal lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
           # self check test and tools
-          ./cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/dmake/*.cpp || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options -Ifrontend -Icli test/*.cpp  || ec=1
+          ./cppcheck $selfcheck_options $cppcheck_options -Icli tools/dmake/*.cpp || ec=1
           # triage
           ./cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
           exit $ec

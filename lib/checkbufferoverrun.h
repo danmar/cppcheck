@@ -72,7 +72,7 @@ private:
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const override;
 
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;

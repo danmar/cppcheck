@@ -54,7 +54,11 @@
 
 #include "ui_mainwindow.h"
 
+#include "frontend.h"
+
 #include <algorithm>
+#include <cstddef>
+#include <fstream>
 #include <iterator>
 #include <list>
 #include <memory>
@@ -391,7 +395,9 @@ void MainWindow::loadSettings()
     mUI->mActionReportAutosar->setChecked(reportType == ReportType::autosar);
     mUI->mActionReportCertC->setChecked(reportType == ReportType::certC);
     mUI->mActionReportCertCpp->setChecked(reportType == ReportType::certCpp);
-    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC);
+    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC2012 ||
+                                         reportType == ReportType::misraC2023 ||
+                                         reportType == ReportType::misraC2025);
     mUI->mActionReportMisraCpp2008->setChecked(reportType == ReportType::misraCpp2008);
     mUI->mActionReportMisraCpp2023->setChecked(reportType == ReportType::misraCpp2023);
 
@@ -470,6 +476,15 @@ void MainWindow::loadSettings()
     }
 }
 
+static ReportType getMisraCReportType(const QStringList &standards)
+{
+    if (standards.contains(CODING_STANDARD_MISRA_C_2023))
+        return ReportType::misraC2023;
+    if (standards.contains(CODING_STANDARD_MISRA_C_2025))
+        return ReportType::misraC2025;
+    return ReportType::misraC2012;
+}
+
 void MainWindow::saveSettings() const
 {
     // Window/dialog sizes
@@ -480,7 +495,7 @@ void MainWindow::saveSettings() const
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;
@@ -604,6 +619,10 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());
     }
+
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(p.fileSettings, checkSettings, enforcedLang);
+
     mThread->setProject(p);
     mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
@@ -644,9 +663,11 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         return;
     }
 
-    mUI->mResults->checkingStarted(fileNames.count());
+    std::list<FileWithDetails> fdetails = enrichFilesForAnalysis(fileNames, checkSettings);
 
-    mThread->setFiles(fileNames);
+    // TODO: lock UI here?
+    mUI->mResults->checkingStarted(fdetails.size());
+    mThread->setFiles(std::move(fdetails));
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
     mThread->setSuppressions(mProjectFile ? mProjectFile->getCheckingSuppressions() : QList<SuppressionList::Suppression>());
@@ -684,9 +705,9 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     if (!getCppcheckSettings(checkSettings, supprs))
         return;
 
+    // TODO: split ErrorLogger from ThreadResult
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
-    result.setFiles(QStringList(filename));
     connect(&result, SIGNAL(progress(int,QString)),
             mUI->mResults, SLOT(progress(int,QString)));
     connect(&result, SIGNAL(error(ErrorItem)),
@@ -703,6 +724,7 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
+    // TODO: apply enforcedLanguage?
     cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
     analysisDone();
 
@@ -797,7 +819,7 @@ void MainWindow::analyzeFiles()
             p.ignoreOtherConfigs(cfg.toStdString());
         }
 
-        doAnalyzeProject(p);
+        doAnalyzeProject(p); // TODO: avoid copy
         return;
     }
 
@@ -1175,7 +1197,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
             if (!premiumArgs.contains("--misra-c-") && mProjectFile->getAddons().contains("misra"))
                 premiumArgs += " --misra-c-2012";
             settings.premiumArgs = premiumArgs.mid(1).toStdString();
-            settings.setMisraRuleTexts(CheckThread::executeCommand);
         }
     }
     else
@@ -1209,7 +1230,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
         settings.platform.set(static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt()));
     settings.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     settings.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    settings.enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
 
     settings.jobs = std::max(settings.jobs, 1u);
 
@@ -1364,10 +1384,12 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     pathList.addPathList(files);
     if (mProjectFile)
         pathList.addExcludeList(mProjectFile->getExcludedPaths());
-    QStringList fileNames = pathList.getFileList();
+
+    std::list<FileWithDetails> fdetails = enrichFilesForAnalysis(pathList.getFileList(), checkSettings);
+
     checkLockDownUI(); // lock UI while checking
-    mUI->mResults->checkingStarted(fileNames.size());
-    mThread->setCheckFiles(fileNames);
+    mUI->mResults->checkingStarted(fdetails.size());
+    mThread->setCheckFiles(std::move(fdetails));
 
     // Saving last check start time, otherwise unchecked modified files will not be
     // considered in "Modified Files Check"  performed after "Selected Files Check"
@@ -1380,7 +1402,7 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
 
 void MainWindow::reAnalyze(bool all)
 {
-    const QStringList files = mThread->getReCheckFiles(all);
+    const std::list<FileWithDetails> files = mThread->getReCheckFiles(all);
     if (files.empty())
         return;
 
@@ -1393,8 +1415,8 @@ void MainWindow::reAnalyze(bool all)
     mUI->mResults->clear(all);
 
     // Clear results for changed files
-    for (int i = 0; i < files.size(); ++i)
-        mUI->mResults->clear(files[i]);
+    for (const auto& f : files)
+        mUI->mResults->clear(QString::fromStdString(f.path()));
 
     checkLockDownUI(); // lock UI while checking
     mUI->mResults->checkingStarted(files.size());
@@ -1961,7 +1983,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
             msg.exec();
             return;
         }
-        doAnalyzeProject(p, checkLibrary, checkConfiguration);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);  // TODO: avoid copy
         return;
     }
 
@@ -2284,7 +2306,7 @@ void MainWindow::changeReportType() {
     const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
                                   mUI->mActionReportCertC->isChecked() ? ReportType::certC :
                                   mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
-                                  mUI->mActionReportMisraC->isChecked() ? ReportType::misraC :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
                                   mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
                                   mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
                                   ReportType::normal;
@@ -2333,3 +2355,12 @@ void MainWindow::changeReportType() {
     }
 }
 
+std::list<FileWithDetails> MainWindow::enrichFilesForAnalysis(const QStringList& fileNames, const Settings& settings) const {
+    std::list<FileWithDetails> fdetails;
+    std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(fdetails), [](const QString& f) {
+        return FileWithDetails{f.toStdString(), Standards::Language::None, static_cast<std::size_t>(QFile(f).size())};
+    });
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(fdetails, settings, enforcedLang);
+    return fdetails;
+}

@@ -86,9 +86,11 @@ void TokenList::deallocateTokens()
         mTokensFrontBack->front = nullptr;
         mTokensFrontBack->back = nullptr;
     }
+    // TODO: clear mOrigFiles?
     mFiles.clear();
 }
 
+// TODO: also update mOrigFiles?
 int TokenList::appendFileIfNew(std::string fileName)
 {
     assert(!fileName.empty());
@@ -99,6 +101,8 @@ int TokenList::appendFileIfNew(std::string fileName)
     });
     if (it != mFiles.cend())
         return static_cast<int>(std::distance(mFiles.cbegin(), it));
+
+    assert(mTokensFrontBack->front == nullptr); // has no effect if tokens have already been created
 
     // The "mFiles" vector remembers what files have been tokenized..
     mFiles.push_back(std::move(fileName));
@@ -347,8 +351,10 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
         // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
         mOrigFiles = mFiles = tokenList.getFiles();
     }
-    else
+    else {
+        // TODO: clear mOrigFiles?
         mFiles.clear();
+    }
 
     for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
@@ -464,7 +470,7 @@ static bool iscast(const Token *tok, bool cpp)
     if (Token::Match(tok->link(), ") %assign%|,|..."))
         return false;
 
-    if (tok->previous() && tok->previous()->isName() && tok->strAt(-1) != "return" &&
+    if (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") &&
         (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
 
@@ -594,6 +600,10 @@ static bool iscpp11init_impl(const Token * const tok)
             if (Token::simpleMatch(castTok->astParent(), "case"))
                 return true;
         }
+        if (findParent(colonTok->previous(), [](const Token *parent){
+            return parent->str() == "case";
+        }))
+            return true;
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
@@ -821,7 +831,7 @@ static void compileTerm(Token *&tok, AST_state& state)
         } else if ((state.cpp && iscpp11init(tok)) || Token::simpleMatch(tok->previous(), "] {")) {
             Token *const end = tok->link();
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
-                if (Token::Match(tok->tokAt(-1), "!!, { . %name% =|{")) {
+                if (Token::Match(tok->tokAt(-1), "!!, { . %name% =|{") && !Token::simpleMatch(tok->tokAt(-1), "(")) {
                     const int inArrayAssignment = state.inArrayAssignment;
                     state.inArrayAssignment = 1;
                     compileBinOp(tok, state, compileExpression);
@@ -1070,7 +1080,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             state.inGeneric = inGenericSaved;
             tok = tok->link()->next();
             if (Token::simpleMatch(tok, "::"))
-                compileBinOp(tok, state, compileTerm);
+                compileBinOp(tok, state, compileScope);
         } else if (iscast(tok, state.cpp) && Token::simpleMatch(tok->link(), ") {") &&
                    Token::simpleMatch(tok->link()->linkAt(1), "} [")) {
             Token *cast = tok;

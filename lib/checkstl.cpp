@@ -271,7 +271,7 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         }
     }
 
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 (containerSize && !containerSize->errorSeverity()) || (indexValue && !indexValue->errorSeverity()) ? Severity::warning : Severity::error,
                 "containerOutOfBounds",
                 "$symbol:" + containerName +"\n" + errmsg,
@@ -1202,6 +1202,11 @@ void CheckStl::invalidContainer()
                         if (info.tok->variable()->isReference() && !isVariableDecl(info.tok) &&
                             reaches(info.tok->variable()->nameToken(), tok, nullptr)) {
 
+                            if ((assignExpr && Token::Match(assignExpr->astOperand1(), "& %varid%", info.tok->varId())) || // TODO: fix AST
+                                Token::Match(assignExpr, "& %varid% {|(", info.tok->varId())) {
+                                return false;
+                            }
+
                             ErrorPath ep;
                             bool addressOf = false;
                             const Variable* var = ValueFlow::getLifetimeVariable(info.tok, ep, *mSettings, &addressOf);
@@ -1253,7 +1258,7 @@ void CheckStl::invalidContainerLoopError(const Token* tok, const Token* loopTok,
 
     const std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidContainerLoop", msg, CWE664, Certainty::normal);
 }
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/, const ValueFlow::Value *val, ErrorPath errorPath)
@@ -1263,7 +1268,7 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/
         errorPath.insert(errorPath.begin(), val->errorPath.cbegin(), val->errorPath.cend());
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath)
@@ -1271,7 +1276,7 @@ void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* con
     std::string name = contTok ? contTok->expressionString() : "x";
     std::string msg = "Reference to " + name;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, Certainty::normal);
 }
 
 void CheckStl::stlOutOfBounds()
@@ -1394,7 +1399,7 @@ void CheckStl::negativeIndex()
 
 void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
 {
-    const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
+    ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
     std::ostringstream errmsg;
     if (index.condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
@@ -1403,7 +1408,7 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
     const auto severity = index.errorSeverity() && index.isKnown() ? Severity::error : Severity::warning;
     const auto certainty = index.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
-    reportError(errorPath, severity, "negativeContainerIndex", errmsg.str(), CWE786, certainty);
+    reportError(std::move(errorPath), severity, "negativeContainerIndex", errmsg.str(), CWE786, certainty);
 }
 
 void CheckStl::erase()
@@ -2537,16 +2542,16 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     if (!mSettings->isEnabled(value, inconclusive))
         return;
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
+    ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
-        reportError(errorPath,
+        reportError(std::move(errorPath),
                     value->isKnown() ? Severity::error : Severity::warning,
                     "derefInvalidIterator",
                     errmsg,

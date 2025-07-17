@@ -164,6 +164,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(array);
         TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
@@ -303,6 +304,7 @@ private:
         TEST_CASE(functionArgs19); // #10376
         TEST_CASE(functionArgs20);
         TEST_CASE(functionArgs21);
+        TEST_CASE(functionArgs22); // #13945
 
         TEST_CASE(functionImplicitlyVirtual);
         TEST_CASE(functionGetOverridden);
@@ -317,6 +319,7 @@ private:
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
         TEST_CASE(namespaces4);
+        TEST_CASE(namespaces5); // #13967
         TEST_CASE(needInitialization);
 
         TEST_CASE(tryCatch1);
@@ -530,6 +533,7 @@ private:
         TEST_CASE(findFunction58); // #13310
         TEST_CASE(findFunction59);
         TEST_CASE(findFunction60);
+        TEST_CASE(findFunction61);
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
@@ -3063,6 +3067,22 @@ private:
         ASSERT_EQUALS("", arg->name());
     }
 
+    void functionArgs22() {
+        const char code[] = "typedef void (*callback_fn)(void);\n"
+                            "void ext_func(const callback_fn cb, size_t v) {}\n";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(1U, db->functionScopes.size());
+        const auto it = db->functionScopes.cbegin();
+        const Function *func = (*it)->function;
+        ASSERT_EQUALS("ext_func", func->name());
+        ASSERT_EQUALS(2, func->argCount());
+        const Variable *arg = func->getArgumentVar(0);
+        ASSERT_EQUALS("cb", arg->name());
+        arg = func->getArgumentVar(1);
+        ASSERT_EQUALS("v", arg->name());
+    }
+
     void functionImplicitlyVirtual() {
         GET_SYMBOL_DB("class base { virtual void f(); };\n"
                       "class derived : base { void f(); };\n"
@@ -3191,6 +3211,19 @@ private:
         ASSERT_EQUALS(2U, fredAType->classDef->linenr());
     }
 
+    void namespaces5() { // #13967
+        GET_SYMBOL_DB("namespace test {\n"
+                      "  template <int S>\n"
+                      "  struct Test { int x[S]; };\n"
+                      "  const Test<64> test;\n"
+                      "}\n");
+        const Variable *x = db->getVariableFromVarId(2U);
+        ASSERT_EQUALS("x", x->name());
+        const Scope *scope = x->scope();
+        ASSERT(scope->nestedIn);
+        ASSERT_EQUALS("test", scope->nestedIn->className);
+    }
+
     void needInitialization() {
         {
             GET_SYMBOL_DB_DBG("template <typename T>\n" // #10259
@@ -3278,7 +3311,7 @@ private:
 
         const Settings s = settingsBuilder(settings1).severity(Severity::portability).build();
         check("main(int argc, char *argv[]) { }", false, false, &s);
-        ASSERT_EQUALS("[test.c:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards.\n",
+        ASSERT_EQUALS("[test.c:1:1]: (portability) Omitted return type of function 'main' defaults to int, this is not supported by ISO C99 and later standards. [returnImplicitInt]\n",
                       errout_str());
 
         check("namespace boost {\n"
@@ -3301,8 +3334,8 @@ private:
               "{\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n"
-            "[test.cpp:1]: (debug) Executable scope 'testing' with unknown function.\n", // duplicate
+            "[test.cpp:1:10]: (debug) Executable scope 'testing' with unknown function. [symbolDatabaseWarning]\n"
+            "[test.cpp:1:10]: (debug) Executable scope 'testing' with unknown function. [symbolDatabaseWarning]\n", // duplicate
             errout_str());
     }
 
@@ -3426,9 +3459,9 @@ private:
         check("::y(){x}");
 
         ASSERT_EQUALS(
-            "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n"
-            "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n"
-            "[test.cpp:1]: (debug) Executable scope 'y' with unknown function.\n", // duplicate
+            "[test.cpp:1:3]: (debug) Executable scope 'y' with unknown function. [symbolDatabaseWarning]\n"
+            "[test.cpp:1:7]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n"
+            "[test.cpp:1:3]: (debug) Executable scope 'y' with unknown function. [symbolDatabaseWarning]\n", // duplicate
             errout_str());
     }
 
@@ -3623,7 +3656,7 @@ private:
               "struct S {\n"
               "  _Atomic union { int n; };\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:2]: (debug) Failed to parse 'typedef _Atomic ( int ) & atomic_int_ref ;'. The checking continues anyway.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:1]: (debug) Failed to parse 'typedef _Atomic ( int ) & atomic_int_ref ;'. The checking continues anyway. [simplifyTypedef]\n", errout_str());
     }
 
     void symboldatabase35() { // ticket #4806 and #4841
@@ -8629,6 +8662,19 @@ private:
                       "    return v.back();\n"
                       "}\n");
         const Token* fun = Token::findsimplematch(tokenizer.tokens(), "fun ( v");
+        ASSERT(fun && !fun->function());
+    }
+
+    void findFunction61() {
+        GET_SYMBOL_DB("namespace N {\n" // #13975
+                      "    struct B {\n"
+                      "        virtual ~B() = default;\n"
+                      "    };\n"
+                      "    struct D : B {\n"
+                      "        D() : B() {}\n"
+                      "    };\n"
+                      "}\n");
+        const Token* fun = Token::findsimplematch(tokenizer.tokens(), "B ( ) {");
         ASSERT(fun && !fun->function());
     }
 

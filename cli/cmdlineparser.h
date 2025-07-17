@@ -27,6 +27,7 @@
 
 #include "cmdlinelogger.h"
 #include "filesettings.h"
+#include "standards.h"
 #include "utils.h"
 
 class Settings;
@@ -46,6 +47,7 @@ class Library;
  * class internal options.
  */
 class CmdLineParser {
+    friend class TestCmdlineParser;
 public:
     /**
      * The constructor.
@@ -174,6 +176,9 @@ private:
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
     Suppressions &mSuppressions;
+    bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
+    /** @brief Name of the language that is enforced. Empty per default. */
+    Standards::Language mEnforcedLang{Standards::Language::None};
 };
 
 /// @}

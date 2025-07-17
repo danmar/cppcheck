@@ -33,6 +33,15 @@ namespace Ui {
     class ProjectFile;
 }
 
+extern const char ADDON_MISRA[];
+extern const char CODING_STANDARD_MISRA_C_2023[];
+extern const char CODING_STANDARD_MISRA_C_2025[];
+extern const char CODING_STANDARD_MISRA_CPP_2008[];
+extern const char CODING_STANDARD_MISRA_CPP_2023[];
+extern const char CODING_STANDARD_CERT_C[];
+extern const char CODING_STANDARD_CERT_CPP[];
+extern const char CODING_STANDARD_AUTOSAR[];
+
 /// @addtogroup GUI
 /// @{
 

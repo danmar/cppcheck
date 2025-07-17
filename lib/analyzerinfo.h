@@ -31,6 +31,10 @@
 class ErrorMessage;
 struct FileSettings;
 
+namespace tinyxml2 {
+    class XMLDocument;
+};
+
 /// @addtogroup Core
 /// @{
 
@@ -49,6 +53,8 @@ struct FileSettings;
  */
 class CPPCHECKLIB AnalyzerInformation {
 public:
+    friend class TestAnalyzerInformation;
+
     ~AnalyzerInformation();
 
     static std::string getFilesTxt(const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings);
@@ -75,7 +81,10 @@ public:
 
 protected:
     static std::string getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, int fileIndex);
+
 private:
+    static bool skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors);
+
     std::ofstream mOutputStream;
     std::string mAnalyzerInfoFile;
 };

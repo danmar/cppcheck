@@ -175,6 +175,9 @@ private:
         mNewTemplate = true;
 
         TEST_CASE(performanceIfCount);
+        TEST_CASE(bitfields);
+
+        TEST_CASE(bitfieldsHang);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -1652,6 +1655,27 @@ private:
         values = tokenValues(code, "( X )");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(12, values.back().intvalue);
+
+        code = "struct X { A a; int b; A c; };\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(-1, values.back().intvalue);
+
+        code = "struct X {};\n"
+               "struct SubX : X {};\n"
+               "void f() {\n"
+               "    x = sizeof(X);\n"
+               "    subx = sizeof(SubX);\n"
+               "}";
+        values = tokenValues(code, "( X )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
+        values = tokenValues(code, "( SubX )");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(1, values.back().intvalue);
 
         code = "struct T;\n"
                "struct S { T& r; };\n"
@@ -5613,6 +5637,23 @@ private:
         value = valueOfTok(code, ", 1");
         ASSERT_EQUALS(0, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
+
+        // #13959
+        const Settings settingsOld = settings;
+        settings = settingsBuilder(settingsOld).c(Standards::C23).build();
+        code = "void f(int* p) {\n"
+               "    if (p == nullptr)\n"
+               "        return;\n"
+               "    if (p) {}\n"
+               "}\n";
+        value = valueOfTok(code, "p ) { }", &settings, /*cpp*/ false);
+        ASSERT_EQUALS(1, value.intvalue);
+        ASSERT_EQUALS(true, value.isKnown());
+
+        settings = settingsBuilder(settingsOld).c(Standards::C17).build();
+        value = valueOfTok(code, "p ) { }", &settings, /*cpp*/ false);
+        ASSERT(value == ValueFlow::Value());
+        settings = settingsOld;
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
@@ -9041,6 +9082,67 @@ private:
                "  return v.front();\n"
                "}\n";
         ASSERT_EQUALS(1U, tokenValues(code, "v .", &s).size());
+    }
+
+#define testBitfields(structBody, expectedSize) testBitfields_(__FILE__, __LINE__, structBody, expectedSize)
+    void testBitfields_(const char *file, int line, const std::string &structBody, std::size_t expectedSize) {
+        const Settings settingsUnix64 = settingsBuilder().platform(Platform::Type::Unix64).build();
+        const std::string code = "struct S { " + structBody + " }; const std::size_t size = sizeof(S);";
+        const auto values = tokenValues(code.c_str(), "( S", &settingsUnix64);
+        ASSERT_LOC(!values.empty(), file, line);
+        ASSERT_EQUALS_LOC(expectedSize, values.back().intvalue, file, line);
+    }
+
+    void bitfields() {
+
+        // #13653
+        testBitfields("unsigned int data_rw: 1;\n"
+                      "unsigned int page_address: 4;\n"
+                      "unsigned int register_address: 3;\n",
+                      4);
+
+        testBitfields("unsigned char data_rw: 1;\n"
+                      "unsigned char page_address: 4;\n"
+                      "unsigned char register_address: 3;\n",
+                      1);
+
+        testBitfields("unsigned int a : 1;\n"
+                      "unsigned int b;\n"
+                      "unsigned int c : 1;\n",
+                      12);
+
+        testBitfields("unsigned int a : 1;\n"
+                      "unsigned char b;\n"
+                      "unsigned int c : 1;\n",
+                      12);
+
+        testBitfields("unsigned int a : 31;\n"
+                      "unsigned int b : 2;\n",
+                      8);
+
+        // #13850
+        testBitfields("int a : 32;\n"
+                      "int b : 16;\n"
+                      "unsigned short c;\n",
+                      8);
+
+        testBitfields("unsigned int a : 31;\n"
+                      "unsigned int   : 2;\n",
+                      8);
+
+        testBitfields("unsigned int a : 16;\n"
+                      "unsigned int   : 0;\n"
+                      "unsigned int b : 16;\n",
+                      8);
+
+        testBitfields("unsigned char a : 16;\n",
+                      2);
+    }
+
+    void bitfieldsHang() {
+        const char *code = "struct S { unknown_type x : 1; };\n"
+                           "const size_t size = sizeof(S);\n";
+        (void)valueOfTok(code, "x");
     }
 };
 

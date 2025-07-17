@@ -20,11 +20,13 @@
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
+#include "filesettings.h"
 #include "settings.h"
 #include "suppressions.h"
 
 #include <atomic>
 #include <cstdint>
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -36,7 +38,6 @@
 #include <QThread>
 
 class ThreadResult;
-struct FileSettings;
 
 /// @addtogroup GUI
 /// @{
@@ -63,7 +64,7 @@ public:
      * @param files    All files
      * @param ctuInfo  Ctu info for addons
      */
-    void analyseWholeProgram(const QStringList &files, const std::string& ctuInfo);
+    void analyseWholeProgram(const std::list<FileWithDetails> &files, const std::string& ctuInfo);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
@@ -142,7 +143,7 @@ private:
 
     bool isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const;
 
-    QStringList mFiles;
+    std::list<FileWithDetails> mFiles;
     bool mAnalyseWholeProgram{};
     std::string mCtuInfo;
     QStringList mAddonsAndTools;
