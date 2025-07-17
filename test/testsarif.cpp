@@ -383,7 +383,7 @@ int main() {
     void sarifBasicStructure()
     {
         // Create a simple test with null pointer dereference
-        const std::string testCode = R"(
+        const std::string basicTestCode = R"(
             int main() {
                 int* p = nullptr;
                 *p = 5; // null pointer dereference
@@ -391,7 +391,7 @@ int main() {
             }
         )";
 
-        const std::string sarif = runCppcheckSarif(testCode);
+        const std::string sarif = runCppcheckSarif(basicTestCode);
 
         std::string errorMsg;
         const bool isValid = validateSarifJson(sarif, errorMsg);
@@ -414,11 +414,11 @@ int main() {
         const picojson::array& runs = root.at("runs").get<picojson::array>();
         ASSERT_EQUALS(1, static_cast<int>(runs.size()));
 
-        const picojson::object& run = runs[0].get<picojson::object>();
-        ASSERT(run.find("tool") != run.end());
-        ASSERT(run.find("results") != run.end());
+        const picojson::object& sarifRun = runs[0].get<picojson::object>();
+        ASSERT(sarifRun.find("tool") != sarifRun.end());
+        ASSERT(sarifRun.find("results") != sarifRun.end());
 
-        const picojson::object& tool = run.at("tool").get<picojson::object>();
+        const picojson::object& tool = sarifRun.at("tool").get<picojson::object>();
         ASSERT(tool.find("driver") != tool.end());
 
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
@@ -438,8 +438,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
         ASSERT(results.size() > 0);
 
@@ -484,8 +484,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -503,7 +503,6 @@ int main() {
             ASSERT(r.find("help") != r.end());
             ASSERT(r.find("defaultConfiguration") != r.end());
 
-            const std::string ruleId = r.at("id").get<std::string>();
             const std::string name   = r.at("name").get<std::string>();
 
             // Check that generic descriptions don't contain empty quotes
@@ -523,8 +522,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -581,8 +580,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
         ASSERT(results.size() > 0);
 
@@ -632,8 +631,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -643,7 +642,6 @@ int main() {
         for (const auto& rule : rules)
         {
             const picojson::object& r = rule.get<picojson::object>();
-            const std::string ruleId  = r.at("id").get<std::string>();
             const std::string name    = r.at("name").get<std::string>();
 
             // Verify we have proper rule structure
@@ -676,8 +674,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
         ASSERT(results.size() > 0);
 
@@ -806,8 +804,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -831,7 +829,6 @@ int main() {
 
                 bool hasSecurityTag = false;
                 bool hasCweTag      = false;
-                std::string cweTag;
 
                 for (const auto& tag : tags)
                 {
@@ -844,7 +841,7 @@ int main() {
                     {
                         hasCweTag      = true;
                         foundAnyCweTag = true;
-                        cweTag         = tagStr;
+                        std::string cweTag = tagStr;
 
                         // Validate CWE tag format: external/cwe/cwe-<number>
                         ASSERT_EQUALS(0, tagStr.find("external/cwe/cwe-"));
@@ -900,8 +897,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -952,8 +949,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
         ASSERT(results.size() > 0);
 
@@ -981,7 +978,7 @@ int main() {
         ASSERT(hasWarning || hasNote);
 
         // Verify rule consistency between rules and results
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -1015,8 +1012,8 @@ int main() {
         picojson::parse(json, sarif);
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& sarifRun    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = sarifRun.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -1028,7 +1025,6 @@ int main() {
         for (const auto& rule : rules)
         {
             const picojson::object& r     = rule.get<picojson::object>();
-            const std::string ruleId      = r.at("id").get<std::string>();
             const picojson::object& props = r.at("properties").get<picojson::object>();
 
             // Check if rule has CWE tag
@@ -1036,15 +1032,9 @@ int main() {
             if (props.find("tags") != props.end())
             {
                 const picojson::array& tags = props.at("tags").get<picojson::array>();
-                for (const auto& tag : tags)
-                {
-                    const std::string tagStr = tag.get<std::string>();
-                    if (tagStr.find("external/cwe/") == 0)
-                    {
-                        hasCWE = true;
-                        break;
-                    }
-                }
+                hasCWE = std::any_of(tags.begin(), tags.end(), [](const picojson::value& tag) {
+                    return tag.get<std::string>().find("external/cwe/") == 0;
+                });
             }
 
             if (hasCWE)
