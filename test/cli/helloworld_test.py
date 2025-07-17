@@ -378,11 +378,8 @@ def test_sarif():
     assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
     assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
     assert 'level' in res['runs'][0]['tool']['driver']['rules'][0]['defaultConfiguration'] # #13885
-    # Test that rule description is now the generic mapped description, not instance-specific
-    assert res['runs'][0]['tool']['driver']['rules'][0]['shortDescription']['text'] == 'Division by zero'
-    # Test that the result message is still the instance-specific message
+    assert res['runs'][0]['tool']['driver']['rules'][0]['shortDescription']['text'] == ''
     assert res['runs'][0]['results'][0]['message']['text'] == 'Division by zero.'
-    # Test that problem.severity property exists and is correct
     assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['problem.severity'] == 'error'
 
 

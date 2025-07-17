@@ -39,7 +39,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <regex>
 
 #include "xml.h"
 
@@ -217,7 +216,6 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     }
 }
 
-// Convert instance-specific messages to generic ones
 void ErrorMessage::setmsg(const std::string &msg)
 {
     // If a message ends to a '\n' and contains only a one '\n'
@@ -499,9 +497,6 @@ std::string ErrorMessage::toXML() const
         printer.PushAttribute("classification", classification.c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
-    // TODO: Generic message was added for SARIF output format, consider whether to include in XML
-    // if (!mGenericMessage.empty())
-    //     printer.PushAttribute("generic", fixInvalidChars(mGenericMessage).c_str());
     if (cwe.id)
         printer.PushAttribute("cwe", cwe.id);
     if (hash)

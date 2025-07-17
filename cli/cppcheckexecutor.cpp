@@ -23,9 +23,7 @@
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
-#include "check.h"
 #include "checkersreport.h"
-#include "checkunusedfunctions.h"
 #include "cmdlinelogger.h"
 #include "cmdlineparser.h"
 #include "color.h"
@@ -35,11 +33,9 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "json.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
-#include "tokenize.h"
 #include "utils.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
@@ -59,7 +55,6 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <regex>
 #include <set>
 #include <sstream>
 #include <unordered_set>
