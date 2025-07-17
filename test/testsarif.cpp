@@ -277,8 +277,33 @@ int main() {
 
         try
         {
-            // Build command with proper quoting for cross-platform compatibility
-            std::string exe  = "./cppcheck";
+            // Try multiple possible locations for the cppcheck executable
+            std::vector<std::string> possibleExes = {
+                "./cppcheck",
+                "../bin/cppcheck",
+                "../../bin/cppcheck",
+                "cppcheck"  // fallback to PATH
+            };
+            
+            std::string exe;
+            for (const auto& possibleExe : possibleExes) {
+                // Test if executable exists and is accessible
+#ifdef _WIN32
+                std::string testCmd = "\"" + possibleExe + "\" --version >nul 2>&1";
+#else
+                std::string testCmd = possibleExe + " --version >/dev/null 2>&1";
+#endif
+                if (system(testCmd.c_str()) == 0) {
+                    exe = possibleExe;
+                    break;
+                }
+            }
+            
+            if (exe.empty()) {
+                std::remove(filename.c_str());
+                return "";
+            }
+
             std::string args = "--output-format=sarif --enable=all " + filename;
 
 #ifdef _WIN32
