@@ -25,11 +25,23 @@
 #include <string>
 #include <fstream>
 
+// Cross-platform includes for process execution
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#define popen _popen
+#define pclose _pclose
+#else
+#include <unistd.h>
+#include <sys/wait.h>
+#endif
+
 class TestSarif : public TestFixture
 {
 public:
     TestSarif() : TestFixture("TestSarif")
-    {}
+    {
+    }
 
 private:
     // Shared test code with various error types
@@ -252,7 +264,10 @@ int main() {
         TEST_CASE(sarifSecurityRules);
     }
 
-    // Helper to run cppcheck and capture SARIF output
+    // Cross-platform approach: Use conditional compilation for Windows/Mac/Linux compatibility
+    // On Windows: Uses _popen/_pclose (mapped via #define)
+    // On Unix/Linux/Mac: Uses popen/pclose
+    // This avoids the need for complex process spawning APIs while maintaining compatibility
     std::string runCppcheckSarif(const std::string& code)
     {
         // Create temporary file
@@ -261,33 +276,55 @@ int main() {
         file << code;
         file.close();
 
-        // Run cppcheck with SARIF output on the file
-        std::string cmd = "./cppcheck --output-format=sarif --enable=all " + filename + " 2>&1";
-        FILE* pipe      = popen(cmd.c_str(), "r");
-        if (!pipe)
+        try
         {
+            // Build command with proper quoting for cross-platform compatibility
+            std::string exe  = "./cppcheck";
+            std::string args = "--output-format=sarif --enable=all " + filename;
+
+#ifdef _WIN32
+            // Windows-specific command building with proper quoting
+            std::string cmd = "\"" + exe + " " + args + "\" 2>&1";
+#else
+            // Unix/Linux/Mac command building
+            std::string cmd = exe + " " + args + " 2>&1";
+#endif
+
+            // Use cross-platform popen (mapped to _popen on Windows via #define)
+            FILE* pipe = popen(cmd.c_str(), "r");
+            if (!pipe)
+            {
+                std::remove(filename.c_str());
+                return "";
+            }
+
+            std::string result;
+            char buffer[1024];
+            while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
+            {
+                result += buffer;
+            }
+
+            // Use cross-platform pclose (mapped to _pclose on Windows via #define)
+            pclose(pipe);
+
+            // Clean up temporary file
+            std::remove(filename.c_str());
+
+            // Extract just the JSON part (skip "Checking..." line)
+            size_t jsonStart = result.find('{');
+            if (jsonStart != std::string::npos)
+            {
+                return result.substr(jsonStart);
+            }
+            return "";
+        }
+        catch (...)
+        {
+            // Clean up on any exception
             std::remove(filename.c_str());
             return "";
         }
-
-        std::string result;
-        char buffer[1024];
-        while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
-        {
-            result += buffer;
-        }
-        pclose(pipe);
-
-        // Clean up
-        std::remove(filename.c_str());
-
-        // Extract just the JSON part (skip "Checking..." line)
-        size_t jsonStart = result.find('{');
-        if (jsonStart != std::string::npos)
-        {
-            return result.substr(jsonStart);
-        }
-        return "";
     }
 
     // Helper to parse and validate SARIF JSON
