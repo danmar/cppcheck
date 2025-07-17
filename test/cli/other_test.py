@@ -3353,7 +3353,7 @@ def test_preprocess_system_include(tmp_path): # #13928
     assert has_missing_include_string_warning(stderr), stderr
 
     # include path provided => no missing include warning about <string>
-    args.append('-I' + g0[:g0.rfind('/')])
+    args.append('-I' + os.path.dirname(g0))
     _, _, stderr = cppcheck(args)
     assert not has_missing_include_string_warning(stderr), stderr
 
