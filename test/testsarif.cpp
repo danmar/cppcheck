@@ -267,7 +267,7 @@ int main() {
     // On Windows: Uses _popen/_pclose (mapped via #define)
     // On Unix/Linux/Mac: Uses popen/pclose
     // This avoids the need for complex process spawning APIs while maintaining compatibility
-    std::string runCppcheckSarif(const std::string& code)
+    static std::string runCppcheckSarif(const std::string& code)
     {
         // Create temporary file
         const std::string filename = "sarif_test_temp.cpp";
@@ -352,7 +352,7 @@ int main() {
     }
 
     // Helper to parse and validate SARIF JSON
-    bool validateSarifJson(const std::string& sarifOutput, std::string& errorMsg)
+    static bool validateSarifJson(const std::string& sarifOutput, std::string& errorMsg)
     {
         if (sarifOutput.empty())
         {
@@ -466,7 +466,7 @@ int main() {
         const picojson::object& sarifRun    = runs[0].get<picojson::object>();
         const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
-        ASSERT(results.size() > 0);
+        ASSERT(!results.empty());
 
         // Check that we have different severity levels and meaningful messages
         bool hasError           = false;
@@ -486,7 +486,7 @@ int main() {
             const std::string messageText = message.at("text").get<std::string>();
 
             // Messages should be non-empty and meaningful
-            ASSERT(messageText.length() > 0);
+            ASSERT(!messageText.empty());
             if (messageText.length() > 5)  // Reasonable minimum for a meaningful message
             {
                 hasNonEmptyMessage = true;
@@ -514,7 +514,7 @@ int main() {
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
-        ASSERT(rules.size() > 0);
+        ASSERT(!rules.empty());
 
         // Check rule structure
         for (const auto& rule : rules)
@@ -577,7 +577,7 @@ int main() {
                         bool hasCweTag              = false;
                         for (const auto& tag : tags)
                         {
-                            const std::string tagStr = tag.get<std::string>();
+                            const std::string& tagStr = tag.get<std::string>();
                             if (tagStr == "security")
                             {
                                 hasSecurityTag = true;
@@ -608,7 +608,7 @@ int main() {
         const picojson::object& sarifRun    = runs[0].get<picojson::object>();
         const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
-        ASSERT(results.size() > 0);
+        ASSERT(!results.empty());
 
         // Check location information
         for (const auto& result : results)
@@ -617,7 +617,7 @@ int main() {
 
             ASSERT(res.find("locations") != res.end());
             const picojson::array& locations = res.at("locations").get<picojson::array>();
-            ASSERT(locations.size() > 0);
+            ASSERT(!locations.empty());
 
             for (const auto& location : locations)
             {
@@ -702,7 +702,7 @@ int main() {
         const picojson::object& sarifRun    = runs[0].get<picojson::object>();
         const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
-        ASSERT(results.size() > 0);
+        ASSERT(!results.empty());
 
         // Validate that results contain instance-specific information
         bool foundArrayBoundsWithSpecifics   = false;
@@ -806,8 +806,7 @@ int main() {
             }
 
             // Verify that all messages are non-empty and meaningful
-            ASSERT(messageText.length() > 0);
-            ASSERT(messageText != "");
+            ASSERT(!messageText.empty());
 
             // Messages should not contain generic placeholders
             ASSERT_EQUALS(std::string::npos, messageText.find("{{"));
@@ -857,7 +856,7 @@ int main() {
 
                 for (const auto& tag : tags)
                 {
-                    const std::string tagStr = tag.get<std::string>();
+                    const std::string& tagStr = tag.get<std::string>();
                     if (tagStr == "security")
                     {
                         hasSecurityTag = true;
@@ -871,7 +870,7 @@ int main() {
                         // Validate CWE tag format: external/cwe/cwe-<number>
                         ASSERT_EQUALS(0, tagStr.find("external/cwe/cwe-"));
                         std::string cweNumber = tagStr.substr(17);  // After "external/cwe/cwe-"
-                        ASSERT(cweNumber.length() > 0);
+                        ASSERT(!cweNumber.empty());
 
                         // Verify it's a valid number
                         for (char c : cweNumber)
@@ -977,7 +976,7 @@ int main() {
         const picojson::object& sarifRun    = runs[0].get<picojson::object>();
         const picojson::array& results = sarifRun.at("results").get<picojson::array>();
 
-        ASSERT(results.size() > 0);
+        ASSERT(!results.empty());
 
         // Track different severity levels
         bool hasError   = false;
@@ -1095,7 +1094,7 @@ int main() {
                     const picojson::array& tags = props.at("tags").get<picojson::array>();
                     for (const auto& tag : tags)
                     {
-                        const std::string tagStr = tag.get<std::string>();
+                        const std::string& tagStr = tag.get<std::string>();
                         ASSERT(tagStr != "security");
                     }
                 }

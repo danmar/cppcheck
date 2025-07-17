@@ -139,8 +139,8 @@ namespace {
                             std::ostringstream ss;
                             ss << securitySeverity;
                             properties["security-severity"] = picojson::value(ss.str());
-                            tags.emplace_back(picojson::value("external/cwe/cwe-" + std::to_string(finding.cwe.id)));
-                            tags.emplace_back(picojson::value("security"));
+                            tags.emplace_back("external/cwe/cwe-" + std::to_string(finding.cwe.id));
+                            tags.emplace_back("security");
                         }
                     }
 
