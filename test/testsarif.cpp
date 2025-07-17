@@ -29,7 +29,8 @@ class TestSarif : public TestFixture
 {
 public:
     TestSarif() : TestFixture("TestSarif")
-    {}
+    {
+    }
 
 private:
     // Shared test code with various error types
@@ -245,6 +246,7 @@ int main() {
         TEST_CASE(sarifSecuritySeverity);
         TEST_CASE(sarifLocationInfo);
         TEST_CASE(sarifGenericDescriptions);
+        TEST_CASE(sarifInstanceSpecificMessages);
         TEST_CASE(sarifCweTags);
         TEST_CASE(sarifRuleCoverage);
         TEST_CASE(sarifSeverityLevels);
@@ -406,17 +408,37 @@ int main() {
 
         ASSERT(results.size() > 0);
 
-        // Check that we have different severity levels
-        bool hasError = false;
+        // Check that we have different severity levels and meaningful messages
+        bool hasError           = false;
+        bool hasNonEmptyMessage = false;
+
         for (const auto& result : results)
         {
             const picojson::object& res = result.get<picojson::object>();
             const std::string level     = res.at("level").get<std::string>();
             if (level == "error")
                 hasError = true;
+
+            // Verify each result has a meaningful message
+            ASSERT(res.find("message") != res.end());
+            const picojson::object& message = res.at("message").get<picojson::object>();
+            ASSERT(message.find("text") != message.end());
+            const std::string messageText = message.at("text").get<std::string>();
+
+            // Messages should be non-empty and meaningful
+            ASSERT(messageText.length() > 0);
+            if (messageText.length() > 5)  // Reasonable minimum for a meaningful message
+            {
+                hasNonEmptyMessage = true;
+            }
+
+            // Basic validation that messages don't contain obvious placeholders
+            ASSERT_EQUALS(std::string::npos, messageText.find("{{"));
+            ASSERT_EQUALS(std::string::npos, messageText.find("}}"));
         }
 
         ASSERT_EQUALS(true, hasError);
+        ASSERT_EQUALS(true, hasNonEmptyMessage);
     }
 
     void sarifRuleDescriptions()
@@ -605,6 +627,140 @@ int main() {
             ASSERT_EQUALS("", shortText);
             ASSERT_EQUALS("", fullText);
         }
+    }
+
+    void sarifInstanceSpecificMessages()
+    {
+        // Use the global testCode to validate instance-specific messages
+        const std::string sarif = runCppcheckSarif(testCode);
+
+        std::string errorMsg;
+        ASSERT_EQUALS(true, validateSarifJson(sarif, errorMsg));
+
+        picojson::value json;
+        picojson::parse(json, sarif);
+        const picojson::object& root   = json.get<picojson::object>();
+        const picojson::array& runs    = root.at("runs").get<picojson::array>();
+        const picojson::object& run    = runs[0].get<picojson::object>();
+        const picojson::array& results = run.at("results").get<picojson::array>();
+
+        ASSERT(results.size() > 0);
+
+        // Validate that results contain instance-specific information
+        bool foundArrayBoundsWithSpecifics   = false;
+        bool foundAnyInstanceSpecificMessage = false;
+
+        for (const auto& result : results)
+        {
+            const picojson::object& res     = result.get<picojson::object>();
+            const std::string ruleId        = res.at("ruleId").get<std::string>();
+            const picojson::object& message = res.at("message").get<picojson::object>();
+            const std::string messageText   = message.at("text").get<std::string>();
+
+            // Skip system include warnings as they're not relevant to our test
+            if (ruleId == "missingIncludeSystem")
+                continue;
+
+            if (ruleId == "arrayIndexOutOfBounds")
+            {
+                // Should contain specific array name and/or index from testCode
+                if ((messageText.find("array") != std::string::npos && messageText.find("10") != std::string::npos) ||
+                    (messageText.find("Array") != std::string::npos && messageText.find("10") != std::string::npos))
+                {
+                    foundArrayBoundsWithSpecifics   = true;
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's about array bounds
+                    ASSERT(messageText.find("bound") != std::string::npos ||
+                           messageText.find("index") != std::string::npos ||
+                           messageText.find("Array") != std::string::npos);
+                }
+            }
+            else if (ruleId == "nullPointer")
+            {
+                // Should contain the specific variable name from our test (ptr)
+                if (messageText.find("ptr") != std::string::npos)
+                {
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's a meaningful message about null pointer dereference
+                    ASSERT(messageText.find("null") != std::string::npos ||
+                           messageText.find("nullptr") != std::string::npos ||
+                           messageText.find("NULL") != std::string::npos ||
+                           messageText.find("Null") != std::string::npos);
+                }
+            }
+            else if (ruleId == "memleak")
+            {
+                // Should contain the specific variable name from testCode (mem)
+                if (messageText.find("mem") != std::string::npos)
+                {
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's about memory leak
+                    ASSERT(messageText.find("leak") != std::string::npos ||
+                           messageText.find("free") != std::string::npos ||
+                           messageText.find("memory") != std::string::npos);
+                }
+            }
+            else if (ruleId == "uninitvar")
+            {
+                // Should contain the specific variable name from testCode (x)
+                if (messageText.find("'x'") != std::string::npos)
+                {
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's about uninitialized variable
+                    ASSERT(messageText.find("uninit") != std::string::npos ||
+                           messageText.find("initial") != std::string::npos);
+                }
+            }
+            else if (ruleId == "unusedVariable")
+            {
+                // Should contain specific variable names from testCode (unused, redundant, etc.)
+                if (messageText.find("unused") != std::string::npos ||
+                    messageText.find("redundant") != std::string::npos ||
+                    messageText.find("counter") != std::string::npos)
+                {
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's about unused variable
+                    ASSERT(messageText.find("unused") != std::string::npos ||
+                           messageText.find("never used") != std::string::npos);
+                }
+            }
+            else if (ruleId == "doubleFree")
+            {
+                // Should contain specific variable name from testCode (p)
+                if (messageText.find("'p'") != std::string::npos)
+                {
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's about double free
+                    ASSERT(messageText.find("free") != std::string::npos ||
+                           messageText.find("deallocat") != std::string::npos);
+                }
+            }
+            else if (ruleId == "redundantAssignment")
+            {
+                // Should contain specific variable name from testCode (redundant)
+                if (messageText.find("redundant") != std::string::npos)
+                {
+                    foundAnyInstanceSpecificMessage = true;
+                    // Verify it's about redundant assignment
+                    ASSERT(messageText.find("redundant") != std::string::npos ||
+                           messageText.find("assign") != std::string::npos);
+                }
+            }
+
+            // Verify that all messages are non-empty and meaningful
+            ASSERT(messageText.length() > 0);
+            ASSERT(messageText != "");
+
+            // Messages should not contain generic placeholders
+            ASSERT_EQUALS(std::string::npos, messageText.find("{{"));
+            ASSERT_EQUALS(std::string::npos, messageText.find("}}"));
+        }
+
+        // We must find at least the array bounds violation with specific details
+        ASSERT_EQUALS(true, foundArrayBoundsWithSpecifics);
+
+        // We should find at least one instance-specific message overall
+        ASSERT_EQUALS(true, foundAnyInstanceSpecificMessage);
     }
 
     void sarifCweTags()
