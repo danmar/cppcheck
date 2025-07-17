@@ -29,8 +29,7 @@ class TestSarif : public TestFixture
 {
 public:
     TestSarif() : TestFixture("TestSarif")
-    {
-    }
+    {}
 
 private:
     // Shared test code with various error types
