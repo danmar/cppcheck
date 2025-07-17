@@ -200,14 +200,6 @@ public:
         return mSymbolNames;
     }
 
-    /** Generic message (instance-specific variables replaced with generic terms) */
-    const std::string &genericMessage() const {
-        return mGenericMessage;
-    }
-
-    /** set generic message */
-    void setGenericMessage(const std::string &msg);
-
     static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = "");
 
 private:
@@ -221,9 +213,6 @@ private:
 
     /** symbol names */
     std::string mSymbolNames;
-
-    /** Generic message */
-    std::string mGenericMessage;
 };
 
 /**

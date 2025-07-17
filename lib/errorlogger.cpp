@@ -191,9 +191,6 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     attr = errmsg->Attribute("verbose");
     mVerboseMessage = attr ? attr : "";
 
-    attr = errmsg->Attribute("generic");
-    mGenericMessage = attr ? attr : "";
-
     attr = errmsg->Attribute("hash");
     hash = attr ? strToInt<std::size_t>(attr) : 0;
 
@@ -221,75 +218,6 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
 }
 
 // Convert instance-specific messages to generic ones
-static std::string makeGeneric(const std::string &message)
-{
-    std::string result = message;
-
-    // Handle format string patterns first (before general single-quoted replacement)
-    result = std::regex_replace(result, std::regex(R"(%[a-zA-Z0-9]+)"), "format specifier");
-
-    // Handle specific casting patterns
-    result = std::regex_replace(
-        result,
-        std::regex(
-            R"(Casting between (?:(?:const\s+|unsigned\s+|signed\s+)*[a-zA-Z_][a-zA-Z0-9_]*\s*\*+\s*and\s*(?:const\s+|unsigned\s+|signed\s+)*[a-zA-Z_][a-zA-Z0-9_]*\s*\*+) which have)"),
-        "Casting between incompatible pointer types which have");
-
-    // Handle specific pointer type patterns (after casting patterns)
-    result = std::regex_replace(
-        result, std::regex(R"(\b(?:const\s+|unsigned\s+|signed\s+)*[a-zA-Z_][a-zA-Z0-9_]*\s*\*+)"), "pointer type");
-
-    // Handle specific patterns that need special treatment
-    // Iterator condition patterns
-    result = std::regex_replace(
-        result,
-        std::regex(
-            R"(Either the condition '[^']*' is redundant or there is possible dereference of an invalid iterator[^.]*\.)"),
-        "Either the condition is redundant or there is possible dereference of an invalid iterator.");
-
-    // Access moved variable patterns
-    result = std::regex_replace(result, std::regex(R"(Access of moved variable '[^']*')"), "Access of moved variable");
-
-    // Variable/function/parameter patterns (before general replacement)
-    result = std::regex_replace(result, std::regex(R"(Variable '[^']*')"), "Variable");
-    result = std::regex_replace(result, std::regex(R"(variable '[^']*')"), "variable");
-    result = std::regex_replace(result, std::regex(R"(Function '[^']*')"), "Function");
-    result = std::regex_replace(result, std::regex(R"(function '[^']*')"), "function");
-    result = std::regex_replace(result, std::regex(R"(Parameter '[^']*')"), "Parameter");
-    result = std::regex_replace(result, std::regex(R"(parameter '[^']*')"), "parameter");
-    result = std::regex_replace(result, std::regex(R"(Member variable '[^']*')"), "Member variable");
-    result = std::regex_replace(result, std::regex(R"(member variable '[^']*')"), "member variable");
-
-    // Replace double-quoted strings with generic placeholder
-    result = std::regex_replace(result, std::regex(R"("(?:[^"\\]|\\.)*")"), "\"string\"");
-
-    // Replace all remaining single-quoted identifiers with generic placeholder
-    result = std::regex_replace(result, std::regex(R"('[^']*')"), "'identifier'");
-
-    // Replace all numbers with generic placeholder
-    result = std::regex_replace(result, std::regex(R"(\b\d+\b)"), "N");
-
-    // Replace array access patterns
-    result = std::regex_replace(result, std::regex(R"(\[[^\]]+\])"), "[index]");
-
-    // Clean up patterns that may have resulted in redundant text
-    result = std::regex_replace(result, std::regex(R"(Variable 'identifier')"), "Variable");
-    result = std::regex_replace(result, std::regex(R"(Function 'identifier')"), "Function");
-    result = std::regex_replace(result, std::regex(R"(Parameter 'identifier')"), "Parameter");
-    result = std::regex_replace(result, std::regex(R"(Member variable 'identifier')"), "Member variable");
-
-    // Clean up trailing colons that don't reference anything
-    result = std::regex_replace(result, std::regex(R"(:\s*$)"), "");
-
-    // Clean up multiple spaces
-    result = std::regex_replace(result, std::regex(R"(\s+)"), " ");
-
-    // Trim whitespace
-    result = std::regex_replace(result, std::regex(R"(^\s+|\s+$)"), "");
-
-    return result;
-}
-
 void ErrorMessage::setmsg(const std::string &msg)
 {
     // If a message ends to a '\n' and contains only a one '\n'
@@ -307,18 +235,12 @@ void ErrorMessage::setmsg(const std::string &msg)
     if (pos == std::string::npos) {
         mShortMessage = replaceStr(msg, "$symbol", symbolName);
         mVerboseMessage = replaceStr(msg, "$symbol", symbolName);
-        // Set generic message (remove symbol names and make generic)
-        const std::string msgWithoutSymbol = replaceStr(msg, "$symbol", "");
-        mGenericMessage = makeGeneric(msgWithoutSymbol);
     } else if (startsWith(msg,"$symbol:")) {
         mSymbolNames += msg.substr(8, pos-7);
         setmsg(msg.substr(pos + 1));
     } else {
         mShortMessage = replaceStr(msg.substr(0, pos), "$symbol", symbolName);
         mVerboseMessage = replaceStr(msg.substr(pos + 1), "$symbol", symbolName);
-        // Set generic message (remove symbol names and make generic)
-        const std::string msgWithoutSymbol = replaceStr(msg.substr(0, pos), "$symbol", "");
-        mGenericMessage = makeGeneric(msgWithoutSymbol);
     }
 }
 
@@ -369,12 +291,10 @@ std::string ErrorMessage::serialize() const
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);
     const std::string saneVerboseMessage = fixInvalidChars(mVerboseMessage);
-    const std::string saneGenericMessage = fixInvalidChars(mGenericMessage);
 
     serializeString(oss, saneShortMessage);
     serializeString(oss, saneVerboseMessage);
     serializeString(oss, mSymbolNames);
-    serializeString(oss, saneGenericMessage);
     oss += std::to_string(callStack.size());
     oss += " ";
 
@@ -402,9 +322,9 @@ void ErrorMessage::deserialize(const std::string &data)
     callStack.clear();
 
     std::istringstream iss(data);
-    std::array<std::string, 11> results;
+    std::array<std::string, 10> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 11) {
+    while (iss.good() && elem < 10) {
         unsigned int len = 0;
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length");
@@ -430,7 +350,7 @@ void ErrorMessage::deserialize(const std::string &data)
     if (!iss.good())
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-    if (elem != 11)
+    if (elem != 10)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = std::move(results[0]);
@@ -454,7 +374,6 @@ void ErrorMessage::deserialize(const std::string &data)
     mShortMessage = std::move(results[7]);
     mVerboseMessage = std::move(results[8]);
     mSymbolNames = std::move(results[9]);
-    mGenericMessage = std::move(results[10]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
