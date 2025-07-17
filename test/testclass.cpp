@@ -6844,7 +6844,7 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout_str());
     }
-  
+
     void const99() {
         checkConst("typedef void (*InitFunc)(void**);\n" // #13953
                    "struct S {\n"
