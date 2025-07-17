@@ -3342,7 +3342,6 @@ def test_preprocess_system_include(tmp_path): # #13928
     def has_missing_include_string_warning(e):
         return '<string>' in e
 
-    g0 = str(g[0])
     args = [
         '--enable=missingInclude',
         str(test_file)
@@ -3353,7 +3352,7 @@ def test_preprocess_system_include(tmp_path): # #13928
     assert has_missing_include_string_warning(stderr), stderr
 
     # include path provided => no missing include warning about <string>
-    args.append('-I' + os.path.dirname(g0))
+    args.append('-I' + os.path.dirname(str(g[0])))
     _, _, stderr = cppcheck(args)
     assert not has_missing_include_string_warning(stderr), stderr
 
