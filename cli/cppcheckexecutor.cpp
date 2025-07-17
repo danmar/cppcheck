@@ -150,12 +150,12 @@ namespace {
 
                     // Set problem.severity for use with github
                     const std::string problemSeverity = sarifSeverity(finding);
-                    properties["problem.severity"]    = picojson::value(problemSeverity);
-                    rule["properties"]                = picojson::value(properties);
+                    properties["problem.severity"] = picojson::value(problemSeverity);
+                    rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
                     defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
-                    rule["defaultConfiguration"]  = picojson::value(defaultConfiguration);
+                    rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
 
                     ret.emplace_back(rule);
                 }
@@ -171,10 +171,10 @@ namespace {
                 artifactLocation["uri"] = picojson::value(location.getfile(false));
                 physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
                 picojson::object region;
-                region["startLine"]   = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
+                region["startLine"] = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
                 region["startColumn"] = picojson::value(static_cast<int64_t>(location.column < 1 ? 1 : location.column));
-                region["endLine"]     = region["startLine"];
-                region["endColumn"]   = region["startColumn"];
+                region["endLine"] = region["startLine"];
+                region["endColumn"] = region["startColumn"];
                 physicalLocation["region"] = picojson::value(region);
                 picojson::object loc;
                 loc["physicalLocation"] = picojson::value(physicalLocation);
