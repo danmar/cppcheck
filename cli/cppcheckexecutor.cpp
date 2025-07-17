@@ -102,6 +102,9 @@ namespace {
                     continue;
                 if (ruleIds.insert(finding.id).second)
                 {
+                    // setting name and description to empty strings will make github default
+                    // to the instance specific violation message and not rule description,
+                    // this makes it so not all the violations have the same description.
                     picojson::object rule;
                     rule["id"]   = picojson::value(finding.id);
                     // rule.name
