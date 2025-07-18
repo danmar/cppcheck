@@ -478,9 +478,9 @@ The format for an error suppression is one of:
     [error id]:[filename2]
     [error id]
 
-The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain `*` and/or `?`.
+The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output.
 
-The filename pattern may contain `**`, `*` or `?`.  
+The `error id` and `filename` patterns may contain `**`, `*` or `?`.  
 `**`: matches zero or more characters, including path separators  
 `*`: matches zero or more characters, excluding path separators  
 `?`: matches zero or one characters, excluding path separators
@@ -530,7 +530,10 @@ The usage of the suppressions file is as follows:
 
     cppcheck --suppress-xml=suppressions.xml src/
 
-The `id` and `fileName` patterns may `**`, `*` or `?`.
+The `id` and `fileName` patterns may contain `**`, `*` or `?`.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
+`?`: matches zero or one characters, excluding path separators
 
 ## Inline suppressions
 
