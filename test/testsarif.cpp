@@ -282,6 +282,8 @@ int main() {
                 "./cppcheck",
                 "../bin/cppcheck",
                 "../../bin/cppcheck",
+                "./cmake.output/bin/cppcheck",  // CMake build from project root
+                "../cmake.output/bin/cppcheck", // CMake build from test directory
                 "cppcheck"  // fallback to PATH
             };
             
@@ -516,26 +518,27 @@ int main() {
 
         ASSERT(!rules.empty());
 
-        // Check rule structure
+        // Verify that ALL rule descriptions are empty so GitHub uses instance-specific messages
         for (const auto& rule : rules)
         {
             const picojson::object& r = rule.get<picojson::object>();
+            const std::string name    = r.at("name").get<std::string>();
 
-            ASSERT(r.find("id") != r.end());
-            ASSERT(r.find("name") != r.end());
+            // Verify we have proper rule structure
             ASSERT(r.find("shortDescription") != r.end());
             ASSERT(r.find("fullDescription") != r.end());
-            ASSERT(r.find("help") != r.end());
-            ASSERT(r.find("defaultConfiguration") != r.end());
-
-            const std::string name   = r.at("name").get<std::string>();
-
-            // Check that generic descriptions don't contain empty quotes
-            ASSERT_EQUALS(std::string::npos, name.find("''"));
 
             const picojson::object& shortDesc = r.at("shortDescription").get<picojson::object>();
             const std::string shortText       = shortDesc.at("text").get<std::string>();
-            ASSERT_EQUALS(std::string::npos, shortText.find("''"));
+
+            const picojson::object& fullDesc = r.at("fullDescription").get<picojson::object>();
+            const std::string fullText       = fullDesc.at("text").get<std::string>();
+
+            // The key test: ALL rule descriptions should be empty
+            // This allows GitHub to automatically use instance-specific messages
+            ASSERT_EQUALS("", name);
+            ASSERT_EQUALS("", shortText);
+            ASSERT_EQUALS("", fullText);
         }
     }
 
@@ -865,7 +868,6 @@ int main() {
                     {
                         hasCweTag      = true;
                         foundAnyCweTag = true;
-                        std::string cweTag = tagStr;
 
                         // Validate CWE tag format: external/cwe/cwe-<number>
                         ASSERT_EQUALS(0, tagStr.find("external/cwe/cwe-"));
