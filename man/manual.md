@@ -105,32 +105,23 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
 
-For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" 
-you have to type:
+For example:
 
     cppcheck src/ --file-filter=src/test*
 
-Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given 
-start folder. 
+You can use `**`, `*` and `?` in the file filter.
+
+The given file filter would mean for example that `src/test1.cpp` and `src/test/file1.cpp` are checked, but `src/file2.cpp` is not checked.
 
 ### Excluding a file or folder from checking
 
-To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to 
-check:
-
-    cppcheck src/a src/b
-
-All files under src/a and src/b are then checked.
-
-The second option is to use -i, which specifies the files/paths to ignore. With this command no files in src/c are 
-checked:
+The option `-i` specifies files/paths to ignore. With this command no files in `src/c` are checked:
 
     cppcheck -isrc/c src
 
-This option is only valid when supplying an input directory. To ignore multiple directories supply the -i flag for each 
-directory individually. The following command ignores both the src/b and src/c directories:
+The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included from checking.
 
-    cppcheck -isrc/b -isrc/c
+You can use `**`, `*` and `?` to specify excluded folders/files.
 
 ### Clang parser (experimental)
 
@@ -475,19 +466,19 @@ The format for an error suppression is one of:
     [error id]:[filename2]
     [error id]
 
-The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain \* to match any sequence of tokens.
+The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain `*` and/or `?`.
 
-The filename may include the wildcard characters \* or ?, which matches any sequence of characters or any single character respectively.
-It is recommended to use forward-slash `/` as path separator on all operating systems. The filename must match the filename in the reported warning exactly.
-For instance, if the warning contains a relative path, then the suppression must match that relative path.
+The filename pattern may contain `**`, `*` or `?`.
 
-## Command line suppression
+It is recommended to use forward-slash `/` as path separator on all operating systems.
+
+### Command line suppression
 
 The `--suppress=` command line option is used to specify suppressions on the command line. Example:
 
     cppcheck --suppress=memleak:src/file1.cpp src/
 
-## Suppressions in a file
+### Suppressions in a file
 
 You can create a suppressions file for example as follows:
 
@@ -523,6 +514,8 @@ The XML format is extensible and may be extended with further attributes in the 
 The usage of the suppressions file is as follows:
 
     cppcheck --suppress-xml=suppressions.xml src/
+
+The `id` and `fileName` patterns may `**`, `*` or `?`.
 
 ## Inline suppressions
 
