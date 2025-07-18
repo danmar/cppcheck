@@ -665,7 +665,7 @@ int main() {
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
-        ASSERT(rules.size() > 0);
+        ASSERT(rules.empty());
 
         // Verify that ALL rule descriptions are empty so GitHub uses instance-specific messages
         for (const auto& rule : rules)
