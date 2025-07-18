@@ -103,25 +103,37 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 ### Check files matching a given file filter
 
-With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
+The option `--file-filter=<str>` is used to specify a file filter pattern. If this is specified then files/paths will only be checked if they match this pattern.
 
 For example:
 
     cppcheck src/ --file-filter=src/test*
 
-You can use `**`, `*` and `?` in the file filter.
+This command means for example that `src/test1.cpp` and `src/test/file1.cpp` are checked, but `src/file2.cpp` is not checked.
 
-The given file filter would mean for example that `src/test1.cpp` and `src/test/file1.cpp` are checked, but `src/file2.cpp` is not checked.
+You can use `**`, `*` and `?` in the file filter pattern.<br>
+`**`: matches zero or more characters, including path separators<br>
+`*`: matches zero or more characters, excluding path separators<br>
+`?`: matches zero or one characters, excluding path separators
+
+A common use case for `--file-filter` is to check a project, but only check certain files:
+
+    cppcheck --project=compile_commands.json --file-filter=src/file1.c
+
+Typically a `compile_commands.json` contains absolute paths, but the file filter pattern can match either the relative path or absolute path.
 
 ### Excluding a file or folder from checking
 
-The option `-i` specifies files/paths to ignore. With this command no files in `src/c` are checked:
+The option `-i` specifies a pattern to files/folders to exclude. With this command no files in `src/c` are checked:
 
     cppcheck -isrc/c src
 
-The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included from checking.
+The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included.
 
-You can use `**`, `*` and `?` to specify excluded folders/files.
+You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.<br>
+`**`: matches zero or more characters, including path separators<br>
+`*`: matches zero or more characters, excluding path separators<br>
+`?`: matches zero or one characters, excluding path separators
 
 ### Clang parser (experimental)
 
@@ -468,9 +480,12 @@ The format for an error suppression is one of:
 
 The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain `*` and/or `?`.
 
-The filename pattern may contain `**`, `*` or `?`.
+The filename pattern may contain `**`, `*` or `?`.<br>
+`**`: matches zero or more characters, including path separators<br>
+`*`: matches zero or more characters, excluding path separators<br>
+`?`: matches zero or one characters, excluding path separators
 
-It is recommended to use forward-slash `/` as path separator on all operating systems.
+It is recommended to use forward-slash `/` in the filename pattern as path separator on all operating systems.
 
 ### Command line suppression
 
