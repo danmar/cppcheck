@@ -163,8 +163,8 @@ private:
         // Check for syntax errors in glob
         {
             SuppressionList suppressions;
-            std::istringstream s("errorid:**.cpp\n");
-            ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '**.cpp'.", suppressions.parseFile(s));
+            std::istringstream s("errorid:*?.cpp\n");
+            ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '*?.cpp'.", suppressions.parseFile(s));
         }
 
         // Check that globbing works
