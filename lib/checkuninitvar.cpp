@@ -1814,7 +1814,7 @@ void CheckUninitVar::getErrorMessages(ErrorLogger* errorLogger, const Settings* 
 
     ValueFlow::Value v{};
 
-    c.uninitvarError(nullptr, v);
+    c.uninitvarError(nullptr, v); // TODO: does not produce any output
     c.uninitdataError(nullptr, "varname");
     c.uninitStructMemberError(nullptr, "a.b");
 }
