@@ -282,11 +282,11 @@ int main() {
                 "./cppcheck",
                 "../bin/cppcheck",
                 "../../bin/cppcheck",
-                "./cmake.output/bin/cppcheck",  // CMake build from project root
-                "../cmake.output/bin/cppcheck", // CMake build from test directory
+                "./cmake.output/bin/cppcheck",
+                "../cmake.output/bin/cppcheck",
                 "cppcheck"  // fallback to PATH
             };
-            
+
             std::string exe;
             for (const auto& possibleExe : possibleExes) {
                 // Test if executable exists and is accessible
@@ -300,7 +300,7 @@ int main() {
                     break;
                 }
             }
-            
+
             if (exe.empty()) {
                 std::remove(filename.c_str());
                 return "";
