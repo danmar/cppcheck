@@ -62,7 +62,7 @@ jobs:
          name: Coverage results
          path: coverage_report
          
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           # file: ./coverage.xml # optional
