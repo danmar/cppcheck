@@ -111,9 +111,9 @@ For example:
 
 This command means for example that `src/test1.cpp` and `src/test/file1.cpp` are checked, but `src/file2.cpp` is not checked.
 
-You can use `**`, `*` and `?` in the file filter pattern.<br>
-`**`: matches zero or more characters, including path separators<br>
-`*`: matches zero or more characters, excluding path separators<br>
+You can use `**`, `*` and `?` in the file filter pattern.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
 `?`: matches zero or one characters, excluding path separators
 
 A common use case for `--file-filter` is to check a project, but only check certain files:
@@ -130,9 +130,9 @@ The option `-i` specifies a pattern to files/folders to exclude. With this comma
 
 The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included.
 
-You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.<br>
-`**`: matches zero or more characters, including path separators<br>
-`*`: matches zero or more characters, excluding path separators<br>
+You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
 `?`: matches zero or one characters, excluding path separators
 
 ### Clang parser (experimental)
@@ -480,9 +480,9 @@ The format for an error suppression is one of:
 
 The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain `*` and/or `?`.
 
-The filename pattern may contain `**`, `*` or `?`.<br>
-`**`: matches zero or more characters, including path separators<br>
-`*`: matches zero or more characters, excluding path separators<br>
+The filename pattern may contain `**`, `*` or `?`.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
 `?`: matches zero or one characters, excluding path separators
 
 It is recommended to use forward-slash `/` in the filename pattern as path separator on all operating systems.
