@@ -103,7 +103,7 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 ### Check files matching a given file filter
 
-The option `--file-filter=<str>` is used to specify a file filter pattern. If this is specified then files/paths will only be checked if they match this pattern.
+The option `--file-filter=<str>` is used to specify a file filter pattern. If this is specified then files/paths will be checked only if they match the provided pattern.
 
 For example:
 
