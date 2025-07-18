@@ -24,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 // Cross-platform includes for process execution
 #ifdef _WIN32
@@ -585,7 +586,7 @@ int main() {
                             {
                                 hasSecurityTag = true;
                             }
-                            else if (tagStr.find("external/cwe/cwe-") == 0)
+                            else if (tagStr.starts_with("external/cwe/cwe-"))
                             {
                                 hasCweTag = true;
                             }
@@ -864,7 +865,7 @@ int main() {
                     {
                         hasSecurityTag = true;
                     }
-                    else if (tagStr.find("external/cwe/cwe-") == 0)
+                    else if (tagStr.starts_with("external/cwe/cwe-"))
                     {
                         hasCweTag      = true;
                         foundAnyCweTag = true;
@@ -954,14 +955,10 @@ int main() {
             "variableScope"           // Style
         };
 
-        int foundExpectedRules = 0;
-        for (const std::string& expectedRule : expectedRules)
-        {
-            if (ruleIds.find(expectedRule) != ruleIds.end())
-            {
-                foundExpectedRules++;
-            }
-        }
+        int foundExpectedRules = std::count_if(expectedRules.begin(), expectedRules.end(), 
+            [&ruleIds](const std::string& expectedRule) {
+                return ruleIds.find(expectedRule) != ruleIds.end();
+            });
 
         // We should find at least half of our expected rules
         ASSERT(foundExpectedRules >= static_cast<int>(expectedRules.size() / 2));
@@ -1074,14 +1071,9 @@ int main() {
                 if (props.find("tags") != props.end())
                 {
                     const picojson::array& tags = props.at("tags").get<picojson::array>();
-                    for (const auto& tag : tags)
-                    {
-                        if (tag.get<std::string>() == "security")
-                        {
-                            hasSecurityTag = true;
-                            break;
-                        }
-                    }
+                    hasSecurityTag = std::any_of(tags.begin(), tags.end(), [](const picojson::value& tag) {
+                        return tag.get<std::string>() == "security";
+                    });
                 }
                 ASSERT(hasSecurityTag);
             }
