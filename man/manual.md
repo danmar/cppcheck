@@ -103,13 +103,11 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 ### Check files matching a given file filter
 
-The option `--file-filter=<str>` is used to specify a file filter pattern. If this is specified then files/paths will be checked only if they match the provided pattern.
+With `--file-filter=<str>` you can configure file filter(s) and then only those files matching the filter will be checked.
 
-For example:
+For example, this command below means that `src/test1.cpp` and `src/test/file1.cpp` could be checked, but `src/file2.cpp` will not be checked:
 
     cppcheck src/ --file-filter=src/test*
-
-This command means for example that `src/test1.cpp` and `src/test/file1.cpp` are checked, but `src/file2.cpp` is not checked.
 
 You can use `**`, `*` and `?` in the file filter pattern.  
 `**`: matches zero or more characters, including path separators  
@@ -118,9 +116,12 @@ You can use `**`, `*` and `?` in the file filter pattern.
 
 A common use case for `--file-filter` is to check a project, but only check certain files:
 
-    cppcheck --project=compile_commands.json --file-filter=src/file1.c
+    cppcheck --project=compile_commands.json --file-filter=src/*.c
 
-Typically a `compile_commands.json` contains absolute paths, but the file filter pattern can match either the relative path or absolute path.
+Typically a `compile_commands.json` contains absolute paths. However no matter if `compile_commands.json` contains absolute paths or relative paths, the option `--file-filter=src/*.c` would mean that:
+ * a file with relative path `test1.c` is not checked.
+ * a file with relative path `src/test2.c` can be checked.
+ * a file with relative path `src/test3.cpp` is not checked.
 
 ### Excluding a file or folder from checking
 
@@ -134,6 +135,14 @@ You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.
 `**`: matches zero or more characters, including path separators  
 `*`: matches zero or more characters, excluding path separators  
 `?`: matches zero or one characters, excluding path separators
+
+A use case for `-i` is to check a project, but exclude certain files/folders:
+
+    cppcheck --project=compile_commands.json -itest
+
+Typically a `compile_commands.json` contains absolute paths. However no matter if `compile_commands.json` contains absolute paths or relative paths, the option `-itest` would mean that:
+ * a file with relative path `test1.cpp` can be checked.
+ * a file with relative path `test/somefile.cpp` is not checked
 
 ### Clang parser (experimental)
 
