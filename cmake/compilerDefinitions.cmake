@@ -37,7 +37,7 @@ if(HAVE_RULES)
     add_definitions(-DHAVE_RULES)
 endif()
 
-if(Boost_FOUND)
+if(USE_BOOST)
     add_definitions(-DHAVE_BOOST)
     if(USE_BOOST_INT128)
         add_definitions(-DHAVE_BOOST_INT128)
