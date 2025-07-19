@@ -163,8 +163,8 @@ private:
         // Check for syntax errors in glob
         {
             SuppressionList suppressions;
-            std::istringstream s("errorid:**.cpp\n");
-            ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '**.cpp'.", suppressions.parseFile(s));
+            std::istringstream s("errorid:*?.cpp\n");
+            ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '*?.cpp'.", suppressions.parseFile(s));
         }
 
         // Check that globbing works
@@ -172,7 +172,9 @@ private:
             SuppressionList suppressions;
             std::istringstream s("errorid:x*.cpp\n"
                                  "errorid:y?.cpp\n"
-                                 "errorid:test.c*");
+                                 "errorid:test.c*\n"
+                                 "errorid:dir/**\n"
+                                 "errorid:**/abc**/xyz-??*.?pp\n");
             ASSERT_EQUALS("", suppressions.parseFile(s));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp.cpp", 1)));
@@ -181,6 +183,13 @@ private:
             ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "y.cpp", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.c", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.cpp", 1)));
+
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "dir/test.cpp", 1)));
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "dir/deep/nested/test.cpp", 1)));
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "yellow.cpp", 1)));
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "foo/sub/abc/sub/xyz-22aaa.cpp", 1)));
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "foo/sub/abc-xyz-22.cpp", 1)));
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "x/abcxyz-11.cpp", 1)));
         }
 
         // Check that both a filename match and a glob match apply

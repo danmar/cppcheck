@@ -40,12 +40,19 @@ int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
 
 bool isValidGlobPattern(const std::string& pattern)
 {
+    int consecutiveAsterisks = 0;
     for (auto i = pattern.cbegin(); i != pattern.cend(); ++i) {
-        if (*i == '*' || *i == '?') {
-            const auto j = i + 1;
-            if (j != pattern.cend() && (*j == '*' || *j == '?')) {
+        if (*i == '*') {
+            ++consecutiveAsterisks;
+            if (consecutiveAsterisks > 2) {
                 return false;
             }
+        } else if (*i == '?') {
+            if (consecutiveAsterisks > 0) {
+                return false;
+            }
+        } else {
+            consecutiveAsterisks = 0;
         }
     }
     return true;
