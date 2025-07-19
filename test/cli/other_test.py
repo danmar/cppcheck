@@ -1133,10 +1133,9 @@ inline void f2()
     assert exitcode == 0, stdout if stdout else stderr
     if sys.platform == "win32":
         stdout = stdout.replace('/', '\\')
-    assert stdout == '''Checking {} ...
-
-
-##file {}
+    assert f'Checking {test_file_cpp} ...' in stdout
+    stdout = stdout.replace(f'Checking {test_file_cpp} ...\n', '').strip()
+    assert stdout == '''##file {}
 2: void f2 ( )
 3: {{
 4: int i@var1 ; i@var1 = 0 ;
@@ -1175,8 +1174,8 @@ Line 5
 File {}
 Line 6
   = always 0
-  0 always 0
-'''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
+  0 always 0'''.format(test_file_h_2, test_file_h, test_file_cpp,
+                       test_file_h_2, test_file_h, test_file_cpp)
     assert stderr == ''
 
 
