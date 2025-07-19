@@ -190,6 +190,7 @@ private:
         TEST_CASE(const97);
         TEST_CASE(const98);
         TEST_CASE(const99);
+        TEST_CASE(const100);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6851,6 +6852,15 @@ private:
                    "    void f(InitFunc func) {\n"
                    "        func(reinterpret_cast<void**>(&m));\n"
                    "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void const100() {
+        checkConst("struct S {\n" // #14023
+                   "    void f() { ++i; }\n"
+                   "    void f() const {}\n"
+                   "    int i;\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
     }

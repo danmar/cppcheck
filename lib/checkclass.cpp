@@ -2189,6 +2189,13 @@ void CheckClass::checkConst()
             const bool suggestStatic = memberAccessed != MemberAccess::MEMBER && !func.isOperator();
             if ((returnsPtrOrRef || func.isConst() || func.hasLvalRefQualifier()) && !suggestStatic)
                 continue;
+            if (suggestStatic && func.isConst()) {
+                const auto overloads = func.getOverloadedFunctions();
+                if (overloads.size() > 1 && std::any_of(overloads.begin(), overloads.end(), [&](const Function* ovl) {
+                    return &func != ovl && func.argCount() == ovl->argCount() && func.argsMatch(ovl->functionScope, ovl->argDef, func.argDef, emptyString, 0);
+                }))
+                    continue;
+            }
 
             std::string classname = scope->className;
             const Scope *nest = scope->nestedIn;
