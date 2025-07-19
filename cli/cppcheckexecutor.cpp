@@ -92,33 +92,65 @@ namespace {
                 if (finding.callStack.empty())
                     continue;
                 if (ruleIds.insert(finding.id).second) {
+                    // setting name and description to empty strings will make github default
+                    // to the instance specific violation message and not rule description,
+                    // this makes it so not all the violations have the same description.
                     picojson::object rule;
                     rule["id"] = picojson::value(finding.id);
+                    // rule.name
+                    rule["name"] = picojson::value("");
                     // rule.shortDescription.text
                     picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(finding.shortMessage());
+                    shortDescription["text"] = picojson::value("");
                     rule["shortDescription"] = picojson::value(shortDescription);
                     // rule.fullDescription.text
                     picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(finding.verboseMessage());
+                    fullDescription["text"] = picojson::value("");
                     rule["fullDescription"] = picojson::value(fullDescription);
                     // rule.help.text
                     picojson::object help;
-                    help["text"] = picojson::value(finding.verboseMessage()); // FIXME provide proper help text
+                    help["text"] = picojson::value("");
                     rule["help"] = picojson::value(help);
                     // rule.properties.precision, rule.properties.problem.severity
                     picojson::object properties;
                     properties["precision"] = picojson::value(sarifPrecision(finding));
-                    const char* securitySeverity = nullptr;
-                    if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
-                        securitySeverity = "9.9"; // We see undefined behavior
-                    //else if (finding.severity == Severity::warning)
-                    //    securitySeverity = 5.1; // We see potential undefined behavior
-                    if (securitySeverity) {
-                        properties["security-severity"] = picojson::value(securitySeverity);
-                        const picojson::array tags{picojson::value("security")};
+                    // rule.properties.security-severity, rule.properties.tags
+                    picojson::array tags;
+
+                    // If we have a CWE ID, treat it as security-related (CWE is the authoritative source for security weaknesses)
+                    if (finding.cwe.id > 0) {
+                        double securitySeverity = 0;
+                        if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id)) {
+                            securitySeverity = 9.9; // critical = 9.0+
+                        }
+                        else if (finding.severity == Severity::warning) {
+                            securitySeverity = 8.5; // high = 7.0 to 8.9
+                        }
+                        else if (finding.severity == Severity::performance || finding.severity == Severity::portability ||
+                                 finding.severity == Severity::style) {
+                            securitySeverity = 5.5; // medium = 4.0 to 6.9
+                        }
+                        else if (finding.severity == Severity::information || finding.severity == Severity::internal ||
+                                 finding.severity == Severity::debug || finding.severity == Severity::none) {
+                            securitySeverity = 2.0; // low = 0.1 to 3.9
+                        }
+                        if (securitySeverity > 0.0) {
+                            std::ostringstream ss;
+                            ss << securitySeverity;
+                            properties["security-severity"] = picojson::value(ss.str());
+                            tags.emplace_back("external/cwe/cwe-" + std::to_string(finding.cwe.id));
+                            tags.emplace_back("security");
+                        }
+                    }
+
+                    // Add tags array if it has any content
+                    if (!tags.empty()) {
                         properties["tags"] = picojson::value(tags);
                     }
+
+                    // Set problem.severity for use with github
+                    const std::string problemSeverity = sarifSeverity(finding);
+                    properties["problem.severity"] = picojson::value(problemSeverity);
                     rule["properties"] = picojson::value(properties);
                     // rule.defaultConfiguration.level
                     picojson::object defaultConfiguration;
@@ -198,14 +230,15 @@ namespace {
 
             return picojson::value(doc).serialize(true);
         }
-    private:
 
+    private:
         static std::string sarifSeverity(const ErrorMessage& errmsg) {
             if (ErrorLogger::isCriticalErrorId(errmsg.id))
                 return "error";
             switch (errmsg.severity) {
             case Severity::error:
             case Severity::warning:
+                return "error";
             case Severity::style:
             case Severity::portability:
             case Severity::performance:
@@ -672,19 +705,21 @@ void StdLogger::reportErr(const ErrorMessage &msg)
                                      mGuidelineMapping, msgCopy.severity);
     msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
 
-    // TODO: there should be no need for verbose and default messages here
-    const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
-
-    // Alert only about unique errors
-    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
-        return;
-
-    if (mSettings.outputFormat == Settings::OutputFormat::sarif)
+    if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
         mSarifReport.addFinding(std::move(msgCopy));
-    else if (mSettings.outputFormat == Settings::OutputFormat::xml)
-        reportErr(msgCopy.toXML());
-    else
-        reportErr(msgStr);
+    } else {
+        // TODO: there should be no need for verbose and default messages here
+        const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+
+        // Alert only about unique errors
+        if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
+            return;
+
+        if (mSettings.outputFormat == Settings::OutputFormat::xml)
+            reportErr(msgCopy.toXML());
+        else
+            reportErr(msgStr);
+    }
 }
 
 /**
