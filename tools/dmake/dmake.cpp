@@ -795,7 +795,7 @@ int main(int argc, char **argv)
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake" << (release ? " --release" : "") << "\n\n"; // Make CI in release builds happy
     fout << "clean:\n";
-    fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/dmake/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
+    fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o frontend/*.o test/*.o tools/dmake/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
