@@ -44,6 +44,10 @@ public:
     {}
 
 private:
+    // Helper function to check if a string starts with a prefix (C++17 compatible)
+    static bool startsWith(const std::string& str, const std::string& prefix) {
+        return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
+    }
     // Shared test code with various error types
     const std::string testCode = R"(
 #include <cstdio>
@@ -586,7 +590,7 @@ int main() {
                             {
                                 hasSecurityTag = true;
                             }
-                            else if (tagStr.starts_with("external/cwe/cwe-"))
+                            else if (startsWith(tagStr, "external/cwe/cwe-"))
                             {
                                 hasCweTag = true;
                             }
@@ -665,7 +669,7 @@ int main() {
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
-        ASSERT(rules.empty());
+        ASSERT(!rules.empty());
 
         // Verify that ALL rule descriptions are empty so GitHub uses instance-specific messages
         for (const auto& rule : rules)
@@ -865,7 +869,7 @@ int main() {
                     {
                         hasSecurityTag = true;
                     }
-                    else if (tagStr.starts_with("external/cwe/cwe-"))
+                    else if (startsWith(tagStr, "external/cwe/cwe-"))
                     {
                         hasCweTag      = true;
                         foundAnyCweTag = true;
@@ -1056,7 +1060,7 @@ int main() {
             {
                 const picojson::array& tags = props.at("tags").get<picojson::array>();
                 hasCWE = std::any_of(tags.begin(), tags.end(), [](const picojson::value& tag) {
-                    return tag.get<std::string>().find("external/cwe/") == 0;
+                    return startsWith(tag.get<std::string>(), "external/cwe/");
                 });
             }
 
