@@ -959,10 +959,10 @@ int main() {
             "variableScope"           // Style
         };
 
-        int foundExpectedRules = std::count_if(expectedRules.begin(), expectedRules.end(), 
-            [&ruleIds](const std::string& expectedRule) {
-                return ruleIds.find(expectedRule) != ruleIds.end();
-            });
+        int foundExpectedRules = std::count_if(expectedRules.begin(), expectedRules.end(),
+                                               [&ruleIds](const std::string& expectedRule) {
+            return ruleIds.find(expectedRule) != ruleIds.end();
+        });
 
         // We should find at least half of our expected rules
         ASSERT(foundExpectedRules >= static_cast<int>(expectedRules.size() / 2));
