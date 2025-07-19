@@ -44,7 +44,7 @@ bool isValidGlobPattern(const std::string& pattern)
     for (auto i = pattern.cbegin(); i != pattern.cend(); ++i) {
         if (*i == '*') {
             ++consecutiveAsterisks;
-            if ( consecutiveAsterisks > 2 ) {
+            if (consecutiveAsterisks > 2) {
                 return false;
             }
         } else if (*i == '?') {
