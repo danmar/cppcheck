@@ -746,6 +746,7 @@ int main(int argc, char **argv)
          << "    else\n"
          << "        LIBS=$(shell $(PCRE_CONFIG) --libs)\n"
          << "    endif\n"
+         << "    $(warning The usage of rules has been deprecated and will be removed in a future Cppcheck version. Please use addons instead.)\n"
          << "else ifneq ($(HAVE_RULES),)\n"
          << "    $(error invalid HAVE_RULES value '$(HAVE_RULES)')\n"
          << "endif\n\n";
