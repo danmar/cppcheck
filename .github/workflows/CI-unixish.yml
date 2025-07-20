@@ -286,6 +286,9 @@ jobs:
           # FIXME: test_color_tty fails with xdist
           - os: macos-13
             xdist_n: '1'
+          # FIXME: test_color_tty fails with xdist
+          - os: macos-15
+            xdist_n: '1'
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
