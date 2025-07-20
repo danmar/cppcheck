@@ -40,6 +40,7 @@
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
+#include "resultstree.h"
 #include "resultsview.h"
 #include "scratchpad.h"
 #include "settings.h"
@@ -588,6 +589,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     }
 
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
     mUI->mResults->checkingStarted(p.fileSettings.size());
@@ -651,6 +653,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     QStringList fileNames = pathList.getFileList();
 
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
     if (fileNames.isEmpty()) {
@@ -1486,6 +1489,7 @@ void MainWindow::loadResults(const QString &selectedFile)
         closeProjectFile();
     mIsLogfileLoaded = true;
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Log);
     mUI->mActionReanalyzeModified->setEnabled(false);
     mUI->mActionReanalyzeAll->setEnabled(false);
     mUI->mResults->readErrorsXml(selectedFile);
@@ -1830,6 +1834,7 @@ void MainWindow::loadProjectFile(const QString &filePath)
     addProjectMRU(filePath);
 
     mIsLogfileLoaded = false;
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mUI->mActionCloseProjectFile->setEnabled(true);
     mUI->mActionEditProjectFile->setEnabled(true);
     delete mProjectFile;

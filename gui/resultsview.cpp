@@ -159,6 +159,11 @@ void ResultsView::setReportType(ReportType reportType) {
     mUI->mTree->setReportType(reportType);
 }
 
+void ResultsView::setResultsSource(ResultsTree::ResultsSource source)
+{
+    mUI->mTree->setResultsSource(source);
+}
+
 void ResultsView::progress(int value, const QString& description)
 {
     mUI->mProgress->setValue(value);
