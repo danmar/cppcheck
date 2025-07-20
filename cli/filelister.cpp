@@ -129,7 +129,7 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
             } else {
                 // Directory
                 if (recursive) {
-                    if (!ignored.match(fname)) {
+                    if (!ignored.match(fname, PathMatch::Filemode::directory)) {
                         std::list<FileWithDetails> filesSorted;
 
                         std::string err = addFiles2(filesSorted, fname, extra, recursive, ignored);
@@ -241,7 +241,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
 #endif
         if (path_is_directory) {
             if (recursive) {
-                if (!ignored.match(new_path)) {
+                if (!ignored.match(new_path, PathMatch::Filemode::directory)) {
                     std::string err = addFiles2(files, new_path, extra, recursive, ignored, debug);
                     if (!err.empty()) {
                         return err;

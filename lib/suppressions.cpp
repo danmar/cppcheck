@@ -401,7 +401,7 @@ SuppressionList::Suppression::Result SuppressionList::Suppression::isSuppressed(
             if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
                 return Result::None;
         }
-        if (!fileName.empty() && fileName != errmsg.getFileName() && !PathMatch::match(fileName, errmsg.getFileName()))
+        if (!fileName.empty() && !PathMatch::match(fileName, errmsg.getFileName()))
             return Result::None;
         if (hash > 0 && hash != errmsg.hash)
             return Result::Checked;
