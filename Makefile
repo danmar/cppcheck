@@ -176,7 +176,7 @@ ifndef INCLUDE_FOR_CLI
 endif
 
 ifndef INCLUDE_FOR_TEST
-    INCLUDE_FOR_TEST=-Ilib -Ifrontend -Icli -isystem externals/simplecpp -isystem externals/tinyxml2 -isystem externals/picojson
+    INCLUDE_FOR_TEST=-Ilib -Ifrontend -Icli -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2
 endif
 
 ifndef CFLAGS_FOR_TEST
@@ -847,7 +847,7 @@ test/testprocessexecutor.o: test/testprocessexecutor.cpp cli/executor.h cli/proc
 test/testprogrammemory.o: test/testprogrammemory.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/programmemory.h lib/settings.h lib/standards.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} ${CFLAGS_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testprogrammemory.cpp
 
-test/testsarif.o: test/testsarif.cpp lib/config.h lib/json.h test/fixture.h test/helpers.h
+test/testsarif.o: test/testsarif.cpp externals/picojson/picojson.h lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testsarif.cpp
 
 test/testsettings.o: test/testsettings.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
