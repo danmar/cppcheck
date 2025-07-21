@@ -231,10 +231,13 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     loadSettings();
 
     mThread->initialize(mUI->mResults);
-    if (mProjectFile)
+    if (mProjectFile) {
+        enableProjectActions(true);
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
-    else
+    } else {
+        enableProjectActions(false);
         formatAndSetTitle();
+    }
 
     mUI->mActionComplianceReport->setVisible(isCppcheckPremium());
 
@@ -243,7 +246,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionPrint->setShortcut(QKeySequence::Print);
     enableResultsButtons();
     enableProjectOpenActions(true);
-    enableProjectActions(false);
 
     // Must setup MRU menu before CLI param handling as it can load a
     // project file and update MRU menu.
@@ -263,9 +265,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     if (!args.isEmpty()) {
         handleCLIParams(args);
     }
-
-    mUI->mActionCloseProjectFile->setEnabled(mProjectFile != nullptr);
-    mUI->mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         PlatformData platform = mPlatforms.mPlatforms[i];
@@ -1780,7 +1779,6 @@ void MainWindow::stopAnalysis()
 {
     mThread->stop();
     mUI->mResults->stopAnalysis();
-    mUI->mResults->disableProgressbar();
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty()) {
         mUI->mResults->updateFromOldReport(lastResults);
@@ -1835,8 +1833,9 @@ void MainWindow::loadProjectFile(const QString &filePath)
 
     mIsLogfileLoaded = false;
     mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
-    mUI->mActionCloseProjectFile->setEnabled(true);
-    mUI->mActionEditProjectFile->setEnabled(true);
+    mUI->mActionReanalyzeModified->setEnabled(true);
+    mUI->mActionReanalyzeAll->setEnabled(true);
+    enableProjectActions(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
     mProjectFile->setActiveProject();
