@@ -198,8 +198,6 @@ public:
      */
     bool isSuccess() const;
 
-    void disableProgressbar();
-
     /**
      * @brief Read errors from report XML file.
      * @param filename Report file to read.

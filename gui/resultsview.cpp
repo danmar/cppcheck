@@ -394,11 +394,6 @@ void ResultsView::translate()
     mUI->mTree->translate();
 }
 
-void ResultsView::disableProgressbar()
-{
-    mUI->mProgress->setEnabled(false);
-}
-
 void ResultsView::readErrorsXml(const QString &filename)
 {
     mSuccess = false; // Don't know if results come from an aborted analysis
