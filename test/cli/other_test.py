@@ -2038,6 +2038,17 @@ void f(bool b)
     build_dir = tmp_path / 'b1'
     os.mkdir(build_dir)
 
+    args = [ # // #14029
+        '--enable=warning',  # to execute the code which generates the normalCheckLevelMaxBranches message
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stderr == ''
+
     args = [
         '--enable=warning',  # to execute the code which generates the normalCheckLevelMaxBranches message
         '--enable=information',  # to show the normalCheckLevelMaxBranches message
