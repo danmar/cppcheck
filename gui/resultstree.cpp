@@ -774,7 +774,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             if (selectedResults == 0 || multipleSelection)
                 hideallid->setDisabled(true);
 
-            if (multipleSelection)
+            if (multipleSelection || mResultsSource == ResultsSource::Log)
                 opencontainingfolder->setDisabled(true);
 
             menu.addAction(recheckAction);
