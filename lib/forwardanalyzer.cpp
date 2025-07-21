@@ -682,9 +682,11 @@ namespace {
                     }
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
                            Token::simpleMatch(tok->linkAt(1), ") {")) {
-                    if (settings.severity.isEnabled(Severity::information) && (settings.vfOptions.maxForwardBranches > 0) && (++branchCount > settings.vfOptions.maxForwardBranches)) {
+                    if ((settings.vfOptions.maxForwardBranches > 0) && (++branchCount > settings.vfOptions.maxForwardBranches)) {
                         // TODO: should be logged on function-level instead of file-level
-                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        if (settings.severity.isEnabled(Severity::information)) {
+                            reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        }
                         return Break(Analyzer::Terminate::Bail);
                     }
                     Token* endCond = tok->linkAt(1);
