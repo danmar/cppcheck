@@ -289,6 +289,14 @@ int main() {
                 "../../bin/cppcheck",
                 "./cmake.output/bin/cppcheck",
                 "../cmake.output/bin/cppcheck",
+#ifdef _WIN32
+                "./bin/debug/cppcheck.exe",
+                "../bin/debug/cppcheck.exe",
+                "../../bin/debug/cppcheck.exe",
+                "./cppcheck.exe",
+                "../cppcheck.exe",
+                "../../cppcheck.exe",
+#endif
                 "cppcheck"  // fallback to PATH
             };
 
