@@ -204,8 +204,6 @@ CPPCHECKLIB bool isValidGlobPattern(const std::string& pattern);
 
 CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name, bool caseInsensitive = false);
 
-CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name, bool caseInsensitive = false);
-
 CPPCHECKLIB void strTolower(std::string& str);
 
 template<typename T, typename std::enable_if<std::is_signed<T>::value, bool>::type=true>

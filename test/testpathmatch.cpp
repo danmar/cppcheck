@@ -20,7 +20,6 @@
 #include "fixture.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 
@@ -29,10 +28,17 @@ public:
     TestPathMatch() : TestFixture("TestPathMatch") {}
 
 private:
-    const PathMatch emptyMatcher{std::vector<std::string>()};
-    const PathMatch srcMatcher{std::vector<std::string>(1, "src/")};
-    const PathMatch fooCppMatcher{std::vector<std::string>(1, "foo.cpp")};
-    const PathMatch srcFooCppMatcher{std::vector<std::string>(1, "src/foo.cpp")};
+    static constexpr auto unix = PathMatch::Syntax::unix;
+    static constexpr auto windows = PathMatch::Syntax::windows;
+#ifdef _WIN32
+    const std::string basepath{"C:\\test"};
+#else
+    const std::string basepath{"/test"};
+#endif
+    const PathMatch emptyMatcher{{}, basepath};
+    const PathMatch srcMatcher{{"src/"}, basepath};
+    const PathMatch fooCppMatcher{{"foo.cpp"}, basepath};
+    const PathMatch srcFooCppMatcher{{"src/foo.cpp"}, basepath};
 
     void run() override {
         TEST_CASE(emptymaskemptyfile);
@@ -67,6 +73,10 @@ private:
         TEST_CASE(filemaskpath3);
         TEST_CASE(filemaskpath4);
         TEST_CASE(mixedallmatch);
+        TEST_CASE(glob);
+        TEST_CASE(globstar1);
+        TEST_CASE(globstar2);
+        TEST_CASE(pathiterator);
     }
 
     // Test empty PathMatch
@@ -97,13 +107,12 @@ private:
     }
 
     void onemasksamepathdifferentslash() const {
-        const PathMatch srcMatcher2{std::vector<std::string>(1, "src\\")};
+        PathMatch srcMatcher2({"src\\"}, basepath, windows);
         ASSERT(srcMatcher2.match("src/"));
     }
 
     void onemasksamepathdifferentcase() const {
-        std::vector<std::string> masks(1, "sRc/");
-        PathMatch match(std::move(masks), false);
+        PathMatch match({"sRc/"}, basepath, windows);
         ASSERT(match.match("srC/"));
     }
 
@@ -115,7 +124,7 @@ private:
         const std::string longerExclude("longersrc/");
         const std::string shorterToMatch("src/");
         ASSERT(shorterToMatch.length() < longerExclude.length());
-        PathMatch match(std::vector<std::string>(1, longerExclude));
+        PathMatch match({longerExclude});
         ASSERT(match.match(longerExclude));
         ASSERT(!match.match(shorterToMatch));
     }
@@ -150,30 +159,26 @@ private:
     }
 
     void onemaskcwd() const {
-        ASSERT(!srcMatcher.match("./src"));
+        ASSERT(srcMatcher.match("./src"));
     }
 
     void twomasklongerpath1() const {
-        std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(std::move(masks));
+        PathMatch match({ "src/", "module/" });
         ASSERT(!match.match("project/"));
     }
 
     void twomasklongerpath2() const {
-        std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(std::move(masks));
+        PathMatch match({ "src/", "module/" });
         ASSERT(match.match("project/src/"));
     }
 
     void twomasklongerpath3() const {
-        std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(std::move(masks));
+        PathMatch match({ "src/", "module/" });
         ASSERT(match.match("project/module/"));
     }
 
     void twomasklongerpath4() const {
-        std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(std::move(masks));
+        PathMatch match({ "src/", "module/" });
         ASSERT(match.match("project/src/module/"));
     }
 
@@ -183,8 +188,7 @@ private:
     }
 
     void filemaskdifferentcase() const {
-        std::vector<std::string> masks(1, "foo.cPp");
-        PathMatch match(std::move(masks), false);
+        PathMatch match({"foo.cPp"}, basepath, windows);
         ASSERT(match.match("fOo.cpp"));
     }
 
@@ -219,10 +223,64 @@ private:
 
     void mixedallmatch() const { // #13570
         // when trying to match a directory against a directory entry it erroneously modified a local variable also used for file matching
-        std::vector<std::string> masks = { "tests/", "file.c" };
-        PathMatch match(std::move(masks));
+        PathMatch match({ "tests/", "file.c" });
         ASSERT(match.match("tests/"));
         ASSERT(match.match("lib/file.c"));
+    }
+
+    void glob() const {
+        PathMatch match({"test?.cpp"});
+        ASSERT(match.match("test1.cpp"));
+        ASSERT(match.match("src/test1.cpp"));
+        ASSERT(match.match("test1.cpp/src"));
+        ASSERT(!match.match("test1.c"));
+        ASSERT(!match.match("test.cpp"));
+    }
+
+    void globstar1() const {
+        PathMatch match({"src/**/foo.c"});
+        ASSERT(match.match("src/lib/foo/foo.c"));
+        ASSERT(match.match("src/lib/foo/bar/foo.c"));
+        ASSERT(!match.match("src/lib/foo/foo.cpp"));
+        ASSERT(!match.match("src/lib/foo/bar/foo.cpp"));
+    }
+
+    void globstar2() const {
+        PathMatch match({"./src/**/foo.c"});
+        ASSERT(match.match("src/lib/foo/foo.c"));
+        ASSERT(match.match("src/lib/foo/bar/foo.c"));
+        ASSERT(!match.match("src/lib/foo/foo.cpp"));
+        ASSERT(!match.match("src/lib/foo/bar/foo.cpp"));
+    }
+
+    void pathiterator() const {
+        /* See https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats
+         * for information on Windows path syntax. */
+        using PathIterator = PathMatch::PathIterator;
+        ASSERT_EQUALS("/", PathIterator("/", nullptr, unix).read());
+        ASSERT_EQUALS("/", PathIterator("//", nullptr, unix).read());
+        ASSERT_EQUALS("/", PathIterator("/", "/", unix).read());
+        ASSERT_EQUALS("/hello/world", PathIterator("/hello/universe/.", "../world//", unix).read());
+        ASSERT_EQUALS("/", PathIterator("//./..//.///.", "../../..///", unix).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator(nullptr, "/foo/bar/.", unix).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator("/foo/bar/.", nullptr, unix).read());
+        ASSERT_EQUALS("/foo/bar", PathIterator("/foo", "bar", unix).read());
+        ASSERT_EQUALS("", PathIterator("", "", unix).read());
+        ASSERT_EQUALS("", PathIterator("", nullptr, unix).read());
+        ASSERT_EQUALS("", PathIterator(nullptr, "", unix).read());
+        ASSERT_EQUALS("", PathIterator(nullptr, nullptr, unix).read());
+        ASSERT_EQUALS("c:", PathIterator("C:", nullptr, windows).read());
+        /* C: without slash is a bit ambigous. It should probably not be considered a root because it's
+         * not fully qualified (it designates the current directory on the C drive),
+         * so this test could be considered to be unspecified behavior. */
+        ASSERT_EQUALS("c:", PathIterator("C:", "../..", windows).read());
+        ASSERT_EQUALS("c:/windows/system32", PathIterator("C:", "Windows\\System32\\Drivers\\..\\.", windows).read());
+        ASSERT_EQUALS("c:/", PathIterator("C:\\Program Files\\", "..", windows).read());
+        ASSERT_EQUALS("//./", PathIterator("\\\\.\\C:\\", "../..", windows).read());
+        ASSERT_EQUALS("//./", PathIterator("\\\\.\\", "..\\..", windows).read());
+        ASSERT_EQUALS("//?/", PathIterator("\\\\?\\", "..\\..", windows).read());
+        /* The server and share should actually be considered part of the root and not be removed */
+        ASSERT_EQUALS("//", PathIterator("\\\\Server\\Share\\Directory", "../..\\../..", windows).read());
     }
 };
 

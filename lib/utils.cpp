@@ -40,12 +40,19 @@ int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
 
 bool isValidGlobPattern(const std::string& pattern)
 {
+    int consecutiveAsterisks = 0;
     for (auto i = pattern.cbegin(); i != pattern.cend(); ++i) {
-        if (*i == '*' || *i == '?') {
-            const auto j = i + 1;
-            if (j != pattern.cend() && (*j == '*' || *j == '?')) {
+        if (*i == '*') {
+            ++consecutiveAsterisks;
+            if (consecutiveAsterisks > 2) {
                 return false;
             }
+        } else if (*i == '?') {
+            if (consecutiveAsterisks > 0) {
+                return false;
+            }
+        } else {
+            consecutiveAsterisks = 0;
         }
     }
     return true;
@@ -85,10 +92,6 @@ bool matchglob(const std::string& pattern, const std::string& name, bool caseIns
                     n++;
                 } else if (caseInsensitive && tolower(*n) == tolower(*p)) {
                     n++;
-                } else if (*n == '\\' && *p == '/') {
-                    n++;
-                } else if (*n == '/' && *p == '\\') {
-                    n++;
                 } else {
                     matching = false;
                 }
@@ -115,12 +118,6 @@ bool matchglob(const std::string& pattern, const std::string& name, bool caseIns
         // Advance name pointer by one because the current position didn't work
         n++;
     }
-}
-
-bool matchglobs(const std::vector<std::string> &patterns, const std::string &name, bool caseInsensitive) {
-    return std::any_of(begin(patterns), end(patterns), [&name, caseInsensitive](const std::string &pattern) {
-        return matchglob(pattern, name, caseInsensitive);
-    });
 }
 
 void strTolower(std::string& str)

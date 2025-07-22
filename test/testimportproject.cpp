@@ -70,6 +70,7 @@ private:
         TEST_CASE(importCompileCommandsDirectoryMissing); // 'directory' field missing
         TEST_CASE(importCompileCommandsDirectoryInvalid); // 'directory' field not a string
         TEST_CASE(importCppcheckGuiProject);
+        TEST_CASE(importCppcheckGuiProjectPremiumMisra);
         TEST_CASE(ignorePaths);
         TEST_CASE(testVcxprojUnicode);
     }
@@ -431,12 +432,32 @@ private:
         Settings s;
         Suppressions supprs;
         TestImporter project;
-        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs, false));
         ASSERT_EQUALS(1, project.guiProject.pathNames.size());
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());
         ASSERT_EQUALS("lib/", s.includePaths.front());
         ASSERT_EQUALS(true, s.inlineSuppressions);
+    }
+
+    void importCppcheckGuiProjectPremiumMisra() const {
+        REDIRECT;
+        constexpr char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                               "<project>\n"
+                               "    <paths>\n"
+                               "        <dir name=\"m1.c\"/>\n"
+                               "    </paths>\n"
+                               "    <addons>\n"
+                               "        <addon>misra</addon>\n"  // <- Premium: add premium argument misra-c-2012
+                               "    </addons>\n"
+                               "</project>";
+        std::istringstream istr(xml);
+        Settings s;
+        Suppressions supprs;
+        TestImporter project;
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs, true));
+        ASSERT_EQUALS("--misra-c-2012", s.premiumArgs);
+        ASSERT(s.addons.empty());
     }
 
     void ignorePaths() const {
@@ -446,7 +467,7 @@ private:
         project.fileSettings = {std::move(fs1), std::move(fs2)};
 
         project.ignorePaths({"*foo", "bar*"});
-        ASSERT_EQUALS(2, project.fileSettings.size());
+        ASSERT_EQUALS(1, project.fileSettings.size());
 
         project.ignorePaths({"foo/*"});
         ASSERT_EQUALS(1, project.fileSettings.size());

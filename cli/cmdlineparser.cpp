@@ -209,11 +209,13 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         std::list<FileSettings> fileSettings;
         if (!mSettings.fileFilters.empty()) {
             // filter only for the selected filenames from all project files
+            PathMatch filtermatcher(mSettings.fileFilters, Path::getCurrentPath());
             std::copy_if(fileSettingsRef.cbegin(), fileSettingsRef.cend(), std::back_inserter(fileSettings), [&](const FileSettings &fs) {
-                return matchglobs(mSettings.fileFilters, fs.filename());
+                return filtermatcher.match(fs.filename());
             });
             if (fileSettings.empty()) {
-                mLogger.printError("could not find any files matching the filter.");
+                for (const std::string& f: mSettings.fileFilters)
+                    mLogger.printError("could not find any files matching the filter:" + f);
                 return false;
             }
         }
@@ -242,16 +244,9 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
 
     if (!pathnamesRef.empty()) {
         std::list<FileWithDetails> filesResolved;
-        // TODO: this needs to be inlined into PathMatch as it depends on the underlying filesystem
-#if defined(_WIN32)
-        // For Windows we want case-insensitive path matching
-        const bool caseSensitive = false;
-#else
-        const bool caseSensitive = true;
-#endif
         // Execute recursiveAddFiles() to each given file parameter
         // TODO: verbose log which files were ignored?
-        const PathMatch matcher(ignored, caseSensitive);
+        const PathMatch matcher(ignored, Path::getCurrentPath());
         for (const std::string &pathname : pathnamesRef) {
             const std::string err = FileLister::recursiveAddFiles(filesResolved, Path::toNativeSeparators(pathname), mSettings.library.markupExtensions(), matcher, mSettings.debugignore);
             if (!err.empty()) {
@@ -285,7 +280,8 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         if (!mSettings.fileFilters.empty()) {
             files = filterFiles(mSettings.fileFilters, filesResolved);
             if (files.empty()) {
-                mLogger.printError("could not find any files matching the filter.");
+                for (const std::string& f: mSettings.fileFilters)
+                    mLogger.printError("could not find any files matching the filter:" + f);
                 return false;
             }
         }
@@ -1130,7 +1126,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
-            projectType = project.import(projectFile, &mSettings, &mSuppressions);
+            projectType = project.import(projectFile, &mSettings, &mSuppressions, isCppcheckPremium());
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                 for (const std::string &lib : project.guiProject.libraries)
                     mSettings.libraries.emplace_back(lib);
@@ -1622,19 +1618,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     for (auto& path : mIgnoredPaths)
     {
         path = Path::removeQuotationMarks(std::move(path));
-        path = Path::simplifyPath(std::move(path));
-
-        bool isdir = false;
-        if (!Path::exists(path, &isdir) && mSettings.debugignore) {
-            // FIXME: this is misleading because we match from the end of the path so it does not require to exist
-            //std::cout << "path to ignore does not exist: " << path << std::endl;
-        }
-        // TODO: this only works when it exists
-        if (isdir) {
-            // If directory name doesn't end with / or \, add it
-            if (!endsWith(path, '/'))
-                path += '/';
-        }
+        path = Path::fromNativeSeparators(std::move(path));
     }
 
     if (!project.guiProject.pathNames.empty())
@@ -1792,10 +1776,9 @@ void CmdLineParser::printHelp() const
         "                         this is not needed.\n"
         "    --include=<file>\n"
         "                         Force inclusion of a file before the checked file.\n"
-        "    -i <dir or file>     Give a source file or source file directory to exclude\n"
-        "                         from the check. This applies only to source files so\n"
-        "                         header files included by source files are not matched.\n"
-        "                         Directory name is matched to all parts of the path.\n"
+        "    -i <str>             Exclude source files or directories matching str from\n"
+        "                         the check. This applies only to source files so header\n"
+        "                         files included by source files are not matched.\n"
         "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
         "                         inconclusive.\n"
         "                         There are false positives with this option. Each result\n"
@@ -2160,13 +2143,9 @@ bool CmdLineParser::loadCppcheckCfg()
 std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::string>& fileFilters,
                                                       const std::list<FileWithDetails>& filesResolved) {
     std::list<FileWithDetails> files;
-#ifdef _WIN32
-    constexpr bool caseInsensitive = true;
-#else
-    constexpr bool caseInsensitive = false;
-#endif
+    PathMatch filtermatcher(fileFilters, Path::getCurrentPath());
     std::copy_if(filesResolved.cbegin(), filesResolved.cend(), std::inserter(files, files.end()), [&](const FileWithDetails& entry) {
-        return matchglobs(fileFilters, entry.path(), caseInsensitive) || matchglobs(fileFilters, entry.spath(), caseInsensitive);
+        return filtermatcher.match(entry.path());
     });
     return files;
 }

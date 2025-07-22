@@ -403,6 +403,7 @@ private:
         TEST_CASE(astvardecl);
         TEST_CASE(astnewscoped);
         TEST_CASE(astdecltypescope);
+        TEST_CASE(astdesignatedinit);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7174,6 +7175,10 @@ private:
 
     void astdecltypescope() {
         ASSERT_EQUALS("sizedecltypethism_P.(XSize::::{", testAst("size { decltype(this->m_P)::X::Size };"));
+    }
+
+    void astdesignatedinit() {
+        ASSERT_EQUALS("(( f ({ (= (. x) 1)))", testAst("f({ .x = 1 });", AstStyle::Z3));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)

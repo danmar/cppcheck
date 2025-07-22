@@ -4,6 +4,7 @@
 import os
 import sys
 import pytest
+import glob
 import json
 import subprocess
 
@@ -988,7 +989,7 @@ def test_file_filter_no_match(tmpdir):
 
     args = ['--file-filter=*.c', test_file]
     out_lines = [
-        'cppcheck: error: could not find any files matching the filter.'
+        'cppcheck: error: could not find any files matching the filter:*.c'
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
@@ -1132,10 +1133,9 @@ inline void f2()
     assert exitcode == 0, stdout if stdout else stderr
     if sys.platform == "win32":
         stdout = stdout.replace('/', '\\')
-    assert stdout == '''Checking {} ...
-
-
-##file {}
+    assert f'Checking {test_file_cpp} ...' in stdout
+    stdout = stdout.replace(f'Checking {test_file_cpp} ...\n', '').strip()
+    assert stdout == '''##file {}
 2: void f2 ( )
 3: {{
 4: int i@var1 ; i@var1 = 0 ;
@@ -1174,8 +1174,8 @@ Line 5
 File {}
 Line 6
   = always 0
-  0 always 0
-'''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
+  0 always 0'''.format(test_file_h_2, test_file_h, test_file_cpp,
+                       test_file_h_2, test_file_h, test_file_cpp)
     assert stderr == ''
 
 
@@ -1764,17 +1764,14 @@ def test_ignore_file_append(tmpdir):
     __test_ignore_file(tmpdir, 'test.cpp', append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_back(tmpdir):
     __test_ignore_file(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_wildcard_front(tmpdir):
     __test_ignore_file(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_placeholder(tmpdir):
     __test_ignore_file(tmpdir, 't?st.cpp')
 
@@ -1787,12 +1784,10 @@ def test_ignore_file_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src/test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\test.c*')
 
@@ -1805,12 +1800,10 @@ def test_ignore_path_relative_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src\\')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard(tmpdir):
     __test_ignore_file(tmpdir, 'src*/')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: glob syntax is not supported?
 def test_ignore_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_file(tmpdir, 'src*\\')
 
@@ -1880,17 +1873,14 @@ def test_ignore_project_file_cli_append(tmpdir):
     __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp', append_cli=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_back(tmpdir):
     __test_ignore_project(tmpdir, 'test.c*')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_wildcard_front(tmpdir):
     __test_ignore_project(tmpdir, '*test.cpp')
 
 
-@pytest.mark.xfail(strict=True)  # TODO: ?
 def test_ignore_project_file_placeholder(tmpdir):
     __test_ignore_project(tmpdir, 't?st.cpp')
 
@@ -1959,18 +1949,15 @@ def __test_ignore_project_2(tmpdir, extra_args, append=False, inject_path=False)
     assert stdout.splitlines() == lines_exp
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_append(tmpdir):
     # make sure it also matches when specified after project
     __test_ignore_project_2(tmpdir, ['-itest.cpp'], append=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_wildcard_back(tmpdir):
     __test_ignore_project_2(tmpdir, ['-itest.c*'])
 
@@ -1979,27 +1966,22 @@ def test_ignore_project_2_file_wildcard_front(tmpdir):
     __test_ignore_project_2(tmpdir, ['-i*test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_placeholder(tmpdir):
     __test_ignore_project_2(tmpdir, ['-it?st.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: -i appears to be ignored
 def test_ignore_project_2_file_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.cpp'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_relative_wildcard(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc/test.c*'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support / -i appears to be ignored
 def test_ignore_project_2_file_relative_wildcard_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\test.c*'])
 
@@ -2012,12 +1994,10 @@ def test_ignore_project_2_path_relative_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc\\'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
 def test_ignore_project_2_path_relative_wildcard(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc*/'])
 
 
-@pytest.mark.xfail(strict=True)  # TODO: PathMatch lacks wildcard support
 def test_ignore_project_2_path_relative_wildcard_backslash(tmpdir):
     __test_ignore_project_2(tmpdir, ['-isrc*\\'])
 
@@ -2498,7 +2478,6 @@ def test_addon_suppr_cli_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
 
 
-@pytest.mark.xfail(strict=True)  # #13437 - TODO: suppression needs to match the whole input path
 def test_addon_suppr_cli_file_line(tmp_path):
     __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:test.c:3'])
 
@@ -3347,6 +3326,34 @@ def test_preprocess_enforced_cpp(tmp_path):  # #10989
     assert stderr.splitlines() == [
         '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
     ]
+
+
+def test_preprocess_system_include(tmp_path): # #13928
+    g = glob.glob('/usr/include/c++/*/string')
+    if len(g) != 1:
+        pytest.skip('<string> header file not found')
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write('#include <string>\n'
+                ';\n')
+
+    def has_missing_include_string_warning(e):
+        return '<string>' in e
+
+    args = [
+        '--enable=missingInclude',
+        str(test_file)
+    ]
+
+    # include path not provided => missing include warning about <string>
+    _, _, stderr = cppcheck(args)
+    assert has_missing_include_string_warning(stderr), stderr
+
+    # include path provided => no missing include warning about <string>
+    args.append('-I' + os.path.dirname(str(g[0])))
+    _, _, stderr = cppcheck(args)
+    assert not has_missing_include_string_warning(stderr), stderr
 
 
 # TODO: test with --xml
