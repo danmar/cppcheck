@@ -2192,7 +2192,11 @@ void CheckClass::checkConst()
             if (suggestStatic && func.isConst()) {
                 const auto overloads = func.getOverloadedFunctions();
                 if (overloads.size() > 1 && std::any_of(overloads.begin(), overloads.end(), [&](const Function* ovl) {
-                    return &func != ovl && func.argCount() == ovl->argCount() && func.argsMatch(ovl->functionScope, ovl->argDef, func.argDef, emptyString, 0);
+                    if (&func == ovl)
+                        return false;
+                    if (!ovl->functionScope)
+                        return true;
+                    return func.argCount() == ovl->argCount() && func.argsMatch(ovl->functionScope, ovl->argDef, func.argDef, emptyString, 0);
                 }))
                     continue;
             }
