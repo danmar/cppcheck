@@ -6863,6 +6863,12 @@ private:
                    "    int i;\n"
                    "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkConst("struct S {\n" // #14033
+                   "    void f();\n"
+                   "    void f() const {}\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout_str()); // don't crash
     }
 
     void const_handleDefaultParameters() {
