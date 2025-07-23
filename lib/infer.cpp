@@ -128,7 +128,7 @@ namespace {
             const ValueFlow::Value* minValue = getCompareValue(values, predicate, std::less<MathLib::bigint>{});
             if (minValue) {
                 if (minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Upper) {
-                    if (std::numeric_limits<long long>::max() == minValue->intvalue)
+                    if (std::numeric_limits<MathLib::bigint>::max() == minValue->intvalue)
                         result.setMinValue(minValue->intvalue, minValue);
                     else
                         result.setMinValue(minValue->intvalue + 1, minValue);
@@ -142,7 +142,7 @@ namespace {
             const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});
             if (maxValue) {
                 if (maxValue->isImpossible() && maxValue->bound == ValueFlow::Value::Bound::Lower) {
-                    if (std::numeric_limits<long long>::min() == maxValue->intvalue)
+                    if (std::numeric_limits<MathLib::bigint>::min() == maxValue->intvalue)
                         result.setMaxValue(minValue->intvalue, maxValue);
                     else
                         result.setMaxValue(maxValue->intvalue - 1, maxValue);
