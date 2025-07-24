@@ -259,6 +259,8 @@ private:
         TEST_CASE(escapeAlias); // #9150
         TEST_CASE(volatileData); // #9280
         TEST_CASE(globalData);
+
+        TEST_CASE(structuredBinding); // #13269
     }
 
     struct FunctionVariableUsageOptions
@@ -7195,6 +7197,42 @@ private:
             "void f(void) {\n"
             "    ((uint8_t *) (uint16_t)0x1000)[0] = 0x42;\n"
             "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structuredBinding() { // #13269
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b] = std::make_pair(42, 0.42);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:17]: (style) Variable 'a' is assigned a value that is never used. [unreadVariable]\n"
+                      "[test.cpp:3:17]: (style) Variable 'b' is assigned a value that is never used. [unreadVariable]\n", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b] = std::make_pair(42, 0.42);\n"
+                              "    (void) a;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b] = std::make_pair(42, 0.42);\n"
+                              "    (void) b;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b, c] = std::make_pair(42, 0.42);\n"
+                              "    (void) b;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    [[maybe_unused]] auto [a2, b3] = std::make_pair(42, 0.42);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 };
