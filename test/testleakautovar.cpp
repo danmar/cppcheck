@@ -180,6 +180,7 @@ private:
         TEST_CASE(return9);
         TEST_CASE(return10);
         TEST_CASE(return11); // #13098
+        TEST_CASE(return12); // #12238
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -2830,6 +2831,17 @@ private:
               "    return 'a';\n"
               "}\n");
         ASSERT_EQUALS("[test.c:7:5]: (error) Memory leak: ptr [memleak]\n", errout_str());
+    }
+
+    void return12() { // #12238
+        CheckOptions options;
+        options.cpp = true;
+        check("void f(size_t size) {\n"
+              "    void* buffer = malloc(size);\n"
+              "    std::vector<void*> v{ buffer };\n"
+              "    x->g(v);\n"
+              "}\n", options);
+        ASSERT_EQUALS("", errout_str());
     }
 
     void test1() {
