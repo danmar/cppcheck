@@ -321,7 +321,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         } else {
             if (!diff.minvalue.empty()) {
                 int adder(0);
-                if (std::numeric_limits<long long>::min() < diff.minvalue.front())
+                if (std::numeric_limits<MathLib::bigint>::min() < diff.minvalue.front())
                     adder = -1;
                 ValueFlow::Value value(diff.minvalue.front() + adder);
                 value.setImpossible();
@@ -331,7 +331,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
             }
             if (!diff.maxvalue.empty()) {
                 int adder(0);
-                if (std::numeric_limits<long long>::max() > diff.maxvalue.front())
+                if (std::numeric_limits<MathLib::bigint>::max() > diff.maxvalue.front())
                     adder = 1;
                 ValueFlow::Value value(diff.maxvalue.front() + adder);
                 value.setImpossible();
