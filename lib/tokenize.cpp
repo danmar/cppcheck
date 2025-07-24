@@ -7679,7 +7679,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
             if (isC() && Token::Match(tok->previous(), "%type%|* %name% [;,=]"))
                 return false;
 
-            if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
+            if (!Token::Match(tok->previous(), "%name%|%num%|%char%|%str%|)|]|> %name% %name%|%num%|%char%|%op%|%str%|("))
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char%|) %name% *"))
                 continue;

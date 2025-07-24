@@ -404,6 +404,7 @@ private:
         TEST_CASE(astnewscoped);
         TEST_CASE(astdecltypescope);
         TEST_CASE(astdesignatedinit);
+        TEST_CASE(astorkeyword);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -6202,6 +6203,7 @@ private:
         tokenizer.simplifySpaceshipOperator();
         tokenizer.createLinks();
         tokenizer.createLinks2();
+        tokenizer.simplifyCAlternativeTokens();
         tokenizer.list.front()->assignIndexes();
 
         // set varid..
@@ -7179,6 +7181,10 @@ private:
 
     void astdesignatedinit() {
         ASSERT_EQUALS("(( f ({ (= (. x) 1)))", testAst("f({ .x = 1 });", AstStyle::Z3));
+    }
+
+    void astorkeyword() {
+        ASSERT_EQUALS("ifsp.\"\"==sp.0==||(", testAst("void f() { if (s.p == \"\" or s.p == 0) {} }"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
