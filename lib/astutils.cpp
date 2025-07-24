@@ -778,7 +778,7 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings& set
                     assert(argn < scope->varlist.size());
                     auto it = std::next(scope->varlist.cbegin(), argn);
                     if (it->valueType())
-                        return {*it->valueType()};
+                        return {*(it->valueType())};
                 }
             }
         }
