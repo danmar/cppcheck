@@ -59,6 +59,7 @@ private:
         TEST_CASE(zeroDiv19);
         TEST_CASE(zeroDiv20); // #11175
         TEST_CASE(zeroDiv21);
+        TEST_CASE(zeroDiv22);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -698,6 +699,14 @@ private:
               "    return f(1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2:14]: (error) Division by zero. [zerodiv]\n", errout_str());
+    }
+
+    void zeroDiv22()
+    {
+        check("int main() {\n"
+              "    return _Generic((0), int: (42) / (0), default: 0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:36]: (error) Division by zero. [zerodiv]\n", errout_str());
     }
 
     void zeroDivCond() {
