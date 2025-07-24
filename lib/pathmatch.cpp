@@ -30,22 +30,30 @@ PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Sy
     mPatterns(std::move(patterns)), mBasepath(std::move(basepath)), mSyntax(syntax)
 {}
 
-bool PathMatch::match(const std::string &path) const
+bool PathMatch::match(const std::string &path, Filemode mode) const
 {
     return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
-        return match(pattern, path, mBasepath, mSyntax);
+        return match(pattern, path, mBasepath, mode, mSyntax);
     });
 }
 
-bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Syntax syntax)
+bool PathMatch::match(const std::string &pattern, const std::string &path, const std::string &basepath, Filemode mode, Syntax syntax)
 {
+    /* Fast paths for common patterns */
     if (pattern.empty())
         return false;
 
     if (pattern == "*" || pattern == "**")
         return true;
 
-    /* A "real" path is absolute or relative to the base path. A pattern that isn't "real" can match at any
+    /* If the pattern ends with a path separator it matches only directories. If the path names a regular file then
+     * the last path component can't match. */
+    bool dir_mismatch = PathIterator::issep(pattern.back(), syntax) && mode != Filemode::directory;
+
+    if (!dir_mismatch && pattern == path)
+        return true;
+
+    /* A "real" pattern is absolute or relative to the base path. A pattern that isn't real can match at any
      * path component boundary. */
     bool real = Path::isAbsolute(pattern) || isRelativePattern(pattern);
 
@@ -53,6 +61,13 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
     PathIterator s = PathIterator::fromPattern(pattern, basepath, syntax);
     /* Path iterator */
     PathIterator t = PathIterator::fromPath(path, basepath, syntax);
+
+    if (dir_mismatch) {
+        /* Final compponent can't match, so skip it. */
+        while (*t != '\0' && *t != '/')
+            ++t;
+    }
+
     /* Pattern restart position */
     PathIterator p = s;
     /* Path restart position */
@@ -72,8 +87,6 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
                 slash = true;
                 ++s;
             }
-            /* Add backtrack for matching zero characters */
-            b.emplace(s.getpos(), t.getpos());
             while (*t != '\0' && (slash || *t != '/')) {
                 if (*s == *t) {
                     /* Could stop here, but do greedy match and add

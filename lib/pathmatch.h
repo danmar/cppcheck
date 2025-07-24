@@ -54,8 +54,11 @@
  * - Otherwise:
  *   - Match all files where the pattern matches any part of the file's canonical absolute path up until a
  *     path separator or the end of the pathname, and the matching part directly follows a path separator.
+ * - If a pattern ends with a path separator before canonicalization then the final path component of the pattern
+ *   only matches the final path component of the file path if the file is a directory (specified by the file mode
+ *   parameter).
  *
- * TODO: Handle less common windows windows syntaxes:
+ * TODO: Handle less common windows syntaxes:
  *   - Drive-specific relative path: C:dir\foo.cpp
  *   - Root-relative path: \dir\foo.cpp
  **/
@@ -88,6 +91,17 @@ public:
 #endif
 
     /**
+     * @brief File mode of a file being matched
+     *
+     * regular: File is a regular file.
+     * directory: File is a directory.
+     */
+    enum class Filemode : std::uint8_t {
+        regular,
+        directory,
+    };
+
+    /**
      * The constructor.
      *
      * @param patterns List of patterns.
@@ -100,9 +114,10 @@ public:
      * @brief Match path against list of patterns.
      *
      * @param path Path to match.
+     * @param mode The file mode of the file named by the path.
      * @return true if any of the masks match the path, false otherwise.
      */
-    bool match(const std::string &path) const;
+    bool match(const std::string &path, Filemode mode = Filemode::regular) const;
 
     /**
      * @brief Match path against a single pattern.
@@ -110,10 +125,11 @@ public:
      * @param pattern Pattern to use.
      * @param path Path to match.
      * @param basepath Path to which the pattern and path is relative, when applicable.
+     * @param mode The file mode of the file named by the path.
      * @param syntax Path syntax.
      * @return true if the pattern matches the path, false otherwise.
      */
-    static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Syntax syntax = platform_syntax);
+    static bool match(const std::string &pattern, const std::string &path, const std::string &basepath = std::string(), Filemode mode = Filemode::regular, Syntax syntax = platform_syntax);
 
     /**
      * @brief Check if a pattern is a relative path name.
@@ -209,12 +225,6 @@ public:
     explicit PathIterator(const char *path_a = nullptr, const char *path_b = nullptr, Syntax syntax = platform_syntax) :
         mStart{path_a, path_b}, mSyntax(syntax)
     {
-        const auto issep = [syntax] (char c) {
-            return c == '/' || (syntax == Syntax::windows && c == '\\');
-        };
-        const auto isdrive = [] (char c) {
-            return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-        };
 
         for (int i = 0; i < 2; i++) {
             const char *&p = mEnd[i];
@@ -225,19 +235,19 @@ public:
 
             if (mPos.l == 0) {
                 /* Check length of root component */
-                if (issep(p[0])) {
+                if (issep(p[0], syntax)) {
                     mRootLength++;
-                    if (syntax == Syntax::windows && issep(p[1])) {
+                    if (syntax == Syntax::windows && issep(p[1], syntax)) {
                         mRootLength++;
                         if (p[2] == '.' || p[2] == '?') {
                             mRootLength++;
-                            if (issep(p[3]))
+                            if (issep(p[3], syntax))
                                 mRootLength++;
                         }
                     }
                 } else if (syntax == Syntax::windows && isdrive(p[0]) && p[1] == ':') {
                     mRootLength += 2;
-                    if (issep(p[2]))
+                    if (issep(p[2], syntax))
                         mRootLength++;
                 }
                 p += mRootLength;
@@ -306,6 +316,18 @@ public:
         }
 
         return str;
+    }
+
+    /* Syntax helper, check if a character is a path separator */
+    static bool issep(char c, Syntax syntax)
+    {
+        return c == '/' || (syntax == Syntax::windows && c == '\\');
+    }
+
+    /* Syntax helper, check if a chracter is a drive letter */
+    static bool isdrive(char c)
+    {
+        return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
     }
 
 private:
