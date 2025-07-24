@@ -407,7 +407,7 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
     const QString classification = getClassification(mReportType, guideline);
     columns[COLUMN_CERT_LEVEL] = createNormalItem(classification);
     columns[COLUMN_CERT_RULE] = createNormalItem(guideline);
-    columns[COLUMN_CWE] = createNormalItem(QString::number(item.cwe));
+    columns[COLUMN_CWE] = createNormalItem(item.cwe > 0 ? QString::number(item.cwe) : QString());
     columns[COLUMN_FILE] = createNormalItem(QDir::toNativeSeparators(item.file));
     columns[COLUMN_ID] = createNormalItem(childOfMessage ? QString() : item.errorId);
     columns[COLUMN_INCONCLUSIVE] = childOfMessage ? createNormalItem(QString()) : createCheckboxItem(item.inconclusive);

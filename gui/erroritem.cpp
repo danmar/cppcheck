@@ -37,7 +37,7 @@ bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 ErrorItem::ErrorItem()
     : severity(Severity::none)
     , inconclusive(false)
-    , cwe(-1)
+    , cwe(0)
     , hash(0)
 {}
 
