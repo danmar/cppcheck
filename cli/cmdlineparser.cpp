@@ -1001,6 +1001,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
 
         else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
+            if (mXmlOptionProvided) {
+                outputFormatOptionMixingError();
+                return Result::Fail;
+            }
             const std::string format = argv[i] + 16;
             // plist can not be handled here because it requires additional data
             if (format == "text")
@@ -1014,6 +1018,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
             mSettings.plistOutput = "";
+            mOutputFormatOptionProvided = true;
         }
 
 
@@ -1486,11 +1491,20 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // Write results in results.xml
         else if (std::strcmp(argv[i], "--xml") == 0) {
+            if (mOutputFormatOptionProvided) {
+                outputFormatOptionMixingError();
+                return Result::Fail;
+            }
             mSettings.outputFormat = Settings::OutputFormat::xml;
+            mXmlOptionProvided = true;
         }
 
         // Define the XML file version (and enable XML output)
         else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
+            if (mOutputFormatOptionProvided) {
+                outputFormatOptionMixingError();
+                return Result::Fail;
+            }
             int tmp;
             if (!parseNumberArg(argv[i], 14, tmp))
                 return Result::Fail;
@@ -1503,6 +1517,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.xml_version = tmp;
             // Enable also XML if version is set
             mSettings.outputFormat = Settings::OutputFormat::xml;
+            mXmlOptionProvided = true;
         }
 
         else {
@@ -2148,4 +2163,9 @@ std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::str
         return filtermatcher.match(entry.path());
     });
     return files;
+}
+
+void CmdLineParser::outputFormatOptionMixingError() const
+{
+    mLogger.printError("'--output-format' and '--xml...' may not be used in conjunction.");
 }

@@ -179,6 +179,13 @@ private:
     bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language mEnforcedLang{Standards::Language::None};
+
+    /* Should be mutually exclusive.
+    * TODO: Deprecate `--xml...`. */
+    bool mXmlOptionProvided{};
+    bool mOutputFormatOptionProvided{};
+
+    void outputFormatOptionMixingError() const;
 };
 
 /// @}
