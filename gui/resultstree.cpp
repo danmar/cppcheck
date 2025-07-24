@@ -765,7 +765,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             auto *hideallid              = new QAction(tr("Hide all with id"), &menu);
             auto *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
-            if (selectedFiles == 0 || mThread->isChecking())
+            if (selectedFiles == 0 || mThread->isChecking() || mResultsSource == ResultsSource::Log)
                 recheckAction->setDisabled(true);
 
             if (selectedResults == 0)
@@ -774,7 +774,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             if (selectedResults == 0 || multipleSelection)
                 hideallid->setDisabled(true);
 
-            if (multipleSelection)
+            if (multipleSelection || mResultsSource == ResultsSource::Log)
                 opencontainingfolder->setDisabled(true);
 
             menu.addAction(recheckAction);
@@ -1424,10 +1424,14 @@ void ResultsTree::setCheckDirectory(const QString &dir)
     mCheckPath = dir;
 }
 
-
 const QString& ResultsTree::getCheckDirectory() const
 {
     return mCheckPath;
+}
+
+void ResultsTree::setResultsSource(ResultsSource source)
+{
+    mResultsSource = source;
 }
 
 QString ResultsTree::stripPath(const QString &path, bool saving) const

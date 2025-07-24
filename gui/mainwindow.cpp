@@ -40,6 +40,7 @@
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
+#include "resultstree.h"
 #include "resultsview.h"
 #include "scratchpad.h"
 #include "settings.h"
@@ -230,10 +231,13 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     loadSettings();
 
     mThread->initialize(mUI->mResults);
-    if (mProjectFile)
+    if (mProjectFile) {
+        enableProjectActions(true);
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
-    else
+    } else {
+        enableProjectActions(false);
         formatAndSetTitle();
+    }
 
     mUI->mActionComplianceReport->setVisible(isCppcheckPremium());
 
@@ -242,7 +246,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionPrint->setShortcut(QKeySequence::Print);
     enableResultsButtons();
     enableProjectOpenActions(true);
-    enableProjectActions(false);
 
     // Must setup MRU menu before CLI param handling as it can load a
     // project file and update MRU menu.
@@ -262,9 +265,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     if (!args.isEmpty()) {
         handleCLIParams(args);
     }
-
-    mUI->mActionCloseProjectFile->setEnabled(mProjectFile != nullptr);
-    mUI->mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         PlatformData platform = mPlatforms.mPlatforms[i];
@@ -588,6 +588,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     }
 
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
     mUI->mResults->checkingStarted(p.fileSettings.size());
@@ -651,6 +652,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     QStringList fileNames = pathList.getFileList();
 
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
     if (fileNames.isEmpty()) {
@@ -1486,6 +1488,7 @@ void MainWindow::loadResults(const QString &selectedFile)
         closeProjectFile();
     mIsLogfileLoaded = true;
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Log);
     mUI->mActionReanalyzeModified->setEnabled(false);
     mUI->mActionReanalyzeAll->setEnabled(false);
     mUI->mResults->readErrorsXml(selectedFile);
@@ -1776,7 +1779,6 @@ void MainWindow::stopAnalysis()
 {
     mThread->stop();
     mUI->mResults->stopAnalysis();
-    mUI->mResults->disableProgressbar();
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty()) {
         mUI->mResults->updateFromOldReport(lastResults);
@@ -1830,8 +1832,10 @@ void MainWindow::loadProjectFile(const QString &filePath)
     addProjectMRU(filePath);
 
     mIsLogfileLoaded = false;
-    mUI->mActionCloseProjectFile->setEnabled(true);
-    mUI->mActionEditProjectFile->setEnabled(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
+    mUI->mActionReanalyzeModified->setEnabled(true);
+    mUI->mActionReanalyzeAll->setEnabled(true);
+    enableProjectActions(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
     mProjectFile->setActiveProject();
