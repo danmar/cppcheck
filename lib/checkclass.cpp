@@ -556,7 +556,7 @@ static std::string noMemberErrorMessage(const Scope *scope, const char function[
         else
             errmsg += " It is recommended to define or delete the " + std::string(function) + '.';
     } else {
-        errmsg += type + " '$symbol' does not have a " + function + " which is recommended since it has dynamic memory/resource allocation(s).";
+        errmsg += type + " '$symbol' does not have a " + function + " which is recommended since it has dynamic memory/resource management.";
     }
 
     return errmsg;
