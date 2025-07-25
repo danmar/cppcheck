@@ -206,6 +206,11 @@ private:
               "    };\n"
               "};");
         ASSERT_EQUALS("", errout_str());
+
+        check("int g();\n"
+              "size_t f1() { return sizeof(x[0]); }\n"
+              "size_t f2() { return sizeof(g()); }\n");
+        ASSERT_EQUALS("[test.cpp:3:22]: (warning) Found function call inside sizeof(). [sizeofFunctionCall]\n", errout_str());
     }
 
     void sizeofForArrayParameter() {

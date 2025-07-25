@@ -379,7 +379,7 @@ void CheckSizeof::sizeofFunction()
             if (const Token *argument = tok->next()->astOperand2()) {
                 const Token *checkToken = argument->previous();
                 if (checkToken->tokType() == Token::eName)
-                    break;
+                    continue;
                 const Function * fun = checkToken->function();
                 // Don't report error if the function is overloaded
                 if (fun && fun->nestedIn->functionMap.count(checkToken->str()) == 1) {
