@@ -5198,10 +5198,9 @@ private:
                               "    const auto&& c = g();\n"
                               "    auto&& d = c;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5:20]: (style) Variable 'b' is assigned a value that is never used.\n"
-                           "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
-                           "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) Variable 'b' is assigned a value that is never used. [unreadVariable]\n"
+                      "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
+                      errout_str());
     }
 
     void localvaralias21() { // #11728
