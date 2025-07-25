@@ -76,7 +76,7 @@ static bool hasGccCompoundStatement(const Token *tok)
 
 static bool nonLocal(const Variable* var, bool deref)
 {
-    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isExtern();
 }
 
 static bool hasVolatileCastOrVar(const Token *expr)
