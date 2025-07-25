@@ -1186,7 +1186,24 @@ void CheckUnusedVar::checkFunctionVariableUsage()
         const Token* lambdaOrInlineStart{};
         const bool hasLambdaOrInline = scope->hasInlineOrLambdaFunction(&lambdaOrInlineStart);
 
+        const Token *nextStructuredBindingTok = nullptr;
+        std::vector<std::pair<const Token*, const Token*>> unusedStructuredBindingTokens;
+        size_t structuredBindingTokCount = 0;
+
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (nextStructuredBindingTok) {
+                tok = nextStructuredBindingTok;
+            } else {
+                if (structuredBindingTokCount > 0 && structuredBindingTokCount == unusedStructuredBindingTokens.size()) {
+                    for (const auto &pair : unusedStructuredBindingTokens) {
+                        unreadVariableError(pair.first, pair.second->expressionString(), false);
+                    }
+                }
+                structuredBindingTokCount = 0;
+                unusedStructuredBindingTokens.clear();
+            }
+            nextStructuredBindingTok = nullptr;
+
             if (findLambdaEndToken(tok))
                 // todo: handle lambdas
                 break;
@@ -1196,6 +1213,16 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Token *varDecl = nullptr;
             if (tok->variable() && tok->variable()->nameToken() == tok) {
                 const Token * eq = tok->next();
+                if (isStructuredBindingVariable(tok->variable())) {
+                    structuredBindingTokCount++;
+                    while (!Token::simpleMatch(eq, "]")) {
+                        eq = eq->next();
+                        if (eq->variable() && !nextStructuredBindingTok)
+                            nextStructuredBindingTok = eq;
+                    }
+                    if (eq)
+                        eq = eq->next();
+                }
                 while (Token::simpleMatch(eq, "["))
                     eq = eq->link()->next();
                 if (Token::simpleMatch(eq, ") (") && Token::simpleMatch(eq->linkAt(1), ") ="))
@@ -1333,8 +1360,12 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
 
                 // warn
-                if (!expr->variable() || !expr->variable()->isMaybeUnused())
-                    unreadVariableError(tok, expr->expressionString(), false);
+                if (!expr->variable() || !expr->variable()->isMaybeUnused()) {
+                    if (structuredBindingTokCount > 0)
+                        unusedStructuredBindingTokens.emplace_back(tok, expr);
+                    else
+                        unreadVariableError(tok, expr->expressionString(), false);
+                }
             }
         }
 
