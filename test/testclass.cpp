@@ -59,6 +59,7 @@ private:
         TEST_CASE(copyConstructor4); // base class with private constructor
         TEST_CASE(copyConstructor5); // multiple inheritance
         TEST_CASE(copyConstructor6); // array of pointers
+        TEST_CASE(deletedMemberPointer); // deleted member pointer in destructor
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -1079,6 +1080,33 @@ private:
                            "[test.cpp:4]: (warning) Struct 'S' does not have a destructor which is recommended since it has dynamic memory/resource management.\n",
                            "",
                            errout_str());
+    }
+
+    void deletedMemberPointer() {
+
+        // delete ...
+        checkCopyConstructor("struct P {};\n"
+                             "class C {\n"
+                             "    P *p;\n"
+                             "public:\n"
+                             "    explicit C(P *p) : p(p) {}\n"
+                             "    ~C() { delete p; }\n"
+                             "    void f() {}\n"
+                             "};\n");
+        ASSERT_EQUALS("[test.cpp:6:19]: (warning) Class 'C' does not have a copy constructor which is recommended since it has dynamic memory/resource management. [noCopyConstructor]\n"
+                      "[test.cpp:6:19]: (warning) Class 'C' does not have a operator= which is recommended since it has dynamic memory/resource management. [noOperatorEq]\n", errout_str());
+
+        // free(...)
+        checkCopyConstructor("struct P {};\n"
+                             "class C {\n"
+                             "    P *p;\n"
+                             "public:\n"
+                             "    explicit C(P *p) : p(p) {}\n"
+                             "    ~C() { free(p); }\n"
+                             "    void f() {}\n"
+                             "};\n");
+        ASSERT_EQUALS("[test.cpp:6:17]: (warning) Class 'C' does not have a copy constructor which is recommended since it has dynamic memory/resource management. [noCopyConstructor]\n"
+                      "[test.cpp:6:17]: (warning) Class 'C' does not have a operator= which is recommended since it has dynamic memory/resource management. [noOperatorEq]\n", errout_str());
     }
 
     void noOperatorEq() {
