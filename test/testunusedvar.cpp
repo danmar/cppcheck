@@ -188,6 +188,7 @@ private:
         TEST_CASE(localvarconst2);
         TEST_CASE(localvarreturn); // ticket #9167
         TEST_CASE(localvarmaybeunused);
+        TEST_CASE(localvarrvalue); // ticket #13977
 
         TEST_CASE(localvarthrow); // ticket #3687
 
@@ -5200,10 +5201,9 @@ private:
                               "    const auto&& c = g();\n"
                               "    auto&& d = c;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5:20]: (style) Variable 'b' is assigned a value that is never used.\n"
-                           "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
-                           "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) Variable 'b' is assigned a value that is never used. [unreadVariable]\n"
+                      "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
+                      errout_str());
     }
 
     void localvaralias21() { // #11728
@@ -6471,6 +6471,15 @@ private:
                               "    [[maybe_unused]] char b[1][2];\n"
                               "}");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void localvarrvalue() { // ticket #13977
+        functionVariableUsage("void f(void) {\n"
+                              "    std::string s;\n"
+                              "    std::string&& m = std::move(s);\n"
+                              "    cb();\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:21]: (style) Variable 'm' is assigned a value that is never used. [unreadVariable]\n", errout_str());
     }
 
     void localvarthrow() { // ticket #3687

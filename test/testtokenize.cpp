@@ -404,6 +404,7 @@ private:
         TEST_CASE(astnewscoped);
         TEST_CASE(astdecltypescope);
         TEST_CASE(astdesignatedinit);
+        TEST_CASE(astrvaluedecl);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -7179,6 +7180,10 @@ private:
 
     void astdesignatedinit() {
         ASSERT_EQUALS("(( f ({ (= (. x) 1)))", testAst("f({ .x = 1 });", AstStyle::Z3));
+    }
+
+    void astrvaluedecl() {
+        ASSERT_EQUALS("varstdmove::var(=", testAst("std::string&& var = std::move(var);"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
