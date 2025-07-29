@@ -620,7 +620,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     // replace id with guideline if present
     // replace severity with classification if present
     const std::string idStr = guideline.empty() ? id : guideline;
-    const std::string severityStr = classification.empty() ? severityToString(severity) : classification;
+    std::string severityStr = classification.empty() ? coloredSeverityToString(severity) : classification;
 
     findAndReplace(result, "{id}", idStr);
 
@@ -632,6 +632,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         findAndReplace(result, replaceFrom, replaceWith);
         pos1 = result.find("{inconclusive:", pos1);
     }
+    replaceColors(severityStr);
     findAndReplace(result, "{severity}", severityStr);
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);

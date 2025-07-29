@@ -390,12 +390,12 @@ private:
         SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
         SUPPRESS_WARNING_GCC_PUSH("-Woverflow")
         {
-            constexpr MathLib::bigint i = 18446744073709551615;
+            constexpr MathLib::bigint i = 18446744073709551615ULL;
             ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("18446744073709551615"));
         }
         {
-            constexpr MathLib::bigint i = -18446744073709551615;
+            constexpr MathLib::bigint i = -18446744073709551615ULL;
             ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("-18446744073709551615"));
         }
@@ -566,12 +566,12 @@ private:
         SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
         SUPPRESS_WARNING_GCC_PUSH("-Woverflow")
         {
-            constexpr MathLib::biguint u = 18446744073709551615;
+            constexpr MathLib::biguint u = 18446744073709551615ULL;
             ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("18446744073709551615"));
         }
         {
-            constexpr MathLib::biguint u = -18446744073709551615;
+            constexpr MathLib::biguint u = -18446744073709551615ULL;
             ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-18446744073709551615"));
         }
