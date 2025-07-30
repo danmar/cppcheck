@@ -147,6 +147,9 @@ struct TokenImpl {
     TokenImpl() : mFunction(nullptr) {}
 
     ~TokenImpl();
+
+    TokenImpl(const TokenImpl &) = delete;
+    TokenImpl operator=(const TokenImpl &) = delete;
 };
 
 /// @addtogroup Core

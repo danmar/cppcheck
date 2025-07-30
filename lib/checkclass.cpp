@@ -413,30 +413,47 @@ void CheckClass::copyconstructors()
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         std::map<int, const Token*> allocatedVars;
+        std::map<int, const Token*> deallocatedVars;
 
         for (const Function &func : scope->functionList) {
-            if (func.type != FunctionType::eConstructor || !func.functionScope)
-                continue;
-            const Token* tok = func.token->linkAt(1);
-            for (const Token* const end = func.functionScope->bodyStart; tok != end; tok = tok->next()) {
-                if (Token::Match(tok, "%var% ( new") ||
-                    (Token::Match(tok, "%var% ( %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
-                    const Variable* var = tok->variable();
-                    if (var && var->isPointer() && var->scope() == scope)
-                        allocatedVars[tok->varId()] = tok;
+            if (func.type == FunctionType::eConstructor && func.functionScope) {
+                // Allocations in constructors
+                const Token* tok = func.token->linkAt(1);
+                for (const Token* const end = func.functionScope->bodyStart; tok != end; tok = tok->next()) {
+                    if (Token::Match(tok, "%var% ( new") ||
+                        (Token::Match(tok, "%var% ( %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
+                        const Variable* var = tok->variable();
+                        if (var && var->isPointer() && var->scope() == scope)
+                            allocatedVars[tok->varId()] = tok;
+                    }
                 }
-            }
-            for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
-                if (Token::Match(tok, "%var% = new") ||
-                    (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
-                    const Variable* var = tok->variable();
-                    if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
-                        allocatedVars[tok->varId()] = tok;
+                for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
+                    if (Token::Match(tok, "%var% = new") ||
+                        (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
+                        const Variable* var = tok->variable();
+                        if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
+                            allocatedVars[tok->varId()] = tok;
+                    }
+                }
+            } else if (func.type == FunctionType::eDestructor && func.functionScope) {
+                // Deallocations in destructors
+                const Token* tok = func.functionScope->bodyStart;
+                for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
+                    if (Token::Match(tok, "delete %var%") ||
+                        (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))) {
+                        const Token *vartok = tok->str() == "delete" ? tok->next() : tok->tokAt(2);
+                        const Variable* var = vartok->variable();
+                        if (var && var->isPointer() && var->scope() == scope && !var->isStatic())
+                            deallocatedVars[vartok->varId()] = vartok;
+                    }
                 }
             }
         }
 
-        if (!allocatedVars.empty()) {
+        const bool hasAllocatedVars = !allocatedVars.empty();
+        const bool hasDeallocatedVars = !deallocatedVars.empty();
+
+        if (hasAllocatedVars || hasDeallocatedVars) {
             const Function *funcCopyCtor = nullptr;
             const Function *funcOperatorEq = nullptr;
             const Function *funcDestructor = nullptr;
@@ -450,13 +467,21 @@ void CheckClass::copyconstructors()
             }
             if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
-                if (!hasNonCopyableBase(scope, &unknown) && !unknown)
-                    noCopyConstructorError(scope, funcCopyCtor, allocatedVars.cbegin()->second, unknown);
+                if (!hasNonCopyableBase(scope, &unknown) && !unknown) {
+                    if (hasAllocatedVars)
+                        noCopyConstructorError(scope, funcCopyCtor, allocatedVars.cbegin()->second, unknown);
+                    else
+                        noCopyConstructorError(scope, funcCopyCtor, deallocatedVars.cbegin()->second, unknown);
+                }
             }
             if (!funcOperatorEq || funcOperatorEq->isDefault()) {
                 bool unknown = false;
-                if (!hasNonCopyableBase(scope, &unknown) && !unknown)
-                    noOperatorEqError(scope, funcOperatorEq, allocatedVars.cbegin()->second, unknown);
+                if (!hasNonCopyableBase(scope, &unknown) && !unknown) {
+                    if (hasAllocatedVars)
+                        noOperatorEqError(scope, funcOperatorEq, allocatedVars.cbegin()->second, unknown);
+                    else
+                        noOperatorEqError(scope, funcOperatorEq, deallocatedVars.cbegin()->second, unknown);
+                }
             }
             if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
@@ -556,7 +581,7 @@ static std::string noMemberErrorMessage(const Scope *scope, const char function[
         else
             errmsg += " It is recommended to define or delete the " + std::string(function) + '.';
     } else {
-        errmsg += type + " '$symbol' does not have a " + function + " which is recommended since it has dynamic memory/resource allocation(s).";
+        errmsg += type + " '$symbol' does not have a " + function + " which is recommended since it has dynamic memory/resource management.";
     }
 
     return errmsg;
