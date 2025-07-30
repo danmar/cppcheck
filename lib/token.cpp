@@ -2632,8 +2632,6 @@ const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) 
 
 TokenImpl::~TokenImpl()
 {
-    // cppcheck-suppress-begin [noCopyConstructor, noOperatorEq]
-
     delete mMacroName;
     delete mOriginalName;
     delete mValueType;
@@ -2651,8 +2649,6 @@ TokenImpl::~TokenImpl()
         mCppcheckAttributes = mCppcheckAttributes->next;
         delete c;
     }
-
-    // cppcheck-suppress-end [noCopyConstructor, noOperatorEq]
 }
 
 void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)

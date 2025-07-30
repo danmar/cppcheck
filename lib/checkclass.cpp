@@ -437,7 +437,7 @@ void CheckClass::copyconstructors()
                 }
             } else if (func.type == FunctionType::eDestructor && func.functionScope) {
                 // Deallocations in destructors
-                const Token* tok = func.token->linkAt(1);
+                const Token* tok = func.functionScope->bodyStart;
                 for (const Token* const end = func.functionScope->bodyEnd; tok != end; tok = tok->next()) {
                     if (Token::Match(tok, "delete %var%") ||
                         (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))) {
@@ -450,8 +450,8 @@ void CheckClass::copyconstructors()
             }
         }
 
-        bool hasAllocatedVars = !allocatedVars.empty();
-        bool hasDeallocatedVars = !deallocatedVars.empty();
+        const bool hasAllocatedVars = !allocatedVars.empty();
+        const bool hasDeallocatedVars = !deallocatedVars.empty();
 
         if (hasAllocatedVars || hasDeallocatedVars) {
             const Function *funcCopyCtor = nullptr;
