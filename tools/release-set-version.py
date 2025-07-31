@@ -59,7 +59,6 @@ def set_version(new_version:str):
             print(f'Aborting, must be executed from {expected_branch} branch')
             return
 
-    v2 = '.'.join(v[:2])
     v3 = '.'.join(v[:3])
 
     cppcheck_version_string = (v[0] + '.' + str(int(v[1])+1) + ' dev') if is_dev_version else new_version
