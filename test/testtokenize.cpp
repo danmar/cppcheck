@@ -1011,6 +1011,8 @@ private:
         ASSERT_EQUALS("int x [ 2 ] = { -2 , 1 }", tokenizeAndStringify("int x[2] = {-2,1}"));
 
         ASSERT_EQUALS("f ( 123 )", tokenizeAndStringify("f(+123)"));
+
+        ASSERT_EQUALS("std :: extent_v < A > - 1 ;", tokenizeAndStringify("std::extent_v<A> - 1;")); // #11341
     }
 
 
