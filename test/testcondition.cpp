@@ -645,7 +645,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-        check("void f(int i) {\n"
+        check("void f(int64_t i) {\n"
               "   if(i == 0x02e2000000 || i == 0xa0c6000000)\n"
               "       foo(i);\n"
               "}");
