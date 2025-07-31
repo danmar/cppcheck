@@ -110,7 +110,7 @@ public:
     static char macroChar;
 
     explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang);
-    virtual ~Preprocessor();
+    virtual ~Preprocessor() = default;
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
 
@@ -122,7 +122,7 @@ public:
 
     bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
 
-    void removeComments(simplecpp::TokenList &tokens);
+    void removeComments(simplecpp::TokenList &tokens) const;
 
     static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
 
@@ -177,7 +177,7 @@ private:
 
     /** list of all directives met while preprocessing file */
 
-    std::map<std::string, simplecpp::TokenList *> mTokenLists;
+    simplecpp::FileDataCache mFileCache;
 
     /** filename for cpp/c file - useful when reporting errors */
     std::string mFile0;
