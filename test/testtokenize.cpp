@@ -405,6 +405,7 @@ private:
         TEST_CASE(astdecltypescope);
         TEST_CASE(astdesignatedinit);
         TEST_CASE(astrvaluedecl);
+        TEST_CASE(astorkeyword);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -6205,6 +6206,7 @@ private:
         tokenizer.simplifySpaceshipOperator();
         tokenizer.createLinks();
         tokenizer.createLinks2();
+        tokenizer.simplifyCAlternativeTokens();
         tokenizer.list.front()->assignIndexes();
 
         // set varid..
@@ -7186,6 +7188,10 @@ private:
 
     void astrvaluedecl() {
         ASSERT_EQUALS("varstdmove::var(=", testAst("std::string&& var = std::move(var);"));
+    }
+
+    void astorkeyword() {
+        ASSERT_EQUALS("ifsp.\"\"==sp.0==||(", testAst("void f() { if (s.p == \"\" or s.p == 0) {} }"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)
