@@ -30,6 +30,8 @@ public:
 private:
     static constexpr auto unix = PathMatch::Syntax::unix;
     static constexpr auto windows = PathMatch::Syntax::windows;
+    static constexpr auto ifreg = PathMatch::Filemode::regular;
+    static constexpr auto ifdir = PathMatch::Filemode::directory;
 #ifdef _WIN32
     const std::string basepath{"C:\\test"};
 #else
@@ -73,7 +75,8 @@ private:
         TEST_CASE(filemaskpath3);
         TEST_CASE(filemaskpath4);
         TEST_CASE(mixedallmatch);
-        TEST_CASE(glob);
+        TEST_CASE(glob1);
+        TEST_CASE(glob2);
         TEST_CASE(globstar1);
         TEST_CASE(globstar2);
         TEST_CASE(pathiterator);
@@ -85,16 +88,16 @@ private:
     }
 
     void emptymaskpath1() const {
-        ASSERT(!emptyMatcher.match("src/"));
+        ASSERT(!emptyMatcher.match("src/", ifdir));
     }
 
     void emptymaskpath2() const {
-        ASSERT(!emptyMatcher.match("../src/"));
+        ASSERT(!emptyMatcher.match("../src/", ifdir));
     }
 
     void emptymaskpath3() const {
-        ASSERT(!emptyMatcher.match("/home/user/code/src/"));
-        ASSERT(!emptyMatcher.match("d:/home/user/code/src/"));
+        ASSERT(!emptyMatcher.match("/home/user/code/src/", ifdir));
+        ASSERT(!emptyMatcher.match("d:/home/user/code/src/", ifdir));
     }
 
     // Test PathMatch containing "src/"
@@ -103,17 +106,20 @@ private:
     }
 
     void onemasksamepath() const {
-        ASSERT(srcMatcher.match("src/"));
+        ASSERT(srcMatcher.match("src/", ifdir));
+        ASSERT(!srcMatcher.match("src/", ifreg));
     }
 
     void onemasksamepathdifferentslash() const {
         PathMatch srcMatcher2({"src\\"}, basepath, windows);
-        ASSERT(srcMatcher2.match("src/"));
+        ASSERT(srcMatcher2.match("src/", ifdir));
+        ASSERT(!srcMatcher2.match("src/", ifreg));
     }
 
     void onemasksamepathdifferentcase() const {
         PathMatch match({"sRc/"}, basepath, windows);
-        ASSERT(match.match("srC/"));
+        ASSERT(match.match("srC/", ifdir));
+        ASSERT(!match.match("srC/", ifreg));
     }
 
     void onemasksamepathwithfile() const {
@@ -125,8 +131,8 @@ private:
         const std::string shorterToMatch("src/");
         ASSERT(shorterToMatch.length() < longerExclude.length());
         PathMatch match({longerExclude});
-        ASSERT(match.match(longerExclude));
-        ASSERT(!match.match(shorterToMatch));
+        ASSERT(match.match(longerExclude, ifdir));
+        ASSERT(!match.match(shorterToMatch, ifdir));
     }
 
     void onemaskdifferentdir1() const {
@@ -146,40 +152,43 @@ private:
     }
 
     void onemasklongerpath1() const {
-        ASSERT(srcMatcher.match("/tmp/src/"));
-        ASSERT(srcMatcher.match("d:/tmp/src/"));
+        ASSERT(srcMatcher.match("/tmp/src/", ifdir));
+        ASSERT(srcMatcher.match("d:/tmp/src/", ifdir));
     }
 
     void onemasklongerpath2() const {
-        ASSERT(srcMatcher.match("src/module/"));
+        ASSERT(srcMatcher.match("src/module/", ifdir));
     }
 
     void onemasklongerpath3() const {
-        ASSERT(srcMatcher.match("project/src/module/"));
+        ASSERT(srcMatcher.match("project/src/module/", ifdir));
     }
 
     void onemaskcwd() const {
-        ASSERT(srcMatcher.match("./src"));
+        ASSERT(srcMatcher.match("./src", ifdir));
     }
 
     void twomasklongerpath1() const {
         PathMatch match({ "src/", "module/" });
-        ASSERT(!match.match("project/"));
+        ASSERT(!match.match("project/", ifdir));
     }
 
     void twomasklongerpath2() const {
         PathMatch match({ "src/", "module/" });
-        ASSERT(match.match("project/src/"));
+        ASSERT(match.match("project/src/", ifdir));
+        ASSERT(!match.match("project/src/", ifreg));
     }
 
     void twomasklongerpath3() const {
         PathMatch match({ "src/", "module/" });
-        ASSERT(match.match("project/module/"));
+        ASSERT(match.match("project/module/", ifdir));
+        ASSERT(!match.match("project/module/", ifreg));
     }
 
     void twomasklongerpath4() const {
         PathMatch match({ "src/", "module/" });
-        ASSERT(match.match("project/src/module/"));
+        ASSERT(match.match("project/src/module/", ifdir));
+        ASSERT(match.match("project/src/module/", ifreg));
     }
 
     // Test PathMatch containing "foo.cpp"
@@ -224,11 +233,12 @@ private:
     void mixedallmatch() const { // #13570
         // when trying to match a directory against a directory entry it erroneously modified a local variable also used for file matching
         PathMatch match({ "tests/", "file.c" });
-        ASSERT(match.match("tests/"));
+        ASSERT(match.match("tests/", ifdir));
+        ASSERT(!match.match("tests/", ifreg));
         ASSERT(match.match("lib/file.c"));
     }
 
-    void glob() const {
+    void glob1() const {
         PathMatch match({"test?.cpp"});
         ASSERT(match.match("test1.cpp"));
         ASSERT(match.match("src/test1.cpp"));
@@ -237,12 +247,22 @@ private:
         ASSERT(!match.match("test.cpp"));
     }
 
+    void glob2() const {
+        PathMatch match({"test*.cpp"});
+        ASSERT(match.match("test1.cpp"));
+        ASSERT(match.match("src/test1.cpp"));
+        ASSERT(match.match("test1.cpp/src"));
+        ASSERT(!match.match("test1.c"));
+        ASSERT(match.match("test.cpp"));
+    }
+
     void globstar1() const {
         PathMatch match({"src/**/foo.c"});
         ASSERT(match.match("src/lib/foo/foo.c"));
         ASSERT(match.match("src/lib/foo/bar/foo.c"));
         ASSERT(!match.match("src/lib/foo/foo.cpp"));
         ASSERT(!match.match("src/lib/foo/bar/foo.cpp"));
+        ASSERT(!match.match("src/foo.c"));
     }
 
     void globstar2() const {
@@ -251,6 +271,7 @@ private:
         ASSERT(match.match("src/lib/foo/bar/foo.c"));
         ASSERT(!match.match("src/lib/foo/foo.cpp"));
         ASSERT(!match.match("src/lib/foo/bar/foo.cpp"));
+        ASSERT(!match.match("src/foo.c"));
     }
 
     void pathiterator() const {
