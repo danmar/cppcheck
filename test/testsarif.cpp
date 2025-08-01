@@ -44,7 +44,7 @@ public:
     void reportErr(const ErrorMessage& msg) override {
         sarifReport.addFinding(msg);
     }
-    void reportProgress(const std::string& /*filename*/, const char[] /*stage*/, const std::size_t /*value*/) override {}
+    void reportProgress(const std::string& /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override {}
     void reportMetric(const std::string& /*metric*/) override {} // Add missing pure virtual function
 };
 
@@ -959,9 +959,9 @@ int main() {
         };
 
         int foundExpectedRules = std::count_if(expectedRules.begin(), expectedRules.end(),
-            [&ruleIds](const std::string& expectedRule) {
-                return ruleIds.find(expectedRule) != ruleIds.end();
-            });
+                                               [&ruleIds](const std::string& expectedRule) {
+            return ruleIds.find(expectedRule) != ruleIds.end();
+        });
 
         // We should find at least 3 of our expected rules
         // (Reduced from half since we're running with limited checks)

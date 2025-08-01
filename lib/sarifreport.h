@@ -43,7 +43,7 @@ private:
     static picojson::array serializeLocations(const ErrorMessage& finding);
     picojson::array serializeResults() const;
     picojson::value serializeRuns(const std::string& productName, const std::string& version) const;
-    
+
     // Utility methods
     static std::string sarifSeverity(const ErrorMessage& errmsg);
     static std::string sarifPrecision(const ErrorMessage& errmsg);
