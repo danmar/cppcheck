@@ -40,12 +40,12 @@ class TestSarifErrorLogger : public ErrorLogger {
 public:
     SarifReport sarifReport;
 
-    void reportOut(const std::string&, Color) override {}
+    void reportOut(const std::string& /*outmsg*/, Color /*c*/) override {}
     void reportErr(const ErrorMessage& msg) override {
         sarifReport.addFinding(msg);
     }
-    void reportProgress(const std::string&, const char[], const std::size_t) override {}
-    void reportMetric(const std::string&) override {} // Add missing pure virtual function
+    void reportProgress(const std::string& /*filename*/, const char[] /*stage*/, const std::size_t /*value*/) override {}
+    void reportMetric(const std::string& /*metric*/) override {} // Add missing pure virtual function
 };
 
 class TestSarif : public TestFixture
@@ -958,12 +958,10 @@ int main() {
             "variableScope"           // Style
         };
 
-        int foundExpectedRules = 0;
-        for (const auto& expectedRule : expectedRules) {
-            if (ruleIds.find(expectedRule) != ruleIds.end()) {
-                foundExpectedRules++;
-            }
-        }
+        int foundExpectedRules = std::count_if(expectedRules.begin(), expectedRules.end(),
+            [&ruleIds](const std::string& expectedRule) {
+                return ruleIds.find(expectedRule) != ruleIds.end();
+            });
 
         // We should find at least 3 of our expected rules
         // (Reduced from half since we're running with limited checks)
@@ -1061,12 +1059,9 @@ int main() {
             if (props.find("tags") != props.end())
             {
                 const picojson::array& tags = props.at("tags").get<picojson::array>();
-                for (const auto& tag : tags) {
-                    if (startsWith(tag.get<std::string>(), "external/cwe/")) {
-                        hasCWE = true;
-                        break;
-                    }
-                }
+                hasCWE = std::any_of(tags.begin(), tags.end(), [](const picojson::value& tag) {
+                    return startsWith(tag.get<std::string>(), "external/cwe/");
+                });
             }
 
             if (hasCWE)
@@ -1080,12 +1075,9 @@ int main() {
                 if (props.find("tags") != props.end())
                 {
                     const picojson::array& tags = props.at("tags").get<picojson::array>();
-                    for (const auto& tag : tags) {
-                        if (tag.get<std::string>() == "security") {
-                            hasSecurityTag = true;
-                            break;
-                        }
-                    }
+                    hasSecurityTag = std::any_of(tags.begin(), tags.end(), [](const picojson::value& tag) {
+                        return tag.get<std::string>() == "security";
+                    });
                 }
                 ASSERT(hasSecurityTag);
             }
