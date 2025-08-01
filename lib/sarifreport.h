@@ -26,10 +26,8 @@
 #include <string>
 #include <vector>
 
-namespace picojson {
-    class value;
-    class array;
-}
+// Include picojson headers
+#include "json.h"
 
 class CPPCHECKLIB SarifReport {
 public:

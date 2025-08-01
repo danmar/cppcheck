@@ -19,7 +19,6 @@
 #include "sarifreport.h"
 #include "errorlogger.h"
 #include "errortypes.h"
-#include "json.h"
 #include "settings.h"
 #include "cppcheck.h"
 
