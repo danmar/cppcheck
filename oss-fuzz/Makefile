@@ -94,6 +94,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/preprocessor.o \
               $(libcppdir)/programmemory.o \
               $(libcppdir)/reverseanalyzer.o \
+              $(libcppdir)/sarifreport.o \
               $(libcppdir)/settings.o \
               $(libcppdir)/standards.o \
               $(libcppdir)/summaries.o \
@@ -314,6 +315,9 @@ $(libcppdir)/programmemory.o: ../lib/programmemory.cpp ../lib/addoninfo.h ../lib
 
 $(libcppdir)/reverseanalyzer.o: ../lib/reverseanalyzer.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/forwardanalyzer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/reverseanalyzer.cpp
+
+$(libcppdir)/sarifreport.o: ../lib/sarifreport.cpp ../externals/picojson/picojson.h ../lib/addoninfo.h ../lib/check.h ../lib/checkers.h ../lib/config.h ../lib/cppcheck.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/sarifreport.h ../lib/settings.h ../lib/standards.h ../lib/utils.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/sarifreport.cpp
 
 $(libcppdir)/settings.o: ../lib/settings.cpp ../externals/picojson/picojson.h ../lib/addoninfo.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/settings.cpp
