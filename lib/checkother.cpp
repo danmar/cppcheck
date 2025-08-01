@@ -2362,7 +2362,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
     else if (tok->str() == "[" && !tok->astParent())
         msg = "Redundant code: Found unused lambda.";
     else if (Token::Match(tok, "%name%|::"))
-        msg = "Redundant code: Found unused function.";        
+        msg = "Redundant code: Found unused function.";
     else if (Token::Match(tok->previous(), "%name% ("))
         msg = "Redundant code: Found unused '" + tok->strAt(-1) + "' expression.";
     else if (mSettings->debugwarnings) {
