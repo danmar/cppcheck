@@ -179,6 +179,8 @@ private:
     bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language mEnforcedLang{Standards::Language::None};
+
+    void outputFormatOptionMixingError() const;
 };
 
 /// @}
