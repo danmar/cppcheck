@@ -50,13 +50,7 @@
 # - empty the releasenotes.txt in main branch
 #
 # Update version numbers in:
-# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.13.0/" cli/main.cpp
-# sed -i -r "s|VERSION 2[.][0-9]+[.]99|VERSION 2.13.0|" CMakeLists.txt # version must have 3 parts.
-# sed -i -r "s/CPPCHECK_MINOR_VERSION [0-9]+/CPPCHECK_MINOR_VERSION 13/" lib/version.h
-# sed -i -r "s/CPPCHECK_BUGFIX_VERSION 99/CPPCHECK_BUGFIX_VERSION 0/" lib/version.h
-# sed -i -r "s/2[.][0-9]+([.]99)*( dev)*/2.13.0/" win_installer/productInfo.wxi
-# sed -i -r "s/subtitle: Version 2\.[0-9]+.*/subtitle: Version 2.13/" man/*.md
-# Ensure that "-rc1" is added in productInfo.wxi and lib/version.h
+# python3 tools/release-set-version.py 2.19.0
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # egrep "2\.[0-9]+" */*.h */*.cpp man/*.md | grep -v "test/test" | less
