@@ -1200,7 +1200,7 @@ void deprecatedFunctions([[maybe_unused]] wxApp &a,
 #if wxCHECK_VERSION(3, 1, 0)  // wxWidets-3.1.0 or higher:
     // Some functions are not available anymore in newer versions
 
-    // @todo cppcheck-suppress ShowPopupCalled
+    // cppcheck-suppress ShowPopupCalled
     comboCtrl.ShowPopup();
 #else
     // cppcheck-suppress InsertCalled

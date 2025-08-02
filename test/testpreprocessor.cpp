@@ -74,9 +74,9 @@ private:
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
-        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::FileDataCache cache;
         // TODO: provide and handle outputList
-        simplecpp::preprocess(tokens2, tokens1, files, filedata, dui);
+        simplecpp::preprocess(tokens2, tokens1, files, cache, dui);
 
         // Tokenizer..
         tokenlist.createTokens(std::move(tokens2));
@@ -2575,7 +2575,7 @@ private:
 
         settings.standards.setStd("c++11");
         ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));
-        ASSERT_EQUALS("[test.cpp:1:0]: (error) failed to evaluate #if condition, division/modulo by zero [preprocessorErrorDirective]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) failed to evaluate #if condition, undefined function-like macro invocation: __has_include( ... ) [preprocessorErrorDirective]\n", errout_str());
 
         settings.standards.setStd("c++17");
         ASSERT_EQUALS("", PreprocessorHelper::getcode(settings, *this, code, "", "test.cpp"));

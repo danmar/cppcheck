@@ -72,12 +72,6 @@ Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger, S
     assert(mLang != Standards::Language::None);
 }
 
-Preprocessor::~Preprocessor()
-{
-    for (const std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists)
-        delete tokenList.second;
-}
-
 namespace {
     struct BadInlineSuppression {
         BadInlineSuppression(std::string file, const int line, std::string msg) : file(std::move(file)), line(line), errmsg(std::move(msg)) {}
@@ -312,9 +306,8 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
         return;
     std::list<BadInlineSuppression> err;
     ::addInlineSuppressions(tokens, mSettings, suppressions, err);
-    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
-        if (it->second)
-            ::addInlineSuppressions(*it->second, mSettings, suppressions, err);
+    for (const auto &filedata : mFileCache) {
+        ::addInlineSuppressions(filedata->tokens, mSettings, suppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.file, bad.line, bad.errmsg);
@@ -325,9 +318,8 @@ std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::Toke
 {
     std::vector<RemarkComment> ret;
     addRemarkComments(tokens, ret);
-    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
-        if (it->second)
-            addRemarkComments(*it->second, ret);
+    for (const auto &filedata : mFileCache) {
+        addRemarkComments(filedata->tokens, ret);
     }
     return ret;
 }
@@ -338,11 +330,12 @@ std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &
     std::list<Directive> directives;
 
     std::vector<const simplecpp::TokenList *> list;
-    list.reserve(1U + mTokenLists.size());
+    list.reserve(1U + mFileCache.size());
     list.push_back(&tokens);
-    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
-        list.push_back(it->second);
-    }
+    std::transform(mFileCache.cbegin(), mFileCache.cend(), std::back_inserter(list),
+                   [](const std::unique_ptr<simplecpp::FileData> &filedata) {
+        return &filedata->tokens;
+    });
 
     for (const simplecpp::TokenList *tokenList : list) {
         for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
@@ -672,9 +665,9 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 
     ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
-    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
-        if (!mSettings.configurationExcluded(it->first))
-            ::getConfigs(*(it->second), defined, mSettings.userDefines, mSettings.userUndefs, ret);
+    for (const auto &filedata : mFileCache) {
+        if (!mSettings.configurationExcluded(filedata->filename))
+            ::getConfigs(filedata->tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
     }
 
     return ret;
@@ -785,17 +778,16 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
 
     simplecpp::OutputList outputList;
-    mTokenLists = simplecpp::load(rawtokens, files, dui, &outputList);
+    mFileCache = simplecpp::load(rawtokens, files, dui, &outputList);
     handleErrors(outputList, false);
     return !hasErrors(outputList);
 }
 
-void Preprocessor::removeComments(simplecpp::TokenList &tokens)
+void Preprocessor::removeComments(simplecpp::TokenList &tokens) const
 {
     tokens.removeComments();
-    for (std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists) {
-        if (tokenList.second)
-            tokenList.second->removeComments();
+    for (const auto &filedata : mFileCache) {
+        filedata->tokens.removeComments();
     }
 }
 
@@ -827,7 +819,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     std::list<simplecpp::MacroUsage> macroUsage;
     std::list<simplecpp::IfCond> ifCond;
     simplecpp::TokenList tokens2(files);
-    simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage, &ifCond);
+    simplecpp::preprocess(tokens2, tokens1, files, mFileCache, dui, &outputList, &macroUsage, &ifCond);
     mMacroUsage = std::move(macroUsage);
     mIfCond = std::move(ifCond);
 
@@ -988,8 +980,8 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
             hashData += static_cast<char>(tok->location.col);
         }
     }
-    for (auto it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
-        for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
+    for (const auto &filedata : mFileCache) {
+        for (const simplecpp::Token *tok = filedata->tokens.cfront(); tok; tok = tok->next) {
             if (!tok->comment) {
                 hashData += tok->str();
                 hashData += static_cast<char>(tok->location.line);
@@ -1003,8 +995,8 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (const std::pair<const std::string, simplecpp::TokenList*>& list : mTokenLists) {
-        Preprocessor::simplifyPragmaAsmPrivate(*list.second);
+    for (const auto &filedata : mFileCache) {
+        Preprocessor::simplifyPragmaAsmPrivate(filedata->tokens);
     }
 }
 
