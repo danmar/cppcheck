@@ -775,12 +775,13 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
                     if(tmp_ch != '\n') {
                         currentToken += tmp;
                     } else {
-                        TokenString check_portability = currentToken + tmp;
+                        const TokenString check_portability = currentToken + tmp;
                         const std::string::size_type pos = check_portability.find_last_not_of(" \t");
                         if (pos < check_portability.size() - 1U && check_portability[pos] == '\\')
                             portabilityBackslash(outputList, files, location);
                         ++multiline;
                         tmp_ch = stream.readChar();
+                        currentToken += '\n';
                     }
                     ch = tmp_ch;
                 }
