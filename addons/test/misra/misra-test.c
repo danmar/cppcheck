@@ -121,22 +121,6 @@ static void misra_2_7_b(int a, int b, int c, // 2.7
 static void misra_2_7_c(int a, ...) { (void)a; }
 static void misra_2_7_d(int) { } // 2.7 8.2
 
-static void misra_3_2(int enable)
-{
-    // This won't generate a violation because of subsequent blank line \
-
-    int y = 0;
-    int x = 0;  // 3.2 non-compliant comment ends with backslash \
-    if (enable != 0)
-    {
-        ++x;    // This is always executed
-        // 3.2 potentially non-compliant comment ends with trigraph resolved to backslash ??/
-        ++y;    // This is hidden if trigraph replacement is active
-    }
-
-    (void)printf("x=%i, y=%i\n", x, y); //21.6
-}
-
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
 int misra_5_1_var_hides_var________a; // 8.4

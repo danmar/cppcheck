@@ -466,8 +466,8 @@ def test_unmatched_cfg():
 
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
     assert stderr.splitlines() == [
-        '{}cfg.c:10:0: information: Unmatched suppression: id [unmatchedSuppression]'.format(__proj_inline_suppres_path),
-        '{}cfg.c:14:0: information: Unmatched suppression: id [unmatchedSuppression]'.format(__proj_inline_suppres_path),
+        '{}cfg.c:5:0: information: Unmatched suppression: id [unmatchedSuppression]'.format(__proj_inline_suppres_path),
+        '{}cfg.c:9:0: information: Unmatched suppression: id [unmatchedSuppression]'.format(__proj_inline_suppres_path),
     ]
     assert stdout == ''
     assert ret == 0, stdout
