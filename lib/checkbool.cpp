@@ -90,12 +90,11 @@ static bool isConvertedToBool(const Token* tok)
 //---------------------------------------------------------------------------
 void CheckBool::checkBitwiseOnBoolean()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
-        return;
-
-    // danmar: this is inconclusive because I don't like that there are
-    //         warnings for calculations. Example: set_flag(a & b);
-    if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
+    if (!mSettings->isPremiumEnabled("bitwiseOnBoolean") &&
+        !mSettings->severity.isEnabled(Severity::style) &&
+        // danmar: this is inconclusive because I don't like that there are
+        //         warnings for calculations. Example: set_flag(a & b);
+        !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
     logChecker("CheckBool::checkBitwiseOnBoolean"); // style,inconclusive
