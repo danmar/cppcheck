@@ -2164,7 +2164,7 @@ static bool isConstStatement(const Token *tok, const Library& library, bool isNe
         return isConstStatement(tok->astOperand1(), library) && isConstStatement(tok->astOperand2(), library);
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
-    if (Token::Match(tok->previous(), "sizeof|alignof|noexcept|typeid ("))
+    if (Token::Match(tok->previous(), "sizeof|alignof|noexcept|typeid (") && tok->previous()->isKeyword())
         return true;
     if (isCPPCast(tok)) {
         if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->linkAt(1)->previous(), "& >"))
