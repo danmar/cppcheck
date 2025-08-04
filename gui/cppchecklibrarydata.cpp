@@ -33,12 +33,12 @@
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
 
-static std::string unhandledElement(const QXmlStreamReader &xmlReader)
+NORETURN static std::string unhandledElement(const QXmlStreamReader &xmlReader)
 {
     throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
 }
 
-static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
+NORETURN static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())
