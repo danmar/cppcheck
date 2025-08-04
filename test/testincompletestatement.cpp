@@ -745,7 +745,7 @@ private:
                       errout_str());
 
         check("void f() {\n" // #14044
-		  "    g<sizeof(wchar_t)>();\n"
+              "    g<sizeof(wchar_t)>();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
