@@ -148,6 +148,7 @@ To be evaluated (need to enable explicitly).
 
 `modernize-type-traits`<br/>
 `modernize-use-nodiscard`<br/>
+`modernize-use-scoped-lock`<br/>
 
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
 
