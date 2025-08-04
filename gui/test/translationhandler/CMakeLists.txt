@@ -11,10 +11,6 @@ target_include_directories(test-translationhandler PRIVATE ${CMAKE_SOURCE_DIR}/g
 target_link_libraries(test-translationhandler ${QT_CORE_LIB} ${QT_WIDGETS_LIB} ${QT_TEST_LIB})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(QT_VERSION VERSION_LESS "6.0.0")
-        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
-        target_compile_options_safe(test-translationhandler -Wno-extra-semi-stmt)
-    endif()
     if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
         # caused by Qt generated moc code starting with 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
         target_compile_options_safe(test-translationhandler -Wno-ctad-maybe-unsupported)

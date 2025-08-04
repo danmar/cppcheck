@@ -67,10 +67,6 @@ CheckOptions:
         endif()
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if(QT_VERSION VERSION_LESS "6.0.0")
-            # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
-            target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
-        endif()
         if(QT_VERSION VERSION_LESS "6.4.0")
             # caused by Qt generated moc code - see https://bugreports.qt.io/browse/QTBUG-100915
             target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
