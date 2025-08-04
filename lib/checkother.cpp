@@ -2164,7 +2164,7 @@ static bool isConstStatement(const Token *tok, const Library& library, bool isNe
         return isConstStatement(tok->astOperand1(), library) && isConstStatement(tok->astOperand2(), library);
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
-    if (Token::simpleMatch(tok->previous(), "sizeof ("))
+    if (Token::Match(tok->previous(), "sizeof|alignof|noexcept|typeid (") && tok->previous()->isKeyword())
         return true;
     if (isCPPCast(tok)) {
         if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->linkAt(1)->previous(), "& >"))
@@ -2299,6 +2299,7 @@ void CheckOther::checkIncompleteStatement()
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;") &&
             !(tok->isCpp() && tok->isCast() && !tok->astParent()) &&
+            !(!tok->astParent() && Token::Match(tok->previous(), "%name% (") && tok->previous()->isKeyword()) &&
             !Token::simpleMatch(tok->tokAt(-2), "for (") &&
             !Token::Match(tok->tokAt(-1), "%var% [") &&
             !(tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp()))
@@ -2362,6 +2363,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Redundant code: Found unused lambda.";
     else if (Token::Match(tok, "%name%|::"))
         msg = "Redundant code: Found unused function.";
+    else if (Token::Match(tok->previous(), "%name% ("))
+        msg = "Redundant code: Found unused '" + tok->strAt(-1) + "' expression.";
     else if (mSettings->debugwarnings) {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;
