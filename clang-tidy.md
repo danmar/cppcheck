@@ -111,7 +111,11 @@ Also reports a false positive about templates which deduce the array length: htt
 
 `misc-include-cleaner`<br/>
 
-We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them. 
+We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them.
+
+`readability-use-concise-preprocessor-directives`<br/>
+
+Does not improve the readability.
 
 `bugprone-branch-clone`<br/>
 `modernize-return-braced-init-list`<br/>
