@@ -743,6 +743,11 @@ private:
                       "[test.cpp:4:13]: (warning) Redundant code: Found unused 'noexcept' expression. [constStatement]\n"
                       "[test.cpp:5:11]: (warning) Redundant code: Found unused 'typeid' expression. [constStatement]\n",
                       errout_str());
+
+        check("void f() {\n" // #14044
+              "    g<sizeof(wchar_t)>();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void vardecl() {

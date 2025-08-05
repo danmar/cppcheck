@@ -2299,7 +2299,7 @@ void CheckOther::checkIncompleteStatement()
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;") &&
             !(tok->isCpp() && tok->isCast() && !tok->astParent()) &&
-            !(!tok->astParent() && Token::Match(tok->previous(), "%name% (") && tok->previous()->isKeyword()) &&
+            !(!tok->astParent() && tok->astOperand1() && Token::Match(tok->previous(), "%name% (") && tok->previous()->isKeyword()) &&
             !Token::simpleMatch(tok->tokAt(-2), "for (") &&
             !Token::Match(tok->tokAt(-1), "%var% [") &&
             !(tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp()))
