@@ -233,7 +233,9 @@ private:
         TEST_CASE(outputFormatImplicitPlist);
         TEST_CASE(outputFormatImplicitXml);
         TEST_CASE(outputFormatOverridePlist);
-        TEST_CASE(outputFormatMixed);
+        TEST_CASE(outputFormatMixed1);
+        TEST_CASE(outputFormatMixed2);
+        TEST_CASE(outputFormatMixed3);
         TEST_CASE(premiumOptions1);
         TEST_CASE(premiumOptions2);
         TEST_CASE(premiumOptions3);
@@ -1430,23 +1432,25 @@ private:
         ASSERT_EQUALS("", settings->plistOutput);
     }
 
-    void outputFormatMixed() {
+    void outputFormatMixed1() {
         REDIRECT;
-        {
-            const char * const argv[] = {"cppcheck", "--xml", "--output-format=xml", "file.cpp"};
-            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-            ASSERT_EQUALS("cppcheck: error: '--output-format' and '--xml...' may not be used in conjunction.\n", logger->str());
-        }
-        {
-            const char * const argv[] = {"cppcheck", "--output-format=xml", "--xml", "file.cpp"};
-            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-            ASSERT_EQUALS("cppcheck: error: '--output-format' and '--xml...' may not be used in conjunction.\n", logger->str());
-        }
-        {
-            const char * const argv[] = {"cppcheck", "--xml-version=2", "--output-format=xml", "file.cpp"};
-            ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-            ASSERT_EQUALS("cppcheck: error: '--output-format' and '--xml...' may not be used in conjunction.\n", logger->str());
-        }
+        const char * const argv[] = {"cppcheck", "--xml", "--output-format=xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: '--output-format' and '--xml...' may not be used in conjunction.\n", logger->str());
+    }
+
+    void outputFormatMixed2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--output-format=xml", "--xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: '--output-format' and '--xml...' may not be used in conjunction.\n", logger->str());
+    }
+
+    void outputFormatMixed3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--xml-version=2", "--output-format=xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
+        ASSERT_EQUALS("cppcheck: error: '--output-format' and '--xml...' may not be used in conjunction.\n", logger->str());
     }
 
     void premiumOptions1() {
