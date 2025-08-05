@@ -2579,8 +2579,8 @@ static bool isEarlyExit(const Token *start)
     if (start->str() != "{")
         return false;
     const Token *endToken = start->link();
-    const Token *tok = Token::findmatch(start, "return|throw|break", endToken);
-    if (!tok)
+    const Token *tok = Token::findmatch(start, "return|throw|break|continue", endToken);
+    if (!tok || tok->str() == "continue")
         return false;
     const Token *endStatement = Token::findsimplematch(tok, "; }", endToken);
     if (!endStatement)
