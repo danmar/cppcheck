@@ -1016,14 +1016,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.outputFormat = Settings::OutputFormat::sarif;
             else if (format == "xml")
                 mSettings.outputFormat = Settings::OutputFormat::xml;
-            else if (format == "xml2") {
+            else if (format == "xmlv2") {
                 mSettings.outputFormat = Settings::OutputFormat::xml;
                 mSettings.xml_version = 2;
-            } else if (format == "xml3") {
+            } else if (format == "xmlv3") {
                 mSettings.outputFormat = Settings::OutputFormat::xml;
                 mSettings.xml_version = 3;
             } else {
-                mLogger.printError("argument to '--output-format=' must be 'text', 'sarif', 'xml' (deprecated), 'xml2' or 'xml3'.");
+                mLogger.printError("argument to '--output-format=' must be 'text', 'sarif', 'xml' (deprecated), 'xmlv2' or 'xmlv3'.");
                 return Result::Fail;
             }
             mSettings.plistOutput = "";
@@ -1839,8 +1839,8 @@ void CmdLineParser::printHelp() const
         "                          * text\n"
         "                          * sarif\n"
         "                          * xml (deprecated)\n"
-        "                          * xml2\n"
-        "                          * xml3\n"
+        "                          * xmlv2\n"
+        "                          * xmlv3\n"
         "    --platform=<type>, --platform=<file>\n"
         "                         Specifies platform specific types and sizes. The\n"
         "                         available builtin platforms are:\n"
