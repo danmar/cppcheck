@@ -2580,7 +2580,7 @@ static bool isEarlyExit(const Token *start)
         return false;
     const Token *endToken = start->link();
     const Token *tok = Token::findmatch(start, "return|throw|break|continue", endToken);
-    if (!tok || tok->scope() != start->scope())
+    if (!tok || tok->scope() != start->scope() || tok->str() == "continue")
         return false;
     const Token *endStatement = Token::findsimplematch(tok, "; }", endToken);
     if (!endStatement)
