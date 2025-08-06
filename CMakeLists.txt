@@ -92,9 +92,16 @@ add_custom_target(copy_addons ALL
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/addons"
     COMMENT "Copying addons files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
+add_custom_target(remove_unsigned_platforms ALL
+        ${CMAKE_COMMAND} -E remove -f
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms/unix32-unsigned.xml"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms/unix64-unsigned.xml"
+        COMMENT "Removing unsigned platforms files from ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
 add_custom_target(copy_platforms ALL
     ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/platforms"
     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms"
+    DEPENDS remove_unsigned_platforms
     COMMENT "Copying platforms files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
 if(USE_BUNDLED_TINYXML2)

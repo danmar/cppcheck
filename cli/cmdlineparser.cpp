@@ -1608,18 +1608,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mLogger.printError(errstr);
             return Result::Fail;
         }
-
-        // TODO: remove
-        // these are loaded via external files and thus have Settings::PlatformFile set instead.
-        // override the type so they behave like the regular platforms.
-        if (platform == "unix32-unsigned") {
-            mSettings.platform.type = Platform::Type::Unix32;
-            mLogger.printMessage("The platform 'unix32-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix32 --funsigned-char' instead");
-        }
-        else if (platform == "unix64-unsigned") {
-            mSettings.platform.type = Platform::Type::Unix64;
-            mLogger.printMessage("The platform 'unix64-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix64 --funsigned-char' instead");
-        }
     }
 
     if (defaultSign != '\0')
