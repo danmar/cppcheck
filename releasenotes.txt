@@ -17,4 +17,5 @@ Deprecations:
 
 Other:
 - Removed deprecated support for builds with Qt5.
+- Removed deprecated platforms `unix32-unsigned` and `unix64-unsigned`.
 -
