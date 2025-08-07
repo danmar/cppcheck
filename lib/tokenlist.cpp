@@ -1765,9 +1765,18 @@ static Token * createAstAtToken(Token *tok)
     if (Token::Match(tok, "%type% %name%|*|&|&&|::") && !Token::Match(tok, "return|new|delete")) {
         int typecount = 0;
         Token *typetok = tok;
-        while (Token::Match(typetok, "%type%|::|*|&|&&")) {
+        while (Token::Match(typetok, "%type%|::|*|&|&&|<")) {
             if (typetok->isName() && !Token::simpleMatch(typetok->previous(), "::"))
                 typecount++;
+            if (typetok->str() == "<") {
+                if (Token* closing = typetok->findClosingBracket()) {
+                    typetok = closing->next();
+                    if (Token::simpleMatch(typetok, "::"))
+                        typetok = typetok->next();
+                    continue;
+                }
+                break;
+            }
             typetok = typetok->next();
         }
         if (Token::Match(typetok, "%var% =") && typetok->varId())
