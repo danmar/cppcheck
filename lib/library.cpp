@@ -39,6 +39,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <utility>
 
 #include "xml.h"
 
@@ -241,7 +242,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
         if (mData->mFiles.find(absolute_path) == mData->mFiles.end()) {
             Error err = load(doc);
             if (err.errorcode == ErrorCode::OK)
-                mData->mFiles.insert(absolute_path);
+                mData->mFiles.insert(std::move(absolute_path));
             return err;
         }
 

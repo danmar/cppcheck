@@ -128,6 +128,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 static void bailoutInternal(const std::string& type,
@@ -7275,7 +7276,7 @@ static void valueFlowDebug(TokenList& tokenlist, ErrorLogger& errorLogger, const
             ErrorPath errorPath = v.errorPath;
             errorPath.insert(errorPath.end(), v.debugPath.cbegin(), v.debugPath.cend());
             errorPath.emplace_back(tok, "");
-            errorLogger.reportErr({errorPath, &tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
+            errorLogger.reportErr({std::move(errorPath), &tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
         }
     }
 }

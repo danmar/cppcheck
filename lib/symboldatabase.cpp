@@ -51,6 +51,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer)
@@ -2212,7 +2213,7 @@ void SymbolDatabase::debugSymbolDatabase() const
             }
             errorPath.emplace_back(tok, "");
             mErrorLogger.reportErr(
-                {errorPath, &mTokenizer.list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
+                {std::move(errorPath), &mTokenizer.list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
         }
     }
 }
