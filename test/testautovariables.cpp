@@ -4120,6 +4120,7 @@ private:
               "    (void)m->first;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9:63] -> [test.cpp:9:49] -> [test.cpp:10:11]: (error) Using iterator that is a temporary. [danglingTemporaryLifetime]\n",
+                      errout_str());
 
         check("struct A {\n" // #14054
               "    std::map<int, int> m_;\n"
