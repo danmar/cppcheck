@@ -1298,8 +1298,44 @@ Description of the options:
 - `--output-file`: html filename that the report should be written to
 - `results.xml`: The xml output from cppcheck
 
+## Metrics
+
+To generate metrics add option `--premium=metrics`. The metrics are saved in the xml v3 report.
+Example:
+
+    cppcheck --premium=metrics test.c --xml-version=3 2> res.xml
+
+We provide a small simple python script that creates a metrics report in CSV format:
+
+    python3 HISReport.py -f res.xml -j path/to/cppcheck-id-mapping.json -o test.csv
+
+the `cppcheck-id-mapping.json` is provided in the cppcheck premium installation folder, i.e.
+`/opt/cppcheckpremium` or `C:\Program Files\Cppcheck Premium`.
+
+We do not have a ready-made solution to generate a html/pdf report. You can easily tweak our
+HISReport.py script so that it generates html and get the report exactly as you want.
+
 ## Licenses
+
+### Commercial Terms
 
 Information about Cppcheck Premium licenses:
 https://www.cppcheck.com/plans-pricing
 
+### Installation / Registration
+
+This is described on the Cppcheck Premium website:
+https://www.cppcheck.com
+
+### Troubleshooting
+
+If your license does not work you can get some details about the license validation by executing
+premiumaddon binary with the `--debug` option.
+
+Windows:
+
+    premiumaddon.exe --debug
+
+Linux/Mac:
+
+    premiumaddon --debug
