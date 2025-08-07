@@ -10022,6 +10022,10 @@ void Tokenizer::simplifyBitfields()
         Token* typeTok = tok->next();
         while (Token::Match(typeTok, "const|volatile"))
             typeTok = typeTok->next();
+        if (Token::Match(typeTok, ":: %name%"))
+            typeTok = typeTok->next();
+        while (Token::Match(typeTok, "%name% :: %name%"))
+            typeTok = typeTok->tokAt(2);
         if (Token::Match(typeTok, "%type% %name% :") &&
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {

@@ -305,6 +305,8 @@ private:
         TEST_CASE(bitfields16); // Save bitfield bit count
         TEST_CASE(bitfields17);
         TEST_CASE(bitfields18);
+        TEST_CASE(bitfields19); // ticket #13733
+        TEST_CASE(bitfields20);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -4856,6 +4858,16 @@ private:
         const char code[] = "struct S { unsigned int a : 100000; };";
         (void) tokenizeAndStringify(code);
         ASSERT_EQUALS("[test.cpp:1:29]: (warning) Bit-field size exceeds max number of bits 32767 [tooLargeBitField]\n", errout_str());
+    }
+
+    void bitfields19() {
+        const char code[] = "struct S { volatile std::uint32_t a : 10; };";
+        ASSERT_EQUALS("struct S { volatile std :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
+    void bitfields20() {
+        const char code[] = "struct S { volatile ::uint32_t a : 10; };";
+        ASSERT_EQUALS("struct S { volatile :: uint32_t a ; } ;", tokenizeAndStringify(code));
     }
 
     void simplifyNamespaceStd() {
