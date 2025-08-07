@@ -7171,6 +7171,15 @@ private:
                "    return a.size();\n"
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+        
+        code = "void f() {\n" // #14060
+               "    std::stack<std::pair<int, int>> s;\n"
+               "    s.emplace(0, 0);\n"
+               "    s.pop();\n"
+               "    bool x = s.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
 
         code = "std::vector<int> g();\n"
                "std::vector<int> f() {\n"
