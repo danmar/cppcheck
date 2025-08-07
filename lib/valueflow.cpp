@@ -1948,7 +1948,10 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
             return true;
         if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
             return true;
-        if (vtParent->str() == vt->str())
+        std::string vtParentStr = vtParent->str();
+        if (startsWith(vtParentStr, "const ") // HACK: assignment to const
+            vtParentStr.erase(0, 6);
+        if (vtParentStr == vt->str())
             return true;
     }
 
