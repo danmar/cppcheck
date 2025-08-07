@@ -25,6 +25,9 @@ if(RUN_CLANG_TIDY_NAMES)
         endif()
         message(STATUS "NPROC=${NPROC}")
 
+        # TODO: introduced in run-clang-tidy-22
+        set(CLANG_TIDY_CONFIG "-enable-check-profile")
+
         # most of these are disabled because they are too noisy in our code
         # clang-analyzer-core.CallAndMessage
         # clang-analyzer-core.NonNullParamChecker
@@ -41,13 +44,12 @@ if(RUN_CLANG_TIDY_NAMES)
 
         # TODO: exclude moc_*.cpp
         # TODO: exclude mocs_compilation.cpp
-        # disable all compiler warnings since we are just interested in the tidy ones
         add_custom_target(run-clang-tidy
-                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet
+                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet ${CLANG_TIDY_CONFIG}
                 USES_TERMINAL
                 VERBATIM)
         add_custom_target(run-clang-tidy-csa
-                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet ${CLANG_TIDY_CSA_ALPHA_OPTS} ${CLANG_TIDY_CSA_CONFIG}
+                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet ${CLANG_TIDY_CONFIG} ${CLANG_TIDY_CSA_ALPHA_OPTS} ${CLANG_TIDY_CSA_CONFIG}
                 USES_TERMINAL
                 VERBATIM)
         if(BUILD_GUI)
