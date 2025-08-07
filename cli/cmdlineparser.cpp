@@ -315,6 +315,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 {
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
+    bool xmlOptionProvided = false;
+    bool outputFormatOptionProvided = false;
+
     // default to --check-level=normal from CLI for now
     mSettings.setCheckLevel(Settings::CheckLevel::normal);
 
@@ -1001,6 +1004,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
 
         else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
+            if (xmlOptionProvided) {
+                outputFormatOptionMixingError();
+                return Result::Fail;
+            }
             const std::string format = argv[i] + 16;
             // plist can not be handled here because it requires additional data
             if (format == "text")
@@ -1009,11 +1016,18 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.outputFormat = Settings::OutputFormat::sarif;
             else if (format == "xml")
                 mSettings.outputFormat = Settings::OutputFormat::xml;
-            else {
-                mLogger.printError("argument to '--output-format=' must be 'text', 'sarif' or 'xml'.");
+            else if (format == "xmlv2") {
+                mSettings.outputFormat = Settings::OutputFormat::xml;
+                mSettings.xml_version = 2;
+            } else if (format == "xmlv3") {
+                mSettings.outputFormat = Settings::OutputFormat::xml;
+                mSettings.xml_version = 3;
+            } else {
+                mLogger.printError("argument to '--output-format=' must be 'text', 'sarif', 'xml' (deprecated), 'xmlv2' or 'xmlv3'.");
                 return Result::Fail;
             }
             mSettings.plistOutput = "";
+            outputFormatOptionProvided = true;
         }
 
 
@@ -1486,11 +1500,20 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // Write results in results.xml
         else if (std::strcmp(argv[i], "--xml") == 0) {
+            if (outputFormatOptionProvided) {
+                outputFormatOptionMixingError();
+                return Result::Fail;
+            }
             mSettings.outputFormat = Settings::OutputFormat::xml;
+            xmlOptionProvided = true;
         }
 
         // Define the XML file version (and enable XML output)
         else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
+            if (outputFormatOptionProvided) {
+                outputFormatOptionMixingError();
+                return Result::Fail;
+            }
             int tmp;
             if (!parseNumberArg(argv[i], 14, tmp))
                 return Result::Fail;
@@ -1503,6 +1526,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.xml_version = tmp;
             // Enable also XML if version is set
             mSettings.outputFormat = Settings::OutputFormat::xml;
+            xmlOptionProvided = true;
         }
 
         else {
@@ -1814,7 +1838,9 @@ void CmdLineParser::printHelp() const
         "                        Specify the output format. The available formats are:\n"
         "                          * text\n"
         "                          * sarif\n"
-        "                          * xml\n"
+        "                          * xml (deprecated)\n"
+        "                          * xmlv2\n"
+        "                          * xmlv3\n"
         "    --platform=<type>, --platform=<file>\n"
         "                         Specifies platform specific types and sizes. The\n"
         "                         available builtin platforms are:\n"
@@ -2148,4 +2174,9 @@ std::list<FileWithDetails> CmdLineParser::filterFiles(const std::vector<std::str
         return filtermatcher.match(entry.path());
     });
     return files;
+}
+
+void CmdLineParser::outputFormatOptionMixingError() const
+{
+    mLogger.printError("'--output-format' and '--xml...' may not be used in conjunction.");
 }
