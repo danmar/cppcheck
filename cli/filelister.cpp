@@ -191,6 +191,12 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 #include <sys/stat.h>
 #include <cerrno>
 
+struct closedir_deleter {
+    void operator()(DIR* d) const {
+        closedir(d);
+    }
+};
+
 static std::string addFiles2(std::list<FileWithDetails> &files,
                              const std::string &path,
                              const std::set<std::string> &extra,
@@ -221,7 +227,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         const int err = errno;
         return "could not open directory '" + path + "' (errno: " + std::to_string(err) + ")";
     }
-    std::unique_ptr<DIR, decltype(&closedir)> dir_deleter(dir, closedir);
+    std::unique_ptr<DIR, closedir_deleter> dir_deleter(dir);
 
     std::string new_path = path;
     new_path += '/';
