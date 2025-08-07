@@ -1490,7 +1490,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP || action == Library::Container::Action::APPEND) { // TODO: handle more actions?
                 std::vector<const Token*> args = getArguments(tok->tokAt(3));
                 bool isVariadic = false;
-                if (const Library::Function* libFunc = settings.library.getFunction(tok->tokAt(2)); {
+                if (const Library::Function* libFunc = settings.library.getFunction(tok->tokAt(2))) {
                     const auto& argChecks = libFunc->argumentChecks;
                     isVariadic = argChecks.find(-1) != argChecks.end() && argChecks.at(-1).variadic;
                 }
