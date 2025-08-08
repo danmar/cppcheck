@@ -60,6 +60,7 @@ class CPPCHECKLIB CppCheck {
     friend class TestCppcheck;
 
 public:
+    // exe, args, redirect, output
     using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
 
     /**
