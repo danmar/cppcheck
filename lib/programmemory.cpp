@@ -489,6 +489,7 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
+#if 0
     ProgramMemory local = state;
     addVars(local, vars);
     fillProgramMemoryFromConditions(local, tok, settings);
@@ -497,6 +498,15 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     local.replace(std::move(pm));
     addVars(local, vars);
     replace(std::move(local), tok);
+#else
+    ProgramMemory pm = state;
+    addVars(pm, vars);
+    fillProgramMemoryFromConditions(pm, tok, settings);
+    ProgramMemory local = pm;
+    fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
+    addVars(pm, vars);
+    replace(std::move(pm), tok);
+#endif
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
