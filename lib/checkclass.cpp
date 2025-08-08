@@ -3887,4 +3887,5 @@ void CheckClass::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
     c.thisUseAfterFree(nullptr, nullptr, nullptr);
     c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
+    // TODO: ctuOneDefinitionRuleViolation
 }
