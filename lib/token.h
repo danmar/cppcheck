@@ -53,6 +53,7 @@ class ConstTokenRange;
 class Token;
 struct TokensFrontBack;
 class TokenList;
+class Library;
 
 struct ScopeInfo2 {
     ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
@@ -103,6 +104,8 @@ struct TokenImpl {
 
     // If this token came from a macro replacement list, this is the name of that macro
     std::string* mMacroName{};
+
+    std::string* mFuncName{};
 
     // ValueType
     ValueType* mValueType{};
@@ -1607,6 +1610,8 @@ public:
     {
         return mIsC;
     }
+
+    const std::string& funcname(const Library& library) const;
 };
 
 Token* findTypeEnd(Token* tok);

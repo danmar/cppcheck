@@ -142,7 +142,7 @@ void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<const
 {
     if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED &&
         (!functionUsage.first || !functionUsage.first->function() || !functionUsage.first->function()->hasBody())) {
-        std::string funcStr = functionUsage.first ? mSettings->library.getFunctionName(functionUsage.first) : "f";
+        std::string funcStr = functionUsage.first ? functionUsage.first->funcname(mSettings->library) : "f";
         if (funcStr.empty())
             funcStr = "unknown::" + functionUsage.first->str();
         reportError(tok,
@@ -755,7 +755,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                         if (ftok->function() && !ftok->function()->isAttributeNoreturn() &&
                             !(ftok->function()->functionScope && mTokenizer->isScopeNoReturn(ftok->function()->functionScope->bodyEnd))) // check function scope
                             continue;
-                        const std::string functionName(mSettings->library.getFunctionName(ftok));
+                        const std::string& functionName(ftok->funcname(mSettings->library));
                         if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
                             const VarInfo::Usage usage = Token::simpleMatch(openingPar, "( )") ? VarInfo::NORET : VarInfo::USED; // TODO: check parameters passed to function
                             varInfo.possibleUsageAll({ ftok, usage });
@@ -996,7 +996,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
 void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
-    const bool isLeakIgnore = mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName));
+    const bool isLeakIgnore = mSettings->library.isLeakIgnore(tokName->funcname(mSettings->library));
     if (mSettings->library.getReallocFuncInfo(tokName))
         return;
     if (tokName->next()->valueType() && tokName->next()->valueType()->container && tokName->next()->valueType()->container->stdStringLike)
