@@ -31,6 +31,7 @@ if(WARNINGS_ARE_ERRORS)
 endif()
 option(EXTERNALS_AS_SYSTEM  "Treat externals as system includes"                            OFF)
 
+# we are only using the header-only "container" Boost component so we can unconditionally search for it by default
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")
 set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify)
 if(USE_MATCHCOMPILER)
@@ -88,7 +89,8 @@ option(DISALLOW_THREAD_EXECUTOR "Disallow usage of ThreadExecutor for -j"       
 if(DISALLOW_THREAD_EXECUTOR AND WIN32)
     message(FATAL_ERROR "Cannot disable usage of ThreadExecutor on Windows as no other executor implementation is currently available")
 endif()
-option(USE_BOOST            "Force usage of Boost"                                          OFF)
+set(USE_BOOST "Auto" CACHE STRING "Usage of Boost")
+set_property(CACHE USE_BOOST PROPERTY STRINGS Auto Off On)
 option(USE_BOOST_INT128     "Usage of Boost.Multiprecision 128-bit integer for Mathlib"     OFF)
 if (NOT USE_BOOST AND USE_BOOST_INT128)
     message(FATAL_ERROR "USE_BOOST_INT128 requires USE_BOOST to be enabled")

@@ -266,14 +266,42 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
+      - name: Run CMake on macOS (force Boost)
+        run: |
+          # make sure we fail when Boost is requested and not available.
+          # will fail because no package configuration is available.
+          if cmake -S . -B cmake.output.boost-force-noavail -G "Unix Makefiles" -DUSE_BOOST=On; then
+            exit 1
+          else
+            exit 0
+          fi
+
       # coreutils contains "nproc"
-      - name: Install missing software on macos
+      - name: Install missing software on macOS
         run: |
           brew install coreutils boost
 
-      - name: CMake build on macOS (with Boost)
+      - name: Run CMake on macOS (force Boost)
+        run: |
+          cmake -S . -B cmake.output.boost-force -G "Unix Makefiles" -DUSE_BOOST=On
+
+      - name: Run CMake on macOS (no Boost)
+        run: |
+          # make sure Boost is not used when disabled even though it is available
+          cmake -S . -B cmake.output.boost-no -G "Unix Makefiles" -DUSE_BOOST=Off
+          if grep -q '\-DHAVE_BOOST' ./cmake.output.boost-no/compile_commands.json; then
+            exit 1
+          else
+            exit 0
+          fi
+
+      - name: Run CMake on macOS (with Boost)
         run: |
           cmake -S . -B cmake.output.boost -G "Unix Makefiles" -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          grep -q '\-DHAVE_BOOST' ./cmake.output.boost/compile_commands.json
+
+      - name: Build with CMake on macOS (with Boost)
+        run: |
           cmake --build cmake.output.boost -- -j$(nproc)
 
   build:
