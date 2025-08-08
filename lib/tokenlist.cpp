@@ -1771,8 +1771,6 @@ static Token * createAstAtToken(Token *tok)
             if (typetok->str() == "<") {
                 if (Token* closing = typetok->findClosingBracket()) {
                     typetok = closing->next();
-                    if (Token::simpleMatch(typetok, "::"))
-                        typetok = typetok->next();
                     continue;
                 }
                 break;
