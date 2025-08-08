@@ -6235,7 +6235,7 @@ private:
         check("void f(bool b) {\n" // #14037
               "    if (b != 2) {}\n"
               "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
-        ASSERT_EQUALS("[test.cpp:2:12:]: (style) Comparing expression of type 'bool' against value 2. Condition is always true. [compareValueOutOfTypeRangeError]\n",
+        ASSERT_EQUALS("[test.cpp:2:14]: (style) Comparing expression of type 'bool' against value 2. Condition is always true. [compareValueOutOfTypeRangeError]\n",
                       errout_str());
     }
 
