@@ -75,9 +75,10 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     if (subexpr)
         (*mValues)[subexpr] = std::move(subvalue);
 }
+
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const auto it = utils::as_const(*mValues).find(exprid);
+    const auto it = find(exprid);
     const bool found = it != mValues->cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
@@ -154,18 +155,28 @@ void ProgramMemory::setUnknown(const Token* expr) {
     (*mValues)[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(nonneg int exprid)
+bool ProgramMemory::hasValue(nonneg int exprid) const
 {
-    return mValues->find(exprid) != mValues->end();
+    const auto it = find(exprid);
+    return it != mValues->cend();
 }
 
 const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
-    return mValues->at(exprid);
+    const auto it = find(exprid);
+    if (it == mValues->cend()) {
+        throw std::out_of_range("ProgramMemory::at");
+    }
+    return it->second;
 }
+
 ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
     copyOnWrite();
 
-    return mValues->at(exprid);
+    const auto it = find(exprid);
+    if (it == mValues->end()) {
+        throw std::out_of_range("ProgramMemory::at");
+    }
+    return it->second;
 }
 
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
@@ -223,6 +234,21 @@ void ProgramMemory::copyOnWrite()
         return;
 
     mValues = std::make_shared<Map>(*mValues);
+}
+
+ProgramMemory::Map::const_iterator ProgramMemory::find(nonneg int exprid) const
+{
+    const auto& cvalues = utils::as_const(*mValues);
+    return std::find_if(cvalues.cbegin(), cvalues.cend(), [&exprid](const Map::value_type& entry) {
+        return entry.first.getExpressionId() == exprid;
+    });
+}
+
+ProgramMemory::Map::iterator ProgramMemory::find(nonneg int exprid)
+{
+    return std::find_if(mValues->begin(), mValues->end(), [&exprid](const Map::value_type& entry) {
+        return entry.first.getExpressionId() == exprid;
+    });
 }
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings);
@@ -395,7 +421,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             bool setvar = false;
             const Token* vartok = tok2->astOperand1();
             for (const auto& p:vars) {
-                if (p.first != vartok->exprId())
+                if (p.first.getExpressionId() != vartok->exprId())
                     continue;
                 if (vartok == tok)
                     continue;
