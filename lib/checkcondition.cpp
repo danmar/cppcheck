@@ -1946,6 +1946,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || !tok->isBinaryOp())
                 continue;
+            if (diag(tok))
+                continue;
 
             for (int i = 0; i < 2; ++i) {
                 const Token * const valueTok = (i == 0) ? tok->astOperand1() : tok->astOperand2();
