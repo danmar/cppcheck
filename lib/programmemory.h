@@ -41,14 +41,9 @@ struct ExprIdToken {
     const Token* tok = nullptr;
     nonneg int exprid = 0;
 
-    ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
     ExprIdToken(const Token* tok);
-    // TODO: Make this constructor only available from ProgramMemory
-    // cppcheck-suppress noExplicitConstructor
-    // NOLINTNEXTLINE(google-explicit-constructor)
-    ExprIdToken(nonneg int exprid) : exprid(exprid) {}
 
     nonneg int getExpressionId() const;
 
@@ -117,7 +112,7 @@ struct CPPCHECKLIB ProgramMemory {
     void setUnknown(const Token* expr);
 
     bool getTokValue(nonneg int exprid, const Token*& result) const;
-    bool hasValue(nonneg int exprid);
+    bool hasValue(nonneg int exprid) const;
 
     const ValueFlow::Value& at(nonneg int exprid) const;
     ValueFlow::Value& at(nonneg int exprid);
@@ -150,6 +145,8 @@ struct CPPCHECKLIB ProgramMemory {
 
 private:
     void copyOnWrite();
+    Map::const_iterator find(nonneg int exprid) const;
+    Map::iterator find(nonneg int exprid);
 
     std::shared_ptr<Map> mValues;
 };
