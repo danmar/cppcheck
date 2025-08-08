@@ -2746,7 +2746,6 @@ void bool_isfinite(float f)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isfinite(f)==123) {}
 }
 
@@ -2769,7 +2768,6 @@ void bool_isgreater(float f1, float f2)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreater(f1,f2)==123) {}
 }
 
@@ -2792,7 +2790,6 @@ void bool_isgreaterequal(float f1, float f2)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreaterequal(f1, f2)==123) {}
 }
 
@@ -2815,7 +2812,6 @@ void bool_isinf(float f)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isinf(f)==123) {}
 }
 

@@ -2042,8 +2042,9 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                         break;
                     }
                 }
-                if (error)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
+                if (!error || diag(tok))
+                    continue;
+                compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
             }
         }
     }
