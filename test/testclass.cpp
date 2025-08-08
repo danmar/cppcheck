@@ -6821,6 +6821,13 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3:10]: (style, inconclusive) Technically the member function 'D::f' can be const. [functionConst]\n",
                       errout_str());
+
+        checkConst("struct S {\n" // #12162
+                   "    bool has(int i) { return m.find(i) != m.end(); }\n"
+                   "    std::map<int, int> m;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2:10]: (style, inconclusive) Technically the member function 'S::has' can be const. [functionConst]\n",
+                      errout_str());
     }
 
     void const98() { // #13642
