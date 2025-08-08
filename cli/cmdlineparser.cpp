@@ -379,8 +379,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
     }
 
-    bool def = false;
-    bool maxconfigs = false;
     bool debug = false;
 
     ImportProject::Type projectType = ImportProject::Type::NONE;
@@ -425,8 +423,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             if (!mSettings.userDefines.empty())
                 mSettings.userDefines += ";";
             mSettings.userDefines += define;
-
-            def = true;
         }
 
         // -E
@@ -958,8 +954,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             mSettings.maxConfigs = tmp;
-            mSettings.force = false;
-            maxconfigs = true;
         }
 
         // max ctu depth
@@ -1138,7 +1132,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
-            mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
             projectType = project.import(projectFile, &mSettings, &mSuppressions, isCppcheckPremium());
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
@@ -1554,14 +1547,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     // replace static parts of the templates
     substituteTemplateFormatStatic(mSettings.templateFormat);
     substituteTemplateLocationStatic(mSettings.templateLocation);
-
-    if (mSettings.force || maxconfigs)
-        mSettings.checkAllConfigurations = true;
-
-    if (mSettings.force)
-        mSettings.maxConfigs = INT_MAX;
-    else if ((def || mSettings.preprocessOnly) && !maxconfigs)
-        mSettings.maxConfigs = 1U;
 
     if (debug) {
         mSettings.debugnormal = true;
