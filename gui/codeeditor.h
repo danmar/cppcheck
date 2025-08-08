@@ -21,6 +21,7 @@
 
 #include <cstdint>
 
+#include <QList>
 #include <QObject>
 #include <QPlainTextEdit>
 #include <QRegularExpression>
@@ -29,7 +30,6 @@
 #include <QStringList>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
-#include <QVector>
 #include <QWidget>
 
 class CodeEditorStyle;
@@ -67,8 +67,8 @@ private:
 
     void applyFormat(HighlightingRule &rule);
 
-    QVector<HighlightingRule> mHighlightingRules;
-    QVector<HighlightingRule> mHighlightingRulesWithSymbols;
+    QList<HighlightingRule> mHighlightingRules;
+    QList<HighlightingRule> mHighlightingRulesWithSymbols;
 
     QRegularExpression mCommentStartExpression;
     QRegularExpression mCommentEndExpression;
