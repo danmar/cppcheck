@@ -6231,6 +6231,12 @@ private:
                       "[test.cpp:14:9]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:17:9]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true. [compareValueOutOfTypeRangeError]\n",
                       errout_str());
+
+        check("void f(bool b) {\n" // #14037
+              "    if (b != 2) {}\n"
+              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
+        ASSERT_EQUALS("[test.cpp:2:12:]: (style) Comparing expression of type 'bool' against value 2. Condition is always true. [compareValueOutOfTypeRangeError]\n",
+                      errout_str());
     }
 
     void knownConditionCast() {
