@@ -4505,6 +4505,43 @@ void CheckOther::overlappingWriteFunction(const Token *tok, const std::string& f
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
 
+void CheckOther::checkSuspiciousComma()
+{
+    if (!mSettings->severity.isEnabled(Severity::style)) {
+        return;
+    }
+
+    logChecker("CheckOther::suspiciousComma");
+
+    for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "," && tok->isBinaryOp()) {
+            const Token * parent = tok->astParent();
+            if (parent && Token::Match(parent->previous(), "if|while (")) {
+                if (tok->strAt(-1) == ")") {
+                    const Function * func = tok->linkAt(-1)->previous()->function();
+                    if (func && func->initArgCount > 0 && !tok->astOperand2()->hasKnownValue()) {
+                        std::vector<const Token*> arg_vec = getArguments(tok->linkAt(-1)->previous());
+                        if (arg_vec.size() < func->argCount() && !arg_vec.empty()) {
+                            const ValueType * type1 = tok->astOperand2()->valueType();
+                            std::vector<Variable> v(func->argumentList.begin(), func->argumentList.end());
+                            const ValueType * type2 = v[arg_vec.size()].valueType();
+                            if (type1 && type2 && type1->isTypeEqual(type2)) {
+                                checkSuspiciousCommaError(tok);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::checkSuspiciousCommaError(const Token *tok)
+{
+    reportError(tok, Severity::style, "suspiciousComma", "There is a suspicious comma expression directly after a function call "
+                "in an if/while condition statement, is there a misplaced paranthesis?");
+}
+
 void CheckOther::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
 {
     CheckOther checkOther(&tokenizer, &tokenizer.getSettings(), errorLogger);
@@ -4554,6 +4591,7 @@ void CheckOther::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
     checkOther.checkAccessOfMovedVariable();
     checkOther.checkModuloOfOne();
     checkOther.checkOverlappingWrite();
+    checkOther.checkSuspiciousComma();
 }
 
 void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
@@ -4628,6 +4666,7 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.comparePointersError(nullptr, nullptr, nullptr);
     c.redundantAssignmentError(nullptr, nullptr, "var", false);
     c.redundantInitializationError(nullptr, nullptr, "var", false);
+    c.checkSuspiciousCommaError(nullptr);
 
     const std::vector<const Token *> nullvec;
     c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
