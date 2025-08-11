@@ -31,9 +31,9 @@ def build_cppcheck(bisect_path):
     # TODO: older versions do not build because of include changes in libstdc++ - check compiler version and try to use an earlier one
     # TODO: make jobs configurable
     # TODO: use "make install"?
-    # TODO: allow CXXFLAGS overrides to workaround compiling issues in older versions
+    # TODO: use CXXOPTS overrides to workaround compiling issues in older versions
     print('building {}'.format(commit_hash))
-    subprocess.check_call(['make', '-C', bisect_repo_dir, '-j6', 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -w -pipe', '-s'])
+    subprocess.check_call(['make', '-C', bisect_repo_dir, '-j6', 'MATCHCOMPILER=yes', 'CXXOPTS=-O2 -w -pipe', '-s'])
 
     # TODO: remove folder if installation failed
     print('installing {}'.format(commit_hash))
