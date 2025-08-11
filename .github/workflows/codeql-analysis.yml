@@ -46,7 +46,7 @@ jobs:
     - name: Build cppcheck
       if: matrix.language == 'cpp'
       run: |
-         make -j$(nproc) HAVE_RULES=yes CPPCHK_GLIBCXX_DEBUG= cppcheck
+         make -j$(nproc) CXXOPTS="-Werror" HAVE_RULES=yes CPPCHK_GLIBCXX_DEBUG= cppcheck
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
