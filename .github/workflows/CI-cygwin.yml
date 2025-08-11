@@ -50,7 +50,7 @@ jobs:
       # Cygwin will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
       - name: Build all and run test
         run: |
-          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j%NUMBER_OF_PROCESSORS% check
+          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j%NUMBER_OF_PROCESSORS% CXXOPTS="-Werror" check
 
       - name: Extra test for misra
         run: |
