@@ -13,10 +13,6 @@ target_include_directories(test-xmlreportv2 PRIVATE ${CMAKE_SOURCE_DIR}/gui)
 target_compile_definitions(test-xmlreportv2 PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(test-xmlreportv2 ${QT_CORE_LIB} ${QT_TEST_LIB} cppcheck-core)
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(QT_VERSION VERSION_LESS "6.0.0")
-        # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
-        target_compile_options_safe(test-xmlreportv2 -Wno-extra-semi-stmt)
-    endif()
     if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
         # caused by Qt generated moc code starting with 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
         target_compile_options_safe(test-xmlreportv2 -Wno-ctad-maybe-unsupported)

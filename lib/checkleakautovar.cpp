@@ -396,6 +396,16 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
         }
 
+        if (tok->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT) {
+            const Token *newTok = tok->astOperand1();
+            const Token *oldTok = tok->astOperand2();
+            if (newTok && newTok->varId() && oldTok && oldTok->varId()) {
+                leakIfAllocated(newTok, varInfo);
+                // no multivariable checking currently => bail out for rhs variables
+                varInfo.erase(oldTok->varId());
+            }
+        }
+
         auto isAssignment = [](const Token* varTok) -> const Token* {
             if (varTok->varId()) {
                 const Token* top = varTok;

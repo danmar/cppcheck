@@ -1936,8 +1936,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->isPremiumEnabled("compareValueOutOfTypeRangeError"))
         return;
 
-    if (mSettings->platform.type == Platform::Type::Native ||
-        mSettings->platform.type == Platform::Type::Unspecified)
+    if (mSettings->platform.type == Platform::Type::Unspecified)
         return;
 
     logChecker("CheckCondition::checkCompareValueOutOfTypeRange"); // style,platform
@@ -2043,8 +2042,9 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                         break;
                     }
                 }
-                if (error)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
+                if (!error || diag(tok))
+                    continue;
+                compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
             }
         }
     }

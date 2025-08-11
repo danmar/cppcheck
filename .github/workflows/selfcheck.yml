@@ -64,7 +64,7 @@ jobs:
       # unusedFunction - start
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies
         run: |
@@ -91,7 +91,7 @@ jobs:
       # unusedFunction notest - start
       - name: CMake (no test)
         run: |
-          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DBUILD_TRIAGE=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DBUILD_TRIAGE=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (no test)
         run: |
@@ -133,7 +133,7 @@ jobs:
       # unusedFunction notest nocli - start
       - name: CMake (no test / no cli)
         run: |
-          cmake -S . -B cmake.output.notest_nocli -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest_nocli -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (no test / no cli)
         run: |

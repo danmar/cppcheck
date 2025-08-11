@@ -305,6 +305,8 @@ private:
         TEST_CASE(bitfields16); // Save bitfield bit count
         TEST_CASE(bitfields17);
         TEST_CASE(bitfields18);
+        TEST_CASE(bitfields19); // ticket #13733
+        TEST_CASE(bitfields20);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -403,6 +405,9 @@ private:
         TEST_CASE(astvardecl);
         TEST_CASE(astnewscoped);
         TEST_CASE(astdecltypescope);
+        TEST_CASE(astdesignatedinit);
+        TEST_CASE(astrvaluedecl);
+        TEST_CASE(astorkeyword);
 
         TEST_CASE(startOfExecutableScope);
 
@@ -1009,6 +1014,8 @@ private:
         ASSERT_EQUALS("int x [ 2 ] = { -2 , 1 }", tokenizeAndStringify("int x[2] = {-2,1}"));
 
         ASSERT_EQUALS("f ( 123 )", tokenizeAndStringify("f(+123)"));
+
+        ASSERT_EQUALS("std :: extent_v < A > - 1 ;", tokenizeAndStringify("std::extent_v<A> - 1;")); // #11341
     }
 
 
@@ -4853,6 +4860,16 @@ private:
         ASSERT_EQUALS("[test.cpp:1:29]: (warning) Bit-field size exceeds max number of bits 32767 [tooLargeBitField]\n", errout_str());
     }
 
+    void bitfields19() {
+        const char code[] = "struct S { volatile std::uint32_t a : 10; };";
+        ASSERT_EQUALS("struct S { volatile std :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
+    void bitfields20() {
+        const char code[] = "struct S { volatile ::uint32_t a : 10; };";
+        ASSERT_EQUALS("struct S { volatile :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
     void simplifyNamespaceStd() {
         const char *expected;
 
@@ -6201,6 +6218,7 @@ private:
         tokenizer.simplifySpaceshipOperator();
         tokenizer.createLinks();
         tokenizer.createLinks2();
+        tokenizer.simplifyCAlternativeTokens();
         tokenizer.list.front()->assignIndexes();
 
         // set varid..
@@ -7174,6 +7192,18 @@ private:
 
     void astdecltypescope() {
         ASSERT_EQUALS("sizedecltypethism_P.(XSize::::{", testAst("size { decltype(this->m_P)::X::Size };"));
+    }
+
+    void astdesignatedinit() {
+        ASSERT_EQUALS("(( f ({ (= (. x) 1)))", testAst("f({ .x = 1 });", AstStyle::Z3));
+    }
+
+    void astrvaluedecl() {
+        ASSERT_EQUALS("varstdmove::var(=", testAst("std::string&& var = std::move(var);"));
+    }
+
+    void astorkeyword() {
+        ASSERT_EQUALS("ifsp.\"\"==sp.0==||(", testAst("void f() { if (s.p == \"\" or s.p == 0) {} }"));
     }
 
 #define isStartOfExecutableScope(offset, code) isStartOfExecutableScope_(offset, code, __FILE__, __LINE__)

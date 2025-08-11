@@ -79,6 +79,7 @@ jobs:
           dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
           dnf install -y python3-pip  # fixes missing pip module in jurplel/install-qt-action
           dnf install -y python3-devel  # fixes building of wheels for jurplel/install-qt-action
+          dnf install -y cairo-devel gtk3-devel libcurl-devel lua-devel openssl-devel python3-devel sqlite-devel boost-devel cppunit-devel libsigc++20-devel  # for strict cfg checks
           dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
@@ -125,7 +126,7 @@ jobs:
       - name: Prepare CMake
         run: |
           # TODO: why does it build dmake in the next step?
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.stdlib == 'libc++' }}
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.stdlib == 'libc++' }}
         env:
           CC: clang
           CXX: clang++
@@ -149,6 +150,16 @@ jobs:
         run: |
           # TODO: remove -stdlib= - it should have been taken from the compilation database
           iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} ${{ matrix.mapping_file_opt }} ${{ matrix.clang_inc }} > iwyu.log
+
+      # TODO: run with all configurations
+      - name: test/cfg
+        if: matrix.stdlib == 'libstdc++'
+        run: |
+          # TODO: redirect to log
+          ./test/cfg/runtests.sh
+        env:
+          IWYU: include-what-you-use
+          IWYU_CLANG_INC: ${{ matrix.clang_inc }}
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
@@ -224,7 +235,7 @@ jobs:
       - name: Prepare CMake
         run: |
           # TODO: why does it build dmake in the next step?
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
         env:
           CC: clang-20
           CXX: clang++-20

@@ -4,6 +4,23 @@ import os
 import re
 import requests
 
+
+def print_checkers(glob_pattern:str):
+    checkers = {}
+    for filename in glob.glob(glob_pattern):
+        for line in open(filename,'rt'):
+            res = re.match(r'[ \t]*logChecker\(\s*"([^"]+)"\s*\);.*', line)
+            if res is None:
+                continue
+            if line.find('//') > 0:
+                req = line[line.find('//')+2:].strip()
+            else:
+                req = ''
+            checkers[res.group(1)] = req
+    for c,req in dict(sorted(checkers.items())).items():
+        print('        {"%s","%s"},' % (c, req))
+
+
 print("""/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-%i Cppcheck team.
@@ -29,33 +46,11 @@ print("""/*
 
 namespace checkers {
     const std::map<std::string, std::string> allCheckers{""" % (datetime.date.today().year,))
-
-for filename in glob.glob(os.path.expanduser('~/cppchecksolutions/cppcheck/lib/*.cpp')):
-    for line in open(filename,'rt'):
-        res = re.match(r'[ \t]*logChecker\(\s*"([:_a-zA-Z0-9]+)"\s*\);.*', line)
-        if res is None:
-            continue
-        req = ''
-        if line.find('//')>0:
-            req = line[line.find('//')+2:].strip()
-        print('        {"%s","%s"},' % (res.group(1), req))
+print_checkers(os.path.expanduser('~/cppchecksolutions/cppcheck/lib/*.cpp'))
 print("    };\n")
 
 print('    const std::map<std::string, std::string> premiumCheckers{')
-premium_checkers = []
-for filename in sorted(glob.glob(os.path.expanduser('~/cppchecksolutions/addon/src/*.cpp'))):
-    for line in open(filename,'rt'):
-        res = re.match(r'[ \t]*logChecker\("([^"]+)"\);.*', line)
-        if res is None:
-            continue
-        if line.find('//') > 0:
-            req = line[line.find('//')+2:].strip()
-        else:
-            req = ''
-        c = '        {"%s","%s"}' % (res.group(1), req)
-        if c not in premium_checkers:
-            premium_checkers.append(c)
-print(',\n'.join(sorted(premium_checkers)))
+print_checkers(os.path.expanduser('~/cppchecksolutions/addon/src/*.cpp'))
 print('    };')
 
 

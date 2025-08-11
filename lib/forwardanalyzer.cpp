@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -684,7 +684,9 @@ namespace {
                            Token::simpleMatch(tok->linkAt(1), ") {")) {
                     if ((settings.vfOptions.maxForwardBranches > 0) && (++branchCount > settings.vfOptions.maxForwardBranches)) {
                         // TODO: should be logged on function-level instead of file-level
-                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        if (settings.severity.isEnabled(Severity::information)) {
+                            reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        }
                         return Break(Analyzer::Terminate::Bail);
                     }
                     Token* endCond = tok->linkAt(1);

@@ -129,9 +129,7 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
             } else {
                 // Directory
                 if (recursive) {
-                    // append a slash if it is a directory since that is what we are doing for mIgnoredPaths directory entries.
-                    // otherwise we would ignore all its contents individually instead as a whole.
-                    if (!ignored.match(fname + '/')) {
+                    if (!ignored.match(fname, PathMatch::Filemode::directory)) {
                         std::list<FileWithDetails> filesSorted;
 
                         std::string err = addFiles2(filesSorted, fname, extra, recursive, ignored);
@@ -193,6 +191,12 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 #include <sys/stat.h>
 #include <cerrno>
 
+struct closedir_deleter {
+    void operator()(DIR* d) const {
+        closedir(d);
+    }
+};
+
 static std::string addFiles2(std::list<FileWithDetails> &files,
                              const std::string &path,
                              const std::set<std::string> &extra,
@@ -223,7 +227,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         const int err = errno;
         return "could not open directory '" + path + "' (errno: " + std::to_string(err) + ")";
     }
-    std::unique_ptr<DIR, decltype(&closedir)> dir_deleter(dir, closedir);
+    std::unique_ptr<DIR, closedir_deleter> dir_deleter(dir);
 
     std::string new_path = path;
     new_path += '/';
@@ -243,9 +247,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
 #endif
         if (path_is_directory) {
             if (recursive) {
-                // append a slash if it is a directory since that is what we are doing for mIgnoredPaths directory entries.
-                // otherwise we would ignore all its contents individually instead as a whole.
-                if (!ignored.match(new_path + '/')) {
+                if (!ignored.match(new_path, PathMatch::Filemode::directory)) {
                     std::string err = addFiles2(files, new_path, extra, recursive, ignored, debug);
                     if (!err.empty()) {
                         return err;

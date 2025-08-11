@@ -188,6 +188,7 @@ private:
         TEST_CASE(localvarconst2);
         TEST_CASE(localvarreturn); // ticket #9167
         TEST_CASE(localvarmaybeunused);
+        TEST_CASE(localvarrvalue); // ticket #13977
 
         TEST_CASE(localvarthrow); // ticket #3687
 
@@ -259,6 +260,8 @@ private:
         TEST_CASE(escapeAlias); // #9150
         TEST_CASE(volatileData); // #9280
         TEST_CASE(globalData);
+
+        TEST_CASE(structuredBinding); // #13269
     }
 
     struct FunctionVariableUsageOptions
@@ -5198,10 +5201,9 @@ private:
                               "    const auto&& c = g();\n"
                               "    auto&& d = c;\n"
                               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5:20]: (style) Variable 'b' is assigned a value that is never used.\n"
-                           "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
-                           "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
-                           errout_str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) Variable 'b' is assigned a value that is never used. [unreadVariable]\n"
+                      "[test.cpp:7:14]: (style) Variable 'd' is assigned a value that is never used. [unreadVariable]\n",
+                      errout_str());
     }
 
     void localvaralias21() { // #11728
@@ -6471,6 +6473,15 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    void localvarrvalue() { // ticket #13977
+        functionVariableUsage("void f(void) {\n"
+                              "    std::string s;\n"
+                              "    std::string&& m = std::move(s);\n"
+                              "    cb();\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:21]: (style) Variable 'm' is assigned a value that is never used. [unreadVariable]\n", errout_str());
+    }
+
     void localvarthrow() { // ticket #3687
         functionVariableUsage("void foo() {\n"
                               "    try {}"
@@ -7195,6 +7206,42 @@ private:
             "void f(void) {\n"
             "    ((uint8_t *) (uint16_t)0x1000)[0] = 0x42;\n"
             "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structuredBinding() { // #13269
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b] = std::make_pair(42, 0.42);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:17]: (style) Variable 'a' is assigned a value that is never used. [unreadVariable]\n"
+                      "[test.cpp:3:17]: (style) Variable 'b' is assigned a value that is never used. [unreadVariable]\n", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b] = std::make_pair(42, 0.42);\n"
+                              "    (void) a;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b] = std::make_pair(42, 0.42);\n"
+                              "    (void) b;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    auto [a, b, c] = std::make_pair(42, 0.42);\n"
+                              "    (void) b;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main()\n"
+                              "{\n"
+                              "    [[maybe_unused]] auto [a2, b3] = std::make_pair(42, 0.42);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 };

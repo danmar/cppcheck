@@ -26,10 +26,6 @@ CheckOptions:
     target_include_directories(triage PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/gui/)
     target_link_libraries(triage ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB})
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if(QT_VERSION VERSION_LESS "6.0.0")
-            # Q_UNUSED() in generated code - see https://bugreports.qt.io/browse/QTBUG-82978
-            target_compile_options_safe(triage -Wno-extra-semi-stmt)
-        endif()
         if(QT_VERSION VERSION_LESS "6.4.0")
             # caused by Qt generated moc code - see https://bugreports.qt.io/browse/QTBUG-100915
             target_compile_options_safe(triage -Wno-redundant-parens)

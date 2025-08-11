@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ ScopedFile::~ScopedFile() {
         // TODO: simplify the function call
         // hack to be able to delete *.plist output files
         std::list<FileWithDetails> files;
-        const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch({}));
+        const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch());
         if (!res.empty()) {
             std::cout << "ScopedFile(" << mPath + ") - generating file list failed (" << res << ")" << std::endl;
         }

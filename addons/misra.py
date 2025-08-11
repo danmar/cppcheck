@@ -1823,20 +1823,6 @@ class MisraChecker:
                         self.reportError(token, 3, 1)
                         break
 
-    def misra_3_2(self, rawTokens):
-        for token in rawTokens:
-            if token.str.startswith('//'):
-                # Check for comment ends with trigraph which might be replaced
-                # by a backslash.
-                if token.str.endswith('??/'):
-                    self.reportError(token, 3, 2)
-                # Check for comment which has been merged with subsequent line
-                # because it ends with backslash.
-                # The last backslash is no more part of the comment token thus
-                # check if next token exists and compare line numbers.
-                elif (token.next is not None) and (token.linenr == token.next.linenr):
-                    self.reportError(token, 3, 2)
-
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
             if (token.str[0] != '"') and (token.str[0] != '\''):
@@ -2074,7 +2060,9 @@ class MisraChecker:
                 self.reportError(token, 7, 2)
 
     def misra_7_3(self, rawTokens):
-        compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
+        # Match decimal digits, hex digits, decimal point, and e/E p/P floating
+        # point constant exponent separators.
+        compiled = re.compile(r'^(0[xX])?[0-9a-fA-FpP.]+[Uu]*l+[Uu]*$')
         for tok in rawTokens:
             if compiled.match(tok.str):
                 self.reportError(tok, 7, 3)
@@ -4716,7 +4704,7 @@ class MisraChecker:
             # data.rawTokens is same for all configurations
             if cfgNumber == 0:
                 self.executeCheck(301, self.misra_3_1, data.rawTokens)
-                self.executeCheck(302, self.misra_3_2, data.rawTokens)
+                #self.executeCheck(302, self.misra_3_2, data.rawTokens)
                 self.executeCheck(401, self.misra_4_1, data.rawTokens)
                 self.executeCheck(402, self.misra_4_2, data.rawTokens)
             self.executeCheck(501, self.misra_5_1, cfg)

@@ -645,7 +645,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-        check("void f(int i) {\n"
+        check("void f(int64_t i) {\n"
               "   if(i == 0x02e2000000 || i == 0xa0c6000000)\n"
               "       foo(i);\n"
               "}");
@@ -4583,7 +4583,7 @@ private:
         if (std::numeric_limits<char>::is_signed) {
             ASSERT_EQUALS("[test.cpp:6:18]: (style) Condition 'o[1]=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
         } else {
-            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
+            ASSERT_EQUALS("[test.cpp:4:25] -> [test.cpp:6:18]: (style) Condition 'o[1]=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
         }
 
         check("void f(int x) {\n" // #11449
@@ -5323,7 +5323,7 @@ private:
         if (std::numeric_limits<char>::is_signed) {
             ASSERT_EQUALS("[test.cpp:5:22]: (style) Condition 'buffer.back()=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
         } else {
-            ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout_str());
+            ASSERT_EQUALS("[test.cpp:3:22] -> [test.cpp:5:22]: (style) Condition 'buffer.back()=='\\0'' is always false [knownConditionTrueFalse]\n", errout_str());
         }
 
         // #9353
@@ -6230,6 +6230,12 @@ private:
                       "[test.cpp:12:9]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:14:9]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:17:9]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true. [compareValueOutOfTypeRangeError]\n",
+                      errout_str());
+
+        check("void f(bool b) {\n" // #14037
+              "    if (b != 2) {}\n"
+              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
+        ASSERT_EQUALS("[test.cpp:2:14]: (style) Comparing expression of type 'bool' against value 2. Condition is always true. [compareValueOutOfTypeRangeError]\n",
                       errout_str());
     }
 

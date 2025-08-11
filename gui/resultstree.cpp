@@ -407,7 +407,7 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
     const QString classification = getClassification(mReportType, guideline);
     columns[COLUMN_CERT_LEVEL] = createNormalItem(classification);
     columns[COLUMN_CERT_RULE] = createNormalItem(guideline);
-    columns[COLUMN_CWE] = createNormalItem(QString::number(item.cwe));
+    columns[COLUMN_CWE] = createNormalItem(item.cwe > 0 ? QString::number(item.cwe) : QString());
     columns[COLUMN_FILE] = createNormalItem(QDir::toNativeSeparators(item.file));
     columns[COLUMN_ID] = createNormalItem(childOfMessage ? QString() : item.errorId);
     columns[COLUMN_INCONCLUSIVE] = childOfMessage ? createNormalItem(QString()) : createCheckboxItem(item.inconclusive);
@@ -747,21 +747,35 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
             }
 
+            int selectedFiles = 0;
+            int selectedResults = 0;
+
+            for (auto row : mSelectionModel->selectedRows()) {
+                auto *item = mModel.itemFromIndex(row);
+                if (!item->parent())
+                    selectedFiles++;
+                else if (!item->parent()->parent())
+                    selectedResults++;
+            }
+
             //Create an action for the application
-            auto *recheckAction          = new QAction(tr("Recheck"), &menu);
+            auto *recheckAction          = new QAction(tr("Recheck %1 file(s)").arg(selectedFiles), &menu);
             auto *copyAction             = new QAction(tr("Copy"), &menu);
-            auto *hide                   = new QAction(tr("Hide"), &menu);
+            auto *hide                   = new QAction(tr("Hide %1 result(s)").arg(selectedResults), &menu);
             auto *hideallid              = new QAction(tr("Hide all with id"), &menu);
             auto *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
-            if (multipleSelection) {
-                hideallid->setDisabled(true);
-                opencontainingfolder->setDisabled(true);
-            }
-            if (mThread->isChecking())
+            if (selectedFiles == 0 || mThread->isChecking() || mResultsSource == ResultsSource::Log)
                 recheckAction->setDisabled(true);
-            else
-                recheckAction->setDisabled(false);
+
+            if (selectedResults == 0)
+                hide->setDisabled(true);
+
+            if (selectedResults == 0 || multipleSelection)
+                hideallid->setDisabled(true);
+
+            if (multipleSelection || mResultsSource == ResultsSource::Log)
+                opencontainingfolder->setDisabled(true);
 
             menu.addAction(recheckAction);
             menu.addSeparator();
@@ -774,7 +788,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             {
                 QVariantMap itemdata = mContextItem->data().toMap();
                 const QString messageId = itemdata[ERRORID].toString();
-                suppress->setEnabled(!ErrorLogger::isCriticalErrorId(messageId.toStdString()));
+
+                if (selectedResults == 0 || ErrorLogger::isCriticalErrorId(messageId.toStdString()))
+                    suppress->setDisabled(true);
             }
             menu.addAction(suppress);
             connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
@@ -911,22 +927,7 @@ void ResultsTree::startApplication(const QStandardItem *target, int application)
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 #endif
 
-        // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        SUPPRESS_WARNING_CLANG_PUSH("-Wdeprecated")
-        SUPPRESS_WARNING_GCC_PUSH("-Wdeprecated-declarations")
-#endif
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        const bool success = QProcess::startDetached(cmdLine);
-#else
         const bool success = QProcess::startDetached(program, QProcess::splitCommand(params));
-#endif
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        SUPPRESS_WARNING_GCC_POP
-            SUPPRESS_WARNING_CLANG_POP
-#endif
         if (!success) {
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
@@ -1408,10 +1409,14 @@ void ResultsTree::setCheckDirectory(const QString &dir)
     mCheckPath = dir;
 }
 
-
 const QString& ResultsTree::getCheckDirectory() const
 {
     return mCheckPath;
+}
+
+void ResultsTree::setResultsSource(ResultsSource source)
+{
+    mResultsSource = source;
 }
 
 QString ResultsTree::stripPath(const QString &path, bool saving) const

@@ -730,6 +730,24 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Redundant code: Found unused lambda. [constStatement]\n",
                       errout_str());
+
+        check("int main() {\n" // #13177
+              "    sizeof(int);\n"
+              "    alignof(long double*);\n"
+              "    noexcept(int());\n"
+              "    typeid(int);\n"
+              "    return(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:11]: (warning) Redundant code: Found unused 'sizeof' expression. [constStatement]\n"
+                      "[test.cpp:3:12]: (warning) Redundant code: Found unused 'alignof' expression. [constStatement]\n"
+                      "[test.cpp:4:13]: (warning) Redundant code: Found unused 'noexcept' expression. [constStatement]\n"
+                      "[test.cpp:5:11]: (warning) Redundant code: Found unused 'typeid' expression. [constStatement]\n",
+                      errout_str());
+
+        check("void f() {\n" // #14044
+              "    g<sizeof(wchar_t)>();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void vardecl() {

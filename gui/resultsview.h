@@ -21,6 +21,7 @@
 #define RESULTSVIEW_H
 
 #include "report.h"
+#include "resultstree.h"
 #include "showtypes.h"
 
 #include <cstdint>
@@ -197,8 +198,6 @@ public:
      */
     bool isSuccess() const;
 
-    void disableProgressbar();
-
     /**
      * @brief Read errors from report XML file.
      * @param filename Report file to read.
@@ -221,6 +220,13 @@ public:
     const ShowTypes & getShowTypes() const;
 
     void setReportType(ReportType reportType);
+
+    /**
+     * @brief Set the results source type for the results tree.
+     *
+     * @param source The results source type.
+     */
+    void setResultsSource(ResultsTree::ResultsSource source);
 
 signals:
 

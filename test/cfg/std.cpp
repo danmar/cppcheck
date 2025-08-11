@@ -9,7 +9,8 @@
 
 // cppcheck-suppress-file valueFlowBailout
 
-#include <algorithm>
+#include <algorithm> // IWYU pragma: keep
+#include <array>
 #include <bitset>
 #include <cassert>
 #include <cctype>
@@ -27,6 +28,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
+#include <cwctype>
 #include <deque>
 #include <exception>
 #include <filesystem>
@@ -36,26 +38,31 @@
     #include <threads.h>
 #endif
 #include <iomanip>
-#include <ios>
+#include <ios> // IWYU pragma: keep
 #include <iostream>
-#include <istream>
+#include <istream> // IWYU pragma: keep
 #include <iterator>
-#include <list>
+#include <list> // IWYU pragma: keep
+#include <locale>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <numeric>
 #include <queue>
 #include <set>
-#include <streambuf>
+#include <sstream>
+#include <stdexcept>
+#include <streambuf> // IWYU pragma: keep
+#include <string>
 #include <string_view>
+#include <system_error>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <version>
+#include <version> // IWYU pragma: keep
 #ifdef __cpp_lib_span
 #include <span>
 #endif
@@ -2739,7 +2746,6 @@ void bool_isfinite(float f)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isfinite(f)==123) {}
 }
 
@@ -2762,7 +2768,6 @@ void bool_isgreater(float f1, float f2)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreater(f1,f2)==123) {}
 }
 
@@ -2785,7 +2790,6 @@ void bool_isgreaterequal(float f1, float f2)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreaterequal(f1, f2)==123) {}
 }
 
@@ -2808,7 +2812,6 @@ void bool_isinf(float f)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isinf(f)==123) {}
 }
 

@@ -47,7 +47,6 @@ enum class Severity : std::uint8_t;
 /// @addtogroup GUI
 /// @{
 
-
 /**
  * @brief Cppcheck's results are shown in this tree
  *
@@ -138,6 +137,24 @@ public:
      */
 
     const QString& getCheckDirectory() const;
+
+    /**
+     * @brief Results source for analysis results in the results tree.
+     */
+    enum class ResultsSource : std::uint8_t {
+        /** Results from a project, files, or directory check */
+        Analysis,
+        /** Saved results from a log file */
+        Log,
+    };
+
+    /**
+     * @brief Set the source type of the current results. This
+     * affects the actions that are allowed on them.
+     *
+     * @param source The results source type.
+     */
+    void setResultsSource(ResultsSource source);
 
     /**
      * @brief Check if there are any visible results in view.
@@ -507,6 +524,12 @@ protected:
      *
      */
     QString mCheckPath;
+
+    /**
+     * @brief The type of source of the current results
+     *
+     */
+    ResultsSource mResultsSource{ResultsSource::Analysis};
 
     /**
      * @brief Are there any visible errors

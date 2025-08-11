@@ -102,34 +102,46 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 ### Check files matching a given file filter
 
-With `--file-filter=<str>` you can set a file filter and only those files matching the filter will be checked.
+With `--file-filter=<str>` you can configure file filter(s) and then only those files matching the filter will be checked.
 
-For example: if you want to check only those files and folders starting from a subfolder src/ that start with "test" 
-you have to type:
+For example, this command below means that `src/test1.cpp` and `src/test/file1.cpp` could be checked, but `src/file2.cpp` will not be checked:
 
     cppcheck src/ --file-filter=src/test*
 
-Cppcheck first collects all files in src/ and will apply the filter after that. So the filter must start with the given 
-start folder. 
+You can use `**`, `*` and `?` in the file filter pattern.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
+`?`: matches any single character except path separators
+
+A common use case for `--file-filter` is to check a project, but only check certain files:
+
+    cppcheck --project=compile_commands.json --file-filter=src/*.c
+
+Typically a `compile_commands.json` contains absolute paths. However no matter if `compile_commands.json` contains absolute paths or relative paths, the option `--file-filter=src/*.c` would mean that:
+ * a file with relative path `test1.c` is not checked.
+ * a file with relative path `src/test2.c` can be checked.
+ * a file with relative path `src/test3.cpp` is not checked.
 
 ### Excluding a file or folder from checking
 
-To exclude a file or folder, there are two options. The first option is to only provide the paths and files you want to 
-check:
-
-    cppcheck src/a src/b
-
-All files under src/a and src/b are then checked.
-
-The second option is to use -i, which specifies the files/paths to ignore. With this command no files in src/c are 
-checked:
+The option `-i` specifies a pattern to files/folders to exclude. With this command no files in `src/c` are checked:
 
     cppcheck -isrc/c src
 
-This option is only valid when supplying an input directory. To ignore multiple directories supply the -i flag for each 
-directory individually. The following command ignores both the src/b and src/c directories:
+The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included.
 
-    cppcheck -isrc/b -isrc/c
+You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
+`?`: matches any single character except path separators
+
+A use case for `-i` is to check a project, but exclude certain files/folders:
+
+    cppcheck --project=compile_commands.json -itest
+
+Typically a `compile_commands.json` contains absolute paths. However no matter if `compile_commands.json` contains absolute paths or relative paths, the option `-itest` would mean that:
+ * a file with relative path `test1.cpp` can be checked.
+ * a file with relative path `test/somefile.cpp` is not checked
 
 ### Clang parser (experimental)
 
@@ -474,19 +486,22 @@ The format for an error suppression is one of:
     [error id]:[filename2]
     [error id]
 
-The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output. The suppression `error id` may contain \* to match any sequence of tokens.
+The `error id` is the id that you want to suppress. The id of a warning is shown in brackets in the normal cppcheck text output.
 
-The filename may include the wildcard characters \* or ?, which matches any sequence of characters or any single character respectively.
-It is recommended to use forward-slash `/` as path separator on all operating systems. The filename must match the filename in the reported warning exactly.
-For instance, if the warning contains a relative path, then the suppression must match that relative path.
+The `error id` and `filename` patterns may contain `**`, `*` or `?`.  
+`**`: matches zero or more characters, including path separators  
+`*`: matches zero or more characters, excluding path separators  
+`?`: matches any single character except path separators
 
-## Command line suppression
+It is recommended to use forward-slash `/` in the filename pattern as path separator on all operating systems.
+
+### Command line suppression
 
 The `--suppress=` command line option is used to specify suppressions on the command line. Example:
 
     cppcheck --suppress=memleak:src/file1.cpp src/
 
-## Suppressions in a file
+### Suppressions in a file
 
 You can create a suppressions file for example as follows:
 
@@ -516,6 +531,11 @@ You can specify suppressions in a XML file, for example as follows:
         <symbolName>var</symbolName>
       </suppress>
     </suppressions>
+
+The `id` and `fileName` patterns may contain `**`, `*` or `?`.
+`**`: matches zero or more characters, including path separators
+`*`: matches zero or more characters, excluding path separators
+`?`: matches any single character except path separators
 
 The XML format is extensible and may be extended with further attributes in the future.
 
@@ -1278,8 +1298,44 @@ Description of the options:
 - `--output-file`: html filename that the report should be written to
 - `results.xml`: The xml output from cppcheck
 
+## Metrics
+
+To generate metrics add option `--premium=metrics`. The metrics are saved in the xml v3 report.
+Example:
+
+    cppcheck --premium=metrics test.c --xml-version=3 2> res.xml
+
+We provide a small simple python script that creates a metrics report in CSV format:
+
+    python3 HISReport.py -f res.xml -j path/to/cppcheck-id-mapping.json -o test.csv
+
+the `cppcheck-id-mapping.json` is provided in the cppcheck premium installation folder, i.e.
+`/opt/cppcheckpremium` or `C:\Program Files\Cppcheck Premium`.
+
+We do not have a ready-made solution to generate a html/pdf report. You can easily tweak our
+HISReport.py script so that it generates html and get the report exactly as you want.
+
 ## Licenses
+
+### Commercial Terms
 
 Information about Cppcheck Premium licenses:
 https://www.cppcheck.com/plans-pricing
 
+### Installation / Registration
+
+This is described on the Cppcheck Premium website:
+https://www.cppcheck.com
+
+### Troubleshooting
+
+If your license does not work you can get some details about the license validation by executing
+premiumaddon binary with the `--debug` option.
+
+Windows:
+
+    premiumaddon.exe --debug
+
+Linux/Mac:
+
+    premiumaddon --debug

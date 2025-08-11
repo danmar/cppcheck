@@ -3605,6 +3605,9 @@ void Tokenizer::concatenateNegativeNumberAndAnyPositive()
         if (!Token::Match(tok, "?|:|,|(|[|{|return|case|sizeof|%op% +|-") || tok->tokType() == Token::eIncDecOp)
             continue;
 
+        if (tok->findOpeningBracket())
+            continue;
+
         while (tok->str() != ">" && tok->next() && tok->strAt(1) == "+" && (!Token::Match(tok->tokAt(2), "%name% (|;") || Token::Match(tok, "%op%")))
             tok->deleteNext();
 
@@ -7679,7 +7682,7 @@ bool Tokenizer::simplifyCAlternativeTokens()
             if (isC() && Token::Match(tok->previous(), "%type%|* %name% [;,=]"))
                 return false;
 
-            if (!Token::Match(tok->previous(), "%name%|%num%|%char%|)|]|> %name% %name%|%num%|%char%|%op%|("))
+            if (!Token::Match(tok->previous(), "%name%|%num%|%char%|%str%|)|]|> %name% %name%|%num%|%char%|%op%|%str%|("))
                 continue;
             if (Token::Match(tok->next(), "%assign%|%or%|%oror%|&&|*|/|%|^") && !Token::Match(tok->previous(), "%num%|%char%|) %name% *"))
                 continue;
@@ -10019,6 +10022,10 @@ void Tokenizer::simplifyBitfields()
         Token* typeTok = tok->next();
         while (Token::Match(typeTok, "const|volatile"))
             typeTok = typeTok->next();
+        if (Token::Match(typeTok, ":: %name%"))
+            typeTok = typeTok->next();
+        while (Token::Match(typeTok, "%name% :: %name%"))
+            typeTok = typeTok->tokAt(2);
         if (Token::Match(typeTok, "%type% %name% :") &&
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
