@@ -83,11 +83,12 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
     cmake_policy(SET CMP0167 NEW)
 endif()
 
-# we are only using the header-only "container" component so we can unconditionally search for it
 if(USE_BOOST)
-    find_package(Boost REQUIRED)
-else()
-    find_package(Boost)
+    if(USE_BOOST STREQUAL "Auto")
+        find_package(Boost)
+    else()
+        find_package(Boost REQUIRED)
+    endif()
 endif()
 
 find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
