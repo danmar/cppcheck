@@ -26,7 +26,7 @@
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
 # self check, fix critical issues:
-# make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
+# make clean && make CXXOPTS=-O2 MATCHCOMPILER=yes -j4
 # ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --suppress=normalCheckLevelMaxBranches --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
 # Generate lib/checkers.cpp (TODO the premium checkers should not be statically coded)
@@ -155,7 +155,7 @@ cp -R ~/cppcheck/cfg .
 cp -R ~/cppcheck/addons .
 cp -R ~/cppcheck/platforms .
 cd ~/cppcheck
-make clean ; make -j12 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes CXXFLAGS=-O2
+make clean ; make -j12 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes CXXOPTS=-O2
 mv cppcheck ~/.cppcheck/cppcheck-$tag
 
 git checkout main

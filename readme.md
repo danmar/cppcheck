@@ -42,11 +42,9 @@ When building the command line tool, [PCRE](http://www.pcre.org/) is optional. I
 
 There are multiple compilation choices:
 * CMake - cross platform build tool
-* Windows: Visual Studio
-* Windows: Qt Creator + MinGW
-* GNU make
-* GCC (g++)
-* Clang (clang++)
+* (Windows) Visual Studio
+* (Windows) Qt Creator + MinGW
+* GNU compilers - via make or directly
 
 The minimum required Python version is 3.6.
 
@@ -57,10 +55,8 @@ The minimum required version is CMake 3.13.
 Example, compiling Cppcheck with cmake:
 
 ```shell
-mkdir build
-cd build
-cmake ..
-cmake --build .
+cmake -S . -B build
+cmake --build build
 ```
 
 If you want to compile the GUI you can use the flag.
@@ -82,19 +78,15 @@ Using cmake you can generate project files for Visual Studio,XCode,etc.
 For single-configuration generators (like "Unix Makefiles") you can generate and build a specific configuration (e.g. "RelWithDebInfo") using:
 
 ```shell
-mkdir build_RelWithDebInfo
-cd build_RelWithDebInfo
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-cmake --build . --config RelWithDebInfo
+cmake -S . -B build_RelWithDebInfo -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake --build build_RelWithDebInfo --config RelWithDebInfo
 ```
 
 For multi-configuration generators (like "Visual Studio 17 2022") the same is achieved using:
 
 ```shell
-mkdir build
-cd build
-cmake ..
-cmake --build . --config RelWithDebInfo
+cmake -S . -B build
+cmake --build build --config RelWithDebInfo
 ```
 
 ### Visual Studio
@@ -182,7 +174,9 @@ For debugging create a launch.json file in the .vscode folder with the following
 The PCRE dll is needed to build the CLI. It can be downloaded here:
 http://software-download.name/pcre-library-windows/
 
-### GNU make
+### GNU compilers
+
+#### GNU make
 
 Simple, unoptimized build (no dependencies):
 
@@ -190,39 +184,38 @@ Simple, unoptimized build (no dependencies):
 make
 ```
 
+You can use `CXXOPTS` and `LDOPTS` to append to the existing `CXXFLAGS` and `LDFLAGS` instead of overriding them.
+
 The recommended release build is:
 
 ```shell
-make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXOPTS="-O2 -DNDEBUG"
 ```
 
-Flags:
-
-1.  `MATCHCOMPILER=yes`
-    Python is used to optimise cppcheck. The Token::Match patterns are converted into C++ code at compile time.
-
-2.  `FILESDIR=/usr/share/cppcheck`
-    Specify folder where cppcheck files are installed (addons, cfg, platform)
-
-3.  `HAVE_RULES=yes`
-    Enable rules (PCRE is required if this is used)
-
-4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`
-    Enables most compiler optimizations, disables cppcheck-internal debugging code and enables basic compiler warnings.
-
-### g++ (for experts)
+#### g++ (for experts)
 
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib -Ifrontend frontend/*.cpp cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/tinyxml2.cpp
 ```
 
-If you want to use `--rule` and `--rule-file` then dependencies are needed:
+#### Flags
 
-```shell
-g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
-```
+-  `MATCHCOMPILER=yes`
+   Several `Token` matching patterns are converted into more efficient C++ code at compile time (requires Python to be installed).
+
+-  `FILESDIR=/usr/share/cppcheck`
+   Specifies the folder where cppcheck files (addons, cfg, platform) are installed to.
+
+-  `HAVE_RULES=yes`
+   Enables rules (requires PCRE to be installed).
+
+-  `CXXOPTS="-O2 -DNDEBUG"`
+   Enables most compiler optimizations and disables assertions.
+
+-  `HAVE_BOOST=yes`
+   Enables usage of more efficient container from Boost (requires Boost to be installed).
 
 ### MinGW
 

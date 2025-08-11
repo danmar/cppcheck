@@ -2,7 +2,7 @@
 
 # Compare results and timings of different valueflow options
 # Example usage:
-# cd ~/cppcheck && make CXXFLAGS=-O2 MATCHCOMPILER=yes
+# cd ~/cppcheck && make CXXOPTS=-O2 MATCHCOMPILER=yes
 # python3 compare-valueflow-options.py --cppcheck-path=~/cppcheck --packages-path=~/daca2-packages
 
 import donate_cpu_lib as lib

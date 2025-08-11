@@ -154,6 +154,9 @@ else ifneq ($(HAVE_RULES),)
     $(error invalid HAVE_RULES value '$(HAVE_RULES)')
 endif
 
+override CXXFLAGS += $(CXXOPTS)
+override LDFLAGS += $(LDOPTS)
+
 ifndef PREFIX
     PREFIX=/usr
 endif
