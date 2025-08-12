@@ -2597,8 +2597,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     return false;
                 const auto yield = vt->container->getYield(end->str());
                 const Token* parent = tok1->astParent();
-                    while (Token::Match(parent, "(|.|::"))
-                        parent = parent->astParent();
+                while (Token::Match(parent, "(|.|::"))
+                    parent = parent->astParent();
                 if (contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR, Library::Container::Yield::ITERATOR}, yield)) {
                     if (parent && parent->isComparisonOp())
                         return true;
