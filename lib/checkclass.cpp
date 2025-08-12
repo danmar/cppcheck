@@ -2594,7 +2594,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
 
             auto isConstContainerUsage = [&](const ValueType* vt) -> bool {
                 if (!vt || !vt->container)
-                    return false;                
+                    return false;
                 const auto yield = vt->container->getYield(end->str());
                 const Token* parent = tok1->astParent();
                     while (Token::Match(parent, "(|.|::"))
