@@ -2607,7 +2607,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                         return true;
                 }
                 if ((yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX) &&
-                    ((parent && parent->isComparisonOp()) || lhs->isAssignmentOp()))
+                    ((parent && parent->isComparisonOp()) || lhs->isAssignmentOp() || (lhs->str() == "(" && Token::Match(lhs->astParent(), "%cop%"))))
                     return true; // assume that these functions have const overloads
                 return false;
             };
