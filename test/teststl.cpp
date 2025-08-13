@@ -984,25 +984,24 @@ private:
                     "    return sv[sv.size()] == '\\0';\n"
                     "}\n");
         ASSERT_EQUALS("[test.cpp:2:12]: error: Out of bounds access of sv, index 'sv.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
+
         check("void f(){\n"
-      "    std::vector<double> v = {0.0, 0.1};\n"
-      "    (void)v[0];\n"
-      "}\n");
-ASSERT_EQUALS("", errout_str());
+              "    std::vector<double> v = {0.0, 0.1};\n"
+              "    (void)v[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
 
-
-check("void f(){\n"
-      "    std::array<int,2> a = {1,2};\n"
-      "    (void)a[1];\n"
-      "}\n");
-ASSERT_EQUALS("", errout_str());
-
-
-check("void f(){\n"
-      "    std::vector<int> v;\n"
-      "    v.push_back(42);\n"
-      "    (void)v[0];\n"
-      "}\n");
+         check("void f(){\n"
+            "    std::array<int,2> a = {1,2};\n"
+            "    (void)a[1];\n"
+            "}\n");
+        ASSERT_EQUALS("", errout_str());
+ 
+         check("void f(){\n"
+            "    std::vector<int> v;\n"
+            "    v.push_back(42);\n"
+            "    (void)v[0];\n"
+            "}\n");
 ASSERT_EQUALS("", errout_str());
 
     }
