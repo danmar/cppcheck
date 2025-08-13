@@ -732,6 +732,7 @@ int main(int argc, char **argv)
                                 "-Wno-sign-compare "
                                 "-Wno-multichar "
                                 "-Woverloaded-virtual "
+                                "-Wno-dollar-in-identifier-extension " // occurs in testrunner only
                                 "-g");
         //fout << "override CPPFLAGS += $(CPPCHK_GLIBCXX_DEBUG)\n\n"; // TODO: when using CXXOPTS this would always be set - need to handle this differently
     }
