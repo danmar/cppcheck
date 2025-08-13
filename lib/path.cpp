@@ -242,8 +242,15 @@ static bool hasEmacsCppMarker(const char* path)
         return false;
     std::string buf(128, '\0');
     {
+#if __cplusplus >= 201703L
+        // C++17 provides an overload with non-const data()
+        #define CONST_CAST(x) (x)
+#else
+        #define CONST_CAST(x) const_cast<char*>(x)
+#endif
         // TODO: read the whole first line only
-        const char * const res = fgets(const_cast<char*>(buf.data()), buf.size(), fp);
+        const char * const res = fgets(CONST_CAST(buf.data()), buf.size(), fp);
+#undef CONST_CAST
         fclose(fp);
         fp = nullptr;
         if (!res)
