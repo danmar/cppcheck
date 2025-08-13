@@ -176,9 +176,7 @@ private:
 
         TEST_CASE(checkKnownEmptyContainer);
         TEST_CASE(checkMutexes);
-        TEST_CASE(coob_initlist_vector_nonempty_no_fp_regression_20250812);
-        TEST_CASE(coob_array_initlist_nonempty_no_fp_regression_20250812);
-        TEST_CASE(coob_vector_pushback_nonempty_no_fp_regression_20250812);
+        
 
     }
 
@@ -986,6 +984,27 @@ private:
                     "    return sv[sv.size()] == '\\0';\n"
                     "}\n");
         ASSERT_EQUALS("[test.cpp:2:12]: error: Out of bounds access of sv, index 'sv.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
+        check("void f(){\n"
+      "    std::vector<double> v = {0.0, 0.1};\n"
+      "    (void)v[0];\n"
+      "}\n");
+ASSERT_EQUALS("", errout_str());
+
+
+check("void f(){\n"
+      "    std::array<int,2> a = {1,2};\n"
+      "    (void)a[1];\n"
+      "}\n");
+ASSERT_EQUALS("", errout_str());
+
+
+check("void f(){\n"
+      "    std::vector<int> v;\n"
+      "    v.push_back(42);\n"
+      "    (void)v[0];\n"
+      "}\n");
+ASSERT_EQUALS("", errout_str());
+
     }
     void outOfBoundsIterator() {
         check("int f() {\n"
@@ -7205,36 +7224,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
-    // Regression guards: non-empty containers must NOT trigger containerOutOfBounds (2025-08-12)
-
-
- void coob_initlist_vector_nonempty_no_fp_regression_20250812()
-{
-    check(
-        "#include <vector>\n"
-        "void f(){ std::vector<double> v{0.0, 0.1}; (void)v[0]; }\n"
-    );
-    ASSERT_EQUALS("", errout_str());
-}
-
- void coob_array_initlist_nonempty_no_fp_regression_20250812()
-{
-    check(
-        "#include <array>\n"
-        "void f(){ std::array<int,2> a{1,2}; (void)a[1]; }\n"
-    );
-    ASSERT_EQUALS("", errout_str());
-}
-
-      void coob_vector_pushback_nonempty_no_fp_regression_20250812()
-{
-    check(
-        "#include <vector>\n"
-        "void f(){ std::vector<int> v; v.push_back(42); (void)v[0]; }\n"
-    );
-    ASSERT_EQUALS("", errout_str());
-}
-
+    
 };
 
 REGISTER_TEST(TestStl)
