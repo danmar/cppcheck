@@ -725,6 +725,7 @@ int main(int argc, char **argv)
                                 "-Wno-sign-compare "
                                 "-Wno-multichar "
                                 "-Woverloaded-virtual "
+                                "-Wno-dollar-in-identifier-extension " // occurs in testrunner only
                                 //"$(CPPCHK_GLIBCXX_DEBUG) " // TODO: when using CXXOPTS this would always be set - need to handle this differently
                                 "-g");
     }
