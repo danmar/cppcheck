@@ -43,11 +43,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # caused by Qt generated moc code starting with 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
         target_compile_options_safe(test-resultstree -Wno-ctad-maybe-unsupported)
     endif()
-    # caused by mocs
+    # caused by mocks
     target_compile_options_safe(test-resultstree -Wno-missing-noreturn)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # caused by mocs
     target_compile_options_safe(test-resultstree -Wno-useless-cast)
+    # caused by mocks
+    target_compile_options_safe(test-resultstree -Wno-suggest-attribute=noreturn)
 endif()
 
 if (REGISTER_GUI_TESTS)
