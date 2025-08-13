@@ -768,6 +768,8 @@ int main(int argc, char **argv)
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Ifrontend -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
     makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Ifrontend -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
 
+    makeConditionalVariable(fout, "CFLAGS_FOR_TEST", "-Wno-dollar-in-identifier-extension");
+
     fout << "BIN=$(DESTDIR)$(PREFIX)/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml on Linux\n";
     fout << "DB2MAN?=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
@@ -889,7 +891,7 @@ int main(int argc, char **argv)
     compilefiles(fout, libfiles_prio, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, frontendfiles, "${INCLUDE_FOR_FE}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
-    compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
+    compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST} ${CFLAGS_FOR_TEST}");
     compilefiles(fout, extfiles, "");
     compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
 
