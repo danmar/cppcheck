@@ -733,6 +733,9 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
 
 #ifdef _WIN32
     const int res = _pclose(p);
+#elif defined(__APPLE__) && defined(__MACH__)
+    // the W* macros cast to int* on macOS
+    int res = pclose(p);
 #else
     const int res = pclose(p);
 #endif
