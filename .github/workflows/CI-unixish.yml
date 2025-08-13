@@ -239,9 +239,10 @@ jobs:
         run: |
           brew install coreutils
 
+      # TODO: avoid duplicating compiler flags from Makefile
       - name: Check syntax with NONNEG
         run: |
-          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -pedantic -Wall -Wextra -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-sign-compare -Wno-multichar -Woverloaded-virtual -fsyntax-only -std=c++11 -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 
   build_cmake_boost:
 
