@@ -75,6 +75,9 @@ CheckOptions:
             # caused by Qt generated moc code starting with 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
             target_compile_options_safe(cppcheck-gui -Wno-ctad-maybe-unsupported)
         endif()
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # caused by mocs
+        target_compile_options_safe(cppcheck-gui -Wno-useless-cast)
     endif()
     if(QT_VERSION VERSION_GREATER_EQUAL "6.9.2")
         # QBrush fails to compile before 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-134038
