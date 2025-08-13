@@ -1607,8 +1607,8 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
                 else if (c >= ' ' && c <= 126)
                     ret += c;
                 else {
-                    char str[10];
-                    sprintf(str, "\\x%02x", c);
+                    char str[5];
+                    snprintf(str, sizeof(str), "\\x%02x", c);
                     ret += str;
                 }
             }
