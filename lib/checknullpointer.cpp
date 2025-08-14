@@ -720,5 +720,9 @@ void CheckNullPointer::getErrorMessages(ErrorLogger *errorLogger, const Settings
     CheckNullPointer c(nullptr, settings, errorLogger);
     c.nullPointerError(nullptr, "pointer", nullptr, false);
     c.pointerArithmeticError(nullptr, nullptr, false);
+    // TODO: nullPointerArithmeticOutOfMemory
     c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
+    // TODO: ctunullpointer
+    // TODO: ctunullpointerOutOfMemory
+    // TODO: ctunullpointerOutOfResources
 }

@@ -1235,4 +1235,7 @@ void CheckBufferOverrun::getErrorMessages(ErrorLogger *errorLogger, const Settin
     c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
     c.negativeMemoryAllocationSizeError(nullptr, nullptr);
     c.negativeArraySizeError(nullptr);
+    c.terminateStrncpyError(nullptr, "var_name");
+    // TODO: ctuArrayIndex
+    // TODO: ctuPointerArith
 }

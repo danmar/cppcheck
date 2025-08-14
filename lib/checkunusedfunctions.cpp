@@ -341,12 +341,9 @@ static bool isOperatorFunction(const std::string & funcName)
     return std::find(additionalOperators.cbegin(), additionalOperators.cend(), funcName.substr(operatorPrefix.length())) != additionalOperators.cend();
 }
 
-static void staticFunctionError(ErrorLogger& errorLogger,
-                                const std::string &filename,
-                                nonneg int fileIndex,
-                                nonneg int lineNumber,
-                                nonneg int column,
-                                const std::string &funcname)
+void CheckUnusedFunctions::staticFunctionError(ErrorLogger& errorLogger,
+                                               const std::string &filename, nonneg int fileIndex, nonneg int lineNumber, nonneg int column,
+                                               const std::string &funcname)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
