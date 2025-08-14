@@ -113,7 +113,7 @@ bool PathMatch::match(const std::string &pattern, const std::string &path, const
 
         /* No match, try to backtrack */
         if (!b.empty()) {
-            const auto &bp = b.top();
+            const auto bp = b.top();
             b.pop();
             s.setpos(bp.first);
             t.setpos(bp.second);
