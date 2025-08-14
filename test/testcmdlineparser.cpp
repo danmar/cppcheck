@@ -236,6 +236,7 @@ private:
         TEST_CASE(premiumOptions3);
         TEST_CASE(premiumOptions4);
         TEST_CASE(premiumOptions5);
+        TEST_CASE(premiumOptionsAll);
         TEST_CASE(premiumOptionsMetrics);
         TEST_CASE(premiumOptionsCertCIntPrecision);
         TEST_CASE(premiumOptionsLicenseFile);
@@ -1454,6 +1455,23 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
         ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::warning));
+    }
+
+    void premiumOptionsAll() {
+        REDIRECT;
+        asPremium();
+        const char * const argv[] = {
+            "cppcheck",
+            "--premium=autosar:all",
+            "--premium=cert-c:all",
+            "--premium=cert-c++:all",
+            "--premium=misra-c-2023:all",
+            "--premium=misra-c++-2023:all",
+            "file.c"
+        };
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS("--autosar:all --cert-c:all --cert-c++:all --misra-c-2023:all --misra-c++-2023:all",
+                      settings->premiumArgs);
     }
 
     void premiumOptionsMetrics() {
