@@ -850,7 +850,7 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
-std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens) const
+std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const std::string& filePath) const
 {
     std::ostringstream toolinfo;
     toolinfo << (mSettings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : mSettings.cppcheckCfgProductName);
@@ -867,7 +867,7 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simp
     }
     toolinfo << mSettings.premiumArgs;
     // TODO: do we need to add more options?
-    mSuppressions.nomsg.dump(toolinfo);
+    mSuppressions.nomsg.dump(toolinfo, filePath);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
