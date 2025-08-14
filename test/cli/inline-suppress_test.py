@@ -1,5 +1,5 @@
 
-# python -m pytest test-inline-suppress.py
+# python -m pytest inline-suppress_test.py
 
 import json
 import os
@@ -247,14 +247,13 @@ def test_build_dir(tmpdir):
     assert stdout == ''
     assert ret == 0, stdout
 
-def test_build_dir_threads_suppressions(tmpdir):
+def test_build_dir_threads_suppressions(tmpdir): #14064
     args = [
         '-q',
         '--template=simple',
         '--cppcheck-build-dir={}'.format(tmpdir),
         '--enable=style',
         '--inline-suppr',
-        '--executor=thread',
         '-j4',
         'reanalysis'
     ]
@@ -266,13 +265,13 @@ def test_build_dir_threads_suppressions(tmpdir):
     assert ret == 0, stdout
 
     a1Path = os.path.join(tmpdir, 'd.a1')
+    assert os.path.exists(a1Path)
     mtimeOld = os.path.getmtime(a1Path)
 
-    for i in range(1, 10):
+    for _ in range(1, 10):
         cppcheck(args, cwd=__script_dir)
-    
-    mtimeNew = os.path.getmtime(a1Path)
 
+    mtimeNew = os.path.getmtime(a1Path)
     assert mtimeOld == mtimeNew
 
 
