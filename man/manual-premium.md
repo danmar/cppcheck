@@ -1272,6 +1272,21 @@ Command to activate Misra C++ 2023 checkers:
 
     cppcheck --premium=misra-c++-2023 ....
 
+### Checking all C and C++ files
+
+The `cert-c` and `misra-c-*` coding standards target C and therefore the checkers only check C files by default.
+
+The `autosar`, `cert-c++` and `misra-c++-*` coding standards target C++ and therefore the checkers only check C++ files by default.
+
+If you want to check all files you can append ":all" to the coding standard. Example:
+
+    # Misra C checkers are executed on C files, not on C++ files
+    cppcheck --premium=misra-c-2025 path
+
+    # Misra C checkers are executed on C and C++ files
+    cppcheck --premium=misra-c-2025:all path
+
+
 ## Compliance report
 
 ### Graphical user interface

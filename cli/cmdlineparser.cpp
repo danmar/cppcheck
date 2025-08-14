@@ -1117,12 +1117,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.premiumArgs += " ";
             const std::string p(argv[i] + 10);
             const std::string p2(p.find('=') != std::string::npos ? p.substr(0, p.find('=')) : "");
-            if (!valid.count(p) && !valid2.count(p2)) {
+            const bool isCodingStandard = startsWith(p, "autosar") || startsWith(p,"cert-") || startsWith(p,"misra-");
+            const std::string p3(endsWith(p,":all") && isCodingStandard ? p.substr(0,p.rfind(':')) : p);
+            if (!valid.count(p3) && !valid2.count(p2)) {
                 mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");
                 return Result::Fail;
             }
             mSettings.premiumArgs += "--" + p;
-            if (startsWith(p, "autosar") || startsWith(p, "cert") || startsWith(p, "misra")) {
+            if (isCodingStandard) {
                 // All checkers related to the coding standard should be enabled. The coding standards
                 // do not all undefined behavior or portability issues.
                 mSettings.addEnabled("warning");
@@ -1888,9 +1890,13 @@ void CmdLineParser::printHelp() const
             "                          * misra-c-2025      Misra C 2025\n"
             "                          * misra-c++-2008    Misra C++ 2008\n"
             "                          * misra-c++-2023    Misra C++ 2023\n"
+            "                         By default 'Misra/Cert C' only checks C files.\n"
+            "                         By default 'Autosar/Misra/Cert C++' only checks C++ files.\n"
+            "                         To check all files, append \":all\" i.e. --premium=misra-c++-2023:all.\n"
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
             "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
+            "                          * metrics           Calculate metrics. Metrics are only reported in xmlv3 output.\n"
             "                          * safety            Turn on safety certified behavior (ON by default)\n"
             "                          * safety-off        Turn off safety certified behavior\n";
     }
