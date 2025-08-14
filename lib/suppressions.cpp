@@ -518,7 +518,7 @@ void SuppressionList::dump(std::ostream & out, const std::string& filePath) cons
 
     out << "  <suppressions>" << std::endl;
     for (const Suppression &suppression : mSuppressions) {
-        if (!filePath.empty() && !suppression.fileName.empty() && filePath != suppression.fileName)
+        if (suppression.isInline && !suppression.fileName.empty() && !filePath.empty() && filePath != suppression.fileName)
             continue;
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
