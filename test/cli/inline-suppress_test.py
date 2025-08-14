@@ -247,6 +247,34 @@ def test_build_dir(tmpdir):
     assert stdout == ''
     assert ret == 0, stdout
 
+def test_build_dir_threads_suppressions(tmpdir):
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=style',
+        '--inline-suppr',
+        '--executor=thread',
+        '-j4',
+        'reanalysis'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
+
+    a1Path = os.path.join(tmpdir, 'd.a1')
+    mtimeOld = os.path.getmtime(a1Path)
+
+    for i in range(1, 10):
+        cppcheck(args, cwd=__script_dir)
+    
+    mtimeNew = os.path.getmtime(a1Path)
+
+    assert mtimeOld == mtimeNew
+
 
 def __test_build_dir_unused_template(tmpdir, extra_args):
     args = [
