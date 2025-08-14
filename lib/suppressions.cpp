@@ -512,12 +512,14 @@ bool SuppressionList::isSuppressed(const ::ErrorMessage &errmsg, const std::set<
     return isSuppressed(SuppressionList::ErrorMessage::fromErrorMessage(errmsg, macroNames));
 }
 
-void SuppressionList::dump(std::ostream & out) const
+void SuppressionList::dump(std::ostream & out, const std::string& filePath) const
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
 
     out << "  <suppressions>" << std::endl;
     for (const Suppression &suppression : mSuppressions) {
+        if (!filePath.empty() && !suppression.fileName.empty() && filePath != suppression.fileName)
+            continue;
         out << "    <suppression";
         out << " errorId=\"" << ErrorLogger::toxml(suppression.errorId) << '"';
         if (!suppression.fileName.empty())
