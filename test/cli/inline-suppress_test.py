@@ -5,6 +5,7 @@ import json
 import os
 import pytest
 import sys
+import time
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
