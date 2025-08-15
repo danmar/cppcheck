@@ -2244,12 +2244,12 @@ static int getVersion(const QString& nameWithVersion) {
         }
         else if (c == '.') {
             ++dot;
-            ret = ret * 1000 + v;
+            ret = (ret * 1000) + v;
             v = 0;
         } else if (c >= '0' && c <= '9')
-            v = v * 10 + (c.toLatin1() - '0');
+            v = (v * 10) + (c.toLatin1() - '0');
     }
-    ret = ret * 1000 + v;
+    ret = (ret * 1000) + v;
     while (dot < 2) {
         ++dot;
         ret *= 1000;

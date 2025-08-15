@@ -547,7 +547,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
                 if (currentBitfieldAlloc == 0) {
                     bits = n * charBit;
                 } else {
-                    bits = currentBitfieldAlloc * charBit - currentBitCount;
+                    bits = (currentBitfieldAlloc * charBit) - currentBitCount;
                 }
             }
             if (bits > 0) {
@@ -570,7 +570,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             if (currentBitCount > 0) {
-                bool fitsInBitfield = currentBitCount + n * charBit <= currentBitfieldAlloc * charBit;
+                bool fitsInBitfield = currentBitCount + (n * charBit) <= currentBitfieldAlloc * charBit;
                 bool isAligned = currentBitCount % (charBit * a) == 0;
                 if (vt2.isIntegral() && fitsInBitfield && isAligned) {
                     currentBitCount += charBit * n;
@@ -5857,7 +5857,7 @@ static void valueFlowSubFunction(const TokenList& tokenlist,
                     v.errorPath.emplace_back(argtok,
                                              "Calling function '" + calledFunction->name() + "', " + nr + " argument '" +
                                              argtok->expressionString() + "' value is " + v.infoString());
-                    v.path = 256 * v.path + id % 256;
+                    v.path = (256 * v.path) + (id % 256);
                     // Change scope of lifetime values
                     if (v.isLifetimeValue())
                         v.lifetimeScope = ValueFlow::Value::LifetimeScope::SubFunction;

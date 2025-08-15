@@ -3307,31 +3307,31 @@ private:
     }
 
     void varid_trailing_return1() { // #8889
-        const char code1[] = "struct Fred {\n"
-                             "    auto foo(const Fred & other) -> Fred &;\n"
-                             "    auto bar(const Fred & other) -> Fred & {\n"
-                             "        return *this;\n"
-                             "    }\n"
-                             "};\n"
-                             "auto Fred::foo(const Fred & other) -> Fred & {\n"
-                             "    return *this;\n"
-                             "}";
-        const char exp1[] = "1: struct Fred {\n"
-                            "2: auto foo ( const Fred & other@1 ) . Fred & ;\n"
-                            "3: auto bar ( const Fred & other@2 ) . Fred & {\n"
-                            "4: return * this ;\n"
-                            "5: }\n"
-                            "6: } ;\n"
-                            "7: auto Fred :: foo ( const Fred & other@3 ) . Fred & {\n"
-                            "8: return * this ;\n"
-                            "9: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        const char code[] = "struct Fred {\n"
+                            "    auto foo(const Fred & other) -> Fred &;\n"
+                            "    auto bar(const Fred & other) -> Fred & {\n"
+                            "        return *this;\n"
+                            "    }\n"
+                            "};\n"
+                            "auto Fred::foo(const Fred & other) -> Fred & {\n"
+                            "    return *this;\n"
+                            "}";
+        const char exp[] = "1: struct Fred {\n"
+                           "2: auto foo ( const Fred & other@1 ) . Fred & ;\n"
+                           "3: auto bar ( const Fred & other@2 ) . Fred & {\n"
+                           "4: return * this ;\n"
+                           "5: }\n"
+                           "6: } ;\n"
+                           "7: auto Fred :: foo ( const Fred & other@3 ) . Fred & {\n"
+                           "8: return * this ;\n"
+                           "9: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_trailing_return2() { // #9066
-        const char code1[] = "auto func(int arg) -> bar::quux {}";
-        const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        const char code[] = "auto func(int arg) -> bar::quux {}";
+        const char exp[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_trailing_return3() { // #11423
@@ -3347,15 +3347,15 @@ private:
     }
 
     void varid_parameter_pack() { // #9383
-        const char code1[] = "template <typename... Rest>\n"
-                             "void func(Rest... parameters) {\n"
-                             "    foo(parameters...);\n"
-                             "}\n";
-        const char exp1[] = "1: template < typename ... Rest >\n"
-                            "2: void func ( Rest ... parameters@1 ) {\n"
-                            "3: foo ( parameters@1 ... ) ;\n"
-                            "4: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        const char code[] = "template <typename... Rest>\n"
+                            "void func(Rest... parameters) {\n"
+                            "    foo(parameters...);\n"
+                            "}\n";
+        const char exp[] = "1: template < typename ... Rest >\n"
+                           "2: void func ( Rest ... parameters@1 ) {\n"
+                           "3: foo ( parameters@1 ... ) ;\n"
+                           "4: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_for_auto_cpp17() {
@@ -3365,23 +3365,23 @@ private:
                             "  }\n"
                             "  x+y+z;\n"
                             "}";
-        const char exp1[] = "1: void f ( ) {\n"
-                            "2: for ( auto [ x@1 , y@2 , z@3 ] : xyz ) {\n"
-                            "3: x@1 + y@2 + z@3 ;\n"
-                            "4: }\n"
-                            "5: x + y + z ;\n"
-                            "6: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code));
+        const char exp[] = "1: void f ( ) {\n"
+                           "2: for ( auto [ x@1 , y@2 , z@3 ] : xyz ) {\n"
+                           "3: x@1 + y@2 + z@3 ;\n"
+                           "4: }\n"
+                           "5: x + y + z ;\n"
+                           "6: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_not() { // #9689 'not x'
-        const char code1[] = "void foo(int x) const {\n"
-                             "  if (not x) {}\n"
-                             "}";
-        const char exp1[] = "1: void foo ( int x@1 ) const {\n"
-                            "2: if ( ! x@1 ) { }\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        const char code[] = "void foo(int x) const {\n"
+                            "  if (not x) {}\n"
+                            "}";
+        const char exp[] = "1: void foo ( int x@1 ) const {\n"
+                           "2: if ( ! x@1 ) { }\n"
+                           "3: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_declInIfCondition() {
@@ -3441,26 +3441,26 @@ private:
     }
 
     void varid_globalScope() {
-        const char code1[] = "int a[5];\n"
-                             "namespace Z { struct B { int a[5]; } b; }\n"
-                             "void f() {\n"
-                             "  int a[5];\n"
-                             "  memset(a, 123, 5);\n"
-                             "  memset(::a, 123, 5);\n"
-                             "  memset(Z::b.a, 123, 5);\n"
-                             "  memset(::Z::b.a, 123, 5);\n"
-                             "}";
+        const char code[] = "int a[5];\n"
+                            "namespace Z { struct B { int a[5]; } b; }\n"
+                            "void f() {\n"
+                            "  int a[5];\n"
+                            "  memset(a, 123, 5);\n"
+                            "  memset(::a, 123, 5);\n"
+                            "  memset(Z::b.a, 123, 5);\n"
+                            "  memset(::Z::b.a, 123, 5);\n"
+                            "}";
 
-        const char exp1[] = "1: int a@1 [ 5 ] ;\n"
-                            "2: namespace Z { struct B { int a@2 [ 5 ] ; } ; struct B b@3 ; }\n"
-                            "3: void f ( ) {\n"
-                            "4: int a@4 [ 5 ] ;\n"
-                            "5: memset ( a@4 , 123 , 5 ) ;\n"
-                            "6: memset ( :: a@1 , 123 , 5 ) ;\n"
-                            "7: memset ( Z :: b@3 . a , 123 , 5 ) ;\n"
-                            "8: memset ( :: Z :: b@3 . a , 123 , 5 ) ;\n"
-                            "9: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        const char exp[] = "1: int a@1 [ 5 ] ;\n"
+                           "2: namespace Z { struct B { int a@2 [ 5 ] ; } ; struct B b@3 ; }\n"
+                           "3: void f ( ) {\n"
+                           "4: int a@4 [ 5 ] ;\n"
+                           "5: memset ( a@4 , 123 , 5 ) ;\n"
+                           "6: memset ( :: a@1 , 123 , 5 ) ;\n"
+                           "7: memset ( Z :: b@3 . a , 123 , 5 ) ;\n"
+                           "8: memset ( :: Z :: b@3 . a , 123 , 5 ) ;\n"
+                           "9: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_function_pointer_args() {

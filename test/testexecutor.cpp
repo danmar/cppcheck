@@ -38,7 +38,7 @@ public:
         : Executor(files, fileSettings, settings, suppressions, errorLogger)
     {}
 
-    unsigned int check() override
+    NORETURN unsigned int check() override
     {
         throw std::runtime_error("not implemented");
     }
