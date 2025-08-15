@@ -39,7 +39,6 @@ class Settings;
 // Class used to handle heterogeneous lookup in unordered_map(since we can't use C++20 yet)
 struct ExprIdToken {
     const Token* tok = nullptr;
-    nonneg int exprid = 0;
 
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
