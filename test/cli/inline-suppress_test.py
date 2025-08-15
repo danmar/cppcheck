@@ -247,7 +247,7 @@ def test_build_dir(tmpdir):
     assert stdout == ''
     assert ret == 0, stdout
 
-def test_build_dir_threads_suppressions(tmpdir): #14064
+def test_build_dir_jobs_suppressions(tmpdir): #14064
     args = [
         '-q',
         '--template=simple',
@@ -267,6 +267,8 @@ def test_build_dir_threads_suppressions(tmpdir): #14064
     a1Path = os.path.join(tmpdir, 'd.a1')
     assert os.path.exists(a1Path)
     mtimeOld = os.path.getmtime(a1Path)
+
+    time.sleep(1)
 
     for _ in range(1, 10):
         cppcheck(args, cwd=__script_dir)
