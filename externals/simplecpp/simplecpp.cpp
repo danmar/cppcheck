@@ -745,7 +745,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
 
         // number or name
         if (isNameChar(ch)) {
-            const bool num = std::isdigit(ch);
+            const bool num = !!std::isdigit(ch);
             while (stream.good() && isNameChar(ch)) {
                 currentToken += ch;
                 ch = stream.readChar();
@@ -886,7 +886,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
             }
 
             if (prefix.empty())
-                push_back(new Token(s, location, std::isspace(stream.peekChar()))); // push string without newlines
+                push_back(new Token(s, location, !!std::isspace(stream.peekChar()))); // push string without newlines
             else
                 back()->setstr(prefix + s);
 
@@ -916,7 +916,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
             }
         }
 
-        push_back(new Token(currentToken, location, std::isspace(stream.peekChar())));
+        push_back(new Token(currentToken, location, !!std::isspace(stream.peekChar())));
 
         if (multiline)
             location.col += currentToken.size();
@@ -3173,8 +3173,11 @@ simplecpp::FileDataCache simplecpp::load(const simplecpp::TokenList &rawtokens, 
         const bool systemheader = (htok->str()[0] == '<');
         const std::string header(htok->str().substr(1U, htok->str().size() - 2U));
 
-        FileData *const filedata = cache.get(sourcefile, header, dui, systemheader, filenames, outputList).first;
-        if (!filedata)
+        const auto loadResult = cache.get(sourcefile, header, dui, systemheader, filenames, outputList);
+        const bool loaded = loadResult.second;
+        FileData *const filedata = loadResult.first;
+
+        if (!loaded)
             continue;
 
         if (dui.removeComments)
@@ -3236,7 +3239,7 @@ static std::string getDateDefine(const struct tm *timep)
 static std::string getTimeDefine(const struct tm *timep)
 {
     char buf[] = "??:??:??";
-    strftime(buf, sizeof(buf), "%T", timep);
+    strftime(buf, sizeof(buf), "%H:%M:%S", timep);
     return std::string("\"").append(buf).append("\"");
 }
 
