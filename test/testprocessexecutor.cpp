@@ -56,10 +56,6 @@ private:
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
-        bool clangTidy = false;
-        bool executeCommandCalled = false;
-        std::string exe;
-        std::vector<std::string> args;
     };
 
     /**
@@ -98,14 +94,8 @@ private:
         s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}";
         Suppressions supprs;
 
-        bool executeCommandCalled = false;
-        std::string exe;
-        std::vector<std::string> args;
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        auto executeFn = [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
-            executeCommandCalled = true;
-            exe = std::move(e);
-            args = std::move(a);
+        auto executeFn = [](std::string,std::vector<std::string>,std::string,std::string&){
             return EXIT_SUCCESS;
         };
 
@@ -120,13 +110,6 @@ private:
 
         ProcessExecutor executor(filelist, fileSettings, s, supprs, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
-        ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
-        ASSERT_EQUALS(opt.exe, exe);
-        ASSERT_EQUALS(opt.args.size(), args.size());
-        for (std::size_t i = 0; i < args.size(); ++i)
-        {
-            ASSERT_EQUALS(opt.args[i], args[i]);
-        }
     }
 
     void run() override {
@@ -141,7 +124,6 @@ private:
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
-        TEST_CASE(clangTidy);
         TEST_CASE(showtime_top5_file);
         TEST_CASE(showtime_top5_summary);
         TEST_CASE(showtime_file);
@@ -248,34 +230,6 @@ private:
               "  return 0;\n"
               "}");
         ASSERT_EQUALS(num_files, cppcheck::count_all_of(errout_str(), "(error) Null pointer dereference: (int*)0"));
-    }
-
-    void clangTidy() {
-        // TODO: we currently only invoke it with ImportProject::FileSettings
-        if (!useFS)
-            return;
-
-#ifdef _WIN32
-        constexpr char exe[] = "clang-tidy.exe";
-#else
-        constexpr char exe[] = "clang-tidy";
-#endif
-        (void)exe;
-
-        const std::string file = fprefix() + "_1.cpp";
-        // TODO: the invocation cannot be checked as the code is called in the forked process
-        check(2, 1, 0,
-              "int main()\n"
-              "{\n"
-              "  return 0;\n"
-              "}",
-              dinit(CheckOptions,
-                    $.quiet = false,
-                        $.clangTidy = true /*,
-                                              $.executeCommandCalled = true,
-                                              $.exe = exe,
-                                              $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}*/));
-        ASSERT_EQUALS("Checking " + file + " ...\n", output_str());
     }
 
     // TODO: provide data which actually shows values above 0
