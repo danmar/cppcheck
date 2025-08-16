@@ -113,12 +113,12 @@ jobs:
       - name: Build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) HAVE_RULES=yes CXXFLAGS="-w"
+          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-w"
 
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes CXXFLAGS="-w"
+          make -j$(nproc) testrunner HAVE_RULES=yes CXXOPTS="-w"
 
       - name: Run test
         run: |
