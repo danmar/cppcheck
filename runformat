@@ -14,8 +14,8 @@
 UNCRUSTIFY_VERSION="0.72.0"
 UNCRUSTIFY="${UNCRUSTIFY-uncrustify}"
 
-DETECTED_VERSION=$("$UNCRUSTIFY" --version 2>&1 | grep -o -E '[0-9.]+')
-if [ "$DETECTED_VERSION" != "${UNCRUSTIFY_VERSION}" ]; then
+DETECTED_VERSION=$("$UNCRUSTIFY" --version 2>&1 | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')
+if [[ "$DETECTED_VERSION" != "${UNCRUSTIFY_VERSION}" ]]; then
   echo "You should use version: ${UNCRUSTIFY_VERSION}"
   echo "Detected version: ${DETECTED_VERSION}"
   exit 1
