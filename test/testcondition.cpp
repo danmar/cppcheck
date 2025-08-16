@@ -5849,6 +5849,19 @@ private:
               "    if (f < 10.0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(char* s, const char* p) {\n" // #14070
+              "    strcpy(s, p);\n"
+              "}\n"
+              "void g() {\n"
+              "    char s1[10] = \"\";\n"
+              "    char s2[10] = \"\";\n"
+              "    f(s1, \"123\");\n"
+              "    f(s2, \"1234\");\n"
+              "    if (strlen(s1) > 0) {}\n"
+              "    if (strlen(s2) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void checkInvalidTestForOverflow() {
