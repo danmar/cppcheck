@@ -115,6 +115,8 @@ private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);
+    /** @brief Mark both token as diagnosed */
+    bool diag(const Token* tok1, const Token* tok2);
     bool isAliased(const std::set<int> &vars) const;
     bool isOverlappingCond(const Token * cond1, const Token * cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
