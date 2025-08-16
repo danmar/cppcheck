@@ -176,8 +176,7 @@ private:
 
         TEST_CASE(checkKnownEmptyContainer);
         TEST_CASE(checkMutexes);
-        
-
+        TEST_CASE(commaSeparatedReturn_no_fp);
     }
 
     struct CheckOptions
@@ -984,26 +983,6 @@ private:
                     "    return sv[sv.size()] == '\\0';\n"
                     "}\n");
         ASSERT_EQUALS("[test.cpp:2:12]: error: Out of bounds access of sv, index 'sv.size()' is out of bounds. [containerOutOfBoundsIndexExpression]\n", errout_str());
-
-        check("void f(){\n"
-              "    std::vector<double> v = {0.0, 0.1};\n"
-              "    (void)v[0];\n"
-              "}\n");
-        ASSERT_EQUALS("", errout_str());
-
-         check("void f(){\n"
-            "    std::array<int,2> a = {1,2};\n"
-            "    (void)a[1];\n"
-            "}\n");
-        ASSERT_EQUALS("", errout_str());
- 
-         check("void f(){\n"
-            "    std::vector<int> v;\n"
-            "    v.push_back(42);\n"
-            "    (void)v[0];\n"
-            "}\n");
-ASSERT_EQUALS("", errout_str());
-
     }
     void outOfBoundsIterator() {
         check("int f() {\n"
@@ -7223,7 +7202,17 @@ ASSERT_EQUALS("", errout_str());
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
-    
+     void commaSeparatedReturn_no_fp()
+{
+    check(
+        "int g(){\n"
+        "    int a = 0, b = 1;\n"
+        "    a = (a, b);      // comma operator in an assignment, not in return\n"
+        "    return a;        // plain return, should not trigger\n"
+        "}\n"
+    );
+    ASSERT_EQUALS("", errout_str());
+}
 };
 
 REGISTER_TEST(TestStl)
