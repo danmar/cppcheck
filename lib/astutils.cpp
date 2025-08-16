@@ -109,7 +109,7 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
 }
 
 template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 100)
+static void astFlattenCopy(T* tok, const char* op, OuputIterator out, int depth = 100)
 {
     --depth;
     if (!tok || depth < 0)

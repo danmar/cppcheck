@@ -100,6 +100,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_compile_options(-gdwarf-4)
     endif()
 
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
+        add_compile_options(-Wno-poison-system-directories)
+    endif()
+
     if(USE_LIBCXX)
         add_compile_options(-stdlib=libc++)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
@@ -120,7 +124,6 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options_safe(-Wno-switch-enum)
     add_compile_options_safe(-Wno-date-time)
     add_compile_options(-Wno-disabled-macro-expansion)
-    add_compile_options_safe(-Wno-bitwise-instead-of-logical)
     add_compile_options(-Wno-sign-compare)
     add_compile_options_safe(-Wno-ms-bitfield-padding) # TODO: fix this
 

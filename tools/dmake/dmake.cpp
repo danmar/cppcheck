@@ -725,6 +725,7 @@ int main(int argc, char **argv)
                                 "-Wno-sign-compare "
                                 "-Wno-multichar "
                                 "-Woverloaded-virtual "
+                                "-Wno-dollar-in-identifier-extension " // occurs in testrunner only
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
@@ -749,6 +750,9 @@ int main(int argc, char **argv)
          << "else ifneq ($(HAVE_RULES),)\n"
          << "    $(error invalid HAVE_RULES value '$(HAVE_RULES)')\n"
          << "endif\n\n";
+
+    fout << "override CXXFLAGS += $(CXXOPTS)\n";
+    fout << "override LDFLAGS += $(LDOPTS)\n\n";
 
     makeConditionalVariable(fout, "PREFIX", "/usr");
     makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
