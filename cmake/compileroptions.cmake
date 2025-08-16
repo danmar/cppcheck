@@ -24,6 +24,28 @@ function(target_externals_include_directories TARGET)
     endif()
 endfunction()
 
+function(target_dll_compile_definitions TARGET)
+    set(options)
+    set(oneValueArgs IMPORT EXPORT)
+    set(multiValueArgs)
+
+    cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(PARSE_UNPARSED_ARGUMENTS)
+        message(
+            FATAL_ERROR "Unknown keywords given to target_dll_compile_definitions(): \"${PARSE_UNPARSED_ARGUMENTS}\"")
+    endif()
+
+
+    if (BUILD_SHARED_LIBS AND MSVC)
+        if(PARSE_EXPORT)
+            target_compile_definitions(${TARGET} PRIVATE ${PARSE_EXPORT})
+        endif()
+        if(PARSE_IMPORT)
+            target_compile_definitions(${TARGET} INTERFACE ${PARSE_IMPORT})
+        endif()
+    endif()
+endfunction()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()

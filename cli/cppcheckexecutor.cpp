@@ -734,7 +734,7 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
 #ifdef _WIN32
     const int res = _pclose(p);
 #else
-    const int res = pclose(p);
+    int res = pclose(p);
 #endif
     if (res == -1) { // error occurred
         // TODO: how to provide to caller?
