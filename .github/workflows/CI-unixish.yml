@@ -183,7 +183,7 @@ jobs:
 
       - name: Test with Unsigned char
         run: |
-          ./testrunner TestSymbolDatabase
+          ./testrunner
 
   build_mathlib:
 
