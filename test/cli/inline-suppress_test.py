@@ -1,10 +1,11 @@
 
-# python -m pytest test-inline-suppress.py
+# python -m pytest inline-suppress_test.py
 
 import json
 import os
 import pytest
 import sys
+import time
 from testutils import cppcheck
 
 __script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -246,6 +247,35 @@ def test_build_dir(tmpdir):
     assert lines == []
     assert stdout == ''
     assert ret == 0, stdout
+
+def test_build_dir_jobs_suppressions(tmpdir): #14064
+    args = [
+        '-q',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(tmpdir),
+        '--enable=style',
+        '--inline-suppr',
+        '-j4',
+        'reanalysis'
+    ]
+
+    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    lines = stderr.splitlines()
+    assert lines == []
+    assert stdout == ''
+    assert ret == 0, stdout
+
+    a1Path = os.path.join(tmpdir, 'd.a1')
+    assert os.path.exists(a1Path)
+    mtimeOld = os.path.getmtime(a1Path)
+
+    time.sleep(1)
+
+    for _ in range(1, 10):
+        cppcheck(args, cwd=__script_dir)
+
+    mtimeNew = os.path.getmtime(a1Path)
+    assert mtimeOld == mtimeNew
 
 
 def __test_build_dir_unused_template(tmpdir, extra_args):

@@ -252,7 +252,7 @@ public:
      * @brief Create an xml dump of suppressions
      * @param out stream to write XML to
      */
-    void dump(std::ostream &out) const;
+    void dump(std::ostream &out, const std::string& filePath = {}) const;
 
     /**
      * @brief Returns list of unmatched local (per-file) suppressions.
