@@ -135,6 +135,8 @@ ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-sign-compare -Wno-multichar -Woverloaded-virtual -Wno-dollar-in-identifier-extension -g
 endif
 
+override CPPFLAGS += $(CPPCHK_GLIBCXX_DEBUG)
+
 ifeq (g++, $(findstring g++,$(CXX)))
     override CXXFLAGS += -pipe
 endif
