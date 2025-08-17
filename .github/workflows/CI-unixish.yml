@@ -213,7 +213,7 @@ jobs:
       - name: Build with TEST_MATHLIB_VALUE
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) CXXOPTS="-Werror -DTEST_MATHLIB_VALUE" all
+          make -j$(nproc) CXXOPTS="-Werror" CPPOPTS="-DTEST_MATHLIB_VALUE" all
 
       - name: Test with TEST_MATHLIB_VALUE
         run: |
@@ -570,7 +570,7 @@ jobs:
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # compile with verification and ast matchers
-          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXOPTS="-Werror -g -O2 -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
+          make -j$(nproc) -s CXXOPTS="-Werror -g -O2" CPPOPTS="-DCHECK_INTERNAL -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
       - name: CMake
         run: |
