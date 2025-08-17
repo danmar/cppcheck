@@ -41,12 +41,12 @@ jobs:
       - name: Build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXOPTS="-O1 -g -w -DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
+          CXXOPTS="-O1 -g -w" CPPOPTS="-DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXOPTS="-O1 -g -w -DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
+          CXXOPTS="-O1 -g -w" CPPOPTS="-DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
         run: |

@@ -144,7 +144,8 @@ ifeq ($(HAVE_RULES),yes)
     ifeq ($(PCRE_CONFIG),)
         $(error Did not find pcre-config)
     endif
-    override CXXFLAGS += -DHAVE_RULES $(shell $(PCRE_CONFIG) --cflags)
+    override CXXFLAGS += $(shell $(PCRE_CONFIG) --cflags)
+    override CPPFLAGS += -DHAVE_RULES
     ifdef LIBS
         LIBS += $(shell $(PCRE_CONFIG) --libs)
     else
@@ -155,6 +156,7 @@ else ifneq ($(HAVE_RULES),)
 endif
 
 override CXXFLAGS += $(CXXOPTS)
+override CPPFLAGS += $(CPPOPTS)
 override LDFLAGS += $(LDOPTS)
 
 ifndef PREFIX
@@ -355,12 +357,12 @@ TESTOBJ =     test/fixture.o \
 ###### Targets
 
 cppcheck: $(EXTOBJ) $(LIBOBJ) $(FEOBJ) $(CLIOBJ)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 all:	cppcheck testrunner
 
 testrunner: $(EXTOBJ) $(TESTOBJ) $(LIBOBJ) $(FEOBJ) cli/cmdlineparser.o cli/cppcheckexecutor.o cli/executor.o cli/filelister.o cli/processexecutor.o cli/sehwrapper.o cli/signalhandler.o cli/singleexecutor.o cli/stacktrace.o cli/threadexecutor.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 test:	all
 	./testrunner

@@ -184,12 +184,12 @@ Simple, unoptimized build (no dependencies):
 make
 ```
 
-You can use `CXXOPTS` and `LDOPTS` to append to the existing `CXXFLAGS` and `LDFLAGS` instead of overriding them.
+You can use `CXXOPTS`, `CPPOPTS` and `LDOPTS` to append to the existing `CXXFLAGS`, `CPPFLAGS` and `LDFLAGS` instead of overriding them.
 
 The recommended release build is:
 
 ```shell
-make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXOPTS="-O2 -DNDEBUG"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXOPTS="-O2" CPPOPTS="-DNDEBUG"
 ```
 
 #### g++ (for experts)
@@ -211,8 +211,11 @@ g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml
 -  `HAVE_RULES=yes`
    Enables rules (requires PCRE to be installed).
 
--  `CXXOPTS="-O2 -DNDEBUG"`
-   Enables most compiler optimizations and disables assertions.
+-  `CXXOPTS="-O2"`
+   Enables most compiler optimizations.
+
+-  `CPPOPTS="-DNDEBUG"`
+   Disables assertions.
 
 -  `HAVE_BOOST=yes`
    Enables usage of more efficient container from Boost (requires Boost to be installed).
