@@ -45,6 +45,8 @@
 #include <utility>
 #include <vector>
 
+#include <iostream>
+
 ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
@@ -487,9 +489,20 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
     }
 }
 
+static void debugPrint(const ProgramMemory& pm)
+{
+    for(auto&& p:pm) {
+        std::cout << p.first->expressionString() << " => " << p.second.toString() << std::endl;
+    }
+}
+
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-#if 0
+    std::cout << "**************************************************************\n";
+    std::cout << "addState: " << tok->expressionString() << std::endl;
+    std::cout << "Before:\n";
+    debugPrint(state);
+#if 1
     ProgramMemory local = state;
     addVars(local, vars);
     fillProgramMemoryFromConditions(local, tok, settings);
@@ -507,6 +520,8 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     addVars(pm, vars);
     replace(std::move(pm), tok);
 #endif
+    std::cout << "After:\n";
+    debugPrint(state);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
