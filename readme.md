@@ -17,20 +17,31 @@ A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 
 ## Donate CPU
 
-Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
+Cppcheck is a project with limited resources.
 
- 1. Download (and extract) Cppcheck source code.
- 2. Run:
-    ```
-    cd cppcheck/
-    virtualenv .env
-    .env/bin/pip install -r tools/donate-cpu-requirements.txt
-    .env/bin/python tools/donate-cpu.py
-    ```
+To monitor for stability, performance and regression we are analyzing the available source code of Debian packages with our latest development code
+and compare the results with the latest stable release.
 
-The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
+You can help with this by donating CPU time (1 core or as many as you like) and bandwidth.
 
-You can stop the script whenever you like with Ctrl C.
+It is as simple as running a shell script.
+
+TODO: describe what the script does
+
+You need a Linux (or WSL) shell (MacOS should work as well) with Python 3.x, Git and some common (development) tools (the script will tell you which) installed.
+
+NOTE: This will constantly and fully utilize the specified amount of cores while the script is running. It will also constantly fetch the sources which will be analyzed from a remote server (some of the packages are hundreds of megabytes in size).<br>
+If your resources and bandwidth are limited and/or would inflict certain costs on you (because of high energy prices or since you have to pay based on your data usage) you should probably not contribute.
+
+NOTE: The script will store data in the temporary folder which will be removed if the script is exited cleanly. Some of the data is to perform the actual work and others to provide a faster start-up time. Any leftovers can be safely removed. You can persistent the data by adding the `--persistent` switch.
+
+```shell
+bash -c "$(wget -O - https://raw.githubusercontent.com/danmar/cppcheck/refs/heads/main/tools/donate.sh)"
+```
+
+The bandwidth used can be limited by adding `--bandwidth-limit=` to the script invocation (see `--limit-rate=amount` on https://www.gnu.org/software/wget/manual/html_node/Download-Options.html for possible values).
+
+The script can be stopped at any time with `CTRL+C`.
 
 ## Compiling
 

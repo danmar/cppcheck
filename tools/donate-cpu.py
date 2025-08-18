@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# TODO: do not keep persistent data by default - make it optional / use the temporary folder by default
+# TODO: print the name of the output directory being used
+
 # Donate CPU
 #
 # A script a user can run to donate CPU to cppcheck project
