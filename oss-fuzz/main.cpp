@@ -28,8 +28,6 @@
 #ifndef NO_FUZZ
 #include <cstddef>
 #include <cstdint>
-
-#include "type2.h"
 #else
 #include <cstdlib>
 #include <fstream>
@@ -52,8 +50,10 @@ static Settings create_settings()
     Settings s;
     s.templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
     s.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
+    s.quiet = true;
     s.addEnabled("all");
     s.certainty.setEnabled(Certainty::inconclusive, true);
+    s.checkLevel = Settings::CheckLevel::exhaustive;
     return s;
 }
 static const Settings s_settings = create_settings();
@@ -72,10 +72,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize);
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
-    if (dataSize < 10000) {
-        const std::string code = generateCode2(data, dataSize);
-        doCheck(code);
-    }
+    const std::string code = std::string(reinterpret_cast<const char*>(data), dataSize);
+    doCheck(code);
     return 0;
 }
 #else
