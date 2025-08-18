@@ -449,6 +449,8 @@ private:
         TEST_CASE(cppcast);
 
         TEST_CASE(checkHeader1);
+        TEST_CASE(checkHeader2);
+        TEST_CASE(checkHeader3);
 
         TEST_CASE(removeExtraTemplateKeywords);
 
@@ -8081,6 +8083,52 @@ private:
                       "|\n"
                       "4:\n"
                       "5: ;\n",
+                      checkHdrs(code, false));
+    }
+
+    void checkHeader2() {
+        // #9977
+        const char code[] = "# 1 \"test.h\"\n"
+                            "A::A(const int &value)\n"
+                            "    :data(value),\n"
+                            "     data2(value)\n"
+                            "    {}\n";
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: A :: A ( const int & value )\n"
+                      "2: : data ( value ) ,\n"
+                      "3: data2 ( value )\n"
+                      "4: { }\n",
+                      checkHdrs(code, true));
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: A :: A ( const int & value )\n"
+                      "2:\n"
+                      "3:\n"
+                      "4: ;\n",
+                      checkHdrs(code, false));
+    }
+
+    void checkHeader3() {
+        // #9977
+        const char code[] = "# 1 \"test.h\"\n"
+                            "A::A(const int &value)\n"
+                            "    :data{value},\n"
+                            "     data2{value}\n"
+                            "    {}\n";
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: A :: A ( const int & value )\n"
+                      "2: : data { value } ,\n"
+                      "3: data2 { value }\n"
+                      "4: { }\n",
+                      checkHdrs(code, true));
+
+        ASSERT_EQUALS("\n\n##file 1\n"
+                      "1: A :: A ( const int & value )\n"
+                      "2:\n"
+                      "3:\n"
+                      "4: ;\n",
                       checkHdrs(code, false));
     }
 

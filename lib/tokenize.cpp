@@ -6339,6 +6339,28 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         const bool isIncluded = (tok->fileIndex() != 0);
 
+        // Remove constructor initializer
+        if (isIncluded && !mSettings.checkHeaders && Token::Match(tok, "%name% (")) {
+            Token *start = tok->next()->link();
+            if (start) {
+                start = start->next();
+            }
+            if (start && start->str() == ":") {
+                const Token *next = start;
+                while (Token::Match(next, "[,:] %name%")) {
+                    next = next->next(); // Go to %name%
+                    next = next->next(); // Go to opening '(' or '{'
+                    if (next && next->link()) {
+                        next = next->link(); // Go to closing ')' or '}'
+                        next = next->next(); // Go to next, either ',' or '{'
+                    }
+                }
+                if (next && next->str() == "{") {
+                    Token::eraseTokens(start->previous(), next);
+                }
+            }
+        }
+
         // Remove executable code
         if (isIncluded && !mSettings.checkHeaders && tok->str() == "{") {
             // TODO: We probably need to keep the executable code if this function is called from the source file.
