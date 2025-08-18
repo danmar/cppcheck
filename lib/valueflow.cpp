@@ -3595,14 +3595,14 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
                             condTok2,
                             makeConditionValue(1, condTok2, /*assume*/ true, !isBool, settings),
                             settings); // don't set '1' for non-boolean expressions
-                        valueFlowGenericForward(startTok, startTok->link(), a1, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(startTok, startTok->link(), std::move(a1), tokenlist, errorLogger, settings);
                     }
 
                     auto a2 = makeOppositeExpressionAnalyzer(true,
                                                              condTok2,
                                                              makeConditionValue(0, condTok2, true, false, settings),
                                                              settings);
-                    valueFlowGenericForward(startTok, startTok->link(), a2, tokenlist, errorLogger, settings);
+                    valueFlowGenericForward(startTok, startTok->link(), std::move(a2), tokenlist, errorLogger, settings);
                 }
             }
 
@@ -3617,7 +3617,7 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
                     auto a1 = makeSameExpressionAnalyzer(condTok2,
                                                          makeConditionValue(0, condTok2, false, false, settings),
                                                          settings);
-                    valueFlowGenericForward(startTok, startTok->link(), a1, tokenlist, errorLogger, settings);
+                    valueFlowGenericForward(startTok, startTok->link(), std::move(a1), tokenlist, errorLogger, settings);
 
                     if (is1) {
                         auto a2 =
@@ -3625,7 +3625,7 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
                                                            condTok2,
                                                            makeConditionValue(isOp, condTok2, false, false, settings),
                                                            settings);
-                        valueFlowGenericForward(startTok, startTok->link(), a2, tokenlist, errorLogger, settings);
+                        valueFlowGenericForward(startTok, startTok->link(), std::move(a2), tokenlist, errorLogger, settings);
                     }
                 }
             }
@@ -3643,7 +3643,7 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
                     auto a1 = makeSameExpressionAnalyzer(condTok2,
                                                          makeConditionValue(0, condTok2, false, false, settings),
                                                          settings);
-                    valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, a1, tokenlist, errorLogger, settings);
+                    valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, std::move(a1), tokenlist, errorLogger, settings);
 
                     if (is1) {
                         auto a2 = makeOppositeExpressionAnalyzer(true,
@@ -3652,7 +3652,7 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
                                                                  settings);
                         valueFlowGenericForward(startTok->link()->next(),
                                                 scope2->bodyEnd,
-                                                a2,
+                                                std::move(a2),
                                                 tokenlist,
                                                 errorLogger,
                                                 settings);
@@ -3944,11 +3944,11 @@ static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const S
             std::vector<ValueFlow::Value> values;
             {
                 SymbolicInferModel leftModel{tok->astOperand1()};
-                values = infer(leftModel, tok->str(), 0, tok->astOperand2()->values());
+                values = infer(std::move(leftModel), tok->str(), 0, tok->astOperand2()->values());
             }
             if (values.empty()) {
                 SymbolicInferModel rightModel{tok->astOperand2()};
-                values = infer(rightModel, tok->str(), tok->astOperand1()->values(), 0);
+                values = infer(std::move(rightModel), tok->str(), tok->astOperand1()->values(), 0);
             }
             for (ValueFlow::Value& value : values) {
                 setTokenValue(tok, std::move(value), settings);
@@ -5637,7 +5637,7 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
         auto a = makeMultiValueFlowAnalyzer(arg, settings);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart),
                                 functionScope->bodyEnd,
-                                a,
+                                std::move(a),
                                 tokenlist,
                                 errorLogger,
                                 settings);
@@ -6183,7 +6183,7 @@ static void valueFlowUninit(TokenList& tokenlist, ErrorLogger& errorLogger, cons
                 }
                 auto partialReadsAnalyzer = std::make_shared<PartialReadContainer>();
                 auto analyzer = makeMemberExpressionAnalyzer(memVar.nameToken()->str(), tok, uninitValue, partialReadsAnalyzer, settings);
-                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, tokenlist, errorLogger, settings);
+                valueFlowGenericForward(start, tok->scope()->bodyEnd, std::move(analyzer), tokenlist, errorLogger, settings);
 
                 for (auto&& p : *partialReadsAnalyzer) {
                     Token* tok2 = p.first;
