@@ -310,7 +310,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-13, macos-15]
         include:
-          - xdist_n: auto
+          - xdist_n: $(nproc)
           # FIXME: test_color_tty fails with xdist
           - os: macos-13
             xdist_n: '1'
@@ -508,7 +508,7 @@ jobs:
           ../../cppcheck --dump naming_test.cpp 
           python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
 
-      # TODO: run with "-n auto" when misra_test.py can be run in parallel
+      # TODO: run with "-n $(nproc)" when misra_test.py can be run in parallel
       - name: test addons (Python)
         if: matrix.os != 'ubuntu-22.04'
         run: |
@@ -516,7 +516,7 @@ jobs:
         env:
           PYTHONPATH: ./addons
 
-      # TODO: run with "-n auto" when misra_test.py can be run in parallel
+      # TODO: run with "-n $(nproc)" when misra_test.py can be run in parallel
       # we cannot specify -Werror since xml/etree/ElementTree.py in Python 3.10 contains an unclosed file
       - name: test addons (Python)
         if: matrix.os == 'ubuntu-22.04'

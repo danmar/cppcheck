@@ -179,12 +179,12 @@ jobs:
       - name: Run test/cli
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n %NUMBER_OF_PROCESSORS% test/cli || exit /b !errorlevel!
 
       - name: Run test/cli (-j2)
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n %NUMBER_OF_PROCESSORS% test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -192,14 +192,14 @@ jobs:
       - name: Run test/cli (--clang)
         if: false # matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n %NUMBER_OF_PROCESSORS% test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
       - name: Run test/cli (--cppcheck-build-dir)
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n %NUMBER_OF_PROCESSORS% test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_BUILDDIR: injected
 
@@ -245,7 +245,7 @@ jobs:
           ..\..\cppcheck --dump naming_test.cpp || exit /b !errorlevel!
           python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump || exit /b !errorlevel!
 
-      # TODO: run with "-n auto" when misra_test.py can be run in parallel
+      # TODO: run with "-n %NUMBER_OF_PROCESSORS%" when misra_test.py can be run in parallel
       - name: test addons (Python)
         if: matrix.config == 'release'
         run: |

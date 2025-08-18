@@ -136,7 +136,7 @@ jobs:
         env:
           PYTHONPATH: ./tools
 
-      # TODO: run with "-n auto" when misra_test.py can be run in parallel
+      # TODO: run with "-n $(nproc)" when misra_test.py can be run in parallel
       # we cannot specify -Werror since xml/etree/ElementTree.py in Python 3.9/3.10 contains an unclosed file
       - name: test addons
         if: matrix.python-version == '3.9' || matrix.python-version == '3.10'
@@ -145,7 +145,7 @@ jobs:
         env:
           PYTHONPATH: ./addons
 
-      # TODO: run with "-n auto" when misra_test.py can be run in parallel
+      # TODO: run with "-n $(nproc)" when misra_test.py can be run in parallel
       - name: test addons
         if: matrix.python-version != '3.9' && matrix.python-version != '3.10'
         run: |
