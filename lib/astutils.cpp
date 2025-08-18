@@ -1212,7 +1212,8 @@ static const Token * followVariableExpression(const Settings& settings, const To
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
-    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, settings)))
+    const int indirect = var->isArray() ? var->dimensions().size() : 0;
+    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, indirect, tok->varId(), false, settings)))
         return tok;
     if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
         return tok;
