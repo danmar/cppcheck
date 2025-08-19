@@ -171,7 +171,7 @@ private:
      * @param tokens        Token list from preprocessed file.
      * @return hash
      */
-    std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens) const;
+    std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens, const std::string& filePath = {}) const;
 
     /**
      * @brief Check a file using stream
