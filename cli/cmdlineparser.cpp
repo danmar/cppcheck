@@ -1895,10 +1895,13 @@ void CmdLineParser::printHelp() const
             "                         To check all files, append \":all\" i.e. --premium=misra-c++-2023:all.\n"
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
-            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
             "                          * metrics           Calculate metrics. Metrics are only reported in xmlv3 output.\n"
             "                          * safety            Turn on safety certified behavior (ON by default)\n"
-            "                          * safety-off        Turn off safety certified behavior\n";
+            "                          * safety-off        Turn off safety certified behavior\n"
+            "    --premium-cert-c-int-precision=BITS\n"
+            "                         Integer precision to use in Cert C analysis.\n"
+            "    --premium-license-file=<path>\n"
+            "                         Provide license file path with argument.\n";
     }
 
     oss <<
