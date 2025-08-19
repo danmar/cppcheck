@@ -365,7 +365,7 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str, const Token * co
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
 {
-    return std::accumulate(str.cbegin(), str.cend(), uint32_t(), [](uint32_t v, char c) {
+    return std::accumulate(str.cbegin(), str.cend(), uint32_t(), [](uint32_t v, char c) -> uint32_t {
         return (v << 8) | c;
     });
 }
@@ -469,7 +469,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
         return 0.; // error handling??
     else
         distance = int(decimalsep)-(from - str.begin());
-    auto digitval = [&](char c) {
+    auto digitval = [&](char c) -> int {
         if ((10 < base) && (c > '9'))
             return 10 + std::tolower(c) - 'a';
         return c - '0';

@@ -479,7 +479,7 @@ public:
      * @return true for the file to be excluded.
      */
     bool configurationExcluded(const std::string &file) const {
-        return std::any_of(configExcludePaths.begin(), configExcludePaths.end(), [&file](const std::string& path) {
+        return std::any_of(configExcludePaths.begin(), configExcludePaths.end(), [&file](const std::string& path) -> bool {
             return file.length() >= path.length() && file.compare(0, path.length(), path) == 0;
         });
     }

@@ -713,7 +713,7 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
         return 0; // TODO: report as failure?
     }
 
-    const auto reportError = [this](const ErrorMessage& errorMessage) {
+    const auto reportError = [this](const ErrorMessage& errorMessage) -> void {
         mErrorLogger.reportErr(errorMessage);
     };
 
@@ -970,7 +970,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         simplecpp::TokenList tokens1 = createTokenList(file.spath(), files, &outputList, fileStream);
 
         // If there is a syntax error, report it and stop
-        const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+        const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) -> bool {
             return Preprocessor::hasErrors(output);
         });
         if (output_it != outputList.cend()) {
@@ -1050,7 +1050,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // Get configurations..
         std::set<std::string> configurations;
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
-            Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
+            Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() -> void {
                 configurations = preprocessor.getConfigs(tokens1);
             });
         } else {
@@ -1132,7 +1132,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
             if (mSettings.preprocessOnly) {
                 std::string codeWithoutCfg;
-                Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
+                Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() -> void {
                     codeWithoutCfg = preprocessor.getcode(tokens1, currentConfig, files, true);
                 });
 
@@ -1155,7 +1155,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 TokenList tokenlist{mSettings, file.lang()};
 
                 // Create tokens, skip rest of iteration if failed
-                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
+                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() -> void {
                     simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, currentConfig, files, true);
                     tokenlist.createTokens(std::move(tokensP));
                 });
@@ -1378,7 +1378,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
                 return;
             }
 
-            Timer::run(check->name() + "::runChecks", mSettings.showtime, &s_timerResults, [&]() {
+            Timer::run(check->name() + "::runChecks", mSettings.showtime, &s_timerResults, [&]() -> void {
                 check->runChecks(tokenizer, &mErrorLogger);
             });
         }

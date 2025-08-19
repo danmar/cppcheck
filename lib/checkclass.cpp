@@ -102,7 +102,7 @@ static bool isVclTypeInit(const Type *type)
 {
     if (!type)
         return false;
-    return std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [&](const Type::BaseInfo& baseInfo) {
+    return std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [&](const Type::BaseInfo& baseInfo) -> bool {
         if (!baseInfo.type)
             return true;
         if (isVclTypeInit(baseInfo.type))
@@ -137,10 +137,10 @@ void CheckClass::constructors()
 
         const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
-        const bool usedInUnion = std::any_of(mSymbolDatabase->scopeList.cbegin(), mSymbolDatabase->scopeList.cend(), [&](const Scope& unionScope) {
+        const bool usedInUnion = std::any_of(mSymbolDatabase->scopeList.cbegin(), mSymbolDatabase->scopeList.cend(), [&](const Scope& unionScope) -> bool {
             if (unionScope.type != ScopeType::eUnion)
                 return false;
-            return std::any_of(unionScope.varlist.cbegin(), unionScope.varlist.cend(), [&](const Variable& var) {
+            return std::any_of(unionScope.varlist.cbegin(), unionScope.varlist.cend(), [&](const Variable& var) -> bool {
                 return var.type() && var.type()->classScope == scope;
             });
         });
@@ -349,7 +349,7 @@ void CheckClass::checkExplicitConstructors()
 
         // Is class abstract? Maybe this test is over-simplification, but it will suffice for simple cases,
         // and it will avoid false positives.
-        const bool isAbstractClass = std::any_of(scope->functionList.cbegin(), scope->functionList.cend(), [](const Function& func) {
+        const bool isAbstractClass = std::any_of(scope->functionList.cbegin(), scope->functionList.cend(), [](const Function& func) -> bool {
             return func.isPure();
         });
 
@@ -657,7 +657,7 @@ bool CheckClass::canNotMove(const Scope *scope)
 
 static void getAllVariableMembers(const Scope *scope, std::vector<const Variable *>& varList)
 {
-    std::transform(scope->varlist.cbegin(), scope->varlist.cend(), std::back_inserter(varList), [](const Variable& var) {
+    std::transform(scope->varlist.cbegin(), scope->varlist.cend(), std::back_inserter(varList), [](const Variable& var) -> const Variable * {
         return &var;
     });
     if (scope->definedType) {
@@ -677,7 +677,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
     std::vector<const Variable *> varlist;
     getAllVariableMembers(scope, varlist);
     ret.reserve(varlist.size());
-    std::transform(varlist.cbegin(), varlist.cend(), std::back_inserter(ret), [](const Variable* var) {
+    std::transform(varlist.cbegin(), varlist.cend(), std::back_inserter(ret), [](const Variable* var) -> Usage {
         return Usage(var);
     });
     return ret;
@@ -685,7 +685,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
 
 void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) -> bool {
         return usage.var->declarationId() == varid;
     });
     if (it != usageList.end())
@@ -698,7 +698,7 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
         assignVar(usageList, vartok->varId());
         return;
     }
-    auto it = std::find_if(usageList.begin(), usageList.end(), [vartok](const Usage& usage) {
+    auto it = std::find_if(usageList.begin(), usageList.end(), [vartok](const Usage& usage) -> bool {
         // FIXME: This is a workaround when varid is not set for a derived member
         return usage.var->name() == vartok->str();
     });
@@ -708,7 +708,7 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
 
 void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
-    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
+    auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) -> bool {
         return usage.var->declarationId() == varid;
     });
     if (it != usageList.end())
@@ -755,7 +755,7 @@ bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *sco
         if (derivedFrom && derivedFrom->classScope) {
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
 
-            if (std::any_of(functionList.cbegin(), functionList.cend(), [&](const Function& func) {
+            if (std::any_of(functionList.cbegin(), functionList.cend(), [&](const Function& func) -> bool {
                 return func.tokenDef->str() == tok->str() && !func.isStatic() && !func.isConst();
             }))
                 return true;
@@ -868,7 +868,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %name% (") && !(ftok->next()->valueType() && ftok->next()->valueType()->pointer)) {
-            if (std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), [&](const Variable& var) {
+            if (std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), [&](const Variable& var) -> bool {
                 return var.declarationId() == ftok->next()->varId();
             }))
                 /** @todo false negative: we assume function changes variable state */
@@ -1205,7 +1205,7 @@ void CheckClass::initializationListUsage()
             // Access local var member in rhs => do not warn
             bool localmember = false;
             visitAstNodes(tok->next()->astOperand2(),
-                          [&](const Token *rhs) {
+                          [&](const Token *rhs) -> ChildrenToVisit {
                 if (rhs->str() == "." && rhs->astOperand1() && rhs->astOperand1()->variable() && rhs->astOperand1()->variable()->isLocal())
                     localmember = true;
                 return ChildrenToVisit::op1_and_op2;
@@ -1215,7 +1215,7 @@ void CheckClass::initializationListUsage()
 
             bool allowed = true;
             visitAstNodes(tok->next()->astOperand2(),
-                          [&](const Token *tok2) {
+                          [&](const Token *tok2) -> ChildrenToVisit {
                 const Variable* var2 = tok2->variable();
                 if (var2) {
                     if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
@@ -1902,7 +1902,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
 
         bool ret = false;
         visitAstNodes(tok->next()->astOperand2(),
-                      [&](const Token *tok2) {
+                      [&](const Token *tok2) -> ChildrenToVisit {
             if (!Token::Match(tok2, "==|!="))
                 return ChildrenToVisit::op1_and_op2;
             if (Token::simpleMatch(tok2->astOperand1(), "this"))
@@ -1958,7 +1958,7 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) {
-                    if (std::any_of(scope->functionList.cbegin(), scope->functionList.cend(), [](const Function& func) {
+                    if (std::any_of(scope->functionList.cbegin(), scope->functionList.cend(), [](const Function& func) -> bool {
                         return func.hasVirtualSpecifier();
                     }))
                         inconclusiveErrors.push_back(destructor);
@@ -2216,7 +2216,7 @@ void CheckClass::checkConst()
                 continue;
             if (suggestStatic && func.isConst()) {
                 const auto overloads = func.getOverloadedFunctions();
-                if (overloads.size() > 1 && std::any_of(overloads.begin(), overloads.end(), [&](const Function* ovl) {
+                if (overloads.size() > 1 && std::any_of(overloads.begin(), overloads.end(), [&](const Function* ovl) -> bool {
                     if (&func == ovl)
                         return false;
                     if (!ovl->functionScope)
@@ -2432,7 +2432,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
         return nullptr;
     };
 
-    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope, const Function* func) {
+    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope, const Function* func) -> bool {
         if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
             const bool isSelf = func == funcTok->function();
             if (!isConstMemberFunc(scope, funcTok) && !isSelf)
@@ -2563,7 +2563,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                                 const auto& funcMap = var->typeScope()->functionMap;
                                 // if there is no operator that is const and returns a non-const pointer, func cannot be const
-                                if (std::none_of(funcMap.cbegin(), funcMap.cend(), [](const std::pair<std::string, const Function*>& fm) {
+                                if (std::none_of(funcMap.cbegin(), funcMap.cend(), [](const std::pair<std::string, const Function*>& fm) -> bool {
                                     return fm.second->isConst() && fm.first == "operator[]" && !Function::returnsConst(fm.second);
                                 }))
                                     return false;
@@ -2583,7 +2583,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 if (!end || !scope || !Token::simpleMatch(end->astParent(), "."))
                     return false;
                 const std::string op = "operator" + end->astParent()->originalName();
-                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&op](const Function& f) {
+                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&op](const Function& f) -> bool {
                     return f.isConst() && f.name() == op;
                 });
                 if (it == scope->functionList.end() || !it->retType || !it->retType->classScope)
@@ -2995,7 +2995,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
-    std::transform(tokStack.cbegin(), tokStack.cend(), std::back_inserter(errorPath), [](const Token* tok) {
+    std::transform(tokStack.cbegin(), tokStack.cend(), std::back_inserter(errorPath), [](const Token* tok) -> ErrorPathItem {
         return ErrorPathItem(tok, "Calling " + tok->str());
     });
     int lineNumber = 1;
@@ -3030,7 +3030,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
-    std::transform(tokStack.cbegin(), tokStack.cend(), std::back_inserter(errorPath), [](const Token* tok) {
+    std::transform(tokStack.cbegin(), tokStack.cend(), std::back_inserter(errorPath), [](const Token* tok) -> ErrorPathItem {
         return ErrorPathItem(tok, "Calling " + tok->str());
     });
     if (!errorPath.empty())
@@ -3193,7 +3193,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
-        const bool hasNonStaticVars = std::any_of(scope->varlist.begin(), scope->varlist.end(), [](const Variable& var) {
+        const bool hasNonStaticVars = std::any_of(scope->varlist.begin(), scope->varlist.end(), [](const Variable& var) -> bool {
             return !var.isStatic();
         });
         if (!hasNonStaticVars)
@@ -3366,7 +3366,7 @@ void CheckClass::checkUselessOverride()
             const Function* baseFunc = func.getOverriddenFunction();
             if (!baseFunc || baseFunc->isPure() || baseFunc->access != func.access)
                 continue;
-            if (std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&func](const Function& f) { // check for overloads
+            if (std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&func](const Function& f) -> bool { // check for overloads
                 if (&f == &func)
                     return false;
                 return f.name() == func.name();
@@ -3398,7 +3398,7 @@ void CheckClass::checkUselessOverride()
                     continue;
                 std::vector<const Token*> callArgs = getArguments(call);
                 if (func.argumentList.size() != callArgs.size() ||
-                    !std::equal(func.argumentList.begin(), func.argumentList.end(), callArgs.begin(), [](const Variable& v, const Token* t) {
+                    !std::equal(func.argumentList.begin(), func.argumentList.end(), callArgs.begin(), [](const Variable& v, const Token* t) -> bool {
                     return v.nameToken() && v.nameToken()->str() == t->str();
                 }))
                     continue;
@@ -3677,7 +3677,7 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer &tokenizer, const Setti
         // the full definition must be compared
         const bool fullDefinition = std::all_of(classScope->functionList.cbegin(),
                                                 classScope->functionList.cend(),
-                                                [](const Function& f) {
+                                                [](const Function& f) -> bool {
             return f.hasBody();
         });
         if (!fullDefinition)

@@ -910,7 +910,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
         Token *expr1 = varDecl->createTokens(tokenList);
         Token *colon = addtoken(tokenList, ":");
 
-        auto it = std::find_if(children.cbegin(), children.cbegin() + 2, [&](const AstNodePtr& c) {
+        auto it = std::find_if(children.cbegin(), children.cbegin() + 2, [&](const AstNodePtr& c) -> bool {
             return c && c->nodeType == DeclStmt && c->getChild(0)->nodeType == VarDecl;
         });
         if (it == children.cbegin() + 2)
@@ -1497,7 +1497,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList &tokenList)
     // definition
     if (isDefinition()) {
         std::vector<AstNodePtr> children2;
-        std::copy_if(children.cbegin(), children.cend(), std::back_inserter(children2), [](const AstNodePtr& child) {
+        std::copy_if(children.cbegin(), children.cend(), std::back_inserter(children2), [](const AstNodePtr& child) -> bool {
             return child->nodeType == CXXConstructorDecl ||
                    child->nodeType == CXXDestructorDecl ||
                    child->nodeType == CXXMethodDecl ||
@@ -1582,7 +1582,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
 
         MathLib::bigint typeSize = 0;
         for (const Variable &var: scope.varlist) {
-            const int mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& dim) {
+            const int mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& dim) -> MathLib::bigint {
                 return v * dim.num;
             });
             if (var.valueType())

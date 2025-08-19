@@ -48,10 +48,10 @@ namespace {
         std::pair<bool, bool> evalCond(const Token* tok) const {
             std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
             // TODO: We should convert to bool
-            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
+            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) -> bool {
                 return x == 1;
             });
-            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
+            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) -> bool {
                 return x == 0;
             });
             return std::make_pair(checkThen, checkElse);
@@ -119,7 +119,7 @@ namespace {
 
         bool updateRecursive(Token* start) {
             bool continueB = true;
-            visitAstNodes(start, [&](Token* tok) {
+            visitAstNodes(start, [&](Token* tok) -> ChildrenToVisit {
                 const Token* parent = tok->astParent();
                 while (Token::simpleMatch(parent, ":"))
                     parent = parent->astParent();
@@ -135,7 +135,7 @@ namespace {
 
         Analyzer::Action analyzeRecursive(const Token* start) const {
             Analyzer::Action result = Analyzer::Action::None;
-            visitAstNodes(start, [&](const Token* tok) {
+            visitAstNodes(start, [&](const Token* tok) -> ChildrenToVisit {
                 result |= analyzer->analyze(tok, Analyzer::Direction::Reverse);
                 if (result.isModified())
                     return ChildrenToVisit::done;

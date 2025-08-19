@@ -96,7 +96,7 @@ int TokenList::appendFileIfNew(std::string fileName)
     assert(!fileName.empty());
 
     // Has this file been tokenized already?
-    auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) {
+    auto it = std::find_if(mFiles.cbegin(), mFiles.cend(), [&](const std::string& f) -> bool {
         return Path::sameFileName(f, fileName);
     });
     if (it != mFiles.cend())
@@ -593,14 +593,14 @@ static bool iscpp11init_impl(const Token * const tok)
             return true;
     }
 
-    auto isCaseStmt = [](const Token* colonTok) {
+    auto isCaseStmt = [](const Token* colonTok) -> bool {
         if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char%|) :"))
             return false;
         if (const Token* castTok = colonTok->linkAt(-1)) {
             if (Token::simpleMatch(castTok->astParent(), "case"))
                 return true;
         }
-        if (findParent(colonTok->previous(), [](const Token *parent){
+        if (findParent(colonTok->previous(), [](const Token *parent) -> bool {
             return parent->str() == "case";
         }))
             return true;
@@ -1852,7 +1852,7 @@ namespace {
 
 void TokenList::validateAst(bool print) const
 {
-    OnException oe{[&] {
+    OnException oe{[&]() -> void {
             if (print)
                 mTokensFrontBack->front->printOut(std::cout);
         }};

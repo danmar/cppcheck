@@ -93,7 +93,7 @@ template<class TFunc>
 const Token* findAstNode(const Token* ast, const TFunc& pred)
 {
     const Token* result = nullptr;
-    visitAstNodes(ast, [&](const Token* tok) {
+    visitAstNodes(ast, [&](const Token* tok) -> ChildrenToVisit { // no suggestion
         if (pred(tok)) {
             result = tok;
             return ChildrenToVisit::done;

@@ -151,7 +151,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
     // Store the ending of init lists
     std::stack<std::pair<const Token*, const Scope*>> endInitList;
-    auto inInitList = [&] {
+    auto inInitList = [&]() -> bool {
         if (endInitList.empty())
             return false;
         return endInitList.top().second == scope;
@@ -176,7 +176,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
     std::map<Scope *, std::set<std::string>> forwardDecls;
 
-    const std::function<Scope *(const Token *, Scope *)> findForwardDeclScope = [&](const Token *tok, Scope *startScope) {
+    const std::function<Scope *(const Token *, Scope *)> findForwardDeclScope = [&](const Token *tok, Scope *startScope) -> Scope* {
         if (tok->str() == "::")
             return findForwardDeclScope(tok->next(), &scopeList.front());
 
@@ -1127,7 +1127,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 
 void SymbolDatabase::createSymbolDatabaseSetScopePointers()
 {
-    auto setScopePointers = [](const Scope &scope, const Token *bodyStart, const Token *bodyEnd) {
+    auto setScopePointers = [](const Scope &scope, const Token *bodyStart, const Token *bodyEnd) -> void {
         assert(bodyStart);
         assert(bodyEnd);
 
@@ -1579,7 +1579,7 @@ static bool isExpression(const Token* tok)
     if (!Token::Match(tok, "(|.|[|::|?|:|++|--|%cop%|%assign%"))
         return false;
     if (Token::Match(tok, "*|&|&&")) {
-        const Token* vartok = findAstNode(tok, [&](const Token* tok2) {
+        const Token* vartok = findAstNode(tok, [&](const Token* tok2) -> bool {
             const Variable* var = tok2->variable();
             if (!var)
                 return false;
@@ -1725,7 +1725,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     }
 
     auto exprScopes = functionScopes; // functions + global lambdas + namespaces
-    std::copy_if(scopeList.front().nestedList.begin(), scopeList.front().nestedList.end(), std::back_inserter(exprScopes), [](const Scope* scope) {
+    std::copy_if(scopeList.front().nestedList.begin(), scopeList.front().nestedList.end(), std::back_inserter(exprScopes), [](const Scope* scope) -> bool {
         return scope && (scope->type == ScopeType::eLambda || scope->type == ScopeType::eNamespace);
     });
 
@@ -2151,7 +2151,7 @@ namespace {
     const Function* getFunctionForArgumentvariable(const Variable * const var)
     {
         if (const Scope* scope = var->nameToken()->scope()) {
-            auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& function) {
+            auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& function) -> bool {
                 for (nonneg int arg = 0; arg < function.argCount(); ++arg) {
                     if (var == function.getArgumentVar(arg))
                         return true;
@@ -3166,28 +3166,28 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
 
 bool Function::returnsConst(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, false, [](const Token* defStart, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [](const Token* defStart, const Token* defEnd) -> const Token* {
         return Token::findsimplematch(defStart, "const", defEnd);
     });
 }
 
 bool Function::returnsReference(const Function* function, bool unknown, bool includeRValueRef)
 {
-    return checkReturns(function, unknown, false, [includeRValueRef](const Token* /*defStart*/, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [includeRValueRef](const Token* /*defStart*/, const Token* defEnd) -> bool {
         return includeRValueRef ? Token::Match(defEnd->previous(), "&|&&") : Token::simpleMatch(defEnd->previous(), "&");
     });
 }
 
 bool Function::returnsPointer(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, false, [](const Token* /*defStart*/, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [](const Token* /*defStart*/, const Token* defEnd) -> bool {
         return Token::simpleMatch(defEnd->previous(), "*");
     });
 }
 
 bool Function::returnsStandardType(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, true, [](const Token* /*defStart*/, const Token* defEnd) {
+    return checkReturns(function, unknown, true, [](const Token* /*defStart*/, const Token* defEnd) -> bool {
         return defEnd->previous() && defEnd->previous()->isStandardType();
     });
 }
@@ -3711,7 +3711,7 @@ bool Type::hasCircularDependencies(std::set<BaseInfo>* ancestors) const
 
 bool Type::findDependency(const Type* ancestor) const
 {
-    return this == ancestor || std::any_of(derivedFrom.cbegin(), derivedFrom.cend(), [&](const BaseInfo& d) {
+    return this == ancestor || std::any_of(derivedFrom.cbegin(), derivedFrom.cend(), [&](const BaseInfo& d) -> bool {
         return d.type && (d.type == this || d.type->findDependency(ancestor));
     });
 }
@@ -4737,7 +4737,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         }
 
         if (isDestructor()) {
-            auto it = std::find_if(parent->functionList.begin(), parent->functionList.end(), [](const Function& f) {
+            auto it = std::find_if(parent->functionList.begin(), parent->functionList.end(), [](const Function& f) -> bool {
                 return f.isDestructor() && f.isImplicitlyVirtual();
             });
             if (it != parent->functionList.end())
@@ -5597,7 +5597,7 @@ static bool hasEmptyCaptureList(const Token* tok) {
 
 bool Scope::hasInlineOrLambdaFunction(const Token** tokStart, bool onlyInline) const
 {
-    return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
+    return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) -> bool {
         // Inline function
         if (s->type == ScopeType::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {")) {
             if (tokStart)
@@ -5763,7 +5763,7 @@ static bool hasMatchingConstructor(const Scope* classScope, const ValueType* arg
         return false;
     return std::any_of(classScope->functionList.cbegin(),
                        classScope->functionList.cend(),
-                       [&](const Function& f) {
+                       [&](const Function& f) -> bool {
         if (!f.isConstructor() || f.argCount() != 1 || !f.getArgumentVar(0))
             return false;
         const ValueType* vt = f.getArgumentVar(0)->valueType();
@@ -5787,7 +5787,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     // find all the possible functions that could match
     const std::size_t args = arguments.size();
 
-    auto addMatchingFunctions = [&](const Scope *scope) {
+    auto addMatchingFunctions = [&](const Scope *scope) -> void {
         auto range = utils::as_const(scope->functionMap).equal_range(tok->str());
         for (auto it = range.first; it != range.second; ++it) {
             const Function *func = it->second;
@@ -6021,7 +6021,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     }
 
     // Fallback cases
-    auto fb_pred = [](const std::pair<const Function*, size_t>& a, const std::pair<const Function*, size_t>& b) {
+    auto fb_pred = [](const std::pair<const Function*, size_t>& a, const std::pair<const Function*, size_t>& b) -> bool {
         return a.second > b.second;
     };
     // sort according to matching arguments
@@ -6044,16 +6044,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst, Referen
     }
 
     // remove pure virtual function if there is an overrider
-    auto itPure = std::find_if(matches.begin(), matches.end(), [](const Function* m) {
+    auto itPure = std::find_if(matches.begin(), matches.end(), [](const Function* m) -> bool {
         return m->isPure();
     });
-    if (itPure != matches.end() && std::any_of(matches.begin(), matches.end(), [&](const Function* m) {
+    if (itPure != matches.end() && std::any_of(matches.begin(), matches.end(), [&](const Function* m) -> bool {
         return m->isImplicitlyVirtual() && m != *itPure;
     }))
         matches.erase(itPure);
 
     // Only one candidate left
-    if (matches.size() == 1 && std::none_of(functionList.begin(), functionList.end(), [tok](const Function& f) {
+    if (matches.size() == 1 && std::none_of(functionList.begin(), functionList.end(), [tok](const Function& f) -> bool {
         return startsWith(f.name(), tok->str() + " <");
     }))
         return matches[0];
@@ -6346,7 +6346,7 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    auto it = std::find_if(functionList.cbegin(), functionList.cend(), [](const Function& f) {
+    auto it = std::find_if(functionList.cbegin(), functionList.cend(), [](const Function& f) -> bool {
         return f.type == FunctionType::eDestructor;
     });
     return it == functionList.end() ? nullptr : &*it;

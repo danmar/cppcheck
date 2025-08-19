@@ -43,7 +43,7 @@ static int getMisraCVersion(const Settings& settings) {
         return 2012;
     if (settings.addons.count("misra"))
         return 2012;
-    const bool misraAddonInfo = std::any_of(settings.addonInfos.cbegin(), settings.addonInfos.cend(), [](const AddonInfo& addonInfo) {
+    const bool misraAddonInfo = std::any_of(settings.addonInfos.cbegin(), settings.addonInfos.cend(), [](const AddonInfo& addonInfo) -> bool {
         return addonInfo.name == "misra";
     });
     if (misraAddonInfo)
@@ -197,7 +197,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
                           const Settings& settings,
                           const std::set<std::string>& activeCheckers,
                           const std::map<std::string, std::string>& premiumCheckers,
-                          const std::string& substring) {
+                          const std::string& substring) -> void {
         fout << std::endl << std::endl;
         fout << title << std::endl;
         fout << std::string(title.size(), '-') << std::endl;

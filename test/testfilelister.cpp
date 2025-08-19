@@ -138,7 +138,7 @@ private:
         std::string err = FileLister::recursiveAddFiles(files, basedir, {}, matcher);
         ASSERT_EQUALS("", err);
         ASSERT(!files.empty());
-        const auto it = std::find_if(files.cbegin(), files.cend(), [](const FileWithDetails& f){
+        const auto it = std::find_if(files.cbegin(), files.cend(), [](const FileWithDetails& f) -> bool {
             return f.spath().find("/lib/") != std::string::npos;
         });
         ASSERT(it == files.cend());

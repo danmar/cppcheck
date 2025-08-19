@@ -359,7 +359,7 @@ void CheckString::overlappingStrcmp()
                 continue;
             std::list<const Token *> equals0;
             std::list<const Token *> notEquals0;
-            visitAstNodes(tok, [&](const Token * t) {
+            visitAstNodes(tok, [&](const Token * t) -> ChildrenToVisit {
                 if (!t)
                     return ChildrenToVisit::none;
                 if (t->str() == "||") {

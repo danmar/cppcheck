@@ -72,7 +72,7 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
             // Do not use inner timers in "Overall time"
             const std::string::size_type pos = iter->first.rfind("::");
             if (pos != std::string::npos)
-                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) {
+                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) -> bool {
                     return d.first.size() == pos && iter->first.compare(0, d.first.size(), d.first) == 0;
                 });
         }

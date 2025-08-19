@@ -143,7 +143,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!errmsg.empty())
             bad.emplace_back(tok->location.file(), tok->location.line, std::move(errmsg));
 
-        std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const SuppressionList::Suppression& s) {
+        std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const SuppressionList::Suppression& s) -> bool {
             return !s.errorId.empty();
         });
     } else {
@@ -490,7 +490,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
     return std::any_of(configs_if.cbegin(), configs_if.cend(),
-                       [&](const std::string &cfg) {
+                       [&](const std::string &cfg) -> bool {
         return hasDefine(userDefines, cfg);
     });
 }
@@ -753,7 +753,7 @@ bool Preprocessor::hasErrors(const simplecpp::Output &output)
 
 bool Preprocessor::hasErrors(const simplecpp::OutputList &outputList)
 {
-    const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) {
+    const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) -> bool {
         return hasErrors(output);
     });
     return it != outputList.cend();
@@ -764,7 +764,7 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
     reportOutput(outputList, showerror);
     if (throwError) {
-        const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+        const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) -> bool {
             return hasErrors(output);
         });
         if (it != outputList.cend()) {

@@ -8200,7 +8200,7 @@ private:
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
-        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
+        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) -> void {
             SimpleTokenizer tokenizer(settingsDefault, *this);
             ASSERT_LOC(tokenizer.tokenize(code), file, line);
 

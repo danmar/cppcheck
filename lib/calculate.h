@@ -49,7 +49,7 @@ bool isZero(T x)
 template<class R, class T>
 R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
-    auto wrap = [](T z) {
+    auto wrap = [](T z) { // TODO: no suggestion
         return R{z};
     };
     constexpr MathLib::bigint maxBitsShift = sizeof(MathLib::bigint) * 8;

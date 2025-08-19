@@ -232,7 +232,7 @@ bool Token::isUpperCaseName() const
 {
     if (!isName())
         return false;
-    return std::none_of(mStr.begin(), mStr.end(), [](char c) {
+    return std::none_of(mStr.begin(), mStr.end(), [](char c) -> int {
         return std::islower(c);
     });
 }
@@ -1779,7 +1779,7 @@ void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std:
         line = tok->linenr();
         if (!xml) {
             ValueFlow::Value::ValueKind valueKind = values->front().valueKind;
-            const bool same = std::all_of(values->begin(), values->end(), [&](const ValueFlow::Value& value) {
+            const bool same = std::all_of(values->begin(), values->end(), [&](const ValueFlow::Value& value) -> bool {
                 return value.valueKind == valueKind;
             });
             outs += "  ";
@@ -1922,7 +1922,7 @@ const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Sett
 {
     if (!mImpl->mValues)
         return nullptr;
-    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) {
+    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) -> bool {
         return !v.isImpossible() && v.isIntValue() && v.intvalue <= val;
     });
 }
@@ -1931,7 +1931,7 @@ const ValueFlow::Value * Token::getValueGE(const MathLib::bigint val, const Sett
 {
     if (!mImpl->mValues)
         return nullptr;
-    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) {
+    return ValueFlow::findValue(*mImpl->mValues, settings, [&](const ValueFlow::Value& v) -> bool {
         return !v.isImpossible() && v.isIntValue() && v.intvalue >= val;
     });
 }
@@ -1940,7 +1940,7 @@ const ValueFlow::Value * Token::getValueNE(MathLib::bigint val) const
 {
     if (!mImpl->mValues)
         return nullptr;
-    const auto it = std::find_if(mImpl->mValues->cbegin(), mImpl->mValues->cend(), [=](const ValueFlow::Value& value) {
+    const auto it = std::find_if(mImpl->mValues->cbegin(), mImpl->mValues->cend(), [=](const ValueFlow::Value& value) -> bool {
         return value.isIntValue() && !value.isImpossible() && value.intvalue != val;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;
@@ -2102,7 +2102,7 @@ static ValueIterator removeAdjacentValues(std::list<ValueFlow::Value>& values, V
     if (it == last)
         it--;
     (*it)->bound = x->bound;
-    std::for_each(std::move(start), std::move(it), [&](ValueIterator y) {
+    std::for_each(std::move(start), std::move(it), [&](ValueIterator y) -> void {
         values.erase(y);
     });
     return values.erase(x);
@@ -2152,7 +2152,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             x++;
             continue;
         }
-        std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
+        std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) -> bool {
             (void)values;
             assert(xx != values.end() && yy != values.end());
             return xx->compareValue(*yy, less{});
@@ -2216,14 +2216,14 @@ bool Token::addValue(const ValueFlow::Value &value)
 {
     if (value.isKnown() && mImpl->mValues) {
         // Clear all other values of the same type since value is known
-        mImpl->mValues->remove_if([&](const ValueFlow::Value& x) {
+        mImpl->mValues->remove_if([&](const ValueFlow::Value& x) -> bool {
             return sameValueType(x, value);
         });
     }
 
     // Don't add a value if its already known
     if (!value.isKnown() && mImpl->mValues &&
-        std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
+        std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) -> bool {
         return x.isKnown() && sameValueType(x, value) && !x.equalValue(value);
     }))
         return false;
@@ -2379,7 +2379,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (vars.empty())
             return nullptr;
         if (std::all_of(
-                vars.cbegin(), vars.cend(), [&](const Variable* var) {
+                vars.cbegin(), vars.cend(), [&](const Variable* var) -> bool {
             return var->type() == vars.front()->type();
         }))
             return vars.front()->type();
@@ -2529,7 +2529,7 @@ bool Token::hasKnownValue() const
 bool Token::hasKnownValue(ValueFlow::Value::ValueType t) const
 {
     return mImpl->mValues &&
-           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) -> bool {
         return value.isKnown() && value.valueType == t;
     });
 }
@@ -2539,7 +2539,7 @@ bool Token::hasKnownSymbolicValue(const Token* tok) const
     if (tok->exprId() == 0)
         return false;
     return mImpl->mValues &&
-           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+           std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) -> bool {
         return value.isKnown() && value.isSymbolicValue() && value.tokvalue &&
                value.tokvalue->exprId() == tok->exprId();
     });
@@ -2558,7 +2558,7 @@ const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) cons
             return nullptr;
         return &v;
     }
-    auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
+    auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) -> bool {
         return value.isKnown() && value.valueType == t;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;
@@ -2568,7 +2568,7 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)
         return nullptr;
-    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) -> bool {
         return value.isIntValue() && !value.isImpossible() && value.intvalue == val;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;
@@ -2612,7 +2612,7 @@ const ValueFlow::Value* Token::getMovedValue() const
 {
     if (!mImpl->mValues)
         return nullptr;
-    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) -> bool {
         return value.isMovedValue() && !value.isImpossible() &&
                value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
     });
@@ -2624,7 +2624,7 @@ const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) 
 {
     if (!mImpl->mValues)
         return nullptr;
-    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) -> bool {
         return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;

@@ -246,7 +246,7 @@ namespace ValueFlow
             return;
 
         if (Token::simpleMatch(parent, ",") && !parent->isInitComma() && astIsRHS(tok)) {
-            const Token* callParent = findParent(parent, [](const Token* p) {
+            const Token* callParent = findParent(parent, [](const Token* p) -> bool {
                 return !Token::simpleMatch(p, ",");
             });
             // Ensure that the comma isn't a function call
@@ -410,7 +410,7 @@ namespace ValueFlow
                 nonneg int varId = 0;
                 bool ret = false;
                 visitAstNodes(parent->astOperand1(),
-                              [&](const Token *t) {
+                              [&](const Token *t) -> ChildrenToVisit {
                     if (t->varId()) {
                         if (varId > 0 || value.varId != 0)
                             ret = true;
@@ -526,7 +526,7 @@ namespace ValueFlow
                                     equal = std::equal(args1.begin(),
                                                        args1.end(),
                                                        args2.begin(),
-                                                       [&](const Token* atok, const Token* btok) {
+                                                       [&](const Token* atok, const Token* btok) -> bool {
                                         return atok->getKnownIntValue() ==
                                                btok->getKnownIntValue();
                                     });

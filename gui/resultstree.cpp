@@ -811,7 +811,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 {
                     auto *action = new QAction(tr("No tag"), tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=]() {
+                    connect(action, &QAction::triggered, [=]() -> void {
                         tagSelectedItems(QString());
                     });
                 }
@@ -819,7 +819,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 for (const QString& tagstr : currentProject->getTags()) {
                     auto *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=]() {
+                    connect(action, &QAction::triggered, [=]() -> void {
                         tagSelectedItems(tagstr);
                     });
                 }
@@ -1293,7 +1293,7 @@ void ResultsTree::saveErrors(Report *report, const QStandardItem *fileItem) cons
 
 static int indexOf(const QList<ErrorItem> &list, const ErrorItem &item)
 {
-    auto it = std::find_if(list.cbegin(), list.cend(), [&](const ErrorItem& e) {
+    auto it = std::find_if(list.cbegin(), list.cend(), [&](const ErrorItem& e) -> bool {
         return ErrorItem::sameCID(item, e);
     });
     return it == list.cend() ? -1 : static_cast<int>(std::distance(list.cbegin(), it));

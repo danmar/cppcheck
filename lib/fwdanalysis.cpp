@@ -83,7 +83,7 @@ static bool hasVolatileCastOrVar(const Token *expr)
 {
     bool ret = false;
     visitAstNodes(expr,
-                  [&ret](const Token *tok) {
+                  [&ret](const Token *tok) -> ChildrenToVisit {
         if (tok->variable() && tok->variable()->isVolatile())
             ret = true;
         else if (Token::simpleMatch(tok, "( volatile"))
@@ -416,7 +416,7 @@ std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOu
     bool local = true;
     bool unknownVarId = false;
     visitAstNodes(expr,
-                  [&](const Token *tok) {
+                  [&](const Token *tok) -> ChildrenToVisit {
         if (tok->str() == "[" && mWhat == What::UnusedValue)
             return ChildrenToVisit::op1;
         if (tok->varId() == 0 && tok->isName() && tok->strAt(-1) != ".") {

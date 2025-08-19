@@ -268,7 +268,7 @@ void CheckType::checkSignConversion()
             if (!tok1)
                 continue;
             const ValueFlow::Value* negativeValue =
-                ValueFlow::findValue(tok1->values(), *mSettings, [&](const ValueFlow::Value& v) {
+                ValueFlow::findValue(tok1->values(), *mSettings, [&](const ValueFlow::Value& v) -> bool {
                 return !v.isImpossible() && v.isIntValue() && (v.intvalue <= -1 || v.wideintvalue <= -1);
             });
             if (!negativeValue)
@@ -331,7 +331,7 @@ static bool checkTypeCombination(ValueType src, ValueType tgt, const Settings& s
     if (!(sizeSrc > 0 && sizeTgt > 0 && sizeSrc < sizeTgt))
         return false;
 
-    return std::any_of(std::begin(typeCombinations), std::end(typeCombinations), [&](const std::pair<ValueType::Type, ValueType::Type>& p) {
+    return std::any_of(std::begin(typeCombinations), std::end(typeCombinations), [&](const std::pair<ValueType::Type, ValueType::Type>& p) -> bool {
         return src.type == p.first && tgt.type == p.second;
     });
 }

@@ -68,7 +68,7 @@ void CheckAssert::assertWithSideEffects()
                         continue;
                     if (Library::getContainerYield(tmp->next()) != Library::Container::Yield::NO_YIELD) // bailout, assume read access
                         continue;
-                    if (std::any_of(f->argumentChecks.begin(), f->argumentChecks.end(), [](const std::pair<int, Library::ArgumentChecks>& ac) {
+                    if (std::any_of(f->argumentChecks.begin(), f->argumentChecks.end(), [](const std::pair<int, Library::ArgumentChecks>& ac) -> bool {
                         return ac.second.iteratorInfo.container > 0; // bailout, takes iterators -> assume read access
                     }))
                         continue;

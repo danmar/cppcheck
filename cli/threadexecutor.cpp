@@ -92,7 +92,7 @@ public:
         mItNextFileSettings = mFileSettings.begin();
 
         mTotalFiles = mFiles.size() + mFileSettings.size();
-        mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) {
+        mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& p) -> std::size_t {
             return v + p.size();
         });
     }
@@ -210,7 +210,7 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    unsigned int result = std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
+    unsigned int result = std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) -> unsigned int {
         return v + f.get();
     });
 
