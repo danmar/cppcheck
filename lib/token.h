@@ -117,6 +117,7 @@ private:
         Token* mAstOperand1{};
         Token* mAstOperand2{};
         Token* mAstParent{};
+        Token* mAstTop{};
 
         // symbol database information
         const Scope* mScope{};
@@ -1598,15 +1599,23 @@ public:
     }
     RET_NONNULL Token *astTop() {
         Token *ret = this;
+        if (mImpl->mAstTop) {
+            return mImpl->mAstTop;
+        }
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
+        mImpl->mAstTop = ret;
         return ret;
     }
 
     RET_NONNULL const Token *astTop() const {
         const Token *ret = this;
+        if (mImpl->mAstTop) {
+            return mImpl->mAstTop;
+        }
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
+        mImpl->mAstTop = const_cast<Token *>(ret);
         return ret;
     }
 
