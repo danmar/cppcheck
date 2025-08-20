@@ -117,6 +117,7 @@ private:
         Token* mAstOperand1{};
         Token* mAstOperand2{};
         Token* mAstParent{};
+        Token* mAstTop{};
 
         // symbol database information
         const Scope* mScope{};
@@ -1557,6 +1558,9 @@ public:
      * @throws InternalError thrown on cyclic dependency
      */
     void astParent(Token* tok);
+    void astTop(Token * tok) {
+        mImpl->mAstTop = tok;
+    }
 
     Token * astOperand1() {
         return mImpl->mAstOperand1;
@@ -1597,6 +1601,9 @@ public:
 
     }
     RET_NONNULL Token *astTop() {
+        if (mImpl->mAstTop) {
+            return mImpl->mAstTop;
+        }
         Token *ret = this;
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
@@ -1604,6 +1611,9 @@ public:
     }
 
     RET_NONNULL const Token *astTop() const {
+        if (mImpl->mAstTop) {
+            return mImpl->mAstTop;
+        }
         const Token *ret = this;
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
