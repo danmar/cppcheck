@@ -486,7 +486,8 @@ namespace ValueFlow
                             continue;
                         result.valueType = Value::ValueType::FLOAT;
                     }
-                    if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
+                    const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
+                    if (isFloat && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
                         continue;
                     const auto intValue1 = [&]() -> MathLib::bigint {
                         return value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
@@ -539,7 +540,6 @@ namespace ValueFlow
                         }
                         setTokenValue(parent, std::move(result), settings);
                     } else if (Token::Match(parent, "%op%")) {
-                        const bool isFloat = value1.isFloatValue() || value2.isFloatValue();
                         if (Token::Match(parent, "%comp%")) {
                             if (!isFloat && !value1.isIntValue() && !value2.isIntValue())
                                 continue;
