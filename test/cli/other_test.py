@@ -2426,6 +2426,41 @@ void f(const void* p)
 '''.format(version_str, test_file_exp, test_file_exp, test_file_exp))
 
 
+def test_outputfile(tmp_path): # #14051
+    test_file = tmp_path / 'test.cpp'
+    out_file = tmp_path / 'out.txt'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+int main()
+{
+    int x = 1 / 0;
+}
+""")
+
+    args = [
+        '-q',
+        '--output-file={}'.format(out_file),
+        str(test_file)
+    ]
+
+    out_exp = [
+        '{}:4:15: error: Division by zero. [zerodiv]'.format(test_file),
+        '    int x = 1 / 0;',
+        '              ^',
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr == ''
+
+    with open(out_file, 'rt') as f:
+        out_text = f.read();
+
+    assert out_text.splitlines() == out_exp
+
+
 def test_internal_error_loc_int(tmp_path):
     test_file = tmp_path / 'test.c'
     with open(test_file, 'wt') as f:
