@@ -7980,6 +7980,18 @@ private:
                "    return (!std::is_reference<decltype(a)>::value);\n"
                "}\n";
         (void)valueOfTok(code, "0");
+
+        code = "struct S { int a; };\n" // #14036
+               "template <typename T>\n"
+               "struct U {\n"
+               "    U() = default;\n"
+               "    U(int i, int* p) {\n"
+               "        m = new T(i, p);\n"
+               "    }\n"
+               "    T m;\n"
+               "};\n"
+               "U<S*> u;\n";
+        (void)valueOfTok(code, "new");
     }
 
     void valueFlowHang() {
