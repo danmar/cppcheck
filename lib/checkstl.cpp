@@ -1649,7 +1649,7 @@ static const Token* skipLocalVars(const Token* const tok)
         return skipLocalVars(tok->next());
 
     if (tok->isAssignmentOp()) {
-        const Token *top = tok->astTop();
+        const Token *top = tok->astTop(true);
         const Token *varTok = top->astOperand1();
         const Variable *var = varTok->variable();
         if (!var)
@@ -1667,7 +1667,7 @@ static const Token* skipLocalVars(const Token* const tok)
 static const Token *findInsertValue(const Token *tok, const Token *containerTok, const Token *keyTok, const Settings &settings)
 {
     const Token *startTok = skipLocalVars(tok);
-    const Token *top = startTok->astTop();
+    const Token *top = startTok->astTop(true);
 
     const Token *icontainerTok = nullptr;
     const Token *ikeyTok = nullptr;

@@ -1013,7 +1013,9 @@ static const Token * getVariableInitExpression(const Variable * var)
 
 const Token* isInLoopCondition(const Token* tok)
 {
-    const Token* top = tok->astTop();
+    if (!tok)
+        return nullptr;
+    const Token* top = tok->astTop(true);
     return Token::Match(top->previous(), "for|while (") ? top : nullptr;
 }
 
@@ -2243,12 +2245,12 @@ bool isReturnScope(const Token* const endToken, const Library& library, const To
             !Token::findsimplematch(prev->link(), "break", prev)) {
             return isReturnScope(prev, library, unknownFunc, functionScope);
         }
-        if (isEscaped(prev->link()->astTop(), functionScope, library))
+        if (isEscaped(prev->link()->astTop(true), functionScope, library))
             return true;
         if (Token::Match(prev->link()->previous(), "[;{}] {"))
             return isReturnScope(prev, library, unknownFunc, functionScope);
     } else if (Token::simpleMatch(prev, ";")) {
-        if (prev->tokAt(-2) && hasNoreturnFunction(prev->tokAt(-2)->astTop(), library, unknownFunc))
+        if (prev->tokAt(-2) && hasNoreturnFunction(prev->tokAt(-2)->astTop(true), library, unknownFunc))
             return true;
         // Unknown symbol
         if (Token::Match(prev->tokAt(-2), ";|}|{ %name% ;") && prev->previous()->isIncompleteVar()) {
@@ -2257,9 +2259,9 @@ bool isReturnScope(const Token* const endToken, const Library& library, const To
             return false;
         }
         if (Token::simpleMatch(prev->previous(), ") ;") && prev->linkAt(-1) &&
-            isEscaped(prev->linkAt(-1)->astTop(), functionScope, library))
+            isEscaped(prev->linkAt(-1)->astTop(true), functionScope, library))
             return true;
-        if (isEscaped(prev->previous()->astTop(), functionScope, library))
+        if (isEscaped(prev->previous()->astTop(true), functionScope, library))
             return true;
         // return/goto statement
         prev = prev->previous();

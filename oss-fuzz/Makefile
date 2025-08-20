@@ -159,7 +159,7 @@ $(libcppdir)/addoninfo.o: ../lib/addoninfo.cpp ../externals/picojson/picojson.h 
 $(libcppdir)/analyzerinfo.o: ../lib/analyzerinfo.cpp ../externals/tinyxml2/tinyxml2.h ../lib/analyzerinfo.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/standards.h ../lib/utils.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/analyzerinfo.cpp
 
-$(libcppdir)/astutils.o: ../lib/astutils.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkclass.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/findtoken.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
+$(libcppdir)/astutils.o: ../lib/astutils.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkclass.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/findtoken.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/astutils.cpp
 
 $(libcppdir)/check.o: ../lib/check.cpp ../lib/addoninfo.h ../lib/check.h ../lib/checkers.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
@@ -264,19 +264,19 @@ $(libcppdir)/errorlogger.o: ../lib/errorlogger.cpp ../externals/tinyxml2/tinyxml
 $(libcppdir)/errortypes.o: ../lib/errortypes.cpp ../lib/config.h ../lib/errortypes.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/errortypes.cpp
 
-$(libcppdir)/findtoken.o: ../lib/findtoken.cpp ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/findtoken.h ../lib/library.h ../lib/mathlib.h ../lib/smallvector.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
+$(libcppdir)/findtoken.o: ../lib/findtoken.cpp ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/findtoken.h ../lib/library.h ../lib/mathlib.h ../lib/smallvector.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/findtoken.cpp
 
 $(libcppdir)/forwardanalyzer.o: ../lib/forwardanalyzer.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/forwardanalyzer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/forwardanalyzer.cpp
 
-$(libcppdir)/fwdanalysis.o: ../lib/fwdanalysis.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/fwdanalysis.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
+$(libcppdir)/fwdanalysis.o: ../lib/fwdanalysis.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/fwdanalysis.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/fwdanalysis.cpp
 
 $(libcppdir)/importproject.o: ../lib/importproject.cpp ../externals/picojson/picojson.h ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/filesettings.h ../lib/importproject.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/pathmatch.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/suppressions.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/importproject.cpp
 
-$(libcppdir)/infer.o: ../lib/infer.cpp ../lib/calculate.h ../lib/config.h ../lib/errortypes.h ../lib/infer.h ../lib/mathlib.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
+$(libcppdir)/infer.o: ../lib/infer.cpp ../lib/calculate.h ../lib/config.h ../lib/errortypes.h ../lib/infer.h ../lib/mathlib.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/infer.cpp
 
 $(libcppdir)/keywords.o: ../lib/keywords.cpp ../lib/config.h ../lib/keywords.h ../lib/standards.h ../lib/utils.h
@@ -285,13 +285,13 @@ $(libcppdir)/keywords.o: ../lib/keywords.cpp ../lib/config.h ../lib/keywords.h .
 $(libcppdir)/library.o: ../lib/library.cpp ../externals/tinyxml2/tinyxml2.h ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/library.cpp
 
-$(libcppdir)/mathlib.o: ../lib/mathlib.cpp ../externals/simplecpp/simplecpp.h ../lib/config.h ../lib/errortypes.h ../lib/mathlib.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
+$(libcppdir)/mathlib.o: ../lib/mathlib.cpp ../externals/simplecpp/simplecpp.h ../lib/config.h ../lib/errortypes.h ../lib/mathlib.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/mathlib.cpp
 
 $(libcppdir)/path.o: ../lib/path.cpp ../externals/simplecpp/simplecpp.h ../lib/config.h ../lib/path.h ../lib/standards.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/path.cpp
 
-$(libcppdir)/pathanalysis.o: ../lib/pathanalysis.cpp ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/pathanalysis.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
+$(libcppdir)/pathanalysis.o: ../lib/pathanalysis.cpp ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/pathanalysis.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/pathanalysis.cpp
 
 $(libcppdir)/pathmatch.o: ../lib/pathmatch.cpp ../lib/config.h ../lib/path.h ../lib/pathmatch.h ../lib/standards.h
@@ -306,7 +306,7 @@ $(libcppdir)/preprocessor.o: ../lib/preprocessor.cpp ../externals/simplecpp/simp
 $(libcppdir)/programmemory.o: ../lib/programmemory.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/calculate.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/programmemory.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/programmemory.cpp
 
-$(libcppdir)/reverseanalyzer.o: ../lib/reverseanalyzer.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/forwardanalyzer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
+$(libcppdir)/reverseanalyzer.o: ../lib/reverseanalyzer.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/forwardanalyzer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/reverseanalyzer.cpp
 
 $(libcppdir)/settings.o: ../lib/settings.cpp ../externals/picojson/picojson.h ../lib/addoninfo.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/standards.h ../lib/summaries.h ../lib/suppressions.h ../lib/utils.h ../lib/vfvalue.h
@@ -336,16 +336,16 @@ $(libcppdir)/tokenlist.o: ../lib/tokenlist.cpp ../externals/simplecpp/simplecpp.
 $(libcppdir)/utils.o: ../lib/utils.cpp ../lib/config.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/utils.cpp
 
-$(libcppdir)/vf_analyzers.o: ../lib/vf_analyzers.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/calculate.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/programmemory.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vf_analyzers.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
+$(libcppdir)/vf_analyzers.o: ../lib/vf_analyzers.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/calculate.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/programmemory.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vf_analyzers.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_analyzers.cpp
 
-$(libcppdir)/vf_common.o: ../lib/vf_common.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueflow.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
+$(libcppdir)/vf_common.o: ../lib/vf_common.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_common.cpp
 
-$(libcppdir)/vf_settokenvalue.o: ../lib/vf_settokenvalue.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/calculate.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueflow.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
+$(libcppdir)/vf_settokenvalue.o: ../lib/vf_settokenvalue.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/calculate.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vf_common.h ../lib/vf_settokenvalue.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf_settokenvalue.cpp
 
-$(libcppdir)/vfvalue.o: ../lib/vfvalue.cpp ../lib/config.h ../lib/errortypes.h ../lib/mathlib.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
+$(libcppdir)/vfvalue.o: ../lib/vfvalue.cpp ../lib/config.h ../lib/errortypes.h ../lib/mathlib.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vfvalue.cpp
 
 

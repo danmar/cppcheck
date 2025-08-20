@@ -641,7 +641,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (tok->function())
             continue;
 
-        if (Token::simpleMatch(tok->astTop(), "throw"))
+        if (Token::simpleMatch(tok->astTop(true), "throw"))
             continue;
 
         if (Token::simpleMatch(tok->astParent(), ".")) {

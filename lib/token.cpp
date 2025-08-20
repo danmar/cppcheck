@@ -1437,7 +1437,7 @@ void Token::astOperand1(Token *tok)
         mImpl->mAstOperand1->astParent(nullptr);
     // goto parent operator
     if (tok) {
-        tok = tok->astTop();
+        tok = tok->astTop(false);
         tok->astParent(this);
     }
     mImpl->mAstOperand1 = tok;
@@ -1449,7 +1449,7 @@ void Token::astOperand2(Token *tok)
         mImpl->mAstOperand2->astParent(nullptr);
     // goto parent operator
     if (tok) {
-        tok = tok->astTop();
+        tok = tok->astTop(false);
         tok->astParent(this);
     }
     mImpl->mAstOperand2 = tok;

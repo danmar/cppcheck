@@ -856,7 +856,7 @@ static std::string innerSmtString(const Token * tok)
 {
     if (!tok)
         return "if";
-    const Token * top = tok->astTop();
+    const Token * top = tok->astTop(true);
     if (top->str() == "(" && top->astOperand1())
         return top->astOperand1()->str();
     return top->str();
@@ -1138,7 +1138,7 @@ static std::string conditionString(const Token * tok)
 }
 
 static bool isIfConstexpr(const Token* tok) {
-    const Token* const top = tok->astTop();
+    const Token* const top = tok->astTop(true);
     return Token::simpleMatch(top->astOperand1(), "if") && top->astOperand1()->isConstexpr();
 }
 
@@ -1835,7 +1835,7 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             if (!blockTok->next())
                 continue;
-            const Token *assignTok = blockTok->next()->astTop();
+            const Token *assignTok = blockTok->next()->astTop(true);
             if (!Token::simpleMatch(assignTok, "="))
                 continue;
             if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
