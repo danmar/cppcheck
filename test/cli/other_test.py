@@ -2456,7 +2456,7 @@ int main()
     assert stderr == ''
 
     with open(out_file, 'rt') as f:
-        out_text = f.read();
+        out_text = f.read()
 
     assert out_text.splitlines() == out_exp
 
