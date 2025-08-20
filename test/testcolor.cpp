@@ -30,8 +30,7 @@ private:
     }
 
     void toString() const {
-        // TODO: color conversion is dependent on stdout/stderr being a TTY
-        ASSERT_EQUALS("", ::toString(Color::FgRed));
+        ASSERT_EQUALS("\033[31m", ::toString(Color::FgRed));
     }
 };
 

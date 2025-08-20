@@ -35,10 +35,11 @@ enum class Color : std::uint8_t {
     FgMagenta  = 35,
     FgDefault  = 39
 };
+
+CPPCHECKLIB bool getForcedColorSetting(bool &colorSetting);
+
 CPPCHECKLIB std::ostream& operator<<(std::ostream& os, Color c);
 
 CPPCHECKLIB std::string toString(Color c);
-
-extern CPPCHECKLIB bool gDisableColors; // for testing
 
 #endif
