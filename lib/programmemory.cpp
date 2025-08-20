@@ -524,13 +524,15 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 {
+    if (!tok)
+        return;
     ProgramMemory pm = state;
     if (isEmpty)
         pm.setContainerSizeValue(tok, 0, b);
     else
         programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
-    const Token* top = tok->astTop();
+    const Token* top = tok->astTop(true);
     if (Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
         origin = top->link()->next();
         if (!b && origin->link()) {
@@ -1748,7 +1750,7 @@ namespace {
             if (!scope->bodyStart)
                 return {unknown()};
             for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
-                const Token* top = tok->astTop();
+                const Token* top = tok->astTop(true);
 
                 if (Token::simpleMatch(top, "return") && top->astOperand1())
                     return {execute(top->astOperand1())};
