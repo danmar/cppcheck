@@ -2555,6 +2555,8 @@ Function::Function(const Token *tok,
     if (::isOperator(tokenDef)) {
         isOperator(true);
 
+        isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
+
         // 'operator =' is special
         if (tokenDef->str() == "operator=")
             type = FunctionType::eOperatorEqual;
