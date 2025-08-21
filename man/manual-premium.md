@@ -1342,6 +1342,17 @@ https://www.cppcheck.com/plans-pricing
 This is described on the Cppcheck Premium website:
 https://www.cppcheck.com
 
+### License file path
+
+There are predefined paths where the premium addon search for license files. If you want to
+provide an arbitrary license file path on the command line you can use the option
+`--premium-license-file`. Example:
+
+    cppcheck --premium-license-file=path/to/file.lic test.cpp
+
+If an explicit path is provided like this then premium addon does not search for license
+files in the predefined paths.
+
 ### Troubleshooting
 
 If your license does not work you can get some details about the license validation by executing
