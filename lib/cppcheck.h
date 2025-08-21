@@ -196,7 +196,6 @@ private:
      */
     unsigned int checkBuffer(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size);
 
-    using CreateTokensFn = std::function<simplecpp::TokenList (std::vector<std::string>& files)>;
     // TODO: should use simplecpp::OutputList
     using CreateTokenListFn = std::function<simplecpp::TokenList (std::vector<std::string>&, std::list<simplecpp::Output>*)>;
 
@@ -204,11 +203,10 @@ private:
      * @brief Check a file using stream
      * @param file the file
      * @param cfgname  cfg name
-     * @param createTokens a function to create the tokens with
-     * @param createTokenList a function to create the TokenList with
+     * @param createTokenList a function to create the simplecpp::TokenList with
      * @return number of errors found
      */
-    unsigned int checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokensFn& createTokens, const CreateTokenListFn& createTokenList);
+    unsigned int checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList);
 
     /**
      * @brief Check normal tokens
