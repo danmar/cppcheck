@@ -776,6 +776,9 @@ std::string ErrorLogger::toxml(const std::string &str)
         case '\0':
             xml += "\\0";
             break;
+        case '\n':
+            xml += "&#10;";
+            break;
         default:
             if (c >= ' ' && c <= 0x7f)
                 xml += c;

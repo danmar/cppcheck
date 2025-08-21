@@ -485,6 +485,22 @@ private:
                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
                                      "  </rawtokens>\n";
         ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
+
+        const char code[] = "//x \\ \n"
+                            "y\n"
+                            ";\n";
+
+        std::istringstream fin(code);
+        simplecpp::OutputList outputList;
+        const simplecpp::TokenList tokens2(fin, files, "", &outputList);
+        const std::string expected2 = "  <rawtokens>\n"
+                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                      "    <file index=\"1\" name=\"\"/>\n"
+                                      "    <tok fileIndex=\"1\" linenr=\"1\" column=\"1\" str=\"//x &#10;y\"/>\n"
+                                      "    <tok fileIndex=\"1\" linenr=\"3\" column=\"1\" str=\";\"/>\n"
+                                      "  </rawtokens>\n";
+        ASSERT_EQUALS(expected2, cppcheck.getDumpFileContentsRawTokens(files, tokens2));
+
     }
 
     void getDumpFileContentsLibrary() const {
