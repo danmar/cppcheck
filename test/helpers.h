@@ -61,12 +61,17 @@ public:
     template<size_t size>
     bool tokenize(const char (&code)[size])
     {
-        return tokenize(code, size-1, std::string(list.isCPP() ? "test.cpp" : "test.c"));
+        return tokenize(code, size-1);
     }
 
     bool tokenize(const std::string& code)
     {
-        return tokenize(code.data(), code.size(), std::string(list.isCPP() ? "test.cpp" : "test.c"));
+        return tokenize(code.data(), code.size());
+    }
+
+    bool tokenize(const char* code, std::size_t size)
+    {
+        return tokenize(code, size, std::string(list.isCPP() ? "test.cpp" : "test.c"));
     }
 
 private:
@@ -107,7 +112,7 @@ public:
     explicit SimpleTokenList(const char (&code)[size], Standards::Language lang = Standards::Language::CPP)
         : list{settings, lang}
     {
-        if (!list.createTokensFromBuffer(code, size-1))
+        if (!list.createTokensFromString(code))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -116,7 +121,7 @@ public:
         : list{settings, lang}
     {
         list.appendFileIfNew(file0);
-        if (!list.createTokensFromBuffer(code, size-1))
+        if (!list.createTokensFromString(code))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -262,13 +267,6 @@ public:
         preprocess(code, size-1, mFiles, file0, *this, errorlogger);
     }
 
-    // TODO: get rid of this
-    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char* code, std::size_t size, const std::string& file0)
-        : Tokenizer{TokenList{settings, Path::identify(file0, false)}, errorlogger}
-    {
-        preprocess(code, size, mFiles, file0, *this, errorlogger);
-    }
-
 private:
     static void preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
 
@@ -280,15 +278,10 @@ struct TokenListHelper
     template<size_t size>
     static bool createTokensFromString(TokenList& tokenlist, const char (&code)[size], const std::string& file)
     {
-        return createTokensFromBuffer(tokenlist, code, size-1, file);
-    }
-
-    static bool createTokensFromBuffer(TokenList& tokenlist, const char* data, size_t size, const std::string& file)
-    {
         if (tokenlist.front())
             throw std::runtime_error("token list is not empty");
         tokenlist.appendFileIfNew(file);
-        return tokenlist.createTokensFromBuffer(data, size);
+        return tokenlist.createTokensFromString(code);
     }
 };
 

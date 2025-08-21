@@ -497,6 +497,7 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    // TODO: use options
     template<size_t size>
     std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], bool expand = true, Platform::Type platform = Platform::Type::Native,
                                       bool cpp = true, Standards::cppstd_t cppstd = Standards::CPP11, Standards::cstd_t cstd = Standards::C11) {
@@ -6209,7 +6210,7 @@ private:
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokensFromBuffer(data, size-1))
+        if (!tokenlist.createTokensFromString(data))
             return "ERROR";
 
         Tokenizer tokenizer(std::move(tokenlist), *this);
@@ -8202,9 +8203,9 @@ private:
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
-        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
+        auto testIsCpp11init_ = [this](const char* file, int line, const std::string& code, const char* find, TokenImpl::Cpp11init expected) {
             SimpleTokenizer tokenizer(settingsDefault, *this);
-            ASSERT_LOC(tokenizer.tokenize(code), file, line);
+            ASSERT_LOC(tokenizer.tokenize(code.data(), code.size()), file, line);
 
             const Token* tok = Token::findsimplematch(tokenizer.tokens(), find, strlen(find));
             ASSERT_LOC(tok, file, line);
@@ -8628,7 +8629,7 @@ private:
     }
 
     void dumpFallthrough() {
-        const char * code = "void f(int n) {\n"
+        const char code[] = "void f(int n) {\n"
                             "    void g(), h(), i();\n"
                             "    switch (n) {\n"
                             "        case 1:\n"
@@ -8652,9 +8653,9 @@ private:
     }
 
     void simplifyRedundantParentheses() {
-        const char *code = "int f(struct S s) {\n"
-                           "    return g(1, &(int){ s.i });\n"
-                           "}\n";
+        const char code[] = "int f(struct S s) {\n"
+                            "    return g(1, &(int){ s.i });\n"
+                            "}\n";
         SimpleTokenizer tokenizer(settingsDefault, *this, false);
         ASSERT_NO_THROW(tokenizer.tokenize(code));
     }

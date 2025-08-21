@@ -279,7 +279,7 @@ private:
     template<size_t size>
     std::string simplifyTypedef(const char (&data)[size]) {
         TokenList tokenlist{settings1, Standards::Language::CPP};
-        if (!tokenlist.createTokensFromBuffer(data, size-1))
+        if (!tokenlist.createTokensFromString(data))
             return "";
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -314,7 +314,7 @@ private:
     std::string simplifyTypedefC(const char (&data)[size]) {
         TokenList tokenlist{settings1, Standards::Language::C};
 
-        if (!TokenListHelper::createTokensFromBuffer(tokenlist, data, size-1, "file.c"))
+        if (!TokenListHelper::createTokensFromString(tokenlist, data, "file.c"))
             return "";
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -330,7 +330,7 @@ private:
     template<size_t size>
     std::string dumpTypedefInfo(const char (&code)[size]) {
         TokenList tokenlist{settings1, Standards::Language::C};
-        if (!TokenListHelper::createTokensFromBuffer(tokenlist, code, size-1, "file.c"))
+        if (!TokenListHelper::createTokensFromString(tokenlist, code, "file.c"))
             return {};
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
