@@ -888,6 +888,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
     mLogger->resetExitCode();
 
+    std::string str;
+    str[0] = 'x';
+
     if (Settings::terminated())
         return mLogger->exitcode();
 
