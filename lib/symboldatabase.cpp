@@ -2652,10 +2652,12 @@ Function::Function(const Token *tok,
         hasBody(true);
     }
 
-    for (tok = tokenDef->previous(); Token::Match(tok, "&|&&|*|::|)|[|(|]|%name%"); tok = tok->previous()) {
+    for (tok = tokenDef->previous(); Token::Match(tok, "&|&&|*|::|)|]|%name%"); tok = tok->previous()) {
         // We should set other keywords here as well
         if (tok->str() == "explicit")
             isExplicit(true);
+        if (tok->str() == "]" || tok->str() == ")")
+            tok = tok->link();
     }
 }
 
