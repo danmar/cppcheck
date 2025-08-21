@@ -289,7 +289,8 @@ private:
     };
 
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
+    template<size_t size>
+    void checkStructMemberUsage_(const char* file, int line, const char (&code)[size], const CheckStructMemberUsageOptions& options = make_default_obj()) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this, options.cpp);
         if (options.directives)

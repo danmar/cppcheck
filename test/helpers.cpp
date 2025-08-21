@@ -124,12 +124,12 @@ std::string PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& e
     return it->second;
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &filename, SuppressionList *inlineSuppression)
 {
     return getcode(settings, errorlogger, code, size, {}, filename, inlineSuppression);
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
