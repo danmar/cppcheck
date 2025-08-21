@@ -2555,8 +2555,6 @@ Function::Function(const Token *tok,
     if (::isOperator(tokenDef)) {
         isOperator(true);
 
-        isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
-
         // 'operator =' is special
         if (tokenDef->str() == "operator=")
             type = FunctionType::eOperatorEqual;
@@ -2580,8 +2578,6 @@ Function::Function(const Token *tok,
         // constructor of any kind
         else
             type = FunctionType::eConstructor;
-
-        isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
     }
 
     const Token *tok1 = setFlags(tok, scope);
@@ -2654,6 +2650,12 @@ Function::Function(const Token *tok,
         arg = argDef;
         isInline(true);
         hasBody(true);
+    }
+
+    for (tok = tokenDef->previous(); Token::Match(tok, "&|&&|*|::|)|[|(|]|%name%"); tok = tok->previous()) {
+        // We should set other keywords here as well
+        if (tok->str() == "explicit")
+            isExplicit(true);
     }
 }
 
