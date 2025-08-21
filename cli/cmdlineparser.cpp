@@ -1899,12 +1899,9 @@ void CmdLineParser::printHelp() const
             "                          * safety            Turn on safety certified behavior (ON by default)\n"
             "                          * safety-off        Turn off safety certified behavior\n"
             "    --premium-cert-c-int-precision=BITS\n"
-            "                         Integer precision to use in Cert C analysis. The precision of 'int' and the size of\n"
-            "                         'int' is usually the same, and then you shall not use this option.\n"
-            "                         If the precision of 'int' is less than the size of 'int' then use this option to\n"
-            "                         specify the precision. BITS shall be a positive value that is less than the size of\n"
-            "                         'int'. I.e. if size of 'int' is 32 bits then BITS shall be a positive value that is\n"
-            "                         less than 32.\n"
+            "                         Integer precision to use in Cert C analysis. Only needed if precision of 'int' is\n"
+            "                         less than the size of 'int'. BITS shall be a positive value that is less than the\n"
+            "                         size of 'int'. This precision is used for INT35-C checking.\n"
             "    --premium-license-file=<path>\n"
             "                         Provide license file path with argument.\n";
     }
