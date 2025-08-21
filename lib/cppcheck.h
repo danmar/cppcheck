@@ -111,10 +111,6 @@ public:
      */
     unsigned int checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size);
 
-    unsigned int checkString(const FileWithDetails &file, const std::string& data) {
-        return checkBuffer(file, reinterpret_cast<const uint8_t*>(data.data()), data.size());
-    }
-
     /**
      * @brief Returns current version number as a string.
      * @return version, e.g. "1.38"

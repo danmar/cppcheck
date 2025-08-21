@@ -104,6 +104,7 @@ public:
         return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size);
     }
     template<size_t size>
+    // cppcheck-suppress unusedFunction - used in tests only
     bool createTokensFromString(const char (&data)[size]) {
         return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1);
     }
@@ -214,7 +215,6 @@ public:
     }
 
 private:
-    bool createTokensFromFileInternal(const std::string& file0);
     bool createTokensFromBufferInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */
