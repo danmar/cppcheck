@@ -328,18 +328,6 @@ bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensFromFileInternal(const std::string& file0)
-{
-    simplecpp::OutputList outputList;
-    simplecpp::TokenList tokens(file0, mFiles, &outputList);
-
-    createTokens(std::move(tokens));
-
-    return outputList.empty();
-}
-
-//---------------------------------------------------------------------------
-
 bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
 {
     simplecpp::OutputList outputList;
