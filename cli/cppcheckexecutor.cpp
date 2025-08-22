@@ -70,10 +70,7 @@
 #endif
 
 #ifdef _WIN32
-#include <io.h>
 #include <windows.h>
-#else
-#include <unistd.h>
 #endif
 
 #if !defined(WIN32) && !defined(__MINGW32__)
@@ -615,20 +612,10 @@ void StdLogger::reportErr(const std::string &errmsg)
 
 void StdLogger::reportOut(const std::string &outmsg, Color c)
 {
-    bool enableColors;
-
-    if (!getForcedColorSetting(enableColors)) {
-#ifdef _WIN32
-        enableColors = (_isatty(_fileno(stdout)) != 0);
-#else
-        enableColors = (isatty(fileno(stdout)) != 0);
-#endif
-    }
-
-    if (enableColors && c != Color::Reset)
-        std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
-    else
+    if (c == Color::Reset)
         std::cout << ansiToOEM(outmsg, true) << std::endl;
+    else
+        std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
 // TODO: remove filename parameter?

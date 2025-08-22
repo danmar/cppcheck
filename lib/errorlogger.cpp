@@ -594,35 +594,34 @@ static void replace(std::string& source, const std::unordered_map<std::string, s
     }
 }
 
-static void replaceColors(std::string& source, bool enableColors) {
-    if (enableColors) {
-        static const std::unordered_map<std::string, std::string> substitutionMap =
-        {
-            {"{reset}",   ::toString(Color::Reset)},
-            {"{bold}",    ::toString(Color::Bold)},
-            {"{dim}",     ::toString(Color::Dim)},
-            {"{red}",     ::toString(Color::FgRed)},
-            {"{green}",   ::toString(Color::FgGreen)},
-            {"{blue}",    ::toString(Color::FgBlue)},
-            {"{magenta}", ::toString(Color::FgMagenta)},
-            {"{default}", ::toString(Color::FgDefault)},
-        };
-        replace(source, substitutionMap);
-    }
-    else {
-        static const std::unordered_map<std::string, std::string> substitutionMap =
-        {
-            {"{reset}",   ""},
-            {"{bold}",    ""},
-            {"{dim}",     ""},
-            {"{red}",     ""},
-            {"{green}",   ""},
-            {"{blue}",    ""},
-            {"{magenta}", ""},
-            {"{default}", ""},
-        };
-        replace(source, substitutionMap);
-    }
+static void replaceColors(std::string& source, bool erase) {
+    // TODO: colors are not applied when either stdout or stderr is not a TTY because we resolve them before the stream usage
+    static const std::unordered_map<std::string, std::string> substitutionMapReplace =
+    {
+        {"{reset}",   ::toString(Color::Reset)},
+        {"{bold}",    ::toString(Color::Bold)},
+        {"{dim}",     ::toString(Color::Dim)},
+        {"{red}",     ::toString(Color::FgRed)},
+        {"{green}",   ::toString(Color::FgGreen)},
+        {"{blue}",    ::toString(Color::FgBlue)},
+        {"{magenta}", ::toString(Color::FgMagenta)},
+        {"{default}", ::toString(Color::FgDefault)},
+    };
+    static const std::unordered_map<std::string, std::string> substitutionMapErase =
+    {
+        {"{reset}",   ""},
+        {"{bold}",    ""},
+        {"{dim}",     ""},
+        {"{red}",     ""},
+        {"{green}",   ""},
+        {"{blue}",    ""},
+        {"{magenta}", ""},
+        {"{default}", ""},
+    };
+    if (!erase)
+        replace(source, substitutionMapReplace);
+    else
+        replace(source, substitutionMapErase);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
@@ -928,16 +927,16 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
     return s;
 }
 
-void substituteTemplateFormatStatic(std::string& templateFormat, bool enableColors)
+void substituteTemplateFormatStatic(std::string& templateFormat, bool eraseColors)
 {
     replaceSpecialChars(templateFormat);
-    replaceColors(templateFormat, enableColors);
+    replaceColors(templateFormat, eraseColors);
 }
 
-void substituteTemplateLocationStatic(std::string& templateLocation, bool enableColors)
+void substituteTemplateLocationStatic(std::string& templateLocation, bool eraseColors)
 {
     replaceSpecialChars(templateLocation);
-    replaceColors(templateLocation, enableColors);
+    replaceColors(templateLocation, eraseColors);
 }
 
 std::string getClassification(const std::string &guideline, ReportType reportType) {

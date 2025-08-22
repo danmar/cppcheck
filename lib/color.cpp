@@ -22,27 +22,52 @@
 #include <sstream>
 #include <iostream>
 
-bool getForcedColorSetting(bool &colorSetting)
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
+bool gDisableColors = false;
+
+#ifndef _WIN32
+static bool isStreamATty(const std::ostream & os)
+{
+    static const bool stdout_tty = isatty(STDOUT_FILENO);
+    static const bool stderr_tty = isatty(STDERR_FILENO);
+    if (&os == &std::cout)
+        return stdout_tty;
+    if (&os == &std::cerr)
+        return stderr_tty;
+    return (stdout_tty && stderr_tty);
+}
+#endif
+
+static bool isColorEnabled(const std::ostream & os)
 {
     // See https://bixense.com/clicolors/
     static const bool color_forced_off = (nullptr != std::getenv("NO_COLOR"));
     if (color_forced_off)
     {
-        colorSetting = false;
-        return true;
+        return false;
     }
     static const bool color_forced_on = (nullptr != std::getenv("CLICOLOR_FORCE"));
     if (color_forced_on)
     {
-        colorSetting = true;
         return true;
     }
+#ifdef _WIN32
+    (void)os;
     return false;
+#else
+    return isStreamATty(os);
+#endif
 }
 
 std::ostream& operator<<(std::ostream & os, Color c)
 {
-    return os << "\033[" << static_cast<std::size_t>(c) << "m";
+    if (!gDisableColors && isColorEnabled(os))
+        return os << "\033[" << static_cast<std::size_t>(c) << "m";
+
+    return os;
 }
 
 std::string toString(Color c)

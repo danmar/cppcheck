@@ -56,14 +56,6 @@
 #include <unordered_set>
 #include <utility>
 
-#ifdef _WIN32
-#include <fcntl.h>
-#include <io.h>
-#else
-#include <fcntl.h>
-#include <unistd.h>
-#endif
-
 #ifdef HAVE_RULES
 // xml is used for rules
 #include "xml.h"
@@ -1561,38 +1553,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         if (mSettings.templateLocation.empty())
             mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
-
-    {
-        bool enableColors = false;
-
-        if (!getForcedColorSetting(enableColors) && mSettings.outputFormat == Settings::OutputFormat::text) {
-#ifdef _WIN32
-            if (mSettings.outputFile.empty())
-                enableColors = _isatty(_fileno(stderr));
-            else {
-                int fd = _open(mSettings.outputFile.c_str(), _O_RDONLY);
-                if (fd != -1) {
-                    enableColors = (_isatty(fd) != 0);
-                    _close(fd);
-                }
-            }
-#else
-            if (mSettings.outputFile.empty())
-                enableColors = isatty(fileno(stderr));
-            else {
-                int fd = open(mSettings.outputFile.c_str(), O_RDONLY | O_NOCTTY);
-                if (fd != -1) {
-                    enableColors = (isatty(fd) != 0);
-                    close(fd);
-                }
-            }
-#endif
-        }
-
-        // replace static parts of the templates
-        substituteTemplateFormatStatic(mSettings.templateFormat, enableColors);
-        substituteTemplateLocationStatic(mSettings.templateLocation, enableColors);
-    }
+    // replace static parts of the templates
+    substituteTemplateFormatStatic(mSettings.templateFormat, !mSettings.outputFile.empty());
+    substituteTemplateLocationStatic(mSettings.templateLocation, !mSettings.outputFile.empty());
 
     if (mSettings.force || maxconfigs)
         mSettings.checkAllConfigurations = true;
