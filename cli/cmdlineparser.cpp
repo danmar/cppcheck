@@ -1554,8 +1554,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
     // replace static parts of the templates
-    substituteTemplateFormatStatic(mSettings.templateFormat);
-    substituteTemplateLocationStatic(mSettings.templateLocation);
+    substituteTemplateFormatStatic(mSettings.templateFormat, !mSettings.outputFile.empty());
+    substituteTemplateLocationStatic(mSettings.templateLocation, !mSettings.outputFile.empty());
 
     if (mSettings.force || maxconfigs)
         mSettings.checkAllConfigurations = true;
