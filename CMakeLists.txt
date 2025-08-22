@@ -47,7 +47,7 @@ if(LIBXML2_XMLLINT_EXECUTABLE)
         add_dependencies(validatePlatforms validatePlatforms-${platformname})
     endforeach()
 
-    if (BUILD_CLI)
+    if(TARGET cppcheck)
         add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
                 DEPENDS cppcheck)
 
