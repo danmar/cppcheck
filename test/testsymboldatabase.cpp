@@ -430,6 +430,7 @@ private:
         TEST_CASE(symboldatabase109); // #13553
         TEST_CASE(symboldatabase110);
         TEST_CASE(symboldatabase111); // [[fallthrough]]
+        TEST_CASE(symboldatabase112); // explicit operator
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5839,6 +5840,17 @@ private:
         ASSERT_EQUALS("", errout_str());
         const Token *case3 = Token::findsimplematch(tokenizer.tokens(), "case 3");
         ASSERT(case3 && case3->isAttributeFallthrough());
+    }
+
+    void symboldatabase112() { // explicit operator
+        GET_SYMBOL_DB("class S {\n"
+                      "    explicit constexpr operator bool() const noexcept { return ptr_ != nullptr; }\n"
+                      "private:\n"
+                      "    void *ptr_{nullptr};\n"
+                      "};\n");
+        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "operatorbool") : nullptr;
+        ASSERT(f != nullptr);
+        ASSERT(f && f->function() && f->function()->isExplicit());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
