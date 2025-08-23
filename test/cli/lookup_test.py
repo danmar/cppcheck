@@ -341,44 +341,42 @@ def test_platform_lookup_builtin(tmpdir):
     ]
 
 
-@pytest.mark.skip  # TODO: performs additional lookups when run via symlink in CI
+@pytest.mark.skip  # TODO: fails when not run from the root folder
 def test_platform_lookup(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform=avr8', test_file])
+    cwd = os.getcwd()
     if sys.platform == 'win32':
-        exepath_bin += '.exe'
+        cwd = cwd.replace('\\', '/')
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8.xml' ... Success",
+        "looking for platform 'avr8'",
+        "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/avr8.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/avr8.xml' ... Success".format(cwd),
         'Checking {} ...'.format(test_file)
     ]
 
 
-@pytest.mark.skip  # TODO: performs additional lookups when run via symlink in CI
+@pytest.mark.skip  # TODO: fails when not run from the root folder
 def test_platform_lookup_ext(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8.xml', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform=avr8.xml', test_file])
+    cwd = os.getcwd()
     if sys.platform == 'win32':
-        exepath_bin += '.exe'
+        cwd = cwd.replace('\\', '/')
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8.xml' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8.xml' ... Success",
+        "looking for platform 'avr8.xml'",
+        "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/avr8.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/avr8.xml' ... Success".format(cwd),
         'Checking {} ...'.format(test_file)
     ]
 
@@ -389,48 +387,45 @@ def test_platform_lookup_notfound(tmpdir):
         pass
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', test_file])
+    cwd = os.getcwd()
     exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
     if sys.platform == 'win32':
+        cwd = cwd.replace('\\', '/')
         exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'none' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "looking for platform 'none'",
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(cwd, cwd),
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'none'."
     ]
 
 
+# TODO: test with invalid file in project path
+# TODO: test with non-file in project path
 def test_platform_lookup_notfound_project(tmpdir):  # #13939
     project_file, _ = __create_gui_project(tmpdir)
     project_path = os.path.dirname(project_file)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', '--project={}'.format(project_file)])
+    cwd = os.getcwd()
     exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
     if sys.platform == 'win32':
+        cwd = cwd.replace('\\', '/')
         exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
         project_path = project_path.replace('\\', '/')
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        # TODO: the CWD lookups are duplicated
-        # TODO: needs to do the relative project lookup first
-        "looking for platform 'none' relative to '{}'".format(project_file),
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "looking for platform 'none'",
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(project_path, project_path),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(project_path, project_path),
-        "looking for platform 'none' relative to '{}'".format(exepath_bin),
-        # TODO: should we really check CWD before relative to executable? should we check CWD at all?
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        # TODO: the following lookups are in CWD - is this intended?
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(cwd, cwd),
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'none'."
@@ -441,17 +436,17 @@ def test_platform_lookup_notfound_compdb(tmpdir):
     compdb_file, _ = __create_compdb(tmpdir)
 
     exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', '--project={}'.format(compdb_file)])
+    cwd = os.getcwd()
     exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
     if sys.platform == 'win32':
+        cwd = cwd.replace('\\', '/')
         exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
     assert exitcode == 1, stdout
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'none' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "looking for platform 'none'",
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(cwd, cwd),
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'none'."
@@ -464,17 +459,17 @@ def test_platform_lookup_ext_notfound(tmpdir):
         pass
 
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none.xml', test_file])
+    cwd = os.getcwd()
     exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
     if sys.platform == 'win32':
+        cwd = cwd.replace('\\', '/')
         exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'none.xml' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
+        "looking for platform 'none.xml'",
+        "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(cwd, cwd),
         "try to load platform file '{}/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'none.xml'."
@@ -487,17 +482,17 @@ def test_platform_lookup_relative_notfound(tmpdir):
         pass
 
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=platform/none.xml', test_file])
+    cwd = os.getcwd()
     exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
     if sys.platform == 'win32':
+        cwd = cwd.replace('\\', '/')
         exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'platform/none.xml' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml",
-        "try to load platform file 'platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml",
+        "looking for platform 'platform/none.xml'",
+        "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml".format(cwd, cwd),
         "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'platform/none.xml'."
@@ -510,17 +505,17 @@ def test_platform_lookup_relative_noext_notfound(tmpdir):
         pass
 
     exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=platform/none', test_file])
+    cwd = os.getcwd()
     exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
     if sys.platform == 'win32':
+        cwd = cwd.replace('\\', '/')
         exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'platform/none' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platform/none.xml",
-        "try to load platform file 'platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/platform/none.xml",
+        "looking for platform 'platform/none'",
+        "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml".format(cwd, cwd),
         "try to load platform file '{}/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platform/none.xml".format(exepath, exepath),
         "try to load platform file '{}/platforms/platform/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/platform/none.xml".format(exepath, exepath),
         "cppcheck: error: unrecognized platform: 'platform/none'."
@@ -538,15 +533,11 @@ def test_platform_lookup_absolute(tmpdir):
 <platform format="2"/>
         ''')
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform={}'.format(platform_file), test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
-    if sys.platform == 'win32':
-        exepath_bin += '.exe'
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform={}'.format(platform_file), test_file])
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform '{}' relative to '{}'".format(platform_file, exepath_bin),
+        "looking for platform '{}'".format(platform_file),
         "try to load platform file '{}' ... Success".format(platform_file),
         'Checking {} ...'.format(test_file)
     ]
@@ -559,21 +550,17 @@ def test_platform_lookup_absolute_notfound(tmpdir):
 
     platform_file = os.path.join(tmpdir, 'test.xml')
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform={}'.format(platform_file), test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
-    if sys.platform == 'win32':
-        exepath_bin += '.exe'
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform={}'.format(platform_file), test_file])
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform '{}' relative to '{}'".format(platform_file, exepath_bin),
+        "looking for platform '{}'".format(platform_file),
         "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(platform_file, platform_file),
         "cppcheck: error: unrecognized platform: '{}'.".format(platform_file)
     ]
 
 
-@pytest.mark.skip  # TODO: performs additional lookups when run via symlink in CI
+@pytest.mark.skip  # TODO: fails when not run from the root folder
 def test_platform_lookup_nofile(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -583,18 +570,17 @@ def test_platform_lookup_nofile(tmpdir):
     avr8_cfg_dir = os.path.join(tmpdir, 'avr8.xml')
     os.mkdir(avr8_cfg_dir)
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform=avr8', test_file])
+    cwd = os.getcwd()
     if sys.platform == 'win32':
-        exepath_bin += '.exe'
+        cwd = cwd.replace('\\', '/')
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8.xml' ... Success",
-        'Checking {} ...'.format(test_file)
+        "looking for platform 'avr8'",
+        "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/avr8.xml".format(cwd, cwd),
+        "try to load platform file '{}/platforms/avr8.xml' ... Success".format(cwd),
+        'Checking {}1 ...'.format(test_file)
     ]
 
 
@@ -607,16 +593,15 @@ def test_platform_lookup_invalid(tmpdir):
     with open(avr8_file, 'wt') as f:
         f.write('''{}''')
 
-    exitcode, stdout, stderr, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file], cwd=tmpdir)
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
+    exitcode, stdout, stderr = cppcheck(['--debug-lookup=platform', '--platform=avr8', test_file], cwd=tmpdir)
+    cwd = str(tmpdir)
     if sys.platform == 'win32':
-        exepath_bin += '.exe'
+        cwd = cwd.replace('\\', '/')
     assert exitcode == 1, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
-        "looking for platform 'avr8' relative to '{}'".format(exepath_bin),
-        "try to load platform file 'avr8.xml' ... Error=XML_ERROR_PARSING_TEXT ErrorID=8 (0x8) Line number=1",
+        "looking for platform 'avr8'",
+        "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_PARSING_TEXT ErrorID=8 (0x8) Line number=1".format(cwd),
         "cppcheck: error: unrecognized platform: 'avr8'."
     ]
 
