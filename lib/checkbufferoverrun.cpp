@@ -75,6 +75,14 @@ static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
     return it == tokenValues.cend() ? nullptr : &*it;
 }
 
+static const Token* getRealBufferTok(const Token* tok) {
+    if (!tok->isUnaryOp("&"))
+        return tok;
+
+    const auto* op = tok->astOperand1();
+    return (op->valueType() && op->valueType()->pointer) ? op : tok;
+}
+
 static int getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, nonneg int formatStringArgNr)
 {
     if (formatStringArgNr <= 0 || formatStringArgNr > parameters.size())
@@ -690,7 +698,7 @@ void CheckBufferOverrun::bufferOverflow()
 
 void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::Value *value, Certainty certainty)
 {
-    reportError(getErrorPath(tok, value, "Buffer overrun"), Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE_BUFFER_OVERRUN, certainty);
+    reportError(getErrorPath(tok, value, "Buffer overrun"), Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? getRealBufferTok(tok)->expressionString() : "buf"), CWE_BUFFER_OVERRUN, certainty);
 }
 
 //---------------------------------------------------------------------------
@@ -800,7 +808,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             if (isZeroTerminated)
                 continue;
             // TODO: Locate unsafe string usage..
-            terminateStrncpyError(tok, args[0]->expressionString());
+            terminateStrncpyError(tok, getRealBufferTok(args[0])->expressionString());
         }
     }
 }
