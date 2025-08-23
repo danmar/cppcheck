@@ -867,6 +867,10 @@ int main(int argc, char **argv)
     fout << ".PHONY: validateRules\n";
     fout << "validateRules:\n";
     fout << "\txmllint --noout rules/*.xml\n";
+    fout << ".PHONY: check-nonneg\n";
+    fout << "check-nonneg:\n";
+    // TODO: how to use provided number of jobs?
+    fout << "\tls lib/*.cpp | xargs -n 1 -P $$(nproc) g++ -fsyntax-only -DNONNEG $(CXXFLAGS) $(INCLUDE_FOR_LIB)\n";
 
     fout << "\n###### Build\n\n";
 

@@ -453,6 +453,9 @@ checkCWEEntries: /tmp/errorlist.xml
 .PHONY: validateRules
 validateRules:
 	xmllint --noout rules/*.xml
+.PHONY: check-nonneg
+check-nonneg:
+	ls lib/*.cpp | xargs -n 1 -P $$(nproc) g++ -fsyntax-only -DNONNEG $(CXXFLAGS) $(INCLUDE_FOR_LIB)
 
 ###### Build
 

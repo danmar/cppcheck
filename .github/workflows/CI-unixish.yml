@@ -241,7 +241,7 @@ jobs:
 
       - name: Check syntax with NONNEG
         run: |
-          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
+          make check-nonneg
 
   build_cmake_boost:
 
