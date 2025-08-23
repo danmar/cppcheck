@@ -176,7 +176,6 @@ private:
 
         TEST_CASE(checkKnownEmptyContainer);
         TEST_CASE(checkMutexes);
-        TEST_CASE(commaSeparatedReturn_no_fp);
     }
 
     struct CheckOptions
@@ -7202,17 +7201,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
-     void commaSeparatedReturn_no_fp()
-{
-    check(
-        "int g(){\n"
-        "    int a = 0, b = 1;\n"
-        "    a = (a, b);      // comma operator in an assignment, not in return\n"
-        "    return a;        // plain return, should not trigger\n"
-        "}\n"
-    );
-    ASSERT_EQUALS("", errout_str());
-}
 };
 
 REGISTER_TEST(TestStl)

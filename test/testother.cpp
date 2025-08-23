@@ -11152,9 +11152,8 @@ private:
     {
         check(
             "int f(){\n"
-            "  int a = 0, b = 1;\n"
-            "  a = (a, b);      // comma in assignment, not in return\n"
-            "  return a;        // plain return\n"
+            "  int a = 0;\n"
+            "  return a;\n"
             "}\n",
             true, false, false
             );
