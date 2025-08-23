@@ -231,6 +231,7 @@ private:
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
 
         TEST_CASE(checkCommaSeparatedReturn);
+        TEST_CASE(commaSeparatedReturn_no_fp);
         TEST_CASE(checkPassByReference);
 
         TEST_CASE(checkComparisonFunctionIsAlwaysTrueOrFalse);
@@ -11145,6 +11146,17 @@ private:
               "        { \"3\" }\n"
               "    };\n"
               "}", true, false, false);
+        ASSERT_EQUALS("", errout_str());
+    }
+    void commaSeparatedReturn_no_fp()
+    {
+        check(
+            "int f(){\n"
+            "  int a = 0;\n"
+            "  return a;\n"
+            "}\n",
+            true, false, false
+            );
         ASSERT_EQUALS("", errout_str());
     }
 
