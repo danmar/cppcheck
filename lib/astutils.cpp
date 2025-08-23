@@ -775,10 +775,11 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings& set
                 if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
                     (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) <= scope->varlist.size() &&
                     !scope->varlist.empty()) {
-                    assert(argn < scope->varlist.size());
-                    auto it = std::next(scope->varlist.cbegin(), argn);
-                    if (it->valueType())
-                        return {*it->valueType()};
+                    if (argn < scope->varlist.size()) {
+                        auto it = std::next(scope->varlist.cbegin(), argn);
+                        if (it->valueType())
+                            return { *it->valueType() };
+                    }
                 }
             }
         }
