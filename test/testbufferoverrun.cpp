@@ -306,6 +306,8 @@ private:
         TEST_CASE(objectIndex);
 
         TEST_CASE(checkPipeParameterSize); // ticket #3521
+
+        TEST_CASE(getBufferSizeOfAddressOfVariable); // ticket #7570
     }
 
 
@@ -4320,7 +4322,7 @@ private:
               "  char c;\n"
               "  mymemset(&c, 0, 4);\n"
               "}", dinit(CheckOptions, $.s = &settings));
-        TODO_ASSERT_EQUALS("[test.cpp:3:14]: (error) Buffer is accessed out of bounds: c [bufferAccessOutOfBounds]\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:12]: (error) Buffer is accessed out of bounds: &c [bufferAccessOutOfBounds]\n", errout_str());
 
         // ticket #2121 - buffer access out of bounds when using uint32_t
         check("void f(void) {\n"
@@ -5711,6 +5713,33 @@ private:
               "  }\n"
               "}", dinit(CheckOptions, $.s = &settings));
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void getBufferSizeOfAddressOfVariable() { // #7570
+
+      check("void f() {\n"
+            "  int i;\n"
+            "  memset(&i, 0, 1000);\n"
+            "}");
+      ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
+
+      check("void f() {\n"
+            "  int i;\n"
+            "  memset(&i, 0, sizeof(i));\n"
+            "}");
+      ASSERT_EQUALS("", errout_str());
+
+      check("void foo() {\n"
+            "  char c[6];\n"
+            "  strncpy(&c, \"hello!\", 6);\n"
+            "}");
+      ASSERT_EQUALS("[test.cpp:3:3]: (warning, inconclusive) The buffer '&c' may not be null-terminated after the call to strncpy(). [terminateStrncpy]\n", errout_str());
+
+      check("void foo() {\n"
+            "  char c[6];\n"
+            "  memcpy(&c, \"hello\\n\", 6);\n"
+            "}");
+      ASSERT_EQUALS("", errout_str());
     }
 };
 

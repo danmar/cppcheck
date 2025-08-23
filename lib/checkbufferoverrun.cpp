@@ -553,6 +553,8 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 {
     if (!bufTok->valueType())
         return ValueFlow::Value(-1);
+    if (bufTok->isUnaryOp("&"))
+        bufTok = bufTok->astOperand1();
     const Variable *var = bufTok->variable();
 
     if (!var || var->dimensions().empty()) {
@@ -653,7 +655,7 @@ void CheckBufferOverrun::bufferOverflow()
                     argtok = argtok->astOperand2() ? argtok->astOperand2() : argtok->astOperand1();
                 while (Token::Match(argtok, ".|::"))
                     argtok = argtok->astOperand2();
-                if (!argtok || !argtok->variable())
+                if (!argtok)
                     continue;
                 if (argtok->valueType() && argtok->valueType()->pointer == 0)
                     continue;
