@@ -2362,6 +2362,11 @@ struct LifetimeStore {
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(argtok, settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
+
+                const Variable* var = lt.token->variable();
+                if (!var || !var->isArgument())
+                    continue;
+
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.tokvalue = lt.token;
@@ -2369,12 +2374,8 @@ struct LifetimeStore {
                 value.errorPath = er;
                 value.lifetimeKind = type;
                 value.setInconclusive(inconclusive || lt.inconclusive);
-                const Variable* var = lt.token->variable();
-                if (var && var->isArgument()) {
-                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
-                } else {
-                    continue;
-                }
+                value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
+
                 // Don't add the value a second time
                 if (std::find(tok->values().cbegin(), tok->values().cend(), value) != tok->values().cend())
                     continue;
@@ -2391,12 +2392,12 @@ struct LifetimeStore {
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok3, settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
-                ErrorPath er = v.errorPath;
-                er.insert(er.end(), lt.errorPath.cbegin(), lt.errorPath.cend());
                 if (!lt.token)
                     return false;
                 if (!pred(lt.token))
                     return false;
+                ErrorPath er = v.errorPath;
+                er.insert(er.end(), lt.errorPath.cbegin(), lt.errorPath.cend());
                 er.emplace_back(argtok, message);
                 er.insert(er.end(), errorPath.cbegin(), errorPath.cend());
 
@@ -5889,11 +5890,12 @@ static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const 
                 const std::list<ValueFlow::Value> &values = var->nameToken()->tokAt(2)->values();
                 std::list<ValueFlow::Value> argvalues;
                 for (const ValueFlow::Value &value : values) {
+                    if (!value.isKnown())
+                        continue;
                     ValueFlow::Value v(value);
                     v.defaultArg = true;
-                    v.changeKnownToPossible();
-                    if (v.isPossible())
-                        argvalues.push_back(std::move(v));
+                    v.setPossible();
+                    argvalues.push_back(std::move(v));
                 }
                 if (!argvalues.empty())
                     valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, argvalues);
