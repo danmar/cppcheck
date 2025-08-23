@@ -5749,7 +5749,7 @@ private:
 
         check("void foo() {\n"
               "  char c[6];\n"
-              "  memcpy(&c, \"hello\\n\", 6);\n"
+              "  strncpy(&c, \"hello\\0\", 6);\n"
               "}");
         ASSERT_EQUALS("", errout_str());
     }
