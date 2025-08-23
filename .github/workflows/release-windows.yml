@@ -68,7 +68,7 @@ jobs:
         run: |
           :: TODO: enable rules?
           :: specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       # TODO: package PDBs
