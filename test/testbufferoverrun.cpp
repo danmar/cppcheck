@@ -5735,6 +5735,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
+        check("void f() {\n"
+              "  int i[10];\n"
+              "  memset(&i[1], 0, 1000);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i[1] [bufferAccessOutOfBounds]\n", "", errout_str());
+
         check("void foo() {\n"
               "  char c[6];\n"
               "  strncpy(&c, \"hello!\", 6);\n"
