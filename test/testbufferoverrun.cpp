@@ -5717,29 +5717,29 @@ private:
 
     void getBufferSizeOfAddressOfVariable() { // #7570
 
-      check("void f() {\n"
-            "  int i;\n"
-            "  memset(&i, 0, 1000);\n"
-            "}");
-      ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
+        check("void f() {\n"
+              "  int i;\n"
+              "  memset(&i, 0, 1000);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
 
-      check("void f() {\n"
-            "  int i;\n"
-            "  memset(&i, 0, sizeof(i));\n"
-            "}");
-      ASSERT_EQUALS("", errout_str());
+        check("void f() {\n"
+              "  int i;\n"
+              "  memset(&i, 0, sizeof(i));\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
 
-      check("void foo() {\n"
-            "  char c[6];\n"
-            "  strncpy(&c, \"hello!\", 6);\n"
-            "}");
-      ASSERT_EQUALS("[test.cpp:3:3]: (warning, inconclusive) The buffer '&c' may not be null-terminated after the call to strncpy(). [terminateStrncpy]\n", errout_str());
+        check("void foo() {\n"
+              "  char c[6];\n"
+              "  strncpy(&c, \"hello!\", 6);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3:3]: (warning, inconclusive) The buffer '&c' may not be null-terminated after the call to strncpy(). [terminateStrncpy]\n", errout_str());
 
-      check("void foo() {\n"
-            "  char c[6];\n"
-            "  memcpy(&c, \"hello\\n\", 6);\n"
-            "}");
-      ASSERT_EQUALS("", errout_str());
+        check("void foo() {\n"
+              "  char c[6];\n"
+              "  memcpy(&c, \"hello\\n\", 6);\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
