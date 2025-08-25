@@ -109,7 +109,8 @@ struct CPPCHECKLIB ProgramMemory {
     explicit ProgramMemory(Map values) : mValues(new Map(std::move(values))) {}
 
     void setValue(const Token* expr, const ValueFlow::Value& value);
-    const ValueFlow::Value* getValue(nonneg int exprid, bool impossible) const;
+    const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;
+    ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false);
 
     bool getIntValue(nonneg int exprid, MathLib::bigint& result, bool impossible = false) const;
     void setIntValue(const Token* expr, MathLib::bigint value, bool impossible = false);
@@ -122,9 +123,6 @@ struct CPPCHECKLIB ProgramMemory {
 
     bool getTokValue(nonneg int exprid, const Token*& result, bool impossible = false) const;
     bool hasValue(nonneg int exprid, bool impossible = true) const;
-
-    const ValueFlow::Value& at(nonneg int exprid, bool impossible = true) const;
-    ValueFlow::Value& at(nonneg int exprid, bool impossible = true);
 
     void erase_if(const std::function<bool(const ExprIdToken&)>& pred);
 
