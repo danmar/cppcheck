@@ -90,6 +90,15 @@ struct ExprIdToken {
     struct Hash {
         std::size_t operator()(ExprIdToken etok) const;
     };
+
+    /** create object for hashed lookups */
+    static ExprIdToken create(nonneg int exprId) {
+        return ExprIdToken(exprId);
+    }
+
+private:
+    // for hashed lookups only
+    explicit ExprIdToken(nonneg int exprId);
 };
 
 struct CPPCHECKLIB ProgramMemory {
