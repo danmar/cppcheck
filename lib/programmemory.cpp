@@ -48,7 +48,7 @@
 ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
-    return tok ? tok->exprId() : exprid;
+    return exprid;
 }
 
 std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
@@ -239,16 +239,16 @@ void ProgramMemory::copyOnWrite()
 ProgramMemory::Map::const_iterator ProgramMemory::find(nonneg int exprid) const
 {
     const auto& cvalues = utils::as_const(*mValues);
-    return std::find_if(cvalues.cbegin(), cvalues.cend(), [&exprid](const Map::value_type& entry) {
-        return entry.first.getExpressionId() == exprid;
-    });
+    ExprIdToken exprIdToken(nullptr);
+    exprIdToken.exprid = exprid;
+    return cvalues.find(exprIdToken);
 }
 
 ProgramMemory::Map::iterator ProgramMemory::find(nonneg int exprid)
 {
-    return std::find_if(mValues->begin(), mValues->end(), [&exprid](const Map::value_type& entry) {
-        return entry.first.getExpressionId() == exprid;
-    });
+    ExprIdToken exprIdToken(nullptr);
+    exprIdToken.exprid = exprid;
+    return mValues->find(exprIdToken);
 }
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings);
