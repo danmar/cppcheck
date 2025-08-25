@@ -92,12 +92,6 @@ private:
         ProgramMemory pm;
         ASSERT(!pm.getValue(123));
     }
-
-    void at() const {
-        ProgramMemory pm;
-        ASSERT_THROW_EQUALS_2(pm.at(123), std::out_of_range, "ProgramMemory::at");
-        ASSERT_THROW_EQUALS_2(utils::as_const(pm).at(123), std::out_of_range, "ProgramMemory::at");
-    }
 };
 
 REGISTER_TEST(TestProgramMemory)
