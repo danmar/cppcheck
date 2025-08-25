@@ -85,6 +85,21 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
     return nullptr;
 }
 
+ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid)
+{
+    if (mValues->empty())
+        return nullptr;
+
+    // TODO: avoid copy if no value is found
+    copyOnWrite();
+
+    const auto it = find(exprid);
+    const bool found = it != mValues->cend();
+    if (found)
+        return &it->second;
+    return nullptr;
+}
+
 // cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint& result) const
 {
@@ -161,24 +176,6 @@ bool ProgramMemory::hasValue(nonneg int exprid) const
     return it != mValues->cend();
 }
 
-const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
-    const auto it = find(exprid);
-    if (it == mValues->cend()) {
-        throw std::out_of_range("ProgramMemory::at");
-    }
-    return it->second;
-}
-
-ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
-    copyOnWrite();
-
-    const auto it = find(exprid);
-    if (it == mValues->end()) {
-        throw std::out_of_range("ProgramMemory::at");
-    }
-    return it->second;
-}
-
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
 {
     if (mValues->empty())
@@ -244,6 +241,7 @@ ProgramMemory::Map::const_iterator ProgramMemory::find(nonneg int exprid) const
     });
 }
 
+// need to call copyOnWrite() before calling this
 ProgramMemory::Map::iterator ProgramMemory::find(nonneg int exprid)
 {
     return std::find_if(mValues->begin(), mValues->end(), [&exprid](const Map::value_type& entry) {
@@ -1343,10 +1341,9 @@ namespace {
 
         ValueFlow::Value executeMultiCondition(bool b, const Token* expr)
         {
-            if (pm->hasValue(expr->exprId())) {
-                const ValueFlow::Value& v = utils::as_const(*pm).at(expr->exprId());
-                if (v.isIntValue())
-                    return v;
+            if (const ValueFlow::Value* v = utils::as_const(*pm).getValue(expr->exprId())) {
+                if (v->isIntValue())
+                    return *v;
             }
 
             // Evaluate recursively if there are no exprids
@@ -1475,18 +1472,18 @@ namespace {
                 if (rhs.isUninitValue())
                     return unknown();
                 if (expr->str() != "=") {
-                    if (!pm->hasValue(expr->astOperand1()->exprId()))
+                    ValueFlow::Value* lhs = pm->getValue(expr->astOperand1()->exprId());
+                    if (!lhs)
                         return unknown();
-                    ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
-                    rhs = evaluate(removeAssign(expr->str()), lhs, rhs);
-                    if (lhs.isIntValue())
-                        ValueFlow::Value::visitValue(rhs, std::bind(assign{}, std::ref(lhs.intvalue), std::placeholders::_1));
-                    else if (lhs.isFloatValue())
+                    rhs = evaluate(removeAssign(expr->str()), *lhs, rhs);
+                    if (lhs->isIntValue())
+                        ValueFlow::Value::visitValue(rhs, std::bind(assign{}, std::ref(lhs->intvalue), std::placeholders::_1));
+                    else if (lhs->isFloatValue())
                         ValueFlow::Value::visitValue(rhs,
-                                                     std::bind(assign{}, std::ref(lhs.floatValue), std::placeholders::_1));
+                                                     std::bind(assign{}, std::ref(lhs->floatValue), std::placeholders::_1));
                     else
                         return unknown();
-                    return lhs;
+                    return *lhs;
                 }
                 pm->setValue(expr->astOperand1(), rhs);
                 return rhs;
@@ -1498,20 +1495,20 @@ namespace {
                 execute(expr->astOperand1());
                 return execute(expr->astOperand2());
             } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
-                if (!pm->hasValue(expr->astOperand1()->exprId()))
+                ValueFlow::Value* lhs = pm->getValue(expr->astOperand1()->exprId());
+                if (!lhs)
                     return ValueFlow::Value::unknown();
-                ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
-                if (!lhs.isIntValue())
+                if (!lhs->isIntValue())
                     return unknown();
                 // overflow
-                if (!lhs.isImpossible() && lhs.intvalue == 0 && expr->str() == "--" && astIsUnsigned(expr->astOperand1()))
+                if (!lhs->isImpossible() && lhs->intvalue == 0 && expr->str() == "--" && astIsUnsigned(expr->astOperand1()))
                     return unknown();
 
                 if (expr->str() == "++")
-                    lhs.intvalue++;
+                    lhs->intvalue++;
                 else
-                    lhs.intvalue--;
-                return lhs;
+                    lhs->intvalue--;
+                return *lhs;
             } else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
                 const Token* tokvalue = nullptr;
                 if (!pm->getTokValue(expr->astOperand1()->exprId(), tokvalue)) {
@@ -1602,13 +1599,16 @@ namespace {
                 }
                 return execute(expr->astOperand1());
             }
-            if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
-                ValueFlow::Value result = utils::as_const(*pm).at(expr->exprId());
-                if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr, settings)) {
-                    result.intvalue = !result.intvalue;
-                    result.setKnown();
+            if (expr->exprId() > 0) {
+                if (const ValueFlow::Value* v = utils::as_const(*pm).getValue(expr->exprId()))
+                {
+                    ValueFlow::Value result = *v;
+                    if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr, settings)) {
+                        result.intvalue = !result.intvalue;
+                        result.setKnown();
+                    }
+                    return result;
                 }
-                return result;
             }
 
             if (Token::Match(expr->previous(), ">|%name% {|(")) {
@@ -1658,14 +1658,16 @@ namespace {
                 }
                 // Check if function modifies argument
                 visitAstNodes(expr->astOperand2(), [&](const Token* child) {
-                    if (child->exprId() > 0 && pm->hasValue(child->exprId())) {
-                        ValueFlow::Value& v = pm->at(child->exprId());
-                        if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
-                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
-                                v = unknown();
-                        } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
-                            if (isVariableChanged(child, v.indirect, settings))
-                                v = unknown();
+                    if (child->exprId() > 0) {
+                        if (ValueFlow::Value* v = pm->getValue(child->exprId()))
+                        {
+                            if (v->valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
+                                if (ValueFlow::isContainerSizeChanged(child, v->indirect, settings))
+                                    *v = unknown();
+                            } else if (v->valueType != ValueFlow::Value::ValueType::UNINIT) {
+                                if (isVariableChanged(child, v->indirect, settings))
+                                    *v = unknown();
+                            }
                         }
                     }
                     return ChildrenToVisit::op1_and_op2;
@@ -1717,9 +1719,12 @@ namespace {
                 return v;
             if (!expr)
                 return v;
-            if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
-                if (updateValue(v, utils::as_const(*pm).at(expr->exprId())))
-                    return v;
+            if (expr->exprId() > 0) {
+                if (const ValueFlow::Value* val = utils::as_const(*pm).getValue(expr->exprId()))
+                {
+                    if (updateValue(v, *val))
+                        return v;
+                }
             }
             // Find symbolic values
             for (const ValueFlow::Value& value : expr->values()) {
@@ -1727,12 +1732,14 @@ namespace {
                     continue;
                 if (!value.isKnown())
                     continue;
-                if (value.tokvalue->exprId() > 0 && !pm->hasValue(value.tokvalue->exprId()))
+                if (value.tokvalue->exprId() == 0)
                     continue;
-                const ValueFlow::Value& v_ref = utils::as_const(*pm).at(value.tokvalue->exprId());
-                if (!v_ref.isIntValue() && value.intvalue != 0)
+                const ValueFlow::Value* v_p = utils::as_const(*pm).getValue(value.tokvalue->exprId());
+                if (!v_p)
                     continue;
-                ValueFlow::Value v2 = v_ref;
+                if (!v_p->isIntValue() && value.intvalue != 0)
+                    continue;
+                ValueFlow::Value v2 = *v_p;
                 v2.intvalue += value.intvalue;
                 return v2;
             }
