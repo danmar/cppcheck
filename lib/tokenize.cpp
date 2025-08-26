@@ -10025,7 +10025,7 @@ void Tokenizer::simplifyBitfields()
         }
 
         const auto tooLargeError = [this](const Token *tok) {
-            const MathLib::bigint max = std::numeric_limits<short>::max();
+            const auto max = std::numeric_limits<short>::max();
             reportError(tok,
                         Severity::warning,
                         "tooLargeBitField",

@@ -445,7 +445,7 @@ static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accura
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return {0, false};
-            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
+            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), MathLib::bigint(1), [](MathLib::bigint i1, const Dimension& dim) {
                 return i1 * dim.num;
             });
             if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
