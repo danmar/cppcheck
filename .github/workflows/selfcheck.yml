@@ -161,7 +161,7 @@ jobs:
 
       - name: CMake (corpus / no test)
         run: |
-          cmake -S cppcheck-2.8 -B cmake.output.corpus -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake -S cppcheck-2.8 -B cmake.output.corpus -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Generate dependencies (corpus)
         run: |
