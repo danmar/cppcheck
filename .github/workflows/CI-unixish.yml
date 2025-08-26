@@ -151,6 +151,46 @@ jobs:
         run: |
           cmake --build cmake.output --target install
 
+      - name: Run CMake on ubuntu (no CLI)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          cmake -S . -B cmake.output_nocli -G "Unix Makefiles" -DBUILD_CLI=Off
+
+      - name: Run CMake on ubuntu (no CLI / with tests)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          # the test and CLI code are too intertwined so for now we need to reject that
+          if cmake -S . -B cmake.output_nocli_tests -G "Unix Makefiles" -DBUILD_TESTS=On -DBUILD_CLI=Off; then
+            exit 1
+          else
+            exit 0
+          fi
+
+      - name: Run CMake on ubuntu (no CLI / with GUI)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          cmake -S . -B cmake.output_nocli_gui -G "Unix Makefiles" -DBUILD_CLI=Off -DBUILD_GUI=On
+
+      - name: Run CMake on ubuntu (no GUI)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          cmake -S . -B cmake.output_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
+
+      - name: Run CMake on ubuntu (no GUI / with triage)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          # cannot build triage without GUI
+          if cmake -S . -B cmake.output_nogui_triage -G "Unix Makefiles" -DBUILD_GUI=Off -DBUILD_TRIAGE=On; then
+            exit 1
+          else
+            exit 0
+          fi
+
+      - name: Run CMake on ubuntu (no CLI / no GUI)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          cmake -S . -B cmake.output_nocli_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
+
   build_uchar:
 
     strategy:
