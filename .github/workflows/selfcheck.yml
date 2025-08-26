@@ -154,6 +154,26 @@ jobs:
           UNUSEDFUNCTION_ONLY: 1
       # unusedFunction notest nocli - end
 
+      # unusedFunction notest nocli nogui - start
+      - name: CMake (no test / no cli / no gui)
+        run: |
+          cmake -S . -B cmake.output.notest_nocli_nogui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=Off -DENABLE_CHECK_INTERNAL=On
+
+      - name: Generate dependencies (no test / no cli / no gui)
+        run: |
+          # make sure the precompiled headers exist
+          make -C cmake.output.notest_nocli_nogui lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
+
+      # TODO: find a way to report unmatched suppressions without need to add information checks
+      - name: Self check (unusedFunction / no test / no cli / no gui)
+        if: false  # TODO: the findings are currently too intrusive
+        run: |
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest_nocli_nogui/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+        env:
+          DISABLE_VALUEFLOW: 1
+          UNUSEDFUNCTION_ONLY: 1
+      # unusedFunction notest nocli nogui - end
+
       - name: Fetch corpus
         run: |
           wget https://github.com/danmar/cppcheck/archive/refs/tags/2.8.tar.gz
