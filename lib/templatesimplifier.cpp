@@ -1581,7 +1581,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             }
         } else {
             if (insert)
-                mTokenList.back()->tokAt(offset)->insertToken(token, emptyString);
+                mTokenList.back()->tokAt(offset)->insertToken(token);
             else
                 mTokenList.addtoken(token, tok->linenr(), tok->column(), tok->fileIndex());
         }
@@ -1592,10 +1592,10 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
     if (token != tokStart->str() || tok->strAt(-1) != "::") {
         if (insert) {
             if (!inTemplate)
-                mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope().substr(start), emptyString);
+                mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope().substr(start));
             else
                 mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + templateDeclaration.scope().substr(start));
-            mTokenList.back()->tokAt(offset)->insertToken("::", emptyString);
+            mTokenList.back()->tokAt(offset)->insertToken("::");
         } else {
             if (!inTemplate)
                 mTokenList.addtoken(templateDeclaration.scope().substr(start), tok->linenr(), tok->column(), tok->fileIndex());
@@ -1762,7 +1762,7 @@ void TemplateSimplifier::expandTemplate(
                         ++typeindentlevel;
                     else if (typetok->str() == ")")
                         --typeindentlevel;
-                    dst->insertToken(typetok->str(), typetok->originalName(), typetok->getMacroName(), true);
+                    dst->insertTokenBefore(typetok->str(), typetok->originalName(), typetok->getMacroName());
                     dst->previous()->linenr(start->linenr());
                     dst->previous()->column(start->column());
                     Token *previous = dst->previous();
@@ -1790,7 +1790,7 @@ void TemplateSimplifier::expandTemplate(
                     }
                 }
                 if (pointerType && Token::simpleMatch(dst1, "const")) {
-                    dst->insertToken("const", dst1->originalName(), dst1->getMacroName(), true);
+                    dst->insertTokenBefore("const", dst1->originalName(), dst1->getMacroName());
                     dst->previous()->linenr(start->linenr());
                     dst->previous()->column(start->column());
                     dst1->deleteThis();
@@ -1842,7 +1842,7 @@ void TemplateSimplifier::expandTemplate(
                         }
                         // just copy the token if it wasn't instantiated
                         if (start != closing) {
-                            dst->insertToken(start->str(), start->originalName(), start->getMacroName(), true);
+                            dst->insertTokenBefore(start->str(), start->originalName(), start->getMacroName());
                             dst->previous()->linenr(start->linenr());
                             dst->previous()->column(start->column());
                             dst->previous()->isSigned(start->isSigned());
@@ -1850,7 +1850,7 @@ void TemplateSimplifier::expandTemplate(
                             dst->previous()->isLong(start->isLong());
                         }
                     } else {
-                        dst->insertToken(start->str(), start->originalName(), start->getMacroName(), true);
+                        dst->insertTokenBefore(start->str(), start->originalName(), start->getMacroName());
                         dst->previous()->linenr(start->linenr());
                         dst->previous()->column(start->column());
                         dst->previous()->isSigned(start->isSigned());
