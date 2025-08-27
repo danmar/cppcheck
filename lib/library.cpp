@@ -1239,7 +1239,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
         // scan format string argument should not be null
-        const std::string funcname = getFunctionName(ftok);
+        const std::string& funcname = ftok->funcname(*this);
         const auto it = utils::as_const(mData->mFunctions).find(funcname);
         if (it != mData->mFunctions.cend() && it->second.formatstr && it->second.formatstr_scan)
             return true;
@@ -1252,7 +1252,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
         // non-scan format string argument should not be uninitialized
-        const std::string funcname = getFunctionName(ftok);
+        const std::string& funcname = ftok->funcname(*this);
         const auto it = utils::as_const(mData->mFunctions).find(funcname);
         if (it != mData->mFunctions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
@@ -1270,7 +1270,7 @@ const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     if (!tok)
         return nullptr;
-    const std::string funcname = getFunctionName(tok);
+    const std::string& funcname = tok->funcname(*this);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mAlloc, funcname);
 }
 
@@ -1281,7 +1281,7 @@ const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     if (!tok)
         return nullptr;
-    const std::string funcname = getFunctionName(tok);
+    const std::string& funcname = tok->funcname(*this);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mDealloc, funcname);
 }
 
@@ -1292,7 +1292,7 @@ const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
     if (!tok)
         return nullptr;
-    const std::string funcname = getFunctionName(tok);
+    const std::string& funcname = tok->funcname(*this);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mRealloc, funcname);
 }
 
@@ -1499,7 +1499,7 @@ bool Library::isNotLibraryFunction(const Token *ftok, const Function **func) con
     if (ftok->varId())
         return true;
 
-    return !matchArguments(ftok, getFunctionName(ftok), func);
+    return !matchArguments(ftok, ftok->funcname(*this), func);
 }
 
 bool Library::matchArguments(const Token *ftok, const std::string &functionName, const Function **func) const
@@ -1539,7 +1539,7 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const auto i = utils::as_const(mData->mFunctionwarn).find(getFunctionName(ftok));
+    const auto i = utils::as_const(mData->mFunctionwarn).find(ftok->funcname(*this));
     if (i ==  mData->mFunctionwarn.cend())
         return nullptr;
     return &i->second;
@@ -1595,7 +1595,7 @@ bool Library::formatstr_function(const Token* ftok) const
     if (isNotLibraryFunction(ftok))
         return false;
 
-    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(ftok->funcname(*this));
     if (it != mData->mFunctions.cend())
         return it->second.formatstr;
     return false;
@@ -1603,7 +1603,7 @@ bool Library::formatstr_function(const Token* ftok) const
 
 int Library::formatstr_argno(const Token* ftok) const
 {
-    const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = mData->mFunctions.at(getFunctionName(ftok)).argumentChecks;
+    const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = mData->mFunctions.at(ftok->funcname(*this)).argumentChecks;
     auto it = std::find_if(argumentChecksFunc.cbegin(), argumentChecksFunc.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
         return a.second.formatstr;
     });
@@ -1612,19 +1612,19 @@ int Library::formatstr_argno(const Token* ftok) const
 
 bool Library::formatstr_scan(const Token* ftok) const
 {
-    return mData->mFunctions.at(getFunctionName(ftok)).formatstr_scan;
+    return mData->mFunctions.at(ftok->funcname(*this)).formatstr_scan;
 }
 
 bool Library::formatstr_secure(const Token* ftok) const
 {
-    return mData->mFunctions.at(getFunctionName(ftok)).formatstr_secure;
+    return mData->mFunctions.at(ftok->funcname(*this)).formatstr_secure;
 }
 
 const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const auto it = utils::as_const(mData->mNonOverlappingData).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mNonOverlappingData).find(ftok->funcname(*this));
     return (it != mData->mNonOverlappingData.cend()) ? &it->second : nullptr;
 }
 
@@ -1642,7 +1642,7 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
         }
         return Library::UseRetValType::NONE;
     }
-    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(ftok->funcname(*this));
     if (it != mData->mFunctions.cend())
         return it->second.useretval;
     return Library::UseRetValType::NONE;
@@ -1652,7 +1652,7 @@ const std::string& Library::returnValue(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return mEmptyString;
-    const auto it = utils::as_const(mData->mReturnValue).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mReturnValue).find(ftok->funcname(*this));
     return it != mData->mReturnValue.cend() ? it->second : mEmptyString;
 }
 
@@ -1670,7 +1670,7 @@ const std::string& Library::returnValueType(const Token *ftok) const
         }
         return mEmptyString;
     }
-    const auto it = utils::as_const(mData->mReturnValueType).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mReturnValueType).find(ftok->funcname(*this));
     return it != mData->mReturnValueType.cend() ? it->second : mEmptyString;
 }
 
@@ -1678,7 +1678,7 @@ int Library::returnValueContainer(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return -1;
-    const auto it = utils::as_const(mData->mReturnValueContainer).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mReturnValueContainer).find(ftok->funcname(*this));
     return it != mData->mReturnValueContainer.cend() ? it->second : -1;
 }
 
@@ -1686,7 +1686,7 @@ std::vector<MathLib::bigint> Library::unknownReturnValues(const Token *ftok) con
 {
     if (isNotLibraryFunction(ftok))
         return std::vector<MathLib::bigint>();
-    const auto it = utils::as_const(mData->mUnknownReturnValues).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mUnknownReturnValues).find(ftok->funcname(*this));
     return (it == mData->mUnknownReturnValues.cend()) ? std::vector<MathLib::bigint>() : it->second;
 }
 
@@ -1694,7 +1694,7 @@ const Library::Function *Library::getFunction(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const auto it1 = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
+    const auto it1 = utils::as_const(mData->mFunctions).find(ftok->funcname(*this));
     if (it1 == mData->mFunctions.cend())
         return nullptr;
     return &it1->second;
@@ -1705,7 +1705,7 @@ bool Library::hasminsize(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return false;
-    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(ftok->funcname(*this));
     if (it == mData->mFunctions.cend())
         return false;
     return std::any_of(it->second.argumentChecks.cbegin(), it->second.argumentChecks.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
@@ -1777,7 +1777,7 @@ bool Library::isFunctionConst(const Token *ftok) const
         }
         return false;
     }
-    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(ftok->funcname(*this));
     return (it != mData->mFunctions.cend() && it->second.isconst);
 }
 
@@ -1796,7 +1796,7 @@ bool Library::isnoreturn(const Token *ftok) const
         }
         return false;
     }
-    const auto it = utils::as_const(mData->mNoReturn).find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mNoReturn).find(ftok->funcname(*this));
     if (it == mData->mNoReturn.end())
         return false;
     if (it->second == LibraryData::FalseTrueMaybe::Maybe)
@@ -1809,8 +1809,8 @@ bool Library::isnotnoreturn(const Token *ftok) const
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return false;
     if (isNotLibraryFunction(ftok))
-        return hasAnyTypeCheck(getFunctionName(ftok));
-    const auto it = utils::as_const(mData->mNoReturn).find(getFunctionName(ftok));
+        return hasAnyTypeCheck(ftok->funcname(*this));
+    const auto it = utils::as_const(mData->mNoReturn).find(ftok->funcname(*this));
     if (it == mData->mNoReturn.end())
         return false;
     if (it->second == LibraryData::FalseTrueMaybe::Maybe)

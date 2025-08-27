@@ -2211,7 +2211,7 @@ static bool hasNoreturnFunction(const Token* tok, const Library& library, const 
         } else if (Token::Match(ftok, "exit|abort")) {
             return true;
         }
-        if (unknownFunc && !function && library.functions().count(library.getFunctionName(ftok)) == 0)
+        if (unknownFunc && !function && library.functions().count(ftok->funcname(library)) == 0)
             *unknownFunc = ftok;
         return false;
     }
