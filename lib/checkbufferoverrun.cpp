@@ -79,7 +79,7 @@ static const Token* getRealBufferTok(const Token* tok) {
     if (!tok->isUnaryOp("&"))
         return tok;
 
-    const auto* op = tok->astOperand1();
+    const Token* op = tok->astOperand1();
     return (op->valueType() && op->valueType()->pointer) ? op : tok;
 }
 
