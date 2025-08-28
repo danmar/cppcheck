@@ -219,7 +219,7 @@ jobs:
       - name: Build with Unsigned char
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
+          make -j$(nproc) CXXOPTS=-funsigned-char testrunner
 
       - name: Test with Unsigned char
         run: |
@@ -609,7 +609,7 @@ jobs:
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # compile with verification and ast matchers
-          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
+          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXOPTS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
       - name: CMake
         run: |
