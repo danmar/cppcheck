@@ -2111,17 +2111,16 @@ void TemplateSimplifier::expandTemplate(
                         if (Token::Match(declTok->previous(), "[<,]")) {
                             const Token* typetok = mTypesUsedInTemplateInstantiation[itype].token();
                             mTokenList.addtoken("(", declTok);
-                            mTokenList.back()->templateArgFrom(declTok);
                             Token* const par1 = mTokenList.back();
                             while (declTok != typeParametersInDeclaration[itype]) {
                                 mTokenList.addtoken(declTok);
-                                mTokenList.back()->templateArgFrom(declTok);
                                 declTok = declTok->next();
                             }
                             mTokenList.addtoken(")", declTok);
-                            mTokenList.back()->templateArgFrom(declTok);
                             Token::createMutualLinks(par1, mTokenList.back());
                             mTokenList.addtoken(typetok, tok3);
+                            for (Token* t = par1; t; t = t->next())
+                                t->templateArgFrom(typetok);
                             continue;
                         }
                     }
