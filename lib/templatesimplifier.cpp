@@ -1766,7 +1766,7 @@ void TemplateSimplifier::expandTemplate(
                     dst->previous()->linenr(start->linenr());
                     dst->previous()->column(start->column());
                     Token *previous = dst->previous();
-                    previous->isTemplateArg(true);
+                    previous->templateArgFrom(typetok);
                     previous->isSigned(typetok->isSigned());
                     previous->isUnsigned(typetok->isUnsigned());
                     previous->isLong(typetok->isLong());
@@ -2016,7 +2016,7 @@ void TemplateSimplifier::expandTemplate(
                                         Token::createMutualLinks(brackets1.top(), back);
                                         brackets1.pop();
                                     }
-                                    back->isTemplateArg(true);
+                                    back->templateArgFrom(typetok);
                                     back->isUnsigned(typetok->isUnsigned());
                                     back->isSigned(typetok->isSigned());
                                     back->isLong(typetok->isLong());
@@ -2111,16 +2111,17 @@ void TemplateSimplifier::expandTemplate(
                         if (Token::Match(declTok->previous(), "[<,]")) {
                             const Token* typetok = mTypesUsedInTemplateInstantiation[itype].token();
                             mTokenList.addtoken("(", declTok);
+                            mTokenList.back()->templateArgFrom(declTok);
                             Token* const par1 = mTokenList.back();
                             while (declTok != typeParametersInDeclaration[itype]) {
                                 mTokenList.addtoken(declTok);
+                                mTokenList.back()->templateArgFrom(declTok);
                                 declTok = declTok->next();
                             }
                             mTokenList.addtoken(")", declTok);
+                            mTokenList.back()->templateArgFrom(declTok);
                             Token::createMutualLinks(par1, mTokenList.back());
                             mTokenList.addtoken(typetok, tok3);
-                            for (Token* t = par1; t; t = t->next())
-                                t->isTemplateArg(true);
                             continue;
                         }
                     }
@@ -2174,7 +2175,7 @@ void TemplateSimplifier::expandTemplate(
                             brackets1.pop();
                         }
                         if (copy)
-                            back->isTemplateArg(true);
+                            back->templateArgFrom(typetok);
                     }
                     if (pointerType && Token::simpleMatch(beforeTypeToken, "const")) {
                         mTokenList.addtoken(beforeTypeToken);

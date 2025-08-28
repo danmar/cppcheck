@@ -2720,3 +2720,10 @@ Token* findLambdaEndScope(Token* tok)
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
 }
+
+void Token::templateArgFrom(const Token* fromToken) {
+    setFlag(fIsTemplateArg, fromToken != nullptr);
+    mImpl->mTemplateArgFileIndex = fromToken ? fromToken->mImpl->mFileIndex : -1;
+    mImpl->mTemplateArgLineNumber = fromToken ? fromToken->mImpl->mLineNumber : -1;
+    mImpl->mTemplateArgColumn = fromToken ? fromToken->mImpl->mColumn : -1;
+}
