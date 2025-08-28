@@ -52,6 +52,7 @@ void print_stacktrace(FILE* output, int start_idx, bool demangling, int maxdepth
     char demangle_buffer[2048]= {0};
     for (int i = offset; i < maxdepth; ++i) {
         const char * const symbolString = symbolStringList[i];
+        // TODO: implement parsing for __APPLE__
         // skip all leading libc symbols so the first symbol is our code
         if (omit_above_own && !own_code) {
             if (strstr(symbolString, "/libc.so.6") != nullptr)
