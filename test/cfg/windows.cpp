@@ -1211,8 +1211,6 @@ void SEH_knownConditionTrueFalse() { // #8434
 }
 
 void SEH_unusedLabel() { // #13233
-    __try {
-    }
-    __finally {
-    }
+    __try {}
+    __finally {}
 }

@@ -1043,7 +1043,7 @@ void* f_returns_NULL(void* arg)
 void nullPointer_pthread_create() // #12396
 {
     pthread_t thread;
-    pthread_create(&thread, NULL, (void* (*)(void*))f_returns_NULL, NULL);
+    pthread_create(&thread, NULL, (void* (*)(void*)) f_returns_NULL, NULL);
 }
 
 void memleak_getaddrinfo() // #6994

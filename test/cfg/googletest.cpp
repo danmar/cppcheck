@@ -33,13 +33,11 @@ namespace ExampleNamespace {
 
     // syntaxError when TYPED_TEST is not known
     TYPED_TEST (ExampleTypedTest, cppcheck_test)
-    {
-    }
+    {}
 
     // syntaxError when TYPED_TEST_P is not known
     TYPED_TEST_P (ExampleTypedTestP, cppcheck)
-    {
-    }
+    {}
 }
 
 TEST(ASSERT, ASSERT)
