@@ -1949,7 +1949,12 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
             return true;
         if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
             return true;
-        if (vtParent->str() == vt->str())
+        ValueType temp = *vtParent;
+        if ((temp.constness & 1) && !(vt->constness & 1)) // allow assignment to const/volatile
+            temp.constness &= ~1;
+        if ((temp.volatileness & 1) && !(vt->volatileness & 1))
+            temp.volatileness &= ~1;
+        if (temp.str() == vt->str())
             return true;
     }
 

@@ -6788,6 +6788,7 @@ private:
         ASSERT_EQUALS("unoRef:: var0(", testAst(code1));
 
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
+        ASSERT_EQUALS("vary=", testAst("std::unique_ptr<int> var = y;")); // #14019
 
         ASSERT_EQUALS("", testAst("void *(*var)(int);"));
         ASSERT_EQUALS("", testAst("void *(*var[2])(int);"));
