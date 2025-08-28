@@ -40,7 +40,7 @@ function formatCplusplus {
   find $1 -iname '*.h' \
       -o -iname '*.c' \
       -o -iname '*.cpp' \
-      | xargs -n 1 -P $CPUCOUNT -I{} -t $UNCRUSTIFY -c .uncrustify.cfg -l CPP --no-backup {}
+      | xargs -n 1 -P $CPUCOUNT $UNCRUSTIFY -c .uncrustify.cfg -l CPP --no-backup --replace
 
 }
 
@@ -51,4 +51,3 @@ formatCplusplus lib/
 formatCplusplus oss-fuzz/
 formatCplusplus test/
 formatCplusplus tools/
-formatCplusplus samples/
