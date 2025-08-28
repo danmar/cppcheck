@@ -62,7 +62,10 @@ option(ENABLE_CHECK_INTERNAL "Enable internal checks"                           
 option(DISABLE_DMAKE        "Disable run-dmake dependencies"                                OFF)
 option(BUILD_MANPAGE        "Enable man target to build manpage"                            OFF)
 
-option(BUILD_CLI            "Build the cli application"                                     ON)
+option(BUILD_CLI            "Build the CLI application"                                     ON)
+if(NOT BUILD_CLI AND BUILD_TESTS)
+    message(FATAL_ERROR "Building the tests requires the CLI to be build as well")
+endif()
 
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "Enable QtCharts usage in the GUI"                              OFF)
