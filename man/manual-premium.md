@@ -1355,6 +1355,8 @@ files in the predefined paths.
 
 ### Troubleshooting
 
+#### check the debug output
+
 If your license does not work you can get some details about the license validation by executing
 premiumaddon binary with the `--debug` option.
 
@@ -1365,3 +1367,17 @@ Windows:
 Linux/Mac:
 
     premiumaddon --debug
+
+you can execute premiumaddon from an arbitrary path.
+
+
+#### ensure there are no loc-license artifacts
+
+Search for file(s) with the name cppcheck-premium-loc and remove these.
+
+
+#### clear cppcheck-build-dir
+
+If you have used a cppcheck-build-dir please remove all files in that and recheck.
+The Cppcheck GUI by default creates a cppcheck-build-dir.
+
