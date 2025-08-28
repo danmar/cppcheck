@@ -1373,11 +1373,11 @@ you can execute premiumaddon from an arbitrary path.
 
 #### ensure there are no loc-license artifacts
 
-Search for file(s) with the name cppcheck-premium-loc and remove these.
+Search for file(s) with the name cppcheck-premium-loc and remove them.
 
 
 #### clear cppcheck-build-dir
 
-If you have used a cppcheck-build-dir please remove all files in that and recheck.
+If you have used a cppcheck-build-dir please remove all files in that directory and recheck.
 The Cppcheck GUI by default creates a cppcheck-build-dir.
 
