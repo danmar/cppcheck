@@ -70,6 +70,11 @@ struct TokenImpl {
     nonneg int mColumn{};
     nonneg int mExprId{};
 
+    // original template argument location
+    int mTemplateArgFileIndex{-1};
+    int mTemplateArgLineNumber{-1};
+    int mTemplateArgColumn{-1};
+
     /**
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
@@ -821,8 +826,15 @@ public:
     bool isTemplateArg() const {
         return getFlag(fIsTemplateArg);
     }
-    void isTemplateArg(const bool value) {
-        setFlag(fIsTemplateArg, value);
+    void templateArgFrom(const Token* fromToken);
+    int templateArgFileIndex() const {
+        return mImpl->mTemplateArgFileIndex;
+    }
+    int templateArgLineNumber() const {
+        return mImpl->mTemplateArgLineNumber;
+    }
+    int templateArgColumn() const {
+        return mImpl->mTemplateArgColumn;
     }
 
     const std::string& getMacroName() const {

@@ -314,6 +314,8 @@ private:
         TEST_CASE(explicitBool2);
 
         TEST_CASE(templateArgPreserveType); // #13882 - type of template argument
+
+        TEST_CASE(dumpTemplateArgFrom);
     }
 
     struct CheckOptions
@@ -331,6 +333,20 @@ private:
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
+    }
+
+#define dump(...) dump_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    std::string dump_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(options.debugwarnings).build();
+        SimpleTokenizer tokenizer(settings1, *this);
+
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        std::ostringstream ostr;
+        (tokenizer.dump)(ostr);
+
+        return ostr.str();
     }
 
     void template1() {
@@ -6622,6 +6638,30 @@ private:
                       "Test<64> test ; "
                       "class Test<64> { uint32_t i ; i = ( uint32_t ) 64 ; } ;",
                       tok(code));
+    }
+
+    void dumpTemplateArgFrom() {
+        const char code[] = "template<class T> void foo(T t) {}\n"
+                            "foo<int>(23);";
+        const std::string d = dump(code);
+        ASSERT(!d.empty());
+
+        // Assert that first 'int' token has templateArg location info
+        const std::string::size_type strpos1 = d.find(" str=\"int\" ");
+        ASSERT(strpos1 < d.size());
+        const std::string::size_type endpos1 = d.find('>', strpos1);
+        const std::string::size_type templateArgPos1 = d.find(" templateArgFileIndex=\"0\" templateArgLineNumber=\"2\" templateArgColumn=\"5\"");
+        ASSERT(templateArgPos1 > strpos1 && templateArgPos1 < endpos1);
+
+        // Assert that second 'int' token has templateArg location info
+        const std::string::size_type strpos2 = d.find(" str=\"int\" ", endpos1);
+        ASSERT(strpos2 < d.size());
+        const std::string::size_type endpos2 = d.find('>', strpos2);
+        const std::string::size_type templateArgPos2 = d.find(" templateArgFileIndex=\"0\" templateArgLineNumber=\"2\" templateArgColumn=\"5\"", endpos1);
+        ASSERT(templateArgPos2 > strpos2 && templateArgPos2 < endpos2);
+
+        // Assert there is no further unexpected templateArg location info
+        ASSERT(d.find(" templateArg", endpos2) == std::string::npos);
     }
 };
 

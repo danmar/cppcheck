@@ -6076,8 +6076,12 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " externLang=\"C\"";
         if (tok->isExpandedMacro())
             outs += " macroName=\"" + tok->getMacroName() + "\"";
-        if (tok->isTemplateArg())
+        if (tok->isTemplateArg()) {
             outs += " isTemplateArg=\"true\"";
+            outs += " templateArgFileIndex=\"" + std::to_string(tok->templateArgFileIndex()) + "\"";
+            outs += " templateArgLineNumber=\"" + std::to_string(tok->templateArgLineNumber()) + "\"";
+            outs += " templateArgColumn=\"" + std::to_string(tok->templateArgColumn()) + "\"";
+        }
         if (tok->isRemovedVoidParameter())
             outs += " isRemovedVoidParameter=\"true\"";
         if (tok->isSplittedVarDeclComma())
