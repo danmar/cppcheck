@@ -1383,5 +1383,5 @@ You can clear all results by clicking on the brush icon in the toolbar. Or by op
 
 If you have cppcheck-premium-loc files in your project folders those should be removed.
 
-If such files are generated during analysis then review your scripts if you can see why they are generated.
+If such files are generated during analysis, then review your scripts to check why those files are generated.
 
