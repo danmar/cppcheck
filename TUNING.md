@@ -28,9 +28,15 @@ Boost.Container (https://www.boost.org/doc/libs/release/libs/container) is being
 
 As the used library is header-only implementation you only need to install the package on the system you build the binary on but not on the system you run the analysis on.
 
-The official Windows binary is currently not using this (TODO: file ticket).
+The official Windows binary is currently not using this - see https://trac.cppcheck.net/ticket/13823 for details.
 
-(TODO: enable usage by default / bail out when it is enforced)
+This will be used by default if Boost is detected in CMake. If you want to enforce the usage, you can use the CMake option `-DUSE_BOOST=On` which will cause the build to fail if no Boost was detected.
+
+Using Visual Studio you need to provide a full Boost release (i.e. including binaries) for it to be detected by CMake. If you are not able to do this you can specify the CMake option `-DBOOST_INCLUDEDIR=<in>` (pointing to the directory which *contains* the `boost` include directory) to work around this (this is a Cppcheck specific hack) - see https://trac.cppcheck.net/ticket/13822 for more details.
+
+If you are using `make` instead you need to specify `-DHAVE_BOOST` in the flags.
+
+(TODO: document how to use with provided Visual Studio project)
 
 ### Use A Different Compiler
 
