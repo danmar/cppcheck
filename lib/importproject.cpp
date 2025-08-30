@@ -79,7 +79,7 @@ void ImportProject::fsSetDefines(FileSettings& fs, std::string defs)
     while (!defs.empty() && defs[0] == ';')
         defs.erase(0, 1);
     while (!defs.empty() && endsWith(defs,';'))
-        defs.erase(defs.size() - 1U); // TODO: Use std::string::pop_back() as soon as travis supports it
+        defs.pop_back();
     bool eq = false;
     for (std::size_t pos = 0; pos < defs.size(); ++pos) {
         if (defs[pos] == '(' || defs[pos] == '=')
