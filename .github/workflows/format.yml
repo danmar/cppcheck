@@ -50,6 +50,6 @@ jobs:
 
       - name: Uncrustify check
         run: |
-          ~/uncrustify/uncrustify -c .uncrustify.cfg -l CPP --no-backup --replace */*.cpp */*.h
+          UNCRUSTIFY=~/uncrustify/uncrustify ./runformat
           git diff
           git diff | diff - /dev/null &> /dev/null
