@@ -3218,7 +3218,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
         Token * const tok2 = instantiation.token();
         if ((mSettings.reportProgress != -1) && !mTokenList.getFiles().empty())
-            mErrorLogger.reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
+            mErrorLogger.reportProgress("TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
@@ -3294,7 +3294,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     if (!instantiated && specialized) {
         auto * tok2 = const_cast<Token *>(templateDeclaration.nameToken());
         if ((mSettings.reportProgress != -1) && !mTokenList.getFiles().empty())
-            mErrorLogger.reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
+            mErrorLogger.reportProgress("TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
