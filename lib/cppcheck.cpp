@@ -263,9 +263,9 @@ private:
         mErrorLogger.reportMetric(metric);
     }
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override
+    void reportProgress(const char stage[], const std::size_t value) override
     {
-        mErrorLogger.reportProgress(filename, stage, value);
+        mErrorLogger.reportProgress(stage, value);
     }
 
     ErrorLogger &mErrorLogger;

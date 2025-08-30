@@ -323,7 +323,7 @@ namespace {
         /** xml output of errors */
         void reportErr(const ErrorMessage &msg) override;
 
-        void reportProgress(const std::string &filename, const char stage[], std::size_t value) override;
+        void reportProgress(const char stage[], std::size_t value) override;
 
         /**
          * Reference to current settings; set while check() is running for reportError().
@@ -618,11 +618,8 @@ void StdLogger::reportOut(const std::string &outmsg, Color c)
         std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
-// TODO: remove filename parameter?
-void StdLogger::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
+void StdLogger::reportProgress(const char stage[], const std::size_t value)
 {
-    (void)filename;
-
     if (!mLatestProgressOutputTime)
         return;
 

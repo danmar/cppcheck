@@ -1137,7 +1137,7 @@ void Tokenizer::simplifyTypedefCpp()
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (doProgress)
-            mErrorLogger.reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
+            mErrorLogger.reportProgress("Tokenize (typedef)", tok->progressValue());
 
         if (Settings::terminated())
             return;
@@ -2884,7 +2884,7 @@ bool Tokenizer::simplifyUsing()
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (doProgress)
-            mErrorLogger.reportProgress(list.getFiles()[0], "Tokenize (using)", tok->progressValue());
+            mErrorLogger.reportProgress("Tokenize (using)", tok->progressValue());
 
         if (Settings::terminated())
             return substitute;

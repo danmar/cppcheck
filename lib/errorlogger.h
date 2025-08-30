@@ -249,12 +249,10 @@ public:
 
     /**
      * Report progress to client
-     * @param filename main file that is checked
      * @param stage for example preprocess / tokenize / simplify / check
      * @param value progress value (0-100)
      */
-    virtual void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
-        (void)filename;
+    virtual void reportProgress(const char stage[], const std::size_t value) {
         (void)stage;
         (void)value;
     }

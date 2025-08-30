@@ -136,7 +136,7 @@ namespace {
             (void) metric;
         }
 
-        void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
+        void reportProgress(const char /*stage*/[], const std::size_t /*value*/) override
         {}
     };
 }

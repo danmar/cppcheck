@@ -83,9 +83,7 @@ public:
     }
     void reportMetric(const std::string & /*metric*/) override {}
 
-    void reportProgress(const std::string& /*filename*/,
-                        const char /*stage*/[],
-                        const std::size_t /*value*/) override {
+    void reportProgress(const char /*stage*/[], const std::size_t /*value*/) override {
         if (std::time(nullptr) >= stoptime) {
             std::cout << "Time to analyse the code exceeded 2 seconds. Terminating.\n\n";
             Settings::terminate();
