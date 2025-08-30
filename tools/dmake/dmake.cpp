@@ -617,10 +617,7 @@ int main(int argc, char **argv)
     // enable backtrac
     fout << "RDYNAMIC=-rdynamic\n";
 
-    // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
-    fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
-         << "# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.\n"
-         << "ifndef COMSPEC\n"
+    fout << "ifndef COMSPEC\n"
          << "    ifeq ($(VERBOSE),1)\n"
          << "        $(info COMSPEC not found)\n"
          << "    endif\n"
@@ -649,9 +646,6 @@ int main(int argc, char **argv)
          << "        $(info WINNT found)\n"
          << "    endif\n"
          << "    #### Maybe Windows\n"
-         << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
-         << "        CPPCHK_GLIBCXX_DEBUG=\n"
-         << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
          << "\n"
          << "    ifeq ($(VERBOSE),1)\n"
          << "        $(info MSYSTEM=$(MSYSTEM))\n"
@@ -673,18 +667,6 @@ int main(int argc, char **argv)
          << "        $(info uname_S=$(uname_S))\n"
          << "    endif\n"
          << "\n"
-         << "    ifeq ($(uname_S),Linux)\n"
-         << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
-         << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
-         << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
-         << "    endif # Linux\n"
-         << "\n"
-         << "    ifeq ($(uname_S),GNU/kFreeBSD)\n"
-         << "        ifndef CPPCHK_GLIBCXX_DEBUG\n"
-         << "            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG\n"
-         << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
-         << "    endif # GNU/kFreeBSD\n"
-         << "\n"
          << "    LDFLAGS+=-pthread\n"
          << "\n"
          << "endif # WINNT\n"
@@ -699,12 +681,6 @@ int main(int argc, char **argv)
          << "    CXXFLAGS+=-Wl,--stack,8388608\n"
          << "endif # CYGWIN\n"
          << "\n";
-
-    // skip "-D_GLIBCXX_DEBUG" if clang, since it breaks the build
-    makeConditionalVariable(fout, "CXX", "g++");
-    fout << "ifeq (clang++, $(findstring clang++,$(CXX)))\n"
-         << "    CPPCHK_GLIBCXX_DEBUG=\n"
-         << "endif\n";
 
     // Makefile settings..
     if (release) {
@@ -728,7 +704,6 @@ int main(int argc, char **argv)
                                 "-Woverloaded-virtual "
                                 "-Wno-dollar-in-identifier-extension " // occurs in testrunner only
                                 "-g");
-        fout << "override CPPFLAGS += $(CPPCHK_GLIBCXX_DEBUG)\n\n";
     }
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
