@@ -5369,7 +5369,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             return nullptr;
 
         if (tok->scope()->type == ScopeType::eGlobal) {
-            const Token* astTop = tok->astTop();
+            const Token* astTop = tok->astTop(true);
             if (Token::simpleMatch(astTop, ":") && Token::simpleMatch(astTop->astOperand1(), "(")) { // ctor init list
                 const Token* ctor = astTop->astOperand1()->previous();
                 if (ctor && ctor->function() && ctor->function()->nestedIn)

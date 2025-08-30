@@ -1728,7 +1728,7 @@ static Token * createAstAtToken(Token *tok)
         }
 
         if (init != semicolon1)
-            semicolon1->astOperand1(init->astTop());
+            semicolon1->astOperand1(init->astTop(false));
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
 

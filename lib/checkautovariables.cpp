@@ -468,7 +468,7 @@ static bool isDeadTemporary(const Token* tok, const Token* expr, const Library& 
     if (!isTemporary(tok, &library))
         return false;
     if (expr) {
-        if (!precedes(nextAfterAstRightmostLeaf(tok->astTop()), nextAfterAstRightmostLeaf(expr->astTop())))
+        if (!precedes(nextAfterAstRightmostLeaf(tok->astTop(true)), nextAfterAstRightmostLeaf(expr->astTop(true))))
             return false;
         const Token* parent = tok->astParent();
         if (Token::simpleMatch(parent, "{") && Token::simpleMatch(parent->astParent(), ":"))
@@ -642,7 +642,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     }
                     if (!ValueFlow::isLifetimeBorrowed(tok, *mSettings))
                         continue;
-                    const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
+                    const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop(true));
                     if (!nextTok)
                         nextTok = tok->next();
                     if (var && (!var->isLocal() || var->isStatic()) && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
