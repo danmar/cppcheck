@@ -33,7 +33,8 @@ def build_cppcheck(bisect_path):
     # TODO: use "make install"?
     # TODO: use CXXOPTS overrides to workaround compiling issues in older versions
     print('building {}'.format(commit_hash))
-    subprocess.check_call(['make', '-C', bisect_repo_dir, '-j6', 'MATCHCOMPILER=yes', 'CXXOPTS=-O2 -w -pipe', '-s'])
+    # we always need to use CXXFLAGS because we need to support older versions
+    subprocess.check_call(['make', '-C', bisect_repo_dir, '-j6', 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -w -pipe', '-s'])
 
     # TODO: remove folder if installation failed
     print('installing {}'.format(commit_hash))
