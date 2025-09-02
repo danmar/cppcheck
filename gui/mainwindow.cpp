@@ -76,6 +76,7 @@
 #include <QCloseEvent>
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDebug>
 #include <QDialog>
 #include <QDir>
@@ -193,6 +194,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // About menu
     connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(mUI->mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
+    mUI->mActionEULA->setVisible(isCppcheckPremium());
+    connect(mUI->mActionEULA, &QAction::triggered, this, &MainWindow::showEULA);
 
     // View > Toolbar menu
     connect(mUI->mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
@@ -1641,6 +1644,11 @@ void MainWindow::showAuthors()
     auto *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
+}
+
+void MainWindow::showEULA()
+{
+    QDesktopServices::openUrl(QUrl("https://www.cppcheck.com/EULA"));
 }
 
 void MainWindow::performSelectedFilesCheck(const QStringList &selectedFilesList)
