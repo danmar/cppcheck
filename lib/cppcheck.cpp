@@ -1890,8 +1890,9 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
     ErrorMessage errmsg(std::move(loclist),
                         "",
                         Severity::information,
+                        "toomanyconfigs",
                         msg.str(),
-                        "toomanyconfigs", CWE398,
+                        CWE398,
                         Certainty::normal);
 
     mErrorLogger.reportErr(errmsg);
