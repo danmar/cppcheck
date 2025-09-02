@@ -170,6 +170,9 @@ public slots:
     /** @brief Slot to to show authors list */
     void showAuthors();
 
+    /** @brief Slot to to show EULA */
+    void showEULA();
+
     /** @brief Slot to save results */
     void save();
 

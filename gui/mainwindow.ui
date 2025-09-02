@@ -124,7 +124,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -200,6 +200,7 @@
     <addaction name="mActionHelpContents"/>
     <addaction name="mActionLicense"/>
     <addaction name="mActionAuthors"/>
+    <addaction name="mActionEULA"/>
     <addaction name="separator"/>
     <addaction name="mActionAbout"/>
    </widget>
@@ -1023,6 +1024,11 @@
    </property>
    <property name="text">
     <string>Autosar</string>
+   </property>
+  </action>
+  <action name="mActionEULA">
+   <property name="text">
+    <string>EULA...</string>
    </property>
   </action>
  </widget>
