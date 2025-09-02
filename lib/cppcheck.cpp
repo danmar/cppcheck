@@ -598,8 +598,8 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         ErrorMessage errmsg({std::move(loc)},
                             std::move(locFile),
                             Severity::error,
-                            msg,
                             "syntaxError",
+                            msg,
                             Certainty::normal);
 
         if (line.compare(pos3, 10, ": warning:") == 0) {
@@ -984,8 +984,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             ErrorMessage errmsg({std::move(loc1)},
                                 "", // TODO: is this correct?
                                 Severity::error,
-                                output.msg,
                                 "syntaxError",
+                                output.msg,
                                 Certainty::normal);
             mErrorLogger.reportErr(errmsg);
             return mLogger->exitcode();
@@ -1243,8 +1243,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     ErrorMessage errmsg({std::move(loc1)},
                                         file.spath(),
                                         Severity::error,
-                                        o.msg,
                                         "preprocessorErrorDirective",
+                                        o.msg,
                                         Certainty::normal);
                     mErrorLogger.reportErr(errmsg);
                 }
@@ -1273,8 +1273,8 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             ErrorMessage errmsg({std::move(loc)},
                                 std::move(locFile),
                                 Severity::information,
-                                msg,
                                 "noValidConfiguration",
+                                msg,
                                 Certainty::normal);
             mErrorLogger.reportErr(errmsg);
         }
@@ -1335,8 +1335,8 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
     ErrorMessage errmsg({std::move(loc1)},
                         "",
                         Severity::error,
-                        fullmsg,
                         "internalError",
+                        fullmsg,
                         Certainty::normal);
 
     mErrorLogger.reportErr(errmsg);
@@ -1370,8 +1370,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
                     ErrorMessage errmsg({std::move(loc)},
                                         "",
                                         Severity::debug,
-                                        "Checks maximum time exceeded",
                                         "checksMaxTime",
+                                        "Checks maximum time exceeded",
                                         Certainty::normal);
                     mErrorLogger.reportErr(errmsg);
                 }
@@ -1912,8 +1912,8 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     ErrorMessage errmsg(std::move(loclist),
                         "",
                         Severity::information,
-                        "The configuration '" + configuration + "' was not checked because its code equals another one.",
                         "purgedConfiguration",
+                        "The configuration '" + configuration + "' was not checked because its code equals another one.",
                         Certainty::normal);
 
     mErrorLogger.reportErr(errmsg);

@@ -60,8 +60,7 @@ ErrorMessage::ErrorMessage()
     : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
 
-// TODO: id and msg are swapped compared to other calls
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity severity, const std::string &msg, std::string id, Certainty certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity severity, std::string id, const std::string &msg, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
@@ -262,8 +261,8 @@ ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError,
     ErrorMessage errmsg(std::move(locationList),
                         tokenList ? tokenList->getSourceFilePath() : filename,
                         Severity::error,
-                        (msg.empty() ? "" : (msg + ": ")) + internalError.errorMessage,
                         internalError.id,
+                        (msg.empty() ? "" : (msg + ": ")) + internalError.errorMessage,
                         Certainty::normal);
     // TODO: find a better way
     if (!internalError.details.empty())

@@ -1717,7 +1717,7 @@ private:
 
     void suppressionFromErrorMessage() const {
         {
-            const ErrorMessage msg({}, "test1.cpp", Severity::information, "msg", "id", Certainty::inconclusive);
+            const ErrorMessage msg({}, "test1.cpp", Severity::information, "id", "msg", Certainty::inconclusive);
             const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {"m1", "m2"});
             ASSERT_EQUALS("test1.cpp", msg_s.getFileName());
             ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, msg_s.lineNumber);
@@ -1733,7 +1733,7 @@ private:
         {
             std::list<ErrorMessage::FileLocation> loc;
             loc.emplace_back("test1.cpp", 1, 1);
-            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "msg", "id", Certainty::normal);
+            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "id", "msg", Certainty::normal);
             const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {});
             ASSERT_EQUALS("test1.cpp", msg_s.getFileName());
             ASSERT_EQUALS(1, msg_s.lineNumber);
@@ -1743,7 +1743,7 @@ private:
             loc.emplace_back("test1.cpp", 1, 1);
             loc.emplace_back("test2.cpp", 2, 2);
             loc.emplace_back("test3.cpp", 3, 3);
-            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "msg", "id", Certainty::normal);
+            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "id", "msg", Certainty::normal);
             const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {});
             ASSERT_EQUALS("test3.cpp", msg_s.getFileName());
             ASSERT_EQUALS(3, msg_s.lineNumber);

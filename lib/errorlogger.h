@@ -103,8 +103,9 @@ public:
     ErrorMessage(std::list<FileLocation> callStack,
                  std::string file1,
                  Severity severity,
+                 std::string id,
                  const std::string &msg,
-                 std::string id, Certainty certainty);
+                 Certainty certainty);
     ErrorMessage(std::list<FileLocation> callStack,
                  std::string file1,
                  Severity severity,

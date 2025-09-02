@@ -463,8 +463,8 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
     const ErrorMessage errmsg(std::move(locations),
                               "",
                               Severity::error,
-                              "Internal error: " + msg,
                               "cppcheckError",
+                              "Internal error: " + msg,
                               Certainty::normal);
 
     if (!mSuppressions.nomsg.isSuppressed(errmsg, {}))

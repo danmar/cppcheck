@@ -872,7 +872,7 @@ namespace {
 
         void reportError(Severity severity, const std::string& id, const std::string& msg) {
             ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 0, 0);
-            const ErrorMessage errmsg({std::move(loc)}, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
+            const ErrorMessage errmsg({std::move(loc)}, tokenList.getSourceFilePath(), severity, id, msg, Certainty::normal);
             errorLogger.reportErr(errmsg);
         }
 
