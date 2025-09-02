@@ -9209,7 +9209,8 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 // check for initialization
-                if (Token::Match(after, "%any% (|{")) {
+                bool isFuncDecl = Token::Match(after, "%name% (") && Token::simpleMatch(after->linkAt(1), ") {");
+                if (Token::Match(after, "%any% (|{") && !isFuncDecl) {
                     after->insertToken("=");
                     after = after->next();
                     const bool isEnum = start->str() == "enum";
