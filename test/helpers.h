@@ -157,6 +157,8 @@ private:
     const std::string mName;
     const std::string mPath;
     const std::string mFullPath;
+
+    static std::set<std::string> s_scopedfiles;
 };
 
 class PreprocessorHelper
