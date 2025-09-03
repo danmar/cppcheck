@@ -1061,7 +1061,7 @@ void Token::function(const Function *f)
         tokType(eName);
 }
 
-Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend)
+Token* Token::insertToken(const std::string& tokenStr, bool prepend)
 {
     Token *newToken;
     if (mStr.empty())
@@ -1069,10 +1069,6 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
     else
         newToken = new Token(mList, mTokensFrontBack);
     newToken->str(tokenStr);
-    if (!originalNameStr.empty())
-        newToken->originalName(originalNameStr);
-    if (!macroNameStr.empty())
-        newToken->setMacroName(macroNameStr);
 
     if (newToken != this) {
         newToken->mImpl->mLineNumber = mImpl->mLineNumber;
@@ -1195,6 +1191,22 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
             }
         }
     }
+    return newToken;
+}
+
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend)
+{
+    Token* const newToken = insertToken(tokenStr, prepend);
+    if (!originalNameStr.empty())
+        newToken->originalName(originalNameStr);
+    return newToken;
+}
+
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend)
+{
+    Token* const newToken = insertToken(tokenStr, originalNameStr, prepend);
+    if (!macroNameStr.empty())
+        newToken->setMacroName(macroNameStr);
     return newToken;
 }
 
