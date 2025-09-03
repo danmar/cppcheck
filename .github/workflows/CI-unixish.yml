@@ -611,7 +611,7 @@ jobs:
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # compile with verification and ast matchers
-          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXOPTS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
+          make -j$(nproc) CPPFLAGS="-DCHECK_INTERNAL" CXXOPTS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
       - name: CMake
         run: |
