@@ -46,7 +46,7 @@ jobs:
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXOPTS="-O1 -g -w" CPPOPTS="-DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-O1 -g -w" CPPOPTS="-DHAVE_BOOST" HAVE_RULES=yes MATCHCOMPILER=yes testrunner
 
       - name: Run valgrind
         run: |
