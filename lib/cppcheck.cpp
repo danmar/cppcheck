@@ -1601,8 +1601,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
                 const ErrorMessage errmsg({},
                                           "",
                                           Severity::error,
-                                          msg,
                                           "pcre_compile",
+                                          msg,
                                           Certainty::normal);
 
                 mErrorLogger.reportErr(errmsg);
@@ -1622,8 +1622,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
             const ErrorMessage errmsg({},
                                       "",
                                       Severity::error,
-                                      msg,
                                       "pcre_study",
+                                      msg,
                                       Certainty::normal);
 
             mErrorLogger.reportErr(errmsg);
@@ -1645,8 +1645,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
                     const ErrorMessage errmsg({},
                                               "",
                                               Severity::error,
-                                              std::string("pcre_exec failed: ") + errorMessage,
                                               "pcre_exec",
+                                              std::string("pcre_exec failed: ") + errorMessage,
                                               Certainty::normal);
 
                     mErrorLogger.reportErr(errmsg);
@@ -1681,8 +1681,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
             const ErrorMessage errmsg({std::move(loc)},
                                       list.getSourceFilePath(),
                                       rule.severity,
-                                      !rule.summary.empty() ? rule.summary : "found '" + str.substr(pos1, pos2 - pos1) + "'",
                                       rule.id,
+                                      !rule.summary.empty() ? rule.summary : "found '" + str.substr(pos1, pos2 - pos1) + "'",
                                       Certainty::normal);
 
             // Report error
