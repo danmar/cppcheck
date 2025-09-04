@@ -823,6 +823,13 @@ private:
               "    if (strequ(p, \"ALL\")) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::string_view);\n"
+              "void f(bool);\n"
+              "void g() {\n"
+              "    f(\"\"sv);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void deadStrcmp() {
