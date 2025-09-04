@@ -6801,6 +6801,7 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
         }
         tokEnd->insertToken("}");
         Token * tokCloseBrace = tokEnd->next();
+        tokCloseBrace->column(tokEnd->column());
 
         Token::createMutualLinks(tokOpenBrace, tokCloseBrace);
         tokBracesEnd = tokCloseBrace;
@@ -6835,6 +6836,7 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
 
         tokEnd->insertToken("}");
         Token * tokCloseBrace=tokEnd->next();
+        tokCloseBrace->column(tokEnd->column());
 
         Token::createMutualLinks(tokOpenBrace,tokCloseBrace);
         tokBracesEnd=tokCloseBrace;
