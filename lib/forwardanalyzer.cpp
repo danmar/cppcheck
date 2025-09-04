@@ -610,7 +610,7 @@ namespace {
                     // In the middle of a loop structure so bail
                     return Break(Analyzer::Terminate::Bail);
                 } else if (tok->str() == ";" && tok->astParent()) {
-                    Token* top = tok->astTop();
+                    Token* top = tok->astTop(true);
                     if (Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
                         Token* endCond = top->link();
                         Token* endBlock = endCond->linkAt(1);

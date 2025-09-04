@@ -1575,7 +1575,7 @@ static bool isConditionKnown(const Token* tok, bool then)
     const Token* parent = tok->astParent();
     while (parent && (parent->str() == op || parent->str() == "!" || parent->isCast()))
         parent = parent->astParent();
-    const Token* top = tok->astTop();
+    const Token* top = tok->astTop(true);
     if (Token::Match(top->previous(), "if|while|for ("))
         return parent == top || Token::simpleMatch(parent, ";");
     return parent && parent->str() != op;
@@ -2110,7 +2110,7 @@ const Token* ValueFlow::getEndOfExprScope(const Token* tok, const Scope* default
                 if (!end || (smallest ? precedes(varEnd, end) : succeeds(varEnd, end)))
                     end = varEnd;
 
-                const Token* top = var->nameToken()->astTop();
+                const Token* top = var->nameToken()->astTop(true);
                 if (Token::simpleMatch(top->tokAt(-1), "if (")) { // variable declared in if (...)
                     const Token* elseTok = top->link()->linkAt(1);
                     if (Token::simpleMatch(elseTok, "} else {") && tok->scope()->isNestedIn(elseTok->tokAt(2)->scope()))
@@ -4604,7 +4604,7 @@ struct ConditionHandler {
                 if (Token::Match(tok, ":|;|,"))
                     continue;
 
-                const Token* top = tok->astTop();
+                const Token* top = tok->astTop(true);
 
                 if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?|!"))
                     continue;
@@ -4638,7 +4638,7 @@ struct ConditionHandler {
             if (tok->hasKnownIntValue())
                 return;
 
-            Token* top = tok->astTop();
+            Token* top = tok->astTop(true);
 
             if (Token::Match(top, "%assign%"))
                 return;
@@ -4857,7 +4857,7 @@ struct ConditionHandler {
                 }
             }
 
-            Token* top = condTok->astTop();
+            Token* top = condTok->astTop(true);
 
             if (top->previous()->isExpandedMacro()) {
                 for (std::list<ValueFlow::Value>* values : {&thenValues, &elseValues}) {
@@ -5419,7 +5419,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
         }
 
         if (Token::Match(tok2, "%oror%|&&")) {
-            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings));
+            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(true), expr, ValueFlow::Value(value), settings));
             if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory, settings)) ||
                 (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory, settings))) {
                 // Skip second expression..
@@ -5444,11 +5444,11 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
-                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings),
+                              getProgramMemory(tok2->astTop(true), expr, ValueFlow::Value(value), settings),
                               settings)) ||
             (tok2->str() == "||" &&
              conditionIsTrue(tok2->astOperand1(),
-                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings),
+                             getProgramMemory(tok2->astTop(true), expr, ValueFlow::Value(value), settings),
                              settings)))
             break;
 
@@ -6804,7 +6804,7 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 !Token::Match(nameToken, "%name% ("))
                 continue;
         }
-        if (Token::Match(nameToken->astTop()->previous(), "for|while"))
+        if (Token::Match(nameToken->astTop(true)->previous(), "for|while"))
             known = !isVariableChanged(var, settings);
         std::vector<ValueFlow::Value> values{ValueFlow::Value{size}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;

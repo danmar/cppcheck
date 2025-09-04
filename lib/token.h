@@ -93,6 +93,7 @@ struct TokenImpl {
     Token* mAstOperand1{};
     Token* mAstOperand2{};
     Token* mAstParent{};
+    Token* mAstTop{};
 
     // symbol database information
     const Scope* mScope{};
@@ -1543,17 +1544,31 @@ public:
         return nullptr;
 
     }
-    RET_NONNULL Token *astTop() {
+    /** If the ast tree has not been created, pls make sure to use cache=false,
+        as the real top has not been identified finally. */
+    RET_NONNULL Token *astTop(bool cache) {
         Token *ret = this;
+        if (cache && mImpl->mAstTop) {
+            return mImpl->mAstTop;
+        }
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
+        if (cache) {
+            mImpl->mAstTop = ret;
+        }
         return ret;
     }
 
-    RET_NONNULL const Token *astTop() const {
+    RET_NONNULL const Token *astTop(bool cache) const {
         const Token *ret = this;
+        if (cache && mImpl->mAstTop) {
+            return mImpl->mAstTop;
+        }
         while (ret->mImpl->mAstParent)
             ret = ret->mImpl->mAstParent;
+        if (cache) {
+            mImpl->mAstTop = const_cast<Token *>(ret);
+        }
         return ret;
     }
 
