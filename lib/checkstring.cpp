@@ -318,6 +318,7 @@ void CheckString::checkIncorrectStringCompare()
                     }
                 }
             } else if (Token::Match(tok, "%str%|%char%") &&
+                       !Token::Match(tok->next(), "%name%") &&
                        isUsedAsBool(tok, *mSettings) &&
                        !isMacroUsage(tok))
                 incorrectStringBooleanError(tok, tok->str());
