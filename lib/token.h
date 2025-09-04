@@ -964,10 +964,12 @@ public:
      * relations between next and previous token also.
      * @param tokenStr String for the new token.
      * @param originalNameStr String used for Token::originalName().
-     * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString, bool prepend = false);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
+    {
+        return insertToken(tokenStr, originalNameStr, macroNameStr, false);
+    }
 
     RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
     {
@@ -1401,6 +1403,8 @@ private:
      * as if it were &apos;\\0&apos;
      */
     static const char *chrInFirstWord(const char *str, char c);
+
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend);
 
     std::string mStr;
 
