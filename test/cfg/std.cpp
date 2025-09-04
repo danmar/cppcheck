@@ -90,12 +90,12 @@ int ignoredReturnValue_std_clamp(const int x)
 void knownConditionTrueFalse_std_clamp(const int x)
 {
     // cppcheck-suppress knownConditionTrueFalse
-    if(std::clamp(-2, -1, 1) == -1){}
+    if (std::clamp(-2, -1, 1) == -1) {}
     // cppcheck-suppress knownConditionTrueFalse
-    if(std::clamp(2, -1, 1) == 1){}
+    if (std::clamp(2, -1, 1) == 1) {}
     // cppcheck-suppress knownConditionTrueFalse
-    if(std::clamp(0, -1, 1) == 0){}
-    if(std::clamp(x, 0, 2)){}
+    if (std::clamp(0, -1, 1) == 0) {}
+    if (std::clamp(x, 0, 2)) {}
 }
 #endif // __cpp_lib_clamp
 
@@ -3263,7 +3263,7 @@ void uninivar_bsearch(void)
     size_t num;
     size_t size;
     // cppcheck-suppress [uninitvar, cstyleCast]
-    (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*)) strcmp);
 }
 
 void minsize_bsearch(const void* key, const void* base,
@@ -3272,11 +3272,11 @@ void minsize_bsearch(const void* key, const void* base,
 {
     const int Base[3] = {42, 43, 44};
 
-    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
-    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
-    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*)) strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*)) strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*)) strcmp); // cppcheck-suppress cstyleCast
 
-    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*)) strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_qsort(void)
@@ -3285,7 +3285,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::qsort(base,n,size, (int (*)(const void*,const void*)) strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_stable_sort(std::vector<int>& v)
