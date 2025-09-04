@@ -133,9 +133,6 @@
 
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
-#include <string>
-static const std::string emptyString;
-
 // Use the nonneg macro when you want to assert that a variable/argument is not negative
 #ifdef __CPPCHECK__
 #define nonneg   __cppcheck_low__(0)
@@ -211,8 +208,7 @@ static const std::string emptyString;
 #define USE_WINDOWS_SEH
 #endif
 
-// TODO: __GLIBC__ is dependent on the features.h include and not a built-in compiler define, so it might be problematic to depend on it
-#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && defined(__GLIBC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
+#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && !defined(__APPLE__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
 #define USE_UNIX_BACKTRACE_SUPPORT
 #endif
 

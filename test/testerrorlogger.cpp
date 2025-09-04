@@ -322,7 +322,7 @@ private:
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
         const auto mapping = createGuidelineMapping(reportType);
 
-        ErrorMessage msg(std::move(locs), emptyString, severity, "", errorId, Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", severity, "", errorId, Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
         msg.classification = getClassification(msg.guideline, reportType);
 
