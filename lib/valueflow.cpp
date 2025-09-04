@@ -147,8 +147,8 @@ static void bailoutInternal(const std::string& type,
     ErrorMessage errmsg({std::move(loc)},
                         tokenlist.getSourceFilePath(),
                         Severity::debug,
-                        (file.empty() ? "" : location) + function + " bailout: " + what,
                         type,
+                        (file.empty() ? "" : location) + function + " bailout: " + what,
                         Certainty::normal);
     errorLogger.reportErr(errmsg);
 }
@@ -3553,8 +3553,8 @@ static void valueFlowConditionExpressions(const TokenList& tokenlist,
                 {std::move(loc)},
                 tokenlist.getSourceFilePath(),
                 Severity::debug,
-                "Analysis of condition expressions is disabled. Use --check-level=exhaustive to enable it.",
                 "normalCheckLevelConditionExpressions",
+                "Analysis of condition expressions is disabled. Use --check-level=exhaustive to enable it.",
                 Certainty::normal);
             errorLogger.reportErr(errmsg);
         }
@@ -7360,8 +7360,8 @@ struct ValueFlowPassRunner {
                 ErrorMessage errmsg({std::move(loc)},
                                     "",
                                     Severity::debug,
-                                    "ValueFlow maximum iterations exceeded",
                                     "valueFlowMaxIterations",
+                                    "ValueFlow maximum iterations exceeded",
                                     Certainty::normal);
                 state.errorLogger.reportErr(errmsg);
             }
@@ -7421,9 +7421,9 @@ struct ValueFlowPassRunner {
                         const ErrorMessage errmsg(std::move(callstack),
                                                   state.tokenlist.getSourceFilePath(),
                                                   Severity::information,
+                                                  "checkLevelNormal", // TODO: use more specific ID
                                                   "Limiting ValueFlow analysis in function '" + functionName + "' since it is too complex. "
                                                   "Please specify --check-level=exhaustive to perform full analysis.",
-                                                  "checkLevelNormal", // TODO: use more specific ID
                                                   Certainty::normal);
                         state.errorLogger.reportErr(errmsg);
                     }

@@ -1045,8 +1045,8 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
     const ErrorMessage errorMessage(std::move(locationList),
                                     file0,
                                     Severity::error,
-                                    errmsg,
                                     errorId,
+                                    errmsg,
                                     cwe, Certainty::normal);
     errorLogger.reportErr(errorMessage);
 

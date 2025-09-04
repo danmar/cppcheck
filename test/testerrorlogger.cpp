@@ -246,7 +246,7 @@ private:
 
     void ErrorMessageConstruct() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.", Certainty::normal);
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
@@ -256,7 +256,7 @@ private:
 
     void ErrorMessageConstructLocations() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.", Certainty::normal);
         ASSERT_EQUALS(2, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Programming error.", msg.verboseMessage());
@@ -266,7 +266,7 @@ private:
 
     void ErrorMessageVerbose() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -276,7 +276,7 @@ private:
 
     void ErrorMessageVerboseLocations() const {
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         ASSERT_EQUALS(2, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -322,7 +322,7 @@ private:
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5 };
         const auto mapping = createGuidelineMapping(reportType);
 
-        ErrorMessage msg(std::move(locs), emptyString, severity, "", errorId, Certainty::normal);
+        ErrorMessage msg(std::move(locs), emptyString, severity, errorId, "", Certainty::normal);
         msg.guideline = getGuideline(msg.id, reportType, mapping, msg.severity);
         msg.classification = getClassification(msg.guideline, reportType);
 
@@ -344,7 +344,7 @@ private:
 
     void CustomFormat() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -354,7 +354,7 @@ private:
 
     void CustomFormat2() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         ASSERT_EQUALS(1, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -365,7 +365,7 @@ private:
     void CustomFormatLocations() const {
         // Check that first location from location stack is used in template
         std::list<ErrorMessage::FileLocation> locs = { fooCpp5, barCpp8 };
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         ASSERT_EQUALS(2, msg.callStack.size());
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
@@ -375,7 +375,7 @@ private:
 
     void ToXmlV2() const {
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         std::string header("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results version=\"2\">\n");
         header += "    <cppcheck version=\"";
         header += CppCheck::version();
@@ -389,7 +389,7 @@ private:
     }
 
     void ToXmlV2RemarkComment() const {
-        ErrorMessage msg({}, "", Severity::warning, "", "id", Certainty::normal);
+        ErrorMessage msg({}, "", Severity::warning, "id", "", Certainty::normal);
         msg.remark = "remark";
         ASSERT_EQUALS("        <error id=\"id\" severity=\"warning\" msg=\"\" verbose=\"\" remark=\"remark\"/>", msg.toXML());
     }
@@ -403,7 +403,7 @@ private:
         dir4loc.setfile("dir4\\a.cpp");
         std::list<ErrorMessage::FileLocation> locs = { dir4loc, dir3loc, dir2loc, dir1loc, fooCpp5, barCpp8_i };
 
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error.\nVerbose error", "errorId", Certainty::normal);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error.\nVerbose error", Certainty::normal);
         std::string message;
         message += "        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Verbose error\">\n";
         message += "            <location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>\n";
@@ -418,16 +418,16 @@ private:
 
     void ToXmlV2Encoding() const {
         {
-            ErrorMessage msg({}, "", Severity::error, "Programming error.\nComparing \"\203\" with \"\003\"", "errorId", Certainty::normal);
+            ErrorMessage msg({}, "", Severity::error, "errorId", "Programming error.\nComparing \"\203\" with \"\003\"", Certainty::normal);
             const std::string expected("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Comparing &quot;\\203&quot; with &quot;\\003&quot;\"/>");
             ASSERT_EQUALS(expected, msg.toXML());
         }
         {
             const char code1[]="äöü";
             const char code2[]="\x12\x00\x00\x01";
-            ErrorMessage msg1({}, "", Severity::error, std::string("Programming error.\nReading \"")+code1+"\"", "errorId", Certainty::normal);
+            ErrorMessage msg1({}, "", Severity::error, "errorId", std::string("Programming error.\nReading \"")+code1+"\"", Certainty::normal);
             ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\303\\244\\303\\266\\303\\274&quot;\"/>", msg1.toXML());
-            ErrorMessage msg2({}, "", Severity::error, std::string("Programming error.\nReading \"")+code2+"\"", "errorId", Certainty::normal);
+            ErrorMessage msg2({}, "", Severity::error, "errorId", std::string("Programming error.\nReading \"")+code2+"\"", Certainty::normal);
             ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error.\" verbose=\"Reading &quot;\\022&quot;\"/>", msg2.toXML());
         }
     }
@@ -481,7 +481,7 @@ private:
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
 
         // Inconclusive error message
-        ErrorMessage msg(std::move(locs), "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg(std::move(locs), "", Severity::error, "errorId", "Programming error", Certainty::inconclusive);
 
         // xml version 2 error message
         ASSERT_EQUALS("        <error id=\"errorId\" severity=\"error\" msg=\"Programming error\" verbose=\"Programming error\" inconclusive=\"true\">\n"
@@ -492,7 +492,7 @@ private:
 
     void SerializeInconclusiveMessage() const {
         // Inconclusive error message
-        ErrorMessage msg({}, "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg({}, "", Severity::error, "errorId", "Programming error", Certainty::inconclusive);
         msg.file0 = "test.cpp";
 
         const std::string msg_str = msg.serialize();
@@ -590,7 +590,7 @@ private:
     }
 
     void SerializeSanitize() const {
-        ErrorMessage msg({}, "", Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
+        ErrorMessage msg({}, "", Severity::error, "errorId", std::string("Illegal character in \"foo\001bar\""), Certainty::normal);
         msg.file0 = "1.c";
 
         const std::string msg_str = msg.serialize();
@@ -619,7 +619,7 @@ private:
         ErrorMessage::FileLocation loc1(":/,;", "abcd:/,", 654, 33);
         loc1.setfile("[]:;,()");
 
-        ErrorMessage msg({std::move(loc1)}, "", Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        ErrorMessage msg({std::move(loc1)}, "", Severity::error, "errorId", "Programming error", Certainty::inconclusive);
 
         const std::string msg_str = msg.serialize();
         ASSERT_EQUALS("7 errorId"
@@ -645,7 +645,7 @@ private:
     }
 
     void SerializeAndDeserialize() const {
-        ErrorMessage msg({}, "", Severity::warning, "$symbol:var\nmessage $symbol", "id", Certainty::normal);
+        ErrorMessage msg({}, "", Severity::warning, "id", "$symbol:var\nmessage $symbol", Certainty::normal);
         msg.remark = "some remark";
 
         ErrorMessage msg2;
