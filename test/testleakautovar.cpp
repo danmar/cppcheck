@@ -3229,7 +3229,8 @@ private:
     const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], bool cpp = false) {
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size], bool cpp = false) {
         SimpleTokenizer2 tokenizer(settings, *this, code, cpp?"test.cpp":"test.c");
 
         // Tokenizer..
