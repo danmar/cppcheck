@@ -1055,7 +1055,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
         if (mSettings.checkConfiguration) {
             for (const std::string &config : configurations)
-                (void)preprocessor.getcode(tokens1, config, files, true);
+                (void)preprocessor.getcode(tokens1, config, files, false);
 
             if (analyzerInformation)
                 mLogger->setAnalyzerInfo(nullptr);
