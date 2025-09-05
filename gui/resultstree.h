@@ -28,7 +28,6 @@
 #include <string>
 
 #include <QObject>
-#include <QStandardItemModel>
 #include <QString>
 #include <QStringList>
 #include <QTreeView>
@@ -42,6 +41,8 @@ class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
 class QSettings;
+class QStandardItem;
+class QStandardItemModel;
 enum class Severity : std::uint8_t;
 
 /// @addtogroup GUI
@@ -469,7 +470,7 @@ protected:
      * @brief Item model for tree
      *
      */
-    QStandardItemModel mModel;
+    QStandardItemModel* mModel;
 
     /**
      * @brief Program settings
