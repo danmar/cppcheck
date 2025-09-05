@@ -9108,7 +9108,7 @@ static bool isAnonymousEnum(const Token* tok)
         while (Token::Match(end, "%name%|::"))
             end = end->next();
     }
-    return end && Token::Match(end->link(), "} (| %type%| )| [,;[({=]");
+    return end && Token::Match(end->link(), "} (| %type%| )| [*,;[({=]");
 }
 
 void Tokenizer::simplifyStructDecl()
