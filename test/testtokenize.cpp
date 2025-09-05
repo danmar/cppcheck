@@ -2772,7 +2772,9 @@ private:
     void vardecl32() {
         {
             const char code[] = "static enum { E } f() { return E; }";
-            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 f ( ) { return E ; }", tokenizeAndStringify(code));
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 f ( ) { return E ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
 
     void vardecl33() {
         {
