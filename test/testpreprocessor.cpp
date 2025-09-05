@@ -2658,7 +2658,6 @@ private:
         }
     }
 
-    // TODO: fails because the location information is not be preserved by PreprocessorHelper::getcode()
     void writeLocations()
     {
         const char inc[] = "class A {\n"
@@ -2668,13 +2667,9 @@ private:
         const char code[] = R"(#include "test.h")";
         ScopedFile header("test.h", inc);
         const std::string processed = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, code, "", "test.cpp");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "\n"
             "#line 1 \"test.h\"\n"
-            "class A {\n"
-            "public :\n"
-            "void f ( ) { }\n"
-            "} ;",
             "class A {\n"
             "public :\n"
             "void f ( ) { }\n"
