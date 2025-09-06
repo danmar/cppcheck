@@ -208,6 +208,7 @@ private:
         TEST_CASE(fileFilterFileWithDetailsSimplifiedPath);
         TEST_CASE(fileFilterFileWithDetailsCase);
         TEST_CASE(fileFilterStdin);
+        TEST_CASE(fileFilterPlus);
         TEST_CASE(fileFilterNoMatch);
         TEST_CASE(fileList);
         TEST_CASE(fileListNoFile);
@@ -1231,6 +1232,19 @@ private:
         ASSERT_EQUALS(2U, settings->fileFilters.size());
         ASSERT_EQUALS("file1.c", settings->fileFilters[0]);
         ASSERT_EQUALS("file2.cpp", settings->fileFilters[1]);
+    }
+
+    void fileFilterPlus() {
+        REDIRECT;
+        ScopedFile file("project.cppcheck",
+                        "<project>\n"
+                        "<paths>\n"
+                        "<dir name=\"src\"/>\n"
+                        "</paths>\n"
+                        "</project>");
+        const char * const argv[] = {"cppcheck", "--project=project.cppcheck", "--file-filter=+", "src/file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS("src/file.cpp", settings->fileFilters.front());
     }
 
     void fileFilterNoMatch() {
