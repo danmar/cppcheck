@@ -295,7 +295,13 @@ def test_clang_tidy(tmpdir):
     assert stderr == ''
 
 
-def test_project_file_filter(tmpdir):
+@pytest.mark.parametrize("file_filter", [
+    ['--file-filter=test.cpp'],
+    ['--file-filter=*.cpp'],
+    ['--file-filter=+', 'test.cpp'],
+    ['--file-filter=+', '*.cpp'],
+])
+def test_project_file_filter(tmpdir, file_filter):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         pass
@@ -310,7 +316,7 @@ def test_project_file_filter(tmpdir):
     </paths>
 </project>""".format(test_file))
 
-    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    args = file_filter + ['--project={}'.format(project_file)]
     out_lines = [
         'Checking {} ...'.format(test_file)
     ]
