@@ -324,7 +324,11 @@ def test_project_file_filter(tmpdir, file_filter):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-def test_project_file_filter_2(tmpdir):
+@pytest.mark.parametrize("file_filter", [
+    ['--file-filter=*.cpp'],
+    ['--file-filter=+', '*.cpp'],
+])
+def test_project_file_filter_cpp(tmpdir, file_filter):
     test_file_1 = os.path.join(tmpdir, 'test.cpp')
     with open(test_file_1, 'wt') as f:
         pass
@@ -343,7 +347,7 @@ def test_project_file_filter_2(tmpdir):
     </paths>
 </project>""".format(test_file_1, test_file_2))
 
-    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    args = file_filter + ['--project={}'.format(project_file)]
     out_lines = [
         'Checking {} ...'.format(test_file_1)
     ]
@@ -351,7 +355,11 @@ def test_project_file_filter_2(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-def test_project_file_filter_3(tmpdir):
+@pytest.mark.parametrize("file_filter", [
+    ['--file-filter=*.c'],
+    ['--file-filter=+', '*.c'],
+])
+def test_project_file_filter_c(tmpdir, file_filter):
     test_file_1 = os.path.join(tmpdir, 'test.cpp')
     with open(test_file_1, 'wt') as f:
         pass
@@ -370,7 +378,7 @@ def test_project_file_filter_3(tmpdir):
     </paths>
 </project>""".format(test_file_1, test_file_2))
 
-    args = ['--file-filter=*.c', '--project={}'.format(project_file)]
+    args = file_filter + ['--project={}'.format(project_file)]
     out_lines = [
         'Checking {} ...'.format(test_file_2)
     ]
