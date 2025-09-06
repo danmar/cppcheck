@@ -382,6 +382,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     bool def = false;
     bool maxconfigs = false;
     bool debug = false;
+    bool inputAsFilter = false; // set by: --file-filter=+
 
     ImportProject::Type projectType = ImportProject::Type::NONE;
     ImportProject project;
@@ -768,6 +769,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("Failed: --file-filter=-");
                     return Result::Fail;
                 }
+            } else if (std::strcmp(filter, "+") == 0) {
+                inputAsFilter = true;
             } else {
                 mSettings.fileFilters.emplace_back(filter);
             }
@@ -1582,6 +1585,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         //mLogger.printMessage("whole program analysis requires --cppcheck-build-dir to be active with -j.");
     }
 
+    if (inputAsFilter) {
+        mSettings.fileFilters.insert(mSettings.fileFilters.end(), mPathNames.cbegin(), mPathNames.cend());
+        mPathNames.clear();
+    }
+
     if (!mPathNames.empty() && projectType != ImportProject::Type::NONE) {
         mLogger.printError("--project cannot be used in conjunction with source files.");
         return Result::Fail;
@@ -1777,10 +1785,12 @@ void CmdLineParser::printHelp() const
         "    --exitcode-suppressions=<file>\n"
         "                         Used when certain messages should be displayed but\n"
         "                         should not cause a non-zero exitcode.\n"
-        "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
-        "                         Can be used multiple times\n"
+        "    --file-filter=<str>  Analyze only those files matching the given filter str.\n"
+        "                         Can be used multiple times. When str is '-', the file\n"
+        "                         filter will be read from standard input. When str is '+',\n"
+        "                         all path arguments are treated as file filters.\n"
         "                         Example: --file-filter=*bar.cpp analyzes only files\n"
-        "                                  that end with bar.cpp.\n"
+        "                         that end with bar.cpp.\n"
         "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
         "                         filename per line. When file is '-,' the file list will\n"
         "                         be read from standard input.\n"
