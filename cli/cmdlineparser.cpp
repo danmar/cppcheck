@@ -1788,7 +1788,7 @@ void CmdLineParser::printHelp() const
         "    --file-filter=<str>  Analyze only those files matching the given filter str.\n"
         "                         Can be used multiple times. When str is '-', the file\n"
         "                         filter will be read from standard input. When str is '+',\n"
-        "                         all path arguments are treated as file filters.\n"
+        "                         given files on CLI will be treated as file filters.\n"
         "                         Example: --file-filter=*bar.cpp analyzes only files\n"
         "                         that end with bar.cpp.\n"
         "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
