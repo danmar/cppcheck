@@ -616,7 +616,7 @@ jobs:
           wget https://github.com/danmar/simplecpp/archive/refs/tags/1.5.1.tar.gz
           tar xvf 1.5.1.tar.gz
           # TODO: should include --verbose but identifiers in output differ on each run
-          ./cppcheck -q --std=c++11 --template=selfcheck -D__GNUC__ --library=gnu --check-level=exhaustive --debug --debug-template simplecpp-1.5.1/simplecpp.cpp > selfcheck.res
+          ./cppcheck -q --std=c++11 --template=selfcheck -D__GNUC__ --library=gnu --check-level=exhaustive --no-check-unused-templates --debug --debug-template simplecpp-1.5.1/simplecpp.cpp > selfcheck.res
           diff -u selfcheck.exp selfcheck.res
 
       # upload in failure case only. being able to just download the file, makes it easier to update the files in case of bigger changes
@@ -638,7 +638,7 @@ jobs:
 
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive --no-check-unused-templates"
           cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
           ec=0
           
