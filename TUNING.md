@@ -111,6 +111,18 @@ So if you do not require the additional safety you might want to switch to the u
 
 Note: For Windows binaries we currently do not provide the possibility of using processes so this does not apply.
 
+### Disable Analyzing Of Unused Templated Functions
+
+Currently all templated functions (either locally or in headers) will be analyzed regardless if they are instantiated or not. If you have template-heavy includes that might lead to unnecessary work and findings, and might slow down the analysis. This behavior can be disabled with `--no-check-unused-templates`.
+
+Note: This might lead to "false negatives" in such functions if they are never instantiated. You should make sure that you have proper coverage of the affected functions in your code before enabling this.
+
+### Limit Analysis Of Projects 
+
+If you specify a project all files will be analyzed by default. But in some cases you might only be interested in the results in a subset of those (e.g. in IDE integrations).
+
+Using the `--file-filter=<pattern>` CLI option you can select files using a globbing syntax. Using `--file-filter=-` you can provide the filters directly on the CLI.
+
 ## Advanced Tuning
 
 ### Re-order The Files
