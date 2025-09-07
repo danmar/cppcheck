@@ -3130,7 +3130,6 @@ void f() {}
     assert stderr.splitlines() == []  # no error since the unused templates are not being checked
 
 
-@pytest.mark.xfail(strict=True)  # TODO: only the first unused templated function is not being checked
 def test_check_unused_templates_func(tmp_path):  # #13714
     test_file_h = tmp_path / 'test.h'
     with open(test_file_h, 'wt') as f:
