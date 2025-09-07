@@ -111,6 +111,12 @@ So if you do not require the additional safety you might want to switch to the u
 
 Note: For Windows binaries we currently do not provide the possibility of using processes so this does not apply.
 
+### Disable analyzing of unused templated functions
+
+Currently all templated functions (either locally or in headers) will be analyzed regardless if they are instantiated or not. If you have template-heavy includes that might to unnecessary work and findings and might slow down the analysis. This behavior can be disabled with `--no-check-unused-templates`.
+
+Note: This might lead to "false negatives" in such functions.
+
 ## Advanced Tuning
 
 ### Re-order The Files
