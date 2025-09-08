@@ -6513,7 +6513,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
             }
         }
 
-        if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
+        if (!tok->previous() || Token::Match(tok->previous(), "[;{}:]")) {
             // Remove unused function declarations
             if (isIncluded && removeUnusedIncludedFunctions) {
                 while (true) {
