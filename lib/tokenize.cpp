@@ -6339,9 +6339,15 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
     }
 
     const std::set<std::string> functionStart{"static", "const", "unsigned", "signed", "void", "bool", "char", "short", "int", "long", "float", "*"};
+    bool goBack = false;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         const bool isIncluded = (tok->fileIndex() != 0);
+
+        if (goBack) {
+            tok = tok->previous();
+        }
+        goBack = false;
 
         // Remove executable code
         if (isIncluded && !mSettings.checkHeaders && tok->str() == "{") {
@@ -6408,6 +6414,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                         const Token *endToken = closingBracket->linkAt(3)->linkAt(1)->next();
                         Token::eraseTokens(tok, endToken);
                         tok->deleteThis();
+                        goBack = true;
                     }
                 }
             }
