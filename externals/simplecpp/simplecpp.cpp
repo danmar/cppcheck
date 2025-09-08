@@ -2582,7 +2582,7 @@ static void simplifyHasInclude(simplecpp::TokenList &expr, const simplecpp::DUI 
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->str() != HAS_INCLUDE)
             continue;
-        simplecpp::Token *tok1 = tok->next;
+        const simplecpp::Token *tok1 = tok->next;
         if (!tok1) {
             throw std::runtime_error("missing __has_include argument");
         }
