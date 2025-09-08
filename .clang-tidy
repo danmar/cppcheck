@@ -83,3 +83,5 @@ CheckOptions:
     value:           '0'
   - key:             modernize-use-trailing-return-type.TransformFunctions
     value:           false
+  - key:             misc-override-with-different-visibility.DisallowedVisibilityChange
+    value:           widening
