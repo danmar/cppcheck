@@ -204,8 +204,6 @@ public:
      */
     ShowTypes mShowSeverities;
 
-    void keyPressEvent(QKeyEvent *event) override;
-
     void setReportType(ReportType reportType);
 
     /**
@@ -559,6 +557,8 @@ protected:
     bool mVisibleErrors{};
 
 private:
+    void keyPressEvent(QKeyEvent *event) override;
+
     /** tag selected items */
     void tagSelectedItems(const QString &tag);
 
