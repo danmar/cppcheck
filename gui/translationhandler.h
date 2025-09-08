@@ -59,7 +59,7 @@ struct TranslationInfo {
  * track which translation is the currently active translation.
  *
  */
-class TranslationHandler : QObject {
+class TranslationHandler : public QObject {
     Q_OBJECT
 public:
     explicit TranslationHandler(QObject *parent = nullptr);
