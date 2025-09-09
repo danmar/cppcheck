@@ -206,7 +206,9 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const int line = strline ? strToInt<int>(strline) : 0;
             const int column = strcolumn ? strToInt<int>(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
-        } else if (std::strcmp(name,"symbol")==0) {
+        } else if (std::strcmp(name,"symbol") == 0) {
+            if (!mSymbolNames.empty())
+                mSymbolNames += '\n';
             mSymbolNames += e->GetText();
         }
     }
