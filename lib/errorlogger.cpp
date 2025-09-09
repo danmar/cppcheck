@@ -196,16 +196,20 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         const char* name = e->Name();
         if (std::strcmp(name,"location")==0) {
+            const char *strorigfile = e->Attribute("origfile");
             const char *strfile = e->Attribute("file");
             const char *strinfo = e->Attribute("info");
             const char *strline = e->Attribute("line");
             const char *strcolumn = e->Attribute("column");
 
             const char *file = strfile ? strfile : unknown;
+            const char *origfile = strorigfile ? strorigfile : file;
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? strToInt<int>(strline) : 0;
             const int column = strcolumn ? strToInt<int>(strcolumn) : 0;
-            callStack.emplace_front(file, info, line, column);
+            callStack.emplace_front(origfile, info, line, column);
+            if (strorigfile)
+                callStack.front().setfile(file);
         } else if (std::strcmp(name,"symbol")==0) {
             mSymbolNames += e->GetText();
         }
@@ -508,7 +512,11 @@ std::string ErrorMessage::toXML() const
 
     for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", it->getfile(false).c_str());
+        const std::string origfile = it->getOrigFile(false);
+        const std::string file = it->getfile(false);
+        if (origfile != file)
+            printer.PushAttribute("origfile", origfile.c_str());
+        printer.PushAttribute("file", file.c_str());
         printer.PushAttribute("line", std::max(it->line,0));
         printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
