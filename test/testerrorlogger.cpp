@@ -409,9 +409,9 @@ private:
         message += "            <location file=\"bar.cpp\" line=\"8\" column=\"1\" info=\"\\303\\244\"/>\n";
         message += "            <location file=\"foo.cpp\" line=\"5\" column=\"1\"/>\n";
         message += "            <location file=\"dir1/a.cpp\" line=\"1\" column=\"1\"/>\n";
-        message += "            <location file=\"dir2/a.cpp\" line=\"1\" column=\"1\"/>\n";
-        message += "            <location file=\"dir3/a.cpp\" line=\"1\" column=\"1\"/>\n";
-        message += "            <location file=\"dir4/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location origfile=\"dir2\\a.cpp\" file=\"dir2/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location origfile=\"dir/a.cpp\" file=\"dir3/a.cpp\" line=\"1\" column=\"1\"/>\n";
+        message += "            <location origfile=\"dir/a.cpp\" file=\"dir4/a.cpp\" line=\"1\" column=\"1\"/>\n";
         message += "        </error>";
         ASSERT_EQUALS(message, msg.toXML());
     }
@@ -443,7 +443,7 @@ private:
                                " hash=\"456\""
                                ">\n"
                                "  <location file=\"bar.cpp\" line=\"8\" column=\"1\"/>\n"
-                               "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
+                               "  <location origfile=\"proj/foo.cpp\" file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
                                "</error>";
         tinyxml2::XMLDocument doc;
         ASSERT(doc.Parse(xmldata, sizeof(xmldata)) == tinyxml2::XML_SUCCESS);
@@ -458,9 +458,11 @@ private:
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS(456u, msg.hash);
         ASSERT_EQUALS(2u, msg.callStack.size());
+        ASSERT_EQUALS("proj/foo.cpp", msg.callStack.front().getOrigFile(false));
         ASSERT_EQUALS("foo.cpp", msg.callStack.front().getfile(false));
         ASSERT_EQUALS(5, msg.callStack.front().line);
         ASSERT_EQUALS(2u, msg.callStack.front().column);
+        ASSERT_EQUALS("bar.cpp", msg.callStack.back().getOrigFile(false));
         ASSERT_EQUALS("bar.cpp", msg.callStack.back().getfile(false));
         ASSERT_EQUALS(8, msg.callStack.back().line);
         ASSERT_EQUALS(1u, msg.callStack.back().column);
