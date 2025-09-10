@@ -6413,7 +6413,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                     } else {
                         Token *funcTok = closingBracket->next();
                         while (funcTok) {
-                            if (Token::Match(funcTok, "static|inline|const|%type%|&|&&|*") && !Token::Match(funcTok, "%name% (")) {
+                            if (Token::Match(funcTok, "constexpr|static|inline|const|%type%|&|&&|*") && !Token::Match(funcTok, "%name% (")) {
                                 funcTok = funcTok->next();
                                 continue;
                             }
