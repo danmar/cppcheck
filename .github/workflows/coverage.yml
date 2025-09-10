@@ -43,7 +43,7 @@ jobs:
       - name: Compile instrumented
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) all CXXOPTS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
+          make -j$(nproc) CXXOPTS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes all
 
       - name: Run instrumented tests
         run: |
