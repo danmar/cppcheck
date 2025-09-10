@@ -5583,8 +5583,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     simplifyFunctionTryCatch();
 
-    simplifyHeadersAndUnusedTemplates();
-
     // Remove __asm..
     simplifyAsm();
 
@@ -5611,6 +5609,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // remove __attribute__((?))
     simplifyAttribute();
+
+    simplifyHeadersAndUnusedTemplates();
 
     validate();
 
@@ -6413,20 +6413,6 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                     } else {
                         Token *funcTok = closingBracket->next();
                         while (funcTok) {
-                            if (Token::Match(funcTok, "__declspec|__attribute__ (")) {
-                                funcTok = funcTok->linkAt(1);
-                                if (funcTok) {
-                                    funcTok = funcTok->next();
-                                }
-                                continue;
-                            }
-                            if (Token::Match(funcTok, "[ [")) {
-                                funcTok = funcTok->link();
-                                if (funcTok) {
-                                    funcTok = funcTok->next();
-                                }
-                                continue;
-                            }
                             if (Token::Match(funcTok, "static|inline|const|%type%|&|&&|*") && !Token::Match(funcTok, "%name% (")) {
                                 funcTok = funcTok->next();
                                 continue;
@@ -6442,15 +6428,8 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                             funcTok = funcTok->next();
                         }
                         while (funcTok) {
-                            if (Token::Match(funcTok, "__declspec|__attribute__|throw|noexcept (")) {
+                            if (Token::Match(funcTok, "throw|noexcept (")) {
                                 funcTok = funcTok->linkAt(1);
-                                if (funcTok) {
-                                    funcTok = funcTok->next();
-                                }
-                                continue;
-                            }
-                            if (Token::Match(funcTok, "[ [")) {
-                                funcTok = funcTok->link();
                                 if (funcTok) {
                                     funcTok = funcTok->next();
                                 }
