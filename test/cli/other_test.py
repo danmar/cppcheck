@@ -3164,6 +3164,15 @@ void f_t_2()
     (void)(*((int*)0));
 }
 
+class S {
+public:
+    template<typename T>
+    void f_t_3()
+    {
+        (void)(*((int*)0));
+    }
+};
+
 void f() {}
 """)
 
