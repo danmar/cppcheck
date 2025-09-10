@@ -18,4 +18,5 @@ Deprecations:
 Other:
 - Removed deprecated support for builds with Qt5.
 - Added make variables `CXXOPTS` and `LDOPTS` to extend existing `CXXFLAGS` and `LDFLAGS`.
+- Removed deprecated platforms `unix32-unsigned` and `unix64-unsigned`.
 -
