@@ -131,7 +131,7 @@ private:
 #endif
     }
 
-    CppCheck::ExecuteCmdFn getExecuteCommand(int& called) const
+    CppCheck::ExecuteCmdFn getExecuteCommand(const std::string& fname, int& called) const
     {
         // cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
         // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
@@ -142,7 +142,7 @@ private:
                 ASSERT_EQUALS(4, args.size());
                 ASSERT_EQUALS("-quiet", args[0]);
                 ASSERT_EQUALS("-checks=*,-clang-analyzer-*,-llvm*", args[1]);
-                ASSERT_EQUALS("test.cpp", args[2]);
+                ASSERT_EQUALS(fname, args[2]);
                 ASSERT_EQUALS("--", args[3]);
                 ASSERT_EQUALS("2>&1", redirect);
                 return EXIT_SUCCESS;
@@ -166,10 +166,10 @@ private:
         };
     }
 
-    void checkWithFileInternal(bool tools, bool nocmd = false) const
+    void checkWithFileInternal(const std::string& fname, bool tools, bool nocmd = false) const
     {
         REDIRECT;
-        ScopedFile file("test.cpp",
+        ScopedFile file(fname,
                         "int main()\n"
                         "{\n"
                         "  int i = *((int*)0);\n"
@@ -193,7 +193,7 @@ private:
         ErrorLogger2 errorLogger;
         CppCheck::ExecuteCmdFn f;
         if (tools && !nocmd) {
-            f = getExecuteCommand(called);
+            f = getExecuteCommand(fname, called);
         }
         CppCheck cppcheck(s, supprs, errorLogger, false, f);
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path(), Path::identify(file.path(), false), 0)));
@@ -240,21 +240,21 @@ private:
     }
 
     void checkWithFile() const {
-        checkWithFileInternal(false);
+        checkWithFileInternal("file.cpp", false);
     }
 
     void checkWithFileWithTools() const {
-        checkWithFileInternal(true);
+        checkWithFileInternal("file_tools.cpp", true);
     }
 
     void checkWithFileWithToolsNoCommand() const {
-        checkWithFileInternal(true, true);
+        checkWithFileInternal("file_tools_nocmd.cpp", true, true);
     }
 
-    void checkWithFSInternal(bool tools, bool nocmd = false) const
+    void checkWithFSInternal(const std::string& fname, bool tools, bool nocmd = false) const
     {
         REDIRECT;
-        ScopedFile file("test.cpp",
+        ScopedFile file(fname,
                         "int main()\n"
                         "{\n"
                         "  int i = *((int*)0);\n"
@@ -278,7 +278,7 @@ private:
         ErrorLogger2 errorLogger;
         CppCheck::ExecuteCmdFn f;
         if (tools && !nocmd) {
-            f = getExecuteCommand(called);
+            f = getExecuteCommand(fname, called);
         }
         CppCheck cppcheck(s, supprs, errorLogger, false, f);
         FileSettings fs{file.path(), Path::identify(file.path(), false), 0};
@@ -325,20 +325,20 @@ private:
     }
 
     void checkWithFS() const {
-        checkWithFSInternal(false);
+        checkWithFSInternal("fs.cpp", false);
     }
 
     void checkWithFSWithTools() const {
-        checkWithFSInternal(true);
+        checkWithFSInternal("fs_tools.cpp", true);
     }
 
     void checkWithFSWithToolsNoCommand() const {
-        checkWithFSInternal(true, true);
+        checkWithFSInternal("fs_tools_nocmd.cpp", true, true);
     }
 
     void suppress_error_library() const
     {
-        ScopedFile file("test.cpp",
+        ScopedFile file("suppr_err_lib.cpp",
                         "int main()\n"
                         "{\n"
                         "  int i = *((int*)0);\n"
