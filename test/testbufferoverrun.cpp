@@ -231,6 +231,7 @@ private:
         TEST_CASE(buffer_overrun_function_array_argument);
         TEST_CASE(possible_buffer_overrun_1); // #3035
         TEST_CASE(buffer_overrun_readSizeFromCfg);
+        TEST_CASE(buffer_overrun_handle_addr_of_var); // ticket #7570 - correctly handle &var
 
         TEST_CASE(valueflow_string); // using ValueFlow string values in checking
 
@@ -270,6 +271,7 @@ private:
         TEST_CASE(terminateStrncpy3);
         TEST_CASE(terminateStrncpy4);
         TEST_CASE(terminateStrncpy5); // #9944
+        TEST_CASE(terminateStrncpy_handle_addr_of_var); // #7570
         TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash1);  // Ticket #1587 - crash
@@ -306,8 +308,6 @@ private:
         TEST_CASE(objectIndex);
 
         TEST_CASE(checkPipeParameterSize); // ticket #3521
-
-        TEST_CASE(getBufferSizeOfAddressOfVariable); // ticket #7570
     }
 
 
@@ -3725,6 +3725,38 @@ private:
         ASSERT_EQUALS("[test.cpp:3:16]: (error) Buffer is accessed out of bounds: ms.str [bufferAccessOutOfBounds]\n", errout_str());
     }
 
+    void buffer_overrun_handle_addr_of_var() { // #7570
+      check("void f() {\n"
+              "  int i;\n"
+              "  memset(i, 0, 1000);\n"
+              "}");
+      ASSERT_EQUALS("", errout_str());
+
+      check("void f() {\n"
+              "  int i;\n"
+              "  memset(&i, 0, 1000);\n"
+              "}");
+      ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
+
+      check("void f() {\n"
+              "  int i[2];\n"
+              "  memset(&i, 0, 1000);\n"
+              "}");
+      ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: i [bufferAccessOutOfBounds]\n", errout_str());
+
+      check("void f() {\n"
+              "  int i;\n"
+              "  memset(&i, 0, sizeof(i));\n"
+              "}");
+      ASSERT_EQUALS("", errout_str());
+
+      check("void f() {\n"
+              "  int i[10];\n"
+              "  memset(&i[1], 0, 1000);\n"
+              "}");
+      TODO_ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i[1] [bufferAccessOutOfBounds]\n", "", errout_str());
+    }
+
     void valueflow_string() { // using ValueFlow string values in checking
         check("char f() {\n"
               "  const char *x = s;\n"
@@ -4685,6 +4717,20 @@ private:
         ASSERT_EQUALS("[test.cpp:4:9]: (warning, inconclusive) The buffer 'v' may not be null-terminated after the call to strncpy(). [terminateStrncpy]\n", errout_str());
     }
     // extracttests.enable
+
+    void terminateStrncpy_handle_addr_of_var() { // #7570
+        check("void foo() {\n"
+              "  char c[6];\n"
+              "  strncpy(&c, \"hello!\", 6);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3:3]: (warning, inconclusive) The buffer 'c' may not be null-terminated after the call to strncpy(). [terminateStrncpy]\n", errout_str());
+
+        check("void foo() {\n"
+              "  char c[6];\n"
+              "  strncpy(&c, \"hello\\0\", 6);\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+    }
 
     void recursive_long_time() {
         // Just test that recursive check doesn't take long time
@@ -5712,45 +5758,6 @@ private:
               "    return;\n"
               "  }\n"
               "}", dinit(CheckOptions, $.s = &settings));
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void getBufferSizeOfAddressOfVariable() { // #7570
-
-        check("void f() {\n"
-              "  int i;\n"
-              "  memset(&i, 0, 1000);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
-
-        check("void f() {\n"
-              "  int i[2];\n"
-              "  memset(&i, 0, 1000);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: i [bufferAccessOutOfBounds]\n", errout_str());
-
-        check("void f() {\n"
-              "  int i;\n"
-              "  memset(&i, 0, sizeof(i));\n"
-              "}");
-        ASSERT_EQUALS("", errout_str());
-
-        check("void f() {\n"
-              "  int i[10];\n"
-              "  memset(&i[1], 0, 1000);\n"
-              "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i[1] [bufferAccessOutOfBounds]\n", "", errout_str());
-
-        check("void foo() {\n"
-              "  char c[6];\n"
-              "  strncpy(&c, \"hello!\", 6);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3:3]: (warning, inconclusive) The buffer 'c' may not be null-terminated after the call to strncpy(). [terminateStrncpy]\n", errout_str());
-
-        check("void foo() {\n"
-              "  char c[6];\n"
-              "  strncpy(&c, \"hello\\0\", 6);\n"
-              "}");
         ASSERT_EQUALS("", errout_str());
     }
 };
