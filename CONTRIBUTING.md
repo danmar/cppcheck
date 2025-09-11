@@ -30,6 +30,9 @@ The CI has an "always green" approach which means that failing tests are not all
 
 Note: Usually you can run the CI on your own fork to verify that it passes before even open an PR. Unfortunately some changes to avoid duplicated builds in our CI disabled this (TODO: file a ticket about this).
 
+(TODO: mention that each behavior change shpould have a ticket)
+(TODO: assign ticket about working on it)
+
 ### Targets
 
 Cppcheck is tracking its issues at https://trac.cppcheck.net.
@@ -43,6 +46,14 @@ Since Cppcheck aims to be low on false positives, these kind of issues are obvio
 Changes might lead to fewer findings being reported. In very few cases this might be intentional but we should not regress in what findings are being reported. 
 
 [Other Defects](https://trac.cppcheck.net/query?status=accepted&status=assigned&status=new&status=reopened&type=defect&component=!False+positive&col=id&col=summary&col=type&col=status&col=component&col=priority&col=milestone&order=priority)
+
+## Source TODOs
+
+There are also various source-level TODOs across all parts of the code. These might be related to tracked issues (even if not explicitly noted) but may also be just exist exploratively, have even been overzealously added or even outdated. So if you start spending a lot of time on these, please get in touch first. 
+
+## simplecpp
+
+At its core Cppcheck is relying on the `simplecpp` library which is a preprocessor implementation which was spun off its [separate project](https://github.com/danmar/simplecpp) with it own [bug tracker](https://github.com/danmar/simplecpp/issues).
 
 ## Translations
 
