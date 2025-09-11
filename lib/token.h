@@ -963,15 +963,42 @@ public:
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
      * @param tokenStr String for the new token.
-     * @param originalNameStr String used for Token::originalName().
-     * the first one on the tokens list.
      */
-    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
+    RET_NONNULL Token* insertToken(const std::string& tokenStr)
+    {
+        return insertToken(tokenStr, false);
+    }
+    /**
+     * Insert new token after this token. This function will handle
+     * relations between next and previous token also.
+     * @param tokenStr String for the new token.
+     * @param originalNameStr String used for Token::originalName().
+     */
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr)
+    {
+        return insertToken(tokenStr, originalNameStr, false);
+    }
+    /**
+     * Insert new token after this token. This function will handle
+     * relations between next and previous token also.
+     * @param tokenStr String for the new token.
+     * @param originalNameStr String used for Token::originalName().
+     * @param macroNameStr String used for Token::getMacroName().
+     */
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr)
     {
         return insertToken(tokenStr, originalNameStr, macroNameStr, false);
     }
 
-    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr)
+    {
+        return insertToken(tokenStr, true);
+    }
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr)
+    {
+        return insertToken(tokenStr, originalNameStr, true);
+    }
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr)
     {
         return insertToken(tokenStr, originalNameStr, macroNameStr, true);
     }
@@ -1404,6 +1431,8 @@ private:
      */
     static const char *chrInFirstWord(const char *str, char c);
 
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, bool prepend);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend);
     RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend);
 
     std::string mStr;
