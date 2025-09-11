@@ -3726,35 +3726,35 @@ private:
     }
 
     void buffer_overrun_handle_addr_of_var() { // #7570
-      check("void f() {\n"
+        check("void f() {\n"
               "  int i;\n"
               "  memset(i, 0, 1000);\n"
               "}");
-      ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
-      check("void f() {\n"
+        check("void f() {\n"
               "  int i;\n"
               "  memset(&i, 0, 1000);\n"
               "}");
-      ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i [bufferAccessOutOfBounds]\n", errout_str());
 
-      check("void f() {\n"
+        check("void f() {\n"
               "  int i[2];\n"
               "  memset(&i, 0, 1000);\n"
               "}");
-      ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: i [bufferAccessOutOfBounds]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: i [bufferAccessOutOfBounds]\n", errout_str());
 
-      check("void f() {\n"
+        check("void f() {\n"
               "  int i;\n"
               "  memset(&i, 0, sizeof(i));\n"
               "}");
-      ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str());
 
-      check("void f() {\n"
+        check("void f() {\n"
               "  int i[10];\n"
               "  memset(&i[1], 0, 1000);\n"
               "}");
-      TODO_ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i[1] [bufferAccessOutOfBounds]\n", "", errout_str());
+        TODO_ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i[1] [bufferAccessOutOfBounds]\n", "", errout_str());
     }
 
     void valueflow_string() { // using ValueFlow string values in checking
