@@ -9295,7 +9295,7 @@ static Token* getVariableTokenAfterAttributes(Token* tok) {
     Token *after = getTokenAfterAttributes(tok, true);
 
     // check if after variable name
-    if (Token::Match(after, ";|=")) {
+    if (Token::Match(after, "[;={]")) {
         Token *prev = tok->previous();
         while (Token::simpleMatch(prev, "]"))
             prev = prev->link()->previous();
@@ -9303,9 +9303,16 @@ static Token* getVariableTokenAfterAttributes(Token* tok) {
             vartok = prev;
     }
 
+
     // check if before variable name
-    else if (Token::Match(after, "%type%"))
-        vartok = after;
+    else {
+        while (Token::Match(after->next(), "const|volatile|static|*|&|&&|%type%")) {
+            after = after->next();
+        }
+        if (Token::Match(after, "%name%")) {
+            vartok = after;
+        }
+    }
 
     return vartok;
 }
