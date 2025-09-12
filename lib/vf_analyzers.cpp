@@ -838,6 +838,8 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
         const Variable* var = tok->variable();
         if (!var)
             return false;
+        if (!var->isLocal() && !var->isArgument())
+            return false;
         const Token* start = var->declEndToken();
         if (!start)
             return false;
