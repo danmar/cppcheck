@@ -2357,8 +2357,11 @@ void Variable::evaluate(const Settings& settings)
     const Library & lib = settings.library;
 
     bool isContainer = false;
-    if (mNameToken)
+    if (mNameToken) {
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
+        setFlag(fIsMaybeUnused, mNameToken->isAttributeMaybeUnused());
+    }
+
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));
@@ -2393,10 +2396,6 @@ void Variable::evaluate(const Settings& settings)
         } else if (tok->str() == "&&") { // Before simplification, && isn't split up
             setFlag(fIsRValueRef, true);
             setFlag(fIsReference, true); // Set also fIsReference
-        }
-
-        if (tok->isAttributeMaybeUnused()) {
-            setFlag(fIsMaybeUnused, true);
         }
 
         if (tok->str() == "<" && tok->link())
