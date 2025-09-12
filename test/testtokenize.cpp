@@ -273,6 +273,10 @@ private:
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
 
+        TEST_CASE(cppMaybeUnusedBefore);
+        TEST_CASE(cppMaybeUnusedAfter);
+        TEST_CASE(cppMaybeUnusedStructuredBinding);
+
         TEST_CASE(splitTemplateRightAngleBrackets);
 
         TEST_CASE(cpp03template1);
@@ -4191,6 +4195,47 @@ private:
         ASSERT(func6 && func6->isAttributePure() && func6->isAttributeNothrow() && func6->isAttributeConst());
         ASSERT(func7 && func7->isAttributePure() && func7->isAttributeNothrow() && func7->isAttributeConst());
         ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
+    }
+
+    void cppMaybeUnusedBefore() {
+        const char code[] = "[[maybe_unused]] int var {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedAfter() {
+        const char code[] = "int var [[maybe_unused]] {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedStructuredBinding() {
+        const char code[] = "[[maybe_unused]] auto [var1, var2] = f();";
+        const char expected[] = "auto [ var1 , var2 ] = f ( ) ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        ASSERT(var1 && var1->isAttributeMaybeUnused());
+        const Token *var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var2 && var2->isAttributeMaybeUnused());
     }
 
 
