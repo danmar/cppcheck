@@ -401,7 +401,7 @@ public:
     const Token* getContainerFromYield(const Token* tok, Container::Yield yield) const;
     const Token* getContainerFromAction(const Token* tok, Container::Action action) const;
 
-    static bool isContainerYield(const Token* cond, Library::Container::Yield y, const std::string& fallback = emptyString);
+    static bool isContainerYield(const Token* cond, Library::Container::Yield y, const std::string& fallback = "");
     static Library::Container::Yield getContainerYield(const Token* cond);
 
     bool isreflection(const std::string &token) const;
