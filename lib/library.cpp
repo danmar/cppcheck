@@ -1385,6 +1385,8 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
 {
     if (!typeStart)
         return nullptr;
+    if (typeStart->isKeyword())
+        return nullptr;
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
@@ -1951,6 +1953,8 @@ bool Library::isSmartPointer(const Token* tok) const
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
     if (!tok)
+        return nullptr;
+    if (tok->isKeyword())
         return nullptr;
     std::string typestr = withoutStd ? "std::" : "";
     if (tok->str() == "::")
