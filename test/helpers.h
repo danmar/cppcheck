@@ -61,30 +61,41 @@ public:
     template<size_t size>
     bool tokenize(const char (&code)[size])
     {
-        std::istringstream istr(code);
-        return tokenize(istr, std::string(list.isCPP() ? "test.cpp" : "test.c"));
+        return tokenize(code, size-1);
     }
 
     bool tokenize(const std::string& code)
     {
-        std::istringstream istr(code);
-        return tokenize(istr, std::string(list.isCPP() ? "test.cpp" : "test.c"));
+        return tokenize(code.data(), code.size());
+    }
+
+    bool tokenize(const char* code, std::size_t size)
+    {
+        return tokenize(code, size, std::string(list.isCPP() ? "test.cpp" : "test.c"));
     }
 
 private:
     /**
      * Tokenize code
-     * @param istr The code as stream
+     * @param code The code
      * @param filename Indicates if the code is C++
      * @return false if source code contains syntax errors
      */
-    bool tokenize(std::istream& istr,
+    template<size_t size>
+    bool tokenize(const char (&code)[size],
+                  const std::string& filename)
+    {
+        return tokenize(code, size-1, filename);
+    }
+
+    bool tokenize(const char* code,
+                  std::size_t size,
                   const std::string& filename)
     {
         if (list.front())
             throw std::runtime_error("token list is not empty");
         list.appendFileIfNew(filename);
-        if (!list.createTokens(istr))
+        if (!list.createTokensFromBuffer(code, size))
             return false;
 
         return simplifyTokens1("");
@@ -101,8 +112,7 @@ public:
     explicit SimpleTokenList(const char (&code)[size], Standards::Language lang = Standards::Language::CPP)
         : list{settings, lang}
     {
-        std::istringstream iss(code);
-        if (!list.createTokens(iss))
+        if (!list.createTokensFromString(code))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -110,9 +120,8 @@ public:
     explicit SimpleTokenList(const char (&code)[size], const std::string& file0, Standards::Language lang = Standards::Language::CPP)
         : list{settings, lang}
     {
-        std::istringstream iss(code);
         list.appendFileIfNew(file0);
-        if (!list.createTokens(iss))
+        if (!list.createTokensFromString(code))
             throw std::runtime_error("creating tokens failed");
     }
 
@@ -173,11 +182,15 @@ public:
      * @param inlineSuppression the inline suppressions
      */
     static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
-
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c");
+    template<size_t size>
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char (&code)[size], const std::string &filename = "file.c")
+    {
+        return getcode(settings, errorlogger, code, size-1, filename);
+    }
 
 private:
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &filename);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression);
 };
 
 namespace cppcheck {
@@ -251,30 +264,24 @@ public:
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)
         : Tokenizer{TokenList{settings, Path::identify(file0, false)}, errorlogger}
     {
-        preprocess(code, mFiles, file0, *this, errorlogger);
-    }
-
-    // TODO: get rid of this
-    SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char code[], const std::string& file0)
-        : Tokenizer{TokenList{settings, Path::identify(file0, false)}, errorlogger}
-    {
-        preprocess(code, mFiles, file0, *this, errorlogger);
+        preprocess(code, size-1, mFiles, file0, *this, errorlogger);
     }
 
 private:
-    static void preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
+    static void preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger);
 
     std::vector<std::string> mFiles;
 };
 
 struct TokenListHelper
 {
-    static bool createTokens(TokenList& tokenlist, std::istream& istr, const std::string& file)
+    template<size_t size>
+    static bool createTokensFromString(TokenList& tokenlist, const char (&code)[size], const std::string& file)
     {
         if (tokenlist.front())
             throw std::runtime_error("token list is not empty");
         tokenlist.appendFileIfNew(file);
-        return tokenlist.createTokens(istr);
+        return tokenlist.createTokensFromString(code);
     }
 };
 

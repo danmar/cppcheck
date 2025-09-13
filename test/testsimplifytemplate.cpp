@@ -5455,11 +5455,11 @@ private:
                           "C<B<int>> y;"));
     }
 
-    unsigned int templateParameters(const char code[]) {
+    template<size_t size>
+    unsigned int templateParameters(const char (&data)[size]) {
         TokenList tokenlist{settings, Standards::Language::CPP};
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokensFromString(data))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5524,12 +5524,12 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
-    int templateNamePositionHelper(const char code[], unsigned offset = 0) {
+    template<size_t size>
+    int templateNamePositionHelper(const char (&data)[size], unsigned offset = 0) {
         TokenList tokenlist{settings, Standards::Language::CPP};
 
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokensFromString(data))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5597,10 +5597,10 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
-    bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
+    template<size_t size>
+    bool findTemplateDeclarationEndHelper(const char (&data)[size], const char pattern[], unsigned offset = 0) {
         TokenList tokenlist{settings, Standards::Language::CPP};
-        std::istringstream istr(code);
-        if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
+        if (!TokenListHelper::createTokensFromString(tokenlist, data, "test.cpp"))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5627,11 +5627,11 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
-    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
+    template<size_t size>
+    bool getTemplateParametersInDeclarationHelper(const char (&data)[size], const std::vector<std::string> & params) {
         TokenList tokenlist{settings, Standards::Language::CPP};
 
-        std::istringstream istr(code);
-        if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
+        if (!TokenListHelper::createTokensFromString(tokenlist, data, "test.cpp"))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
