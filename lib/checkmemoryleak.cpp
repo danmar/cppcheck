@@ -1012,7 +1012,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             tok2 = tok2->astParent();
         if (Token::Match(tok2, "%assign%")) // TODO: check if function returns allocated resource
             continue;
-        if (Token::simpleMatch(tok->astTop(), "return"))
+        if (Token::simpleMatch(tok->astTop(true), "return"))
             continue;
 
         const std::string& functionName = tok->str();

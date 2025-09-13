@@ -2241,7 +2241,7 @@ static bool isConstTop(const Token *tok)
     if (!tok->astParent())
         return true;
     if (Token::simpleMatch(tok->astParent(), ";") &&
-        Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
+        Token::Match(tok->astTop(true)->previous(), "for|if (") && Token::simpleMatch(tok->astTop(true)->astOperand2(), ";")) {
         if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
             return tok->astParent()->astOperand2() == tok;
         return tok->astParent()->astOperand1() == tok;
@@ -2272,7 +2272,7 @@ void CheckOther::checkIncompleteStatement()
             continue;
         if (!isConstTop(tok))
             continue;
-        if (tok->str() == "," && Token::simpleMatch(tok->astTop()->previous(), "for ("))
+        if (tok->str() == "," && Token::simpleMatch(tok->astTop(true)->previous(), "for ("))
             continue;
 
         // Do not warn for statement when both lhs and rhs has side effects:
@@ -2540,7 +2540,7 @@ static const Token * getSingleExpressionInBlock(const Token * tok)
 {
     if (!tok)
         return nullptr;
-    const Token * top = tok->astTop();
+    const Token * top = tok->astTop(true);
     const Token * nextExpression = nextAfterAstRightmostLeaf(top);
     if (!Token::simpleMatch(nextExpression, "; }"))
         return nullptr;

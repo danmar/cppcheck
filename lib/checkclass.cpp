@@ -1877,7 +1877,7 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
 
 const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
 {
-    const Token *top = tok->astTop();
+    const Token *top = tok->astTop(true);
     if (Token::simpleMatch(top->link(), ") {")) {
         switch (isInverted(tok->astParent(), rhs)) {
         case Bool::BAILOUT:
@@ -2522,7 +2522,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                         return false;
                     parent = parent->astParent();
                 }
-                const Token* const top = lhs->astTop();
+                const Token* const top = lhs->astTop(true);
                 if (top->isAssignmentOp()) {
                     if (Token::simpleMatch(top->astOperand2(), "{") && !top->astOperand2()->previous()->function()) // TODO: check usage in init list
                         return false;
