@@ -542,6 +542,16 @@ private:
         return "";
     }
 
+    template<size_t size>
+    std::string tokenizeAndStringify_(const char* file, int line, const char (&code)[size], const Settings &settings, bool cpp = true) {
+        // tokenize..
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+        if (!tokenizer.tokens())
+            return "";
+        return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
+    }
+
 #define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char (&code)[size], Platform::Type platform = Platform::Type::Native) {
@@ -554,16 +564,6 @@ private:
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
         return "";
-    }
-
-    template<size_t size>
-    std::string tokenizeAndStringify_(const char* file, int line, const char (&code)[size], const Settings &settings, bool cpp = true) {
-        // tokenize..
-        SimpleTokenizer tokenizer(settings, *this, cpp);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-        if (!tokenizer.tokens())
-            return "";
-        return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
