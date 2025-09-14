@@ -43,7 +43,9 @@ public:
     TestOther() : TestFixture("TestOther") {}
 
 private:
-    /*const*/ Settings _settings = settingsBuilder().library("std.cfg").build();
+    const Settings settings0 = settingsBuilder().library("std.cfg").build();
+    /*const*/ Settings settings1 = settingsBuilder().library("std.cfg").severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance).build();
+    const Settings settings2 = settingsBuilder(settings1).certainty(Certainty::inconclusive).build();
 
     void run() override {
         mNewTemplate = true;
@@ -341,17 +343,15 @@ private:
         // TODO: do not modify object passed into
         Settings* settings;
         if (!opt.settings) {
-            settings = &_settings;
+            settings = &settings1;
         }
         else {
             settings = opt.settings;
+            settings->severity.enable(Severity::style);
+            settings->severity.enable(Severity::warning);
+            settings->severity.enable(Severity::portability);
+            settings->severity.enable(Severity::performance);
         }
-        settings->severity.enable(Severity::style);
-        settings->severity.enable(Severity::warning);
-        settings->severity.enable(Severity::portability);
-        settings->severity.enable(Severity::performance);
-        settings->standards.c = Standards::CLatest;
-        settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.setEnabled(Certainty::inconclusive, opt.inconclusive);
         settings->verbose = opt.verbose;
 
@@ -372,17 +372,7 @@ private:
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkP_(const char* file, int line, const char (&code)[size], const CheckPOptions& options = make_default_obj()) {
-        // TODO: do not modify passed in object
-        Settings* settings = &_settings;
-        settings->severity.enable(Severity::style);
-        settings->severity.enable(Severity::warning);
-        settings->severity.enable(Severity::portability);
-        settings->severity.enable(Severity::performance);
-        settings->standards.c = Standards::CLatest;
-        settings->standards.cpp = Standards::CPPLatest;
-        settings->certainty.enable(Certainty::inconclusive);
-
-        SimpleTokenizer2 tokenizer(*settings, *this, code, options.cpp ? "test.cpp" : "test.c");
+        SimpleTokenizer2 tokenizer(settings2, *this, code, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -2556,7 +2546,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1:42]: (performance) Function parameter 't' should be passed by const reference. [passedByValue]\n", errout_str());
 
-        /*const*/ Settings settings0 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
+        /*const*/ Settings settingsUnix64 = settingsBuilder(settings0).platform(Platform::Type::Unix64).build();
         check("struct S {\n" // #12138
               "    union {\n"
               "        int a = 0;\n"
@@ -2573,7 +2563,7 @@ private:
               "};\n"
               "void f(S s) {\n"
               "    if (s.x > s.y) {}\n"
-              "}\n", dinit(CheckOptions, $.settings = &settings0));
+              "}\n", dinit(CheckOptions, $.settings = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("struct S { std::list<int> l; };\n" // #12147
@@ -2613,10 +2603,10 @@ private:
         check("void f(const std::array<int, 10> a[]) {}\n"); // #13524
         ASSERT_EQUALS("", errout_str());
 
-        /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
+        /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
-              dinit(CheckOptions, $.settings = &settings1));
+              dinit(CheckOptions, $.settings = &settingsWin64));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2760,11 +2750,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            /*const*/ Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
+            /*const*/ Settings s32 = settingsBuilder(settings0).platform(Platform::Type::Unix32).build();
             check(code, dinit(CheckOptions, $.settings = &s32));
             ASSERT_EQUALS("[test.cpp:5:10]: (performance) Function parameter 'x' should be passed by const reference. [passedByValue]\n", errout_str());
 
-            /*const*/ Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
+            /*const*/ Settings s64 = settingsBuilder(settings0).platform(Platform::Type::Unix64).build();
             check(code, dinit(CheckOptions, $.settings = &s64));
             ASSERT_EQUALS("", errout_str());
         }
@@ -8064,7 +8054,7 @@ private:
             const char code[] = "void foo(bool flag) {\n"
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
-            /*const*/ Settings settings = _settings;
+            /*const*/ Settings settings = settings0;
             settings.platform.sizeof_int = 4;
             settings.platform.int_bit = 32;
 
@@ -9024,12 +9014,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3:13]: (style) Checking if unsigned expression 'value' is less than zero. [unsignedLessThanZero]\n", errout_str());
 
         // #9040
-        /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
+        /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
               "    return i >= 0;\n"
-              "}\n", dinit(CheckOptions, $.settings = &settings1));
+              "}\n", dinit(CheckOptions, $.settings = &settingsWin64));
         ASSERT_EQUALS("", errout_str());
 
         // #10612
@@ -11846,7 +11836,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2:22]: (error) Expression '~(-(++i))+i' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
 
-        const Settings settings11 = settingsBuilder(_settings).cpp(Standards::CPP11).certainty(Certainty::inconclusive).build();
+        const Settings settings11 = settingsBuilder(settings0).cpp(Standards::CPP11).certainty(Certainty::inconclusive).build();
 
         checkCustomSettings("void f(int i) {\n"
                             "  i = i++ + 2;\n"
