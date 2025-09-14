@@ -4608,10 +4608,9 @@ struct ConditionHandler {
                 if (conditions.empty())
                     continue;
 
-                const Token* top = tok->astTop();
-
-                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?|!"))
+                if (!Token::Match(tok->astParent(), "&&|%oror%|?|!") && !Token::Match(tok->astTop()->previous(), "if|while|for ("))
                     continue;
+
                 for (const Condition& cond : conditions) {
                     if (!cond.vartok)
                         continue;
