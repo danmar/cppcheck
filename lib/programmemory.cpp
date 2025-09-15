@@ -96,9 +96,9 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
     return nullptr;
 }
 
-bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint& result) const
+bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint& result, bool impossible) const
 {
-    const ValueFlow::Value* value = getValue(exprid);
+    const ValueFlow::Value* value = getValue(exprid, impossible);
     if (value && value->isIntValue()) {
         result = value->intvalue;
         return true;
@@ -114,9 +114,9 @@ void ProgramMemory::setIntValue(const Token* expr, MathLib::bigint value, bool i
     setValue(expr, v);
 }
 
-bool ProgramMemory::getTokValue(nonneg int exprid, const Token*& result) const
+bool ProgramMemory::getTokValue(nonneg int exprid, const Token*& result, bool impossible) const
 {
-    const ValueFlow::Value* value = getValue(exprid);
+    const ValueFlow::Value* value = getValue(exprid, impossible);
     if (value && value->isTokValue()) {
         result = value->tokvalue;
         return true;
@@ -125,18 +125,18 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token*& result) const
 }
 
 // cppcheck-suppress unusedFunction
-bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint& result) const
+bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint& result, bool impossible) const
 {
-    const ValueFlow::Value* value = getValue(exprid);
+    const ValueFlow::Value* value = getValue(exprid, impossible);
     if (value && value->isContainerSizeValue()) {
         result = value->intvalue;
         return true;
     }
     return false;
 }
-bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint& result) const
+bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint& result, bool impossible) const
 {
-    const ValueFlow::Value* value = getValue(exprid, true);
+    const ValueFlow::Value* value = getValue(exprid, impossible);
     if (value && value->isContainerSizeValue()) {
         if (value->isImpossible() && value->intvalue == 0) {
             result = false;
@@ -165,25 +165,25 @@ void ProgramMemory::setUnknown(const Token* expr) {
     (*mValues)[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(nonneg int exprid) const
+bool ProgramMemory::hasValue(nonneg int exprid, bool impossible) const
 {
     const auto it = find(exprid);
-    return it != mValues->cend();
+    return it != mValues->cend() && (impossible || !it->second.isImpossible());
 }
 
-const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
+const ValueFlow::Value& ProgramMemory::at(nonneg int exprid, bool impossible) const {
     const auto it = find(exprid);
-    if (it == mValues->cend()) {
+    if (it == mValues->cend() && (impossible || !it->second.isImpossible())) {
         throw std::out_of_range("ProgramMemory::at");
     }
     return it->second;
 }
 
-ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
+ValueFlow::Value& ProgramMemory::at(nonneg int exprid, bool impossible) {
     copyOnWrite();
 
     const auto it = find(exprid);
-    if (it == mValues->end()) {
+    if (it == mValues->end() && (impossible || !it->second.isImpossible())) {
         throw std::out_of_range("ProgramMemory::at");
     }
     return it->second;

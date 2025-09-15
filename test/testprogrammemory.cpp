@@ -45,11 +45,11 @@ private:
         tok->exprId(id);
 
         ProgramMemory pm;
-        const ValueFlow::Value* v = pm.getValue(id);
+        const ValueFlow::Value* v = pm.getValue(id, false);
         ASSERT(!v);
         pm.setValue(tok, ValueFlow::Value{41});
 
-        v = pm.getValue(id);
+        v = pm.getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
 
@@ -57,7 +57,7 @@ private:
         ProgramMemory pm2 = pm;
 
         // make sure the value was copied
-        v = pm2.getValue(id);
+        v = pm2.getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
 
@@ -71,17 +71,17 @@ private:
         pm3.setValue(tok, ValueFlow::Value{43});
 
         // make sure the value was set
-        v = pm2.getValue(id);
+        v = pm2.getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(42, v->intvalue);
 
         // make sure the value was set
-        v = pm3.getValue(id);
+        v = pm3.getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(43, v->intvalue);
 
         // make sure the original value remains unchanged
-        v = pm.getValue(id);
+        v = pm.getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
     }
@@ -93,7 +93,7 @@ private:
 
     void getValue() const {
         ProgramMemory pm;
-        ASSERT(!pm.getValue(123));
+        ASSERT(!pm.getValue(123, false));
     }
 
     void at() const {
