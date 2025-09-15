@@ -6305,7 +6305,8 @@ static T* findTypeImpl(S& thisScope, const std::string & name)
         return it->second;
 
     // is type defined in anonymous namespace..
-    it = thisScope.definedTypesMap.find("");
+    static const std::string anonymousScope;
+    it = thisScope.definedTypesMap.find(anonymousScope);
     if (it != thisScope.definedTypesMap.end()) {
         for (S *scope : thisScope.nestedList) {
             if (scope->className.empty() && (scope->type == ScopeType::eNamespace || scope->isClassOrStructOrUnion())) {
