@@ -2754,3 +2754,20 @@ const SmallVector<ReferenceToken>& Token::refs(bool temporary) const
         mImpl->mRefs = new SmallVector<ReferenceToken>(followAllReferences(this, false));
     return *mImpl->mRefs;
 }
+
+bool Token::isAliasOf(const Token* expr, int* indirect) const
+{
+    auto it = mImpl->mAliases.find(expr);
+    if (it != mImpl->mAliases.end()) {
+        if (indirect)
+            *indirect = it->second.second;
+        return it->second.first;
+    }
+    int i = 0;
+    const bool b = ::isAliasOf(this, expr, &i);
+    mImpl->mAliases[expr] = std::make_pair(b, i);
+    if (indirect)
+        *indirect = i;
+    return b;
+}
+

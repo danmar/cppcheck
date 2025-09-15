@@ -2920,7 +2920,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (!expr && !(tok->valueType() && tok->valueType()->pointer == 0 && tok->valueType()->reference == Reference::None))
             aliased = true;
         if (!aliased)
-            aliased = isAliasOf(tok, expr, &i);
+            aliased = tok->isAliasOf(expr, &i);
         if (!aliased)
             return false;
         if (isVariableChanged(tok, indirect + i, settings, depth))

@@ -154,6 +154,8 @@ struct TokenImpl {
     SmallVector<ReferenceToken>* mRefs{};
     SmallVector<ReferenceToken>* mRefsTemp{};
 
+    std::map<const Token*, std::pair<bool, int>> mAliases;
+
     TokenImpl() : mFunction(nullptr) {}
 
     ~TokenImpl();
@@ -1356,6 +1358,8 @@ public:
 
     // provides and caches result of a followAllReferences() call
     const SmallVector<ReferenceToken>& refs(bool temporary = true) const;
+
+    bool isAliasOf(const Token* expr, int* indirect) const;
 
     /**
      * Sets the original name.
