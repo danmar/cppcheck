@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [ubuntu-22.04, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -75,7 +75,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [ubuntu-22.04, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -195,7 +195,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [ubuntu-22.04, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -229,7 +229,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [ubuntu-22.04, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -263,7 +263,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [ubuntu-22.04, macos-15]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -287,7 +287,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, macos-15]  # non-macos platforms are already built with Boost in other contexts
+        os: [macos-15]  # non-macos platforms are already built with Boost in other contexts
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -348,12 +348,10 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [ubuntu-22.04, macos-15]
         include:
           - xdist_n: auto
           # FIXME: test_color_tty fails with xdist - see #13278
-          - os: macos-13
-            xdist_n: '1'
           - os: macos-15
             xdist_n: '1'
       fail-fast: false # Prefer quick result
