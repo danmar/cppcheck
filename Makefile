@@ -44,8 +44,6 @@ ifdef FILESDIR
 endif
 
 RDYNAMIC=-rdynamic
-# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
-# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.
 ifndef COMSPEC
     ifeq ($(VERBOSE),1)
         $(info COMSPEC not found)
@@ -75,9 +73,6 @@ ifdef WINNT
         $(info WINNT found)
     endif
     #### Maybe Windows
-    ifndef CPPCHK_GLIBCXX_DEBUG
-        CPPCHK_GLIBCXX_DEBUG=
-    endif # !CPPCHK_GLIBCXX_DEBUG
 
     ifeq ($(VERBOSE),1)
         $(info MSYSTEM=$(MSYSTEM))
@@ -99,18 +94,6 @@ else # !WINNT
         $(info uname_S=$(uname_S))
     endif
 
-    ifeq ($(uname_S),Linux)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # Linux
-
-    ifeq ($(uname_S),GNU/kFreeBSD)
-        ifndef CPPCHK_GLIBCXX_DEBUG
-            CPPCHK_GLIBCXX_DEBUG=-D_GLIBCXX_DEBUG
-        endif # !CPPCHK_GLIBCXX_DEBUG
-    endif # GNU/kFreeBSD
-
     LDFLAGS+=-pthread
 
 endif # WINNT
@@ -124,13 +107,6 @@ ifdef CYGWIN
     CXXFLAGS+=-Wl,--stack,8388608
 endif # CYGWIN
 
-ifndef CXX
-    CXX=g++
-endif
-
-ifeq (clang++, $(findstring clang++,$(CXX)))
-    CPPCHK_GLIBCXX_DEBUG=
-endif
 ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-sign-compare -Wno-multichar -Woverloaded-virtual -g
 endif
