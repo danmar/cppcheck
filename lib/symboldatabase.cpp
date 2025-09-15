@@ -7358,9 +7358,9 @@ static const Token* parsedecl(const Token* type,
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
-        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong())) {
+        } else if (ValueType::Type type_s = ValueType::typeFromString(type->str(), type->isLong())) { // != UNKNOWN_TYPE
             const ValueType::Type t0 = valuetype->type;
-            valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
+            valuetype->type = type_s;
             if (t0 == ValueType::Type::LONG) {
                 if (valuetype->type == ValueType::Type::LONG)
                     valuetype->type = ValueType::Type::LONGLONG;
