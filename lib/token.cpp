@@ -2760,3 +2760,19 @@ bool Token::isMutableExpr() const
         mImpl->mMutableExpr = isMutableExpression(this);
     return !!mImpl->mMutableExpr;
 }
+
+bool Token::isAliasOf(const Token* expr, int* indirect) const
+{
+    const auto it = utils::as_const(mImpl->mAliases).find(expr);
+    if (it != mImpl->mAliases.cend()) {
+        if (indirect)
+            *indirect = it->second.second;
+        return it->second.first;
+    }
+    int i = 0;
+    const bool b = ::isAliasOf(this, expr, &i);
+    mImpl->mAliases[expr] = std::make_pair(b, i);
+    if (indirect)
+        *indirect = i;
+    return b;
+}

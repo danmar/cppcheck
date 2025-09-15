@@ -2944,7 +2944,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
             Token::Match(tok->astOperand2() ? tok->astOperand2() : tok->astOperand1(), "%varid%", expr->varId()))
             aliased = true;
         if (!aliased)
-            aliased = isAliasOf(tok, expr, &i);
+            aliased = tok->isAliasOf(expr, &i);
         if (!aliased)
             return false;
         i += indirect;

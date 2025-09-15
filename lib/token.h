@@ -41,6 +41,7 @@
 #include <set>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -174,6 +175,8 @@ private:
         std::unique_ptr<SmallVector<ReferenceToken>> mRefsTemp;
 
         std::int8_t mMutableExpr{-1};
+
+        std::unordered_map<const Token*, std::pair<bool, int>> mAliases;
 
         void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value);
         bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const;
@@ -1368,6 +1371,9 @@ public:
 
     // provides and caches the result of a isMutableExpression() call
     bool isMutableExpr() const;
+
+    // provides and caches the result of a isAliasOf() call
+    bool isAliasOf(const Token* expr, int* indirect) const;
 
     /**
      * Sets the original name.
