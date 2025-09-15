@@ -207,7 +207,7 @@ bool ProgramMemory::empty() const
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - technically correct but we are moving the given values
-void ProgramMemory::replace(ProgramMemory pm)
+void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
 {
     if (pm.empty())
         return;
@@ -215,6 +215,11 @@ void ProgramMemory::replace(ProgramMemory pm)
     copyOnWrite();
 
     for (auto&& p : (*pm.mValues)) {
+        if(skipUnknown) {
+            auto it = mValues->find(p.first);
+            if(it != mValues->end() && it->second.isUninitValue())
+                continue;
+        }
         (*mValues)[p.first] = std::move(p.second);
     }
 }
@@ -407,7 +412,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
                     const Token* valuetok = tok2->astOperand2();
-                    pm.setValue(vartok, execute(valuetok, pm, settings));
+                    ProgramMemory local = state;
+                    pm.setValue(vartok, execute(valuetok, local, settings));
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
@@ -478,7 +484,7 @@ void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
     if (origin)
         for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(std::move(pm));
+    state.replace(std::move(pm), true);
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
@@ -492,26 +498,50 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 static void debugPrint(const ProgramMemory& pm)
 {
     for(auto&& p:pm) {
-        std::cout << p.first->expressionString() << " => " << p.second.toString() << std::endl;
+        if(p.first.tok)
+            std::cout << p.first->expressionString();
+        else
+            std::cout << p.first.exprid;
+        std::cout << " => " << p.second.toString() << std::endl;
     }
 }
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-    std::cout << "**************************************************************\n";
-    std::cout << "addState: " << tok->expressionString() << std::endl;
-    std::cout << "Before:\n";
-    debugPrint(state);
+    // std::cout << "**************************************************************\n";
+    // std::cout << "addState: " << tok->expressionString() << std::endl;
+    // std::cout << "Before:\n";
+    // debugPrint(state);
 #if 1
+    // ProgramMemory local = state;
+    // addVars(local, vars);
+    // fillProgramMemoryFromConditions(local, tok, settings);
+    // ProgramMemory pm;
+    // fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
+    // local.replace(std::move(pm));
+    // addVars(local, vars);
+    // replace(std::move(local), tok);
+
     ProgramMemory local = state;
     addVars(local, vars);
     fillProgramMemoryFromConditions(local, tok, settings);
     ProgramMemory pm;
     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     local.replace(std::move(pm));
+    // ProgramMemory local2 = local;
+    // fillProgramMemoryFromAssignments(local, tok, settings, local2, vars);
     addVars(local, vars);
     replace(std::move(local), tok);
 #else
+    // ProgramMemory pm = state;
+    // addVars(pm, vars);
+    // for(int i =0;i<4;i++) {
+    //     fillProgramMemoryFromConditions(pm, tok, settings);
+    //     ProgramMemory local = pm;
+    //     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
+    // }
+    // replace(std::move(pm), tok);
+
     ProgramMemory pm = state;
     addVars(pm, vars);
     fillProgramMemoryFromConditions(pm, tok, settings);
@@ -520,8 +550,8 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     addVars(pm, vars);
     replace(std::move(pm), tok);
 #endif
-    std::cout << "After:\n";
-    debugPrint(state);
+    // std::cout << "After:\n";
+    // debugPrint(state);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)

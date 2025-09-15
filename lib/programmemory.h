@@ -130,7 +130,7 @@ struct CPPCHECKLIB ProgramMemory {
 
     bool empty() const;
 
-    void replace(ProgramMemory pm);
+    void replace(ProgramMemory pm, bool skipUnknown = false);
 
     Map::const_iterator begin() const {
         return mValues->cbegin();
