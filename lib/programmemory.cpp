@@ -215,9 +215,9 @@ void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
     copyOnWrite();
 
     for (auto&& p : (*pm.mValues)) {
-        if(skipUnknown) {
+        if (skipUnknown) {
             auto it = mValues->find(p.first);
-            if(it != mValues->end() && it->second.isUninitValue())
+            if (it != mValues->end() && it->second.isUninitValue())
                 continue;
         }
         (*mValues)[p.first] = std::move(p.second);
@@ -497,8 +497,8 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 
 static void debugPrint(const ProgramMemory& pm)
 {
-    for(auto&& p:pm) {
-        if(p.first.tok)
+    for (auto&& p : pm) {
+        if (p.first.tok)
             std::cout << p.first->expressionString();
         else
             std::cout << p.first.exprid;
