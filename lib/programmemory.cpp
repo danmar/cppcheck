@@ -1395,17 +1395,19 @@ namespace {
                 return unknown();
             std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1, &b);
             bool allNegated = true;
-            ValueFlow::Value negatedValue = unknown();
-            for (const auto& p : condValues) {
-                const ValueFlow::Value& v = p.second;
-                if (isTrueOrFalse(v, b))
-                    return v;
-                allNegated &= isTrueOrFalse(v, !b);
-                if (allNegated && negatedValue.isUninitValue())
-                    negatedValue = v;
+            {
+                ValueFlow::Value negatedValue = unknown();
+                for (const auto& p : condValues) {
+                    const ValueFlow::Value& v = p.second;
+                    if (isTrueOrFalse(v, b))
+                        return v;
+                    allNegated &= isTrueOrFalse(v, !b);
+                    if (allNegated && negatedValue.isUninitValue())
+                        negatedValue = v;
+                }
+                if (condValues.size() == conditions1.size() && allNegated)
+                    return negatedValue;
             }
-            if (condValues.size() == conditions1.size() && allNegated)
-                return negatedValue;
             if (n > 4)
                 return unknown();
             if (!sortConditions(conditions1))
@@ -1805,7 +1807,7 @@ namespace {
                         if (elseStart)
                             result = execute(elseStart->scope());
                     } else {
-                        return {unknown()};
+                        result = {unknown()};
                     }
                     if (!result.empty())
                         return result;
