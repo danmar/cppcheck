@@ -1643,14 +1643,14 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
 
 static bool isCastToVoid(const Variable* var)
 {
-    if(!var)
+    if (!var)
         return false;
-    if(!var->scope())
+    if (!var->scope())
         return false;
-    for (const Token *tok = var->scope()->bodyStart; tok != var->scope()->bodyEnd; tok = tok->next()) {
-        if(tok->varId() != var->declarationId())
+    for (const Token* tok = var->scope()->bodyStart; tok != var->scope()->bodyEnd; tok = tok->next()) {
+        if (tok->varId() != var->declarationId())
             continue;
-        if(isVoidCast(tok->astParent()))
+        if (isVoidCast(tok->astParent()))
             return true;
     }
     return false;

@@ -12164,8 +12164,7 @@ private:
               "        for (auto &j : g(std::move(l))) { (void)j; }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4:36]: (warning) Access of moved variable 'l'. [accessMoved]\n",
-                      errout_str());
+        ASSERT_EQUALS("[test.cpp:4:36]: (warning) Access of moved variable 'l'. [accessMoved]\n", errout_str());
     }
 
     void moveCallback()
