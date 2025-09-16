@@ -508,50 +508,14 @@ static void debugPrint(const ProgramMemory& pm)
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-    // std::cout << "**************************************************************\n";
-    // std::cout << "addState: " << tok->expressionString() << std::endl;
-    // std::cout << "Before:\n";
-    // debugPrint(state);
-#if 1
-    // ProgramMemory local = state;
-    // addVars(local, vars);
-    // fillProgramMemoryFromConditions(local, tok, settings);
-    // ProgramMemory pm;
-    // fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
-    // local.replace(std::move(pm));
-    // addVars(local, vars);
-    // replace(std::move(local), tok);
-
     ProgramMemory local = state;
     addVars(local, vars);
     fillProgramMemoryFromConditions(local, tok, settings);
     ProgramMemory pm;
     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     local.replace(std::move(pm));
-    // ProgramMemory local2 = local;
-    // fillProgramMemoryFromAssignments(local, tok, settings, local2, vars);
     addVars(local, vars);
     replace(std::move(local), tok);
-#else
-    // ProgramMemory pm = state;
-    // addVars(pm, vars);
-    // for(int i =0;i<4;i++) {
-    //     fillProgramMemoryFromConditions(pm, tok, settings);
-    //     ProgramMemory local = pm;
-    //     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
-    // }
-    // replace(std::move(pm), tok);
-
-    ProgramMemory pm = state;
-    addVars(pm, vars);
-    fillProgramMemoryFromConditions(pm, tok, settings);
-    ProgramMemory local = pm;
-    fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
-    addVars(pm, vars);
-    replace(std::move(pm), tok);
-#endif
-    // std::cout << "After:\n";
-    // debugPrint(state);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
