@@ -93,6 +93,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/platform.o \
               $(libcppdir)/preprocessor.o \
               $(libcppdir)/programmemory.o \
+              $(libcppdir)/regex.o \
               $(libcppdir)/reverseanalyzer.o \
               $(libcppdir)/settings.o \
               $(libcppdir)/standards.o \
@@ -258,7 +259,7 @@ $(libcppdir)/clangimport.o: ../lib/clangimport.cpp ../lib/addoninfo.h ../lib/che
 $(libcppdir)/color.o: ../lib/color.cpp ../lib/color.h ../lib/config.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/color.cpp
 
-$(libcppdir)/cppcheck.o: ../lib/cppcheck.cpp ../externals/picojson/picojson.h ../externals/simplecpp/simplecpp.h ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/analyzerinfo.h ../lib/check.h ../lib/checkers.h ../lib/checkunusedfunctions.h ../lib/clangimport.h ../lib/color.h ../lib/config.h ../lib/cppcheck.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/settings.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/version.h ../lib/vfvalue.h ../lib/xml.h
+$(libcppdir)/cppcheck.o: ../lib/cppcheck.cpp ../externals/picojson/picojson.h ../externals/simplecpp/simplecpp.h ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/analyzerinfo.h ../lib/check.h ../lib/checkers.h ../lib/checkunusedfunctions.h ../lib/clangimport.h ../lib/color.h ../lib/config.h ../lib/cppcheck.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/filesettings.h ../lib/json.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/preprocessor.h ../lib/regex.h ../lib/settings.h ../lib/sourcelocation.h ../lib/standards.h ../lib/suppressions.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/timer.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/version.h ../lib/vfvalue.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/cppcheck.cpp
 
 $(libcppdir)/ctu.o: ../lib/ctu.cpp ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkers.h ../lib/config.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h
@@ -311,6 +312,9 @@ $(libcppdir)/preprocessor.o: ../lib/preprocessor.cpp ../externals/simplecpp/simp
 
 $(libcppdir)/programmemory.o: ../lib/programmemory.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/calculate.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/infer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/programmemory.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/programmemory.cpp
+
+$(libcppdir)/regex.o: ../lib/regex.cpp ../lib/config.h ../lib/regex.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/regex.cpp
 
 $(libcppdir)/reverseanalyzer.o: ../lib/reverseanalyzer.cpp ../lib/addoninfo.h ../lib/analyzer.h ../lib/astutils.h ../lib/checkers.h ../lib/config.h ../lib/errortypes.h ../lib/forwardanalyzer.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/reverseanalyzer.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/valueptr.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/reverseanalyzer.cpp
