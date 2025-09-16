@@ -45,8 +45,6 @@
 #include <utility>
 #include <vector>
 
-#include <iostream>
-
 ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
@@ -492,17 +490,6 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
     for (const auto& p:vars) {
         const ValueFlow::Value &value = p.second;
         pm.setValue(p.first.tok, value);
-    }
-}
-
-static void debugPrint(const ProgramMemory& pm)
-{
-    for (auto&& p : pm) {
-        if (p.first.tok)
-            std::cout << p.first->expressionString();
-        else
-            std::cout << p.first.exprid;
-        std::cout << " => " << p.second.toString() << std::endl;
     }
 }
 
