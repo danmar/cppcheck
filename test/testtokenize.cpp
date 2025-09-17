@@ -8203,7 +8203,7 @@ private:
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
-        auto testIsCpp11init_ = [this](const char* file, int line, const std::string& code, const char* find, TokenImpl::Cpp11init expected) {
+        auto testIsCpp11init_ = [this](const char* file, int line, const std::string& code, const char* find, Cpp11init expected) {
             SimpleTokenizer tokenizer(settingsDefault, *this);
             ASSERT_LOC(tokenizer.tokenize(code.data(), code.size()), file, line);
 
@@ -8214,44 +8214,44 @@ private:
 
         testIsCpp11init("class X : public A<int>, C::D {};",
                         "D {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("auto f() -> void {}",
                         "void {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("auto f() & -> void {}",
                         "void {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("auto f() const noexcept(false) -> void {}",
                         "void {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "{ return",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "vector",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "std ::",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("class X{};",
                         "{ }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("class X{}", // forgotten ; so not properly recognized as a class
                         "{ }",
-                        TokenImpl::Cpp11init::CPP11INIT);
+                        Cpp11init::CPP11INIT);
 
         testIsCpp11init("namespace abc::def { TEST(a, b) {} }",
                         "{ TEST",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
         testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
                         "{ TEST",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("enum { e = decltype(s)::i };",
                         "{ e",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("template <typename T>\n" // #11378
                         "class D<M<T, 1>> : public B<M<T, 1>, T> {\n"
@@ -8259,7 +8259,7 @@ private:
                         "    D(int x) : B<M<T, 1>, T>(x) {}\n"
                         "};\n",
                         "{ public:",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("template <typename T>\n"
                         "class D<M<T, 1>> : B<M<T, 1>, T> {\n"
@@ -8267,7 +8267,7 @@ private:
                         "    D(int x) : B<M<T, 1>, T>(x) {}\n"
                         "};\n",
                         "{ public:",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("using namespace std;\n"
                         "namespace internal {\n"
@@ -8277,21 +8277,21 @@ private:
                         "    S::S() {}\n"
                         "}\n",
                         "{ } }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("template <std::size_t N>\n"
                         "struct C : public C<N - 1>, public B {\n"
                         "    ~C() {}\n"
                         "};\n",
                         "{ } }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("struct S { int i; } s;\n"
                         "struct T : decltype (s) {\n"
                         "    T() : decltype(s) ({ 0 }) { }\n"
                         "};\n",
                         "{ } }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("struct S {};\n"
                         "template<class... Args>\n"
@@ -8301,21 +8301,21 @@ private:
                         "    void operator()(Args...) {}\n"
                         "};\n",
                         "{ void",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Cpp11init::NOINIT);
 
         testIsCpp11init("struct S {\n"
                         "    std::uint8_t* p;\n"
                         "    S() : p{ new std::uint8_t[1]{} } {}\n"
                         "};\n",
                         "{ } } {",
-                        TokenImpl::Cpp11init::CPP11INIT);
+                        Cpp11init::CPP11INIT);
 
         testIsCpp11init("struct S {\n"
                         "    S() : p{new (malloc(4)) int{}} {}\n"
                         "    int* p;\n"
                         "};\n",
                         "{ } } {",
-                        TokenImpl::Cpp11init::CPP11INIT);
+                        Cpp11init::CPP11INIT);
 
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash
                                              "template<typename T> auto f(T t) -> X<decltype(t + 1)> {}\n"));

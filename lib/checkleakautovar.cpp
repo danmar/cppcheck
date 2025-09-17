@@ -396,7 +396,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
         }
 
-        if (tok->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT) {
+        if (tok->isCpp11init() == Cpp11init::CPP11INIT) {
             const Token *newTok = tok->astOperand1();
             const Token *oldTok = tok->astOperand2();
             if (newTok && newTok->varId() && oldTok && oldTok->varId()) {

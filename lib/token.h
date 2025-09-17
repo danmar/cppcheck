@@ -63,6 +63,10 @@ struct ScopeInfo2 {
 
 enum class TokenDebug : std::uint8_t { None, ValueFlow, ValueType };
 
+// TODO: move these to Token when TokenImpl has been moved into the implementation
+enum CppcheckAttributesType : std::uint8_t { LOW, HIGH };
+enum class Cpp11init : std::uint8_t { UNKNOWN, CPP11INIT, NOINIT };
+
 struct TokenImpl {
     nonneg int mVarId{};
     nonneg int mFileIndex{};
@@ -114,7 +118,6 @@ struct TokenImpl {
 
     // ValueFlow
     std::list<ValueFlow::Value>* mValues{};
-    static const std::list<ValueFlow::Value> mEmptyValueList;
 
     // Pointer to a template in the template simplifier
     std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers{};
@@ -124,7 +127,7 @@ struct TokenImpl {
 
     // __cppcheck_in_range__
     struct CppcheckAttributes {
-        enum Type : std::uint8_t { LOW, HIGH } type = LOW;
+        CppcheckAttributesType type{LOW};
         MathLib::bigint value{};
         CppcheckAttributes* next{};
     };
@@ -142,12 +145,12 @@ struct TokenImpl {
     std::string mAttributeCleanup;
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init : std::uint8_t { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
+    Cpp11init mCpp11init{Cpp11init::UNKNOWN};
 
     TokenDebug mDebug{};
 
-    void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
-    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint &value) const;
+    void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value);
+    bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const;
 
     TokenImpl() : mFunction(nullptr) {}
 
@@ -594,10 +597,10 @@ public:
     bool hasAttributeCleanup() const {
         return !mImpl->mAttributeCleanup.empty();
     }
-    void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
+    void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
-    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const {
+    bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
     // cppcheck-suppress unusedFunction
@@ -1346,7 +1349,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
+        return mImpl->mValues ? *mImpl->mValues : mEmptyValueList;
     }
 
     /**
@@ -1406,6 +1409,7 @@ public:
     void assignIndexes();
 
 private:
+    static const std::list<ValueFlow::Value> mEmptyValueList;
 
     void next(Token *nextToken) {
         mNext = nextToken;
@@ -1630,9 +1634,9 @@ public:
     std::shared_ptr<ScopeInfo2> scopeInfo() const;
 
     void setCpp11init(bool cpp11init) const {
-        mImpl->mCpp11init=cpp11init ? TokenImpl::Cpp11init::CPP11INIT : TokenImpl::Cpp11init::NOINIT;
+        mImpl->mCpp11init=cpp11init ? Cpp11init::CPP11INIT : Cpp11init::NOINIT;
     }
-    TokenImpl::Cpp11init isCpp11init() const {
+    Cpp11init isCpp11init() const {
         return mImpl->mCpp11init;
     }
 

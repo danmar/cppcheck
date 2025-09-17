@@ -58,7 +58,7 @@ namespace {
     };
 }
 
-const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
+const std::list<ValueFlow::Value> Token::mEmptyValueList;
 const std::string Token::mEmptyString;
 
 Token::Token(const TokenList& tokenlist, std::shared_ptr<TokensFrontBack> tokensFrontBack)
@@ -2663,7 +2663,7 @@ TokenImpl::~TokenImpl()
     }
 }
 
-void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
+void TokenImpl::setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value)
 {
     CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
@@ -2679,7 +2679,7 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     }
 }
 
-bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
+bool TokenImpl::getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const
 {
     CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)

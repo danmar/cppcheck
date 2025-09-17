@@ -9471,10 +9471,10 @@ void Tokenizer::simplifyCppcheckAttribute()
 
         if (vartok->isName()) {
             if (Token::Match(tok->previous(), "__cppcheck_low__ ( %num% )"))
-                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW,
+                vartok->setCppcheckAttribute(CppcheckAttributesType::LOW,
                                              MathLib::toBigNumber(tok->tokAt(1)));
             else if (Token::Match(tok->previous(), "__cppcheck_high__ ( %num% )"))
-                vartok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH,
+                vartok->setCppcheckAttribute(CppcheckAttributesType::HIGH,
                                              MathLib::toBigNumber(tok->tokAt(1)));
         }
 
@@ -9562,16 +9562,16 @@ void Tokenizer::simplifyCPPAttribute()
                 }
                 if (argtok && argtok->str() == vartok->str()) {
                     if (vartok->strAt(1) == ">=")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW,
+                        argtok->setCppcheckAttribute(CppcheckAttributesType::LOW,
                                                      MathLib::toBigNumber(vartok->tokAt(2)));
                     else if (vartok->strAt(1) == ">")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW,
+                        argtok->setCppcheckAttribute(CppcheckAttributesType::LOW,
                                                      MathLib::toBigNumber(vartok->tokAt(2)) + 1);
                     else if (vartok->strAt(1) == "<=")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH,
+                        argtok->setCppcheckAttribute(CppcheckAttributesType::HIGH,
                                                      MathLib::toBigNumber(vartok->tokAt(2)));
                     else if (vartok->strAt(1) == "<")
-                        argtok->setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH,
+                        argtok->setCppcheckAttribute(CppcheckAttributesType::HIGH,
                                                      MathLib::toBigNumber(vartok->tokAt(2)) - 1);
                 }
             }
