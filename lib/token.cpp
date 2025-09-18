@@ -2649,8 +2649,8 @@ Token::Impl::~Impl()
     delete mValues;
 
     if (mTemplateSimplifierPointers) {
-        for (auto *templateSimplifierPointer : *mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token(nullptr);
+        for (auto *p : *mTemplateSimplifierPointers) {
+            p->token(nullptr);
         }
     }
     delete mTemplateSimplifierPointers;
