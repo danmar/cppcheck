@@ -90,7 +90,6 @@ jobs:
           brew install include-what-you-use pcre coreutils
           # on Apple Silicon files are symlinked under /opt/homebrew/bin
           ln -s /opt/homebrew/bin/iwyu_tool.py /usr/local/bin/iwyu_tool
-          ls -l /opt/homebrew/bin
 
       # Fails on OpenSUSE:
       # Warning: Failed to restore: Tar failed with error: Unable to locate executable file: tar. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.
