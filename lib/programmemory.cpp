@@ -441,6 +441,16 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                     pm.setValue(vartok, execute(valuetok, pm, settings));
                 }
             }
+        } else if (Token::simpleMatch(tok2, ")") && tok2->link() &&
+                   Token::Match(tok2->link()->previous(), "assert|ASSERT ( !!)")) {
+            const Token* cond = tok2->link()->astOperand2();
+            if (!conditionIsTrue(cond, state, settings)) {
+                // TODO: change to assert when we can propagate the assert, for now just bail
+                if (conditionIsFalse(cond, state, settings))
+                    return;
+                programMemoryParseCondition(pm, cond, nullptr, settings, true);
+            }
+            tok2 = tok2->link()->previous();
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
                    isVariableChanged(tok2, 0, settings)) {
             pm.setUnknown(tok2);
