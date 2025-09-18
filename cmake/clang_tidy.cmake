@@ -11,7 +11,7 @@ if(NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         message(STATUS "Cannot use non-Clang compiler with clang-tidy when precompiled headers are enabled - skipping 'run-clang-tidy'/'run-clang-tidy-csa' target generation")
     endif()
 else()
-    set(RUN_CLANG_TIDY_NAMES run-clang-tidy run-clang-tidy-20 run-clang-tidy-19 run-clang-tidy-18 run-clang-tidy-17 run-clang-tidy-16 run-clang-tidy-15 run-clang-tidy-14 run-clang-tidy-13 run-clang-tidy-12 run-clang-tidy-11 run-clang-tidy-10 run-clang-tidy-9 run-clang-tidy-8)
+    set(RUN_CLANG_TIDY_NAMES run-clang-tidy run-clang-tidy-21 run-clang-tidy-20 run-clang-tidy-19 run-clang-tidy-18 run-clang-tidy-17 run-clang-tidy-16 run-clang-tidy-15 run-clang-tidy-14 run-clang-tidy-13 run-clang-tidy-12 run-clang-tidy-11 run-clang-tidy-10 run-clang-tidy-9 run-clang-tidy-8)
 endif()
 
 if(RUN_CLANG_TIDY_NAMES)
@@ -32,10 +32,9 @@ if(RUN_CLANG_TIDY_NAMES)
         # clang-analyzer-cplusplus.NewDelete
         # clang-analyzer-core.NullDereference
         # clang-analyzer-unix.Stream
-        # clang-analyzer-optin.cplusplus.UninitializedObject - false positives with unnamed fields - see https://github.com/llvm/llvm-project/issues/132001
         # clang-analyzer-alpha.clone.CloneChecker
         # clang-analyzer-alpha.webkit.* - we are not interested in these
-        set(CLANG_TIDY_CSA_CONFIG "-config={InheritParentConfig: true, Checks: '-*,clang-analyzer-*,-clang-analyzer-core.CallAndMessage,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-core.NullDereference,-clang-analyzer-unix.Stream,-clang-analyzer-optin.cplusplus.UninitializedObject,-clang-analyzer-alpha.clone.CloneChecker,-clang-analyzer-alpha.webkit.*'}")
+        set(CLANG_TIDY_CSA_CONFIG "-config={InheritParentConfig: true, Checks: '-*,clang-analyzer-*,-clang-analyzer-core.CallAndMessage,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-core.NullDereference,-clang-analyzer-unix.Stream,-clang-analyzer-alpha.clone.CloneChecker,-clang-analyzer-alpha.webkit.*'}")
         if (ENABLE_CSA_ALPHA)
             set(CLANG_TIDY_CSA_ALPHA_OPTS "-allow-enabling-alpha-checkers" "-extra-arg=-Xclang" "-extra-arg=-analyzer-config" "-extra-arg=-Xclang" "-extra-arg=aggressive-binary-operation-simplification=true")
         endif()

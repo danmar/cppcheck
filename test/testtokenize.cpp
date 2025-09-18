@@ -6788,6 +6788,7 @@ private:
         ASSERT_EQUALS("unoRef:: var0(", testAst(code1));
 
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
+        ASSERT_EQUALS("vary=", testAst("std::unique_ptr<int> var = y;")); // #14019
 
         ASSERT_EQUALS("", testAst("void *(*var)(int);"));
         ASSERT_EQUALS("", testAst("void *(*var[2])(int);"));
@@ -8701,7 +8702,7 @@ private:
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(fin, files, "", &outputList);
         const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcode(settingsDefault, *this, filedata, "", "test.c");
+        const std::string code = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, filedata, "", "test.c");
 
         ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
     }

@@ -43,10 +43,6 @@ CheckOptions:
     if(MSVC)
         # compilation will fail as e.g. QList::realloc would be replaced by MSVC's macro definition
         target_compile_definitions(cppcheck-gui PRIVATE $<$<CONFIG:Debug>:DISABLE_CRTDBG_MAP_ALLOC>)
-        if(NOT USE_QT6)
-            target_compile_options(cppcheck-gui PRIVATE /wd4996) # warning C4996: 'QProcess::startDetached': Use QProcess::startDetached(const QString &program, const QStringList &arguments) instead
-            target_compile_options(cppcheck-gui PRIVATE /wd4505) # warning C4505: 'x': unreferenced function with internal linkage has been removed
-        endif()
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if(QT_VERSION VERSION_LESS "6.4.0")
@@ -57,6 +53,9 @@ CheckOptions:
             # caused by Qt generated moc code starting with 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-135638
             target_compile_options_safe(cppcheck-gui -Wno-ctad-maybe-unsupported)
         endif()
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # caused by mocs
+        target_compile_options_safe(cppcheck-gui -Wno-useless-cast)
     endif()
     if(QT_VERSION VERSION_GREATER_EQUAL "6.9.2")
         # QBrush fails to compile before 6.9.0 - see https://bugreports.qt.io/browse/QTBUG-134038

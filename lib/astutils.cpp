@@ -109,7 +109,7 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
 }
 
 template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 100)
+static void astFlattenCopy(T* tok, const char* op, OuputIterator out, int depth = 100)
 {
     --depth;
     if (!tok || depth < 0)
@@ -775,10 +775,11 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings& set
                 if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
                     (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) <= scope->varlist.size() &&
                     !scope->varlist.empty()) {
-                    assert(argn < scope->varlist.size());
-                    auto it = std::next(scope->varlist.cbegin(), argn);
-                    if (it->valueType())
-                        return {*it->valueType()};
+                    if (argn < scope->varlist.size()) {
+                        auto it = std::next(scope->varlist.cbegin(), argn);
+                        if (it->valueType())
+                            return { *it->valueType() };
+                    }
                 }
             }
         }
@@ -1212,7 +1213,8 @@ static const Token * followVariableExpression(const Settings& settings, const To
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
-    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, settings)))
+    const int indirect = var->isArray() ? var->dimensions().size() : 0;
+    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, indirect, tok->varId(), false, settings)))
         return tok;
     if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
         return tok;

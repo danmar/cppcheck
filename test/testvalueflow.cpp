@@ -7172,6 +7172,15 @@ private:
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
 
+        code = "void f() {\n" // #14060
+               "    std::stack<std::pair<int, int>> s;\n"
+               "    s.emplace(0, 0);\n"
+               "    s.pop();\n"
+               "    bool x = s.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
+
         code = "std::vector<int> g();\n"
                "std::vector<int> f() {\n"
                "    std::vector<int> v = g();\n"
@@ -7971,6 +7980,18 @@ private:
                "    return (!std::is_reference<decltype(a)>::value);\n"
                "}\n";
         (void)valueOfTok(code, "0");
+
+        code = "struct S { int a; };\n" // #14036
+               "template <typename T>\n"
+               "struct U {\n"
+               "    U() = default;\n"
+               "    U(int i, int* p) {\n"
+               "        m = new T(i, p);\n"
+               "    }\n"
+               "    T m;\n"
+               "};\n"
+               "U<S*> u;\n";
+        (void)valueOfTok(code, "new");
     }
 
     void valueFlowHang() {

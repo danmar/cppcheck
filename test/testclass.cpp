@@ -6821,6 +6821,22 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3:10]: (style, inconclusive) Technically the member function 'D::f' can be const. [functionConst]\n",
                       errout_str());
+
+        checkConst("int g(int);\n" // #12162
+                   "struct S {\n"
+                   "    bool has(int i) { return m.find(i) != m.end(); }\n"
+                   "    bool isZero(int i) { return m.at(i) == 0; }\n"
+                   "    bool isZero() { return v.front() == 0; }\n"
+                   "    void f() { g(v.front() + 1); }\n"
+                   "    void set(int i) { m.at(i) = 0; }\n"
+                   "    std::map<int, int> m;\n"
+                   "    std::vector<int> v;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3:10]: (style, inconclusive) Technically the member function 'S::has' can be const. [functionConst]\n"
+                      "[test.cpp:4:10]: (style, inconclusive) Technically the member function 'S::isZero' can be const. [functionConst]\n"
+                      "[test.cpp:5:10]: (style, inconclusive) Technically the member function 'S::isZero' can be const. [functionConst]\n"
+                      "[test.cpp:6:10]: (style, inconclusive) Technically the member function 'S::f' can be const. [functionConst]\n",
+                      errout_str());
     }
 
     void const98() { // #13642

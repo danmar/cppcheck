@@ -79,8 +79,10 @@ protected:
     void assertEquals(const char* const filename, const unsigned int linenr, const T& expected, const T& actual, const std::string& msg = "") const {
         if (expected != actual) {
             std::ostringstream expectedStr;
+            // NOLINTNEXTLINE(bugprone-unintended-char-ostream-output) - chars being treated as integers is acceptable here
             expectedStr << expected;
             std::ostringstream actualStr;
+            // NOLINTNEXTLINE(bugprone-unintended-char-ostream-output) - chars being treated as integers is acceptable here
             actualStr << actual;
 
             assertFailure(filename, linenr, expectedStr.str(), actualStr.str(), msg);
@@ -320,6 +322,7 @@ protected:
 #define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (const AssertFailedError&) {} catch (...) { assertNoThrowFail(__FILE__, __LINE__, false); } } } while (false)
 
 #define ASSERT( CONDITION ) assert_(__FILE__, __LINE__, (CONDITION))
+#define ASSERT_MSG( CONDITION, MSG ) assert_(__FILE__, __LINE__, (CONDITION), MSG)
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION))
 #define ASSERT_LOC_MSG( CONDITION, MSG, FILE_, LINE_ ) assert_(FILE_, LINE_, (CONDITION), MSG)
 // *INDENT-OFF*

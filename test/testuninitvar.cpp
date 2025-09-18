@@ -7667,6 +7667,16 @@ private:
                         "    }\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3:24]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
+
+        // #14137
+        valueFlowUninit("int f(int n) {\n"
+                        "    int x;\n"
+                        "    assert(n > 0);\n"
+                        "    for(int i=0;i<n;i++)\n"
+                        "        x = n;\n"
+                        "    return x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void uninitvar_memberfunction() {

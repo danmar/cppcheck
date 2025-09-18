@@ -35,6 +35,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
+#include "symboldatabase.h"
 #include "timer.h"
 #include "token.h"
 #include "tokenize.h"
@@ -432,6 +433,9 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &premiumArgs,
                                                  const CppCheck::ExecuteCmdFn &executeCommand)
 {
+    if (!executeCommand)
+        throw InternalError(nullptr, "Failed to execute addon - no command callback provided");
+
     std::string pythonExe;
 
     if (!addonInfo.executable.empty())
@@ -441,7 +445,7 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
     else if (!defaultPythonExe.empty())
         pythonExe = cmdFileName(defaultPythonExe);
     else {
-        // store in static variable so we only look this up once
+        // store in static variable so we only look this up once - TODO: do not cache globally
         static const std::string detectedPythonExe = detectPython(executeCommand);
         if (detectedPythonExe.empty())
             throw InternalError(nullptr, "Failed to auto detect python");
@@ -686,6 +690,11 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
         mErrorLogger.reportOut(exe + " " + args2, Color::Reset);
     }
 
+    if (!mExecuteCommand) {
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no command callback provided)" << std::endl;
+        return 0; // TODO: report as failure?
+    }
+
     std::string output2;
     const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
     if (mSettings.debugClangOutput) {
@@ -850,7 +859,7 @@ static simplecpp::TokenList createTokenList(const std::string& filename, std::ve
     return {filename, files, outputList};
 }
 
-std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens) const
+std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const std::string& filePath) const
 {
     std::ostringstream toolinfo;
     toolinfo << (mSettings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : mSettings.cppcheckCfgProductName);
@@ -867,7 +876,7 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simp
     }
     toolinfo << mSettings.premiumArgs;
     // TODO: do we need to add more options?
-    mSuppressions.nomsg.dump(toolinfo);
+    mSuppressions.nomsg.dump(toolinfo, filePath);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
@@ -1020,7 +1029,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1);
+            const std::size_t hash = calculateHash(preprocessor, tokens1, file.spath());
             std::list<ErrorMessage> errors;
             if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
                 while (!errors.empty()) {
@@ -1934,6 +1943,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     CheckUnusedFunctions::getErrorMessages(errorlogger);
     Preprocessor::getErrorMessages(errorlogger, s);
     Tokenizer::getErrorMessages(errorlogger, s);
+    SymbolDatabase::getErrorMessages(errorlogger);
 }
 
 void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
@@ -1953,6 +1963,11 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         exe += ".exe";
     }
 #endif
+
+    if (!mExecuteCommand) {
+        std::cerr << "Failed to execute '" << exe << "' (no command callback provided)" << std::endl;
+        return;
+    }
 
     // TODO: log this call
     // TODO: get rid of hard-coded checks

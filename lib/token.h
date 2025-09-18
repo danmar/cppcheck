@@ -70,6 +70,11 @@ struct TokenImpl {
     nonneg int mColumn{};
     nonneg int mExprId{};
 
+    // original template argument location
+    int mTemplateArgFileIndex{-1};
+    int mTemplateArgLineNumber{-1};
+    int mTemplateArgColumn{-1};
+
     /**
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
@@ -824,8 +829,15 @@ public:
     bool isTemplateArg() const {
         return getFlag(fIsTemplateArg);
     }
-    void isTemplateArg(const bool value) {
-        setFlag(fIsTemplateArg, value);
+    void templateArgFrom(const Token* fromToken);
+    int templateArgFileIndex() const {
+        return mImpl->mTemplateArgFileIndex;
+    }
+    int templateArgLineNumber() const {
+        return mImpl->mTemplateArgLineNumber;
+    }
+    int templateArgColumn() const {
+        return mImpl->mTemplateArgColumn;
     }
 
     const std::string& getMacroName() const {
@@ -951,13 +963,42 @@ public:
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
      * @param tokenStr String for the new token.
-     * @param originalNameStr String used for Token::originalName().
-     * @param prepend Insert the new token before this token when it's not
-     * the first one on the tokens list.
      */
-    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString, bool prepend = false);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr)
+    {
+        return insertToken(tokenStr, false);
+    }
+    /**
+     * Insert new token after this token. This function will handle
+     * relations between next and previous token also.
+     * @param tokenStr String for the new token.
+     * @param originalNameStr String used for Token::originalName().
+     */
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr)
+    {
+        return insertToken(tokenStr, originalNameStr, false);
+    }
+    /**
+     * Insert new token after this token. This function will handle
+     * relations between next and previous token also.
+     * @param tokenStr String for the new token.
+     * @param originalNameStr String used for Token::originalName().
+     * @param macroNameStr String used for Token::getMacroName().
+     */
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr)
+    {
+        return insertToken(tokenStr, originalNameStr, macroNameStr, false);
+    }
 
-    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString, const std::string& macroNameStr = emptyString)
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr)
+    {
+        return insertToken(tokenStr, true);
+    }
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr)
+    {
+        return insertToken(tokenStr, originalNameStr, true);
+    }
+    RET_NONNULL Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr)
     {
         return insertToken(tokenStr, originalNameStr, macroNameStr, true);
     }
@@ -1389,6 +1430,10 @@ private:
      * as if it were &apos;\\0&apos;
      */
     static const char *chrInFirstWord(const char *str, char c);
+
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, bool prepend);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend);
+    RET_NONNULL Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend);
 
     std::string mStr;
 

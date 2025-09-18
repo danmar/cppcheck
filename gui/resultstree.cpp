@@ -737,7 +737,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             //Add a new mapping
             signalMapper.setMapping(start, defaultApplicationIndex);
 
-            connect(&signalMapper, SIGNAL(mapped(int)),
+            connect(&signalMapper, SIGNAL(mappedInt(int)),
                     this, SLOT(context(int)));
         }
 

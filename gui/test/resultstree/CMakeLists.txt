@@ -33,6 +33,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif()
     # caused by mocks
     target_compile_options_safe(test-resultstree -Wno-missing-noreturn)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # caused by mocs
+    target_compile_options_safe(test-resultstree -Wno-useless-cast)
+    # caused by mocks
+    target_compile_options_safe(test-resultstree -Wno-suggest-attribute=noreturn)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

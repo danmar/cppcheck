@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "fixture.h"
 #include "mathlib.h"
 #include "standards.h"
@@ -386,23 +385,19 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: 02000000000000000000000");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("-02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: -02000000000000000000000");
 
-        // min/max and out-of-bounds - decimal
-        SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
-        SUPPRESS_WARNING_GCC_PUSH("-Woverflow")
+        // min/max and out-of-range - decimal
         {
-            constexpr MathLib::bigint i = 18446744073709551615;
+            constexpr MathLib::bigint i = 18446744073709551615ULL;
             ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("18446744073709551615"));
         }
         {
-            constexpr MathLib::bigint i = -18446744073709551615;
+            constexpr MathLib::bigint i = -18446744073709551615ULL;
             ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("-18446744073709551615"));
         }
-        SUPPRESS_WARNING_GCC_POP
-        SUPPRESS_WARNING_CLANG_POP
 
-            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: 18446744073709551616");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: 18446744073709551616");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("-18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigNumber: out_of_range: -18446744073709551616");
 
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("invalid"), INTERNAL, "Internal Error. MathLib::toBigNumber: invalid_argument: invalid");
@@ -562,23 +557,19 @@ private:
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: 02000000000000000000000");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("-02000000000000000000000"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: -02000000000000000000000");
 
-        // min/max and out-of-bounds - decimal
-        SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
-        SUPPRESS_WARNING_GCC_PUSH("-Woverflow")
+        // min/max and out-of-range - decimal
         {
-            constexpr MathLib::biguint u = 18446744073709551615;
+            constexpr MathLib::biguint u = 18446744073709551615ULL;
             ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("18446744073709551615"));
         }
         {
-            constexpr MathLib::biguint u = -18446744073709551615;
+            constexpr MathLib::biguint u = -18446744073709551615ULL;
             ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-18446744073709551615"));
         }
-        SUPPRESS_WARNING_GCC_POP
-        SUPPRESS_WARNING_CLANG_POP
 
-            ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: 18446744073709551616");
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: 18446744073709551616");
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("-18446744073709551616"), INTERNAL, "Internal Error. MathLib::toBigUNumber: out_of_range: -18446744073709551616");
 
         ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("invalid"), INTERNAL, "Internal Error. MathLib::toBigUNumber: invalid_argument: invalid");

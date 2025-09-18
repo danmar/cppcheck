@@ -1061,7 +1061,7 @@ void Token::function(const Function *f)
         tokType(eName);
 }
 
-Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend)
+Token* Token::insertToken(const std::string& tokenStr, bool prepend)
 {
     Token *newToken;
     if (mStr.empty())
@@ -1069,10 +1069,6 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
     else
         newToken = new Token(mList, mTokensFrontBack);
     newToken->str(tokenStr);
-    if (!originalNameStr.empty())
-        newToken->originalName(originalNameStr);
-    if (!macroNameStr.empty())
-        newToken->setMacroName(macroNameStr);
 
     if (newToken != this) {
         newToken->mImpl->mLineNumber = mImpl->mLineNumber;
@@ -1195,6 +1191,22 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
             }
         }
     }
+    return newToken;
+}
+
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend)
+{
+    Token* const newToken = insertToken(tokenStr, prepend);
+    if (!originalNameStr.empty())
+        newToken->originalName(originalNameStr);
+    return newToken;
+}
+
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend)
+{
+    Token* const newToken = insertToken(tokenStr, originalNameStr, prepend);
+    if (!macroNameStr.empty())
+        newToken->setMacroName(macroNameStr);
     return newToken;
 }
 
@@ -1607,8 +1619,8 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
                 else if (c >= ' ' && c <= 126)
                     ret += c;
                 else {
-                    char str[10];
-                    sprintf(str, "\\x%02x", c);
+                    char str[5];
+                    snprintf(str, sizeof(str), "\\x%02x", c);
                     ret += str;
                 }
             }
@@ -2719,4 +2731,11 @@ Token* findLambdaEndScope(Token* tok)
 }
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
+}
+
+void Token::templateArgFrom(const Token* fromToken) {
+    setFlag(fIsTemplateArg, fromToken != nullptr);
+    mImpl->mTemplateArgFileIndex = fromToken ? fromToken->mImpl->mFileIndex : -1;
+    mImpl->mTemplateArgLineNumber = fromToken ? fromToken->mImpl->mLineNumber : -1;
+    mImpl->mTemplateArgColumn = fromToken ? fromToken->mImpl->mColumn : -1;
 }

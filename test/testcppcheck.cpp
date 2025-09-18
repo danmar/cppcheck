@@ -25,15 +25,19 @@
 #include "helpers.h"
 #include "path.h"
 #include "preprocessor.h"
+#include "redirect.h"
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdlib>
 #include <list>
 #include <sstream>
 #include <string>
+#include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <simplecpp.h>
@@ -66,7 +70,11 @@ private:
     void run() override {
         TEST_CASE(getErrorMessages);
         TEST_CASE(checkWithFile);
+        TEST_CASE(checkWithFileWithTools);
+        TEST_CASE(checkWithFileWithToolsNoCommand);
         TEST_CASE(checkWithFS);
+        TEST_CASE(checkWithFSWithTools);
+        TEST_CASE(checkWithFSWithToolsNoCommand);
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
         TEST_CASE(unique_errors_2);
@@ -114,54 +122,223 @@ private:
         ASSERT(foundMissingIncludeSystem);
     }
 
-    void checkWithFile() const
+    static std::string exename_(const std::string& exe)
     {
-        ScopedFile file("test.cpp",
+#ifdef _WIN32
+        return exe + ".exe";
+#else
+        return exe;
+#endif
+    }
+
+    CppCheck::ExecuteCmdFn getExecuteCommand(const std::string& fname, int& called) const
+    {
+        // cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
+        // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
+        return [&](std::string exe, std::vector<std::string> args, std::string redirect, std::string& /*output*/) -> int {
+            ++called;
+            if (exe == exename_("clang-tidy"))
+            {
+                ASSERT_EQUALS(4, args.size());
+                ASSERT_EQUALS("-quiet", args[0]);
+                ASSERT_EQUALS("-checks=*,-clang-analyzer-*,-llvm*", args[1]);
+                ASSERT_EQUALS(fname, args[2]);
+                ASSERT_EQUALS("--", args[3]);
+                ASSERT_EQUALS("2>&1", redirect);
+                return EXIT_SUCCESS;
+            }
+            if (exe == exename_("python3"))
+            {
+                ASSERT_EQUALS(1, args.size());
+                ASSERT_EQUALS("--version", args[0]);
+                ASSERT_EQUALS("2>&1", redirect);
+                return EXIT_SUCCESS;
+            }
+            if (exe == exename_("python"))
+            {
+                ASSERT_EQUALS(1, args.size());
+                ASSERT_EQUALS("--version", args[0]);
+                ASSERT_EQUALS("2>&1", redirect);
+                return EXIT_SUCCESS;
+            }
+            ASSERT_MSG(false, "unhandled exe: " + exe);
+            return EXIT_FAILURE;
+        };
+    }
+
+    void checkWithFileInternal(const std::string& fname, bool tools, bool nocmd = false) const
+    {
+        REDIRECT;
+        ScopedFile file(fname,
                         "int main()\n"
                         "{\n"
                         "  int i = *((int*)0);\n"
                         "  return 0;\n"
                         "}");
 
-        const auto s = dinit(Settings, $.templateFormat = templateFormat);
+        int called = 0;
+        std::unordered_set<std::string> addons;
+        std::vector<AddonInfo> addonInfo;
+        if (tools)
+        {
+            addons.emplace("testcppcheck");
+            addonInfo.emplace_back(/*AddonInfo()*/);
+        }
+        const auto s = dinit(Settings,
+                             $.templateFormat = templateFormat,
+                                 $.clangTidy = tools,
+                                 $.addons = std::move (addons),
+                                 $.addonInfos = std::move (addonInfo));
         Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(s, supprs, errorLogger, false, {});
+        CppCheck::ExecuteCmdFn f;
+        if (tools && !nocmd) {
+            f = getExecuteCommand(fname, called);
+        }
+        CppCheck cppcheck(s, supprs, errorLogger, false, f);
         ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(file.path(), Path::identify(file.path(), false), 0)));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
             return id == "logChecker";
         }), errorLogger.ids.end());
-        ASSERT_EQUALS(1, errorLogger.ids.size());
-        ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        if (tools)
+        {
+            ASSERT_EQUALS(2, errorLogger.ids.size());
+            auto it = errorLogger.errmsgs.cbegin();
+            ASSERT_EQUALS("nullPointer", it->id);
+            ++it;
+
+            if (nocmd)
+            {
+                ASSERT_EQUALS("internalError", it->id);
+                ASSERT_EQUALS("Bailing out from analysis: Checking file failed: Failed to execute addon - no command callback provided", it->shortMessage()); // TODO: add addon name
+
+                // TODO: clang-tidy is currently not invoked for file inputs - see #12053
+                // TODO: needs to become a proper error
+                TODO_ASSERT_EQUALS("Failed to execute '" + exename_("clang-tidy") + "' (no command callback provided)\n", "", GET_REDIRECT_ERROUT);
+
+                ASSERT_EQUALS(0, called); // not called because we check if the callback exists
+            }
+            else
+            {
+                ASSERT_EQUALS("internalError", it->id);
+                ASSERT_EQUALS("Bailing out from analysis: Checking file failed: Failed to auto detect python", it->shortMessage()); // TODO: clarify what python is used for
+
+                // TODO: we cannot check this because the python detection is cached globally so this result will different dependent on how the test is called
+                //ASSERT_EQUALS(2, called);
+            }
+        }
+        else
+        {
+            ASSERT_EQUALS(0, called);
+            ASSERT_EQUALS(1, errorLogger.ids.size());
+            ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+        }
     }
 
-    void checkWithFS() const
+    void checkWithFile() const {
+        checkWithFileInternal("file.cpp", false);
+    }
+
+    void checkWithFileWithTools() const {
+        checkWithFileInternal("file_tools.cpp", true);
+    }
+
+    void checkWithFileWithToolsNoCommand() const {
+        checkWithFileInternal("file_tools_nocmd.cpp", true, true);
+    }
+
+    void checkWithFSInternal(const std::string& fname, bool tools, bool nocmd = false) const
     {
-        ScopedFile file("test.cpp",
+        REDIRECT;
+        ScopedFile file(fname,
                         "int main()\n"
                         "{\n"
                         "  int i = *((int*)0);\n"
                         "  return 0;\n"
                         "}");
 
-        const auto s = dinit(Settings, $.templateFormat = templateFormat);
+        int called = 0;
+        std::unordered_set<std::string> addons;
+        std::vector<AddonInfo> addonInfo;
+        if (tools)
+        {
+            addons.emplace("testcppcheck");
+            addonInfo.emplace_back(/*AddonInfo()*/);
+        }
+        const auto s = dinit(Settings,
+                             $.templateFormat = templateFormat,
+                                 $.clangTidy = tools,
+                                 $.addons = std::move (addons),
+                                 $.addonInfos = std::move (addonInfo));
         Suppressions supprs;
         ErrorLogger2 errorLogger;
-        CppCheck cppcheck(s, supprs, errorLogger, false, {});
+        CppCheck::ExecuteCmdFn f;
+        if (tools && !nocmd) {
+            f = getExecuteCommand(fname, called);
+        }
+        CppCheck cppcheck(s, supprs, errorLogger, false, f);
         FileSettings fs{file.path(), Path::identify(file.path(), false), 0};
         ASSERT_EQUALS(1, cppcheck.check(fs));
         // TODO: how to properly disable these warnings?
         errorLogger.ids.erase(std::remove_if(errorLogger.ids.begin(), errorLogger.ids.end(), [](const std::string& id) {
             return id == "logChecker";
         }), errorLogger.ids.end());
-        ASSERT_EQUALS(1, errorLogger.ids.size());
-        ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        if (tools)
+        {
+            ASSERT_EQUALS(2, errorLogger.ids.size());
+            auto it = errorLogger.errmsgs.cbegin();
+            ASSERT_EQUALS("nullPointer", it->id);
+            ++it;
+
+            if (nocmd)
+            {
+                ASSERT_EQUALS("internalError", it->id);
+                ASSERT_EQUALS("Bailing out from analysis: Checking file failed: Failed to execute addon - no command callback provided", it->shortMessage()); // TODO: add addon name
+
+                // TODO: needs to become a proper error
+                ASSERT_EQUALS("Failed to execute '" + exename_("clang-tidy") + "' (no command callback provided)\n", GET_REDIRECT_ERROUT);
+
+                ASSERT_EQUALS(0, called); // not called because we check if the callback exists
+            }
+            else
+            {
+                ASSERT_EQUALS("internalError", it->id);
+                ASSERT_EQUALS("Bailing out from analysis: Checking file failed: Failed to auto detect python", it->shortMessage()); // TODO: clarify what python is used for
+
+                // TODO: we cannot check this because the python detection is cached globally so this result will different dependent on how the test is called
+                //ASSERT_EQUALS(3, called);
+            }
+        }
+        else
+        {
+            ASSERT_EQUALS(0, called);
+            ASSERT_EQUALS(1, errorLogger.ids.size());
+            ASSERT_EQUALS("nullPointer", *errorLogger.ids.cbegin());
+        }
+    }
+
+    void checkWithFS() const {
+        checkWithFSInternal("fs.cpp", false);
+    }
+
+    void checkWithFSWithTools() const {
+        checkWithFSInternal("fs_tools.cpp", true);
+    }
+
+    void checkWithFSWithToolsNoCommand() const {
+        checkWithFSInternal("fs_tools_nocmd.cpp", true, true);
     }
 
     void suppress_error_library() const
     {
-        ScopedFile file("test.cpp",
+        ScopedFile file("suppr_err_lib.cpp",
                         "int main()\n"
                         "{\n"
                         "  int i = *((int*)0);\n"
@@ -308,6 +485,22 @@ private:
                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
                                      "  </rawtokens>\n";
         ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
+
+        const char code[] = "//x \\ \n"
+                            "y\n"
+                            ";\n";
+
+        std::istringstream fin(code);
+        simplecpp::OutputList outputList;
+        const simplecpp::TokenList tokens2(fin, files, "", &outputList);
+        const std::string expected2 = "  <rawtokens>\n"
+                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                      "    <file index=\"1\" name=\"\"/>\n"
+                                      "    <tok fileIndex=\"1\" linenr=\"1\" column=\"1\" str=\"//x &#10;y\"/>\n"
+                                      "    <tok fileIndex=\"1\" linenr=\"3\" column=\"1\" str=\";\"/>\n"
+                                      "  </rawtokens>\n";
+        ASSERT_EQUALS(expected2, cppcheck.getDumpFileContentsRawTokens(files, tokens2));
+
     }
 
     void getDumpFileContentsLibrary() const {

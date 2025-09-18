@@ -382,6 +382,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     bool def = false;
     bool maxconfigs = false;
     bool debug = false;
+    bool inputAsFilter = false; // set by: --file-filter=+
 
     ImportProject::Type projectType = ImportProject::Type::NONE;
     ImportProject project;
@@ -768,6 +769,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError("Failed: --file-filter=-");
                     return Result::Fail;
                 }
+            } else if (std::strcmp(filter, "+") == 0) {
+                inputAsFilter = true;
             } else {
                 mSettings.fileFilters.emplace_back(filter);
             }
@@ -1117,12 +1120,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.premiumArgs += " ";
             const std::string p(argv[i] + 10);
             const std::string p2(p.find('=') != std::string::npos ? p.substr(0, p.find('=')) : "");
-            if (!valid.count(p) && !valid2.count(p2)) {
+            const bool isCodingStandard = startsWith(p, "autosar") || startsWith(p,"cert-") || startsWith(p,"misra-");
+            const std::string p3(endsWith(p,":all") && isCodingStandard ? p.substr(0,p.rfind(':')) : p);
+            if (!valid.count(p3) && !valid2.count(p2)) {
                 mLogger.printError("invalid --premium option '" + (p2.empty() ? p : p2) + "'.");
                 return Result::Fail;
             }
             mSettings.premiumArgs += "--" + p;
-            if (startsWith(p, "autosar") || startsWith(p, "cert") || startsWith(p, "misra")) {
+            if (isCodingStandard) {
                 // All checkers related to the coding standard should be enabled. The coding standards
                 // do not all undefined behavior or portability issues.
                 mSettings.addEnabled("warning");
@@ -1552,8 +1557,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
     // replace static parts of the templates
-    substituteTemplateFormatStatic(mSettings.templateFormat);
-    substituteTemplateLocationStatic(mSettings.templateLocation);
+    substituteTemplateFormatStatic(mSettings.templateFormat, !mSettings.outputFile.empty());
+    substituteTemplateLocationStatic(mSettings.templateLocation, !mSettings.outputFile.empty());
 
     if (mSettings.force || maxconfigs)
         mSettings.checkAllConfigurations = true;
@@ -1578,6 +1583,11 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mLogger.printMessage("unusedFunction check requires --cppcheck-build-dir to be active with -j.");
         // TODO: enable
         //mLogger.printMessage("whole program analysis requires --cppcheck-build-dir to be active with -j.");
+    }
+
+    if (inputAsFilter) {
+        mSettings.fileFilters.insert(mSettings.fileFilters.end(), mPathNames.cbegin(), mPathNames.cend());
+        mPathNames.clear();
     }
 
     if (!mPathNames.empty() && projectType != ImportProject::Type::NONE) {
@@ -1775,10 +1785,12 @@ void CmdLineParser::printHelp() const
         "    --exitcode-suppressions=<file>\n"
         "                         Used when certain messages should be displayed but\n"
         "                         should not cause a non-zero exitcode.\n"
-        "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
-        "                         Can be used multiple times\n"
+        "    --file-filter=<str>  Analyze only those files matching the given filter str.\n"
+        "                         Can be used multiple times. When str is '-', the file\n"
+        "                         filter will be read from standard input. When str is '+',\n"
+        "                         given files on CLI will be treated as file filters.\n"
         "                         Example: --file-filter=*bar.cpp analyzes only files\n"
-        "                                  that end with bar.cpp.\n"
+        "                         that end with bar.cpp.\n"
         "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
         "                         filename per line. When file is '-,' the file list will\n"
         "                         be read from standard input.\n"
@@ -1888,11 +1900,20 @@ void CmdLineParser::printHelp() const
             "                          * misra-c-2025      Misra C 2025\n"
             "                          * misra-c++-2008    Misra C++ 2008\n"
             "                          * misra-c++-2023    Misra C++ 2023\n"
+            "                         By default 'Misra/Cert C' only checks C files.\n"
+            "                         By default 'Autosar/Misra/Cert C++' only checks C++ files.\n"
+            "                         To check all files, append \":all\" i.e. --premium=misra-c++-2023:all.\n"
             "                         Other:\n"
             "                          * bughunting        Soundy analysis\n"
-            "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n"
+            "                          * metrics           Calculate metrics. Metrics are only reported in xmlv3 output.\n"
             "                          * safety            Turn on safety certified behavior (ON by default)\n"
-            "                          * safety-off        Turn off safety certified behavior\n";
+            "                          * safety-off        Turn off safety certified behavior\n"
+            "    --premium-cert-c-int-precision=BITS\n"
+            "                         Integer precision to use in Cert C analysis. Only needed if precision of 'int' is\n"
+            "                         less than the size of 'int'. BITS shall be a positive value that is less than the\n"
+            "                         size of 'int'. This precision is used for INT35-C checking.\n"
+            "    --premium-license-file=<path>\n"
+            "                         Provide license file path with argument.\n";
     }
 
     oss <<

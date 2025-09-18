@@ -353,49 +353,6 @@ namespace simplecpp {
         bool removeComments; /** remove comment tokens from included files */
     };
 
-    SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
-
-    SIMPLECPP_LIB FileDataCache load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = nullptr);
-
-    /**
-     * Preprocess
-     * @todo simplify interface
-     * @param output TokenList that receives the preprocessing output
-     * @param rawtokens Raw tokenlist for top sourcefile
-     * @param files internal data of simplecpp
-     * @param cache output from simplecpp::load()
-     * @param dui defines, undefs, and include paths
-     * @param outputList output: list that will receive output messages
-     * @param macroUsage output: macro usage
-     * @param ifCond output: #if/#elif expressions
-     */
-    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, FileDataCache &cache, const DUI &dui, OutputList *outputList = nullptr, std::list<MacroUsage> *macroUsage = nullptr, std::list<IfCond> *ifCond = nullptr);
-
-    /**
-     * Deallocate data
-     */
-    SIMPLECPP_LIB void cleanup(FileDataCache &cache);
-
-    /** Simplify path */
-    SIMPLECPP_LIB std::string simplifyPath(std::string path);
-
-    /** Convert Cygwin path to Windows path */
-    SIMPLECPP_LIB std::string convertCygwinToWindowsPath(const std::string &cygwinPath);
-
-    /** Returns the C version a given standard */
-    SIMPLECPP_LIB cstd_t getCStd(const std::string &std);
-
-    /** Returns the C++ version a given standard */
-    SIMPLECPP_LIB cppstd_t getCppStd(const std::string &std);
-
-    /** Returns the __STDC_VERSION__ value for a given standard */
-    SIMPLECPP_LIB std::string getCStdString(const std::string &std);
-    SIMPLECPP_LIB std::string getCStdString(cstd_t std);
-
-    /** Returns the __cplusplus value for a given standard */
-    SIMPLECPP_LIB std::string getCppStdString(const std::string &std);
-    SIMPLECPP_LIB std::string getCppStdString(cppstd_t std);
-
     struct SIMPLECPP_LIB FileData {
         /** The canonical filename associated with this data */
         std::string filename;
@@ -503,8 +460,50 @@ namespace simplecpp {
         container_type mData;
         name_map_type mNameMap;
         id_map_type mIdMap;
-
     };
+
+    SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
+
+    SIMPLECPP_LIB FileDataCache load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = nullptr, FileDataCache cache = {});
+
+    /**
+     * Preprocess
+     * @todo simplify interface
+     * @param output TokenList that receives the preprocessing output
+     * @param rawtokens Raw tokenlist for top sourcefile
+     * @param files internal data of simplecpp
+     * @param cache output from simplecpp::load()
+     * @param dui defines, undefs, and include paths
+     * @param outputList output: list that will receive output messages
+     * @param macroUsage output: macro usage
+     * @param ifCond output: #if/#elif expressions
+     */
+    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, FileDataCache &cache, const DUI &dui, OutputList *outputList = nullptr, std::list<MacroUsage> *macroUsage = nullptr, std::list<IfCond> *ifCond = nullptr);
+
+    /**
+     * Deallocate data
+     */
+    SIMPLECPP_LIB void cleanup(FileDataCache &cache);
+
+    /** Simplify path */
+    SIMPLECPP_LIB std::string simplifyPath(std::string path);
+
+    /** Convert Cygwin path to Windows path */
+    SIMPLECPP_LIB std::string convertCygwinToWindowsPath(const std::string &cygwinPath);
+
+    /** Returns the C version a given standard */
+    SIMPLECPP_LIB cstd_t getCStd(const std::string &std);
+
+    /** Returns the C++ version a given standard */
+    SIMPLECPP_LIB cppstd_t getCppStd(const std::string &std);
+
+    /** Returns the __STDC_VERSION__ value for a given standard */
+    SIMPLECPP_LIB std::string getCStdString(const std::string &std);
+    SIMPLECPP_LIB std::string getCStdString(cstd_t std);
+
+    /** Returns the __cplusplus value for a given standard */
+    SIMPLECPP_LIB std::string getCppStdString(const std::string &std);
+    SIMPLECPP_LIB std::string getCppStdString(cppstd_t std);
 }
 
 #if defined(_MSC_VER)

@@ -86,7 +86,21 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
 endif()
 
 if(USE_BOOST)
-    if(USE_BOOST STREQUAL "Auto")
+    # with Visual Studio Boost is not detected by CMake unless you provide a full release even if only used header-only.
+    # to work around this we allow to externally set BOOST_INCLUDEDIR.
+    # see https://trac.cppcheck.net/ticket/13822 for more details.
+    if(BOOST_INCLUDEDIR)
+        if(NOT MSVC)
+            message(FATAL_ERROR "BOOST_INCLUDEDIR hack only allowed for Visual Studio")
+        endif()
+        message(STATUS "Using BOOST_INCLUDEDIR hack for Visual Studio")
+        if(NOT IS_READABLE "${BOOST_INCLUDEDIR}/boost/container/small_vector.hpp")
+            message(FATAL_ERROR "Provided BOOST_INCLUDEDIR does not appear to contain Boost includes")
+        endif()
+        set(Boost_FOUND ON)
+        set(Boost_INCLUDE_DIRS "${BOOST_INCLUDEDIR}")
+        # TODO: set Boost_VERSION_STRING
+    elseif(USE_BOOST STREQUAL "Auto")
         find_package(Boost)
     else()
         find_package(Boost REQUIRED)

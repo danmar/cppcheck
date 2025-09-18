@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if !defined(__APPLE__)
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE // required to have feenableexcept()
+#endif
 #endif
 
 #include "config.h"

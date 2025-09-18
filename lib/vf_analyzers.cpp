@@ -838,6 +838,8 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
         const Variable* var = tok->variable();
         if (!var)
             return false;
+        if (!var->isLocal() && !var->isArgument())
+            return false;
         const Token* start = var->declEndToken();
         if (!start)
             return false;
@@ -941,8 +943,11 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const Settings& set)
         : ValueFlowAnalyzer(set) {
         for (const auto& p:args) {
-            values[p.first->declarationId()] = p.second;
-            vars[p.first->declarationId()] = p.first;
+            const auto declId = p.first->declarationId();
+            if (declId == 0)
+                continue; // TODO: should never happen?
+            values[declId] = p.second;
+            vars[declId] = p.first;
         }
     }
 
@@ -1075,6 +1080,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             const Variable* var = vars.at(p.first);
             if (!var)
                 continue;
+            assert(var->nameToken());
             ps[var->nameToken()] = p.second;
         }
         return ps;
@@ -1489,7 +1495,12 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP || action == Library::Container::Action::APPEND) { // TODO: handle more actions?
                 std::vector<const Token*> args = getArguments(tok->tokAt(3));
-                if (args.size() < 2 || action == Library::Container::Action::APPEND)
+                bool isVariadic = false;
+                if (const Library::Function* libFunc = settings.library.getFunction(tok->tokAt(2))) {
+                    const auto& argChecks = libFunc->argumentChecks;
+                    isVariadic = argChecks.find(-1) != argChecks.end() && argChecks.at(-1).variadic;
+                }
+                if (args.size() < 2 || action == Library::Container::Action::APPEND || isVariadic)
                     return Action::Read | Action::Write | Action::Incremental;
             }
         }

@@ -51,6 +51,7 @@
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(Tokenizer& tokenizer)
@@ -2212,7 +2213,7 @@ void SymbolDatabase::debugSymbolDatabase() const
             }
             errorPath.emplace_back(tok, "");
             mErrorLogger.reportErr(
-                {errorPath, &mTokenizer.list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
+                {std::move(errorPath), &mTokenizer.list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
         }
     }
 }
@@ -2577,8 +2578,6 @@ Function::Function(const Token *tok,
         // constructor of any kind
         else
             type = FunctionType::eConstructor;
-
-        isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
     }
 
     const Token *tok1 = setFlags(tok, scope);
@@ -2651,6 +2650,14 @@ Function::Function(const Token *tok,
         arg = argDef;
         isInline(true);
         hasBody(true);
+    }
+
+    for (tok = tokenDef->previous(); Token::Match(tok, "&|&&|*|::|)|]|%name%"); tok = tok->previous()) {
+        // We should set other keywords here as well
+        if (tok->str() == "explicit")
+            isExplicit(true);
+        if (tok->str() == "]" || tok->str() == ")")
+            tok = tok->link();
     }
 }
 
@@ -7351,9 +7358,9 @@ static const Token* parsedecl(const Token* type,
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
-        } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong())) {
+        } else if (ValueType::Type type_s = ValueType::typeFromString(type->str(), type->isLong())) { // != UNKNOWN_TYPE
             const ValueType::Type t0 = valuetype->type;
-            valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
+            valuetype->type = type_s;
             if (t0 == ValueType::Type::LONG) {
                 if (valuetype->type == ValueType::Type::LONG)
                     valuetype->type = ValueType::Type::LONGLONG;
@@ -7457,8 +7464,10 @@ static const Token* parsedecl(const Token* type,
             valuetype->typeScope = type->type()->classScope;
         } else if (type->isName() && valuetype->sign != ValueType::Sign::UNKNOWN_SIGN && valuetype->pointer == 0U)
             return nullptr;
-        else if (Token::Match(type->previous(), "!!:: %name% !!::"))
-            valuetype->fromLibraryType(type->str(), settings);
+        else if (Token::Match(type->previous(), "!!:: %name% !!::")) {
+            if (!type->isKeyword())
+                valuetype->fromLibraryType(type->str(), settings);
+        }
         if (!type->originalName().empty())
             valuetype->originalTypeName = type->originalName();
         type = type->next();
@@ -8420,4 +8429,11 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             return ValueType::MatchResult::NOMATCH;
     }
     return res;
+}
+
+void SymbolDatabase::getErrorMessages(ErrorLogger& /*errorLogger*/)
+{
+    // TODO
+    //SymbolDatabase symdb;
+    //symdb.returnImplicitIntError(nullptr);
 }

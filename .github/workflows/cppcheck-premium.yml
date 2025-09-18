@@ -49,7 +49,7 @@ jobs:
           tar xzvf cppcheckpremium.tar.gz
           mv cppcheckpremium-devdrop-20250713 cppcheckpremium
           # Overwrite cppcheck binary
-          make -j$(nproc) CXXFLAGS=-O2 MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS=-O2 MATCHCOMPILER=yes
           cp cppcheck cppcheckpremium/
 
       - name: Generate a license file

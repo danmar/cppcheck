@@ -2596,10 +2596,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 if (!vt || !vt->container)
                     return false;
                 const auto yield = vt->container->getYield(end->str());
-                if (yield == Library::Container::Yield::START_ITERATOR || yield == Library::Container::Yield::END_ITERATOR) {
-                    const Token* parent = tok1->astParent();
-                    while (Token::Match(parent, "(|.|::"))
-                        parent = parent->astParent();
+                const Token* parent = tok1->astParent();
+                while (Token::Match(parent, "(|.|::"))
+                    parent = parent->astParent();
+                if (contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR, Library::Container::Yield::ITERATOR}, yield)) {
                     if (parent && parent->isComparisonOp())
                         return true;
                     // TODO: use AST
@@ -2607,7 +2607,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                         return true;
                 }
                 if ((yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX) &&
-                    (lhs->isComparisonOp() || lhs->isAssignmentOp() || (lhs->str() == "(" && Token::Match(lhs->astParent(), "%cop%"))))
+                    ((parent && parent->isComparisonOp()) || lhs->isAssignmentOp() || (lhs->str() == "(" && Token::Match(lhs->astParent(), "%cop%"))))
                     return true; // assume that these functions have const overloads
                 return false;
             };
@@ -3887,4 +3887,5 @@ void CheckClass::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
     c.thisUseAfterFree(nullptr, nullptr, nullptr);
     c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
+    // TODO: ctuOneDefinitionRuleViolation
 }

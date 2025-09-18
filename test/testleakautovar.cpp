@@ -2230,8 +2230,8 @@ private:
               "        void * p2 = malloc(2);\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3:0]: (error) Memory leak: p1 [memleak]\n"
-                      "[test.c:5:0]: (error) Memory leak: p2 [memleak]\n", errout_str());
+        ASSERT_EQUALS("[test.c:3:30]: (error) Memory leak: p1 [memleak]\n"
+                      "[test.c:5:30]: (error) Memory leak: p2 [memleak]\n", errout_str());
 
         check("void f() {\n"
               "    if (x > 0)\n"
@@ -2239,8 +2239,8 @@ private:
               "    else\n"
               "        void * p2 = malloc(2);\n"
               "}");
-        ASSERT_EQUALS("[test.c:3:0]: (error) Memory leak: p1 [memleak]\n"
-                      "[test.c:5:0]: (error) Memory leak: p2 [memleak]\n", errout_str());
+        ASSERT_EQUALS("[test.c:3:30]: (error) Memory leak: p1 [memleak]\n"
+                      "[test.c:5:30]: (error) Memory leak: p2 [memleak]\n", errout_str());
     }
 
     void ifelse21() {
