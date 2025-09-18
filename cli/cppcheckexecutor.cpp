@@ -737,7 +737,7 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
     // the W* macros cast to int* on macOS
     int res = pclose(p);
 #else
-    int res = pclose(p);
+    const int res = pclose(p);
 #endif
     if (res == -1) { // error occurred
         // TODO: how to provide to caller?
