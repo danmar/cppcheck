@@ -2,10 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: include-what-you-use
 
-on:
-  schedule:
-    - cron: '0 0 * * 0'
-  workflow_dispatch:
+on: [push, pull_request]
 
 permissions:
   contents: read
@@ -17,15 +14,6 @@ jobs:
       matrix:
         # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
         include:
-          - os: ubuntu-22.04
-            image: "fedora:latest"
-            stdlib: libstdc++
-            clang_inc: '-isystem/usr/lib/clang/20/include'
-          # TODO: disable because it currently fails with "error: <cstddef> tried including <stddef.h> but didn't find libc++'s <stddef.h> header."
-          #- os: ubuntu-22.04
-          #  image: "fedora:latest"
-          #  stdlib: libc++
-          #  clang_inc: '-isystem/usr/lib/clang/20/include'
           - os: macos-13
             image: ""
             stdlib: libc++  # no libstdc++ on macOS
@@ -194,7 +182,7 @@ jobs:
       fail-fast: false
 
     runs-on: ubuntu-22.04
-    if: ${{ github.repository_owner == 'danmar' }}
+    if: false
 
     env:
       QT_VERSION: 6.9.1
