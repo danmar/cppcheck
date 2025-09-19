@@ -13,7 +13,6 @@ CheckOptions:
     file(GLOB srcs "*.cpp")
     file(GLOB uis  "*.ui")
     file(GLOB tss  "*.ts")
-    QT_WRAP_UI(uis_hdrs ${uis})
     QT_ADD_RESOURCES(resources "gui.qrc")
     # TODO: passing "-no-obsolete" here breaks the translations
     QT_CREATE_TRANSLATION(qms ${CMAKE_CURRENT_SOURCE_DIR} ${tss})
@@ -33,6 +32,7 @@ CheckOptions:
 
     add_executable(cppcheck-gui ${cppcheck-gui-deps} ${cppcheck-gui_SOURCES})
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
+    set_target_properties(cppcheck-gui PROPERTIES AUTOUIC ON)
     set_target_properties(cppcheck-gui PROPERTIES WIN32_EXECUTABLE ON)
     target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/frontend/)
     if(USE_BUNDLED_TINYXML2)
