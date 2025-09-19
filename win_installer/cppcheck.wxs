@@ -170,6 +170,7 @@
               <File Id='runaddon.py' Name='runaddon.py' Source='$(var.AddonsDir)\runaddon.py' />
               <File Id='threadsafety.py' Name='threadsafety.py' Source='$(var.AddonsDir)\threadsafety.py' />
               <File Id='y2038.py' Name='y2038.py' Source='$(var.AddonsDir)\y2038.py' />
+              <File Id='y2038_buildsystem.py' Name='y2038_buildsystem.py' Source='$(var.AddonsDir)\y2038_buildsystem.py' />
             </Component>
           </Directory>
           <Component Id='BaseDocs' Guid='$(var.basedocsGUID)'>
