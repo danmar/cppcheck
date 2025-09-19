@@ -105,9 +105,6 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 With `--file-filter=<str>` you can configure file filter(s) and then only those files matching the filter will be checked.
 
-Cppcheck first collects all files in the specified directory, then applies the filter. Therefore, the filter pattern
-must include the directory path you specified.
-
 You can use `**`, `*` and `?` in the file filter pattern.  
 `**`: matches zero or more characters, including path separators  
 `*`: matches zero or more characters, excluding path separators  
@@ -116,6 +113,9 @@ You can use `**`, `*` and `?` in the file filter pattern.
 For example, this command below means that `src/test1.cpp` could be checked, but `src/file2.cpp` and `src/test/file1.cpp` will not be checked:
 
     cppcheck src/ --file-filter=src/test*
+
+Cppcheck first collects all files in the specified directory, then applies the filter. Therefore, the filter pattern
+must include the directory path you specified.
 
 A common use case for `--file-filter` is to check a project, but only check certain files:
 
