@@ -58,17 +58,16 @@ namespace {
     };
 }
 
-const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
+const std::list<ValueFlow::Value> Token::mEmptyValueList;
 const std::string Token::mEmptyString;
 
 Token::Token(const TokenList& tokenlist, std::shared_ptr<TokensFrontBack> tokensFrontBack)
     : mList(tokenlist)
     , mTokensFrontBack(std::move(tokensFrontBack))
+    , mImpl(new Impl)
     , mIsC(mList.isC())
     , mIsCpp(mList.isCPP())
-{
-    mImpl = new TokenImpl();
-}
+{}
 
 Token::Token(const Token* tok)
     : Token(tok->mList, const_cast<Token*>(tok)->mTokensFrontBack)
@@ -2642,7 +2641,7 @@ const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) 
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-TokenImpl::~TokenImpl()
+Token::Impl::~Impl()
 {
     delete mMacroName;
     delete mOriginalName;
@@ -2650,8 +2649,8 @@ TokenImpl::~TokenImpl()
     delete mValues;
 
     if (mTemplateSimplifierPointers) {
-        for (auto *templateSimplifierPointer : *mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token(nullptr);
+        for (auto *p : *mTemplateSimplifierPointers) {
+            p->token(nullptr);
         }
     }
     delete mTemplateSimplifierPointers;
@@ -2663,7 +2662,7 @@ TokenImpl::~TokenImpl()
     }
 }
 
-void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
+void Token::Impl::setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value)
 {
     CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
@@ -2679,7 +2678,7 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     }
 }
 
-bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
+bool Token::Impl::getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const
 {
     CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
