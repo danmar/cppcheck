@@ -1893,7 +1893,7 @@ void CheckOther::checkConstPointer()
                 if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken() == lhs && !lhs->variable()->isConst())
                     takingRef = true;
                 if (lhs && lhs->valueType() && lhs->valueType()->pointer && (lhs->valueType()->constness & 1) == 0 &&
-                    parent->valueType() && parent->valueType()->pointer)
+                    parent->valueType() && parent->valueType()->pointer && lhs->variable() != var)
                     nonConstPtrAssignment = true;
                 if (!takingRef && !nonConstPtrAssignment)
                     continue;
@@ -1910,7 +1910,7 @@ void CheckOther::checkConstPointer()
             }
         } else {
             int argn = -1;
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<|;"))
                 continue;
             if (hasIncDecPlus && !parent->astParent())
                 continue;
