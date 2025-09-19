@@ -4604,11 +4604,14 @@ struct ConditionHandler {
                 if (Token::Match(tok, ":|;|,"))
                     continue;
 
-                const Token* top = tok->astTop();
-
-                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?|!"))
+                std::vector<Condition> conditions = parse(tok, settings);
+                if (conditions.empty())
                     continue;
-                for (const Condition& cond : parse(tok, settings)) {
+
+                if (!Token::Match(tok->astParent(), "&&|%oror%|?|!") && !Token::Match(tok->astTop()->previous(), "if|while|for ("))
+                    continue;
+
+                for (const Condition& cond : conditions) {
                     if (!cond.vartok)
                         continue;
                     if (cond.vartok->exprId() == 0)
