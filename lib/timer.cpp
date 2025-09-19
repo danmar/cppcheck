@@ -94,28 +94,36 @@ Timer::~Timer()
     stop();
 }
 
-void Timer::stop()
+void Timer::restart()
+{
+    mStart = Clock::now();
+}
+
+double Timer::stop()
 {
     if (mMode == ShowTime::NONE)
-        return;
+        return -1.0;
     if (mType == Type::OVERALL && mMode != ShowTime::TOP5_SUMMARY && mMode != ShowTime::SUMMARY) {
         mMode = ShowTime::NONE;
-        return;
+        return -1.0;
     }
     if (mType == Type::FILE && mMode != ShowTime::TOP5_FILE && mMode != ShowTime::FILE && mMode != ShowTime::FILE_TOTAL) {
         mMode = ShowTime::NONE;
-        return;
+        return -1.0;
     }
     if (mStart != TimePoint{}) {
         auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - mStart);
         if (!mResults) {
+            // TODO: do not print implicitly
             std::lock_guard<std::mutex> l(stdCoutLock);
             std::cout << (mType == Type::OVERALL ? "Overall time: " : "Check time: " + mName + ": ") << TimerResultsData::durationToString(diff) << std::endl;
         } else {
             mResults->addResults(mName, diff);
         }
+        return diff.count();
     }
     mMode = ShowTime::NONE; // prevent multiple stops
+    return -1.0;
 }
 
 std::string TimerResultsData::durationToString(std::chrono::milliseconds duration)

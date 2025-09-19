@@ -42,6 +42,7 @@
 
 class options;
 class Tokenizer;
+class Timer;
 
 class TestFixture : public ErrorLogger {
 private:
@@ -283,6 +284,8 @@ private:
 
     std::ostringstream mOutput;
     std::ostringstream mErrout;
+
+    std::unique_ptr<Timer> mTimer;
 
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;

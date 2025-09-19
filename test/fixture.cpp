@@ -23,6 +23,7 @@
 #include "library.h"
 #include "options.h"
 #include "redirect.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -84,10 +85,15 @@ std::size_t TestFixture::fails_counter = 0;
 std::size_t TestFixture::todos_counter = 0;
 std::size_t TestFixture::succeeded_todos_counter = 0;
 
+static TimerResults timerResults;
+
 TestFixture::TestFixture(const char * const _name)
-    : classname(_name)
+    : mTimer(new Timer("", ShowTime::SUMMARY, &timerResults)) // TODO: only create when requested
+    , classname(_name)
 {}
 
+// TODO: add test-specific result points
+// TODO: print time for whole fixture when -q is specified
 
 bool TestFixture::prepareTest(const char testname[])
 {
@@ -105,7 +111,8 @@ bool TestFixture::prepareTest(const char testname[])
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
             std::fflush(stdout);
         } else {
-            std::cout << classname << "::" << mTestname << std::endl;
+            std::cout << classname << "::" << mTestname /*<< std::endl*/;
+            mTimer->restart();
         }
         return !dry_run;
     }
@@ -115,6 +122,10 @@ bool TestFixture::prepareTest(const char testname[])
 void TestFixture::teardownTest()
 {
     teardownTestInternal();
+
+    // TODO: print more detailed data
+    if (mTimer)
+        std::cout << " - " << mTimer->stop() << "ms" << std::endl;
 
     {
         const std::string s = errout_str();
