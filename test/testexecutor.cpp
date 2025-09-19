@@ -68,7 +68,7 @@ private:
         DummyExecutor executor(files, fileSettings, settings, supprs, *this);
 
         ErrorMessage::FileLocation loc1("test.c", 1, 2);
-        ErrorMessage msg({std::move(loc1)}, "test.c", Severity::error, "error", "id", Certainty::normal);
+        ErrorMessage msg({std::move(loc1)}, "test.c", Severity::error, "id", "error", Certainty::normal);
 
         ASSERT(executor.hasToLog_(msg));
         ASSERT(!executor.hasToLog_(msg));

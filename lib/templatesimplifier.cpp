@@ -3226,8 +3226,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 ErrorMessage errmsg({std::move(loc)},
                                     "",
                                     Severity::debug,
-                                    "Template instantiation maximum time exceeded",
                                     "templateMaxTime",
+                                    "Template instantiation maximum time exceeded",
                                     Certainty::normal);
                 mErrorLogger.reportErr(errmsg);
             }
@@ -3302,8 +3302,8 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                 ErrorMessage errmsg({std::move(loc)},
                                     "",
                                     Severity::debug,
-                                    "Template instantiation maximum time exceeded",
                                     "templateMaxTime",
+                                    "Template instantiation maximum time exceeded",
                                     Certainty::normal);
                 mErrorLogger.reportErr(errmsg);
             }

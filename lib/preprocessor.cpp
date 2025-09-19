@@ -902,8 +902,8 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
     mErrorLogger.reportErr(ErrorMessage(std::move(locationList),
                                         mFile0,
                                         Severity::error,
-                                        msg,
                                         "preprocessorErrorDirective",
+                                        msg,
                                         Certainty::normal));
 }
 
@@ -918,10 +918,10 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
         locationList.emplace_back(filename, linenr, 0);
     }
     ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
+                        (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                         (headerType==SystemHeader) ?
                         "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                         "Include file: \"" + header + "\" not found.",
-                        (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                         Certainty::normal);
     mErrorLogger.reportErr(errmsg);
 }
