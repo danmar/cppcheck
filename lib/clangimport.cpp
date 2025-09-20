@@ -785,7 +785,7 @@ Token *clangimport::AstNode::createTokens(TokenList &tokenList)
     if (nodeType == BreakStmt)
         return addtoken(tokenList, "break");
     if (nodeType == CharacterLiteral) {
-        const int c = MathLib::toBigNumber(mExtTokens.back());
+        const int c = static_cast<int>(MathLib::toBigNumber(mExtTokens.back()));
         if (c == 0)
             return addtoken(tokenList, "\'\\0\'");
         if (c == '\r')
@@ -1582,7 +1582,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
 
         MathLib::bigint typeSize = 0;
         for (const Variable &var: scope.varlist) {
-            const int mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& dim) {
+            const MathLib::bigint mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), MathLib::bigint(1), [](MathLib::bigint v, const Dimension& dim) {
                 return v * dim.num;
             });
             if (var.valueType())

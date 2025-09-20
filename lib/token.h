@@ -778,10 +778,10 @@ public:
     bool setBits(const MathLib::bigint b) {
         const MathLib::bigint max = std::numeric_limits<short>::max();
         if (b > max) {
-            mImpl->mBits = max;
+            mImpl->mBits = static_cast<short>(max);
             return false;
         }
-        mImpl->mBits = b < 0 ? -1 : b;
+        mImpl->mBits = b < 0 ? -1 : static_cast<short>(b);
         return true;
     }
 
