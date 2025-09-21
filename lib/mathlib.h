@@ -26,8 +26,10 @@
 #include <cstdint>
 #include <string>
 
-#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
-#include <boost/multiprecision/cpp_int.hpp>
+#if defined(HAVE_INT128)
+#   if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+#   include <boost/multiprecision/cpp_int.hpp>
+#   endif
 #endif
 
 class Token;
@@ -41,9 +43,18 @@ class CPPCHECKLIB MathLib {
     friend class TestMathLib;
 
 public:
-#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+#if defined(HAVE_INT128)
+#   if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
     using bigint = boost::multiprecision::int128_t;
     using biguint = boost::multiprecision::uint128_t;
+#   elif defined(__GNUC__)
+    SUPPRESS_WARNING_GCC_PUSH("-Wpedantic")
+    using bigint = __int128;
+    using biguint = unsigned __int128;
+    SUPPRESS_WARNING_GCC_POP
+#   else
+    #error "no 128-bit type"
+#   endif
 #else
     using bigint = long long;
     using biguint = unsigned long long;
@@ -144,6 +155,12 @@ public:
     static bool isOctalDigit(char c);
 
     static unsigned int encodeMultiChar(const std::string& str);
+
+    static bigint abs(bigint i) {
+        if (i < 0)
+            return -i;
+        return i;
+    }
 };
 
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2);
@@ -160,6 +177,20 @@ MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 template<> CPPCHECKLIB std::string MathLib::toString<MathLib::bigint>(MathLib::bigint value);
 template<> CPPCHECKLIB std::string MathLib::toString<MathLib::biguint>(MathLib::biguint value);
 template<> CPPCHECKLIB std::string MathLib::toString<double>(double value);
+
+// Boost provides stream insertion operators
+#if defined(HAVE_INT128) && !defined(HAVE_BOOST_INT128)
+inline std::ostream& operator<<(std::ostream& os, MathLib::bigint i)
+{
+    os << MathLib::toString(i);
+    return os;
+}
+inline std::ostream& operator<<(std::ostream& os, MathLib::biguint u)
+{
+    os << MathLib::toString(u);
+    return os;
+}
+#endif
 
 /// @}
 //---------------------------------------------------------------------------

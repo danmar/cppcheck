@@ -163,7 +163,7 @@ MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const Mat
         case '/':
             if (v2.mIntValue == 0)
                 throw InternalError(nullptr, "Internal Error: Division by zero");
-            if (v1.mIntValue == std::numeric_limits<bigint>::min() && std::abs(v2.mIntValue)<=1)
+            if (v1.mIntValue == std::numeric_limits<bigint>::min() && MathLib::abs(v2.mIntValue)<=1)
                 throw InternalError(nullptr, "Internal Error: Division overflow");
             temp.mIntValue /= static_cast<unsigned long long>(v2.mIntValue);
             break;
@@ -198,7 +198,7 @@ MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const Mat
         case '/':
             if (v2.mIntValue == 0)
                 throw InternalError(nullptr, "Internal Error: Division by zero");
-            if (v1.mIntValue == std::numeric_limits<bigint>::min() && std::abs(v2.mIntValue)<=1)
+            if (v1.mIntValue == std::numeric_limits<bigint>::min() && MathLib::abs(v2.mIntValue)<=1)
                 throw InternalError(nullptr, "Internal Error: Division overflow");
             temp.mIntValue /= v2.mIntValue;
             break;
@@ -537,10 +537,16 @@ double MathLib::toDoubleNumber(const std::string &str, const Token * const tok)
 
 template<> std::string MathLib::toString<MathLib::bigint>(MathLib::bigint value)
 {
-#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+#if defined(HAVE_INT128)
+#   if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
     std::ostringstream result;
     result << value;
     return result.str();
+#   else
+    // TODO: handle actual 128-bit values
+    assert(value >= std::numeric_limits<long long>::min() && value <= std::numeric_limits<long long>::max());
+    return std::to_string(static_cast<long long>(value));
+#   endif
 #else
     return std::to_string(value);
 #endif
@@ -548,10 +554,16 @@ template<> std::string MathLib::toString<MathLib::bigint>(MathLib::bigint value)
 
 template<> std::string MathLib::toString<MathLib::biguint>(MathLib::biguint value)
 {
-#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+#if defined(HAVE_INT128)
+#   if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
     std::ostringstream result;
     result << value;
     return result.str();
+#   else
+    // TODO: handle actual 128-bit values
+    assert(value <= std::numeric_limits<unsigned long long>::max());
+    return std::to_string(static_cast<unsigned long long>(value));
+#   endif
 #else
     return std::to_string(value);
 #endif
@@ -1148,7 +1160,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
         const bigint b = toBigNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
-        if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
+        if (a == std::numeric_limits<bigint>::min() && MathLib::abs(b)<=1)
             throw InternalError(nullptr, "Internal Error: Division overflow");
         return MathLib::toString(toBigNumber(first) / b) + intsuffix(first, second);
     }
