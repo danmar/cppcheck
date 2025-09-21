@@ -120,8 +120,6 @@ public:
 
     std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
 
-    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
-
     void removeComments(simplecpp::TokenList &tokens) const;
 
     static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);

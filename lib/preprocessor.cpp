@@ -773,16 +773,6 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     }
 }
 
-bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
-{
-    const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
-
-    simplecpp::OutputList outputList;
-    mFileCache = simplecpp::load(rawtokens, files, dui, &outputList);
-    handleErrors(outputList, false);
-    return !hasErrors(outputList);
-}
-
 void Preprocessor::removeComments(simplecpp::TokenList &tokens) const
 {
     tokens.removeComments();

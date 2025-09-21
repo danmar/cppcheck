@@ -993,9 +993,6 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
 
-        if (!preprocessor.loadFiles(tokens1, files))
-            return mLogger->exitcode();
-
         if (!mSettings.plistOutput.empty()) {
             std::string filename2;
             if (file.spath().find('/') != std::string::npos)
