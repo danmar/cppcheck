@@ -151,13 +151,35 @@ jobs:
         run: |
           cmake --build cmake.output --target install
 
-      - name: Run CMake on ubuntu (no CLI)
-        if: matrix.os == 'ubuntu-22.04'
+  build_cmake_no_with:
+
+    strategy:
+      matrix:
+        # TODO: also run on macOS?
+        os: [ubuntu-22.04]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
+      - name: Run CMake (no CLI)
         run: |
           cmake -S . -B cmake.output_nocli -G "Unix Makefiles" -DBUILD_CLI=Off
 
-      - name: Run CMake on ubuntu (no CLI / with tests)
-        if: matrix.os == 'ubuntu-22.04'
+      - name: Run CMake (no CLI / with tests)
         run: |
           # the test and CLI code are too intertwined so for now we need to reject that
           if cmake -S . -B cmake.output_nocli_tests -G "Unix Makefiles" -DBUILD_TESTS=On -DBUILD_CLI=Off; then
@@ -166,18 +188,15 @@ jobs:
             exit 0
           fi
 
-      - name: Run CMake on ubuntu (no CLI / with GUI)
-        if: matrix.os == 'ubuntu-22.04'
+      - name: Run CMake (no CLI / with GUI)
         run: |
           cmake -S . -B cmake.output_nocli_gui -G "Unix Makefiles" -DBUILD_CLI=Off -DBUILD_GUI=On
 
-      - name: Run CMake on ubuntu (no GUI)
-        if: matrix.os == 'ubuntu-22.04'
+      - name: Run CMake (no GUI)
         run: |
           cmake -S . -B cmake.output_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
 
-      - name: Run CMake on ubuntu (no GUI / with triage)
-        if: matrix.os == 'ubuntu-22.04'
+      - name: Run CMake (no GUI / with triage)
         run: |
           # cannot build triage without GUI
           if cmake -S . -B cmake.output_nogui_triage -G "Unix Makefiles" -DBUILD_GUI=Off -DBUILD_TRIAGE=On; then
@@ -186,8 +205,7 @@ jobs:
             exit 0
           fi
 
-      - name: Run CMake on ubuntu (no CLI / no GUI)
-        if: matrix.os == 'ubuntu-22.04'
+      - name: Run CMake (no CLI / no GUI)
         run: |
           cmake -S . -B cmake.output_nocli_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
 
