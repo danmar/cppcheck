@@ -1,0 +1,3 @@
+union u {
+    Unknown x;
+};
