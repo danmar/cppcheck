@@ -4511,6 +4511,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2:15]: (style) Variable 'q' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str());
+
+        check("void g(const int*);\n" // #14148
+              "void f() {\n"
+              "    int a[] = {1, 2, 3};\n"
+              "    for (int* p = a; *p != 3; p++) {\n"
+              "        g(p);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:15]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
     }
 
     void constArray() {

@@ -1912,7 +1912,7 @@ void CheckOther::checkConstPointer()
             int argn = -1;
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<|;"))
                 continue;
-            if (hasIncDecPlus && !parent->astParent())
+            if (hasIncDecPlus && (!parent->astParent() || parent->astParent()->str() == ";"))
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
