@@ -252,7 +252,7 @@ protected:
         const TestFixture &fixture;
         Settings settings;
 
-        const bool REDUNDANT_CHECK = false;
+        static constexpr bool REDUNDANT_CHECK = false;
     };
 
     SettingsBuilder settingsBuilder() const {
