@@ -482,7 +482,7 @@ void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
     if (origin)
         for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(std::move(pm), true);
+    state.replace(std::move(pm), /*skipUnknown*/ true);
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
