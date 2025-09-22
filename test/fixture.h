@@ -51,7 +51,6 @@ private:
     static std::size_t fails_counter;
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
-    bool mVerbose{};
     std::string mTemplateFormat;
     std::string mTemplateLocation;
     std::string mTestname;
@@ -123,10 +122,6 @@ protected:
     NORETURN void assertThrowFail(const char * filename, unsigned int linenr) const;
     void assertNoThrowFail(const char * filename, unsigned int linenr, bool bailout) const;
     static std::string deleteLineNumber(const std::string &message);
-
-    void setVerbose(bool v) {
-        mVerbose = v;
-    }
 
     void setTemplateFormat(const std::string &templateFormat);
 
