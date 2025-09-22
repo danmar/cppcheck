@@ -227,7 +227,7 @@ bool ProgramMemory::empty() const
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - technically correct but we are moving the given values
-void ProgramMemory::replace(ProgramMemory pm)
+void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
 {
     if (pm.empty())
         return;
@@ -235,6 +235,11 @@ void ProgramMemory::replace(ProgramMemory pm)
     copyOnWrite();
 
     for (auto&& p : (*pm.mValues)) {
+        if (skipUnknown) {
+            auto it = mValues->find(p.first);
+            if (it != mValues->end() && it->second.isUninitValue())
+                continue;
+        }
         (*mValues)[p.first] = std::move(p.second);
     }
 }
@@ -438,7 +443,8 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
                     const Token* valuetok = tok2->astOperand2();
-                    pm.setValue(vartok, execute(valuetok, pm, settings));
+                    ProgramMemory local = state;
+                    pm.setValue(vartok, execute(valuetok, local, settings));
                 }
             }
         } else if (Token::simpleMatch(tok2, ")") && tok2->link() &&
@@ -519,7 +525,7 @@ void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
     if (origin)
         for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(std::move(pm));
+    state.replace(std::move(pm), /*skipUnknown*/ true);
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
@@ -532,13 +538,14 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-    ProgramMemory pm = state;
-    addVars(pm, vars);
-    fillProgramMemoryFromConditions(pm, tok, settings);
-    ProgramMemory local = pm;
+    ProgramMemory local = state;
+    addVars(local, vars);
+    fillProgramMemoryFromConditions(local, tok, settings);
+    ProgramMemory pm;
     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
-    addVars(pm, vars);
-    replace(std::move(pm), tok);
+    local.replace(std::move(pm));
+    addVars(local, vars);
+    replace(std::move(local), tok);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
