@@ -1628,6 +1628,15 @@ void CheckUnusedVar::checkStructMemberUsage()
                         break;
                     }
                 }
+                // Member referenced in alignas
+                if (tok->hasAttributeAlignas()) {
+                    for (const std::string& alignasExpr : tok->getAttributeAlignas()) {
+                        if (alignasExpr == var.name()) {
+                            use = true;
+                            break;
+                        }
+                    }
+                }
                 if (tok->variable() != &var)
                     continue;
                 if (tok != var.nameToken()) {
