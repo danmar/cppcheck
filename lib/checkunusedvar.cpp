@@ -1601,14 +1601,19 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         // #7458 - if struct is declared inside union and any struct member is used,
         // then don't warn about other struct members
-        bool structInUnionWithUsedMember = false;
         if (scope.type == ScopeType::eStruct && scope.nestedIn && scope.nestedIn->type == ScopeType::eUnion) {
+            bool structMemberUsed = false;
+
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-                if (tok->variable() && tok->variable()->scope() == scope.nestedIn) {
-                    structInUnionWithUsedMember = true;
+                if (tok->variable() && tok != tok->variable()->nameToken() && tok->variable()->scope() == &scope) {
+                    structMemberUsed = true;
                     break;
                 }
             }
+
+            // Skip reporting unused members if this struct is in a union and any member is used
+            if (structMemberUsed)
+                continue;
         }
 
         for (const Variable &var : scope.varlist) {
@@ -1622,10 +1627,6 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             if (mTokenizer->isVarUsedInTemplate(var.declarationId()))
-                continue;
-
-            // Skip reporting unused members if this struct is in a union and any member is used
-            if (structInUnionWithUsedMember)
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
