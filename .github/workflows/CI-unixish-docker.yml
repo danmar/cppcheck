@@ -116,11 +116,11 @@ jobs:
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes CXXOPTS="-w"
+          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-w" testrunner
 
       - name: Run test
         run: |
-          make -j$(nproc) check HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes check
 
       # requires python3
       - name: Run extra tests
