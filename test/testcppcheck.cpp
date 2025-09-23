@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <list>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -486,9 +485,8 @@ private:
                             "y\n"
                             ";\n";
 
-        std::istringstream fin(code);
         simplecpp::OutputList outputList;
-        const simplecpp::TokenList tokens2(fin, files, "", &outputList);
+        const simplecpp::TokenList tokens2(code, files, "", &outputList);
         const std::string expected2 = "  <rawtokens>\n"
                                       "    <file index=\"0\" name=\"test.c\"/>\n"
                                       "    <file index=\"1\" name=\"\"/>\n"
@@ -531,8 +529,8 @@ private:
 
         std::vector<std::string> files;
 
-        std::istringstream istr("void f();\nint x;\n");
-        const simplecpp::TokenList tokens(istr, files, "m1.c");
+        const char code[] = "void f();\nint x;\n";
+        const simplecpp::TokenList tokens(code, files, "m1.c");
 
         Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
         ASSERT(preprocessor.loadFiles(tokens, files));
