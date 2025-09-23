@@ -93,9 +93,9 @@ private:
     }
 
     // TODO: we should be using the actual Preprocessor implementation
-    static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
+    static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
     {
-        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), std::set<std::string>{cfg}, filename, inlineSuppression);
+        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, std::set<std::string>{cfg}, filename, inlineSuppression);
         const auto it = cfgcode.find(cfg);
         if (it == cfgcode.end())
             return "";
@@ -430,7 +430,7 @@ private:
 
     void error3() {
         const auto settings = dinit(Settings, $.userDefines = "__cplusplus");
-        const std::string code("#error hello world!\n");
+        const char code[] = "#error hello world!\n";
         (void)getcodeforcfg(settings, *this, code, "X", "test.c");
         ASSERT_EQUALS("[test.c:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
     }
@@ -440,7 +440,7 @@ private:
         // In included file
         {
             const auto settings = dinit(Settings, $.userDefines = "TEST");
-            const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
+            const char code[] = "#file \"ab.h\"\n#error hello world!\n#endfile";
             (void)getcodeforcfg(settings, *this, code, "TEST", "test.c");
             ASSERT_EQUALS("[ab.h:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
         }
@@ -448,7 +448,7 @@ private:
         // After including a file
         {
             const auto settings = dinit(Settings, $.userDefines = "TEST");
-            const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
+            const char code[] = "#file \"ab.h\"\n\n#endfile\n#error aaa";
             (void)getcodeforcfg(settings, *this, code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2:0]: (error) #error aaa [preprocessorErrorDirective]\n", errout_str());
         }
@@ -459,7 +459,7 @@ private:
         const auto settings = dinit(Settings,
                                     $.userDefines = "TEST",
                                         $.force = true);
-        const std::string code("#error hello world!\n");
+        const char code[] = "#error hello world!\n";
         (void)getcodeforcfg(settings, *this, code, "X", "test.c");
         ASSERT_EQUALS("", errout_str());
     }
@@ -1974,10 +1974,10 @@ private:
         settings.inlineSuppressions = true;
         settings.checks.enable(Checks::missingInclude);
 
-        const std::string code("// cppcheck-suppress missingInclude\n"
-                               "#include \"missing.h\"\n"
-                               "// cppcheck-suppress missingIncludeSystem\n"
-                               "#include <missing2.h>\n");
+        const char code[] = "// cppcheck-suppress missingInclude\n"
+                            "#include \"missing.h\"\n"
+                            "// cppcheck-suppress missingIncludeSystem\n"
+                            "#include <missing2.h>\n";
         SuppressionList inlineSuppr;
         (void)getcodeforcfg(settings, *this, code, "", "test.c", &inlineSuppr);
 
@@ -2036,25 +2036,25 @@ private:
     }
 
     void predefine1() {
-        const std::string src("#if defined X || Y\n"
-                              "Fred & Wilma\n"
-                              "#endif\n");
-        std::string actual = getcodeforcfg(settings0, *this, src, "X=1", "test.c");
+        const char code[] = "#if defined X || Y\n"
+                            "Fred & Wilma\n"
+                            "#endif\n";
+        std::string actual = getcodeforcfg(settings0, *this, code, "X=1", "test.c");
 
         ASSERT_EQUALS("\nFred & Wilma", actual);
     }
 
     void predefine2() {
-        const std::string src("#if defined(X) && Y\n"
-                              "Fred & Wilma\n"
-                              "#endif\n");
+        const char code[] = "#if defined(X) && Y\n"
+                            "Fred & Wilma\n"
+                            "#endif\n";
         {
-            std::string actual = getcodeforcfg(settings0, *this, src, "X=1", "test.c");
+            std::string actual = getcodeforcfg(settings0, *this, code, "X=1", "test.c");
             ASSERT_EQUALS("", actual);
         }
 
         {
-            std::string actual = getcodeforcfg(settings0, *this, src, "X=1;Y=2", "test.c");
+            std::string actual = getcodeforcfg(settings0, *this, code, "X=1;Y=2", "test.c");
             ASSERT_EQUALS("\nFred & Wilma", actual);
         }
     }
@@ -2376,7 +2376,7 @@ private:
 
     void wrongPathOnErrorDirective() {
         const auto settings = dinit(Settings, $.userDefines = "foo");
-        const std::string code("#error hello world!\n");
+        const char code[] = "#error hello world!\n";
         (void)getcodeforcfg(settings, *this, code, "X", "./././test.c");
         ASSERT_EQUALS("[test.c:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
     }
@@ -2391,7 +2391,7 @@ private:
 
         ScopedFile header("header.h", "");
 
-        std::string code("#include \"header.h\"");
+        const char code[] = "#include \"header.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
@@ -2405,7 +2405,7 @@ private:
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
 
-        std::string code("#include \"header.h\"");
+        const char code[] = "#include \"header.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
@@ -2421,7 +2421,7 @@ private:
 
         ScopedFile header("header.h", "", "inc");
 
-        std::string code("#include \"header.h\"");
+        const char code[] = "#include \"header.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
@@ -2438,7 +2438,7 @@ private:
 
         ScopedFile header("header.h", "", "inc");
 
-        std::string code("#include \"inc/header.h\"");
+        const char code[] = "#include \"inc/header.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
@@ -2456,7 +2456,7 @@ private:
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include \"" + header.path() + "\"");
-        (void)getcodeforcfg(settings, *this, code, "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2472,7 +2472,7 @@ private:
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include \"" + header + "\"");
-        (void)getcodeforcfg(settings, *this, code, "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"" + header + "\" not found. [missingInclude]\n", errout_str());
     }
@@ -2487,7 +2487,7 @@ private:
 
         ScopedFile header("header.h", "");
 
-        std::string code("#include <header.h>");
+        const char code[] = "#include <header.h>";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
@@ -2501,7 +2501,7 @@ private:
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
 
-        std::string code("#include <header.h>");
+        const char code[] = "#include <header.h>";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
@@ -2518,7 +2518,7 @@ private:
 
         ScopedFile header("header.h", "", "system");
 
-        std::string code("#include <header.h>");
+        const char code[] = "#include <header.h>";
         (void)getcodeforcfg(settings0, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
@@ -2536,7 +2536,7 @@ private:
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include <" + header.path() + ">");
-        (void)getcodeforcfg(settings, *this, code, "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2552,7 +2552,7 @@ private:
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include <" + header + ">");
-        (void)getcodeforcfg(settings, *this, code, "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
@@ -2568,10 +2568,10 @@ private:
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");
 
-        std::string code("#include \"missing.h\"\n"
-                         "#include <header.h>\n"
-                         "#include <missing2.h>\n"
-                         "#include \"header2.h\"");
+        const char code[] = "#include \"missing.h\"\n"
+                            "#include <header.h>\n"
+                            "#include <missing2.h>\n"
+                            "#include \"header2.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
@@ -2608,7 +2608,7 @@ private:
                          "#include \"" + missing3 + "\"\n"
                          "#include <" + header6.path() + ">\n"
                          "#include <" + missing4 + ">\n");
-        (void)getcodeforcfg(settings, *this, code, "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
                       "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
