@@ -1633,7 +1633,9 @@ void CheckUnusedVar::checkStructMemberUsage()
                     const std::vector<std::string> alignasExpressions = tok->getAttributeAlignas();
                     use = std::any_of(alignasExpressions.cbegin(),
                                       alignasExpressions.cend(),
-                                      [&var](const std::string& alignasExpr){ return alignasExpr == var.name(); });
+                                      [&var](const std::string& alignasExpr){
+                        return alignasExpr == var.name();
+                    });
                     if (use)
                         break;
                 }
