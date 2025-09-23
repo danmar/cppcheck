@@ -1603,15 +1603,11 @@ void CheckUnusedVar::checkStructMemberUsage()
         // then don't warn about other struct members
         bool structInUnionWithUsedMember = false;
         if (scope.type == ScopeType::eStruct && scope.nestedIn && scope.nestedIn->type == ScopeType::eUnion) {
-            for (const Variable &unionVar : scope.varlist) {
-                for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-                    if (tok->variable() == &unionVar && tok != unionVar.nameToken()) {
-                        structInUnionWithUsedMember = true;
-                        break;
-                    }
-                }
-                if (structInUnionWithUsedMember)
+            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (tok->variable() && tok->variable()->scope() == scope.nestedIn) {
+                    structInUnionWithUsedMember = true;
                     break;
+                }
             }
         }
 
@@ -1631,7 +1627,6 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Skip reporting unused members if this struct is in a union and any member is used
             if (structInUnionWithUsedMember)
                 continue;
-
 
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
