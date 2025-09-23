@@ -4,6 +4,7 @@ import subprocess
 import sys
 import argparse
 import time
+import difflib
 
 from packaging.version import Version
 
@@ -21,6 +22,7 @@ parser.add_argument('--compact', action='store_true', help='only print versions 
 parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
 parser.add_argument('--perf', action='store_true', default=False, help='output duration of execution in seconds (CSV format)')
 parser.add_argument('--start', default=None, help='specify the start version/commit')
+parser.add_argument('--diff', action='store_true', help='show differences as unified diff')
 package_group = parser.add_mutually_exclusive_group()
 package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
 package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
@@ -110,8 +112,10 @@ except:
 if verbose:
     print("analyzing '{}'".format(input_file))
 
+last_udiff_version = ''
 last_ec = None
 last_out = None
+last_udiff = None
 
 if args.perf:
     print('version,time')
@@ -247,6 +251,7 @@ for entry in versions:
         continue
 
     do_print = False
+    udiff = None
 
     if last_ec != ec:
         if verbose:
@@ -257,10 +262,16 @@ for entry in versions:
         if verbose:
             print("{}: output changed".format(version))
         do_print = True
+        if args.diff:
+            udiff = difflib.unified_diff(last_out.splitlines(True), out.splitlines(True), fromfile=last_udiff_version, tofile=version)
+            last_udiff_version = version
 
     if do_print:
         print(last_ec)
         print(last_out)
+        if last_udiff:
+            sys.stdout.writelines(last_udiff)
+            sys.stdout.write('\n')
 
     # do not print intermediate versions with --compact
     if not args.compact or do_print:
@@ -271,10 +282,15 @@ for entry in versions:
 
     last_ec = ec
     last_out = out
+    if udiff:
+        last_udiff = udiff
 
 if do_compare:
     print(last_ec)
     print(last_out)
+    if last_udiff:
+        sys.stdout.writelines(last_udiff)
+        sys.stdout.write('\n')
 
 if verbose:
     print('done')
