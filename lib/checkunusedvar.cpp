@@ -1599,6 +1599,57 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
+        // #7458 - if struct is declared inside union and any struct member is used,
+        // then don't warn about other struct members
+        bool structInUnionWithUsedMember = false;
+        if (scope.type == ScopeType::eStruct && scope.nestedIn && scope.nestedIn->type == ScopeType::eUnion) {
+            for (const Variable &unionVar : scope.varlist) {
+                for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                    if (tok->variable() == &unionVar && tok != unionVar.nameToken()) {
+                        structInUnionWithUsedMember = true;
+                        break;
+                    }
+                }
+                if (structInUnionWithUsedMember)
+                    break;
+            }
+        }
+
+        // #7458 - if this is a union and any member is used, don't warn about other members
+        bool unionWithUsedMember = false;
+        if (scope.type == ScopeType::eUnion) {
+            // Check if any direct member of the union is used
+            for (const Variable &unionVar : scope.varlist) {
+                for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                    if (tok->variable() == &unionVar && tok != unionVar.nameToken()) {
+                        unionWithUsedMember = true;
+                        break;
+                    }
+                }
+                if (unionWithUsedMember)
+                    break;
+            }
+            // Also check if any member of nested structs in this union is used
+            if (!unionWithUsedMember) {
+                for (const Scope *nestedScope : scope.nestedList) {
+                    if (nestedScope->type == ScopeType::eStruct) {
+                        for (const Variable &structVar : nestedScope->varlist) {
+                            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                                if (tok->variable() == &structVar && tok != structVar.nameToken()) {
+                                    unionWithUsedMember = true;
+                                    break;
+                                }
+                            }
+                            if (unionWithUsedMember)
+                                break;
+                        }
+                        if (unionWithUsedMember)
+                            break;
+                    }
+                }
+            }
+        }
+
         for (const Variable &var : scope.varlist) {
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
@@ -1610,6 +1661,14 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             if (mTokenizer->isVarUsedInTemplate(var.declarationId()))
+                continue;
+
+            // Skip reporting unused members if this struct is in a union and any member is used
+            if (structInUnionWithUsedMember)
+                continue;
+
+            // Skip reporting unused members if this is a union and any member is used
+            if (unionWithUsedMember)
                 continue;
 
             // Check if the struct member variable is used anywhere in the file

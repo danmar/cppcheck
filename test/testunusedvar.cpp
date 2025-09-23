@@ -1409,6 +1409,20 @@ private:
         ASSERT_EQUALS("[test.cpp:3:9]: (style) union member 'abc::a' is never used. [unusedStructMember]\n"
                       "[test.cpp:4:9]: (style) union member 'abc::b' is never used. [unusedStructMember]\n"
                       "[test.cpp:5:9]: (style) union member 'abc::c' is never used. [unusedStructMember]\n", errout_str());
+
+        // #7458 - union with anonymous struct should not cause false positive
+        checkStructMemberUsage("union DoubleInt {\n"
+                               "    double asDouble;\n"
+                               "    uint64_t asInt;\n"
+                               "    struct {\n"
+                               "        uint32_t lo, hi;\n"
+                               "    } asIntel;\n"
+                               "};\n"
+                               "void f() {\n"
+                               "    union DoubleInt di;\n"
+                               "    di.asIntel.hi = 3;\n"
+                               "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void structmember2() {
