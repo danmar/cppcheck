@@ -5468,7 +5468,8 @@ private:
         TODO_ASSERT_EQUALS("", "[test.c:4:14]: (error) Uninitialized variable: d [legacyUninitvar]\n", errout_str());
     }
 
-    void valueFlowUninit_(const char* file, int line, const char code[], bool cpp = true)
+    template<size_t size>
+    void valueFlowUninit_(const char* file, int line, const char (&code)[size], bool cpp = true)
     {
         // Tokenize..
         const Settings s = settingsBuilder(settings).debugwarnings(false).build();
@@ -7940,7 +7941,8 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void ctu_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void ctu_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

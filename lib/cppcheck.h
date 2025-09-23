@@ -45,7 +45,10 @@ class Settings;
 struct Suppressions;
 class Preprocessor;
 
-namespace simplecpp { class TokenList; }
+namespace simplecpp {
+    class TokenList;
+    struct Output;
+}
 
 /// @addtogroup Core
 /// @{
@@ -100,12 +103,13 @@ public:
      * the disk but the content is given in @p content. In errors the @p path
      * is used as a filename.
      * @param file The file to check.
-     * @param content File content as a string.
+     * @param data File content as a buffer.
+     * @param size Size of buffer.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const FileWithDetails &file, const std::string &content);
+    unsigned int checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size);
 
     /**
      * @brief Returns current version number as a string.
@@ -175,13 +179,34 @@ private:
     std::size_t calculateHash(const Preprocessor &preprocessor, const simplecpp::TokenList &tokens, const std::string& filePath = {}) const;
 
     /**
+     * @brief Check a file
+     * @param file the file
+     * @param cfgname  cfg name
+     * @return number of errors found
+     */
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex);
+
+    /**
+     * @brief Check a file using buffer
+     * @param file the file
+     * @param cfgname  cfg name
+     * @param data the data to be read
+     * @param size the size of the data to be read
+     * @return number of errors found
+     */
+    unsigned int checkBuffer(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size);
+
+    // TODO: should use simplecpp::OutputList
+    using CreateTokenListFn = std::function<simplecpp::TokenList (std::vector<std::string>&, std::list<simplecpp::Output>*)>;
+
+    /**
      * @brief Check a file using stream
      * @param file the file
      * @param cfgname  cfg name
-     * @param fileStream stream the file content can be read from
+     * @param createTokenList a function to create the simplecpp::TokenList with
      * @return number of errors found
      */
-    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream* fileStream = nullptr);
+    unsigned int checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList);
 
     /**
      * @brief Check normal tokens

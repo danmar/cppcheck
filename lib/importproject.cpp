@@ -533,8 +533,7 @@ namespace {
             // TODO: improve evaluation
             const Settings s;
             TokenList tokenlist(s, Standards::Language::C);
-            std::istringstream istr(c);
-            tokenlist.createTokens(istr); // TODO: check result
+            tokenlist.createTokensFromBuffer(c.data(), c.size()); // TODO: check result
             // TODO: put in a helper
             // generate links
             {

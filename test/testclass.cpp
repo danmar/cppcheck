@@ -8778,7 +8778,8 @@ private:
     }
 
     #define checkUselessOverride(...) checkUselessOverride_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkUselessOverride_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkUselessOverride_(const char* file, int line, const char (&code)[size]) {
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");

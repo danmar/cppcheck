@@ -289,7 +289,8 @@ private:
     };
 
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
+    template<size_t size>
+    void checkStructMemberUsage_(const char* file, int line, const char (&code)[size], const CheckStructMemberUsageOptions& options = make_default_obj()) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this, options.cpp);
         if (options.directives)
@@ -302,7 +303,8 @@ private:
     }
 
 #define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkStructMemberUsageP_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
@@ -314,7 +316,8 @@ private:
     }
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkFunctionVariableUsageP_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkFunctionVariableUsageP_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
