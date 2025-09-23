@@ -1424,7 +1424,7 @@ private:
                                "}");
         ASSERT_EQUALS("[test.cpp:2:12]: (style) union member 'DoubleInt::asDouble' is never used. [unusedStructMember]\n"
                       "[test.cpp:3:14]: (style) union member 'DoubleInt::asInt' is never used. [unusedStructMember]\n",
-		      errout_str());
+                      errout_str());
     }
 
     void structmember2() {
