@@ -34,7 +34,8 @@ CheckOptions:
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
     set_target_properties(cppcheck-gui PROPERTIES AUTOUIC ON)
     set_target_properties(cppcheck-gui PROPERTIES WIN32_EXECUTABLE ON)
-    target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/frontend/)
+    # the GUI include is needed so the includes are found from the generated headers - TODO: is it possible to get rid of this?
+    target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/frontend/ ${PROJECT_SOURCE_DIR}/gui/)
     if(USE_BUNDLED_TINYXML2)
         target_externals_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
     else()
