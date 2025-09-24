@@ -35,7 +35,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -92,28 +91,34 @@ private:
         return preprocessor.getRemarkComments(tokens1);
     }
 
-    // TODO: we should be using the actual Preprocessor implementation
-    static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
+    static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
     {
-        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, std::set<std::string>{cfg}, filename, inlineSuppression);
+        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, size, std::set<std::string>{cfg}, filename, inlineSuppression);
         const auto it = cfgcode.find(cfg);
         if (it == cfgcode.end())
             return "";
         return it->second;
     }
 
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c")
+    template<size_t size>
+    static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const char (&code)[size], const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
     {
-        return getcode(settings, errorlogger, code, {}, filename, nullptr);
+        return getcodeforcfg(settings, errorlogger, code, size-1, cfg, filename, inlineSuppression);
     }
 
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+    template<size_t size>
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char (&code)[size], const std::string &filename = "file.c")
+    {
+        return getcode(settings, errorlogger, code, size-1, {}, filename, nullptr);
+    }
+
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
     {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
 
-        std::istringstream istr(code);
-        simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
+        simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
+        // TODO: we should be using the actual Preprocessor implementation
         Preprocessor preprocessor(settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
         if (inlineSuppression)
             preprocessor.inlineSuppressions(tokens, *inlineSuppression);
@@ -2456,7 +2461,7 @@ private:
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include \"" + header.path() + "\"");
-        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2472,7 +2477,7 @@ private:
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include \"" + header + "\"");
-        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"" + header + "\" not found. [missingInclude]\n", errout_str());
     }
@@ -2536,7 +2541,7 @@ private:
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include <" + header.path() + ">");
-        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
@@ -2552,7 +2557,7 @@ private:
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include <" + header + ">");
-        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
@@ -2608,7 +2613,7 @@ private:
                          "#include \"" + missing3 + "\"\n"
                          "#include <" + header6.path() + ">\n"
                          "#include <" + missing4 + ">\n");
-        (void)getcodeforcfg(settings, *this, code.c_str(), "", "test.c");
+        (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
         ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
                       "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
