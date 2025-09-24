@@ -1604,7 +1604,7 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (scope.type == ScopeType::eStruct && scope.nestedIn && scope.nestedIn->type == ScopeType::eUnion) {
             bool structMemberUsed = false;
 
-            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+            for (const Token *tok = scope.nestedIn->bodyStart; tok; tok = tok->next()) {
                 if (tok->variable() && tok != tok->variable()->nameToken() && tok->variable()->scope() == &scope) {
                     structMemberUsed = true;
                     break;
