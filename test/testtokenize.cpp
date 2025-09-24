@@ -350,10 +350,10 @@ private:
         TEST_CASE(simplifyOperatorName27);
         TEST_CASE(simplifyOperatorName28);
         TEST_CASE(simplifyOperatorName29); // spaceship operator
+        TEST_CASE(simplifyOperatorName30);
         TEST_CASE(simplifyOperatorName31); // #6342
         TEST_CASE(simplifyOperatorName32); // #10256
         TEST_CASE(simplifyOperatorName33); // #10138
-        TEST_CASE(simplifyOperatorName34);
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -5605,6 +5605,20 @@ private:
         ASSERT_EQUALS("auto operator<=> ( ) ;", tokenizeAndStringify("auto operator<=>();", settings));
     }
 
+    void simplifyOperatorName30() { // #14151
+        const char code[] = "struct S { int operator()() const { return 42; } };\n"
+                            "int f() {\n"
+                            "    S s;\n"
+                            "    return int{ s.operator()() };\n"
+                            "}\n";
+        ASSERT_EQUALS("struct S { int operator() ( ) const { return 42 ; } } ;\n"
+                      "int f ( ) {\n"
+                      "S s ;\n"
+                      "return int { s . operator() ( ) } ;\n"
+                      "}", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
     void simplifyOperatorName31() { // #6342
         const char code[] = "template <typename T>\n"
                             "struct B {\n"
@@ -5625,20 +5639,6 @@ private:
     void simplifyOperatorName33() { // #10138
         const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
         ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void simplifyOperatorName34() { // #14151
-        const char code[] = "struct S { int operator()() const { return 42; } };\n"
-                            "int f() {\n"
-                            "    S s;\n"
-                            "    return int{ s.operator()() };\n"
-                            "}\n";
-        ASSERT_EQUALS("struct S { int operator() ( ) const { return 42 ; } } ;\n"
-                      "int f ( ) {\n"
-                      "S s ;\n"
-                      "return int { s . operator() ( ) } ;\n"
-                      "}", tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout_str());
     }
 
