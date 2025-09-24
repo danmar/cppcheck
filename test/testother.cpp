@@ -11711,7 +11711,9 @@ private:
     }
 
     #define checkCustomSettings(...) checkCustomSettings_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkCustomSettings_(const char* file, int line, const char code[], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
+    // TODO: use options
+    template<size_t size>
+    void checkCustomSettings_(const char* file, int line, const char (&code)[size], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
         if (!settings) {
             settings = &_settings;
         }
@@ -11728,7 +11730,8 @@ private:
         (void)runSimpleChecks; // TODO Remove this
     }
 
-    void checkCustomSettings_(const char* file, int line, const char code[], Settings *s) {
+    template<size_t size>
+    void checkCustomSettings_(const char* file, int line, const char (&code)[size], Settings *s) {
         checkCustomSettings_(file, line, code, true, true, true, false, s);
     }
 

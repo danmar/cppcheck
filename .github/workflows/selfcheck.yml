@@ -56,7 +56,7 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # valgrind cannot handle DWARF 5 yet so force version 4
           # work around performance regression with -inline-deferral
-          make -j$(nproc) -s CXXOPTS="-O2 -w -gdwarf-4" CPPOPTS="-DHAVE_BOOST -mllvm -inline-deferral" MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-O2 -w -gdwarf-4" CPPOPTS="-DHAVE_BOOST -mllvm -inline-deferral" MATCHCOMPILER=yes
         env:
           CC: clang-14
           CXX: clang++-14

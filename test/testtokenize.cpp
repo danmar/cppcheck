@@ -497,6 +497,7 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    // TODO: use options
     template<size_t size>
     std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], bool expand = true, Platform::Type platform = Platform::Type::Native,
                                       bool cpp = true, Standards::cppstd_t cppstd = Standards::CPP11, Standards::cstd_t cstd = Standards::C11) {
@@ -560,15 +561,16 @@ private:
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
     }
 
-    void directiveDump(const char filedata[], std::ostream& ostr) {
-        directiveDump(filedata, "test.c", settingsDefault, ostr);
+    template<size_t size>
+    void directiveDump(const char (&code)[size], std::ostream& ostr) {
+        directiveDump(code, "test.c", settingsDefault, ostr);
     }
 
-    void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
-        std::istringstream istr(filedata);
+    template<size_t size>
+    void directiveDump(const char (&code)[size], const char filename[], const Settings& settings, std::ostream& ostr) {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
+        const simplecpp::TokenList tokens1(code, size-1, files, filename, &outputList);
         Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
         std::list<Directive> directives = preprocessor.createDirectives(tokens1);
 
@@ -910,9 +912,8 @@ private:
         {
             TokenList tokenlist{settings1, Standards::Language::C}; // headers are treated as C files
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
-            std::istringstream istr(code);
             tokenlist.appendFileIfNew("test.h");
-            ASSERT(tokenlist.createTokens(istr));
+            ASSERT(tokenlist.createTokensFromString(code));
             Tokenizer tokenizer(std::move(tokenlist), *this);
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
@@ -6204,12 +6205,12 @@ private:
         Z3
     };
 
-    std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
+    template<size_t size>
+    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokensFromString(data))
             return "ERROR";
 
         Tokenizer tokenizer(std::move(tokenlist), *this);
@@ -8048,7 +8049,8 @@ private:
     }
 
 #define checkHdrs(...) checkHdrs_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
+    template<size_t size>
+    std::string checkHdrs_(const char* file, int line, const char (&code)[size], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
@@ -8201,9 +8203,9 @@ private:
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
-        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
+        auto testIsCpp11init_ = [this](const char* file, int line, const std::string& code, const char* find, TokenImpl::Cpp11init expected) {
             SimpleTokenizer tokenizer(settingsDefault, *this);
-            ASSERT_LOC(tokenizer.tokenize(code), file, line);
+            ASSERT_LOC(tokenizer.tokenize(code.data(), code.size()), file, line);
 
             const Token* tok = Token::findsimplematch(tokenizer.tokens(), find, strlen(find));
             ASSERT_LOC(tok, file, line);
@@ -8627,7 +8629,7 @@ private:
     }
 
     void dumpFallthrough() {
-        const char * code = "void f(int n) {\n"
+        const char code[] = "void f(int n) {\n"
                             "    void g(), h(), i();\n"
                             "    switch (n) {\n"
                             "        case 1:\n"
@@ -8651,9 +8653,9 @@ private:
     }
 
     void simplifyRedundantParentheses() {
-        const char *code = "int f(struct S s) {\n"
-                           "    return g(1, &(int){ s.i });\n"
-                           "}\n";
+        const char code[] = "int f(struct S s) {\n"
+                            "    return g(1, &(int){ s.i });\n"
+                            "}\n";
         SimpleTokenizer tokenizer(settingsDefault, *this, false);
         ASSERT_NO_THROW(tokenizer.tokenize(code));
     }
@@ -8697,10 +8699,9 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        std::istringstream fin(raw_code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(fin, files, "", &outputList);
+        const simplecpp::TokenList tokens1(raw_code, sizeof(raw_code), files, "", &outputList);
         const std::string filedata = tokens1.stringify();
         const std::string code = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, filedata, "", "test.c");
 

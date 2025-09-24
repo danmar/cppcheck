@@ -26,7 +26,6 @@
 #include "token.h"
 #include "tokenlist.h"
 
-#include <sstream>
 #include <stack>
 #include <string>
 #include <utility>
@@ -125,9 +124,8 @@ private:
             const char code2[] = "_Generic"; // C11 keyword
             const Settings s = settingsBuilder().c(Standards::C89).build();
             TokenList tokenlist(s, Standards::Language::C);
-            std::istringstream istr(code2);
             tokenlist.appendFileIfNew("a.c");
-            ASSERT(tokenlist.createTokens(istr));
+            ASSERT(tokenlist.createTokensFromString(code2));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
 
@@ -147,9 +145,8 @@ private:
             const char code2[] = "noexcept"; // C++11 keyword
             const Settings s = settingsBuilder().cpp(Standards::CPP03).build();
             TokenList tokenlist(s, Standards::Language::CPP);
-            std::istringstream istr(code2);
             tokenlist.appendFileIfNew("a.cpp");
-            ASSERT(tokenlist.createTokens(istr));
+            ASSERT(tokenlist.createTokensFromString(code2));
             ASSERT_EQUALS(false, tokenlist.front()->isKeyword());
         }
     }
@@ -158,9 +155,8 @@ private:
         // analyzing /usr/include/poll.h caused Path::identify() to be called with an empty filename from
         // TokenList::determineCppC() because there are no tokens
         const char code[] = "#include <sys/poll.h>";
-        std::istringstream istr(code);
         std::vector<std::string> files;
-        simplecpp::TokenList tokens1(istr, files, "poll.h", nullptr);
+        simplecpp::TokenList tokens1(code, sizeof(code), files, "poll.h", nullptr);
         Preprocessor preprocessor(settingsDefault, *this, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
         TokenList tokenlist(settingsDefault, Standards::Language::C); // headers are treated as C files
@@ -168,11 +164,10 @@ private:
     }
 
     void ast1() const {
-        const std::string s = "('Release|x64' == 'Release|x64');";
+        const char code[] = "('Release|x64' == 'Release|x64');";
 
         TokenList tokenlist(settingsDefault, Standards::Language::C);
-        std::istringstream istr(s);
-        ASSERT(tokenlist.createTokens(istr));
+        ASSERT(tokenlist.createTokensFromString(code));
         // TODO: put this logic in TokenList
         // generate links
         {

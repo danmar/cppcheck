@@ -39,7 +39,7 @@ jobs:
       - name: build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) -s CXXOPTS="-w"
+          make -j$(nproc) CXXOPTS="-w"
           strip -s ./cppcheck
 
   scriptcheck:

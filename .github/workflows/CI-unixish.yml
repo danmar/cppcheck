@@ -417,11 +417,11 @@ jobs:
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes testrunner
 
       - name: Run test
         run: |
-          make -j$(nproc) check HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes check
 
       # requires "gnu-sed" installed on macos
       - name: Run extra tests
@@ -609,7 +609,7 @@ jobs:
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # compile with verification and ast matchers
-          make -j$(nproc) -s CXXOPTS="-g -O2 -w" CPPOPTS="-DCHECK_INTERNAL -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
+          make -j$(nproc) CXXOPTS="-g -O2 -w" CPPOPTS="-DCHECK_INTERNAL -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
       - name: CMake
         run: |
