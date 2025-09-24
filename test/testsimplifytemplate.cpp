@@ -37,8 +37,9 @@ public:
     TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}
 
 private:
-    // If there are unused templates, keep those
     const Settings settings = settingsBuilder().severity(Severity::portability).build();
+    const Settings settings1 = settingsBuilder(settings).library("std.cfg").build();
+    const Settings settings1_d = settingsBuilder(settings1).debugwarnings().build();
 
     void run() override {
         TEST_CASE(template1);
@@ -327,8 +328,8 @@ private:
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tok_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(options.debugwarnings).build();
-        SimpleTokenizer tokenizer(settings1, *this);
+        const Settings& s = options.debugwarnings ? settings1_d : settings1;
+        SimpleTokenizer tokenizer(s, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
@@ -338,8 +339,8 @@ private:
 #define dump(...) dump_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string dump_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(options.debugwarnings).build();
-        SimpleTokenizer tokenizer(settings1, *this);
+        const Settings& s = options.debugwarnings ? settings1_d : settings1;
+        SimpleTokenizer tokenizer(s, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 

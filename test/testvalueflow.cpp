@@ -7535,10 +7535,9 @@ private:
 
     void valueFlowUnknownFunctionReturnMalloc() { // #4626
         const char *code;
-        const Settings s = settingsBuilder().library("std.cfg").build();
 
         code = "ptr = malloc(10);";
-        const auto& values = tokenValues(code, "(", &s);
+        const auto& values = tokenValues(code, "(");
         ASSERT_EQUALS(1, values.size());
         ASSERT_EQUALS(true, values.front().isIntValue());
         ASSERT_EQUALS(true, values.front().isPossible());
