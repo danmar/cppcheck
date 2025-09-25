@@ -10356,7 +10356,7 @@ bool Tokenizer::operatorEnd(const Token * tok)
             return true;
 
         tok = tok->next();
-        while (tok && !Token::Match(tok, "[=;{),]")) {
+        while (tok && !Token::Match(tok, "[=;{}),]")) {
             if (Token::Match(tok, "const|volatile|override")) {
                 tok = tok->next();
             } else if (tok->str() == "noexcept") {

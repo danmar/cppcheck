@@ -350,6 +350,7 @@ private:
         TEST_CASE(simplifyOperatorName27);
         TEST_CASE(simplifyOperatorName28);
         TEST_CASE(simplifyOperatorName29); // spaceship operator
+        TEST_CASE(simplifyOperatorName30);
         TEST_CASE(simplifyOperatorName31); // #6342
         TEST_CASE(simplifyOperatorName32); // #10256
         TEST_CASE(simplifyOperatorName33); // #10138
@@ -5328,29 +5329,6 @@ private:
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
-    void simplifyOperatorName31() { // #6342
-        const char code[] = "template <typename T>\n"
-                            "struct B {\n"
-                            "    typedef T A[3];\n"
-                            "    operator A& () { return x_; }\n"
-                            "    A x_;\n"
-                            "};";
-        ASSERT_EQUALS("template < typename T >\nstruct B {\n\nT ( & operatorT ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void simplifyOperatorName32() { // #10256
-        const char code[] = "void f(int* = nullptr) {}\n";
-        ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void simplifyOperatorName33() { // #10138
-        const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
-        ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
     void simplifyOperatorName10() { // #8746
         const char code1[] = "using a::operator=;";
         ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code1));
@@ -5625,6 +5603,43 @@ private:
     void simplifyOperatorName29() {
         const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         ASSERT_EQUALS("auto operator<=> ( ) ;", tokenizeAndStringify("auto operator<=>();", settings));
+    }
+
+    void simplifyOperatorName30() { // #14151
+        const char code[] = "struct S { int operator()() const { return 42; } };\n"
+                            "int f() {\n"
+                            "    S s;\n"
+                            "    return int{ s.operator()() };\n"
+                            "}\n";
+        ASSERT_EQUALS("struct S { int operator() ( ) const { return 42 ; } } ;\n"
+                      "int f ( ) {\n"
+                      "S s ;\n"
+                      "return int { s . operator() ( ) } ;\n"
+                      "}", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyOperatorName31() { // #6342
+        const char code[] = "template <typename T>\n"
+                            "struct B {\n"
+                            "    typedef T A[3];\n"
+                            "    operator A& () { return x_; }\n"
+                            "    A x_;\n"
+                            "};";
+        ASSERT_EQUALS("template < typename T >\nstruct B {\n\nT ( & operatorT ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyOperatorName32() { // #10256
+        const char code[] = "void f(int* = nullptr) {}\n";
+        ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyOperatorName33() { // #10138
+        const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
+        ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyOverloadedOperators1() {
