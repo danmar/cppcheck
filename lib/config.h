@@ -211,7 +211,7 @@ static const std::string emptyString;
 #define USE_WINDOWS_SEH
 #endif
 
-#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && !defined(__APPLE__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
+#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && !defined(__APPLE__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__SVR4) && !defined(__QNX__)
 #define USE_UNIX_BACKTRACE_SUPPORT
 #endif
 
