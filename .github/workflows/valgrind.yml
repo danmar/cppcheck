@@ -41,7 +41,7 @@ jobs:
       - name: Build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXOPTS="-O1 -g -w" CPPOPTS="-DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG=
+          make -j$(nproc) CXXOPTS="-O1 -g -w" CPPOPTS="-DHAVE_BOOST" HAVE_RULES=yes MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG=
 
       - name: Build test
         run: |
