@@ -311,6 +311,10 @@ namespace {
             return mCtuInfo;
         }
 
+        void setActiveCheckers(std::set<std::string> activeCheckers) {
+            mActiveCheckers = std::move(activeCheckers);
+        }
+
     private:
         /**
          * Information about progress is directed here. This should be
@@ -465,6 +469,20 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
         for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->path());
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
+
+        std::ifstream fout(Path::join(settings.buildDir, "checkers.txt"));
+        if (fout.is_open())
+        {
+            std::set<std::string> activeCheckers;
+            std::string line;
+            // cppcheck-suppress accessMoved - FP
+            while (std::getline(fout, line))
+            {
+                // cppcheck-suppress accessMoved - FP
+                activeCheckers.emplace(std::move(line));
+            }
+            stdLogger.setActiveCheckers(std::move(activeCheckers));
+        }
     }
 
     if (!settings.checkersReportFilename.empty())
@@ -522,6 +540,15 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
 
 void StdLogger::writeCheckersReport(const Suppressions& supprs)
 {
+    if (!mSettings.buildDir.empty())
+    {
+        std::ofstream fout(Path::join(mSettings.buildDir, "checkers.txt"));
+        for (const auto& c : mActiveCheckers)
+        {
+            fout << c << std::endl;
+        }
+    }
+
     const bool summary = mSettings.safety || mSettings.severity.isEnabled(Severity::information);
     const bool xmlReport = mSettings.outputFormat == Settings::OutputFormat::xml && mSettings.xml_version == 3;
     const bool textReport = !mSettings.checkersReportFilename.empty();
