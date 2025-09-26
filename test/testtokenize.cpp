@@ -6260,16 +6260,16 @@ private:
 
         // Return stringified AST
         if (style == AstStyle::Z3)
-            return tokenizer.list.front()->astTop()->astStringZ3();
+            return tokenizer.list.front()->astTop(true)->astStringZ3();
 
         std::string ret;
         std::set<const Token *> astTop;
         for (const Token *tok = tokenizer.list.front(); tok; tok = tok->next()) {
-            if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
-                astTop.insert(tok->astTop());
+            if (tok->astOperand1() && astTop.find(tok->astTop(true)) == astTop.end()) {
+                astTop.insert(tok->astTop(true));
                 if (!ret.empty())
                     ret += " ";
-                ret += tok->astTop()->astString();
+                ret += tok->astTop(true)->astString();
             }
         }
         return ret;
