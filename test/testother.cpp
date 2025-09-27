@@ -4497,6 +4497,16 @@ private:
         ASSERT_EQUALS("[test.cpp:2:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:5:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("struct T;\n"
+              "void use(const T*);\n"
+              "void f(T* tok0) {\n"
+              "    T *tok1 = tok0;\n"
+              "    const T *tok2 = tok1;\n"
+              "    use(tok2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:8]: (style) Variable 'tok1' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
     }
 
     void constArray() {

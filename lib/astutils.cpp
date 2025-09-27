@@ -2916,7 +2916,10 @@ static bool isExpressionChangedAt(const F& getExprTok,
             aliased = isAliasOf(tok, expr, &i);
         if (!aliased)
             return false;
-        if (isVariableChanged(tok, indirect + i, settings, depth))
+        i += indirect;
+        if (tok->valueType() && tok->valueType()->pointer)
+            i = std::min(i, tok->valueType()->pointer);
+        if (isVariableChanged(tok, i, settings, depth))
             return true;
         // TODO: Try to traverse the lambda function
         if (Token::Match(tok, "%var% ("))
