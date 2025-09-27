@@ -4497,6 +4497,30 @@ private:
         ASSERT_EQUALS("[test.cpp:2:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:5:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("struct S { S* next; };\n" // #14119
+              "void f(S* s) {\n"
+              "    for (S* p = s->next; p != nullptr; p = p->next) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:13]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
+
+        check("void f(int* p) {\n"
+              "    for (int* q = p; q;)\n"
+              "        break;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:15]: (style) Variable 'q' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
+
+        check("void g(const int*);\n" // #14148
+              "void f() {\n"
+              "    int a[] = {1, 2, 3};\n"
+              "    for (int* p = a; *p != 3; p++) {\n"
+              "        g(p);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:15]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
     }
 
     void constArray() {

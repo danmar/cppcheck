@@ -2680,7 +2680,7 @@ void Token::Impl::setCppcheckAttribute(CppcheckAttributesType type, MathLib::big
 
 bool Token::Impl::getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const
 {
-    CppcheckAttributes *attr = mCppcheckAttributes;
+    const CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
