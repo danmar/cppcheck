@@ -30,7 +30,6 @@
 #include <iostream>
 #include <fstream>
 #include <list>
-#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -45,8 +44,6 @@
 #include <simplecpp.h>
 
 #include "xml.h"
-
-class SuppressionList;
 
 const Settings SimpleTokenizer::s_settings;
 
@@ -112,53 +109,6 @@ ScopedFile::~ScopedFile() {
         }
 #endif
     }
-}
-
-// TODO: we should be using the actual Preprocessor implementation
-std::string PreprocessorHelper::getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
-{
-    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), filedata.size(), std::set<std::string>{cfg}, filename, inlineSuppression);
-    const auto it = cfgcode.find(cfg);
-    if (it == cfgcode.end())
-        return "";
-    return it->second;
-}
-
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &filename)
-{
-    return getcode(settings, errorlogger, code, size, {}, filename, nullptr);
-}
-
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
-{
-    simplecpp::OutputList outputList;
-    std::vector<std::string> files;
-
-    simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
-    Preprocessor preprocessor(settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
-    if (inlineSuppression)
-        preprocessor.inlineSuppressions(tokens, *inlineSuppression);
-    preprocessor.removeComments(tokens);
-    preprocessor.simplifyPragmaAsm(tokens);
-
-    preprocessor.reportOutput(outputList, true);
-
-    if (Preprocessor::hasErrors(outputList))
-        return {};
-
-    std::map<std::string, std::string> cfgcode;
-    if (cfgs.empty())
-        cfgs = preprocessor.getConfigs(tokens);
-    for (const std::string & config : cfgs) {
-        try {
-            // TODO: also preserve location information when #include exists - enabling that will fail since #line is treated like a regular token
-            cfgcode[config] = preprocessor.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
-        } catch (const simplecpp::Output &) {
-            cfgcode[config] = "";
-        }
-    }
-
-    return cfgcode;
 }
 
 void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
