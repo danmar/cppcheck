@@ -60,6 +60,7 @@
 #include <QSettings>
 #include <QSignalMapper>
 #include <QStandardItem>
+#include <QStandardItemModel>
 #include <QUrl>
 #include <QVariant>
 #include <QVariantMap>
@@ -145,9 +146,10 @@ static QStringList getLabels() {
 }
 
 ResultsTree::ResultsTree(QWidget * parent) :
-    QTreeView(parent)
+    QTreeView(parent),
+    mModel(new QStandardItemModel)
 {
-    setModel(&mModel);
+    setModel(mModel);
     translate(); // Adds columns to grid
     clear();
     setExpandsOnDoubleClick(false);
@@ -169,8 +171,8 @@ void ResultsTree::setReportType(ReportType reportType) {
 
     mGuideline = createGuidelineMapping(reportType);
 
-    for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *fileItem = mModel.item(i, COLUMN_FILE);
+    for (int i = 0; i < mModel->rowCount(); ++i) {
+        const QStandardItem *fileItem = mModel->item(i, COLUMN_FILE);
         if (!fileItem)
             continue;
         for (int j = 0; j < fileItem->rowCount(); ++j) {
@@ -473,20 +475,20 @@ QStandardItem *ResultsTree::findFileItem(const QString &name) const
     // The first column contains the file name. In Windows we can get filenames
     // "header.h" and "Header.h" and must compare them as identical.
 
-    for (int i = 0; i < mModel.rowCount(); i++) {
+    for (int i = 0; i < mModel->rowCount(); i++) {
 #ifdef _WIN32
-        if (QString::compare(mModel.item(i, COLUMN_FILE)->text(), name, Qt::CaseInsensitive) == 0)
+        if (QString::compare(mModel->item(i, COLUMN_FILE)->text(), name, Qt::CaseInsensitive) == 0)
 #else
-        if (mModel.item(i, COLUMN_FILE)->text() == name)
+        if (mModel->item(i, COLUMN_FILE)->text() == name)
 #endif
-            return mModel.item(i, COLUMN_FILE);
+            return mModel->item(i, COLUMN_FILE);
     }
     return nullptr;
 }
 
 void ResultsTree::clear()
 {
-    mModel.removeRows(0, mModel.rowCount());
+    mModel->removeRows(0, mModel->rowCount());
 
     if (const ProjectFile *activeProject = ProjectFile::getActiveProject()) {
         hideColumn(COLUMN_SINCE_DATE);
@@ -504,15 +506,15 @@ void ResultsTree::clear(const QString &filename)
 {
     const QString stripped = stripPath(filename, false);
 
-    for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *fileItem = mModel.item(i, COLUMN_FILE);
+    for (int i = 0; i < mModel->rowCount(); ++i) {
+        const QStandardItem *fileItem = mModel->item(i, COLUMN_FILE);
         if (!fileItem)
             continue;
 
         QVariantMap fitemdata = fileItem->data().toMap();
         if (stripped == fitemdata[FILENAME].toString() ||
             filename == fitemdata[FILE0].toString()) {
-            mModel.removeRow(i);
+            mModel->removeRow(i);
             break;
         }
     }
@@ -520,8 +522,8 @@ void ResultsTree::clear(const QString &filename)
 
 void ResultsTree::clearRecheckFile(const QString &filename)
 {
-    for (int i = 0; i < mModel.rowCount(); ++i) {
-        const QStandardItem *fileItem = mModel.item(i, COLUMN_FILE);
+    for (int i = 0; i < mModel->rowCount(); ++i) {
+        const QStandardItem *fileItem = mModel->item(i, COLUMN_FILE);
         if (!fileItem)
             continue;
 
@@ -530,7 +532,7 @@ void ResultsTree::clearRecheckFile(const QString &filename)
         QString storedfile = fitemdata[FILENAME].toString();
         storedfile = ((!mCheckPath.isEmpty() && storedfile.startsWith(mCheckPath)) ? storedfile.mid(mCheckPath.length() + 1) : storedfile);
         if (actualfile == storedfile) {
-            mModel.removeRow(i);
+            mModel->removeRow(i);
             break;
         }
     }
@@ -539,9 +541,9 @@ void ResultsTree::clearRecheckFile(const QString &filename)
 
 void ResultsTree::loadSettings()
 {
-    for (int i = 0; i < mModel.columnCount(); i++) {
+    for (int i = 0; i < mModel->columnCount(); i++) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
-        setColumnWidth(i, qMax(20, mSettings->value(temp, 800 / mModel.columnCount()).toInt()));
+        setColumnWidth(i, qMax(20, mSettings->value(temp, 800 / mModel->columnCount()).toInt()));
     }
 
     mSaveFullPath = mSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool();
@@ -554,7 +556,7 @@ void ResultsTree::loadSettings()
 
 void ResultsTree::saveSettings() const
 {
-    for (int i = 0; i < mModel.columnCount(); i++) {
+    for (int i = 0; i < mModel->columnCount(); i++) {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
         mSettings->setValue(temp, columnWidth(i));
     }
@@ -599,11 +601,11 @@ void ResultsTree::refreshTree()
 {
     mVisibleErrors = false;
     //Get the amount of files in the tree
-    const int filecount = mModel.rowCount();
+    const int filecount = mModel->rowCount();
 
     for (int i = 0; i < filecount; i++) {
         //Get file i
-        QStandardItem *fileItem = mModel.item(i, 0);
+        QStandardItem *fileItem = mModel->item(i, 0);
         if (!fileItem) {
             continue;
         }
@@ -693,7 +695,7 @@ QStandardItem *ResultsTree::ensureFileItem(const QString &fullpath, const QStrin
     itemdata[FILENAME] = fullpath;
     itemdata[FILE0] = file0;
     item->setData(QVariant(itemdata));
-    mModel.appendRow(item);
+    mModel->appendRow(item);
 
     setRowHidden(item->row(), QModelIndex(), hide);
 
@@ -710,7 +712,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         if (mSelectionModel->selectedRows().count() > 1)
             multipleSelection = true;
 
-        mContextItem = mModel.itemFromIndex(index);
+        mContextItem = mModel->itemFromIndex(index);
 
         //Create a new context menu
         QMenu menu(this);
@@ -751,7 +753,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             int selectedResults = 0;
 
             for (auto row : mSelectionModel->selectedRows()) {
-                auto *item = mModel.itemFromIndex(row);
+                auto *item = mModel->itemFromIndex(row);
                 if (!item->parent())
                     selectedFiles++;
                 else if (!item->parent()->parent())
@@ -830,7 +832,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         menu.exec(e->globalPos());
         index = indexAt(e->pos());
         if (index.isValid()) {
-            mContextItem = mModel.itemFromIndex(index);
+            mContextItem = mModel->itemFromIndex(index);
         }
     }
 }
@@ -996,7 +998,7 @@ void ResultsTree::copy()
 
     QString text;
     for (const QModelIndex& index : mSelectionModel->selectedRows()) {
-        const QStandardItem *item = mModel.itemFromIndex(index);
+        const QStandardItem *item = mModel->itemFromIndex(index);
         if (!item->parent()) {
             text += item->text() + '\n';
             continue;
@@ -1027,7 +1029,7 @@ void ResultsTree::hideResult()
         return;
 
     for (QModelIndex index : mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+        QStandardItem *item = mModel->itemFromIndex(index);
         //Set the "hide" flag for this item
         QVariantMap itemdata = item->data().toMap();
         itemdata[HIDE] = true;
@@ -1045,7 +1047,7 @@ void ResultsTree::recheckSelectedFiles()
 
     QStringList selectedItems;
     for (QModelIndex index : mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+        QStandardItem *item = mModel->itemFromIndex(index);
         while (item->parent())
             item = item->parent();
         QVariantMap itemdata = item->data().toMap();
@@ -1100,7 +1102,7 @@ void ResultsTree::suppressSelectedIds()
 
     QSet<QString> selectedIds;
     for (QModelIndex index : mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+        QStandardItem *item = mModel->itemFromIndex(index);
         if (!item->parent())
             continue;
         if (item->parent()->parent())
@@ -1112,8 +1114,8 @@ void ResultsTree::suppressSelectedIds()
     }
 
     // delete all errors with selected message Ids
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        QStandardItem * const file = mModel.item(i, 0);
+    for (int i = 0; i < mModel->rowCount(); i++) {
+        QStandardItem * const file = mModel->item(i, 0);
         for (int j = 0; j < file->rowCount();) {
             QStandardItem *errorItem = file->child(j, 0);
             QVariantMap userdata = errorItem->data().toMap();
@@ -1124,7 +1126,7 @@ void ResultsTree::suppressSelectedIds()
             }
         }
         if (file->rowCount() == 0)
-            mModel.removeRow(file->row());
+            mModel->removeRow(file->row());
     }
 
 
@@ -1139,7 +1141,7 @@ void ResultsTree::suppressHash()
     // Extract selected warnings
     QSet<QStandardItem *> selectedWarnings;
     for (QModelIndex index : mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+        QStandardItem *item = mModel->itemFromIndex(index);
         if (!item->parent())
             continue;
         while (item->parent()->parent())
@@ -1163,7 +1165,7 @@ void ResultsTree::suppressHash()
         }
         fileItem->removeRow(item->row());
         if (fileItem->rowCount() == 0)
-            mModel.removeRow(fileItem->row());
+            mModel->removeRow(fileItem->row());
     }
 
     if (changed)
@@ -1186,7 +1188,7 @@ void ResultsTree::tagSelectedItems(const QString &tag)
     bool isTagged = false;
     ProjectFile *currentProject = ProjectFile::getActiveProject();
     for (QModelIndex index : mSelectionModel->selectedRows()) {
-        QStandardItem *item = mModel.itemFromIndex(index);
+        QStandardItem *item = mModel->itemFromIndex(index);
         QVariantMap itemdata = item->data().toMap();
         if (itemdata.contains("tags")) {
             itemdata[TAGS] = tag;
@@ -1209,7 +1211,7 @@ void ResultsTree::context(int application)
 
 void ResultsTree::quickStartApplication(const QModelIndex &index)
 {
-    startApplication(mModel.itemFromIndex(index));
+    startApplication(mModel->itemFromIndex(index));
 }
 
 QString ResultsTree::getFilePath(const QStandardItem *target, bool fullPath)
@@ -1259,9 +1261,9 @@ void ResultsTree::saveResults(Report *report) const
 {
     report->writeHeader();
 
-    for (int i = 0; i < mModel.rowCount(); i++) {
+    for (int i = 0; i < mModel->rowCount(); i++) {
         if (mSaveAllErrors || !isRowHidden(i, QModelIndex()))
-            saveErrors(report, mModel.item(i, 0));
+            saveErrors(report, mModel->item(i, 0));
     }
 
     report->writeFooter();
@@ -1311,8 +1313,8 @@ void ResultsTree::updateFromOldReport(const QString &filename)
     }
 
     // Read current results..
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        QStandardItem *fileItem = mModel.item(i,0);
+    for (int i = 0; i < mModel->rowCount(); i++) {
+        QStandardItem *fileItem = mModel->item(i,0);
         for (int j = 0; j < fileItem->rowCount(); j++) {
             QStandardItem *error = fileItem->child(j,0);
             ErrorItem errorItem;
@@ -1491,8 +1493,8 @@ void ResultsTree::refreshFilePaths()
     qDebug("Refreshing file paths");
 
     //Go through all file items (these are parent items that contain the errors)
-    for (int i = 0; i < mModel.rowCount(); i++) {
-        refreshFilePaths(mModel.item(i, 0));
+    for (int i = 0; i < mModel->rowCount(); i++) {
+        refreshFilePaths(mModel->item(i, 0));
     }
 }
 
@@ -1503,12 +1505,12 @@ bool ResultsTree::hasVisibleResults() const
 
 bool ResultsTree::hasResults() const
 {
-    return mModel.rowCount() > 0;
+    return mModel->rowCount() > 0;
 }
 
 void ResultsTree::translate()
 {
-    mModel.setHorizontalHeaderLabels(getLabels());
+    mModel->setHorizontalHeaderLabels(getLabels());
     //TODO go through all the errors in the tree and translate severity and message
 }
 
