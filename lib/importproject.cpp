@@ -179,6 +179,9 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
         settings ? settings->fileFilters : std::vector<std::string>();
 
     if (endsWith(filename, ".json")) {
+        if (settings) {
+            settings->importCompileDBFile = filename;
+        }
         if (importCompileCommands(fin)) {
             setRelativePaths(filename);
             return ImportProject::Type::COMPILE_DB;
