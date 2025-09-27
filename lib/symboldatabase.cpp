@@ -2296,7 +2296,7 @@ Variable& Variable::operator=(const Variable &var) &
     if (this == &var)
         return *this;
 
-    ValueType* vt = nullptr;
+    const ValueType* vt = nullptr;
     if (var.mValueType)
         vt = new ValueType(*var.mValueType);
 
@@ -2462,7 +2462,7 @@ void Variable::setValueType(const ValueType &valueType)
         if (declType && !declType->next()->valueType())
             return;
     }
-    auto* vt = new ValueType(valueType);
+    const auto* vt = new ValueType(valueType);
     delete mValueType;
     mValueType = vt;
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
