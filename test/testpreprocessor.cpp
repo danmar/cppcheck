@@ -298,6 +298,8 @@ private:
         TEST_CASE(hashCalculation);
 
         TEST_CASE(standard);
+
+        TEST_CASE(writeLocations);
     }
 
     template<size_t size>
@@ -2654,6 +2656,25 @@ private:
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
+    }
+
+    void writeLocations()
+    {
+        const char inc[] = "class A {\n"
+                           "public:\n"
+                           "    void f() {}\n"
+                           "};";
+        const char code[] = R"(#include "test.h")";
+        ScopedFile header("test.h", inc);
+        const std::string processed = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, code, "", "test.cpp");
+        ASSERT_EQUALS(
+            "\n"
+            "#line 1 \"test.h\"\n"
+            "class A {\n"
+            "public :\n"
+            "void f ( ) { }\n"
+            "} ;",
+            processed);
     }
 };
 

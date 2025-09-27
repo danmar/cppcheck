@@ -27,6 +27,7 @@
 
 #include <cerrno>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <list>
@@ -151,8 +152,8 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
         cfgs = preprocessor.getConfigs(tokens);
     for (const std::string & config : cfgs) {
         try {
-            // TODO: also preserve location information when #include exists - enabling that will fail since #line is treated like a regular token
-            cfgcode[config] = preprocessor.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
+            const bool writeLocations = (strstr(code, "#file") != nullptr) || (strstr(code, "#include") != nullptr);
+            cfgcode[config] = preprocessor.getcode(tokens, config, files, writeLocations);
         } catch (const simplecpp::Output &) {
             cfgcode[config] = "";
         }
