@@ -92,11 +92,16 @@ option(DISALLOW_THREAD_EXECUTOR "Disallow usage of ThreadExecutor for -j"       
 if(DISALLOW_THREAD_EXECUTOR AND WIN32)
     message(FATAL_ERROR "Cannot disable usage of ThreadExecutor on Windows as no other executor implementation is currently available")
 endif()
+set(USE_INT128 "Off" CACHE STRING "Usage of 128-bit integer type")  # TODO: default to Auto when working
+set_property(CACHE USE_INT128 PROPERTY STRINGS Auto Off On)
 set(USE_BOOST "Auto" CACHE STRING "Usage of Boost")
 set_property(CACHE USE_BOOST PROPERTY STRINGS Auto Off On)
-option(USE_BOOST_INT128     "Usage of Boost.Multiprecision 128-bit integer for Mathlib"     OFF)
-if (NOT USE_BOOST AND USE_BOOST_INT128)
-    message(FATAL_ERROR "USE_BOOST_INT128 requires USE_BOOST to be enabled")
+set(USE_BOOST_INT128 "Off" CACHE STRING "Usage of Boost.Multiprecision 128-bit integer for Mathlib")   # TODO: default to Auto when working
+set_property(CACHE USE_BOOST_INT128 PROPERTY STRINGS Auto Off On)
+if (USE_INT128)
+    if (NOT USE_BOOST AND USE_BOOST_INT128)
+        message(FATAL_ERROR "USE_BOOST_INT128 requires USE_BOOST to be enabled")
+    endif()
 endif()
 option(USE_LIBCXX           "Use libc++ instead of libstdc++"                               OFF)
 
