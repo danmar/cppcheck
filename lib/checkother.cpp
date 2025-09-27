@@ -1916,8 +1916,13 @@ void CheckOther::checkConstPointer()
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
-            if (Token::simpleMatch(parent, "=") && parent->astOperand1() == tok)
-                continue;
+            if (Token::simpleMatch(parent, "=")) {
+                const Token* lhs = parent->astOperand1();
+                if (lhs == tok)
+                    continue;
+                if (lhs && lhs->valueType() && lhs->valueType()->isConst(vt->pointer))
+                    continue;
+            }
             if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function()) {
                     const bool isCastArg = parent->isCast() && !ftok->function()->getOverloadedFunctions().empty(); // assume that cast changes the called function
