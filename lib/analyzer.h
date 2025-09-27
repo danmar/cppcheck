@@ -186,7 +186,7 @@ struct Analyzer {
     /// Update the state of the program at the token
     virtual void updateState(const Token* tok) = 0;
     /// Return analyzer for expression at token
-    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = emptyString) const = 0;
+    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = "") const = 0;
     virtual bool invalid() const {
         return false;
     }
