@@ -32,7 +32,6 @@ private:
         TEST_CASE(copyOnWrite);
         TEST_CASE(hasValue);
         TEST_CASE(getValue);
-        TEST_CASE(at);
     }
 
     void copyOnWrite() const {
@@ -42,11 +41,11 @@ private:
         tok->exprId(id);
 
         ProgramMemory pm;
-        const ValueFlow::Value* v = pm.getValue(id);
+        const ValueFlow::Value* v = utils::as_const(pm).getValue(id, false);
         ASSERT(!v);
         pm.setValue(tok, ValueFlow::Value{41});
 
-        v = pm.getValue(id);
+        v = utils::as_const(pm).getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
 
@@ -54,7 +53,7 @@ private:
         ProgramMemory pm2 = pm;
 
         // make sure the value was copied
-        v = pm2.getValue(id);
+        v = utils::as_const(pm2).getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
 
@@ -68,17 +67,17 @@ private:
         pm3.setValue(tok, ValueFlow::Value{43});
 
         // make sure the value was set
-        v = pm2.getValue(id);
+        v = utils::as_const(pm2).getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(42, v->intvalue);
 
         // make sure the value was set
-        v = pm3.getValue(id);
+        v = utils::as_const(pm3).getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(43, v->intvalue);
 
         // make sure the original value remains unchanged
-        v = pm.getValue(id);
+        v = utils::as_const(pm).getValue(id, false);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
     }
@@ -90,13 +89,7 @@ private:
 
     void getValue() const {
         ProgramMemory pm;
-        ASSERT(!pm.getValue(123));
-    }
-
-    void at() const {
-        ProgramMemory pm;
-        ASSERT_THROW_EQUALS_2(pm.at(123), std::out_of_range, "ProgramMemory::at");
-        ASSERT_THROW_EQUALS_2(utils::as_const(pm).at(123), std::out_of_range, "ProgramMemory::at");
+        ASSERT(!utils::as_const(pm).getValue(123, false));
     }
 };
 
