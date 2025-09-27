@@ -3653,3 +3653,35 @@ void f()
     assert stderr.splitlines() == [
         "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
     ]
+
+
+def test_ast_max_depth(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define PTR1 (* (* (* (*
+#define PTR2 PTR1 PTR1 PTR1 PTR1
+#define PTR3 PTR2 PTR2 PTR2 PTR2
+#define PTR4 PTR3 PTR3 PTR3 PTR3
+
+#define RBR1 ) ) ) )
+#define RBR2 RBR1 RBR1 RBR1 RBR1
+#define RBR3 RBR2 RBR2 RBR2 RBR2
+#define RBR4 RBR3 RBR3 RBR3 RBR3
+
+int PTR4 q4_var RBR4 = 0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:12:5: error: maximum AST depth exceeded [internalAstError]'.format(test_file)
+    ]
