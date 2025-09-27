@@ -429,6 +429,12 @@ bool isStlStringType(const Token* tok)
            (Token::simpleMatch(tok, "std :: basic_string <") && !Token::simpleMatch(tok->linkAt(3), "> ::"));
 }
 
+bool isVoidCast(const Token* tok)
+{
+    return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() &&
+           tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
+}
+
 bool isTemporary(const Token* tok, const Library* library, bool unknown)
 {
     if (!tok)
