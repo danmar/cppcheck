@@ -14,6 +14,8 @@ __PRODUCT_NAME = 'Cppcheck Premium ' + str(time.time())
 
 def __copy_cppcheck_premium(tmpdir):
     exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
 
     # add minimum cfg/std.cfg
     test_cfg_folder = tmpdir.mkdir('cfg')
@@ -26,8 +28,7 @@ def __copy_cppcheck_premium(tmpdir):
                 {
                     "addons": [],
                     "productName": "NAME",
-                    "about": "NAME",
-                    "safety": true
+                    "about": "NAME"
                 }
                 """.replace('NAME', __PRODUCT_NAME))
 
@@ -35,39 +36,35 @@ def __copy_cppcheck_premium(tmpdir):
 
 
 def test_misra_c_builtin_style_checks(tmpdir):
-    # FIXME this test does not work in ci-windows.yml (release build)
-    if sys.platform == 'win32':
-        return
-
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         f.write('void foo() { int x; y = 0; }')
 
     exe = __copy_cppcheck_premium(tmpdir)
 
-    exitcode, _, stderr = cppcheck(['--premium=autosar', '--xml', test_file], cppcheck_exe=exe)
+    exitcode, _, stderr = cppcheck(['--premium=autosar', '--premium=safety', '--xml', test_file], cppcheck_exe=exe)
     assert exitcode == 0
     assert 'id="unusedVariable"' in stderr
     assert 'id="checkersReport"' in stderr
 
-    exitcode, _, stderr = cppcheck(['--premium=autosar', '--premium=safety-off', '--xml', test_file], cppcheck_exe=exe)
+    exitcode, _, stderr = cppcheck(['--premium=autosar', '--xml', test_file], cppcheck_exe=exe)
     assert exitcode == 0
     assert 'id="unusedVariable"' in stderr
     assert 'id="checkersReport"' not in stderr
 
-    exitcode, _, stderr = cppcheck(['--xml-version=3', test_file], cppcheck_exe=exe)
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--premium=safety', test_file], cppcheck_exe=exe)
     assert exitcode == 0
     assert '<safety/>' in stderr
 
-    exitcode, _, stderr = cppcheck(['--xml-version=3', '--premium=safety-off', test_file], cppcheck_exe=exe)
+    exitcode, _, stderr = cppcheck(['--xml-version=3', test_file], cppcheck_exe=exe)
     assert exitcode == 0
     assert '<safety/>' not in stderr
 
-    exitcode, _, stderr = cppcheck(['--xml-version=3', '--inline-suppr', test_file], cppcheck_exe=exe)
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--premium=safety', '--inline-suppr', test_file], cppcheck_exe=exe)
     assert exitcode == 0
     assert '<inline-suppr/>' in stderr
 
-    exitcode, _, stderr = cppcheck(['--xml-version=3', '--suppress=foo', test_file], cppcheck_exe=exe)
+    exitcode, _, stderr = cppcheck(['--xml-version=3', '--premium=safety', '--suppress=foo', test_file], cppcheck_exe=exe)
     assert exitcode == 0
     assert '<suppression errorId="foo" inline="false" />' in stderr
 
@@ -156,3 +153,13 @@ def test_invalid_license_retry(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert 'Invalid license' not in stderr
+
+
+def test_help(tmpdir):
+    exe = __copy_cppcheck_premium(tmpdir)
+
+    exitcode, stdout, _ = cppcheck(['--help'], cppcheck_exe=exe)
+    assert exitcode == 0
+    assert stdout.startswith('Cppcheck ')  # check for product name - TODO: should be "Cppcheck Premium"
+    assert '--premium=' in stdout, stdout  # check for premium option
+    assert 'cppchecksolutions.com' in stdout, stdout  # check for premium help link
