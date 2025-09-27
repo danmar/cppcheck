@@ -1062,7 +1062,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
+bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
 {
     const Token* r = nullptr;
     if (indirect)
