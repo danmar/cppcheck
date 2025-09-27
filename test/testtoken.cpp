@@ -1303,7 +1303,7 @@ private:
         assert_tok("0.0", Token::Type::eNumber);
         assert_tok("0x0.3p10", Token::Type::eNumber);
         assert_tok("0z", Token::Type::eNumber); // TODO: not a valid number
-        assert_tok("0_km", Token::Type::eName); // user literal
+        assert_tok("0_km", Token::Type::eLiteral); // user literal
         assert_tok("=", Token::Type::eAssignmentOp);
         assert_tok("<<=", Token::Type::eAssignmentOp);
         assert_tok(">>=", Token::Type::eAssignmentOp);
