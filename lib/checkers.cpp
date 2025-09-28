@@ -200,6 +200,7 @@ namespace checkers {
         {"CheckType::checkLongCast","style"},
         {"CheckType::checkSignConversion","warning"},
         {"CheckType::checkTooBigBitwiseShift","platform"},
+        {"CheckUninitVar::check",""},
         {"CheckUninitVar::analyseWholeProgram",""},
         {"CheckUninitVar::check",""},
         {"CheckUninitVar::valueFlowUninit",""},

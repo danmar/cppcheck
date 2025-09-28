@@ -107,6 +107,7 @@
     <ClCompile Include="testtokenrange.cpp" />
     <ClCompile Include="testtype.cpp" />
     <ClCompile Include="testuninitvar.cpp" />
+    <ClCompile Include="testunionzeroinit.cpp" />
     <ClCompile Include="testunusedfunctions.cpp" />
     <ClCompile Include="testunusedprivfunc.cpp" />
     <ClCompile Include="testunusedvar.cpp" />

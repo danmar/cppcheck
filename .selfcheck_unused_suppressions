@@ -6,3 +6,6 @@ unusedFunction:lib/symboldatabase.cpp
 
 # Q_OBJECT functions which are not called in our code
 unusedFunction:cmake.output.notest/gui/cppcheck-gui_autogen/*/moc_aboutdialog.cpp
+
+# CheckUnionZeroInit::generateTestMessage only used in tests.
+unusedFunction:lib/checkunionzeroinit.cpp
