@@ -39,7 +39,7 @@ jobs:
       - name: build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) CXXOPTS="-w"
+          make -j$(nproc) CXXOPTS="-Werror"
           strip -s ./cppcheck
 
   scriptcheck:
@@ -215,7 +215,7 @@ jobs:
 
       - name: run dmake
         run: |
-          make -j3 CXXOPTS="-w" run-dmake
+          make -j3 CXXOPTS="-Werror" run-dmake
 
       - name: check diff
         run: |
