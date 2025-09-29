@@ -603,7 +603,6 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     checkLockDownUI(); // lock UI while checking
 
     mUI->mResults->setCheckDirectory(checkPath);
-    checkSettings.force = false;
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
 
@@ -1101,6 +1100,11 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
 
     // If project file loaded, read settings from it
     if (mProjectFile) {
+        std::string import_project = mProjectFile->getImportProject().toStdString();
+        if (endsWith(import_project, ".json")) {
+            settings.importCompileDBFile = import_project;
+        }
+
         QStringList dirs = mProjectFile->getIncludeDirs();
         addIncludeDirs(dirs, settings);
 
@@ -1129,14 +1133,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
         for (const SuppressionList::Suppression &suppression : mProjectFile->getCheckingSuppressions()) {
             supprs.nomsg.addSuppression(suppression); // TODO: check result
         }
-
-        // Only check the given -D configuration
-        if (!defines.isEmpty())
-            settings.maxConfigs = 1;
-
-        // If importing a project, only check the given configuration
-        if (!mProjectFile->getImportProject().isEmpty())
-            settings.checkAllConfigurations = false;
 
         const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {

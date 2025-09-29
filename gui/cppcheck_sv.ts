@@ -496,19 +496,19 @@ Exempel:
     <message>
         <location filename="mainwindow.ui" line="26"/>
         <location filename="mainwindow.ui" line="685"/>
-        <location filename="mainwindow.cpp" line="452"/>
-        <location filename="mainwindow.cpp" line="639"/>
-        <location filename="mainwindow.cpp" line="718"/>
-        <location filename="mainwindow.cpp" line="823"/>
+        <location filename="mainwindow.cpp" line="458"/>
+        <location filename="mainwindow.cpp" line="658"/>
+        <location filename="mainwindow.cpp" line="740"/>
         <location filename="mainwindow.cpp" line="845"/>
-        <location filename="mainwindow.cpp" line="1430"/>
-        <location filename="mainwindow.cpp" line="1559"/>
-        <location filename="mainwindow.cpp" line="1891"/>
-        <location filename="mainwindow.cpp" line="1899"/>
-        <location filename="mainwindow.cpp" line="1947"/>
-        <location filename="mainwindow.cpp" line="1956"/>
-        <location filename="mainwindow.cpp" line="2028"/>
-        <location filename="mainwindow.cpp" line="2102"/>
+        <location filename="mainwindow.cpp" line="867"/>
+        <location filename="mainwindow.cpp" line="1445"/>
+        <location filename="mainwindow.cpp" line="1574"/>
+        <location filename="mainwindow.cpp" line="1906"/>
+        <location filename="mainwindow.cpp" line="1914"/>
+        <location filename="mainwindow.cpp" line="1962"/>
+        <location filename="mainwindow.cpp" line="1971"/>
+        <location filename="mainwindow.cpp" line="2043"/>
+        <location filename="mainwindow.cpp" line="2117"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -652,14 +652,14 @@ Exempel:
     <message>
         <location filename="mainwindow.ui" line="468"/>
         <location filename="mainwindow.ui" line="471"/>
-        <location filename="mainwindow.cpp" line="2326"/>
+        <location filename="mainwindow.cpp" line="2341"/>
         <source>Show errors</source>
         <translation>Visa fel</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="614"/>
         <location filename="mainwindow.ui" line="617"/>
-        <location filename="mainwindow.cpp" line="2327"/>
+        <location filename="mainwindow.cpp" line="2342"/>
         <source>Show warnings</source>
         <translation>Visa varningar</translation>
     </message>
@@ -675,8 +675,8 @@ Exempel:
         <translation>Visa dolda</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="949"/>
-        <location filename="mainwindow.cpp" line="990"/>
+        <location filename="mainwindow.cpp" line="971"/>
+        <location filename="mainwindow.cpp" line="1012"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
@@ -1085,18 +1085,18 @@ Exempel:
         <translation>&amp;Hjälp</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="149"/>
-        <location filename="mainwindow.cpp" line="1737"/>
+        <location filename="mainwindow.cpp" line="153"/>
+        <location filename="mainwindow.cpp" line="1752"/>
         <source>Quick Filter:</source>
         <translation>Snabbfilter:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="794"/>
+        <location filename="mainwindow.cpp" line="816"/>
         <source>Select configuration</source>
         <translation>Välj konfiguration</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="824"/>
+        <location filename="mainwindow.cpp" line="846"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -1105,97 +1105,97 @@ Do you want to load this project file instead?</source>
 Vill du ladda denna projektfil istället?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="958"/>
+        <location filename="mainwindow.cpp" line="980"/>
         <source>File not found</source>
         <translation>Filen hittades ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="961"/>
+        <location filename="mainwindow.cpp" line="983"/>
         <source>Bad XML</source>
         <translation>Ogiltig XML</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="964"/>
+        <location filename="mainwindow.cpp" line="986"/>
         <source>Missing attribute</source>
         <translation>Attribut finns ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="967"/>
+        <location filename="mainwindow.cpp" line="989"/>
         <source>Bad attribute value</source>
         <translation>Ogiltigt attribut värde</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="970"/>
+        <location filename="mainwindow.cpp" line="992"/>
         <source>Unsupported format</source>
         <translation>Format stöds ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="979"/>
+        <location filename="mainwindow.cpp" line="1001"/>
         <source>Duplicate define</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="990"/>
+        <location filename="mainwindow.cpp" line="1012"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation>Misslyckades att ladda valda library &apos;%1&apos;.
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1001"/>
+        <location filename="mainwindow.cpp" line="1023"/>
         <source>File not found: &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1024"/>
+        <location filename="mainwindow.cpp" line="1046"/>
         <source>Failed to load/setup addon %1: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
+        <location filename="mainwindow.cpp" line="1068"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1056"/>
+        <location filename="mainwindow.cpp" line="1078"/>
         <source>Failed to load %1 - %2
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1162"/>
+        <location filename="mainwindow.cpp" line="1088"/>
+        <location filename="mainwindow.cpp" line="1176"/>
         <source>%1
 
 Analysis is aborted.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1611"/>
+        <location filename="mainwindow.cpp" line="1626"/>
         <source>License</source>
         <translation>Licens</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1618"/>
+        <location filename="mainwindow.cpp" line="1633"/>
         <source>Authors</source>
         <translation>Utvecklare</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1633"/>
+        <location filename="mainwindow.cpp" line="1648"/>
         <source>Save the report file</source>
         <translation>Spara rapport</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1446"/>
-        <location filename="mainwindow.cpp" line="1640"/>
+        <location filename="mainwindow.cpp" line="1461"/>
+        <location filename="mainwindow.cpp" line="1655"/>
         <source>XML files (*.xml)</source>
         <translation>XML filer (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="447"/>
+        <location filename="mainwindow.cpp" line="453"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
@@ -1204,42 +1204,42 @@ This is probably because the settings were changed between the Cppcheck versions
 En trolig orsak är att inställningarna ändrats för olika Cppcheck versioner. Kontrollera programinställningarna.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="719"/>
+        <location filename="mainwindow.cpp" line="741"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Du måste stänga projektfilen innan nya filer eller sökvägar kan väljas!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="949"/>
+        <location filename="mainwindow.cpp" line="971"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation>Library filen &apos;%1&apos; har element som ej hanteras:
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="973"/>
+        <location filename="mainwindow.cpp" line="995"/>
         <source>Duplicate platform type</source>
         <translation>Dubbel plattformstyp</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="976"/>
+        <location filename="mainwindow.cpp" line="998"/>
         <source>Platform type redefined</source>
         <translation>Plattformstyp definieras igen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="982"/>
+        <location filename="mainwindow.cpp" line="1004"/>
         <source>Unknown element</source>
         <translation>Element hanteras ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="985"/>
+        <location filename="mainwindow.cpp" line="1007"/>
         <source>Unknown issue</source>
         <translation>Något problem</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
-        <location filename="mainwindow.cpp" line="1056"/>
-        <location filename="mainwindow.cpp" line="1066"/>
-        <location filename="mainwindow.cpp" line="1162"/>
+        <location filename="mainwindow.cpp" line="1068"/>
+        <location filename="mainwindow.cpp" line="1078"/>
+        <location filename="mainwindow.cpp" line="1088"/>
+        <location filename="mainwindow.cpp" line="1176"/>
         <source>Error</source>
         <translation>Fel</translation>
     </message>
@@ -1248,80 +1248,80 @@ En trolig orsak är att inställningarna ändrats för olika Cppcheck versioner.
         <translation type="vanished">Misslyckades att ladda %1. Din Cppcheck installation är ej komplett. Du kan använda --data-dir&lt;directory&gt; på kommandoraden för att specificera var denna fil finns. Det är meningen att --data-dir kommandot skall köras under installationen,så GUIt kommer ej visas när --data-dir används allt som händer är att en inställning görs.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1463"/>
         <source>Open the report file</source>
         <translation>Öppna rapportfilen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1644"/>
+        <location filename="mainwindow.cpp" line="1659"/>
         <source>Text files (*.txt)</source>
         <translation>Text filer (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1648"/>
+        <location filename="mainwindow.cpp" line="1663"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV filer (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1776"/>
+        <location filename="mainwindow.cpp" line="1791"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Projektfiler (*.cppcheck);;Alla filer(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1778"/>
+        <location filename="mainwindow.cpp" line="1793"/>
         <source>Select Project File</source>
         <translation>Välj projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="230"/>
-        <location filename="mainwindow.cpp" line="1739"/>
-        <location filename="mainwindow.cpp" line="1806"/>
-        <location filename="mainwindow.cpp" line="1996"/>
+        <location filename="mainwindow.cpp" line="234"/>
+        <location filename="mainwindow.cpp" line="1754"/>
+        <location filename="mainwindow.cpp" line="1821"/>
+        <location filename="mainwindow.cpp" line="2011"/>
         <source>Project:</source>
         <translation>Projekt:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="640"/>
+        <location filename="mainwindow.cpp" line="659"/>
         <source>No suitable files found to analyze!</source>
         <translation>Inga filer hittades att analysera!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="733"/>
+        <location filename="mainwindow.cpp" line="755"/>
         <source>C/C++ Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="734"/>
+        <location filename="mainwindow.cpp" line="756"/>
         <source>Compile database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="735"/>
+        <location filename="mainwindow.cpp" line="757"/>
         <source>Visual Studio</source>
         <translation type="unfinished">Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="736"/>
+        <location filename="mainwindow.cpp" line="758"/>
         <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="739"/>
+        <location filename="mainwindow.cpp" line="761"/>
         <source>Select files to analyze</source>
         <translation>Välj filer att analysera</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="754"/>
+        <location filename="mainwindow.cpp" line="776"/>
         <source>Select directory to analyze</source>
         <translation>Välj mapp att analysera</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="794"/>
+        <location filename="mainwindow.cpp" line="816"/>
         <source>Select the configuration that will be analyzed</source>
         <translation>Välj konfiguration som kommer analyseras</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="846"/>
+        <location filename="mainwindow.cpp" line="868"/>
         <source>Found project files from the directory.
 
 Do you want to proceed analysis without using any of these project files?</source>
@@ -1330,7 +1330,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 Vill du fortsätta analysen utan att använda någon av dessa projekt filer?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1431"/>
+        <location filename="mainwindow.cpp" line="1446"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1338,7 +1338,7 @@ Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1555"/>
+        <location filename="mainwindow.cpp" line="1570"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1347,109 +1347,109 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 Vill du stoppa analysen och avsluta Cppcheck?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1597"/>
+        <location filename="mainwindow.cpp" line="1612"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1646"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML filer (*.xml);;Text filer (*.txt);;CSV filer (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1671"/>
+        <location filename="mainwindow.cpp" line="1686"/>
         <source>Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1892"/>
+        <location filename="mainwindow.cpp" line="1907"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>Build dir &apos;%1&apos; existerar ej, skapa den?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1900"/>
+        <location filename="mainwindow.cpp" line="1915"/>
         <source>To check the project using addons, you need a build directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1932"/>
+        <location filename="mainwindow.cpp" line="1947"/>
         <source>Failed to open file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1935"/>
+        <location filename="mainwindow.cpp" line="1950"/>
         <source>Unknown project file format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1938"/>
+        <location filename="mainwindow.cpp" line="1953"/>
         <source>Failed to import project file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1948"/>
+        <location filename="mainwindow.cpp" line="1963"/>
         <source>Failed to import &apos;%1&apos;: %2
 
 Analysis is stopped.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1957"/>
+        <location filename="mainwindow.cpp" line="1972"/>
         <source>Failed to import &apos;%1&apos; (%2), analysis is stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2299"/>
+        <location filename="mainwindow.cpp" line="2314"/>
         <source>Show Mandatory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2300"/>
+        <location filename="mainwindow.cpp" line="2315"/>
         <source>Show Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2301"/>
+        <location filename="mainwindow.cpp" line="2316"/>
         <source>Show Advisory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2302"/>
+        <location filename="mainwindow.cpp" line="2317"/>
         <source>Show Document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2319"/>
+        <location filename="mainwindow.cpp" line="2334"/>
         <source>Show L1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2320"/>
+        <location filename="mainwindow.cpp" line="2335"/>
         <source>Show L2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2321"/>
+        <location filename="mainwindow.cpp" line="2336"/>
         <source>Show L3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2328"/>
+        <location filename="mainwindow.cpp" line="2343"/>
         <source>Show style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2329"/>
+        <location filename="mainwindow.cpp" line="2344"/>
         <source>Show portability</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2330"/>
+        <location filename="mainwindow.cpp" line="2345"/>
         <source>Show performance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2331"/>
+        <location filename="mainwindow.cpp" line="2346"/>
         <source>Show information</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1458,22 +1458,22 @@ Analysis is stopped.</source>
         <translation type="vanished">Misslyckades att importera &apos;%1&apos;, analysen stoppas</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1981"/>
+        <location filename="mainwindow.cpp" line="1996"/>
         <source>Project files (*.cppcheck)</source>
         <translation>Projekt filer (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1983"/>
+        <location filename="mainwindow.cpp" line="1998"/>
         <source>Select Project Filename</source>
         <translation>Välj Projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2029"/>
+        <location filename="mainwindow.cpp" line="2044"/>
         <source>No project file loaded</source>
         <translation>Inget projekt laddat</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2097"/>
+        <location filename="mainwindow.cpp" line="2112"/>
         <source>The project file
 
 %1
@@ -1490,12 +1490,12 @@ Do you want to remove the file from the recently used projects -list?</source>
 Vill du ta bort filen från &apos;senast använda projekt&apos;-listan?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2257"/>
+        <location filename="mainwindow.cpp" line="2272"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="2261"/>
+        <location filename="mainwindow.cpp" line="2276"/>
         <source>New version available: %1. %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3196,7 +3196,7 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
 <context>
     <name>ThreadResult</name>
     <message>
-        <location filename="threadresult.cpp" line="45"/>
+        <location filename="threadresult.cpp" line="50"/>
         <source>%1 of %2 files checked</source>
         <translation>%1 av %2 filer analyserade</translation>
     </message>
