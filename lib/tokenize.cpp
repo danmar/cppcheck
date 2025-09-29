@@ -10046,7 +10046,7 @@ void Tokenizer::simplifyBitfields()
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = typeTok->next();
-            if (Token::Match(tok1, "%name% : %num% [;=]"))
+            if (Token::Match(tok1, "%name% : %num% [;=,]"))
                 if (!tok1->setBits(MathLib::toBigNumber(tok1->tokAt(2))))
                     tooLargeError(tok1->tokAt(2));
             if (tok1 && tok1->tokAt(2) &&
