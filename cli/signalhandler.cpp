@@ -238,7 +238,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         }
         fprintf(output, " (at 0x%lx).%s\n",
                 reinterpret_cast<unsigned long>(info->si_addr),
-                (isAddressOnStack)?" Stackoverflow?":"");
+                isAddressOnStack ? " Stackoverflow?" : "");
         break;
     case SIGINT:
         unexpectedSignal=false;     // legal usage: interrupt application via CTRL-C
@@ -264,7 +264,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (type==-1)? "" :
                 (type==0) ? "reading " : "writing ",
                 reinterpret_cast<unsigned long>(info->si_addr),
-                (isAddressOnStack)?" Stackoverflow?":""
+                isAddressOnStack ? " Stackoverflow?" : ""
                 );
         break;
     case SIGUSR1:

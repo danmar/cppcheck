@@ -2859,9 +2859,9 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
                 } else if ((((Token::Match(tok->previous(), "[=[(,] 0 * %name%|%num% ,|]|)|;|=|%cop%") ||
                               Token::Match(tok->previous(), "return|case 0 *|&& %name%|%num% ,|:|;|=|%cop%")) &&
                              validTokenEnd(bounded, tok, backToken, 3)) ||
-                            (((Token::Match(tok->previous(), "[=[(,] 0 * (") ||
-                               Token::Match(tok->previous(), "return|case 0 *|&& (")) &&
-                              validTokenEnd(bounded, tok, backToken, 2))))) {
+                            ((Token::Match(tok->previous(), "[=[(,] 0 * (") ||
+                              Token::Match(tok->previous(), "return|case 0 *|&& (")) &&
+                             validTokenEnd(bounded, tok, backToken, 2)))) {
                     tok->deleteNext();
                     if (tok->strAt(1) == "(")
                         eraseTokens(tok, tok->linkAt(1));

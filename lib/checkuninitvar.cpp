@@ -1540,7 +1540,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
         return true;
 
     // TODO: this used to be experimental - enable or remove see #5586
-    if ((false) && // NOLINT(readability-simplify-boolean-expr)
+    if ((false) && // NOLINT(readability-simplify-boolean-expr,readability-redundant-parentheses)
         !isPointer &&
         Token::Match(tok->tokAt(-2), "[(,] & %name% [,)]") &&
         isVariableUsage(tok, isPointer, alloc))
