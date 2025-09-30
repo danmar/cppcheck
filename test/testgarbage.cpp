@@ -257,6 +257,7 @@ private:
         TEST_CASE(garbageCode226);
         TEST_CASE(garbageCode227);
         TEST_CASE(garbageCode228);
+        TEST_CASE(garbageCode229);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1768,6 +1769,10 @@ private:
         ASSERT_NO_THROW(checkCode("void f() { enum { A = [=]() mutable { return 0; }() }; }"));
         ASSERT_NO_THROW(checkCode("enum { A = [=](void) mutable -> int { return 0; }() };"));
     }
+    void garbageCode229() { // #14126
+        ASSERT_THROW_INTERNAL(checkCode("void f() {} [[maybe_unused]]"), SYNTAX);
+    }
+
 
     void syntaxErrorFirstToken() {
         ASSERT_THROW_INTERNAL(checkCode("&operator(){[]};"), SYNTAX); // #7818
