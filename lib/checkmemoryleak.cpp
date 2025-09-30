@@ -454,7 +454,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                     continue;
 
                 const AllocType allocType = getReallocationType(reallocTok, tok->varId());
-                if (!((allocType == Malloc || allocType == OtherMem)))
+                if (!(allocType == Malloc || allocType == OtherMem))
                     continue;
                 const Token* arg = getArguments(reallocTok).at(f->reallocArg - 1);
                 while (arg && arg->isCast())
