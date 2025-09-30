@@ -60,7 +60,7 @@ private:
     }
 
     // Helper to create an ErrorMessage
-    ErrorMessage createErrorMessage(const std::string& id,
+    static ErrorMessage createErrorMessage(const std::string& id,
                                     Severity severity,
                                     const std::string& msg,
                                     const std::string& file = "test.cpp",
@@ -79,7 +79,7 @@ private:
     }
 
     // Helper to parse JSON and validate structure
-    bool parseAndValidateJson(const std::string& json, picojson::value& root)
+    static bool parseAndValidateJson(const std::string& json, picojson::value& root)
     {
         std::string parseError = picojson::parse(root, json);
         return parseError.empty() && root.is<picojson::object>();
