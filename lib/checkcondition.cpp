@@ -1059,7 +1059,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
 {
     not1 = false;
     while (comp && comp->str() == "!") {
-        not1 = !(not1);
+        not1 = !not1;
         comp = comp->astOperand1();
     }
 
@@ -1096,7 +1096,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
         expr = comp;
     }
 
-    inconclusive = inconclusive || ((value)[0] == '\'' && !(op == "!=" || op == "=="));
+    inconclusive = inconclusive || (value[0] == '\'' && !(op == "!=" || op == "=="));
 
     // Only float and int values are currently handled
     return MathLib::isInt(value) || MathLib::isFloat(value) || (value[0] == '\'');
@@ -1288,13 +1288,13 @@ void CheckCondition::checkIncorrectLogicOperator()
                 continue;
 
             // the expr are not the token of the value but they provide better context
-            const double d1 = (isfloat) ? MathLib::toDoubleNumber(value1) : 0;
-            const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
-            const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toBigNumber(value1, expr1);
-            const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toBigNumber(value2, expr2);
+            const double d1 = isfloat ? MathLib::toDoubleNumber(value1) : 0;
+            const double d2 = isfloat ? MathLib::toDoubleNumber(value2) : 0;
+            const MathLib::bigint i1 = isfloat ? 0 : MathLib::toBigNumber(value1, expr1);
+            const MathLib::bigint i2 = isfloat ? 0 : MathLib::toBigNumber(value2, expr2);
             const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1) || (std::numeric_limits<MathLib::bigint>::max()==i2);
-            const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toBigUNumber(value1, expr1) : 0;
-            const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toBigUNumber(value2, expr2) : 0;
+            const MathLib::biguint u1 = useUnsignedInt ? MathLib::toBigUNumber(value1, expr1) : 0;
+            const MathLib::biguint u2 = useUnsignedInt ? MathLib::toBigUNumber(value2, expr2) : 0;
             // evaluate if expression is always true/false
             bool alwaysTrue = true, alwaysFalse = true;
             bool firstTrue = true, secondTrue = true;
