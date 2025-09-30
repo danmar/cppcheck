@@ -31,8 +31,8 @@
 
 class CPPCHECKLIB SarifReport {
 public:
-    SarifReport();
-    ~SarifReport();
+    SarifReport() = default;
+    ~SarifReport() = default;
 
     void addFinding(ErrorMessage msg);
     std::string serialize(std::string productName) const;

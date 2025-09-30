@@ -25,9 +25,6 @@
 #include <set>
 #include <sstream>
 
-SarifReport::SarifReport() = default;
-SarifReport::~SarifReport() = default;
-
 void SarifReport::addFinding(ErrorMessage msg)
 {
     mFindings.push_back(std::move(msg));
