@@ -9117,7 +9117,7 @@ static bool isAnonymousEnum(const Token* tok)
         while (Token::Match(end, "%name%|::"))
             end = end->next();
     }
-    return end && Token::Match(end->link(), "} (| %type%| )| [,;[({=]");
+    return end && Token::Match(end->link(), "} (| %type%| )| [*,;[({=]");
 }
 
 void Tokenizer::simplifyStructDecl()
@@ -9218,7 +9218,8 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 // check for initialization
-                if (Token::Match(after, "%any% (|{")) {
+                bool isFuncDecl = Token::Match(after, "%name% (") && Token::simpleMatch(after->linkAt(1), ") {");
+                if (Token::Match(after, "%any% (|{") && !isFuncDecl) {
                     after->insertToken("=");
                     after = after->next();
                     const bool isEnum = start->str() == "enum";
