@@ -101,11 +101,11 @@ private:
         const picojson::array& runs = root.at("runs").get<picojson::array>();
         ASSERT_EQUALS(1U, runs.size());
 
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(0U, results.size());
 
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
         ASSERT_EQUALS(0U, rules.size());
@@ -122,10 +122,10 @@ private:
 
         const picojson::object& root = json.get<picojson::object>();
         const picojson::array& runs  = root.at("runs").get<picojson::array>();
-        const picojson::object& run  = runs[0].get<picojson::object>();
+        const picojson::object& cur_run  = runs[0].get<picojson::object>();
 
         // Check results
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(1U, results.size());
 
         const picojson::object& result = results[0].get<picojson::object>();
@@ -136,7 +136,7 @@ private:
         ASSERT_EQUALS("Null pointer dereference", message.at("text").get<std::string>());
 
         // Check rules
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
         ASSERT_EQUALS(1U, rules.size());
@@ -158,12 +158,12 @@ private:
 
         const picojson::object& root = json.get<picojson::object>();
         const picojson::array& runs  = root.at("runs").get<picojson::array>();
-        const picojson::object& run  = runs[0].get<picojson::object>();
+        const picojson::object& cur_run  = runs[0].get<picojson::object>();
 
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(3U, results.size());
 
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
         ASSERT_EQUALS(3U, rules.size());
@@ -184,13 +184,13 @@ private:
 
         const picojson::object& root = json.get<picojson::object>();
         const picojson::array& runs  = root.at("runs").get<picojson::array>();
-        const picojson::object& run  = runs[0].get<picojson::object>();
+        const picojson::object& cur_run  = runs[0].get<picojson::object>();
 
         // Should have no results (GitHub doesn't support findings without locations)
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(0U, results.size());
 
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
         ASSERT_EQUALS(0U, rules.size());
@@ -218,8 +218,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
 
         ASSERT_EQUALS(1U, results.size());
 
@@ -252,9 +252,9 @@ private:
 
         const picojson::object& root = json.get<picojson::object>();
         const picojson::array& runs  = root.at("runs").get<picojson::array>();
-        const picojson::object& run  = runs[0].get<picojson::object>();
+        const picojson::object& cur_run  = runs[0].get<picojson::object>();
 
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(6U, results.size());
 
         // Check severity mappings
@@ -282,8 +282,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -327,8 +327,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -361,8 +361,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -392,7 +392,7 @@ private:
         report.addFinding(
             createErrorMessage("test1", Severity::error, "Conclusive", "test.cpp", 10, 5, 0, Certainty::normal));
         report.addFinding(createErrorMessage(
-            "test2", Severity::error, "Inconclusive", "test.cpp", 20, 5, 0, Certainty::inconclusive));
+                              "test2", Severity::error, "Inconclusive", "test.cpp", 20, 5, 0, Certainty::inconclusive));
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
@@ -400,8 +400,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -430,8 +430,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
 
         ASSERT_EQUALS(1U, results.size());
 
@@ -452,8 +452,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -489,8 +489,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
 
         ASSERT_EQUALS(2U, results.size());
 
@@ -541,13 +541,13 @@ private:
 
         const picojson::object& root = json.get<picojson::object>();
         const picojson::array& runs  = root.at("runs").get<picojson::array>();
-        const picojson::object& run  = runs[0].get<picojson::object>();
+        const picojson::object& cur_run  = runs[0].get<picojson::object>();
 
         // Should have 3 results but only 1 rule
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(3U, results.size());
 
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
         ASSERT_EQUALS(1U, rules.size());
@@ -568,8 +568,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
 
         // Should use "Cppcheck" as default when custom name doesn't parse
@@ -587,8 +587,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
 
         // Should have a semantic version
@@ -627,8 +627,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -678,8 +678,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
 
         const std::string& version = driver.at("semanticVersion").get<std::string>();
@@ -700,8 +700,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
 
         // Should have a name (either parsed or default)
@@ -730,8 +730,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
 
         ASSERT_EQUALS(2U, results.size());
 
@@ -789,8 +789,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
 
         ASSERT_EQUALS(3U, results.size());
 
@@ -824,8 +824,8 @@ private:
 
         const picojson::object& root   = json.get<picojson::object>();
         const picojson::array& runs    = root.at("runs").get<picojson::array>();
-        const picojson::object& run    = runs[0].get<picojson::object>();
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& cur_run    = runs[0].get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
 
@@ -869,14 +869,14 @@ private:
 
         const picojson::object& root = json.get<picojson::object>();
         const picojson::array& runs  = root.at("runs").get<picojson::array>();
-        const picojson::object& run  = runs[0].get<picojson::object>();
+        const picojson::object& cur_run  = runs[0].get<picojson::object>();
 
         // Should only have results for findings with locations
-        const picojson::array& results = run.at("results").get<picojson::array>();
+        const picojson::array& results = cur_run.at("results").get<picojson::array>();
         ASSERT_EQUALS(3U, results.size());
 
         // Should only have rules for findings with locations
-        const picojson::object& tool   = run.at("tool").get<picojson::object>();
+        const picojson::object& tool   = cur_run.at("tool").get<picojson::object>();
         const picojson::object& driver = tool.at("driver").get<picojson::object>();
         const picojson::array& rules   = driver.at("rules").get<picojson::array>();
         ASSERT_EQUALS(3U, rules.size());

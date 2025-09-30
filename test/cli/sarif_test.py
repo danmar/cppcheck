@@ -123,6 +123,7 @@ def run_sarif_check(code, extra_args=None):
             return sarif_data
         except json.JSONDecodeError as e:
             pytest.fail(f"Failed to parse SARIF JSON: {e}\nOutput: {stderr}")
+            return None
 
 
 def test_sarif_basic_structure():
