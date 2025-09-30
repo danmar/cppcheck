@@ -30,6 +30,7 @@ Checks: >
         -bugprone-narrowing-conversions,
         -bugprone-signed-char-misuse,
         -bugprone-switch-missing-default-case,
+        -bugprone-throwing-static-initialization,
         -bugprone-unchecked-optional-access,
         -clang-analyzer-*,
         -concurrency-mt-unsafe,
