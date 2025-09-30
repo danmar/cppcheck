@@ -29,8 +29,7 @@ class TestSarifReport : public TestFixture
 {
 public:
     TestSarifReport() : TestFixture("TestSarifReport")
-    {
-    }
+    {}
 
 private:
     void run() override
@@ -391,7 +390,7 @@ private:
         report.addFinding(
             createErrorMessage("test1", Severity::error, "Conclusive", "test.cpp", 10, 5, 0, Certainty::normal));
         report.addFinding(createErrorMessage(
-            "test2", Severity::error, "Inconclusive", "test.cpp", 20, 5, 0, Certainty::inconclusive));
+                              "test2", Severity::error, "Inconclusive", "test.cpp", 20, 5, 0, Certainty::inconclusive));
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
