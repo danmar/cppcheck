@@ -131,6 +131,7 @@ Does not improve the readability.
 `readability-enum-initial-value`<br/>
 `modernize-use-trailing-return-type`<br/>
 `misc-unconventional-assign-operator`<br/>
+`bugprone-throwing-static-initialization`<br/>
 
 To be evaluated (need to remove exclusion).
 
