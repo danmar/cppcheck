@@ -9542,6 +9542,8 @@ void Tokenizer::simplifyCPPAttribute()
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head)->next();
+                if (!head)
+                    syntaxError(tok);
                 head->isAttributeMaybeUnused(true);
             } else if (Token::findsimplematch(tok->tokAt(2), "unused", tok->link())) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
