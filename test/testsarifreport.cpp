@@ -22,6 +22,7 @@
 #include "fixture.h"
 #include "helpers.h"
 
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -61,21 +62,21 @@ private:
 
     // Helper to create an ErrorMessage
     static ErrorMessage createErrorMessage(const std::string& id,
-                                    Severity severity,
-                                    const std::string& msg,
-                                    const std::string& file = "test.cpp",
-                                    int line                = 10,
-                                    int column              = 5,
-                                    int cweId               = 0,
-                                    Certainty certainty     = Certainty::normal)
+                                           Severity severity,
+                                           const std::string& msg,
+                                           const std::string& file = "test.cpp",
+                                           int line                = 10,
+                                           int column              = 5,
+                                           int cweId               = 0,
+                                           Certainty certainty     = Certainty::normal)
     {
         ErrorMessage::FileLocation loc(file, line, column);
-        ErrorMessage errmsg({loc}, file, severity, msg, id, certainty);
+        ErrorMessage errorMessage({loc}, file, severity, msg, id, certainty);
         if (cweId > 0)
         {
-            errmsg.cwe = CWE(cweId);
+            errorMessage.cwe = CWE(cweId);
         }
-        return errmsg;
+        return errorMessage;
     }
 
     // Helper to parse JSON and validate structure
@@ -173,8 +174,9 @@ private:
         SarifReport report;
 
         // Create error without location (empty callStack)
-        ErrorMessage errmsg({}, "test.cpp", Severity::error, "Error without location", "testError", Certainty::normal);
-        report.addFinding(errmsg);
+        ErrorMessage errorMessage(
+            {}, "test.cpp", Severity::error, "Error without location", "testError", Certainty::normal);
+        report.addFinding(errorMessage);
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
@@ -202,13 +204,13 @@ private:
         ErrorMessage::FileLocation loc2("test2.cpp", 20, 10);
         ErrorMessage::FileLocation loc3("test3.cpp", 30, 15);
 
-        ErrorMessage errmsg({loc1, loc2, loc3},
-                            "test1.cpp",
-                            Severity::error,
-                            "Error with multiple locations",
-                            "multiLocError",
-                            Certainty::normal);
-        report.addFinding(errmsg);
+        ErrorMessage errorMessage({loc1, loc2, loc3},
+                                  "test1.cpp",
+                                  Severity::error,
+                                  "Error with multiple locations",
+                                  "multiLocError",
+                                  Certainty::normal);
+        report.addFinding(errorMessage);
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
@@ -390,7 +392,7 @@ private:
         report.addFinding(
             createErrorMessage("test1", Severity::error, "Conclusive", "test.cpp", 10, 5, 0, Certainty::normal));
         report.addFinding(createErrorMessage(
-                              "test2", Severity::error, "Inconclusive", "test.cpp", 20, 5, 0, Certainty::inconclusive));
+            "test2", Severity::error, "Inconclusive", "test.cpp", 20, 5, 0, Certainty::inconclusive));
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
@@ -475,11 +477,11 @@ private:
         ErrorMessage::FileLocation loc1("test.cpp", 0, 0);
         ErrorMessage::FileLocation loc2("test.cpp", 1, 1);
 
-        ErrorMessage errmsg1({loc1}, "test.cpp", Severity::error, "Error at 0,0", "error1", Certainty::normal);
-        ErrorMessage errmsg2({loc2}, "test.cpp", Severity::error, "Error at 1,1", "error2", Certainty::normal);
+        ErrorMessage errorMessage1({loc1}, "test.cpp", Severity::error, "Error at 0,0", "error1", Certainty::normal);
+        ErrorMessage errorMessage2({loc2}, "test.cpp", Severity::error, "Error at 1,1", "error2", Certainty::normal);
 
-        report.addFinding(errmsg1);
-        report.addFinding(errmsg2);
+        report.addFinding(errorMessage1);
+        report.addFinding(errorMessage2);
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
@@ -713,14 +715,14 @@ private:
 
         // Test with 0 values
         ErrorMessage::FileLocation loc0("test.cpp", 0, 0);
-        ErrorMessage errmsg0({loc0}, "test.cpp", Severity::error, "Error at 0", "error0", Certainty::normal);
-        report.addFinding(errmsg0);
+        ErrorMessage errorMessage0({loc0}, "test.cpp", Severity::error, "Error at 0", "error0", Certainty::normal);
+        report.addFinding(errorMessage0);
 
         // Test with positive values
         ErrorMessage::FileLocation locPos("test.cpp", 10, 5);
-        ErrorMessage errmsgPos(
+        ErrorMessage errorMessagePos(
             {locPos}, "test.cpp", Severity::error, "Error at positive", "errorPos", Certainty::normal);
-        report.addFinding(errmsgPos);
+        report.addFinding(errorMessagePos);
 
         std::string sarif = report.serialize("Cppcheck");
         picojson::value json;
