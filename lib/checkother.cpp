@@ -4328,7 +4328,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
+        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE758, Certainty::normal);
 }
 
 void CheckOther::checkModuloOfOne()
