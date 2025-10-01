@@ -310,6 +310,7 @@ private:
         TEST_CASE(bitfields18);
         TEST_CASE(bitfields19); // ticket #13733
         TEST_CASE(bitfields20);
+        TEST_CASE(bitfields21);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -4897,6 +4898,16 @@ private:
     void bitfields20() {
         const char code[] = "struct S { volatile ::uint32_t a : 10; };";
         ASSERT_EQUALS("struct S { volatile :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
+    void bitfields21() {
+        const char code[] = "struct S { uint32_t a : 1, b : 1; };";
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a");
+        ASSERT_EQUALS(1, a->bits());
+        const Token *b = Token::findsimplematch(tokenizer.tokens(), "b");
+        ASSERT_EQUALS(1, b->bits());
     }
 
     void simplifyNamespaceStd() {
