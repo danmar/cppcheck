@@ -1150,11 +1150,6 @@ static bool astIsRhs(const Token *tok)
     return tok && tok->astParent() && tok == tok->astParent()->astOperand2();
 }
 
-static bool isVoidCast(const Token *tok)
-{
-    return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
-}
-
 const Token* CheckUninitVar::isVariableUsage(const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
 {
     const bool cpp = vartok->isCpp();

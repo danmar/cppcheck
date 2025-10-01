@@ -3300,6 +3300,10 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout_str());
 
+        // #14136
+        check("void f(int& x) { (void)x; }\n");
+        ASSERT_EQUALS("", errout_str());
+
         check("void e();\n"
               "void g(void);\n"
               "void h(void);\n"
@@ -4496,6 +4500,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:5:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n",
+                      errout_str());
+
+        check("struct T;\n"
+              "void use(const T*);\n"
+              "void f(T* tok0) {\n"
+              "    T *tok1 = tok0;\n"
+              "    const T *tok2 = tok1;\n"
+              "    use(tok2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:8]: (style) Variable 'tok1' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str());
     }
 
@@ -12163,9 +12177,7 @@ private:
               "        for (auto &j : g(std::move(l))) { (void)j; }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4:20]: (style) Variable 'j' can be declared as reference to const [constVariableReference]\n"
-                      "[test.cpp:4:36]: (warning) Access of moved variable 'l'. [accessMoved]\n",
-                      errout_str());
+        ASSERT_EQUALS("[test.cpp:4:36]: (warning) Access of moved variable 'l'. [accessMoved]\n", errout_str());
     }
 
     void moveCallback()

@@ -1243,7 +1243,7 @@ void Tokenizer::simplifyTypedefCpp()
         bool refToArray = false;
         bool ptrMember = false;
         bool typeOf = false;
-        Token *namespaceStart = nullptr;
+        const Token *namespaceStart = nullptr;
         Token *namespaceEnd = nullptr;
 
         // check for invalid input
@@ -3025,7 +3025,7 @@ bool Tokenizer::simplifyUsing()
         ScopeInfo3 scopeInfo1;
         ScopeInfo3 *currentScope1 = &scopeInfo1;
         Token *startToken = list.front();
-        Token *endToken = nullptr;
+        const Token *endToken = nullptr;
         bool inMemberFunc = false;
         const ScopeInfo3 * memberFuncScope = nullptr;
         const Token * memberFuncEnd = nullptr;
@@ -3039,7 +3039,7 @@ bool Tokenizer::simplifyUsing()
             if (!currentScope1)
                 return substitute; // something bad happened
             startToken = usingEnd->next();
-            endToken = const_cast<Token*>(currentScope->bodyEnd->next());
+            endToken = currentScope->bodyEnd->next();
             if (currentScope->type == ScopeInfo3::MemberFunction) {
                 const ScopeInfo3 * temp = currentScope->findScope(currentScope->fullName);
                 if (temp) {
@@ -9117,7 +9117,7 @@ static bool isAnonymousEnum(const Token* tok)
         while (Token::Match(end, "%name%|::"))
             end = end->next();
     }
-    return end && Token::Match(end->link(), "} (| %type%| )| [,;[({=]");
+    return end && Token::Match(end->link(), "} (| %type%| )| [*,;[({=]");
 }
 
 void Tokenizer::simplifyStructDecl()
@@ -9218,7 +9218,8 @@ void Tokenizer::simplifyStructDecl()
                 }
 
                 // check for initialization
-                if (Token::Match(after, "%any% (|{")) {
+                bool isFuncDecl = Token::Match(after, "%name% (") && Token::simpleMatch(after->linkAt(1), ") {");
+                if (Token::Match(after, "%any% (|{") && !isFuncDecl) {
                     after->insertToken("=");
                     after = after->next();
                     const bool isEnum = start->str() == "enum";

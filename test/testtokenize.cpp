@@ -218,6 +218,9 @@ private:
         TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl30);
         TEST_CASE(vardecl31); // function pointer init
+        TEST_CASE(vardecl32);
+        TEST_CASE(vardecl33);
+        TEST_CASE(vardecl34);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2768,6 +2771,27 @@ private:
         {
             const char code[] = "void foo() { int (*fptr)(int) = 0; }";
             ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( int ) ; fptr = 0 ; }", tokenizeAndStringify(code));
+        }
+    }
+
+    void vardecl32() {
+        {
+            const char code[] = "static enum { E } f() { return E; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 f ( ) { return E ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
+    void vardecl33() {
+        {
+            const char code[] = "static enum { E } *f() { return NULL; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 * f ( ) { return NULL ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
+    void vardecl34() {
+        {
+            const char code[] = "static enum { E } const *f() { return NULL; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 const * f ( ) { return NULL ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
         }
     }
 

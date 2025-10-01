@@ -188,6 +188,8 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 bool isVariableDecl(const Token* tok);
 bool isStlStringType(const Token* tok);
 
+bool isVoidCast(const Token* tok);
+
 bool isTemporary(const Token* tok, const Library* library, bool unknown = false);
 
 const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
@@ -379,7 +381,7 @@ bool isExpressionChangedAt(const Token* expr,
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect = nullptr);
+bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect = nullptr);
 
 const Token* getArgumentStart(const Token* ftok);
 
