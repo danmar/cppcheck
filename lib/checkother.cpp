@@ -1641,6 +1641,21 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
     return false;
 }
 
+static bool isCastToVoid(const Variable* var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    for (const Token* tok = var->scope()->bodyStart; tok != var->scope()->bodyEnd; tok = tok->next()) {
+        if (tok->varId() != var->declarationId())
+            continue;
+        if (isVoidCast(tok->astParent()))
+            return true;
+    }
+    return false;
+}
+
 void CheckOther::checkConstVariable()
 {
     if ((!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC()) && !mSettings->isPremiumEnabled("constVariable"))
@@ -1688,6 +1703,8 @@ void CheckOther::checkConstVariable()
         if (var->nameToken()->isExpandedMacro())
             continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
+            continue;
+        if (isCastToVoid(var))
             continue;
         if (isVariableChanged(var, *mSettings))
             continue;
