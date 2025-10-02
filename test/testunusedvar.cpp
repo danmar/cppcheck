@@ -72,6 +72,7 @@ private:
         TEST_CASE(structmember27); // #13367
         TEST_CASE(structmember28);
         TEST_CASE(structmember29); // #14075
+        TEST_CASE(structmember30); // #14131
         TEST_CASE(structmember_macro);
         TEST_CASE(structmember_template_argument); // #13887 - do not report that member used in template argument is unused
         TEST_CASE(classmember);
@@ -2021,6 +2022,17 @@ private:
                                "    alignas(cDataAlign) std::array<uint8_t, cDataSize> storage{};\n"
                                "};\n");
         ASSERT_EQUALS("[test.cpp:4:56]: (style) struct member 'S::storage' is never used. [unusedStructMember]\n", errout_str());
+    }
+
+    void structmember30() { // #14131
+        checkStructMemberUsage("struct S\n"
+                               "{\n"
+                               "private:\n"
+                               "    __attribute__((unused)) int i1{};\n"
+                               "    int __attribute__((unused)) i2{}; // no warning\n"
+                               "    int i3 __attribute__((unused)) {};\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void structmember_macro() {
