@@ -1771,6 +1771,7 @@ private:
     }
     void garbageCode229() { // #14126
         ASSERT_THROW_INTERNAL(checkCode("void f() {} [[maybe_unused]]"), SYNTAX);
+        ASSERT_THROW_INTERNAL(checkCode("void f() {} [[unused]]"), SYNTAX);
     }
 
 
