@@ -73,6 +73,7 @@ private:
         TEST_CASE(structmember28);
         TEST_CASE(structmember29); // #14075
         TEST_CASE(structmember30); // #14131
+        TEST_CASE(structmember31); // #14130
         TEST_CASE(structmember_macro);
         TEST_CASE(structmember_template_argument); // #13887 - do not report that member used in template argument is unused
         TEST_CASE(classmember);
@@ -2031,6 +2032,15 @@ private:
                                "    __attribute__((unused)) int i1{};\n"
                                "    int __attribute__((unused)) i2{}; // no warning\n"
                                "    int i3 __attribute__((unused)) {};\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void structmember31() { // #14130
+        checkStructMemberUsage("struct S\n"
+                               "{\n"
+                               "    [[maybe_unused]] int i1{};\n"
+                               "    int i2 [[maybe_unused]] {};\n"
                                "};\n");
         ASSERT_EQUALS("", errout_str());
     }
