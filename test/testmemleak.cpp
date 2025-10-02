@@ -2701,6 +2701,12 @@ private:
               "    delete[] &p[-1];\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(FILE* fp1, FILE* fp2) {\n" // #14171
+              "    if (freopen(NULL, \"w+b\", fp1) == NULL) {}\n"
+              "    if (std::freopen(NULL, \"w+b\", fp2) == NULL) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void smartPointerFunctionParam() {
