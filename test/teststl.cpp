@@ -5873,6 +5873,28 @@ private:
               "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("bool get_index(const std::vector<int>& items, int value, size_t& index) {\n" // #14047
+              "    size_t current_index = 0;\n"
+              "    for (size_t i = 0; i < items.size(); ++i) {\n"
+              "        if (items[i] == value) {\n"
+              "            if (current_index != index) {\n"
+              "                current_index++;\n"
+              "                continue;\n"
+              "            }\n"
+              "            index = i;\n"
+              "            return true;\n"
+              "        }\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n"
+              "int main() {\n"
+              "    std::vector<int> items{ 0, 1, 1, 1 };\n"
+              "    size_t index = 2;\n"
+              "    get_index(items, 1, index);\n"
+              "    return index;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void loopAlgoMinMax() {

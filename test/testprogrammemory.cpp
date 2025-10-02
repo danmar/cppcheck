@@ -30,6 +30,9 @@ public:
 private:
     void run() override {
         TEST_CASE(copyOnWrite);
+        TEST_CASE(hasValue);
+        TEST_CASE(getValue);
+        TEST_CASE(at);
     }
 
     void copyOnWrite() const {
@@ -78,6 +81,22 @@ private:
         v = pm.getValue(id);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
+    }
+
+    void hasValue() const {
+        ProgramMemory pm;
+        ASSERT(!pm.hasValue(123));
+    }
+
+    void getValue() const {
+        ProgramMemory pm;
+        ASSERT(!pm.getValue(123));
+    }
+
+    void at() const {
+        ProgramMemory pm;
+        ASSERT_THROW_EQUALS_2(pm.at(123), std::out_of_range, "ProgramMemory::at");
+        ASSERT_THROW_EQUALS_2(utils::as_const(pm).at(123), std::out_of_range, "ProgramMemory::at");
     }
 };
 

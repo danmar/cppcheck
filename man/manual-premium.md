@@ -1272,6 +1272,21 @@ Command to activate Misra C++ 2023 checkers:
 
     cppcheck --premium=misra-c++-2023 ....
 
+### Checking all C and C++ files
+
+The `cert-c` and `misra-c-*` coding standards target C and therefore the checkers only check C files by default.
+
+The `autosar`, `cert-c++` and `misra-c++-*` coding standards target C++ and therefore the checkers only check C++ files by default.
+
+If you want to check all files you can append ":all" to the coding standard. Example:
+
+    # Misra C checkers are executed on C files, not on C++ files
+    cppcheck --premium=misra-c-2025 path
+
+    # Misra C checkers are executed on C and C++ files
+    cppcheck --premium=misra-c-2025:all path
+
+
 ## Compliance report
 
 ### Graphical user interface
@@ -1298,8 +1313,75 @@ Description of the options:
 - `--output-file`: html filename that the report should be written to
 - `results.xml`: The xml output from cppcheck
 
+## Metrics
+
+To generate metrics add option `--premium=metrics`. The metrics are saved in the xml v3 report.
+Example:
+
+    cppcheck --premium=metrics test.c --xml-version=3 2> res.xml
+
+We provide a small simple python script that creates a metrics report in CSV format:
+
+    python3 HISReport.py -f res.xml -j path/to/cppcheck-id-mapping.json -o test.csv
+
+the `cppcheck-id-mapping.json` is provided in the cppcheck premium installation folder, i.e.
+`/opt/cppcheckpremium` or `C:\Program Files\Cppcheck Premium`.
+
+We do not have a ready-made solution to generate a html/pdf report. You can easily tweak our
+HISReport.py script so that it generates html and get the report exactly as you want.
+
 ## Licenses
+
+### Commercial Terms
 
 Information about Cppcheck Premium licenses:
 https://www.cppcheck.com/plans-pricing
+
+### Installation / Registration
+
+This is described on the Cppcheck Premium website:
+https://www.cppcheck.com
+
+### License file path
+
+There are predefined paths where the premium addon search for license files. If you want to
+provide an arbitrary license file path on the command line you can use the option
+`--premium-license-file`. Example:
+
+    cppcheck --premium-license-file=path/to/file.lic test.cpp
+
+If an explicit path is provided like this then premium addon does not search for license
+files in the predefined paths.
+
+### Troubleshooting
+
+#### Step 1: check premiumaddon debug output
+
+If your license does not work you can get some details about the license validation by executing
+premiumaddon binary with the `--debug` option.
+
+Windows:
+
+    premiumaddon.exe --debug
+
+Linux/Mac:
+
+    premiumaddon --debug
+
+These commands can be executed from an arbitrary folder.
+
+#### Step 2: clean up cppcheck build dir
+
+Command line:
+If you use --cppcheck-build-dir then remove all files in the specified folder and recheck.
+
+Cppcheck GUI:
+The GUI normally by default creates a cppcheck build dir. Clear all results and recheck.
+You can clear all results by clicking on the brush icon in the toolbar. Or by open `Edit` menu and selecting menu item `Clear results`.
+
+#### Step 3: remove cppcheck-premium-loc files
+
+If you have cppcheck-premium-loc files in your project folders those should be removed.
+
+If such files are generated during analysis, then review your scripts to check why those files are generated.
 

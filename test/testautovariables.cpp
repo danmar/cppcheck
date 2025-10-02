@@ -30,6 +30,7 @@ public:
 
 private:
     const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).library("std.cfg").library("qt.cfg").build();
+    const Settings settings_i = settingsBuilder(settings).certainty(Certainty::inconclusive).build();
 
     struct CheckOptions
     {
@@ -41,7 +42,7 @@ private:
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings &settings1 = options.inconclusive ? settings_i : settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);
@@ -4120,6 +4121,20 @@ private:
               "    (void)m->first;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9:63] -> [test.cpp:9:49] -> [test.cpp:10:11]: (error) Using iterator that is a temporary. [danglingTemporaryLifetime]\n",
+                      errout_str());
+
+        check("struct A {\n" // #14054
+              "    std::map<int, int> m_;\n"
+              "};\n"
+              "struct B {\n"
+              "    A a_;\n"
+              "};\n"
+              "B func();\n"
+              "void f() {\n"
+              "    const std::map<int, int>::iterator m = func().a_.m_.begin();\n"
+              "    (void)m->first;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9:62] -> [test.cpp:9:48] -> [test.cpp:10:11]: (error) Using iterator that is a temporary. [danglingTemporaryLifetime]\n",
                       errout_str());
 
         check("void f(bool b) {\n"

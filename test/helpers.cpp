@@ -27,6 +27,7 @@
 
 #include <cerrno>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <list>
@@ -115,27 +116,26 @@ ScopedFile::~ScopedFile() {
 }
 
 // TODO: we should be using the actual Preprocessor implementation
-std::string PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
+std::string PreprocessorHelper::getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
 {
-    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), std::set<std::string>{cfg}, filename, inlineSuppression);
+    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), filedata.size(), std::set<std::string>{cfg}, filename, inlineSuppression);
     const auto it = cfgcode.find(cfg);
     if (it == cfgcode.end())
         return "";
     return it->second;
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &filename)
 {
-    return getcode(settings, errorlogger, code, {}, filename, inlineSuppression);
+    return getcode(settings, errorlogger, code, size, {}, filename, nullptr);
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
 
-    std::istringstream istr(code);
-    simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
+    simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
     Preprocessor preprocessor(settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens, *inlineSuppression);
@@ -152,8 +152,8 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
         cfgs = preprocessor.getConfigs(tokens);
     for (const std::string & config : cfgs) {
         try {
-            // TODO: also preserve location information when #include exists - enabling that will fail since #line is treated like a regular token
-            cfgcode[config] = preprocessor.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
+            const bool writeLocations = (strstr(code, "#file") != nullptr) || (strstr(code, "#include") != nullptr);
+            cfgcode[config] = preprocessor.getcode(tokens, config, files, writeLocations);
         } catch (const simplecpp::Output &) {
             cfgcode[config] = "";
         }
@@ -162,11 +162,9 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     return cfgcode;
 }
 
-void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
+void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
-    // TODO: get rid of stream
-    std::istringstream istr(code);
-    const simplecpp::TokenList tokens1(istr, files, file0);
+    const simplecpp::TokenList tokens1(code, size, files, file0);
 
     Preprocessor preprocessor(tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
     simplecpp::TokenList tokens2 = preprocessor.preprocess(tokens1, "", files, true);

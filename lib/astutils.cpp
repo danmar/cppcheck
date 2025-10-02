@@ -109,7 +109,7 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
 }
 
 template<class T, class OuputIterator, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static void astFlattenCopy(T* tok, const char* op, OuputIterator out, nonneg int depth = 100)
+static void astFlattenCopy(T* tok, const char* op, OuputIterator out, int depth = 100)
 {
     --depth;
     if (!tok || depth < 0)
@@ -427,6 +427,12 @@ bool isStlStringType(const Token* tok)
 {
     return Token::Match(tok, "std :: string|wstring|u16string|u32string !!::") ||
            (Token::simpleMatch(tok, "std :: basic_string <") && !Token::simpleMatch(tok->linkAt(3), "> ::"));
+}
+
+bool isVoidCast(const Token* tok)
+{
+    return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() &&
+           tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
 bool isTemporary(const Token* tok, const Library* library, bool unknown)
@@ -775,10 +781,11 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings& set
                 if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
                     (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) <= scope->varlist.size() &&
                     !scope->varlist.empty()) {
-                    assert(argn < scope->varlist.size());
-                    auto it = std::next(scope->varlist.cbegin(), argn);
-                    if (it->valueType())
-                        return {*it->valueType()};
+                    if (argn < scope->varlist.size()) {
+                        auto it = std::next(scope->varlist.cbegin(), argn);
+                        if (it->valueType())
+                            return { *it->valueType() };
+                    }
                 }
             }
         }
@@ -1061,7 +1068,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
+bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
 {
     const Token* r = nullptr;
     if (indirect)
@@ -1212,7 +1219,8 @@ static const Token * followVariableExpression(const Settings& settings, const To
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
-    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, tok->varId(), false, settings)))
+    const int indirect = var->isArray() ? var->dimensions().size() : 0;
+    if (!var->isConst() && (!precedes(varTok, endToken) || isVariableChanged(varTok, endToken, indirect, tok->varId(), false, settings)))
         return tok;
     if (precedes(varTok, endToken) && isAliased(varTok, endToken, tok->varId()))
         return tok;
@@ -2904,7 +2912,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
                 // TODO: Is global variable really changed by function call?
                 return true;
         }
-        int i = 1;
+        nonneg int i = 1;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         auto expr = getExprTok();
@@ -2914,7 +2922,10 @@ static bool isExpressionChangedAt(const F& getExprTok,
             aliased = isAliasOf(tok, expr, &i);
         if (!aliased)
             return false;
-        if (isVariableChanged(tok, indirect + i, settings, depth))
+        i += indirect;
+        if (tok->valueType() && tok->valueType()->pointer)
+            i = std::min(i, tok->valueType()->pointer);
+        if (isVariableChanged(tok, i, settings, depth))
             return true;
         // TODO: Try to traverse the lambda function
         if (Token::Match(tok, "%var% ("))

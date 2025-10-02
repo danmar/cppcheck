@@ -865,6 +865,7 @@ void CheckFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *
     c.invalidFunctionArgBoolError(nullptr, "func_name", 1);
     c.invalidFunctionArgStrError(nullptr, "func_name", 1);
     c.ignoredReturnValueError(nullptr, "malloc");
+    c.ignoredReturnErrorCode(nullptr, "func_name");
     c.mathfunctionCallWarning(nullptr);
     c.mathfunctionCallWarning(nullptr, "1 - erf(x)", "erfc(x)");
     c.memsetZeroBytesError(nullptr);
@@ -873,4 +874,5 @@ void CheckFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings *
     c.missingReturnError(nullptr);
     c.copyElisionError(nullptr);
     c.useStandardLibraryError(nullptr, "memcpy");
+    // TODO: allocaCalled, <funcname>Called
 }

@@ -196,16 +196,20 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         const char* name = e->Name();
         if (std::strcmp(name,"location")==0) {
+            const char *strorigfile = e->Attribute("origfile");
             const char *strfile = e->Attribute("file");
             const char *strinfo = e->Attribute("info");
             const char *strline = e->Attribute("line");
             const char *strcolumn = e->Attribute("column");
 
             const char *file = strfile ? strfile : unknown;
+            const char *origfile = strorigfile ? strorigfile : file;
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? strToInt<int>(strline) : 0;
             const int column = strcolumn ? strToInt<int>(strcolumn) : 0;
-            callStack.emplace_front(file, info, line, column);
+            callStack.emplace_front(origfile, info, line, column);
+            if (strorigfile)
+                callStack.front().setfile(file);
         } else if (std::strcmp(name,"symbol")==0) {
             mSymbolNames += e->GetText();
         }
@@ -508,7 +512,11 @@ std::string ErrorMessage::toXML() const
 
     for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", it->getfile(false).c_str());
+        const std::string origfile = it->getOrigFile(false);
+        const std::string file = it->getfile(false);
+        if (origfile != file)
+            printer.PushAttribute("origfile", origfile.c_str());
+        printer.PushAttribute("file", file.c_str());
         printer.PushAttribute("line", std::max(it->line,0));
         printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
@@ -594,9 +602,9 @@ static void replace(std::string& source, const std::unordered_map<std::string, s
     }
 }
 
-static void replaceColors(std::string& source) {
+static void replaceColors(std::string& source, bool erase) {
     // TODO: colors are not applied when either stdout or stderr is not a TTY because we resolve them before the stream usage
-    static const std::unordered_map<std::string, std::string> substitutionMap =
+    static const std::unordered_map<std::string, std::string> substitutionMapReplace =
     {
         {"{reset}",   ::toString(Color::Reset)},
         {"{bold}",    ::toString(Color::Bold)},
@@ -607,7 +615,21 @@ static void replaceColors(std::string& source) {
         {"{magenta}", ::toString(Color::FgMagenta)},
         {"{default}", ::toString(Color::FgDefault)},
     };
-    replace(source, substitutionMap);
+    static const std::unordered_map<std::string, std::string> substitutionMapErase =
+    {
+        {"{reset}",   ""},
+        {"{bold}",    ""},
+        {"{dim}",     ""},
+        {"{red}",     ""},
+        {"{green}",   ""},
+        {"{blue}",    ""},
+        {"{magenta}", ""},
+        {"{default}", ""},
+    };
+    if (!erase)
+        replace(source, substitutionMapReplace);
+    else
+        replace(source, substitutionMapErase);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
@@ -776,6 +798,15 @@ std::string ErrorLogger::toxml(const std::string &str)
         case '\0':
             xml += "\\0";
             break;
+        case '\n':
+            xml += "&#10;";
+            break;
+        case '\t':
+            xml += "&#09;";
+            break;
+        case '\r':
+            xml += "&#13;";
+            break;
         default:
             if (c >= ' ' && c <= 0x7f)
                 xml += c;
@@ -913,16 +944,16 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
     return s;
 }
 
-void substituteTemplateFormatStatic(std::string& templateFormat)
+void substituteTemplateFormatStatic(std::string& templateFormat, bool eraseColors)
 {
     replaceSpecialChars(templateFormat);
-    replaceColors(templateFormat);
+    replaceColors(templateFormat, eraseColors);
 }
 
-void substituteTemplateLocationStatic(std::string& templateLocation)
+void substituteTemplateLocationStatic(std::string& templateLocation, bool eraseColors)
 {
     replaceSpecialChars(templateLocation);
-    replaceColors(templateLocation);
+    replaceColors(templateLocation, eraseColors);
 }
 
 std::string getClassification(const std::string &guideline, ReportType reportType) {

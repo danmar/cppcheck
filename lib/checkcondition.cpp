@@ -78,6 +78,13 @@ bool CheckCondition::diag(const Token* tok, bool insert)
     return true;
 }
 
+bool CheckCondition::diag(const Token* tok1, const Token* tok2)
+{
+    const bool b1 = diag(tok1);
+    const bool b2 = diag(tok2);
+    return b1 && b2;
+}
+
 bool CheckCondition::isAliased(const std::set<int> &vars) const
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -515,7 +522,7 @@ void CheckCondition::duplicateCondition()
 
 void CheckCondition::duplicateConditionError(const Token *tok1, const Token *tok2, ErrorPath errorPath)
 {
-    if (diag(tok1) & diag(tok2))
+    if (diag(tok1, tok2))
         return;
     errorPath.emplace_back(tok1, "First condition");
     errorPath.emplace_back(tok2, "Second condition");
@@ -581,7 +588,7 @@ void CheckCondition::overlappingElseIfConditionError(const Token *tok, nonneg in
 
 void CheckCondition::oppositeElseIfConditionError(const Token *ifCond, const Token *elseIfCond, ErrorPath errorPath)
 {
-    if (diag(ifCond) & diag(elseIfCond))
+    if (diag(ifCond, elseIfCond))
         return;
     std::ostringstream errmsg;
     errmsg << "Expression is always true because 'else if' condition is opposite to previous condition at line "
@@ -857,7 +864,7 @@ static std::string innerSmtString(const Token * tok)
 
 void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
-    if (diag(tok1) & diag(tok2))
+    if (diag(tok1, tok2))
         return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
@@ -872,7 +879,7 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
 
 void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token* tok2, ErrorPath errorPath)
 {
-    if (diag(tok1) & diag(tok2))
+    if (diag(tok1, tok2))
         return;
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
@@ -887,7 +894,7 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
 
 void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, const Token* cond2, ErrorPath errorPath)
 {
-    if (diag(cond1) & diag(cond2))
+    if (diag(cond1, cond2))
         return;
 
     const bool isReturnValue = cond2 && Token::simpleMatch(cond2->astParent(), "return");
@@ -2042,8 +2049,9 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                         break;
                     }
                 }
-                if (error)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
+                if (!error || diag(tok))
+                    continue;
+                compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
             }
         }
     }

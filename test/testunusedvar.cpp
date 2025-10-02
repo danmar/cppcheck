@@ -71,6 +71,8 @@ private:
         TEST_CASE(structmember26); // #13345
         TEST_CASE(structmember27); // #13367
         TEST_CASE(structmember28);
+        TEST_CASE(structmember29); // #14075
+        TEST_CASE(structmember30); // #14131
         TEST_CASE(structmember_macro);
         TEST_CASE(structmember_template_argument); // #13887 - do not report that member used in template argument is unused
         TEST_CASE(classmember);
@@ -289,7 +291,8 @@ private:
     };
 
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsage_(const char* file, int line, const char code[], const CheckStructMemberUsageOptions& options = make_default_obj()) {
+    template<size_t size>
+    void checkStructMemberUsage_(const char* file, int line, const char (&code)[size], const CheckStructMemberUsageOptions& options = make_default_obj()) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this, options.cpp);
         if (options.directives)
@@ -302,7 +305,8 @@ private:
     }
 
 #define checkStructMemberUsageP(...) checkStructMemberUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsageP_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkStructMemberUsageP_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
@@ -314,7 +318,8 @@ private:
     }
 
 #define checkFunctionVariableUsageP(...) checkFunctionVariableUsageP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkFunctionVariableUsageP_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkFunctionVariableUsageP_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
@@ -2008,6 +2013,26 @@ private:
                                "    unsigned int : 16;\n"
                                "};\n");
         ASSERT_EQUALS("[test.cpp:2:18]: (style) struct member 'S::a' is never used. [unusedStructMember]\n", errout_str());
+    }
+
+    void structmember29() { // #14075 - alignas false positive
+        checkStructMemberUsage("struct S {\n"
+                               "    static constexpr size_t cDataAlign = 8;\n"
+                               "    static constexpr size_t cDataSize = 128;\n"
+                               "    alignas(cDataAlign) std::array<uint8_t, cDataSize> storage{};\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:4:56]: (style) struct member 'S::storage' is never used. [unusedStructMember]\n", errout_str());
+    }
+
+    void structmember30() { // #14131
+        checkStructMemberUsage("struct S\n"
+                               "{\n"
+                               "private:\n"
+                               "    __attribute__((unused)) int i1{};\n"
+                               "    int __attribute__((unused)) i2{}; // no warning\n"
+                               "    int i3 __attribute__((unused)) {};\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void structmember_macro() {

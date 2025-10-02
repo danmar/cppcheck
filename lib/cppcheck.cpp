@@ -35,6 +35,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
+#include "symboldatabase.h"
 #include "timer.h"
 #include "token.h"
 #include "tokenize.h"
@@ -432,6 +433,9 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &premiumArgs,
                                                  const CppCheck::ExecuteCmdFn &executeCommand)
 {
+    if (!executeCommand)
+        throw InternalError(nullptr, "Failed to execute addon - no command callback provided");
+
     std::string pythonExe;
 
     if (!addonInfo.executable.empty())
@@ -441,7 +445,7 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
     else if (!defaultPythonExe.empty())
         pythonExe = cmdFileName(defaultPythonExe);
     else {
-        // store in static variable so we only look this up once
+        // store in static variable so we only look this up once - TODO: do not cache globally
         static const std::string detectedPythonExe = detectPython(executeCommand);
         if (detectedPythonExe.empty())
             throw InternalError(nullptr, "Failed to auto detect python");
@@ -686,6 +690,11 @@ unsigned int CppCheck::checkClang(const FileWithDetails &file, int fileIndex)
         mErrorLogger.reportOut(exe + " " + args2, Color::Reset);
     }
 
+    if (!mExecuteCommand) {
+        std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "' - (no command callback provided)" << std::endl;
+        return 0; // TODO: report as failure?
+    }
+
     std::string output2;
     const int exitcode = mExecuteCommand(exe,split(args2),redirect2,output2);
     if (mSettings.debugClangOutput) {
@@ -790,10 +799,9 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     return returnValue;
 }
 
-unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size)
 {
-    std::istringstream iss(content);
-    return checkFile(file, "", 0, &iss);
+    return checkBuffer(file, "", 0, data, size);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -842,15 +850,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     return returnValue;
 }
 
-static simplecpp::TokenList createTokenList(const std::string& filename, std::vector<std::string>& files, simplecpp::OutputList* outputList, std::istream* fileStream)
-{
-    if (fileStream)
-        return {*fileStream, files, filename, outputList};
-
-    return {filename, files, outputList};
-}
-
-std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens) const
+std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const std::string& filePath) const
 {
     std::ostringstream toolinfo;
     toolinfo << (mSettings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : mSettings.cppcheckCfgProductName);
@@ -867,11 +867,27 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simp
     }
     toolinfo << mSettings.premiumArgs;
     // TODO: do we need to add more options?
-    mSuppressions.nomsg.dump(toolinfo);
+    mSuppressions.nomsg.dump(toolinfo, filePath);
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
-unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream* fileStream)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size)
+{
+    const auto f = [&file, data, size](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
+        return simplecpp::TokenList{data, size, files, file.spath(), outputList};
+    };
+    return checkInternal(file, cfgname, fileIndex, f);
+}
+
+unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex)
+{
+    const auto f = [&file](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
+        return simplecpp::TokenList{file.spath(), files, outputList};
+    };
+    return checkInternal(file, cfgname, fileIndex, f);
+}
+
+unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -922,24 +938,13 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 std::size_t hash = 0;
                 // markup files are special and do not adhere to the enforced language
                 TokenList tokenlist{mSettings, Standards::Language::C};
-                if (fileStream) {
-                    std::vector<std::string> files;
-                    simplecpp::TokenList tokens(*fileStream, files, file.spath());
-                    if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger, Standards::Language::C);
-                        hash = calculateHash(preprocessor, tokens);
-                    }
-                    tokenlist.createTokens(std::move(tokens));
+                std::vector<std::string> files;
+                simplecpp::TokenList tokens = createTokenList(files, nullptr);
+                if (analyzerInformation) {
+                    const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
+                    hash = calculateHash(preprocessor, tokens);
                 }
-                else {
-                    std::vector<std::string> files;
-                    simplecpp::TokenList tokens(file.spath(), files);
-                    if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
-                        hash = calculateHash(preprocessor, tokens);
-                    }
-                    tokenlist.createTokens(std::move(tokens));
-                }
+                tokenlist.createTokens(std::move(tokens));
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
@@ -958,7 +963,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        simplecpp::TokenList tokens1 = createTokenList(file.spath(), files, &outputList, fileStream);
+        simplecpp::TokenList tokens1 = createTokenList(files, &outputList);
 
         // If there is a syntax error, report it and stop
         const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
@@ -1020,7 +1025,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1);
+            const std::size_t hash = calculateHash(preprocessor, tokens1, file.spath());
             std::list<ErrorMessage> errors;
             if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
                 while (!errors.empty()) {
@@ -1050,7 +1055,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (mSettings.checkConfiguration) {
             for (const std::string &config : configurations)
-                (void)preprocessor.getcode(tokens1, config, files, true);
+                (void)preprocessor.getcode(tokens1, config, files, false);
 
             if (analyzerInformation)
                 mLogger->setAnalyzerInfo(nullptr);
@@ -1066,8 +1071,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             TokenList tokenlist(mSettings, file.lang());
-            std::istringstream istr2(code);
-            tokenlist.createTokens(istr2); // TODO: check result?
+            tokenlist.createTokensFromBuffer(code.data(), code.size()); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif
@@ -1934,6 +1938,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     CheckUnusedFunctions::getErrorMessages(errorlogger);
     Preprocessor::getErrorMessages(errorlogger, s);
     Tokenizer::getErrorMessages(errorlogger, s);
+    SymbolDatabase::getErrorMessages(errorlogger);
 }
 
 void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
@@ -1953,6 +1958,11 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
         exe += ".exe";
     }
 #endif
+
+    if (!mExecuteCommand) {
+        std::cerr << "Failed to execute '" << exe << "' (no command callback provided)" << std::endl;
+        return;
+    }
 
     // TODO: log this call
     // TODO: get rid of hard-coded checks

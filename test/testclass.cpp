@@ -38,6 +38,7 @@ private:
     const Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
     const Settings settings2 = settingsBuilder().severity(Severity::style).library("std.cfg").certainty(Certainty::inconclusive).build();
     const Settings settings3 = settingsBuilder().severity(Severity::style).library("std.cfg").severity(Severity::warning).build();
+    const Settings settings3_i = settingsBuilder(settings3).certainty(Certainty::inconclusive).build();
 
     void run() override {
         mNewTemplate = true;
@@ -2640,7 +2641,7 @@ private:
 #define checkVirtualDestructor(...) checkVirtualDestructor_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkVirtualDestructor_(const char* file, int line, const char (&code)[size], const CheckVirtualDestructorOptions& options = make_default_obj()) {
-        const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive, options.inconclusive).severity(Severity::warning).build();
+        const Settings& s = options.inconclusive ? settings3_i : settings3;
 
         // Tokenize..
         SimpleTokenizer tokenizer(s, *this);
@@ -6821,6 +6822,22 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3:10]: (style, inconclusive) Technically the member function 'D::f' can be const. [functionConst]\n",
                       errout_str());
+
+        checkConst("int g(int);\n" // #12162
+                   "struct S {\n"
+                   "    bool has(int i) { return m.find(i) != m.end(); }\n"
+                   "    bool isZero(int i) { return m.at(i) == 0; }\n"
+                   "    bool isZero() { return v.front() == 0; }\n"
+                   "    void f() { g(v.front() + 1); }\n"
+                   "    void set(int i) { m.at(i) = 0; }\n"
+                   "    std::map<int, int> m;\n"
+                   "    std::vector<int> v;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3:10]: (style, inconclusive) Technically the member function 'S::has' can be const. [functionConst]\n"
+                      "[test.cpp:4:10]: (style, inconclusive) Technically the member function 'S::isZero' can be const. [functionConst]\n"
+                      "[test.cpp:5:10]: (style, inconclusive) Technically the member function 'S::isZero' can be const. [functionConst]\n"
+                      "[test.cpp:6:10]: (style, inconclusive) Technically the member function 'S::f' can be const. [functionConst]\n",
+                      errout_str());
     }
 
     void const98() { // #13642
@@ -8762,7 +8779,8 @@ private:
     }
 
     #define checkUselessOverride(...) checkUselessOverride_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkUselessOverride_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void checkUselessOverride_(const char* file, int line, const char (&code)[size]) {
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");

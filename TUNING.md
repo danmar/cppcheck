@@ -28,9 +28,15 @@ Boost.Container (https://www.boost.org/doc/libs/release/libs/container) is being
 
 As the used library is header-only implementation you only need to install the package on the system you build the binary on but not on the system you run the analysis on.
 
-The official Windows binary is currently not using this (TODO: file ticket).
+The official Windows binary is currently not using this - see https://trac.cppcheck.net/ticket/13823 for details.
 
-(TODO: enable usage by default / bail out when it is enforced)
+This will be used by default if Boost is detected in CMake. If you want to enforce the usage, you can use the CMake option `-DUSE_BOOST=On` which will cause the build to fail if no Boost was detected.
+
+Using Visual Studio you need to provide a full Boost release (i.e. including binaries) for it to be detected by CMake. If you are not able to do this you can specify the CMake option `-DBOOST_INCLUDEDIR=<in>` (pointing to the directory which *contains* the `boost` include directory) to work around this (this is a Cppcheck specific hack) - see https://trac.cppcheck.net/ticket/13822 for more details.
+
+If you are using `make` instead you need to specify `-DHAVE_BOOST` in the flags.
+
+(TODO: document how to use with provided Visual Studio project)
 
 ### Use A Different Compiler
 
@@ -104,6 +110,18 @@ Unfortunately it has overhead because of a suboptimal implementation and the fac
 So if you do not require the additional safety you might want to switch to the usage of thread instead using `--executor=thread`.
 
 Note: For Windows binaries we currently do not provide the possibility of using processes so this does not apply.
+
+### Disable Analyzing Of Unused Templated Functions
+
+Currently all templated functions (either locally or in headers) will be analyzed regardless if they are instantiated or not. If you have template-heavy includes that might lead to unnecessary work and findings, and might slow down the analysis. This behavior can be disabled with `--no-check-unused-templates`.
+
+Note: This might lead to "false negatives" in such functions if they are never instantiated. You should make sure that you have proper coverage of the affected functions in your code before enabling this.
+
+### Limit Analysis Of Projects 
+
+If you specify a project all files will be analyzed by default. But in some cases you might only be interested in the results in a subset of those (e.g. in IDE integrations).
+
+Using the `--file-filter=<pattern>` CLI option you can select files using a globbing syntax. Using `--file-filter=-` you can provide the filters directly on the CLI.
 
 ## Advanced Tuning
 

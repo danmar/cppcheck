@@ -67,7 +67,8 @@ private:
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         SimpleTokenizer2 tokenizer(settings, *this, code, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenize..
@@ -821,6 +822,13 @@ private:
         check("#define strequ(s1,s2) ((void *)s1 && (void *)s2 && strcmp(s1, s2) == 0)\n" // #13093
               "void f(const char* p) {\n"
               "    if (strequ(p, \"ALL\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(std::string_view);\n"
+              "void f(bool);\n"
+              "void g() {\n"
+              "    f(\"\"sv);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

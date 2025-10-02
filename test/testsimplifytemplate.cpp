@@ -37,8 +37,9 @@ public:
     TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}
 
 private:
-    // If there are unused templates, keep those
     const Settings settings = settingsBuilder().severity(Severity::portability).build();
+    const Settings settings1 = settingsBuilder(settings).library("std.cfg").build();
+    const Settings settings1_d = settingsBuilder(settings1).debugwarnings().build();
 
     void run() override {
         TEST_CASE(template1);
@@ -314,6 +315,8 @@ private:
         TEST_CASE(explicitBool2);
 
         TEST_CASE(templateArgPreserveType); // #13882 - type of template argument
+
+        TEST_CASE(dumpTemplateArgFrom);
     }
 
     struct CheckOptions
@@ -325,12 +328,26 @@ private:
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tok_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).library("std.cfg").debugwarnings(options.debugwarnings).build();
-        SimpleTokenizer tokenizer(settings1, *this);
+        const Settings& s = options.debugwarnings ? settings1_d : settings1;
+        SimpleTokenizer tokenizer(s, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
+    }
+
+#define dump(...) dump_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    std::string dump_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings& s = options.debugwarnings ? settings1_d : settings1;
+        SimpleTokenizer tokenizer(s, *this);
+
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        std::ostringstream ostr;
+        (tokenizer.dump)(ostr);
+
+        return ostr.str();
     }
 
     void template1() {
@@ -4683,43 +4700,43 @@ private:
     }
 
     void template_enum() {
-        const char code1[] = "template <class T>\n"
-                             "struct Unconst {\n"
-                             "    typedef T type;\n"
-                             "};\n"
-                             "template <class T>\n"
-                             "struct Unconst<const T> {\n"
-                             "    typedef T type;\n"
-                             "};\n"
-                             "template <class T>\n"
-                             "struct Unconst<const T&> {\n"
-                             "    typedef T& type;\n"
-                             "};\n"
-                             "template <class T>\n"
-                             "struct Unconst<T* const> {\n"
-                             "    typedef T* type;\n"
-                             "};\n"
-                             "template <class T1, class T2>\n"
-                             "struct type_equal {\n"
-                             "    enum {  value = 0   };\n"
-                             "};\n"
-                             "template <class T>\n"
-                             "struct type_equal<T, T> {\n"
-                             "    enum {  value = 1   };\n"
-                             "};\n"
-                             "template<class T>\n"
-                             "struct template_is_const\n"
-                             "{\n"
-                             "    enum {value = !type_equal<T, typename Unconst<T>::type>::value  };\n"
-                             "};";
-        const char exp1[] = "template < class T > struct Unconst { } ; "
-                            "template < class T > struct Unconst < const T > { } ; "
-                            "template < class T > struct Unconst < const T & > { } ; "
-                            "template < class T > struct Unconst < T * const > { } ; "
-                            "template < class T1 , class T2 > struct type_equal { enum Anonymous0 { value = 0 } ; } ; "
-                            "template < class T > struct type_equal < T , T > { enum Anonymous1 { value = 1 } ; } ; "
-                            "template < class T > struct template_is_const { enum Anonymous2 { value = ! type_equal < T , Unconst < T > :: type > :: value } ; } ;";
-        ASSERT_EQUALS(exp1, tok(code1));
+        const char code[] = "template <class T>\n"
+                            "struct Unconst {\n"
+                            "    typedef T type;\n"
+                            "};\n"
+                            "template <class T>\n"
+                            "struct Unconst<const T> {\n"
+                            "    typedef T type;\n"
+                            "};\n"
+                            "template <class T>\n"
+                            "struct Unconst<const T&> {\n"
+                            "    typedef T& type;\n"
+                            "};\n"
+                            "template <class T>\n"
+                            "struct Unconst<T* const> {\n"
+                            "    typedef T* type;\n"
+                            "};\n"
+                            "template <class T1, class T2>\n"
+                            "struct type_equal {\n"
+                            "    enum {  value = 0   };\n"
+                            "};\n"
+                            "template <class T>\n"
+                            "struct type_equal<T, T> {\n"
+                            "    enum {  value = 1   };\n"
+                            "};\n"
+                            "template<class T>\n"
+                            "struct template_is_const\n"
+                            "{\n"
+                            "    enum {value = !type_equal<T, typename Unconst<T>::type>::value  };\n"
+                            "};";
+        const char exp[] = "template < class T > struct Unconst { } ; "
+                           "template < class T > struct Unconst < const T > { } ; "
+                           "template < class T > struct Unconst < const T & > { } ; "
+                           "template < class T > struct Unconst < T * const > { } ; "
+                           "template < class T1 , class T2 > struct type_equal { enum Anonymous0 { value = 0 } ; } ; "
+                           "template < class T > struct type_equal < T , T > { enum Anonymous1 { value = 1 } ; } ; "
+                           "template < class T > struct template_is_const { enum Anonymous2 { value = ! type_equal < T , Unconst < T > :: type > :: value } ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void template_default_parameter() {
@@ -5439,11 +5456,11 @@ private:
                           "C<B<int>> y;"));
     }
 
-    unsigned int templateParameters(const char code[]) {
+    template<size_t size>
+    unsigned int templateParameters(const char (&data)[size]) {
         TokenList tokenlist{settings, Standards::Language::CPP};
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokensFromString(data))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5508,12 +5525,12 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
-    int templateNamePositionHelper(const char code[], unsigned offset = 0) {
+    template<size_t size>
+    int templateNamePositionHelper(const char (&data)[size], unsigned offset = 0) {
         TokenList tokenlist{settings, Standards::Language::CPP};
 
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokensFromString(data))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5581,10 +5598,10 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::findTemplateDeclarationEnd
-    bool findTemplateDeclarationEndHelper(const char code[], const char pattern[], unsigned offset = 0) {
+    template<size_t size>
+    bool findTemplateDeclarationEndHelper(const char (&data)[size], const char pattern[], unsigned offset = 0) {
         TokenList tokenlist{settings, Standards::Language::CPP};
-        std::istringstream istr(code);
-        if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
+        if (!TokenListHelper::createTokensFromString(tokenlist, data, "test.cpp"))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -5611,11 +5628,11 @@ private:
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateParametersInDeclaration
-    bool getTemplateParametersInDeclarationHelper(const char code[], const std::vector<std::string> & params) {
+    template<size_t size>
+    bool getTemplateParametersInDeclarationHelper(const char (&data)[size], const std::vector<std::string> & params) {
         TokenList tokenlist{settings, Standards::Language::CPP};
 
-        std::istringstream istr(code);
-        if (!TokenListHelper::createTokens(tokenlist, istr, "test.cpp"))
+        if (!TokenListHelper::createTokensFromString(tokenlist, data, "test.cpp"))
             return false;
         Tokenizer tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
@@ -6622,6 +6639,30 @@ private:
                       "Test<64> test ; "
                       "class Test<64> { uint32_t i ; i = ( uint32_t ) 64 ; } ;",
                       tok(code));
+    }
+
+    void dumpTemplateArgFrom() {
+        const char code[] = "template<class T> void foo(T t) {}\n"
+                            "foo<int>(23);";
+        const std::string d = dump(code);
+        ASSERT(!d.empty());
+
+        // Assert that first 'int' token has templateArg location info
+        const std::string::size_type strpos1 = d.find(" str=\"int\" ");
+        ASSERT(strpos1 < d.size());
+        const std::string::size_type endpos1 = d.find('>', strpos1);
+        const std::string::size_type templateArgPos1 = d.find(" templateArgFileIndex=\"0\" templateArgLineNumber=\"2\" templateArgColumn=\"5\"");
+        ASSERT(templateArgPos1 > strpos1 && templateArgPos1 < endpos1);
+
+        // Assert that second 'int' token has templateArg location info
+        const std::string::size_type strpos2 = d.find(" str=\"int\" ", endpos1);
+        ASSERT(strpos2 < d.size());
+        const std::string::size_type endpos2 = d.find('>', strpos2);
+        const std::string::size_type templateArgPos2 = d.find(" templateArgFileIndex=\"0\" templateArgLineNumber=\"2\" templateArgColumn=\"5\"", endpos1);
+        ASSERT(templateArgPos2 > strpos2 && templateArgPos2 < endpos2);
+
+        // Assert there is no further unexpected templateArg location info
+        ASSERT(d.find(" templateArg", endpos2) == std::string::npos);
     }
 };
 

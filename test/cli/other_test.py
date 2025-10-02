@@ -2426,6 +2426,41 @@ void f(const void* p)
 '''.format(version_str, test_file_exp, test_file_exp, test_file_exp))
 
 
+def test_outputfile(tmp_path): # #14051
+    test_file = tmp_path / 'test.cpp'
+    out_file = tmp_path / 'out.txt'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+int main()
+{
+    int x = 1 / 0;
+}
+""")
+
+    args = [
+        '-q',
+        '--output-file={}'.format(out_file),
+        str(test_file)
+    ]
+
+    out_exp = [
+        '{}:4:15: error: Division by zero. [zerodiv]'.format(test_file),
+        '    int x = 1 / 0;',
+        '              ^',
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr == ''
+
+    with open(out_file, 'rt') as f:
+        out_text = f.read()
+
+    assert out_text.splitlines() == out_exp
+
+
 def test_internal_error_loc_int(tmp_path):
     test_file = tmp_path / 'test.c'
     with open(test_file, 'wt') as f:
@@ -3095,7 +3130,6 @@ void f() {}
     assert stderr.splitlines() == []  # no error since the unused templates are not being checked
 
 
-@pytest.mark.xfail(strict=True)  # TODO: only the first unused templated function is not being checked
 def test_check_unused_templates_func(tmp_path):  # #13714
     test_file_h = tmp_path / 'test.h'
     with open(test_file_h, 'wt') as f:
@@ -3618,4 +3652,36 @@ void f()
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
         "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
+    ]
+
+
+def test_ast_max_depth(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define PTR1 (* (* (* (*
+#define PTR2 PTR1 PTR1 PTR1 PTR1
+#define PTR3 PTR2 PTR2 PTR2 PTR2
+#define PTR4 PTR3 PTR3 PTR3 PTR3
+
+#define RBR1 ) ) ) )
+#define RBR2 RBR1 RBR1 RBR1 RBR1
+#define RBR3 RBR2 RBR2 RBR2 RBR2
+#define RBR4 RBR3 RBR3 RBR3 RBR3
+
+int PTR4 q4_var RBR4 = 0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:12:5: error: maximum AST depth exceeded [internalAstError]'.format(test_file)
     ]

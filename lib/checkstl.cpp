@@ -2350,7 +2350,8 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
 
 void CheckStl::uselessCallsConstructorError(const Token *tok)
 {
-    const std::string msg = "Inefficient constructor call: container '" + tok->str() + "' is assigned a partial copy of itself. Use erase() or resize() instead.";
+    const std::string container = tok ? tok->str() : "";
+    const std::string msg = "Inefficient constructor call: container '" + container + "' is assigned a partial copy of itself. Use erase() or resize() instead.";
     reportError(tok, Severity::performance, "uselessCallsConstructor", msg, CWE398, Certainty::normal);
 }
 
@@ -2579,8 +2580,8 @@ static bool isEarlyExit(const Token *start)
     if (start->str() != "{")
         return false;
     const Token *endToken = start->link();
-    const Token *tok = Token::findmatch(start, "return|throw|break", endToken);
-    if (!tok)
+    const Token *tok = Token::findmatch(start, "return|throw|break|continue", endToken);
+    if (!tok || tok->scope() != start->scope() || tok->str() == "continue")
         return false;
     const Token *endStatement = Token::findsimplematch(tok, "; }", endToken);
     if (!endStatement)
@@ -3456,6 +3457,7 @@ void CheckStl::getErrorMessages(ErrorLogger* errorLogger, const Settings* settin
     c.iteratorsError(nullptr, nullptr, "container");
     c.invalidContainerLoopError(nullptr, nullptr, ErrorPath{});
     c.invalidContainerError(nullptr, nullptr, nullptr, ErrorPath{});
+    c.invalidContainerReferenceError(nullptr, nullptr, ErrorPath{});
     c.mismatchingContainerIteratorError(nullptr, nullptr, nullptr);
     c.mismatchingContainersError(nullptr, nullptr);
     c.mismatchingContainerExpressionError(nullptr, nullptr);
@@ -3470,6 +3472,10 @@ void CheckStl::getErrorMessages(ErrorLogger* errorLogger, const Settings* settin
     c.string_c_strError(nullptr);
     c.string_c_strReturn(nullptr);
     c.string_c_strParam(nullptr, 0);
+    c.string_c_strConstructor(nullptr);
+    c.string_c_strAssignment(nullptr);
+    c.string_c_strConcat(nullptr);
+    c.string_c_strStream(nullptr);
     c.string_c_strThrowError(nullptr);
     c.sizeError(nullptr);
     c.missingComparisonError(nullptr, nullptr);
@@ -3477,12 +3483,15 @@ void CheckStl::getErrorMessages(ErrorLogger* errorLogger, const Settings* settin
     c.uselessCallsReturnValueError(nullptr, "str", "find");
     c.uselessCallsSwapError(nullptr, "str");
     c.uselessCallsSubstrError(nullptr, SubstrErrorType::COPY);
+    c.uselessCallsConstructorError(nullptr);
     c.uselessCallsEmptyError(nullptr);
     c.uselessCallsRemoveError(nullptr, "remove");
     c.dereferenceInvalidIteratorError(nullptr, "i");
+    // TODO: derefInvalidIteratorRedundantCheck
     c.eraseIteratorOutOfBoundsError(nullptr, nullptr);
     c.useStlAlgorithmError(nullptr, "");
     c.knownEmptyContainerError(nullptr, "");
     c.globalLockGuardError(nullptr);
     c.localMutexError(nullptr);
+    c.outOfBoundsIndexExpressionError(nullptr, nullptr);
 }

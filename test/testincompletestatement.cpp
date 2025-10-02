@@ -30,6 +30,7 @@ public:
 
 private:
     const Settings settings = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
+    const Settings settings_i = settingsBuilder(settings).certainty(Certainty::inconclusive).build();
 
     struct CheckOptions
     {
@@ -39,8 +40,9 @@ private:
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
+        const Settings &settings1 = options.inconclusive ? settings_i : settings;
 
         SimpleTokenizer2 tokenizer(settings1, *this, code, options.cpp ? "test.cpp" : "test.c");
 

@@ -124,10 +124,10 @@
 #include <memory>
 #include <numeric>
 #include <set>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 static void bailoutInternal(const std::string& type,
@@ -444,7 +444,7 @@ static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accura
         if (const ValueType* vt = var.valueType()) {
             if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
                 return {0, false};
-            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension& dim) {
+            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), MathLib::bigint(1), [](MathLib::bigint i1, const Dimension& dim) {
                 return i1 * dim.num;
             });
             if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
@@ -547,7 +547,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
                 if (currentBitfieldAlloc == 0) {
                     bits = n * charBit;
                 } else {
-                    bits = currentBitfieldAlloc * charBit - currentBitCount;
+                    bits = (currentBitfieldAlloc * charBit) - currentBitCount;
                 }
             }
             if (bits > 0) {
@@ -570,7 +570,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accur
             n *= dim;
             size_t padding = (a - (total % a)) % a;
             if (currentBitCount > 0) {
-                bool fitsInBitfield = currentBitCount + n * charBit <= currentBitfieldAlloc * charBit;
+                bool fitsInBitfield = currentBitCount + (n * charBit) <= currentBitfieldAlloc * charBit;
                 bool isAligned = currentBitCount % (charBit * a) == 0;
                 if (vt2.isIntegral() && fitsInBitfield && isAligned) {
                     currentBitCount += charBit * n;
@@ -1948,7 +1948,12 @@ static bool isLifetimeBorrowed(const ValueType *vt, const ValueType *vtParent)
             return true;
         if (vtParent->pointer < vt->pointer && vtParent->isIntegral())
             return true;
-        if (vtParent->str() == vt->str())
+        ValueType temp = *vtParent;
+        if ((temp.constness & 1) && !(vt->constness & 1)) // allow assignment to const/volatile
+            temp.constness &= ~1;
+        if ((temp.volatileness & 1) && !(vt->volatileness & 1))
+            temp.volatileness &= ~1;
+        if (temp.str() == vt->str())
             return true;
     }
 
@@ -1991,8 +1996,7 @@ static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const 
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const std::string& y, bool cpp, const Settings& settings)
 {
     TokenList tokenList(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
-    std::istringstream istr(y);
-    tokenList.createTokens(istr); // TODO: check result?
+    tokenList.createTokensFromBuffer(y.data(), y.size()); // TODO: check result?
     return isNotEqual(x, std::make_pair(tokenList.front(), tokenList.back()));
 }
 static bool isNotEqual(std::pair<const Token*, const Token*> x, const ValueType* y, bool cpp, const Settings& settings)
@@ -2361,6 +2365,11 @@ struct LifetimeStore {
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(argtok, settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
+
+                const Variable* var = lt.token->variable();
+                if (!var || !var->isArgument())
+                    continue;
+
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.tokvalue = lt.token;
@@ -2368,12 +2377,8 @@ struct LifetimeStore {
                 value.errorPath = er;
                 value.lifetimeKind = type;
                 value.setInconclusive(inconclusive || lt.inconclusive);
-                const Variable* var = lt.token->variable();
-                if (var && var->isArgument()) {
-                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
-                } else {
-                    continue;
-                }
+                value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
+
                 // Don't add the value a second time
                 if (std::find(tok->values().cbegin(), tok->values().cend(), value) != tok->values().cend())
                     continue;
@@ -2390,12 +2395,12 @@ struct LifetimeStore {
             for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok3, settings)) {
                 if (!settings.certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
                     continue;
-                ErrorPath er = v.errorPath;
-                er.insert(er.end(), lt.errorPath.cbegin(), lt.errorPath.cend());
                 if (!lt.token)
                     return false;
                 if (!pred(lt.token))
                     return false;
+                ErrorPath er = v.errorPath;
+                er.insert(er.end(), lt.errorPath.cbegin(), lt.errorPath.cend());
                 er.emplace_back(argtok, message);
                 er.insert(er.end(), errorPath.cbegin(), errorPath.cend());
 
@@ -5857,7 +5862,7 @@ static void valueFlowSubFunction(const TokenList& tokenlist,
                     v.errorPath.emplace_back(argtok,
                                              "Calling function '" + calledFunction->name() + "', " + nr + " argument '" +
                                              argtok->expressionString() + "' value is " + v.infoString());
-                    v.path = 256 * v.path + id % 256;
+                    v.path = (256 * v.path) + (id % 256);
                     // Change scope of lifetime values
                     if (v.isLifetimeValue())
                         v.lifetimeScope = ValueFlow::Value::LifetimeScope::SubFunction;
@@ -5888,11 +5893,12 @@ static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const 
                 const std::list<ValueFlow::Value> &values = var->nameToken()->tokAt(2)->values();
                 std::list<ValueFlow::Value> argvalues;
                 for (const ValueFlow::Value &value : values) {
+                    if (!value.isKnown())
+                        continue;
                     ValueFlow::Value v(value);
                     v.defaultArg = true;
-                    v.changeKnownToPossible();
-                    if (v.isPossible())
-                        argvalues.push_back(std::move(v));
+                    v.setPossible();
+                    argvalues.push_back(std::move(v));
                 }
                 if (!argvalues.empty())
                     valueFlowInjectParameter(tokenlist, errorLogger, settings, var, scope, argvalues);
@@ -6313,6 +6319,8 @@ const Token* ValueFlow::solveExprValue(const Token* expr,
                                        const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
                                        ValueFlow::Value& value)
 {
+    if (!expr)
+        return nullptr;
     if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
         return expr;
     if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
@@ -7107,8 +7115,8 @@ static bool getMinMaxValues(const std::string& typestr,
                             MathLib::bigint& maxvalue)
 {
     TokenList typeTokens(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
-    std::istringstream istr(typestr + ";");
-    if (!typeTokens.createTokens(istr))
+    const std::string str(typestr + ";");
+    if (!typeTokens.createTokensFromBuffer(str.data(), str.size()))
         return false;
     typeTokens.simplifyPlatformTypes();
     typeTokens.simplifyStdType();
@@ -7150,8 +7158,8 @@ static void valueFlowSafeFunctions(const TokenList& tokenlist, const SymbolDatab
             }
 
             MathLib::bigint low, high;
-            bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, low);
-            bool isHigh = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, high);
+            bool isLow = arg.nameToken()->getCppcheckAttribute(Token::CppcheckAttributesType::LOW, low);
+            bool isHigh = arg.nameToken()->getCppcheckAttribute(Token::CppcheckAttributesType::HIGH, high);
 
             if (!isLow && !isHigh && !all)
                 continue;
@@ -7275,7 +7283,7 @@ static void valueFlowDebug(TokenList& tokenlist, ErrorLogger& errorLogger, const
             ErrorPath errorPath = v.errorPath;
             errorPath.insert(errorPath.end(), v.debugPath.cbegin(), v.debugPath.cend());
             errorPath.emplace_back(tok, "");
-            errorLogger.reportErr({errorPath, &tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
+            errorLogger.reportErr({std::move(errorPath), &tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
         }
     }
 }

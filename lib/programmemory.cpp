@@ -45,10 +45,17 @@
 #include <utility>
 #include <vector>
 
-ExprIdToken::ExprIdToken(const Token* tok) : tok(tok), exprid(tok ? tok->exprId() : 0) {}
+ExprIdToken::ExprIdToken(const Token* tok)
+    : tok(tok)
+{
+    assert(tok);
+    exprid = tok->exprId();
+}
+
+ExprIdToken::ExprIdToken(nonneg int exprId) : exprid(exprId) {}
 
 nonneg int ExprIdToken::getExpressionId() const {
-    return tok ? tok->exprId() : exprid;
+    return exprid;
 }
 
 std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
@@ -57,9 +64,11 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 }
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
+    if (!expr)
+        return;
+
     copyOnWrite();
 
-    (*mValues)[expr] = value;
     ValueFlow::Value subvalue = value;
     const Token* subexpr = solveExprValue(
         expr,
@@ -72,12 +81,15 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
         return {};
     },
         subvalue);
+    if (expr != subexpr)
+        (*mValues)[expr] = value;
     if (subexpr)
         (*mValues)[subexpr] = std::move(subvalue);
 }
+
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const auto it = utils::as_const(*mValues).find(exprid);
+    const auto it = find(exprid);
     const bool found = it != mValues->cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
@@ -154,18 +166,28 @@ void ProgramMemory::setUnknown(const Token* expr) {
     (*mValues)[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
-bool ProgramMemory::hasValue(nonneg int exprid)
+bool ProgramMemory::hasValue(nonneg int exprid) const
 {
-    return mValues->find(exprid) != mValues->end();
+    const auto it = find(exprid);
+    return it != mValues->cend();
 }
 
 const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
-    return mValues->at(exprid);
+    const auto it = find(exprid);
+    if (it == mValues->cend()) {
+        throw std::out_of_range("ProgramMemory::at");
+    }
+    return it->second;
 }
+
 ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
     copyOnWrite();
 
-    return mValues->at(exprid);
+    const auto it = find(exprid);
+    if (it == mValues->end()) {
+        throw std::out_of_range("ProgramMemory::at");
+    }
+    return it->second;
 }
 
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
@@ -205,7 +227,7 @@ bool ProgramMemory::empty() const
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - technically correct but we are moving the given values
-void ProgramMemory::replace(ProgramMemory pm)
+void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
 {
     if (pm.empty())
         return;
@@ -213,6 +235,11 @@ void ProgramMemory::replace(ProgramMemory pm)
     copyOnWrite();
 
     for (auto&& p : (*pm.mValues)) {
+        if (skipUnknown) {
+            auto it = mValues->find(p.first);
+            if (it != mValues->end() && it->second.isUninitValue())
+                continue;
+        }
         (*mValues)[p.first] = std::move(p.second);
     }
 }
@@ -223,6 +250,17 @@ void ProgramMemory::copyOnWrite()
         return;
 
     mValues = std::make_shared<Map>(*mValues);
+}
+
+ProgramMemory::Map::const_iterator ProgramMemory::find(nonneg int exprid) const
+{
+    const auto& cvalues = utils::as_const(*mValues);
+    return cvalues.find(ExprIdToken::create(exprid));
+}
+
+ProgramMemory::Map::iterator ProgramMemory::find(nonneg int exprid)
+{
+    return mValues->find(ExprIdToken::create(exprid));
 }
 
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings& settings);
@@ -395,7 +433,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             bool setvar = false;
             const Token* vartok = tok2->astOperand1();
             for (const auto& p:vars) {
-                if (p.first != vartok->exprId())
+                if (p.first.getExpressionId() != vartok->exprId())
                     continue;
                 if (vartok == tok)
                     continue;
@@ -405,9 +443,20 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
                     const Token* valuetok = tok2->astOperand2();
-                    pm.setValue(vartok, execute(valuetok, pm, settings));
+                    ProgramMemory local = state;
+                    pm.setValue(vartok, execute(valuetok, local, settings));
                 }
             }
+        } else if (Token::simpleMatch(tok2, ")") && tok2->link() &&
+                   Token::Match(tok2->link()->previous(), "assert|ASSERT ( !!)")) {
+            const Token* cond = tok2->link()->astOperand2();
+            if (!conditionIsTrue(cond, state, settings)) {
+                // TODO: change to assert when we can propagate the assert, for now just bail
+                if (conditionIsFalse(cond, state, settings))
+                    return;
+                programMemoryParseCondition(pm, cond, nullptr, settings, true);
+            }
+            tok2 = tok2->link()->previous();
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
                    isVariableChanged(tok2, 0, settings)) {
             pm.setUnknown(tok2);
@@ -476,7 +525,7 @@ void ProgramMemoryState::replace(ProgramMemory pm, const Token* origin)
     if (origin)
         for (const auto& p : pm)
             origins[p.first.getExpressionId()] = origin;
-    state.replace(std::move(pm));
+    state.replace(std::move(pm), /*skipUnknown*/ true);
 }
 
 static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
@@ -489,13 +538,14 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
-    ProgramMemory pm = state;
-    addVars(pm, vars);
-    fillProgramMemoryFromConditions(pm, tok, settings);
-    ProgramMemory local = pm;
+    ProgramMemory local = state;
+    addVars(local, vars);
+    fillProgramMemoryFromConditions(local, tok, settings);
+    ProgramMemory pm;
     fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
-    addVars(pm, vars);
-    replace(std::move(pm), tok);
+    local.replace(std::move(pm));
+    addVars(local, vars);
+    replace(std::move(local), tok);
 }
 
 void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
@@ -1789,8 +1839,7 @@ static std::shared_ptr<Token> createTokenFromExpression(const std::string& retur
     std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings, cpp ? Standards::Language::CPP : Standards::Language::C);
     {
         const std::string code = "return " + returnValue + ";";
-        std::istringstream istr(code);
-        if (!tokenList->createTokens(istr))
+        if (!tokenList->createTokensFromBuffer(code.data(), code.size()))
             return nullptr;
     }
 

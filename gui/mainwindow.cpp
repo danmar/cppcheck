@@ -77,6 +77,7 @@
 #include <QCloseEvent>
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDebug>
 #include <QDialog>
 #include <QDir>
@@ -194,6 +195,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // About menu
     connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(mUI->mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
+    mUI->mActionEULA->setVisible(isCppcheckPremium());
+    connect(mUI->mActionEULA, &QAction::triggered, this, &MainWindow::showEULA);
 
     // View > Toolbar menu
     connect(mUI->mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
@@ -726,8 +729,11 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    // TODO: apply enforcedLanguage?
-    cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
+    {
+        const std::string code_s = code.toStdString();
+        // TODO: apply enforcedLanguage?
+        cppcheck.checkBuffer(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
+    }
     analysisDone();
 
     // Expand results
@@ -1646,6 +1652,11 @@ void MainWindow::showAuthors()
     dlg->exec();
 }
 
+void MainWindow::showEULA()
+{
+    QDesktopServices::openUrl(QUrl("https://www.cppcheck.com/EULA"));
+}
+
 void MainWindow::performSelectedFilesCheck(const QStringList &selectedFilesList)
 {
     reAnalyzeSelected(selectedFilesList);
@@ -2244,12 +2255,12 @@ static int getVersion(const QString& nameWithVersion) {
         }
         else if (c == '.') {
             ++dot;
-            ret = ret * 1000 + v;
+            ret = (ret * 1000) + v;
             v = 0;
         } else if (c >= '0' && c <= '9')
-            v = v * 10 + (c.toLatin1() - '0');
+            v = (v * 10) + (c.toLatin1() - '0');
     }
-    ret = ret * 1000 + v;
+    ret = (ret * 1000) + v;
     while (dot < 2) {
         ++dot;
         ret *= 1000;

@@ -646,20 +646,18 @@ private:
     }
 
     void memcpy1() { // #11542
-        const Settings s = settingsBuilder().library("std.cfg").build();
         check("void f(char** old, char* value) {\n"
               "    char *str = strdup(value);\n"
               "    memcpy(old, &str, sizeof(char*));\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
     void memcpy2() {
-        const Settings s = settingsBuilder().library("std.cfg").build();
         check("void f(char* old, char* value, size_t len) {\n"
               "    char *str = strdup(value);\n"
               "    memcpy(old, str, len);\n"
-              "}\n", dinit(CheckOptions, $.cpp = true, $.s = &s));
+              "}\n", dinit(CheckOptions, $.cpp = true));
         ASSERT_EQUALS("[test.cpp:4:1]: (error) Memory leak: str [memleak]\n", errout_str());
     }
 
@@ -1894,20 +1892,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        const Settings s = settingsBuilder().library("std.cfg").build();
         check("struct S {};\n"
               "void f(int i, std::vector<std::unique_ptr<S>> &v) {\n"
               "    if (i < 1) {\n"
               "        auto s = new S;\n"
               "        v.push_back(std::unique_ptr<S>(s));\n"
               "    }\n"
-              "}\n", dinit(CheckOptions, $.cpp = true, $.s = &s));
+              "}\n", dinit(CheckOptions, $.cpp = true));
         ASSERT_EQUALS("", errout_str()); // don't crash
 
         check("void g(size_t len) {\n" // #12365
               "    char* b = new char[len + 1]{};\n"
               "    std::string str = std::string(b);\n"
-              "}", dinit(CheckOptions, $.cpp = true, $.s = &s));
+              "}", dinit(CheckOptions, $.cpp = true));
         ASSERT_EQUALS("[test.cpp:4:1]: (error) Memory leak: b [memleak]\n", errout_str());
     }
 
@@ -2230,8 +2227,8 @@ private:
               "        void * p2 = malloc(2);\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.c:3:0]: (error) Memory leak: p1 [memleak]\n"
-                      "[test.c:5:0]: (error) Memory leak: p2 [memleak]\n", errout_str());
+        ASSERT_EQUALS("[test.c:3:30]: (error) Memory leak: p1 [memleak]\n"
+                      "[test.c:5:30]: (error) Memory leak: p2 [memleak]\n", errout_str());
 
         check("void f() {\n"
               "    if (x > 0)\n"
@@ -2239,8 +2236,8 @@ private:
               "    else\n"
               "        void * p2 = malloc(2);\n"
               "}");
-        ASSERT_EQUALS("[test.c:3:0]: (error) Memory leak: p1 [memleak]\n"
-                      "[test.c:5:0]: (error) Memory leak: p2 [memleak]\n", errout_str());
+        ASSERT_EQUALS("[test.c:3:30]: (error) Memory leak: p1 [memleak]\n"
+                      "[test.c:5:30]: (error) Memory leak: p2 [memleak]\n", errout_str());
     }
 
     void ifelse21() {
@@ -3229,7 +3226,8 @@ private:
     const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[], bool cpp = false) {
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size], bool cpp = false) {
         SimpleTokenizer2 tokenizer(settings, *this, code, cpp?"test.cpp":"test.c");
 
         // Tokenizer..

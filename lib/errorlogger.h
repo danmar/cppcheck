@@ -288,10 +288,10 @@ private:
 std::string replaceStr(std::string s, const std::string &from, const std::string &to);
 
 /** replaces the static parts of the location template **/
-CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
+CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat, bool eraseColors = false);
 
 /** replaces the static parts of the location template **/
-CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
+CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation, bool eraseColors = false);
 
 /** Get a classification string from the given guideline and reporttype */
 CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);

@@ -41,14 +41,9 @@ struct ExprIdToken {
     const Token* tok = nullptr;
     nonneg int exprid = 0;
 
-    ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
     ExprIdToken(const Token* tok);
-    // TODO: Make this constructor only available from ProgramMemory
-    // cppcheck-suppress noExplicitConstructor
-    // NOLINTNEXTLINE(google-explicit-constructor)
-    ExprIdToken(nonneg int exprid) : exprid(exprid) {}
 
     nonneg int getExpressionId() const;
 
@@ -95,6 +90,15 @@ struct ExprIdToken {
     struct Hash {
         std::size_t operator()(ExprIdToken etok) const;
     };
+
+    /** create object for hashed lookups */
+    static ExprIdToken create(nonneg int exprId) {
+        return ExprIdToken(exprId);
+    }
+
+private:
+    // for hashed lookups only
+    explicit ExprIdToken(nonneg int exprId);
 };
 
 struct CPPCHECKLIB ProgramMemory {
@@ -117,7 +121,7 @@ struct CPPCHECKLIB ProgramMemory {
     void setUnknown(const Token* expr);
 
     bool getTokValue(nonneg int exprid, const Token*& result) const;
-    bool hasValue(nonneg int exprid);
+    bool hasValue(nonneg int exprid) const;
 
     const ValueFlow::Value& at(nonneg int exprid) const;
     ValueFlow::Value& at(nonneg int exprid);
@@ -130,7 +134,7 @@ struct CPPCHECKLIB ProgramMemory {
 
     bool empty() const;
 
-    void replace(ProgramMemory pm);
+    void replace(ProgramMemory pm, bool skipUnknown = false);
 
     Map::const_iterator begin() const {
         return mValues->cbegin();
@@ -150,6 +154,8 @@ struct CPPCHECKLIB ProgramMemory {
 
 private:
     void copyOnWrite();
+    Map::const_iterator find(nonneg int exprid) const;
+    Map::iterator find(nonneg int exprid);
 
     std::shared_ptr<Map> mValues;
 };

@@ -35,10 +35,10 @@
 #include <iostream>
 #include <list>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <utility>
 
 #include "xml.h"
 
@@ -177,8 +177,8 @@ static std::vector<std::string> getnames(const char *names)
 
 static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
 {
-    std::istringstream istr(valid + ',');
-    tokenList.createTokens(istr); // TODO: check result?
+    const std::string str(valid + ',');
+    tokenList.createTokensFromBuffer(str.data(), str.size()); // TODO: check result?
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
             tok->str("-" + tok->strAt(1));
@@ -241,7 +241,7 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
         if (mData->mFiles.find(absolute_path) == mData->mFiles.end()) {
             Error err = load(doc);
             if (err.errorcode == ErrorCode::OK)
-                mData->mFiles.insert(absolute_path);
+                mData->mFiles.insert(std::move(absolute_path));
             return err;
         }
 
@@ -1384,6 +1384,8 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
 {
     if (!typeStart)
         return nullptr;
+    if (typeStart->isKeyword())
+        return nullptr;
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
         if (!tok->link())
@@ -1950,6 +1952,8 @@ bool Library::isSmartPointer(const Token* tok) const
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
     if (!tok)
+        return nullptr;
+    if (tok->isKeyword())
         return nullptr;
     std::string typestr = withoutStd ? "std::" : "";
     if (tok->str() == "::")

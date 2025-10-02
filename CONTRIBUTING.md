@@ -34,6 +34,8 @@ Note: Usually you can run the CI on your own fork to verify that it passes befor
 
 Cppcheck is tracking its issues at https://trac.cppcheck.net.
 
+The tickets are not really prioritized (except for non-synthetic crashing issues) but of most interest are the following types of tickets.
+
 [False Positives](https://trac.cppcheck.net/query?status=accepted&status=assigned&status=new&status=reopened&component=False+positive&col=id&col=summary&col=status&col=component&col=type&col=priority&col=milestone&order=priority)
 
 Since Cppcheck aims to be low on false positives, these kind of issues are obviously of the highest priority.
@@ -43,6 +45,18 @@ Since Cppcheck aims to be low on false positives, these kind of issues are obvio
 Changes might lead to fewer findings being reported. In very few cases this might be intentional but we should not regress in what findings are being reported. 
 
 [Other Defects](https://trac.cppcheck.net/query?status=accepted&status=assigned&status=new&status=reopened&type=defect&component=!False+positive&col=id&col=summary&col=type&col=status&col=component&col=priority&col=milestone&order=priority)
+
+Note: If you start working on ticket, please assign yourself or request to be.
+
+## Source TODOs
+
+There are also various source-level TODOs. These might be related to already tracked issues (even if not explicitly noted) but may also be just exist exploratively, have even been added overzealously or might even be outdated.
+
+So if you start spending a lot of time on these, you might want to get into touch before proceeding further. 
+
+## simplecpp
+
+At its core Cppcheck is relying on the `simplecpp` library which is a preprocessor implementation which was spun off into its [separate project](https://github.com/danmar/simplecpp) with its own [bug tracker](https://github.com/danmar/simplecpp/issues). This is also maintained by the Cppcheck developers and contributions to it are also welcome.
 
 ## Translations
 

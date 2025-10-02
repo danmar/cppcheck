@@ -1279,7 +1279,7 @@ private:
         ASSERT(!!tok);
         tok = tok->next();
         ASSERT(tok->hasKnownIntValue());
-        ASSERT_EQUALS(44, tok->getKnownIntValue());
+        ASSERT_EQUALS(MathLib::bigint(44), tok->getKnownIntValue());
     }
 
     void valueFlow2() {

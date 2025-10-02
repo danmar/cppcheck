@@ -1641,6 +1641,21 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
     return false;
 }
 
+static bool isCastToVoid(const Variable* var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    for (const Token* tok = var->scope()->bodyStart; tok != var->scope()->bodyEnd; tok = tok->next()) {
+        if (tok->varId() != var->declarationId())
+            continue;
+        if (isVoidCast(tok->astParent()))
+            return true;
+    }
+    return false;
+}
+
 void CheckOther::checkConstVariable()
 {
     if ((!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC()) && !mSettings->isPremiumEnabled("constVariable"))
@@ -1688,6 +1703,8 @@ void CheckOther::checkConstVariable()
         if (var->nameToken()->isExpandedMacro())
             continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
+            continue;
+        if (isCastToVoid(var))
             continue;
         if (isVariableChanged(var, *mSettings))
             continue;
@@ -1916,8 +1933,13 @@ void CheckOther::checkConstPointer()
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
-            if (Token::simpleMatch(parent, "=") && parent->astOperand1() == tok)
-                continue;
+            if (Token::simpleMatch(parent, "=")) {
+                const Token* lhs = parent->astOperand1();
+                if (lhs == tok)
+                    continue;
+                if (lhs && lhs->valueType() && lhs->valueType()->isConst(vt->pointer))
+                    continue;
+            }
             if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function()) {
                     const bool isCastArg = parent->isCast() && !ftok->function()->getOverloadedFunctions().empty(); // assume that cast changes the called function
@@ -4306,7 +4328,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
+        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE758, Certainty::normal);
 }
 
 void CheckOther::checkModuloOfOne()
@@ -4583,6 +4605,8 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.intToPointerCastError(nullptr, "decimal");
     c.suspiciousFloatingPointCastError(nullptr);
     c.passedByValueError(nullptr, false);
+    // TODO: iterateByValue
+    // TODO: passedByValueCallback
     c.constVariableError(nullptr, nullptr);
     c.constStatementError(nullptr, "type", false);
     c.signedCharArrayIndexError(nullptr);
@@ -4626,8 +4650,10 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     c.knownArgumentError(nullptr, nullptr, nullptr, "x", false);
     c.knownPointerToBoolError(nullptr, nullptr);
     c.comparePointersError(nullptr, nullptr, nullptr);
+    // TODO: subtractPointers
     c.redundantAssignmentError(nullptr, nullptr, "var", false);
     c.redundantInitializationError(nullptr, nullptr, "var", false);
+    c.redundantContinueError(nullptr);
 
     const std::vector<const Token *> nullvec;
     c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);

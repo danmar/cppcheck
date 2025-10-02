@@ -511,7 +511,7 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
                 bits = mSettings->platform.long_long_bit;
             else
                 continue;
-            if (bits < MathLib::bigint_bits && f.floatValue >= (static_cast<MathLib::biguint>(1) << bits))
+            if (bits < MathLib::bigint_bits && f.floatValue >= (1ULL << bits))
                 floatToIntegerOverflowError(tok, f);
         }
     }
@@ -544,7 +544,9 @@ void CheckType::getErrorMessages(ErrorLogger *errorLogger, const Settings *setti
     c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
     c.tooBigSignedBitwiseShiftError(nullptr, 31, ValueFlow::Value(31));
     c.integerOverflowError(nullptr, ValueFlow::Value(1LL<<32));
+    // TODO: integerOverflowCond
     c.signConversionError(nullptr, nullptr, false);
+    // TODO: signConversionCond
     c.longCastAssignError(nullptr);
     c.longCastReturnError(nullptr);
     ValueFlow::Value f;

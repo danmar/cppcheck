@@ -17,4 +17,7 @@ Deprecations:
 
 Other:
 - Removed deprecated support for builds with Qt5.
+- Added make variables `CXXOPTS` and `LDOPTS` to extend existing `CXXFLAGS` and `LDFLAGS`.
+- Added make variables `CPPOPTS` to extend existing `CPPFLAGS`.
+- `CPPFLAGS` are not longer being passed to the linker command for `cppcheck` and `testrunner`.
 -

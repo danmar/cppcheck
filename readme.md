@@ -42,11 +42,9 @@ When building the command line tool, [PCRE](http://www.pcre.org/) is optional. I
 
 There are multiple compilation choices:
 * CMake - cross platform build tool
-* Windows: Visual Studio
-* Windows: Qt Creator + MinGW
-* GNU make
-* GCC (g++)
-* Clang (clang++)
+* (Windows) Visual Studio
+* (Windows) Qt Creator + MinGW
+* GNU compilers - via make or directly
 
 The minimum required Python version is 3.6.
 
@@ -57,10 +55,8 @@ The minimum required version is CMake 3.13.
 Example, compiling Cppcheck with cmake:
 
 ```shell
-mkdir build
-cd build
-cmake ..
-cmake --build .
+cmake -S . -B build
+cmake --build build
 ```
 
 If you want to compile the GUI you can use the flag.
@@ -82,19 +78,15 @@ Using cmake you can generate project files for Visual Studio,XCode,etc.
 For single-configuration generators (like "Unix Makefiles") you can generate and build a specific configuration (e.g. "RelWithDebInfo") using:
 
 ```shell
-mkdir build_RelWithDebInfo
-cd build_RelWithDebInfo
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-cmake --build . --config RelWithDebInfo
+cmake -S . -B build_RelWithDebInfo -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake --build build_RelWithDebInfo --config RelWithDebInfo
 ```
 
 For multi-configuration generators (like "Visual Studio 17 2022") the same is achieved using:
 
 ```shell
-mkdir build
-cd build
-cmake ..
-cmake --build . --config RelWithDebInfo
+cmake -S . -B build
+cmake --build build --config RelWithDebInfo
 ```
 
 ### Visual Studio
@@ -182,7 +174,9 @@ For debugging create a launch.json file in the .vscode folder with the following
 The PCRE dll is needed to build the CLI. It can be downloaded here:
 http://software-download.name/pcre-library-windows/
 
-### GNU make
+### GNU compilers
+
+#### GNU make
 
 Simple, unoptimized build (no dependencies):
 
@@ -190,39 +184,41 @@ Simple, unoptimized build (no dependencies):
 make
 ```
 
+You can use `CXXOPTS`, `CPPOPTS` and `LDOPTS` to append to the existing `CXXFLAGS`, `CPPFLAGS` and `LDFLAGS` instead of overriding them.
+
 The recommended release build is:
 
 ```shell
-make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"
+make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXOPTS="-O2" CPPOPTS="-DNDEBUG"
 ```
 
-Flags:
-
-1.  `MATCHCOMPILER=yes`
-    Python is used to optimise cppcheck. The Token::Match patterns are converted into C++ code at compile time.
-
-2.  `FILESDIR=/usr/share/cppcheck`
-    Specify folder where cppcheck files are installed (addons, cfg, platform)
-
-3.  `HAVE_RULES=yes`
-    Enable rules (PCRE is required if this is used)
-
-4.  `CXXFLAGS="-O2 -DNDEBUG -Wall -Wno-sign-compare -Wno-unused-function"`
-    Enables most compiler optimizations, disables cppcheck-internal debugging code and enables basic compiler warnings.
-
-### g++ (for experts)
+#### g++ (for experts)
 
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib -Ifrontend frontend/*.cpp cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/tinyxml2.cpp
 ```
 
-If you want to use `--rule` and `--rule-file` then dependencies are needed:
+#### Flags
 
-```shell
-g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
-```
+-  `MATCHCOMPILER=yes`
+   Several `Token` matching patterns are converted into more efficient C++ code at compile time (requires Python to be installed).
+
+-  `FILESDIR=/usr/share/cppcheck`
+   Specifies the folder where cppcheck files (addons, cfg, platform) are installed to.
+
+-  `HAVE_RULES=yes`
+   Enables rules (requires PCRE to be installed).
+
+-  `CXXOPTS="-O2"`
+   Enables most compiler optimizations.
+
+-  `CPPOPTS="-DNDEBUG"`
+   Disables assertions.
+
+-  `HAVE_BOOST=yes`
+   Enables usage of more efficient container from Boost (requires Boost to be installed).
 
 ### MinGW
 
@@ -259,32 +255,38 @@ mv cppcheck cppcheck.exe
 
 Besides building yourself on the platform of your choice there are also several ways to obtain pre-built packages.<br/>
 
-Official packages maintained by the Cppcheck team:
+### Official
+
+Official packages are maintained by the Cppcheck team.
+
 - (Windows) An official Windows installer is available via the official Cppcheck SourceForge page: https://cppcheck.sourceforge.io.
 - (Windows) Official builds of the current development versions are available via the [release-windows](https://github.com/danmar/cppcheck/actions/workflows/release-windows.yml) workflow. They are built nightly for the `main` branch and for each commit for release branches. As these are development versions please refrain from using these in production environments!
   - A portable package (i.e. does not require installation) is available as the `portable` artifact. This is still a work-in-progress - see https://trac.cppcheck.net/ticket/10771 for details.
   - An installer is available via the `installer` artifact.
 - (Multi-Platform) A premium version with additional features provided by the original author of Cppcheck is available for purchase via https://www.cppcheck.com.
 
-Unofficial packages *not* maintained by the Cppcheck team but their respective packagers:
+### Third-party
+
+Third-party packages are ***not*** maintained by the Cppcheck team but their respective packagers.
+
+*Note:* The following list is purely informational and listed in no particular order.
+
+*Note:* Please always try to obtain the package from the primary official source of your operating system/distro first and make sure you are getting the latest released/tagged version (see https://github.com/danmar/cppcheck/tags). Some packages might not carry the latest patch version though.
+
+*Note:* Some issues might be related to additional patches carried by the builds in these packages or by the packaging itself. Please try to verify the issue with an official build before reporting it upstream. Otherwise you might need toreport it to the respective maintainer of the package.
+
 - (Windows / Outdated) A portable package is available via https://portableapps.com/apps/development/cppcheck-portable.
 - (Windows / Outdated) A package is available via https://community.chocolatey.org/packages/cppcheck.
 - (Windows / Outdated) A package is available via https://winget.run/pkg/Cppcheck/Cppcheck.
-- (Windows / Outdated) A package is available via https://osdn.net/projects/sfnet_cppcheck.
 - (Windows) A package is available via https://scoop.sh/#/apps?q=cppcheck.
 - (Linux/Unix) Many major distros offer Cppcheck packages via their integrated package managers (`yum`, `apt`, `pacman`, etc.). See https://pkgs.org/search/?q=cppcheck or https://repology.org/project/cppcheck for an overview.
 - (Linux/Unix) Unless you are using a "rolling" distro, it is likely that they are not carrying the latest version. There are several external (mainly unsupported) repositories like AUR (ArchLinux), PPA (ubuntu), EPEL (CentOS/Fedora) etc. which might provide up-to-date packages. 
 - (Linux/Unix / Outdated) The Canonical Snapcraft packages (https://snapcraft.io/cppcheck / https://snapcraft.io/cppcheckgui) are unmaintained and contain very old (development) versions. Please refrain from using them! See https://trac.cppcheck.net/ticket/11641 for more details.
 - (MacOS) A package is available via Homebrew (`brew`). See https://formulae.brew.sh/formula/cppcheck.
-- (MacOS) A package is available via https://ports.macports.org/port/cppcheck
+- (MacOS) A package is available via https://ports.macports.org/port/cppcheck.
 - (Multi-Platform) A package is available via https://anaconda.org/conda-forge/cppcheck.
+- (Multi-Platform) A package is available via https://conan.io/center/recipes/cppcheck.
 - Packages are also available from various download portals (mainly the Windows installer - sometimes re-packaged).
-
-*Note:* This is list is purely informational and listed in no particular order.
-
-*Note:* Please always try to obtain the package from the primary official source of your operating system/distro first and make sure you are getting the latest released version.
-
-*Note:* Some issues might be related to additional patches carried by the builds in these packages or the packaging itself. In that case issues might need to be reported to the respective project.
 
 ## Webpage
 
