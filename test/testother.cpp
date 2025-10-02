@@ -4511,7 +4511,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4:8]: (style) Variable 'tok1' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str());
-      
+
         check("struct S { S* next; };\n" // #14119
               "void f(S* s) {\n"
               "    for (S* p = s->next; p != nullptr; p = p->next) {}\n"
