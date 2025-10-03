@@ -80,6 +80,7 @@
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="programmemory.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
+    <ClCompile Include="sarifreport.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="standards.cpp" />
     <ClCompile Include="summaries.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="programmemory.h" />
     <ClInclude Include="reverseanalyzer.h" />
+    <ClInclude Include="sarifreport.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="smallvector.h" />
     <ClInclude Include="sourcelocation.h" />
