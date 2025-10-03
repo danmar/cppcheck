@@ -8869,6 +8869,7 @@ void Tokenizer::findGarbageCode() const
             !Token::simpleMatch(tok->previous(), ".") &&
             !Token::simpleMatch(tok->next(), ".") &&
             !Token::Match(tok->previous(), "{|, . %name% =|.|[|{") &&
+            !(tok->previous() && tok->previous()->isLiteral()) &&
             !Token::Match(tok->previous(), ", . %name%")) {
             if (!Token::Match(tok->previous(), "%name%|)|]|>|}"))
                 syntaxError(tok, tok->strAt(-1) + " " + tok->str() + " " + tok->strAt(1));
@@ -9877,7 +9878,7 @@ void Tokenizer::simplifyAsm()
             Token *endasm = tok->next();
             const Token *firstSemiColon = nullptr;
             int comment = 0;
-            while (Token::Match(endasm, "%num%|%name%|,|:|;") || (endasm && endasm->linenr() == comment)) {
+            while (Token::Match(endasm, "%num%|%name%|,|:|;") || (endasm && (endasm->isLiteral() || endasm->linenr() == comment))) {
                 if (Token::Match(endasm, "_asm|__asm|__endasm"))
                     break;
                 if (endasm->str() == ";") {

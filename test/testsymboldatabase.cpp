@@ -622,6 +622,8 @@ private:
         TEST_CASE(dumpFriend); // Check if isFriend added to dump file
 
         TEST_CASE(smartPointerLookupCtor); // #13719);
+
+        TEST_CASE(userDefinedLiteral);
     }
 
     void array() {
@@ -11317,6 +11319,15 @@ private:
 
         ASSERT(db);
     }
+
+    void userDefinedLiteral() {
+        GET_SYMBOL_DB("_ 1p;");
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "1p");
+        ASSERT(x);
+        ASSERT(!x->varId());
+        ASSERT(!x->variable());
+    }
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)
