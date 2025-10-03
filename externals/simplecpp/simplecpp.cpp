@@ -2512,7 +2512,7 @@ static void simplifySizeof(simplecpp::TokenList &expr, const std::map<std::strin
     for (simplecpp::Token *tok = expr.front(); tok; tok = tok->next) {
         if (tok->str() != "sizeof")
             continue;
-        simplecpp::Token *tok1 = tok->next;
+        const simplecpp::Token *tok1 = tok->next;
         if (!tok1) {
             throw std::runtime_error("missing sizeof argument");
         }
