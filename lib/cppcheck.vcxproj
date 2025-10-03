@@ -56,7 +56,6 @@
     <ClCompile Include="checkstring.cpp" />
     <ClCompile Include="checktype.cpp" />
     <ClCompile Include="checkuninitvar.cpp" />
-    <ClCompile Include="checkunionzeroinit.cpp" />
     <ClCompile Include="checkunusedfunctions.cpp" />
     <ClCompile Include="checkunusedvar.cpp" />
     <ClCompile Include="checkvaarg.cpp" />
@@ -128,7 +127,6 @@
     <ClInclude Include="checkstring.h" />
     <ClInclude Include="checktype.h" />
     <ClInclude Include="checkuninitvar.h" />
-    <ClInclude Include="checkunionzeroinit.h" />
     <ClInclude Include="checkunusedfunctions.h" />
     <ClInclude Include="checkunusedvar.h" />
     <ClInclude Include="checkvaarg.h" />

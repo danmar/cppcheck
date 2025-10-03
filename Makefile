@@ -224,7 +224,6 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checkstring.o \
               $(libcppdir)/checktype.o \
               $(libcppdir)/checkuninitvar.o \
-              $(libcppdir)/checkunionzeroinit.o \
               $(libcppdir)/checkunusedfunctions.o \
               $(libcppdir)/checkunusedvar.o \
               $(libcppdir)/checkvaarg.o \
@@ -347,7 +346,6 @@ TESTOBJ =     test/fixture.o \
               test/testtokenrange.o \
               test/testtype.o \
               test/testuninitvar.o \
-              test/testunionzeroinit.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
@@ -562,9 +560,6 @@ $(libcppdir)/checktype.o: lib/checktype.cpp lib/addoninfo.h lib/astutils.h lib/c
 
 $(libcppdir)/checkuninitvar.o: lib/checkuninitvar.cpp lib/addoninfo.h lib/astutils.h lib/check.h lib/checkers.h lib/checknullpointer.h lib/checkuninitvar.h lib/config.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkuninitvar.cpp
-
-$(libcppdir)/checkunionzeroinit.o: lib/checkunionzeroinit.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/checkunionzeroinit.h lib/config.h lib/errortypes.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/vfvalue.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkunionzeroinit.cpp
 
 $(libcppdir)/checkunusedfunctions.o: lib/checkunusedfunctions.cpp externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/astutils.h lib/checkers.h lib/checkunusedfunctions.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h lib/xml.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkunusedfunctions.cpp
@@ -913,9 +908,6 @@ test/testtype.o: test/testtype.cpp lib/addoninfo.h lib/check.h lib/checkers.h li
 
 test/testuninitvar.o: test/testuninitvar.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/checkuninitvar.h lib/color.h lib/config.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} ${CFLAGS_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testuninitvar.cpp
-
-test/testunionzeroinit.o: test/testunionzeroinit.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/checkunionzeroinit.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
-	$(CXX) ${INCLUDE_FOR_TEST} ${CFLAGS_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testunionzeroinit.cpp
 
 test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/addoninfo.h lib/check.h lib/checkers.h lib/checkunusedfunctions.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/tokenize.h lib/tokenlist.h lib/utils.h test/fixture.h test/helpers.h
 	$(CXX) ${INCLUDE_FOR_TEST} ${CFLAGS_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testunusedfunctions.cpp
