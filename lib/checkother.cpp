@@ -2802,6 +2802,14 @@ isStaticAssert(const Settings &settings, const Token *tok)
     return false;
 }
 
+static bool isSizeof(const Token *tok)
+{
+    if (!Token::simpleMatch(tok, "("))
+        return false;
+
+    return Token::simpleMatch(tok->astOperand1(), "sizeof");
+}
+
 void CheckOther::checkDuplicateExpression()
 {
     {
@@ -2985,7 +2993,8 @@ void CheckOther::checkDuplicateExpression()
             } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
                     !isVariableChanged(tok->astParent(), /*indirect*/ 0, *mSettings) &&
-                    isConstStatement(tok->astOperand1(), mSettings->library) && isConstStatement(tok->astOperand2(), mSettings->library))
+                    isConstStatement(tok->astOperand1(), mSettings->library) && isConstStatement(tok->astOperand2(), mSettings->library) &&
+                    !isSizeof(tok->astOperand1()) && !isSizeof(tok->astOperand2()))
                     duplicateValueTernaryError(tok);
                 else if (isSameExpression(true, tok->astOperand1(), tok->astOperand2(), *mSettings, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, std::move(errorPath));
