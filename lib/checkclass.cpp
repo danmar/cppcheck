@@ -3801,9 +3801,9 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<C
             const ErrorMessage errmsg(std::move(locationList),
                                       fi->file0,
                                       Severity::error,
+                                      "ctuOneDefinitionRuleViolation",
                                       "$symbol:" + nameLoc.className +
                                       "\nThe one definition rule is violated, different classes/structs have the same name '$symbol'",
-                                      "ctuOneDefinitionRuleViolation",
                                       CWE_ONE_DEFINITION_RULE,
                                       Certainty::normal);
             errorLogger.reportErr(errmsg);
