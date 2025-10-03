@@ -290,6 +290,29 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
             if (!defval.empty())
                 defs += defval;
             defs += ';';
+
+            // Extract Y2038-specific flags
+            if (fval == "_TIME_BITS" && !defval.empty() && defval[0] == '=') {
+                const std::string valueStr = defval.substr(1);
+                char* endptr = nullptr;
+                const long value = std::strtol(valueStr.c_str(), &endptr, 10);
+                if (*endptr == '\0' && value >= INT_MIN && value <= INT_MAX) {
+                    fs.timeBitsDefined = true;
+                    fs.timeBitsValue = static_cast<int>(value);
+                }
+                // If parsing fails, leave timeBitsDefined as false
+            } else if (fval == "_FILE_OFFSET_BITS" && !defval.empty() && defval[0] == '=') {
+                const std::string valueStr = defval.substr(1);
+                char* endptr = nullptr;
+                const long value = std::strtol(valueStr.c_str(), &endptr, 10);
+                if (*endptr == '\0' && value >= INT_MIN && value <= INT_MAX) {
+                    fs.fileOffsetBitsDefined = true;
+                    fs.fileOffsetBitsValue = static_cast<int>(value);
+                }
+                // If parsing fails, leave fileOffsetBitsDefined as false
+            } else if (fval == "_USE_TIME_BITS64") {
+                fs.useTimeBits64Defined = true;
+            }
         } else if (F=='U')
             fs.undefs.insert(std::move(fval));
         else if (F=='I') {
