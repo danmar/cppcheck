@@ -38,7 +38,7 @@ struct CPPCHECKLIB Standards {
     enum Language : std::uint8_t { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
+    enum cstd_t : std::uint8_t { C89, C99, C11, C17, C23, C2Y, CLatest = C2Y } c = CLatest;
 
     /** C++ code standard */
     enum cppstd_t : std::uint8_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
