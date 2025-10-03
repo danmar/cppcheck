@@ -4229,7 +4229,7 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
             }
             if (tok2->isCpp() && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
-            if (tok2->isCpp() && Token::simpleMatch(tok2, "decltype (")) {
+            if (tok2->isCpp() && Token::Match(tok2, "decltype|typeof|__typeof (")) {
                 typeCount = 1;
                 tok2 = tok2->linkAt(1)->next();
                 continue;
@@ -4782,7 +4782,7 @@ void Tokenizer::setVarIdPass1()
                                               variableMap.map(true),
                                               mTemplateVarIdUsage);
                     }
-                    if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
+                    if (Token *declTypeTok = Token::findmatch(tok, "decltype|typeof|__typeof (", tok2)) {
                         for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
                             if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
                                 declTok->varId(variableMap.map(false).find(declTok->str())->second);
