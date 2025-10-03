@@ -70,6 +70,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/checkstring.o \
               $(libcppdir)/checktype.o \
               $(libcppdir)/checkuninitvar.o \
+              $(libcppdir)/checkunionzeroinit.o \
               $(libcppdir)/checkunusedfunctions.o \
               $(libcppdir)/checkunusedvar.o \
               $(libcppdir)/checkvaarg.o \
@@ -242,6 +243,9 @@ $(libcppdir)/checktype.o: ../lib/checktype.cpp ../lib/addoninfo.h ../lib/astutil
 
 $(libcppdir)/checkuninitvar.o: ../lib/checkuninitvar.cpp ../lib/addoninfo.h ../lib/astutils.h ../lib/check.h ../lib/checkers.h ../lib/checknullpointer.h ../lib/checkuninitvar.h ../lib/config.h ../lib/ctu.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkuninitvar.cpp
+
+$(libcppdir)/checkunionzeroinit.o: ../lib/checkunionzeroinit.cpp ../lib/addoninfo.h ../lib/check.h ../lib/checkers.h ../lib/checkunionzeroinit.h ../lib/config.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/platform.h ../lib/settings.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/valueflow.h ../lib/vfvalue.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkunionzeroinit.cpp
 
 $(libcppdir)/checkunusedfunctions.o: ../lib/checkunusedfunctions.cpp ../externals/tinyxml2/tinyxml2.h ../lib/addoninfo.h ../lib/astutils.h ../lib/checkers.h ../lib/checkunusedfunctions.h ../lib/config.h ../lib/errorlogger.h ../lib/errortypes.h ../lib/library.h ../lib/mathlib.h ../lib/path.h ../lib/platform.h ../lib/settings.h ../lib/smallvector.h ../lib/sourcelocation.h ../lib/standards.h ../lib/symboldatabase.h ../lib/templatesimplifier.h ../lib/token.h ../lib/tokenize.h ../lib/tokenlist.h ../lib/utils.h ../lib/vfvalue.h ../lib/xml.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkunusedfunctions.cpp
