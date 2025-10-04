@@ -622,6 +622,8 @@ private:
         TEST_CASE(dumpFriend); // Check if isFriend added to dump file
 
         TEST_CASE(smartPointerLookupCtor); // #13719);
+
+        TEST_CASE(stdintFunction);
     }
 
     void array() {
@@ -11316,6 +11318,14 @@ private:
                       "void f() { S(0).v; }");
 
         ASSERT(db);
+    }
+
+    void stdintFunction() {
+        GET_SYMBOL_DB("a = UINT32_C(60);");
+        const Token* tok = Token::findsimplematch(tokenizer.tokens(), "UINT32_C (");
+        ASSERT(tok != nullptr);
+        ASSERT_EQUALS(tok->next()->valueType()->sign, ValueType::Sign::UNSIGNED);
+        ASSERT_EQUALS(tok->next()->valueType()->type, ValueType::Type::INT);
     }
 };
 
