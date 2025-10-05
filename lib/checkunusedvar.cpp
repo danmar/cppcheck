@@ -1606,7 +1606,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             if (isInherited && !var.isPrivate())
                 continue;
 
-            if (!var.nameToken() || var.nameToken()->isAttributeUnused() || var.nameToken()->isAnonymous())
+            if (!var.nameToken() || var.nameToken()->isAttributeUnused() || var.nameToken()->isAttributeMaybeUnused() || var.nameToken()->isAnonymous())
                 continue;
 
             if (mTokenizer->isVarUsedInTemplate(var.declarationId()))
@@ -1627,6 +1627,17 @@ void CheckUnusedVar::checkStructMemberUsage()
                         use = true;
                         break;
                     }
+                }
+                // Member referenced in alignas
+                if (tok->hasAttributeAlignas()) {
+                    const std::vector<std::string> alignasExpressions = tok->getAttributeAlignas();
+                    use = std::any_of(alignasExpressions.cbegin(),
+                                      alignasExpressions.cend(),
+                                      [&var](const std::string& alignasExpr){
+                        return alignasExpr == var.name();
+                    });
+                    if (use)
+                        break;
                 }
                 if (tok->variable() != &var)
                     continue;

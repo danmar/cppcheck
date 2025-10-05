@@ -511,7 +511,7 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
                 bits = mSettings->platform.long_long_bit;
             else
                 continue;
-            if (bits < MathLib::bigint_bits && f.floatValue >= (static_cast<MathLib::biguint>(1) << bits))
+            if (bits < MathLib::bigint_bits && f.floatValue >= (1ULL << bits))
                 floatToIntegerOverflowError(tok, f);
         }
     }

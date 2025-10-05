@@ -56,7 +56,7 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # valgrind cannot handle DWARF 5 yet so force version 4
           # work around performance regression with -inline-deferral
-          make -j$(nproc) -s CXXOPTS="-O2 -w -gdwarf-4" CPPOPTS="-DHAVE_BOOST -mllvm -inline-deferral" MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-Werror -O2 -gdwarf-4" CPPOPTS="-DHAVE_BOOST -mllvm -inline-deferral" MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG=
         env:
           CC: clang-14
           CXX: clang++-14
@@ -64,7 +64,7 @@ jobs:
       # unusedFunction - start
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCPPCHK_GLIBCXX_DEBUG=Off
 
       - name: Generate dependencies
         run: |
@@ -91,7 +91,7 @@ jobs:
       # unusedFunction notest - start
       - name: CMake (no test)
         run: |
-          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DBUILD_TRIAGE=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DBUILD_TRIAGE=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCPPCHK_GLIBCXX_DEBUG=Off
 
       - name: Generate dependencies (no test)
         run: |
@@ -114,7 +114,7 @@ jobs:
       # unusedFunction notest nogui - start
       - name: CMake (no test / no gui)
         run: |
-          cmake -S . -B cmake.output.notest_nogui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DENABLE_CHECK_INTERNAL=On
+          cmake -S . -B cmake.output.notest_nogui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off
 
       - name: Generate dependencies (no test / no gui)
         run: |
@@ -133,7 +133,7 @@ jobs:
       # unusedFunction notest nocli - start
       - name: CMake (no test / no cli)
         run: |
-          cmake -S . -B cmake.output.notest_nocli -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest_nocli -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCPPCHK_GLIBCXX_DEBUG=Off
 
       - name: Generate dependencies (no test / no cli)
         run: |
@@ -157,7 +157,7 @@ jobs:
       # unusedFunction notest nocli nogui - start
       - name: CMake (no test / no cli / no gui)
         run: |
-          cmake -S . -B cmake.output.notest_nocli_nogui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=Off -DENABLE_CHECK_INTERNAL=On
+          cmake -S . -B cmake.output.notest_nocli_nogui -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_CLI=Off -DBUILD_GUI=Off -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off
 
       - name: Generate dependencies (no test / no cli / no gui)
         run: |
@@ -181,7 +181,7 @@ jobs:
 
       - name: CMake (corpus / no test)
         run: |
-          cmake -S cppcheck-2.8 -B cmake.output.corpus -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake -S cppcheck-2.8 -B cmake.output.corpus -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Generate dependencies (corpus)
         run: |

@@ -92,7 +92,6 @@ TestFixture::TestFixture(const char * const _name)
 
 bool TestFixture::prepareTest(const char testname[])
 {
-    mVerbose = false;
     mTemplateFormat.clear();
     mTemplateLocation.clear();
     CppCheck::resetTimerResults();
@@ -439,7 +438,7 @@ void TestFixture::reportErr(const ErrorMessage &msg)
         return;
     std::string errormessage;
     if (!mTemplateFormat.empty()) {
-        errormessage = msg.toString(mVerbose, mTemplateFormat, mTemplateLocation);
+        errormessage = msg.toString(false, mTemplateFormat, mTemplateLocation);
     }
     else {
         if (!msg.callStack.empty()) {

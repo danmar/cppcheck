@@ -321,17 +321,17 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokens(std::istream &code)
+bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size)
 {
-    return createTokensInternal(code, mFiles.empty() ? "" : *mFiles.cbegin());
+    return createTokensFromBufferInternal(data, size, mFiles.empty() ? "" : *mFiles.cbegin());
 }
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensInternal(std::istream &code, const std::string& file0)
+bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
 {
     simplecpp::OutputList outputList;
-    simplecpp::TokenList tokens(code, mFiles, file0, &outputList);
+    simplecpp::TokenList tokens(data, size, mFiles, file0, &outputList);
 
     createTokens(std::move(tokens));
 
@@ -559,9 +559,9 @@ static Token * findCppTypeInitPar(Token *tok)
 static bool iscpp11init_impl(const Token * tok);
 static bool iscpp11init(const Token * const tok)
 {
-    if (tok->isCpp11init() == TokenImpl::Cpp11init::UNKNOWN)
+    if (tok->isCpp11init() == Token::Cpp11init::UNKNOWN)
         tok->setCpp11init(iscpp11init_impl(tok));
-    return tok->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT;
+    return tok->isCpp11init() == Token::Cpp11init::CPP11INIT;
 }
 
 static bool iscpp11init_impl(const Token * const tok)
@@ -570,8 +570,8 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     const Token *nameToken = tok;
     while (nameToken && nameToken->str() == "{") {
-        if (nameToken->isCpp11init() != TokenImpl::Cpp11init::UNKNOWN)
-            return nameToken->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT;
+        if (nameToken->isCpp11init() != Token::Cpp11init::UNKNOWN)
+            return nameToken->isCpp11init() == Token::Cpp11init::CPP11INIT;
         nameToken = nameToken->previous();
         if (nameToken && nameToken->str() == "," && Token::simpleMatch(nameToken->previous(), "} ,"))
             nameToken = nameToken->linkAt(-1);

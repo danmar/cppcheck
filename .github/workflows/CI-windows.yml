@@ -55,7 +55,7 @@ jobs:
         run: |
           rem TODO: enable rules?
           rem specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install || exit /b !errorlevel!
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
 
       - name: Build GUI release
         run: |
@@ -125,7 +125,7 @@ jobs:
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
           git apply --ignore-space-change ..\externals\pcre.patch || exit /b !errorlevel!
-          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off -DCMAKE_POLICY_VERSION_MINIMUM=3.5 || exit /b !errorlevel!
+          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
           nmake || exit /b !errorlevel!
           copy pcre.h ..\externals || exit /b !errorlevel!
           copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
@@ -207,7 +207,7 @@ jobs:
       - name: Test SEH wrapper
         if: matrix.config == 'release'
         run: |
-          cmake -S . -B build.cmake.seh -DBUILD_TESTS=On || exit /b !errorlevel!
+          cmake -S . -B build.cmake.seh -DBUILD_TESTS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
           cmake --build build.cmake.seh --target test-sehwrapper || exit /b !errorlevel!
           :: TODO: how to run this without copying the file?
           copy build.cmake.seh\bin\Debug\test-sehwrapper.exe . || exit /b !errorlevel!

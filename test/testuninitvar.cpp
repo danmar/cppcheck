@@ -5468,16 +5468,14 @@ private:
         TODO_ASSERT_EQUALS("", "[test.c:4:14]: (error) Uninitialized variable: d [legacyUninitvar]\n", errout_str());
     }
 
-    void valueFlowUninit_(const char* file, int line, const char code[], bool cpp = true)
+    template<size_t size>
+    void valueFlowUninit_(const char* file, int line, const char (&code)[size], bool cpp = true)
     {
-        // Tokenize..
-        const Settings s = settingsBuilder(settings).debugwarnings(false).build();
-
-        SimpleTokenizer tokenizer(s, *this, cpp);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &s, this);
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
         (checkuninitvar.valueFlowUninit)();
     }
 
@@ -6588,6 +6586,23 @@ private:
                         "    return c.front();\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:8:12]: (error) Uninitialized variable: c [uninitvar]\n", errout_str());
+
+        // #13930
+        valueFlowUninit("extern int32_t g_items[10U];\n"
+                        "uint16_t write_item(uint8_t n);\n"
+                        "uint16_t write_item(uint8_t n) {\n"
+                        "    int32_t *p_item = NULL;\n"
+                        "    uint16_t ret;\n"
+                        "    ret = 0U;\n"
+                        "    if (n < 10U)\n"
+                        "        p_item = &g_items[n];\n"
+                        "    else\n"
+                        "        ret = 1U;\n"
+                        "    if (ret == 0U) \n"
+                        "        *p_item = 5;\n"
+                        "    return ret;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -7923,7 +7938,8 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void ctu_(const char* file, int line, const char code[]) {
+    template<size_t size>
+    void ctu_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

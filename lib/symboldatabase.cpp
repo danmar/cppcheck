@@ -2296,7 +2296,7 @@ Variable& Variable::operator=(const Variable &var) &
     if (this == &var)
         return *this;
 
-    ValueType* vt = nullptr;
+    const ValueType* vt = nullptr;
     if (var.mValueType)
         vt = new ValueType(*var.mValueType);
 
@@ -2357,8 +2357,11 @@ void Variable::evaluate(const Settings& settings)
     const Library & lib = settings.library;
 
     bool isContainer = false;
-    if (mNameToken)
+    if (mNameToken) {
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
+        setFlag(fIsMaybeUnused, mNameToken->isAttributeMaybeUnused());
+    }
+
 
     if (mTypeStartToken)
         setValueType(ValueType::parseDecl(mTypeStartToken,settings));
@@ -2393,10 +2396,6 @@ void Variable::evaluate(const Settings& settings)
         } else if (tok->str() == "&&") { // Before simplification, && isn't split up
             setFlag(fIsRValueRef, true);
             setFlag(fIsReference, true); // Set also fIsReference
-        }
-
-        if (tok->isAttributeMaybeUnused()) {
-            setFlag(fIsMaybeUnused, true);
         }
 
         if (tok->str() == "<" && tok->link())
@@ -2462,7 +2461,7 @@ void Variable::setValueType(const ValueType &valueType)
         if (declType && !declType->next()->valueType())
             return;
     }
-    auto* vt = new ValueType(valueType);
+    const auto* vt = new ValueType(valueType);
     delete mValueType;
     mValueType = vt;
     if ((mValueType->pointer > 0) && (!isArray() || Token::Match(mNameToken->previous(), "( * %name% )")))
@@ -7531,6 +7530,40 @@ static const Function* getFunction(const Token* tok) {
     return nullptr;
 }
 
+static int getIntegerConstantMacroWidth(const Token* tok) {
+    if (!Token::Match(tok, "%name% (") || Token::simpleMatch(tok->next()->astOperand2(), ","))
+        return 0;
+    const std::string &name = tok->str();
+    if (name.back() != 'C')
+        return 0;
+    size_t pos = (name[0] == 'U') ? 1 : 0;
+    if (name[pos] != 'I' || name[pos + 1] != 'N' || name[pos + 2] != 'T')
+        return 0;
+    pos += 3;
+    int intnum = 0;
+    if (name[pos] == '8') {
+        ++pos;
+        intnum = 8;
+    }
+    else if (name[pos] == '1' && name[pos + 1] == '6') {
+        pos += 2;
+        intnum = 16;
+    }
+    else if (name[pos] == '3' && name[pos + 1] == '2') {
+        pos += 2;
+        intnum = 32;
+    }
+    else if (name[pos] == '6' && name[pos + 1] == '4') {
+        pos += 2;
+        intnum = 64;
+    }
+    else
+        return 0;
+    if (pos + 2 != name.size() || name[pos] != '_')
+        return 0;
+    return intnum;
+}
+
 void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens)
 {
     if (!tokens)
@@ -7672,6 +7705,29 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 }
             }
 
+            // functions from stdint.h
+            else if (const int macroWidth = getIntegerConstantMacroWidth(tok->previous())) {
+                ValueType valuetype;
+                if (macroWidth == mSettings.platform.char_bit)
+                    valuetype.type = ValueType::Type::CHAR;
+                else if (macroWidth == mSettings.platform.short_bit)
+                    valuetype.type = ValueType::Type::SHORT;
+                else if (macroWidth == mSettings.platform.int_bit)
+                    valuetype.type = ValueType::Type::INT;
+                else if (macroWidth == mSettings.platform.long_bit)
+                    valuetype.type = ValueType::Type::LONG;
+                else if (macroWidth == mSettings.platform.long_long_bit)
+                    valuetype.type = ValueType::Type::LONGLONG;
+                else
+                    valuetype.type = ValueType::Type::INT;
+
+                if (tok->strAt(-1)[0] == 'U')
+                    valuetype.sign = ValueType::Sign::UNSIGNED;
+                else
+                    valuetype.sign = ValueType::Sign::SIGNED;
+                setValueType(tok, valuetype);
+            }
+
             // function style cast
             else if (tok->previous() && tok->previous()->isStandardType()) {
                 ValueType valuetype;
@@ -7758,8 +7814,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 if (!typestr.empty()) {
                     ValueType valuetype;
                     TokenList tokenList(mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
-                    std::istringstream istr(typestr+";");
-                    tokenList.createTokens(istr); // TODO: check result?
+                    const std::string str(typestr+";");
+                    tokenList.createTokensFromBuffer(str.data(), str.size()); // TODO: check result?
                     tokenList.simplifyStdType();
                     if (parsedecl(tokenList.front(), &valuetype, mDefaultSignedness, mSettings)) {
                         valuetype.originalTypeName = typestr;
@@ -7848,8 +7904,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     continue;
                 }
                 TokenList tokenList(mSettings, tok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
-                std::istringstream istr(typestr+";");
-                if (tokenList.createTokens(istr)) {
+                const std::string str(typestr+";");
+                if (tokenList.createTokensFromBuffer(str.data(), str.size())) {
                     ValueType vt;
                     tokenList.simplifyPlatformTypes();
                     tokenList.simplifyStdType();

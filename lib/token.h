@@ -63,100 +63,6 @@ struct ScopeInfo2 {
 
 enum class TokenDebug : std::uint8_t { None, ValueFlow, ValueType };
 
-struct TokenImpl {
-    nonneg int mVarId{};
-    nonneg int mFileIndex{};
-    nonneg int mLineNumber{};
-    nonneg int mColumn{};
-    nonneg int mExprId{};
-
-    // original template argument location
-    int mTemplateArgFileIndex{-1};
-    int mTemplateArgLineNumber{-1};
-    int mTemplateArgColumn{-1};
-
-    /**
-     * A value from 0-100 that provides a rough idea about where in the token
-     * list this token is located.
-     */
-    nonneg int mProgressValue{};
-
-    /**
-     * Token index. Position in token list
-     */
-    nonneg int mIndex{};
-
-    /** Bitfield bit count. */
-    short mBits = -1;
-
-    // AST..
-    Token* mAstOperand1{};
-    Token* mAstOperand2{};
-    Token* mAstParent{};
-
-    // symbol database information
-    const Scope* mScope{};
-    union {
-        const Function *mFunction;
-        const Variable *mVariable;
-        const ::Type* mType;
-        const Enumerator *mEnumerator;
-    };
-
-    // original name like size_t
-    std::string* mOriginalName{};
-
-    // If this token came from a macro replacement list, this is the name of that macro
-    std::string* mMacroName{};
-
-    // ValueType
-    ValueType* mValueType{};
-
-    // ValueFlow
-    std::list<ValueFlow::Value>* mValues{};
-    static const std::list<ValueFlow::Value> mEmptyValueList;
-
-    // Pointer to a template in the template simplifier
-    std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers{};
-
-    // Pointer to the object representing this token's scope
-    std::shared_ptr<ScopeInfo2> mScopeInfo;
-
-    // __cppcheck_in_range__
-    struct CppcheckAttributes {
-        enum Type : std::uint8_t { LOW, HIGH } type = LOW;
-        MathLib::bigint value{};
-        CppcheckAttributes* next{};
-    };
-    CppcheckAttributes* mCppcheckAttributes{};
-
-    // alignas expressions
-    std::unique_ptr<std::vector<std::string>> mAttributeAlignas;
-    void addAttributeAlignas(const std::string& a) {
-        if (!mAttributeAlignas)
-            mAttributeAlignas = std::unique_ptr<std::vector<std::string>>(new std::vector<std::string>());
-        if (std::find(mAttributeAlignas->cbegin(), mAttributeAlignas->cend(), a) == mAttributeAlignas->cend())
-            mAttributeAlignas->push_back(a);
-    }
-
-    std::string mAttributeCleanup;
-
-    // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init : std::uint8_t { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
-
-    TokenDebug mDebug{};
-
-    void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
-    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint &value) const;
-
-    TokenImpl() : mFunction(nullptr) {}
-
-    ~TokenImpl();
-
-    TokenImpl(const TokenImpl &) = delete;
-    TokenImpl operator=(const TokenImpl &) = delete;
-};
-
 /// @addtogroup Core
 /// @{
 
@@ -173,7 +79,104 @@ struct TokenImpl {
 class CPPCHECKLIB Token {
     friend class TestToken;
 
+public:
+    enum CppcheckAttributesType : std::uint8_t { LOW, HIGH };
+    enum class Cpp11init : std::uint8_t { UNKNOWN, CPP11INIT, NOINIT };
+
 private:
+    struct Impl {
+        nonneg int mVarId{};
+        nonneg int mFileIndex{};
+        nonneg int mLineNumber{};
+        nonneg int mColumn{};
+        nonneg int mExprId{};
+
+        // original template argument location
+        int mTemplateArgFileIndex{-1};
+        int mTemplateArgLineNumber{-1};
+        int mTemplateArgColumn{-1};
+
+        /**
+         * A value from 0-100 that provides a rough idea about where in the token
+         * list this token is located.
+         */
+        nonneg int mProgressValue{};
+
+        /**
+         * Token index. Position in token list
+         */
+        nonneg int mIndex{};
+
+        /** Bitfield bit count. */
+        short mBits = -1;
+
+        // AST..
+        Token* mAstOperand1{};
+        Token* mAstOperand2{};
+        Token* mAstParent{};
+
+        // symbol database information
+        const Scope* mScope{};
+        union {
+            const Function *mFunction;
+            const Variable *mVariable;
+            const ::Type* mType;
+            const Enumerator *mEnumerator;
+        };
+
+        // original name like size_t
+        std::string* mOriginalName{};
+
+        // If this token came from a macro replacement list, this is the name of that macro
+        std::string* mMacroName{};
+
+        // ValueType
+        ValueType* mValueType{};
+
+        // ValueFlow
+        std::list<ValueFlow::Value>* mValues{};
+
+        // Pointer to a template in the template simplifier
+        std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers{};
+
+        // Pointer to the object representing this token's scope
+        std::shared_ptr<ScopeInfo2> mScopeInfo;
+
+        // __cppcheck_in_range__
+        struct CppcheckAttributes {
+            CppcheckAttributesType type{LOW};
+            MathLib::bigint value{};
+            CppcheckAttributes* next{};
+        };
+        CppcheckAttributes* mCppcheckAttributes{};
+
+        // alignas expressions
+        std::unique_ptr<std::vector<std::string>> mAttributeAlignas;
+        void addAttributeAlignas(const std::string& a) {
+            if (!mAttributeAlignas)
+                mAttributeAlignas = std::unique_ptr<std::vector<std::string>>(new std::vector<std::string>());
+            if (std::find(mAttributeAlignas->cbegin(), mAttributeAlignas->cend(), a) == mAttributeAlignas->cend())
+                mAttributeAlignas->push_back(a);
+        }
+
+        std::string mAttributeCleanup;
+
+        // For memoization, to speed up parsing of huge arrays #8897
+        Cpp11init mCpp11init{Cpp11init::UNKNOWN};
+
+        TokenDebug mDebug{};
+
+        void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value);
+        bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const;
+
+        Impl() : mFunction(nullptr) {}
+
+        ~Impl();
+
+        Impl(const Impl &) = delete;
+        Impl operator=(const Impl &) = delete;
+    };
+
     const TokenList& mList;
     std::shared_ptr<TokensFrontBack> mTokensFrontBack;
 
@@ -594,10 +597,10 @@ public:
     bool hasAttributeCleanup() const {
         return !mImpl->mAttributeCleanup.empty();
     }
-    void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
+    void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
-    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const {
+    bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
     // cppcheck-suppress unusedFunction
@@ -778,10 +781,10 @@ public:
     bool setBits(const MathLib::bigint b) {
         const MathLib::bigint max = std::numeric_limits<short>::max();
         if (b > max) {
-            mImpl->mBits = max;
+            mImpl->mBits = static_cast<short>(max);
             return false;
         }
-        mImpl->mBits = b < 0 ? -1 : b;
+        mImpl->mBits = b < 0 ? -1 : static_cast<short>(b);
         return true;
     }
 
@@ -1346,7 +1349,7 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
-        return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
+        return mImpl->mValues ? *mImpl->mValues : mEmptyValueList;
     }
 
     /**
@@ -1406,6 +1409,7 @@ public:
     void assignIndexes();
 
 private:
+    static const std::list<ValueFlow::Value> mEmptyValueList;
 
     void next(Token *nextToken) {
         mNext = nextToken;
@@ -1499,7 +1503,7 @@ private:
 
     uint64_t mFlags{};
 
-    TokenImpl* mImpl{};
+    Impl* mImpl{};
 
     /**
      * Get specified flag state.
@@ -1630,9 +1634,9 @@ public:
     std::shared_ptr<ScopeInfo2> scopeInfo() const;
 
     void setCpp11init(bool cpp11init) const {
-        mImpl->mCpp11init=cpp11init ? TokenImpl::Cpp11init::CPP11INIT : TokenImpl::Cpp11init::NOINIT;
+        mImpl->mCpp11init=cpp11init ? Cpp11init::CPP11INIT : Cpp11init::NOINIT;
     }
-    TokenImpl::Cpp11init isCpp11init() const {
+    Cpp11init isCpp11init() const {
         return mImpl->mCpp11init;
     }
 

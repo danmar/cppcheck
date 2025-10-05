@@ -38,7 +38,7 @@ struct TaggedAllocator : std::allocator<T>
     template<class ... Ts>
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
-    TaggedAllocator(Ts&&... ts)
+    TaggedAllocator(Ts && ... ts)
         : std::allocator<T>(std::forward<Ts>(ts)...)
     {}
 

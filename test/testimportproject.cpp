@@ -65,6 +65,7 @@ private:
         TEST_CASE(importCompileCommands11); // include path order
         TEST_CASE(importCompileCommands12); // #13040: "directory" is parent directory, relative include paths
         TEST_CASE(importCompileCommands13); // #13333: duplicate file entries
+        TEST_CASE(importCompileCommands14); // #14156
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCompileCommandsDirectoryMissing); // 'directory' field missing
@@ -363,6 +364,29 @@ private:
         const FileSettings &fs2 = importer.fileSettings.back();
         ASSERT_EQUALS(0, fs1.fileIndex);
         ASSERT_EQUALS(1, fs2.fileIndex);
+    }
+
+    void importCompileCommands14() const { // #14156
+        REDIRECT;
+        constexpr char json[] =
+            R"([{
+                "arguments": [
+                  "/usr/bin/g++",
+                  "-DTFS_LINUX_MODULE_NAME=\"tfs_linux\"",
+                  "-g",
+                  "-c",
+                  "cli/main.cpp"
+                ],
+                "directory": "/home/daniel/cppcheck",
+                "file": "/home/daniel/cppcheck/cli/main.cpp",
+                "output": "/home/daniel/cppcheck/cli/main.o"
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS("TFS_LINUX_MODULE_NAME=\"tfs_linux\"", fs.defines);
     }
 
     void importCompileCommandsArgumentsSection() const {

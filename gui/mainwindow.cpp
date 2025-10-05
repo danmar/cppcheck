@@ -729,8 +729,11 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    // TODO: apply enforcedLanguage?
-    cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
+    {
+        const std::string code_s = code.toStdString();
+        // TODO: apply enforcedLanguage?
+        cppcheck.checkBuffer(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
+    }
     analysisDone();
 
     // Expand results
@@ -1227,7 +1230,7 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
     settings.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     settings.quiet = false;
     settings.verbose = true;
-    settings.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
+    settings.force = mSettings->value(SETTINGS_CHECK_FORCE, 0).toBool();
     settings.outputFormat = Settings::OutputFormat::text;
     settings.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     settings.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());

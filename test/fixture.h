@@ -51,7 +51,6 @@ private:
     static std::size_t fails_counter;
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
-    bool mVerbose{};
     std::string mTemplateFormat;
     std::string mTemplateLocation;
     std::string mTestname;
@@ -124,10 +123,6 @@ protected:
     void assertNoThrowFail(const char * filename, unsigned int linenr, bool bailout) const;
     static std::string deleteLineNumber(const std::string &message);
 
-    void setVerbose(bool v) {
-        mVerbose = v;
-    }
-
     void setTemplateFormat(const std::string &templateFormat);
 
     void setMultiline() {
@@ -162,7 +157,7 @@ protected:
 
         SettingsBuilder& severity(Severity sev, bool b = true) {
             if (REDUNDANT_CHECK && settings.severity.isEnabled(sev) == b)
-                throw std::runtime_error("redundant setting: severity");
+                throw std::runtime_error("redundant setting: severity - " + severityToString(sev));
             settings.severity.setEnabled(sev, b);
             return *this;
         }
@@ -252,7 +247,7 @@ protected:
         const TestFixture &fixture;
         Settings settings;
 
-        const bool REDUNDANT_CHECK = false;
+        static constexpr bool REDUNDANT_CHECK = false;
     };
 
     SettingsBuilder settingsBuilder() const {
@@ -319,7 +314,7 @@ protected:
     std::unique_ptr<TestFixture> impl;
 };
 
-#define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (const AssertFailedError&) {} catch (...) { assertNoThrowFail(__FILE__, __LINE__, false); } } } while (false)
+#define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { try { NAME(); teardownTest(); } catch (const AssertFailedError&) {} catch (...) { assertNoThrowFail(__FILE__, __LINE__, false); } } } while (false)
 
 #define ASSERT( CONDITION ) assert_(__FILE__, __LINE__, (CONDITION))
 #define ASSERT_MSG( CONDITION, MSG ) assert_(__FILE__, __LINE__, (CONDITION), MSG)

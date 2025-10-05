@@ -799,10 +799,9 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     return returnValue;
 }
 
-unsigned int CppCheck::check(const FileWithDetails &file, const std::string &content)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size)
 {
-    std::istringstream iss(content);
-    return checkFile(file, "", 0, &iss);
+    return checkBuffer(file, "", 0, data, size);
 }
 
 unsigned int CppCheck::check(const FileSettings &fs)
@@ -851,14 +850,6 @@ unsigned int CppCheck::check(const FileSettings &fs)
     return returnValue;
 }
 
-static simplecpp::TokenList createTokenList(const std::string& filename, std::vector<std::string>& files, simplecpp::OutputList* outputList, std::istream* fileStream)
-{
-    if (fileStream)
-        return {*fileStream, files, filename, outputList};
-
-    return {filename, files, outputList};
-}
-
 std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const std::string& filePath) const
 {
     std::ostringstream toolinfo;
@@ -880,7 +871,23 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simp
     return preprocessor.calculateHash(tokens, toolinfo.str());
 }
 
-unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex, std::istream* fileStream)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size)
+{
+    const auto f = [&file, data, size](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
+        return simplecpp::TokenList{data, size, files, file.spath(), outputList};
+    };
+    return checkInternal(file, cfgname, fileIndex, f);
+}
+
+unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex)
+{
+    const auto f = [&file](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
+        return simplecpp::TokenList{file.spath(), files, outputList};
+    };
+    return checkInternal(file, cfgname, fileIndex, f);
+}
+
+unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
@@ -931,24 +938,13 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                 std::size_t hash = 0;
                 // markup files are special and do not adhere to the enforced language
                 TokenList tokenlist{mSettings, Standards::Language::C};
-                if (fileStream) {
-                    std::vector<std::string> files;
-                    simplecpp::TokenList tokens(*fileStream, files, file.spath());
-                    if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger, Standards::Language::C);
-                        hash = calculateHash(preprocessor, tokens);
-                    }
-                    tokenlist.createTokens(std::move(tokens));
+                std::vector<std::string> files;
+                simplecpp::TokenList tokens = createTokenList(files, nullptr);
+                if (analyzerInformation) {
+                    const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
+                    hash = calculateHash(preprocessor, tokens);
                 }
-                else {
-                    std::vector<std::string> files;
-                    simplecpp::TokenList tokens(file.spath(), files);
-                    if (analyzerInformation) {
-                        const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
-                        hash = calculateHash(preprocessor, tokens);
-                    }
-                    tokenlist.createTokens(std::move(tokens));
-                }
+                tokenlist.createTokens(std::move(tokens));
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
                 Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
                 mUnusedFunctionsCheck->parseTokens(tokenizer, mSettings);
@@ -967,7 +963,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        simplecpp::TokenList tokens1 = createTokenList(file.spath(), files, &outputList, fileStream);
+        simplecpp::TokenList tokens1 = createTokenList(files, &outputList);
 
         // If there is a syntax error, report it and stop
         const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
@@ -1059,7 +1055,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
         if (mSettings.checkConfiguration) {
             for (const std::string &config : configurations)
-                (void)preprocessor.getcode(tokens1, config, files, true);
+                (void)preprocessor.getcode(tokens1, config, files, false);
 
             if (analyzerInformation)
                 mLogger->setAnalyzerInfo(nullptr);
@@ -1075,8 +1071,7 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             TokenList tokenlist(mSettings, file.lang());
-            std::istringstream istr2(code);
-            tokenlist.createTokens(istr2); // TODO: check result?
+            tokenlist.createTokensFromBuffer(code.data(), code.size()); // TODO: check result?
             executeRules("define", tokenlist);
         }
 #endif

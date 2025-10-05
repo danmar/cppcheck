@@ -202,9 +202,7 @@ private:
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkP_(const char* file, int line, const char (&code)[size]) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
-
-        SimpleTokenizer2 tokenizer(settings1, *this, code, "test.cpp");
+        SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

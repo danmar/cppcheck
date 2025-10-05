@@ -34,6 +34,7 @@ public:
 private:
     const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
     /*const*/ Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    const Settings settings2 = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
     void run() override {
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
@@ -136,7 +137,8 @@ private:
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         const Settings settings = settingsBuilder(options.s ? *options.s : settings0).certainty(Certainty::inconclusive, options.inconclusive).build();
 
         SimpleTokenizer2 tokenizer(settings, *this, code, options.cpp ? "test.cpp" : "test.c");
@@ -149,11 +151,10 @@ private:
     }
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkP_(const char* file, int line, const char code[])
+    template<size_t size>
+    void checkP_(const char* file, int line, const char (&code)[size])
     {
-        const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
-
-        SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
+        SimpleTokenizer2 tokenizer(settings2, *this, code, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

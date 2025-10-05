@@ -298,6 +298,8 @@ private:
         TEST_CASE(hashCalculation);
 
         TEST_CASE(standard);
+
+        TEST_CASE(writeLocations);
     }
 
     template<size_t size>
@@ -309,7 +311,7 @@ private:
             settings.userUndefs.insert(arg+2);
         std::vector<std::string> files;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code, size-1,files);
+        simplecpp::TokenList tokens(code,size-1,files);
         tokens.removeComments();
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
@@ -813,25 +815,25 @@ private:
     }
 
     void ticket_3675() {
-        const char* code = "#ifdef YYSTACKSIZE\n"
-                           "#define YYMAXDEPTH YYSTACKSIZE\n"
-                           "#else\n"
-                           "#define YYSTACKSIZE YYMAXDEPTH\n"
-                           "#endif\n"
-                           "#if YYDEBUG\n"
-                           "#endif\n";
+        const char code[] = "#ifdef YYSTACKSIZE\n"
+                            "#define YYMAXDEPTH YYSTACKSIZE\n"
+                            "#else\n"
+                            "#define YYSTACKSIZE YYMAXDEPTH\n"
+                            "#endif\n"
+                            "#if YYDEBUG\n"
+                            "#endif\n";
         (void)PreprocessorHelper::getcode(settings0, *this, code);
 
         // There's nothing to assert. It just needs to not hang.
     }
 
     void ticket_3699() {
-        const char* code = "#define INLINE __forceinline\n"
-                           "#define inline __forceinline\n"
-                           "#define __forceinline inline\n"
-                           "#if !defined(_WIN32)\n"
-                           "#endif\n"
-                           "INLINE inline __forceinline\n";
+        const char code[] = "#define INLINE __forceinline\n"
+                            "#define inline __forceinline\n"
+                            "#define __forceinline inline\n"
+                            "#if !defined(_WIN32)\n"
+                            "#endif\n"
+                            "INLINE inline __forceinline\n";
         const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, code);
 
         // First, it must not hang. Second, inline must becomes inline, and __forceinline must become __forceinline.
@@ -839,9 +841,9 @@ private:
     }
 
     void ticket_4922() { // #4922
-        const char* code = "__asm__ \n"
-                           "{ int extern __value) 0; (double return (\"\" } extern\n"
-                           "__typeof __finite (__finite) __finite __inline \"__GI___finite\");";
+        const char code[] = "__asm__ \n"
+                            "{ int extern __value) 0; (double return (\"\" } extern\n"
+                            "__typeof __finite (__finite) __finite __inline \"__GI___finite\");";
         (void)PreprocessorHelper::getcode(settings0, *this, code);
     }
 
@@ -2284,12 +2286,12 @@ private:
     }
 
     void if_sizeof() { // #4071
-        static const char* code = "#if sizeof(unsigned short) == 2\n"
-                                  "Fred & Wilma\n"
-                                  "#elif sizeof(unsigned short) == 4\n"
-                                  "Fred & Wilma\n"
-                                  "#else\n"
-                                  "#endif";
+        const char code[] = "#if sizeof(unsigned short) == 2\n"
+                            "Fred & Wilma\n"
+                            "#elif sizeof(unsigned short) == 4\n"
+                            "Fred & Wilma\n"
+                            "#else\n"
+                            "#endif";
 
         const std::map<std::string, std::string> actual = PreprocessorHelper::getcode(settings0, *this, code);
         ASSERT_EQUALS("\nFred & Wilma", actual.at(""));
@@ -2654,6 +2656,25 @@ private:
             preprocess(code, files, "test.cpp", tokenlist, dui);
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
+    }
+
+    void writeLocations()
+    {
+        const char inc[] = "class A {\n"
+                           "public:\n"
+                           "    void f() {}\n"
+                           "};";
+        const char code[] = R"(#include "test.h")";
+        ScopedFile header("test.h", inc);
+        const std::string processed = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, code, "", "test.cpp");
+        ASSERT_EQUALS(
+            "\n"
+            "#line 1 \"test.h\"\n"
+            "class A {\n"
+            "public :\n"
+            "void f ( ) { }\n"
+            "} ;",
+            processed);
     }
 };
 
