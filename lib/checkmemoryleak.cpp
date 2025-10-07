@@ -1117,6 +1117,8 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
                 if (!(Token::simpleMatch(parent->astParent(), "?") && !parent->astParent()->astParent()))
                     continue;
             }
+            if (tok->str() == "freopen")
+                continue;
             returnValueNotUsedError(tok, tok->str());
         }
     }

@@ -9550,9 +9550,27 @@ void Tokenizer::simplifyCPPAttribute()
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head)->next();
+
                 if (!head)
                     syntaxError(tok);
-                head->isAttributeMaybeUnused(true);
+
+                while (Token::Match(head->next(), "%name%|*|&|&&|const|static|inline|volatile"))
+                    head = head->next();
+                if (Token::Match(head, "%name%") && !Token::Match(head, "auto ["))
+                    head->isAttributeMaybeUnused(true);
+                else if (Token::Match(tok->previous(), "%name%") && Token::Match(tok->link(), "] [;={]")) {
+                    tok->previous()->isAttributeMaybeUnused(true);
+                } else {
+                    if (Token::simpleMatch(head->next(), "[")) {
+                        head = head->next();
+                        const Token *end = head->link();
+                        for (head = head->next(); end && head != end; head = head->next()) {
+                            if (Token::Match(head, "%name%")) {
+                                head->isAttributeMaybeUnused(true);
+                            }
+                        }
+                    }
+                }
             } else if (Token::findsimplematch(tok->tokAt(2), "unused", tok->link())) {
                 Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
@@ -10055,7 +10073,7 @@ void Tokenizer::simplifyBitfields()
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = typeTok->next();
-            if (Token::Match(tok1, "%name% : %num% [;=]"))
+            if (Token::Match(tok1, "%name% : %num% [;=,]"))
                 if (!tok1->setBits(MathLib::toBigNumber(tok1->tokAt(2))))
                     tooLargeError(tok1->tokAt(2));
             if (tok1 && tok1->tokAt(2) &&

@@ -273,6 +273,10 @@ private:
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
 
+        TEST_CASE(cppMaybeUnusedBefore);
+        TEST_CASE(cppMaybeUnusedAfter);
+        TEST_CASE(cppMaybeUnusedStructuredBinding);
+
         TEST_CASE(splitTemplateRightAngleBrackets);
 
         TEST_CASE(cpp03template1);
@@ -310,6 +314,7 @@ private:
         TEST_CASE(bitfields18);
         TEST_CASE(bitfields19); // ticket #13733
         TEST_CASE(bitfields20);
+        TEST_CASE(bitfields21);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -4192,6 +4197,47 @@ private:
         ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
+    void cppMaybeUnusedBefore() {
+        const char code[] = "[[maybe_unused]] int var {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedAfter() {
+        const char code[] = "int var [[maybe_unused]] {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedStructuredBinding() {
+        const char code[] = "[[maybe_unused]] auto [var1, var2] = f();";
+        const char expected[] = "auto [ var1 , var2 ] = f ( ) ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        ASSERT(var1 && var1->isAttributeMaybeUnused());
+        const Token *var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var2 && var2->isAttributeMaybeUnused());
+    }
+
 
     void splitTemplateRightAngleBrackets() {
         {
@@ -4897,6 +4943,16 @@ private:
     void bitfields20() {
         const char code[] = "struct S { volatile ::uint32_t a : 10; };";
         ASSERT_EQUALS("struct S { volatile :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
+    void bitfields21() {
+        const char code[] = "struct S { uint32_t a : 1, b : 1; };";
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a");
+        ASSERT_EQUALS(1, a->bits());
+        const Token *b = Token::findsimplematch(tokenizer.tokens(), "b");
+        ASSERT_EQUALS(1, b->bits());
     }
 
     void simplifyNamespaceStd() {
