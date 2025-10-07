@@ -7,6 +7,7 @@
 #define simplecppH
 
 #include <cctype>
+#include <cstdint>
 #include <cstring>
 #include <iosfwd>
 #include <list>
@@ -39,9 +40,7 @@
 #  define SIMPLECPP_LIB
 #endif
 
-#ifdef _WIN32
-#  include <cstdint>
-#else
+#ifndef _WIN32
 #  include <sys/stat.h>
 #endif
 
@@ -63,10 +62,10 @@
 
 namespace simplecpp {
     /** C code standard */
-    enum cstd_t { CUnknown=-1, C89, C99, C11, C17, C23, C2Y };
+    enum cstd_t : std::int8_t { CUnknown=-1, C89, C99, C11, C17, C23, C2Y };
 
     /** C++ code standard */
-    enum cppstd_t { CPPUnknown=-1, CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26 };
+    enum cppstd_t : std::int8_t { CPPUnknown=-1, CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26 };
 
     using TokenString = std::string;
     class Macro;
@@ -204,7 +203,7 @@ namespace simplecpp {
     /** Output from preprocessor */
     struct SIMPLECPP_LIB Output {
         explicit Output(const std::vector<std::string> &files) : type(ERROR), location(files) {}
-        enum Type {
+        enum Type : std::uint8_t {
             ERROR, /* #error */
             WARNING, /* #warning */
             MISSING_HEADER,

@@ -7,8 +7,12 @@
 #  ifndef _WIN32_WINNT
 #    define _WIN32_WINNT 0x0602
 #  endif
-#  define NOMINMAX
-#  define WIN32_LEAN_AND_MEAN
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
 #  include <windows.h>
 #  undef ERROR
 #endif
@@ -24,6 +28,7 @@
 #include <cctype>
 #include <climits>
 #include <cstddef> // IWYU pragma: keep
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -3366,7 +3371,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
     // True => code in current #if block should be kept
     // ElseIsTrue => code in current #if block should be dropped. the code in the #else should be kept.
     // AlwaysFalse => drop all code in #if and #else
-    enum IfState { True, ElseIsTrue, AlwaysFalse };
+    enum IfState : std::uint8_t { True, ElseIsTrue, AlwaysFalse };
     std::stack<int> ifstates;
     std::stack<const Token *> iftokens;
     ifstates.push(True);
