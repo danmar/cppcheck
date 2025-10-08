@@ -624,6 +624,8 @@ private:
         TEST_CASE(smartPointerLookupCtor); // #13719);
 
         TEST_CASE(stdintFunction);
+
+        TEST_CASE(userDefinedLiteral);
     }
 
     void array() {
@@ -11326,6 +11328,14 @@ private:
         ASSERT(tok != nullptr);
         ASSERT_EQUALS(tok->next()->valueType()->sign, ValueType::Sign::UNSIGNED);
         ASSERT_EQUALS(tok->next()->valueType()->type, ValueType::Type::INT);
+    }
+
+    void userDefinedLiteral() {
+        GET_SYMBOL_DB("_ 1p;");
+        const Token *x = Token::findsimplematch(tokenizer.tokens(), "1p");
+        ASSERT(x);
+        ASSERT(!x->varId());
+        ASSERT(!x->variable());
     }
 };
 
