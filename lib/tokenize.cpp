@@ -9411,6 +9411,8 @@ void Tokenizer::simplifyAttribute()
 
                 else if (Token::Match(attr, "[(,] unused|__unused__|used|__used__ [,)]")) {
                     Token *vartok = getVariableTokenAfterAttributes(tok);
+                    if (!vartok)
+                        vartok = functok;
                     if (vartok) {
                         const std::string &attribute(attr->strAt(1));
                         if (attribute.find("unused") != std::string::npos)
@@ -9526,7 +9528,7 @@ void Tokenizer::simplifyCPPAttribute()
                     head = skipCPPOrAlignAttribute(head)->next();
                 while (Token::Match(head, "%name%|::|*|&|<|>|,")) // skip return type
                     head = head->next();
-                if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{;")) {
+                if (head && head->str() == "(" && TokenList::isFunctionHead(head, "{;__attribute__")) {
                     head->previous()->isAttributeNoreturn(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {

@@ -272,7 +272,7 @@ private:
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
-
+        TEST_CASE(functionAttributeListAfter2);
         TEST_CASE(cppMaybeUnusedBefore);
         TEST_CASE(cppMaybeUnusedAfter);
         TEST_CASE(cppMaybeUnusedStructuredBinding);
@@ -4197,6 +4197,25 @@ private:
         ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
+    void functionAttributeListAfter2() {
+        const char code[] = "[[noreturn]] void func1(const char *format, ...) __attribute__((format(printf, 1, 2)));\n" // #14181
+                            "void func2() __attribute__((unused));\n"; // #14183
+        const char expected[] = "void func1 ( const char * format , ... ) ; void func2 ( ) ;";
+
+        // tokenize..
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+
+        ASSERT(func1 && func1->isAttributeNoreturn());
+        ASSERT(func2 && func2->isAttributeUnused());
+    }
+
     void cppMaybeUnusedBefore() {
         const char code[] = "[[maybe_unused]] int var {};";
         const char expected[] = "int var { } ;";
@@ -4237,7 +4256,6 @@ private:
         const Token *var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
         ASSERT(var2 && var2->isAttributeMaybeUnused());
     }
-
 
     void splitTemplateRightAngleBrackets() {
         {
