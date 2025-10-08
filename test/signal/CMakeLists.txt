@@ -8,9 +8,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     target_compile_options_safe(test-signalhandler -Wno-missing-declarations)
     target_compile_options_safe(test-signalhandler -Wno-missing-prototypes)
     # required for backtrace() to produce function names
-    if(CMAKE_SYSTEM_NAME MATCHES AIX)
-        target_link_options(test-signalhandler PRIVATE)
-    else()
+    if(NOT CMAKE_SYSTEM_NAME MATCHES AIX)
         target_link_options(test-signalhandler PRIVATE -rdynamic)
     endif()
 endif()
@@ -24,9 +22,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     target_compile_options_safe(test-stacktrace -Wno-missing-declarations)
     target_compile_options_safe(test-stacktrace -Wno-missing-prototypes)
     # required for backtrace() to produce function names
-    if(CMAKE_SYSTEM_NAME MATCHES AIX)
-        target_link_options(test-signalhandler PRIVATE)
-    else()
+    if(NOT CMAKE_SYSTEM_NAME MATCHES AIX)
         target_link_options(test-stacktrace PRIVATE -rdynamic)
     endif()
 endif()
