@@ -4257,7 +4257,7 @@ private:
         ASSERT(var2 && var2->isAttributeMaybeUnused());
     }
 
-    
+
     void splitTemplateRightAngleBrackets() {
         {
             const char code[] = "; z = x < 0 ? x >> y : x >> y;";
