@@ -9528,7 +9528,7 @@ void Tokenizer::simplifyCPPAttribute()
                     head = skipCPPOrAlignAttribute(head)->next();
                 while (Token::Match(head, "%name%|::|*|&|<|>|,")) // skip return type
                     head = head->next();
-                if (head && head->str() == "(" && (TokenList::isFunctionHead(head, "{;") || Token::Match(head->link(), ") __attribute__"))) {
+                if (head && head->str() == "(" && (TokenList::isFunctionHead(head, "{;") || Token::simpleMatch(head->link(), ") __attribute__"))) {
                     head->previous()->isAttributeNoreturn(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {
