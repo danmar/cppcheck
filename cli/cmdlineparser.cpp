@@ -321,8 +321,25 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     // default to --check-level=normal from CLI for now
     mSettings.setCheckLevel(Settings::CheckLevel::normal);
 
+    // TODO: this is duplicated in gui/mainwindows.cpp
+    {
+        // only read cppcheck.cfg if the product name has not been set yet
+        // this is hack so we can unit test this - should never happen in production
+        if (mSettings.cppcheckCfgProductName.empty())
+        {
+            // load config to determine if we are premium - do not apply any other settings
+            Settings s;
+            s.exename = mSettings.exename;
+            Suppressions supprs;
+            // TODO: errorhandling
+            Settings::loadCppcheckCfg(s, supprs, mSettings.debuglookup || mSettings.debuglookupConfig);
+            mSettings.cppcheckCfgProductName = s.cppcheckCfgProductName;
+        }
+        mSettings.premium = startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
+    }
+
     if (argc <= 1) {
-        printHelp();
+        printHelp(mSettings.premium);
         return Result::Exit;
     }
 
@@ -359,7 +376,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // Print help
         if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
-            printHelp();
+            printHelp(mSettings.premium);
             return Result::Exit;
         }
 
@@ -1002,6 +1019,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.cppHeaderProbe = false;
         }
 
+        else if (std::strcmp(argv[i], "--no-safety") == 0)
+            mSettings.safety = false;
+
         // Write results in file
         else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
             mSettings.outputFile = Path::simplifyPath(argv[i] + 14);
@@ -1084,7 +1104,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
 
         // Special Cppcheck Premium options
-        else if ((std::strncmp(argv[i], "--premium=", 10) == 0 || std::strncmp(argv[i], "--premium-", 10) == 0) && isCppcheckPremium()) {
+            else if ((std::strncmp(argv[i], "--premium=", 10) == 0 || std::strncmp(argv[i], "--premium-", 10) == 0) && mSettings.premium) {
             // valid options --premium=..
             const std::set<std::string> valid{
                 "autosar",
@@ -1145,7 +1165,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
-            projectType = project.import(projectFile, &mSettings, &mSuppressions, isCppcheckPremium());
+            projectType = project.import(projectFile, &mSettings, &mSuppressions);
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                 for (const std::string &lib : project.guiProject.libraries)
                     mSettings.libraries.emplace_back(lib);
@@ -1669,13 +1689,15 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     return Result::Success;
 }
 
-void CmdLineParser::printHelp() const
+void CmdLineParser::printHelp(bool premium) const
 {
-    const std::string manualUrl(isCppcheckPremium() ?
-                                "https://cppcheck.sourceforge.io/manual.pdf" :
-                                "https://files.cppchecksolutions.com/manual.pdf");
+    // TODO: fetch URL from config like product name?
+    const std::string manualUrl(premium ?
+                                "https://files.cppchecksolutions.com/manual.pdf" :
+                                "https://cppcheck.sourceforge.io/manual.pdf");
 
     std::ostringstream oss;
+    // TODO: display product name
     oss << "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
@@ -1876,7 +1898,7 @@ void CmdLineParser::printHelp() const
         "    --plist-output=<path>\n"
         "                         Generate Clang-plist output files in folder.\n";
 
-    if (isCppcheckPremium()) {
+    if (premium) {
         oss <<
             "    --premium=<option>\n"
             "                         Coding standards:\n"
@@ -2059,18 +2081,13 @@ void CmdLineParser::printHelp() const
 }
 
 std::string CmdLineParser::getVersion() const {
+    // TODO: this should not contain the version - it should set the extraVersion
     if (!mSettings.cppcheckCfgProductName.empty())
         return mSettings.cppcheckCfgProductName;
     const char * const extraVersion = CppCheck::extraVersion();
     if (*extraVersion != '\0')
         return std::string("Cppcheck ") + CppCheck::version() + " ("+ extraVersion + ')';
     return std::string("Cppcheck ") + CppCheck::version();
-}
-
-bool CmdLineParser::isCppcheckPremium() const {
-    if (mSettings.cppcheckCfgProductName.empty())
-        Settings::loadCppcheckCfg(mSettings, mSuppressions, mSettings.debuglookup || mSettings.debuglookupConfig);
-    return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
 
 bool CmdLineParser::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename, bool debug)
@@ -2165,10 +2182,15 @@ bool CmdLineParser::loadAddons(Settings& settings)
 
 bool CmdLineParser::loadCppcheckCfg()
 {
-    if (!mSettings.cppcheckCfgProductName.empty())
-        return true;
+    if (!mSettings.settingsFiles.empty())
+    {
+        // should never happen - programming error
+        mLogger.printError("cppcheck.cfg has already been loaded from " + mSettings.settingsFiles[0]);
+        return false;
+    }
     const std::string cfgErr = Settings::loadCppcheckCfg(mSettings, mSuppressions, mSettings.debuglookup || mSettings.debuglookupConfig);
     if (!cfgErr.empty()) {
+        // TODO: log full path
         mLogger.printError("could not load cppcheck.cfg - " + cfgErr);
         return false;
     }
