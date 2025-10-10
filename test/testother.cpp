@@ -27,6 +27,17 @@
 #include <cstddef>
 #include <string>
 
+static std::string unionZeroInitMessage(int lno, int cno, const std::string &varName, const std::string &largestMemberName)
+{
+    std::stringstream ss;
+    ss << "[test.cpp:" << lno << ":" << cno << "]: (portability) ";
+    ss << "Zero initializing union '" << varName << "' ";
+    ss << "does not guarantee its complete storage to be zero initialized as its largest member is not declared as the first member. ";
+    ss << "Consider making " << largestMemberName << " the first member or favor memset(). [UnionZeroInit]";
+    ss << std::endl;
+    return ss.str();
+}
+
 class TestOther : public TestFixture {
 public:
     TestOther() : TestFixture("TestOther") {}
@@ -307,6 +318,12 @@ private:
 
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
+
+        TEST_CASE(unionZeroInitBasic);
+        TEST_CASE(unionZeroInitArrayMember);
+        TEST_CASE(unionZeroInitStructMember);
+        TEST_CASE(unionZeroInitUnknownType);
+        TEST_CASE(unionZeroInitBitfields);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -13265,6 +13282,90 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2:13] -> [test.cpp:3:11]: (style) The comparison 'i > +1' is always false. [knownConditionTrueFalse]\n",
             errout_str());
+    }
+
+    void unionZeroInitBasic() {
+        check(
+            "union bad_union_0 {\n"
+            "  char c;\n"
+            "  long long i64;\n"
+            "  void *p;\n"
+            "};\n"
+            "\n"
+            "typedef union {\n"
+            "  char c;\n"
+            "  int i;\n"
+            "} bad_union_1;\n"
+            "\n"
+            "extern void e(union bad_union_0 *);\n"
+            "\n"
+            "void\n"
+            "foo(void)\n"
+            "{\n"
+            "  union { int i; char c; } good0 = {0};\n"
+            "  union { int i; char c; } good1 = {};\n"
+            "\n"
+            "  union { char c; int i; } bad0 = {0};\n"
+            "  union bad_union_0 bad1 = {0};\n"
+            "  e(&bad1);\n"
+            "  bad_union_1 bad2 = {0};\n"
+            "}");
+        const std::string exp = unionZeroInitMessage(20, 28, "bad0", "i") +
+                                unionZeroInitMessage(21, 21, "bad1", "i64") +
+                                unionZeroInitMessage(23, 15, "bad2", "i");
+        ASSERT_EQUALS(exp, errout_str());
+    }
+
+    void unionZeroInitArrayMember() {
+        check(
+            "void foo(void) {\n"
+            " union { int c; char s8[2]; } u = {0};\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void unionZeroInitStructMember() {
+        check(
+            "void foo(void) {\n"
+            "  union {\n"
+            "    int c;\n"
+            "     struct {\n"
+            "       char x;\n"
+            "       struct {\n"
+            "         char y;\n"
+            "       } s1;\n"
+            "    } s0;\n"
+            "  } u = {0};\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void unionZeroInitUnknownType() {
+        check(
+            "union u {\n"
+            "  Unknown x;\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void unionZeroInitBitfields() {
+        check(
+            "typedef union Evex {\n"
+            "  int u32;\n"
+            "  struct {\n"
+            "    char mmm:3,\n"
+            "         b4:1,\n"
+            "         r4:1,\n"
+            "         b3:1,\n"
+            "         x3:1,\n"
+            "         r3:1;\n"
+            "  } extended;\n"
+            "} Evex;\n"
+            "\n"
+            "void foo(void) {\n"
+            "  Evex evex = {0};\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

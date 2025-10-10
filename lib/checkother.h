@@ -40,6 +40,7 @@ class Function;
 class Variable;
 class ErrorLogger;
 class Tokenizer;
+struct UnionMember;
 
 /// @addtogroup Checks
 /// @{
@@ -194,6 +195,8 @@ private:
 
     void checkModuloOfOne();
 
+    void checkUnionZeroInit();
+
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok, const std::string& funcname);
@@ -257,6 +260,7 @@ private:
     void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
+    void unionZeroInitError(const Token *tok, const UnionMember& largestMember);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
@@ -291,6 +295,7 @@ private:
                // portability
                "- Passing NULL pointer to function with variable number of arguments leads to UB.\n"
                "- Casting non-zero integer literal in decimal or octal format to pointer.\n"
+               "- Incorrect zero initialization of unions can lead to access of uninitialized memory.\n"
 
                // style
                "- C-style pointer cast in C++ code\n"
