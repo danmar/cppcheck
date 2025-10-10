@@ -7936,6 +7936,20 @@ private:
                         "    return s;\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("struct S { int i; };\n" // #14191
+                        "bool g(S*);\n"
+                        "void f( struct S *p) {\n"
+                        "    struct S s;\n"
+                        "    if (!p) {\n"
+                        "        p = &s;\n"
+                        "        if (g(p))\n"
+                        "            return;\n"
+                        "    }\n"
+                        "    printf(\"%i\", p->i);\n"
+                        "    p = &s;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     template<size_t size>
