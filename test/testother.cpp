@@ -307,6 +307,8 @@ private:
 
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
+
+        TEST_CASE(ternarySameValueSizeof); // #13773
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -13265,6 +13267,19 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2:13] -> [test.cpp:3:11]: (style) The comparison 'i > +1' is always false. [knownConditionTrueFalse]\n",
             errout_str());
+    }
+
+    void ternarySameValueSizeof() // #13773
+    {
+        check("void f(void) {\n"
+              "    b = a ? sizeof(unsigned int) : sizeof(uint32_t);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(void) {\n"
+              "    b = a ? sizeof(uint32_t) : sizeof(uint32_t);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:30]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
     }
 };
 
