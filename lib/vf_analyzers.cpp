@@ -608,6 +608,8 @@ private:
             for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
+                if (v.conditional)
+                    continue;
                 if (lifeTok)
                     return Action::None;
                 lifeTok = v.tokvalue;
