@@ -2911,8 +2911,7 @@ namespace {
                         alwaysFalse = false;
                         return;
                     }
-                    (returnTok->getKnownIntValue() ? alwaysTrue : alwaysFalse) &= true;
-                    (returnTok->getKnownIntValue() ? alwaysFalse : alwaysTrue) &= false;
+                    (returnTok->getKnownIntValue() ? alwaysFalse : alwaysTrue) = false;
                 });
                 if (alwaysTrue == alwaysFalse)
                     return "";
