@@ -91,11 +91,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.13
+      - name: Set up Python
         if: matrix.config == 'release'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           check-latest: true
 
       - name: Set up Visual Studio environment

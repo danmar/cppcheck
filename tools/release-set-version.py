@@ -81,7 +81,7 @@ def set_version(new_version:str):
     check_sed(['-i', '-r', f's/<[?]define ProductName[ ]*=.*/<?define ProductName = "Cppcheck $(var.Platform) {cppcheck_version_string}" ?>/', 'win_installer/productInfo.wxi'])
     check_sed(['-i', '-r', f's/<[?]define ProductVersion[ ]*=.*/<?define ProductVersion = "{new_version}" ?>/', 'win_installer/productInfo.wxi'])
     for g in glob.glob('man/*.md'):
-        check_sed(['-i', '-r', f's/subtitle: Version 2\.[0-9].*/subtitle: Version {cppcheck_version_string}/', g])
+        check_sed(['-i', '-r', f's/subtitle: Version 2\\.[0-9].*/subtitle: Version {cppcheck_version_string}/', g])
     print('Versions have been changed.')
     print('')
     print('Please double check these results below:')
