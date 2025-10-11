@@ -471,4 +471,4 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
         mErrorLogger.reportErr(errmsg);
 }
 
-#endif // !WIN32
+#endif // HAS_THREADING_MODEL_FORK
