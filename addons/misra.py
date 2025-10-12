@@ -22,7 +22,6 @@ import sys
 import re
 import os
 import argparse
-import codecs
 import string
 import copy
 
@@ -4525,7 +4524,7 @@ class MisraChecker:
         encodings = ['ascii', 'utf-8', 'windows-1250', 'windows-1252']
         for e in encodings:
             try:
-                file_stream = codecs.open(filename, 'r', encoding=e)
+                file_stream = open(filename, 'r', encoding=e)
                 file_stream.readlines()
                 file_stream.seek(0)
             except UnicodeDecodeError:
