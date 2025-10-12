@@ -1203,8 +1203,8 @@ static const Token * followVariableExpression(const Settings& settings, const To
         return tok;
     if (hasUnknownVars(varTok))
         return tok;
-    //if (astIsRangeBasedForDecl(var->nameToken()))
-      //  return tok;
+    if (astIsRangeBasedForDecl(var->nameToken()))
+        return tok;
     if (var->isVolatile())
         return tok;
     if (!var->isLocal() && !var->isConst())
