@@ -43,7 +43,7 @@ ifdef FILESDIR
     override CPPFLAGS+=-DFILESDIR=\"$(FILESDIR)\"
 endif
 
-RDYNAMIC=-rdynamic
+RDYNAMIC?=-rdynamic
 # Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.
 # The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.
 ifndef COMSPEC
