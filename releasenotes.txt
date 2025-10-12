@@ -1,7 +1,10 @@
 Release Notes for Cppcheck 2.19
 
 New checks:
--
+- Detect zero initialization of unions in which its largest member is not
+  declared as the first one. Depending on the compiler, there's no guarantee
+  that the complete union will be zero initialized in such scenarios leading to
+  potential access of uninitialized memory.
 
 Improved checking:
 -
