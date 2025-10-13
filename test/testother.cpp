@@ -8027,7 +8027,7 @@ private:
               "        for (const int& r2 : v) {\n"
               "            if (&r1 == &r2) {}\n"
               "        }\n"
-               "    }\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
