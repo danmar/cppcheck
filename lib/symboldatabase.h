@@ -1421,6 +1421,10 @@ public:
 
     static void getErrorMessages(ErrorLogger &errorLogger);
 
+    // check if type has no side effects (no constructors and no members with constructors)
+    /** @todo false negative: check constructors for side effects */
+    bool isRecordTypeWithoutSideEffects(const Type* type) const;
+
 private:
     friend class Scope;
     friend class Function;
@@ -1476,6 +1480,10 @@ private:
      */
     void validateVariables() const;
 
+    bool isVariableWithoutSideEffects(const Variable& var, const Type* type = nullptr) const;
+    bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
+        std::list<const Function*> checkedFuncs) const;
+
     Tokenizer& mTokenizer;
     const Settings &mSettings;
     ErrorLogger &mErrorLogger;
@@ -1487,6 +1495,8 @@ private:
     std::list<Type> mBlankTypes;
 
     ValueType::Sign mDefaultSignedness;
+
+    mutable std::map<const Type*, bool> mIsRecordTypeWithoutSideEffectsMap;
 };
 
 

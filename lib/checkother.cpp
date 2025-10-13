@@ -1213,7 +1213,7 @@ void CheckOther::checkVariableScope()
             continue;
 
         const bool isPtrOrRef = var->isPointer() || var->isReference();
-        const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || (var->typeStartToken()->isC() && var->type() && var->type()->isStructType());
+        const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || var->typeStartToken()->isC() || symbolDatabase->isRecordTypeWithoutSideEffects(var->type());
         if (!isPtrOrRef && !isSimpleType && !astIsContainer(var->nameToken()))
             continue;
 

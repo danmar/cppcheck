@@ -66,11 +66,7 @@ private:
     /** @brief %Check that all struct members are used */
     void checkStructMemberUsage();
 
-    bool isRecordTypeWithoutSideEffects(const Type* type);
-    bool isVariableWithoutSideEffects(const Variable& var, const Type* type = nullptr);
     bool isEmptyType(const Type* type);
-    bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-                                      std::list<const Function*> checkedFuncs);
 
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, const std::string& prefix = "struct");
@@ -95,8 +91,6 @@ private:
                "- unassigned variable\n"
                "- unused struct member\n";
     }
-
-    std::map<const Type *,bool> mIsRecordTypeWithoutSideEffectsMap;
 
     std::map<const Type *,bool> mIsEmptyTypeMap;
 
