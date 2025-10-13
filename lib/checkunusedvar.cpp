@@ -689,7 +689,7 @@ static void useFunctionArgs(const Token *tok, Variables& variables)
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------
-void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables)
+void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const scope, Variables& variables) const
 {
     // Find declarations if the scope is executable..
     if (scope->isExecutable()) {
