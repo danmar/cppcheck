@@ -1482,7 +1482,7 @@ private:
 
     bool isVariableWithoutSideEffects(const Variable& var, const Type* type = nullptr) const;
     bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-        std::list<const Function*> checkedFuncs) const;
+                                      std::list<const Function*> checkedFuncs) const;
 
     Tokenizer& mTokenizer;
     const Settings &mSettings;

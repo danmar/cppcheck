@@ -2215,7 +2215,7 @@ bool SymbolDatabase::isFunctionWithoutSideEffects(const Function& func, const To
     bool sideEffectReturnFound = false;
     std::set<const Variable*> pointersToGlobals;
     for (const Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
-        bodyToken = bodyToken->next()) {
+         bodyToken = bodyToken->next()) {
         // check variable inside function body
         const Variable* bodyVariable = bodyToken->variable();
         if (bodyVariable) {
@@ -2321,7 +2321,7 @@ bool SymbolDatabase::isRecordTypeWithoutSideEffects(const Type* type) const
                     }
                     const Function* initValueFunc = valueToken->function();
                     if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken,
-                        std::list<const Function*> {})) {
+                                                                       std::list<const Function*> {})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -2525,7 +2525,7 @@ void Variable::evaluate(const Settings& settings)
     const Library & lib = settings.library;
 
     bool isContainer = false;
-     if (mNameToken) {
+    if (mNameToken) {
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
         setFlag(fIsMaybeUnused, mNameToken->isAttributeMaybeUnused());
     }
