@@ -111,6 +111,9 @@ private:
         ASSERT_EQUALS(32, platform.int_bit);
         ASSERT_EQUALS(64, platform.long_bit);
         ASSERT_EQUALS(64, platform.long_long_bit);
+        ASSERT_EQUALS(32, platform.float_bit);
+        ASSERT_EQUALS(64, platform.double_bit);
+        ASSERT_EQUALS(128, platform.long_double_bit);
     }
 
     void valid_config_win32w() const {
@@ -136,6 +139,9 @@ private:
         ASSERT_EQUALS(32, platform.int_bit);
         ASSERT_EQUALS(32, platform.long_bit);
         ASSERT_EQUALS(64, platform.long_long_bit);
+        ASSERT_EQUALS(32, platform.float_bit);
+        ASSERT_EQUALS(64, platform.double_bit);
+        ASSERT_EQUALS(64, platform.long_double_bit);
     }
 
     void valid_config_unix32() const {
@@ -161,6 +167,9 @@ private:
         ASSERT_EQUALS(32, platform.int_bit);
         ASSERT_EQUALS(32, platform.long_bit);
         ASSERT_EQUALS(64, platform.long_long_bit);
+        ASSERT_EQUALS(32, platform.float_bit);
+        ASSERT_EQUALS(64, platform.double_bit);
+        ASSERT_EQUALS(96, platform.long_double_bit);
     }
 
     void valid_config_win64() const {
@@ -186,6 +195,9 @@ private:
         ASSERT_EQUALS(32, platform.int_bit);
         ASSERT_EQUALS(32, platform.long_bit);
         ASSERT_EQUALS(64, platform.long_long_bit);
+        ASSERT_EQUALS(32, platform.float_bit);
+        ASSERT_EQUALS(64, platform.double_bit);
+        ASSERT_EQUALS(64, platform.long_double_bit);
     }
 
     void valid_config_file_1() const {
