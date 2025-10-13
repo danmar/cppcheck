@@ -1076,8 +1076,15 @@ bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
         *indirect = 1;
     if (!tok)
         return false;
+    if (!expr)
+        return false;
     const Token* r = nullptr;
     for (const ReferenceToken& ref : tok->refs()) {
+        const bool isPossible = std::any_of(ref.token->values().cbegin(), ref.token->values().cend(), [](const ValueFlow::Value& v) {
+            return !v.isImpossible();
+        });
+        if (expr->exprId() == 0 && !isPossible)
+            continue;
         const bool pointer = astIsPointer(ref.token);
         r = findAstNode(expr, [&](const Token* childTok) {
             if (childTok->exprId() == 0)
@@ -1087,6 +1094,8 @@ bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
                     *indirect = 0;
                 return true;
             }
+            if (!isPossible)
+                return false;
             for (const ValueFlow::Value& val : ref.token->values()) {
                 if (val.isImpossible())
                     continue;
@@ -2938,7 +2947,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
             aliased = true;
         if (!aliased)
         {
-            std::cout << tok->str() << " " << tok->exprId() << " " << exprid << " " << indirect << std::endl;
+            //std::cout << tok->str() << " " << tok->exprId() << " " << exprid << " " << indirect << std::endl;
             aliased = isAliasOf(tok, expr, &i);
         }
         if (!aliased)
