@@ -121,7 +121,7 @@ private:
         // symbol database information
         const Scope* mScope{};
         union {
-            const Function *mFunction;
+            const Function *mFunction{};
             const Variable *mVariable;
             const ::Type* mType;
             const Enumerator *mEnumerator;
@@ -169,14 +169,13 @@ private:
 
         TokenDebug mDebug{};
 
-        SmallVector<ReferenceToken>* mRefs{};
-        SmallVector<ReferenceToken>* mRefsTemp{};
+        std::unique_ptr<SmallVector<ReferenceToken>> mRefs;
+        std::unique_ptr<SmallVector<ReferenceToken>> mRefsTemp;
 
         void setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value);
         bool getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const;
 
-        Impl() : mFunction(nullptr) {}
-
+        Impl() = default;
         ~Impl();
 
         Impl(const Impl &) = delete;
