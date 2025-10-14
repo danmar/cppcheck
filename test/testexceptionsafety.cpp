@@ -57,6 +57,7 @@ private:
         TEST_CASE(rethrowNoCurrentException2);
         TEST_CASE(rethrowNoCurrentException3);
         TEST_CASE(noFunctionCall);
+        TEST_CASE(entryPoint);
     }
 
     struct CheckOptions
@@ -404,7 +405,7 @@ private:
               "{\n"
               "    f();\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n", errout_str());
     }
 
     void unhandledExceptionSpecification3() {
@@ -421,12 +422,16 @@ private:
                             "}\n";
 
         check(code, dinit(CheckOptions, $.inconclusive = true));
-        ASSERT_EQUALS("[test.cpp:3:5] -> [test.cpp:1:6]: (style, inconclusive) Unhandled exception specification when calling function f(). [unhandledExceptionSpecification]\n"
+        ASSERT_EQUALS("[test.cpp:10:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n"
+                      "[test.cpp:3:5] -> [test.cpp:1:6]: (style, inconclusive) Unhandled exception specification when calling function f(). [unhandledExceptionSpecification]\n"
                       "[test.cpp:6:5] -> [test.cpp:1:6]: (style, inconclusive) Unhandled exception specification when calling function f(). [unhandledExceptionSpecification]\n", errout_str());
 
         const Settings s = settingsBuilder().library("gnu.cfg").build();
         check(code, dinit(CheckOptions, $.inconclusive = true, $.s = &s));
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n"
+                      "[test.cpp:6:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n"
+                      "[test.cpp:10:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n",
+                      errout_str());
     }
 
     void nothrowAttributeThrow() {
@@ -489,6 +494,18 @@ private:
               "    auto pF = &f;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void entryPoint() {
+        check("void f(int i) {\n" // #14195
+              "    if (i < 2)\n"
+              "        throw 0;\n"
+              "}\n"
+              "int main(int argc, char* argv[]) {\n"
+              "    f(argc);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n",
+                      errout_str());
     }
 };
 
