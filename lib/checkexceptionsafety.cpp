@@ -296,7 +296,7 @@ void CheckExceptionSafety::nothrowThrows()
         if (!function)
             continue;
 
-    bool isNoExcept = false, isEntryPoint = false;
+        bool isNoExcept = false, isEntryPoint = false;
 
         // check noexcept and noexcept(true) functions
         if (function->isNoExcept()) {
