@@ -296,32 +296,45 @@ void CheckExceptionSafety::nothrowThrows()
         if (!function)
             continue;
 
+		bool isNoExcept = false, isEntryPoint = false;
+
         // check noexcept and noexcept(true) functions
         if (function->isNoExcept()) {
-            const Token *throws = functionThrows(function);
-            if (throws)
-                noexceptThrowError(throws);
+            isNoExcept = true;
         }
 
         // check throw() functions
         else if (function->isThrow() && !function->throwArg) {
-            const Token *throws = functionThrows(function);
-            if (throws)
-                noexceptThrowError(throws);
+            isNoExcept = true;
         }
 
         // check __attribute__((nothrow)) or __declspec(nothrow) functions
         else if (function->isAttributeNothrow()) {
-            const Token *throws = functionThrows(function);
-            if (throws)
+            isNoExcept = true;
+        }
+        else if (mSettings->library.isentrypoint(function->name())) {
+            isEntryPoint = true;
+        }
+        if (!isNoExcept && !isEntryPoint)
+            continue;
+        if (const Token* throws = functionThrows(function)) {
+            if (isEntryPoint)
+                entryPointThrowError(throws);
+            else
                 noexceptThrowError(throws);
         }
+            
     }
 }
 
 void CheckExceptionSafety::noexceptThrowError(const Token * const tok)
 {
     reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.", CWE398, Certainty::normal);
+}
+
+void CheckExceptionSafety::entryPointThrowError(const Token * const tok)
+{
+    reportError(tok, Severity::error, "throwInEntryPoint", "Exception thrown in function that is an entry point.", CWE398, Certainty::normal);
 }
 
 //--------------------------------------------------------------------------
