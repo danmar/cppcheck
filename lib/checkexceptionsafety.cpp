@@ -446,6 +446,7 @@ void CheckExceptionSafety::getErrorMessages(ErrorLogger *errorLogger, const Sett
     c.rethrowCopyError(nullptr, "varname");
     c.catchExceptionByValueError(nullptr);
     c.noexceptThrowError(nullptr);
+	c.entryPointThrowError(nullptr);
     c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
     c.rethrowNoCurrentExceptionError(nullptr);
 }
