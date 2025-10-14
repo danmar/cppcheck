@@ -2738,3 +2738,16 @@ void Token::templateArgFrom(const Token* fromToken) {
     mImpl->mTemplateArgLineNumber = fromToken ? fromToken->mImpl->mLineNumber : -1;
     mImpl->mTemplateArgColumn = fromToken ? fromToken->mImpl->mColumn : -1;
 }
+
+const SmallVector<ReferenceToken>& Token::refs(bool temporary) const
+{
+    if (temporary) {
+        if (!mImpl->mRefsTemp)
+            mImpl->mRefsTemp.reset(new SmallVector<ReferenceToken>(followAllReferences(this, true)));
+        return *mImpl->mRefsTemp;
+    }
+
+    if (!mImpl->mRefs)
+        mImpl->mRefs.reset(new SmallVector<ReferenceToken>(followAllReferences(this, false)));
+    return *mImpl->mRefs;
+}
