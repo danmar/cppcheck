@@ -296,7 +296,7 @@ void CheckExceptionSafety::nothrowThrows()
         if (!function)
             continue;
 
-		bool isNoExcept = false, isEntryPoint = false;
+    bool isNoExcept = false, isEntryPoint = false;
 
         // check noexcept and noexcept(true) functions
         if (function->isNoExcept()) {
@@ -323,7 +323,6 @@ void CheckExceptionSafety::nothrowThrows()
             else
                 noexceptThrowError(throws);
         }
-            
     }
 }
 
@@ -446,7 +445,7 @@ void CheckExceptionSafety::getErrorMessages(ErrorLogger *errorLogger, const Sett
     c.rethrowCopyError(nullptr, "varname");
     c.catchExceptionByValueError(nullptr);
     c.noexceptThrowError(nullptr);
-	c.entryPointThrowError(nullptr);
+    c.entryPointThrowError(nullptr);
     c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
     c.rethrowNoCurrentExceptionError(nullptr);
 }
