@@ -269,7 +269,6 @@ private:
 
     struct FunctionVariableUsageOptions
     {
-        FunctionVariableUsageOptions() = default;
         bool cpp = true;
     };
 
@@ -286,7 +285,6 @@ private:
 
     struct CheckStructMemberUsageOptions
     {
-        CheckStructMemberUsageOptions() = default;
         const std::list<Directive>* directives = nullptr;
         bool cpp = true;
     };

@@ -330,7 +330,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool cpp = true;
         bool inconclusive = true;
         bool verbose = false;
@@ -365,7 +364,6 @@ private:
 
     struct CheckPOptions
     {
-        CheckPOptions() = default;
         bool cpp = true;
     };
 
@@ -2265,7 +2263,6 @@ private:
 
     struct CheckInvalidPointerCastOptions
     {
-        CheckInvalidPointerCastOptions() = default;
         bool portability = true;
         bool inconclusive = false;
     };

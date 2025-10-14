@@ -39,7 +39,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         const Settings* s = nullptr;
         bool cpp = true;
     };

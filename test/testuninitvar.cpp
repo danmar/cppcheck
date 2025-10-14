@@ -108,7 +108,6 @@ private:
 
     struct CheckUninitVarOptions
     {
-        CheckUninitVarOptions() = default;
         bool cpp = true;
         bool debugwarnings = false;
         const Settings *s = nullptr;

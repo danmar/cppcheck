@@ -259,7 +259,6 @@ private:
 
     struct TokOptions
     {
-        TokOptions() = default;
         bool simplify = true;
         bool debugwarnings = true;
     };

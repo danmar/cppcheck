@@ -48,7 +48,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         const Settings* settings = nullptr;
         Standards::cppstd_t standard = Standards::cppstd_t::CPP11;
     };
@@ -80,7 +79,6 @@ private:
 
     struct CheckPOptions
     {
-        CheckPOptions() = default;
         const Settings* settings = nullptr;
         bool cpp = true;
     };

@@ -34,7 +34,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = false;
         const Settings* s = nullptr;
     };

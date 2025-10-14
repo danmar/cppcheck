@@ -2633,7 +2633,6 @@ private:
 
     struct CheckVirtualDestructorOptions
     {
-        CheckVirtualDestructorOptions() = default;
         bool inconclusive = false;
     };
 
@@ -3656,7 +3655,6 @@ private:
 
     struct CheckConstOptions
     {
-        CheckConstOptions() = default;
         const Settings *s = nullptr;
         bool inconclusive = true;
     };
