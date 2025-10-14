@@ -1102,6 +1102,7 @@ private:
         // classes may have extra side effects
         check("class fred {\n"
               "public:\n"
+              "    fred();\n"
               "    void x();\n"
               "};\n"
               "void test(int a) {\n"
@@ -1111,6 +1112,28 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("class fred {\n" // #2062
+              "public:\n"
+              "    void x();\n"
+              "};\n"
+              "void test(int a) {\n"
+              "    fred f;\n"
+              "    if (a == 2) {\n"
+              "        f.x();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6:10]: (style) The scope of the variable 'f' can be reduced. [variableScope]\n", errout_str());
+
+        check("struct S { int a, b; };\n"
+              "bool f() {\n"
+              "    S s{};\n"
+              "    {\n"
+              "        bool b = s.a && a.b;\n"
+              "        return b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:7]: (style) The scope of the variable 's' can be reduced. [variableScope]\n", errout_str());
     }
 
     void varScope10() {
