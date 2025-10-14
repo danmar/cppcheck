@@ -62,7 +62,7 @@ void FileViewDialog::loadTextFile(const QString &filename, QTextEdit *edit)
         return;
     }
 
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    (void)file.open(QIODevice::ReadOnly | QIODevice::Text); // TODO: check result
     if (!file.isReadable()) {
         QString msg(tr("Could not read the file: %1"));
         msg = msg.arg(filename);

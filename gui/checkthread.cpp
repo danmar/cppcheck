@@ -264,7 +264,7 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
                     }
                     f1.close();
                 }
-                f1.open(QIODevice::WriteOnly | QIODevice::Text);
+                (void)f1.open(QIODevice::WriteOnly | QIODevice::Text); // TODO: check result
                 QTextStream out1(&f1);
                 out1 << chksum;
 

@@ -1717,7 +1717,7 @@ void MainWindow::complianceReport()
     }
 
     QTemporaryFile tempResults;
-    tempResults.open();
+    (void)tempResults.open(); // TODO: check result
     tempResults.close();
 
     mUI->mResults->save(tempResults.fileName(), Report::XMLV2, mCppcheckCfgProductName);

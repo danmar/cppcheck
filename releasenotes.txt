@@ -24,4 +24,5 @@ Other:
 - Added make variables `CPPOPTS` to extend existing `CPPFLAGS`.
 - `CPPFLAGS` are not longer being passed to the linker command for `cppcheck` and `testrunner`.
 - Removed deprecated platforms `unix32-unsigned` and `unix64-unsigned`.
+- Updated Qt to 6.10.0 (official Windows release only).
 -
