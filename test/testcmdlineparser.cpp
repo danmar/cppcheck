@@ -382,6 +382,7 @@ private:
 #ifdef HAVE_RULES
         TEST_CASE(rule);
         TEST_CASE(ruleMissingPattern);
+        TEST_CASE(ruleInvalidPattern);
 #else
         TEST_CASE(ruleNotSupported);
 #endif
@@ -401,6 +402,7 @@ private:
         TEST_CASE(ruleFileMissingId);
         TEST_CASE(ruleFileInvalidSeverity1);
         TEST_CASE(ruleFileInvalidSeverity2);
+        TEST_CASE(ruleFileInvalidPattern);
 #else
         TEST_CASE(ruleFileNotSupported);
 #endif
@@ -2582,6 +2584,13 @@ private:
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: no rule pattern provided.\n", logger->str());
     }
+
+    void ruleInvalidPattern() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--rule=.*\\", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: failed to compile rule pattern '.*\\' (pcre_compile failed: \\ at end of pattern).\n", logger->str());
+    }
 #else
     void ruleNotSupported() {
         REDIRECT;
@@ -2805,6 +2814,17 @@ private:
         const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - a rule has an invalid severity.\n", logger->str());
+    }
+
+    void ruleFileInvalidPattern() {
+        REDIRECT;
+        ScopedFile file("rule.xml",
+                        "<rule>\n"
+                        "<pattern>.+\\</pattern>\n"
+                        "</rule>\n");
+        const char * const argv[] = {"cppcheck", "--rule-file=rule.xml", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unable to load rule-file 'rule.xml' - pattern '.+\\' failed to compile (pcre_compile failed: \\ at end of pattern).\n", logger->str());
     }
 #else
     void ruleFileNotSupported() {
