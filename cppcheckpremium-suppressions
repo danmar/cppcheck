@@ -115,6 +115,9 @@ premium-misra-cpp-2023-7.0.3
 # signed integer expression in bitwise rhs by intention
 premium-misra-cpp-2023-7.0.4
 
+# integer promotions
+premium-misra-cpp-2023-7.0.5
+
 # sign conversions in assignments by intention
 premium-misra-cpp-2023-7.0.6
 
