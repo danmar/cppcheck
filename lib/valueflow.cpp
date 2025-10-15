@@ -1796,7 +1796,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
         if (Token::Match(tok->tokAt(-2), ". %name% (") && tok->tokAt(-2)->originalName() != "->" && astIsContainer(tok->tokAt(-2)->astOperand1())) {
             const Library::Container* library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
             const Library::Container::Yield y = library->getYield(tok->strAt(-1));
-            if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM || y == Library::Container::Yield::BUFFER || y == Library::Container::Yield::BUFFER_NT) {
+            if (contains({Library::Container::Yield::AT_INDEX, Library::Container::Yield::ITEM, Library::Container::Yield::BUFFER, Library::Container::Yield::BUFFER_NT}, y)) {
                 errorPath.emplace_back(tok->previous(), "Accessing container.");
                 return ValueFlow::LifetimeToken::setAddressOf(
                     getLifetimeTokens(tok->tokAt(-2)->astOperand1(), escape, std::move(errorPath), pred, settings, depth - 1),
