@@ -257,7 +257,7 @@ jobs:
 
       - name: Test with TEST_MATHLIB_VALUE
         run: |
-          make -j$(nproc) check
+          make -j$(nproc) test
 
   check_nonneg:
 
@@ -421,7 +421,7 @@ jobs:
 
       - name: Run test
         run: |
-          make -j$(nproc) HAVE_RULES=yes check
+          make -j$(nproc) HAVE_RULES=yes test
 
       # requires "gnu-sed" installed on macos
       - name: Run extra tests
