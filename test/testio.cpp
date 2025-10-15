@@ -86,7 +86,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = false;
         bool portability = false;
         Platform::Type platform = Platform::Type::Unspecified;

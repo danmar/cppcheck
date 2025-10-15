@@ -216,7 +216,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool cpp = false;
         const Settings *s = nullptr;
     };

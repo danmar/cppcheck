@@ -51,7 +51,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool quiet = true;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
