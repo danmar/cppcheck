@@ -1576,6 +1576,27 @@ void f() { }
     ]
 
 
+def test_rule_multiple_files(tmpdir):
+    stderr_exp = []
+    for i in range(10):
+        test_file = os.path.join(tmpdir, f'test_{i}.c')
+        stderr_exp.append("{}:4:0: style: found 'f' [rule]".format(test_file))
+        with open(test_file, 'wt') as f:
+            f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['-q', '--template=simple', '--rule=f', str(tmpdir)])
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    lines = stderr.splitlines()
+    lines.sort()
+    stderr_exp.sort()
+    assert lines == stderr_exp
+
+
 def test_filelist(tmpdir):
     list_dir = os.path.join(tmpdir, 'list-dir')
     os.mkdir(list_dir)
