@@ -3392,6 +3392,20 @@ private:
               "  pointer = func(sizeof pointer[0]);\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct T {\n" // #14164
+              "    T* next;\n"
+              "    char op;\n"
+              "};\n"
+              "void h(int, char);\n"
+              "void g(const T* tok, bool b) {\n"
+              "    if (tok->op == '<') {\n"
+              "        while ((tok = tok->next) && tok->op != '>') {}\n"
+              "    }\n"
+              "    h(b ? 1 : 0, tok->op);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8:21] -> [test.cpp:10:18]: (warning) Either the condition 'tok=tok->next' is redundant or there is possible null pointer dereference: tok. [nullPointerRedundantCheck]\n",
+                      errout_str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
