@@ -39,6 +39,7 @@ private:
     const Settings settings2 = settingsBuilder().severity(Severity::style).library("std.cfg").certainty(Certainty::inconclusive).build();
     const Settings settings3 = settingsBuilder().severity(Severity::style).library("std.cfg").severity(Severity::warning).build();
     const Settings settings3_i = settingsBuilder(settings3).certainty(Certainty::inconclusive).build();
+    const Settings settings4 = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").library("posix.cfg").build();
 
     void run() override {
         mNewTemplate = true;
@@ -2974,8 +2975,7 @@ private:
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkNoMemset_(const char* file, int line, const char (&code)[size]) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").library("posix.cfg").build();
-        checkNoMemset_(file, line, code, settings);
+        checkNoMemset_(file, line, code, settings4);
     }
 
     template<size_t size>
@@ -7626,10 +7626,10 @@ private:
                             "    }\n"
                             "};";
 
-        checkConst(code, dinit(CheckConstOptions, $.s = &settings0, $.inconclusive = true));
+        checkConst(code);
         ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'foo::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
 
-        checkConst(code, dinit(CheckConstOptions, $.s = &settings0, $.inconclusive = false)); // TODO: Set inconclusive to true (preprocess it)
+        checkConst(code, dinit(CheckConstOptions, $.inconclusive = false)); // TODO: Set inconclusive to true (preprocess it)
         ASSERT_EQUALS("", errout_str());
     }
 

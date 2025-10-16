@@ -132,13 +132,12 @@ private:
     {
         const Settings* s = nullptr;
         bool cpp = true;
-        bool inconclusive = false;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings = settingsBuilder(options.s ? *options.s : settings0).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings& settings = options.s ? *options.s : settings0;
 
         SimpleTokenizer2 tokenizer(settings, *this, code, options.cpp ? "test.cpp" : "test.c");
 
@@ -1307,24 +1306,25 @@ private:
     }
 
     void incorrectLogicOperator6() { // char literals
+        const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
         check("void f(char x) {\n"
               "  if (x == '1' || x == '2') {}\n"
-              "}", dinit(CheckOptions, $.inconclusive = true));
+              "}", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(char x) {\n"
               "  if (x == '1' && x == '2') {}\n"
-              "}", dinit(CheckOptions, $.inconclusive = true));
+              "}", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("[test.cpp:2:16]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'. [incorrectLogicOperator]\n", errout_str());
 
         check("int f(char c) {\n"
               "  return (c >= 'a' && c <= 'z');\n"
-              "}", dinit(CheckOptions, $.inconclusive = true));
+              "}", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}", dinit(CheckOptions, $.inconclusive = true));
+              "}", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("[test.cpp:2:20]: (warning, inconclusive) Logical conjunction always evaluates to false: c <= 'a' && c >= 'z'. [incorrectLogicOperator]\n", errout_str());
 
         check("int f(char c) {\n"
