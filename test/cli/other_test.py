@@ -1576,6 +1576,27 @@ void f() { }
     ]
 
 
+def test_rule_multiple_files(tmpdir):
+    stderr_exp = []
+    for i in range(10):
+        test_file = os.path.join(tmpdir, f'test_{i}.c')
+        stderr_exp.append("{}:4:0: style: found 'f' [rule]".format(test_file))
+        with open(test_file, 'wt') as f:
+            f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['-q', '--template=simple', '--rule=f', str(tmpdir)])
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    lines = stderr.splitlines()
+    lines.sort()
+    stderr_exp.sort()
+    assert lines == stderr_exp
+
+
 def test_filelist(tmpdir):
     list_dir = os.path.join(tmpdir, 'list-dir')
     os.mkdir(list_dir)
@@ -3652,4 +3673,36 @@ void f()
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
         "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
+    ]
+
+
+def test_ast_max_depth(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define PTR1 (* (* (* (*
+#define PTR2 PTR1 PTR1 PTR1 PTR1
+#define PTR3 PTR2 PTR2 PTR2 PTR2
+#define PTR4 PTR3 PTR3 PTR3 PTR3
+
+#define RBR1 ) ) ) )
+#define RBR2 RBR1 RBR1 RBR1 RBR1
+#define RBR3 RBR2 RBR2 RBR2 RBR2
+#define RBR4 RBR3 RBR3 RBR3 RBR3
+
+int PTR4 q4_var RBR4 = 0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:12:5: error: maximum AST depth exceeded [internalAstError]'.format(test_file)
     ]

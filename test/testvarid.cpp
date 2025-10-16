@@ -260,7 +260,6 @@ private:
 
     struct TokenizeOptions
     {
-        TokenizeOptions() = default;
         bool cpp = true;
         const Settings *s = nullptr;
     };

@@ -112,7 +112,7 @@ void MainWindow::loadFile()
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    (void)file.open(QIODevice::ReadOnly | QIODevice::Text); // TODO: check result
     QTextStream textStream(&file);
     load(textStream);
 }

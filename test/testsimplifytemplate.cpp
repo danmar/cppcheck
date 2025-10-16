@@ -321,7 +321,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool debugwarnings = false;
     };
 

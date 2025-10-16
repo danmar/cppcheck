@@ -88,7 +88,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         Platform::Type platform = Platform::Type::Native;
     };
 

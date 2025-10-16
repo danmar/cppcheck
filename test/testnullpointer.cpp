@@ -180,7 +180,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = false;
         bool cpp = true;
         Standards::cstd_t cstd = Standards::CLatest;

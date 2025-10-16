@@ -153,7 +153,7 @@ void Token::update_property_info()
             if ((MathLib::isInt(mStr) || MathLib::isFloat(mStr)) && mStr.find('_') == std::string::npos)
                 tokType(eNumber);
             else
-                tokType(eName); // assume it is a user defined literal
+                tokType(eLiteral); // assume it is a user defined literal
         } else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                    (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
@@ -2680,7 +2680,7 @@ void Token::Impl::setCppcheckAttribute(CppcheckAttributesType type, MathLib::big
 
 bool Token::Impl::getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const
 {
-    CppcheckAttributes *attr = mCppcheckAttributes;
+    const CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)

@@ -79,6 +79,7 @@
     <ClCompile Include="platform.cpp" />
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="programmemory.cpp" />
+    <ClCompile Include="regex.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
     <ClCompile Include="sarifreport.cpp" />
     <ClCompile Include="settings.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="precompiled.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="programmemory.h" />
+    <ClInclude Include="regex.h" />
     <ClInclude Include="reverseanalyzer.h" />
     <ClInclude Include="sarifreport.h" />
     <ClInclude Include="settings.h" />
@@ -282,7 +284,9 @@
       <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">
@@ -315,7 +319,9 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -356,7 +362,9 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">
@@ -398,7 +406,9 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

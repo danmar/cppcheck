@@ -218,6 +218,9 @@ private:
         TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl30);
         TEST_CASE(vardecl31); // function pointer init
+        TEST_CASE(vardecl32);
+        TEST_CASE(vardecl33);
+        TEST_CASE(vardecl34);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -269,6 +272,10 @@ private:
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
+        TEST_CASE(functionAttributeListAfter2);
+        TEST_CASE(cppMaybeUnusedBefore);
+        TEST_CASE(cppMaybeUnusedAfter);
+        TEST_CASE(cppMaybeUnusedStructuredBinding);
 
         TEST_CASE(splitTemplateRightAngleBrackets);
 
@@ -307,6 +314,7 @@ private:
         TEST_CASE(bitfields18);
         TEST_CASE(bitfields19); // ticket #13733
         TEST_CASE(bitfields20);
+        TEST_CASE(bitfields21);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -2771,6 +2779,27 @@ private:
         }
     }
 
+    void vardecl32() {
+        {
+            const char code[] = "static enum { E } f() { return E; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 f ( ) { return E ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
+    void vardecl33() {
+        {
+            const char code[] = "static enum { E } *f() { return NULL; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 * f ( ) { return NULL ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
+    void vardecl34() {
+        {
+            const char code[] = "static enum { E } const *f() { return NULL; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 const * f ( ) { return NULL ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
     void volatile_variables() {
         {
             const char code[] = "volatile int a=0;\n"
@@ -4168,6 +4197,66 @@ private:
         ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
+    void functionAttributeListAfter2() {
+        const char code[] = "[[noreturn]] void func1(const char *format, ...) __attribute__((format(printf, 1, 2)));\n" // #14181
+                            "void func2() __attribute__((unused));\n"; // #14183
+        const char expected[] = "void func1 ( const char * format , ... ) ; void func2 ( ) ;";
+
+        // tokenize..
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+
+        ASSERT(func1 && func1->isAttributeNoreturn());
+        ASSERT(func2 && func2->isAttributeUnused());
+    }
+
+    void cppMaybeUnusedBefore() {
+        const char code[] = "[[maybe_unused]] int var {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedAfter() {
+        const char code[] = "int var [[maybe_unused]] {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedStructuredBinding() {
+        const char code[] = "[[maybe_unused]] auto [var1, var2] = f();";
+        const char expected[] = "auto [ var1 , var2 ] = f ( ) ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        ASSERT(var1 && var1->isAttributeMaybeUnused());
+        const Token *var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var2 && var2->isAttributeMaybeUnused());
+    }
+
 
     void splitTemplateRightAngleBrackets() {
         {
@@ -4873,6 +4962,16 @@ private:
     void bitfields20() {
         const char code[] = "struct S { volatile ::uint32_t a : 10; };";
         ASSERT_EQUALS("struct S { volatile :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
+    void bitfields21() {
+        const char code[] = "struct S { uint32_t a : 1, b : 1; };";
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a");
+        ASSERT_EQUALS(1, a->bits());
+        const Token *b = Token::findsimplematch(tokenizer.tokens(), "b");
+        ASSERT_EQUALS(1, b->bits());
     }
 
     void simplifyNamespaceStd() {
@@ -8680,51 +8779,3 @@ private:
 };
 
 REGISTER_TEST(TestTokenizer)
-
-class TestTokenizerCompileLimits : public TestFixture
-{
-public:
-    TestTokenizerCompileLimits() : TestFixture("TestTokenizerCompileLimits") {}
-
-private:
-    void run() override
-    {
-        TEST_CASE(test); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
-    }
-
-#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const std::string& code) {
-        // tokenize..
-        SimpleTokenizer tokenizer(settingsDefault, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
-
-        if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
-        return "";
-    }
-
-    void test() {
-        const char raw_code[] = "#define PTR1 (* (* (* (*\n"
-                                "#define PTR2 PTR1 PTR1 PTR1 PTR1\n"
-                                "#define PTR3 PTR2 PTR2 PTR2 PTR2\n"
-                                "#define PTR4 PTR3 PTR3 PTR3 PTR3\n"
-                                "\n"
-                                "#define RBR1 ) ) ) )\n"
-                                "#define RBR2 RBR1 RBR1 RBR1 RBR1\n"
-                                "#define RBR3 RBR2 RBR2 RBR2 RBR2\n"
-                                "#define RBR4 RBR3 RBR3 RBR3 RBR3\n"
-                                "\n"
-                                "int PTR4 q4_var RBR4 = 0;\n";
-
-        // Preprocess file..
-        simplecpp::OutputList outputList;
-        std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(raw_code, sizeof(raw_code), files, "", &outputList);
-        const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, filedata, "", "test.c");
-
-        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
-    }
-};
-
-REGISTER_TEST(TestTokenizerCompileLimits)

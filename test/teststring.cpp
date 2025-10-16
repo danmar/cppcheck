@@ -62,7 +62,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool cpp = true;
     };
 

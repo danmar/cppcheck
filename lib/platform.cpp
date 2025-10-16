@@ -56,10 +56,7 @@ bool Platform::set(Type t)
             defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
         }
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Win32W:
     case Type::Win32A:
@@ -77,10 +74,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 4;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Win64:
         type = t;
@@ -97,10 +91,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 8;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Unix32:
         type = t;
@@ -117,10 +108,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 4;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Unix64:
         type = t;
@@ -137,10 +125,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 8;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::File:
         // sizes are not set.
@@ -294,12 +279,7 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
             }
         }
     }
-
-    short_bit = char_bit * sizeof_short;
-    int_bit = char_bit * sizeof_int;
-    long_bit = char_bit * sizeof_long;
-    long_long_bit = char_bit * sizeof_long_long;
-
+    calculateBitMembers();
     type = Type::File;
     return !error;
 }
