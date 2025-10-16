@@ -3372,7 +3372,7 @@ private:
               "    if (!p) {}\n"
               "    return q ? p->x : 0;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:3:16]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p. [nullPointerRedundantCheck]\n", errout_str());
 
         check("int f(ABC *p) {\n" // FP : return &&
               "    if (!p) {}\n"
