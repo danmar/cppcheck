@@ -208,7 +208,7 @@ namespace {
                 bool checkThen, checkElse;
                 std::tie(checkThen, checkElse) = evalCond(condTok);
                 if (!checkThen && !checkElse) {
-                    if (!traverseUnknown && stopOnCondition(condTok) && stopUpdates()) {
+                    if (!traverseUnknown && stopOnCondition(condTok)) {
                         return Progress::Continue;
                     }
                     checkThen = true;
