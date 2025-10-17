@@ -32,6 +32,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <set>

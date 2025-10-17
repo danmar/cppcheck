@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <functional>
 #include <initializer_list>
 #include <iomanip>
 #include <iostream>

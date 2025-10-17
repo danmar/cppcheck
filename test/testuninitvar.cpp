@@ -23,6 +23,7 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
 #include <list>
 #include <string>
 

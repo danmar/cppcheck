@@ -16,6 +16,7 @@
 
 #include "clangimport.h"
 #include "fixture.h"
+#include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"

@@ -22,6 +22,7 @@
 #include "regex.h"
 
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 

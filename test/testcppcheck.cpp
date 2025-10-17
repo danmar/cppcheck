@@ -31,7 +31,6 @@
 #include "suppressions.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdlib>
 #include <list>
 #include <sstream>

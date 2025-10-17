@@ -21,7 +21,10 @@
 #include "helpers.h"
 #include "token.h"
 #include "programmemory.h"
+#include "utils.h"
 #include "vfvalue.h"
+
+#include <stdexcept>
 
 class TestProgramMemory : public TestFixture {
 public:
