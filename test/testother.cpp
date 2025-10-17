@@ -8040,6 +8040,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(const std::vector<int>& v) {\n" // #14193
+              "    for (const int& r1 : v) {\n"
+              "        for (const int& r2 : v) {\n"
+              "            if (&r1 == &r2) {}\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void duplicateExpressionTernary() { // #6391
