@@ -28,11 +28,15 @@
 
 #include "xml.h"
 
-class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
+class TestAnalyzerInformation : public TestFixture {
 public:
     TestAnalyzerInformation() : TestFixture("TestAnalyzerInformation") {}
 
 private:
+    class AnalyzerInformationTest : public AnalyzerInformation
+    {
+        friend class TestAnalyzerInformation;
+    };
 
     void run() override {
         TEST_CASE(getAnalyzerInfoFile);
@@ -45,9 +49,9 @@ private:
     void getAnalyzerInfoFile() const {
         constexpr char filesTxt[] = "file1.a4:::file1.c\n";
         std::istringstream f1(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 0));
+        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 0));
         std::istringstream f2(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", "", 0));
+        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", "", 0));
         ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "file1.c", "", 0));
         ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "some/path/file1.c", "", 0));
     }
@@ -62,7 +66,7 @@ private:
         const char expected[] = "a.a1:::a.c\n"
                                 "a.a2::1:a.c\n";
 
-        ASSERT_EQUALS(expected, getFilesTxt({}, "", fileSettings));
+        ASSERT_EQUALS(expected, AnalyzerInformationTest::getFilesTxt({}, "", fileSettings));
     }
 
     void duplicateFile() const {
@@ -70,9 +74,9 @@ private:
         constexpr char filesTxt[] = "file1.a1::1:file1.c\n"
                                     "file1.a2::2:file1.c\n";
         std::istringstream f1(filesTxt);
-        ASSERT_EQUALS("file1.a1", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 1));
+        ASSERT_EQUALS("file1.a1", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 1));
         std::istringstream f2(filesTxt);
-        ASSERT_EQUALS("file1.a2", getAnalyzerInfoFileFromFilesTxt(f2, "file1.c", "", 2));
+        ASSERT_EQUALS("file1.a2", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f2, "file1.c", "", 2));
     }
 
     void parse() const {
@@ -118,7 +122,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -137,7 +141,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -156,7 +160,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -177,7 +181,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(true, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(true, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(1, errorList.size());
         }
 
@@ -193,7 +197,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(true, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(true, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -214,7 +218,7 @@ private:
                 );
             ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 99, errorList));
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 99, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
 
@@ -226,7 +230,7 @@ private:
             const tinyxml2::XMLError xmlError = doc.Parse("");
             ASSERT_EQUALS(tinyxml2::XML_ERROR_EMPTY_DOCUMENT, xmlError);
 
-            ASSERT_EQUALS(false, AnalyzerInformation::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
             ASSERT_EQUALS(0, errorList.size());
         }
     }
