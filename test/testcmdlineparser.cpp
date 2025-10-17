@@ -626,7 +626,7 @@ private:
         const char * const argv[] = {"cppcheck", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(1, parser->mPathNames.size());
-        ASSERT_EQUALS("file.cpp", parser->mPathNames.at(0));
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void onepath() {
@@ -634,7 +634,7 @@ private:
         const char * const argv[] = {"cppcheck", "src"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(1, parser->mPathNames.size());
-        ASSERT_EQUALS("src", parser->mPathNames.at(0));
+        ASSERT_EQUALS("src", parser->mPathNames[0]);
     }
 
     void optionwithoutfile() {
