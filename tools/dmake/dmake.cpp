@@ -766,7 +766,7 @@ int main(int argc, char **argv)
     makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
     makeConditionalVariable(fout, "INCLUDE_FOR_FE", "-Ilib");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Ifrontend -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Ifrontend -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Ifrontend -Icli -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
 
     makeConditionalVariable(fout, "CFLAGS_FOR_TEST", "-Wno-dollar-in-identifier-extension");
 
