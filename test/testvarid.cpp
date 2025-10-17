@@ -240,6 +240,11 @@ private:
         TEST_CASE(decltype1);
         TEST_CASE(decltype2);
 
+        TEST_CASE(typeof1);
+        TEST_CASE(typeof2);
+        TEST_CASE(typeof3);
+        TEST_CASE(typeof4);
+
         TEST_CASE(exprid1);
         TEST_CASE(exprid2);
         TEST_CASE(exprid3);
@@ -4186,6 +4191,32 @@ private:
         const char code[] = "int x; decltype(x) y;";
         const char expected[] = "1: int x@1 ; decltype ( x@1 ) y@2 ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void typeof1() {
+        const char code[] = "int x; typeof(x) y;";
+        const char expected[] = "1: int x@1 ; typeof ( x@1 ) y@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void typeof2() {
+        const char code[] = "int x; typeof(x) *y;";
+        const char expected[] = "1: int x@1 ; typeof ( x@1 ) * y@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void typeof3() {
+        const char code[] = "int x; const typeof(x) *const y;";
+        const char expected[] = "1: int x@1 ; const typeof ( x@1 ) * const y@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void typeof4() {
+        const char code[] = "int x; __typeof(x) y;";
+        const char expected[] = "1: int x@1 ; __typeof ( x@1 ) y@2 ;\n";
+        TokenizeOptions options;
+        options.cpp = false;
+        ASSERT_EQUALS(expected, tokenize(code, options));
     }
 
     void exprid1() {
