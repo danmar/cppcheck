@@ -47,7 +47,6 @@ class Library;
  * class internal options.
  */
 class CmdLineParser {
-    friend class TestCmdlineParser;
 public:
     /**
      * The constructor.
@@ -94,36 +93,23 @@ public:
         return mFileSettings;
     }
 
-private:
+protected:
     /**
-     * Return the path names user gave to command line.
+     * Parse given command line.
+     * @return true if command line was ok, false if there was an error.
      */
-    const std::vector<std::string>& getPathNames() const {
-        return mPathNames;
-    }
-
-    /**
-     * Return a list of paths user wants to ignore.
-     */
-    const std::vector<std::string>& getIgnoredPaths() const {
-        return mIgnoredPaths;
-    }
+    Result parseFromArgs(int argc, const char* const argv[]);
 
     /**
      * Get Cppcheck version
      */
     std::string getVersion() const;
 
+private:
     /**
      * Print help text to the console.
      */
     void printHelp() const;
-
-    /**
-     * Parse given command line.
-     * @return true if command line was ok, false if there was an error.
-     */
-    Result parseFromArgs(int argc, const char* const argv[]);
 
     bool isCppcheckPremium() const;
 
@@ -166,19 +152,21 @@ private:
 
     bool loadCppcheckCfg();
 
+    void outputFormatOptionMixingError() const;
+
     CmdLineLogger &mLogger;
 
+    Settings &mSettings;
+    Suppressions &mSuppressions;
+
+protected:
     std::vector<std::string> mPathNames;
     std::list<FileWithDetails> mFiles;
     std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
-    Settings &mSettings;
-    Suppressions &mSuppressions;
     bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
     /** @brief Name of the language that is enforced. Empty per default. */
     Standards::Language mEnforcedLang{Standards::Language::None};
-
-    void outputFormatOptionMixingError() const;
 };
 
 /// @}

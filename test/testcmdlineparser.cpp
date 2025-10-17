@@ -91,16 +91,25 @@ private:
         std::string buf;
     };
 
+    class CmdLineParserTest : public CmdLineParser
+    {
+        friend class TestCmdlineParser;
+    public:
+        CmdLineParserTest(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions)
+            : CmdLineParser(logger, settings, suppressions)
+        {}
+    };
+
     std::unique_ptr<CmdLineLoggerTest> logger;
     std::unique_ptr<Settings> settings;
     std::unique_ptr<Suppressions> supprs;
-    std::unique_ptr<CmdLineParser> parser;
+    std::unique_ptr<CmdLineParserTest> parser;
 
     void prepareTestInternal() override {
         logger.reset(new CmdLineLoggerTest());
         settings.reset(new Settings());
         supprs.reset(new Suppressions());
-        parser.reset(new CmdLineParser(*logger, *settings, *supprs));
+        parser.reset(new CmdLineParserTest(*logger, *settings, *supprs));
     }
 
     void teardownTestInternal() override {
@@ -616,23 +625,23 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames().at(0));
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames.at(0));
     }
 
     void onepath() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "src"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("src", parser->getPathNames().at(0));
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("src", parser->mPathNames.at(0));
     }
 
     void optionwithoutfile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-v"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
-        ASSERT_EQUALS(0, parser->getPathNames().size());
+        ASSERT_EQUALS(0, parser->mPathNames.size());
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
     }
 
@@ -1266,8 +1275,8 @@ private:
                         "file2.cpp\n");
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(3, parser->getPathNames().size());
-        auto it = parser->getPathNames().cbegin();
+        ASSERT_EQUALS(3, parser->mPathNames.size());
+        auto it = parser->mPathNames.cbegin();
         ASSERT_EQUALS("file1.c", *it++);
         ASSERT_EQUALS("file2.cpp", *it++);
         ASSERT_EQUALS("file.cpp", *it);
@@ -1285,8 +1294,8 @@ private:
         RedirectInput input("file1.c\nfile2.cpp\n");
         const char * const argv[] = {"cppcheck", "--file-list=-", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(3, parser->getPathNames().size());
-        auto it = parser->getPathNames().cbegin();
+        ASSERT_EQUALS(3, parser->mPathNames.size());
+        auto it = parser->mPathNames.cbegin();
         ASSERT_EQUALS("file1.c", *it++);
         ASSERT_EQUALS("file2.cpp", *it++);
         ASSERT_EQUALS("file.cpp", *it);
@@ -2474,8 +2483,8 @@ private:
                         "</project>");
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        auto it = parser->getPathNames().cbegin();
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        auto it = parser->mPathNames.cbegin();
         ASSERT_EQUALS("dir", *it);
     }
 
@@ -3342,82 +3351,82 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorepaths3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(2, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS("module", parser->getIgnoredPaths()[1]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(2, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS("module", parser->mIgnoredPaths[1]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorepaths4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(2, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS("module", parser->getIgnoredPaths()[1]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(2, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS("module", parser->mIgnoredPaths[1]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorefilepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("foo.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorefilepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src/foo.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src/foo.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorefilepaths3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "foo.cpp", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("foo.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
     }
 
     void ignorefilepaths4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("foo.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("foo.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
         TODO_ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\n", "cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
     }
 
@@ -3425,10 +3434,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-ifile.cpp", "file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("file.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("file.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("file.cpp", parser->mPathNames[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
     }
 
@@ -3436,10 +3445,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/file.cpp", "src/file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mPathNames[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
     }
 
@@ -3447,10 +3456,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc\\file.cpp", "src/file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mPathNames[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
     }
 
@@ -3458,10 +3467,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/file.cpp", "src\\file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mPathNames[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
     }
 
@@ -3469,10 +3478,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc\\", "src\\file.cpp"};
         ASSERT(!fillSettingsFromArgs(argv));
-        ASSERT_EQUALS(1, parser->getIgnoredPaths().size());
-        ASSERT_EQUALS("src/", parser->getIgnoredPaths()[0]);
-        ASSERT_EQUALS(1, parser->getPathNames().size());
-        ASSERT_EQUALS("src/file.cpp", parser->getPathNames()[0]);
+        ASSERT_EQUALS(1, parser->mIgnoredPaths.size());
+        ASSERT_EQUALS("src/", parser->mIgnoredPaths[0]);
+        ASSERT_EQUALS(1, parser->mPathNames.size());
+        ASSERT_EQUALS("src/file.cpp", parser->mPathNames[0]);
         ASSERT_EQUALS("cppcheck: error: could not find or open any of the paths given.\ncppcheck: Maybe all paths were ignored?\n", logger->str());
     }
 
