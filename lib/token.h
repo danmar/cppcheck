@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <list>
 #include <memory>
 #include <ostream>

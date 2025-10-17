@@ -24,6 +24,7 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -41,8 +42,6 @@
 
 class options;
 class Tokenizer;
-enum class Certainty : std::uint8_t;
-enum class Severity : std::uint8_t;
 
 class TestFixture : public ErrorLogger {
 private:

@@ -25,6 +25,7 @@
 #include "standards.h"
 
 #include <cstddef>
+#include <sstream>
 #include <string>
 
 static std::string unionZeroInitMessage(int lno, int cno, const std::string &varName, const std::string &largestMemberName)

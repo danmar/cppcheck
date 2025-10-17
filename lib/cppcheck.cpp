@@ -74,8 +74,6 @@
 
 #include <simplecpp.h>
 
-class SymbolDatabase;
-
 static constexpr char Version[] = CPPCHECK_VERSION_STRING;
 static constexpr char ExtraVersion[] = "";
 

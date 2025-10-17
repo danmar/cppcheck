@@ -36,6 +36,7 @@
 #include "vfvalue.h"
 
 #include <algorithm> // find_if()
+#include <cassert>
 #include <cctype>
 #include <cstddef>
 #include <cstdint>

@@ -24,7 +24,6 @@
 #include "check.h"
 #include "config.h"
 
-#include <list>
 #include <map>
 #include <string>
 
@@ -34,8 +33,6 @@ class Settings;
 class Token;
 class Type;
 class Variables;
-class Variable;
-class Function;
 class Tokenizer;
 
 /// @addtogroup Checks

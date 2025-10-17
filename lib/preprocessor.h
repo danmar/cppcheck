@@ -28,7 +28,6 @@
 #include <cstdint>
 #include <istream>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <utility>
