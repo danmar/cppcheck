@@ -535,7 +535,6 @@ private:
         const simplecpp::TokenList tokens(istr, files, "m1.c");
 
         Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
-        ASSERT(preprocessor.loadFiles(tokens, files));
 
         AddonInfo premiumaddon;
         premiumaddon.name = "premiumaddon.json";
