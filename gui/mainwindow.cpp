@@ -1154,8 +1154,11 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
 
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
-            const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            settings.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
+            const std::vector<std::string> paths = {
+                Path::getCurrentPath(), // TODO: do we want to look in CWD?
+                QCoreApplication::applicationFilePath().toStdString(),
+            };
+            settings.platform.loadFromFile(paths, platform.toStdString());
         } else {
             for (int i = Platform::Type::Native; i <= Platform::Type::Unix64; i++) {
                 const auto p = static_cast<Platform::Type>(i);

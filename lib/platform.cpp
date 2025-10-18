@@ -155,27 +155,19 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
     }
-    else {
-        bool found = false;
-        for (const std::string& path : paths) {
-            if (debug)
-                std::cout << "looking for platform '" + platformstr + "' relative to '" + path + "'" << std::endl;
-            if (loadFromFile(path.c_str(), platformstr, debug)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            errstr = "unrecognized platform: '" + platformstr + "'.";
-            return false;
-        }
+    else if (!loadFromFile(paths, platformstr, debug)) {
+        errstr = "unrecognized platform: '" + platformstr + "'.";
+        return false;
     }
 
     return true;
 }
 
-bool Platform::loadFromFile(const char exename[], const std::string &filename, bool debug)
+bool Platform::loadFromFile(const std::vector<std::string>& paths, const std::string &filename, bool debug)
 {
+    if (debug)
+        std::cout << "looking for platform '" + filename + "'" << std::endl;
+
     const bool is_abs_path = Path::isAbsolute(filename);
 
     std::string fullfilename(filename);
@@ -185,20 +177,33 @@ bool Platform::loadFromFile(const char exename[], const std::string &filename, b
         fullfilename += ".xml";
 
     // TODO: use native separators
-    std::vector<std::string> filenames{
-        fullfilename,
-    };
-    if (!is_abs_path) {
-        filenames.push_back("platforms/" + fullfilename);
-        if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
-            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + fullfilename);
-            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + fullfilename);
+    std::vector<std::string> filenames;
+    if (is_abs_path)
+    {
+        filenames.push_back(fullfilename);
+    }
+    else {
+        // TODO: drop duplicated paths
+        for (const std::string& path : paths)
+        {
+            if (path.empty())
+                continue; // TODO: error out instead?
+
+            std::string ppath = Path::fromNativeSeparators(path);
+            if (ppath.back() != '/')
+                ppath += '/';
+            // TODO: look in platforms first?
+            filenames.push_back(ppath + fullfilename);
+            filenames.push_back(ppath + "platforms/" + fullfilename);
         }
 #ifdef FILESDIR
         std::string filesdir = FILESDIR;
-        if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
-            filesdir += '/';
-        filenames.push_back(filesdir + ("platforms/" + fullfilename));
+        if (!filesdir.empty()) {
+            if (filesdir.back() != '/')
+                filesdir += '/';
+            // TODO: look in filesdir?
+            filenames.push_back(filesdir + "platforms/" + fullfilename);
+        }
 #endif
     }
 
