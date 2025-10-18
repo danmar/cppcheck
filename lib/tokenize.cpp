@@ -5593,8 +5593,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     simplifyFunctionTryCatch();
 
-    simplifyHeadersAndUnusedTemplates();
-
     // Remove __asm..
     simplifyAsm();
 
@@ -5621,6 +5619,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // remove __attribute__((?))
     simplifyAttribute();
+
+    simplifyHeadersAndUnusedTemplates();
 
     validate();
 
@@ -6373,7 +6373,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
             }
         }
 
-        if (!tok->previous() || Token::Match(tok->previous(), "[;{}]")) {
+        if (!tok->previous() || Token::Match(tok->previous(), "[;{}:]")) {
             // Remove unused function declarations
             if (isIncluded && removeUnusedIncludedFunctions) {
                 while (true) {
@@ -6406,7 +6406,7 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
 
             if (removeUnusedTemplates || (isIncluded && removeUnusedIncludedTemplates)) {
                 if (Token::Match(tok, "template < %name%")) {
-                    const Token *closingBracket = tok->next()->findClosingBracket();
+                    Token *closingBracket = tok->next()->findClosingBracket();
                     if (Token::Match(closingBracket, "> class|struct %name% [;:{]") && keep.find(closingBracket->strAt(2)) == keep.end()) {
                         const Token *endToken = closingBracket->tokAt(3);
                         if (endToken->str() == ":") {
@@ -6420,11 +6420,47 @@ void Tokenizer::simplifyHeadersAndUnusedTemplates()
                             Token::eraseTokens(tok, endToken);
                             tok->deleteThis();
                         }
-                    } else if (Token::Match(closingBracket, "> %type% %name% (") && Token::simpleMatch(closingBracket->linkAt(3), ") {") && keep.find(closingBracket->strAt(2)) == keep.end()) {
-                        const Token *endToken = closingBracket->linkAt(3)->linkAt(1)->next();
-                        Token::eraseTokens(tok, endToken);
-                        tok->deleteThis();
-                        goBack = true;
+                    } else {
+                        Token *funcTok = closingBracket->next();
+                        while (funcTok) {
+                            if (Token::Match(funcTok, "constexpr|static|inline|const|%type%|&|&&|*") && !Token::Match(funcTok, "%name% (")) {
+                                funcTok = funcTok->next();
+                                continue;
+                            }
+                            break;
+                        }
+                        if (!Token::Match(funcTok, "%name% (")) {
+                            tok = funcTok;
+                            continue;
+                        }
+                        funcTok = funcTok->linkAt(1);
+                        if (funcTok) {
+                            funcTok = funcTok->next();
+                        }
+                        while (funcTok) {
+                            if (Token::Match(funcTok, "throw|noexcept (")) {
+                                funcTok = funcTok->linkAt(1);
+                                if (funcTok) {
+                                    funcTok = funcTok->next();
+                                }
+                                continue;
+                            }
+                            if (Token::Match(funcTok, "const|volatile|&|&&")) {
+                                funcTok = funcTok->next();
+                                continue;
+                            }
+                            break;
+                        }
+                        if (!Token::simpleMatch(funcTok, "{")) {
+                            tok = funcTok;
+                            continue;
+                        }
+                        funcTok = funcTok->link();
+                        if (funcTok) {
+                            Token::eraseTokens(tok, funcTok->next());
+                            tok->deleteThis();
+                            goBack = true;
+                        }
                     }
                 }
             }
