@@ -37,7 +37,14 @@ public:
     using MatchFn = std::function<void (int start, int end)>;
     virtual std::string match(const std::string& str, const MatchFn& matchFn) const = 0;
 
-    static std::shared_ptr<Regex> create(std::string pattern, std::string& err);
+    enum class Type
+    {
+        Unknown = 0,
+        Pcre = 1,
+        Std = 2
+    };
+
+    static std::shared_ptr<Regex> create(std::string pattern, Type type, std::string& err);
 };
 
 #endif // HAVE_RULES
