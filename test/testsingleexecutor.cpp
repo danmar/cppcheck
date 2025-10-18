@@ -72,19 +72,19 @@ private:
         std::list<FileWithDetails> filelist;
         if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::string f_s = fprefix() + "_" + zpad3(i) + ".cpp";
-                filelist.emplace_back(f_s, Standards::Language::CPP, data.size());
+                std::string f_s = fprefix() + "_" + zpad3(i) + ".c";
+                filelist.emplace_back(f_s, Standards::Language::C, data.size());
                 if (useFS) {
-                    fileSettings.emplace_back(std::move(f_s), Standards::Language::CPP, data.size());
+                    fileSettings.emplace_back(std::move(f_s), Standards::Language::C, data.size());
                 }
             }
         }
         else {
             for (const auto& f : opt.filesList)
             {
-                filelist.emplace_back(f, Standards::Language::CPP, data.size());
+                filelist.emplace_back(f, Standards::Language::C, data.size());
                 if (useFS) {
-                    fileSettings.emplace_back(f, Standards::Language::CPP, data.size());
+                    fileSettings.emplace_back(f, Standards::Language::C, data.size());
                 }
             }
         }
@@ -138,16 +138,15 @@ private:
     void many_files() {
         const int num_files = 100;
         check(num_files, num_files,
-              "int main()\n"
+              "void f()\n"
               "{\n"
-              "  int i = *((int*)0);\n"
-              "  return 0;\n"
+              "  (void)(*((int*)0));\n"
               "}", dinit(CheckOptions,
                          $.quiet = false));
         {
             std::string expected;
             for (int i = 1; i <= num_files; ++i) {
-                expected += "Checking " + fprefix() + "_" + zpad3(i) + ".cpp ...\n";
+                expected += "Checking " + fprefix() + "_" + zpad3(i) + ".c ...\n";
                 expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
             }
             ASSERT_EQUALS(expected, output_str());
@@ -155,7 +154,7 @@ private:
         {
             std::string expected;
             for (int i = 1; i <= num_files; ++i) {
-                expected += "[" + fprefix() + "_" + zpad3(i) + ".cpp:3:13]: (error) Null pointer dereference: (int*)0 [nullPointer]\n";
+                expected += "[" + fprefix() + "_" + zpad3(i) + ".c:3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n";
             }
             ASSERT_EQUALS(expected, errout_str());
         }
@@ -164,10 +163,9 @@ private:
     void many_files_showtime() {
         SUPPRESS;
         check(100, 100,
-              "int main()\n"
+              "void f()\n"
               "{\n"
-              "  int i = *((int*)0);\n"
-              "  return 0;\n"
+              "  (void)(*((int*)0));\n"
               "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
         // we are not interested in the results - so just consume them
         ignore_errout();
@@ -178,10 +176,9 @@ private:
         ScopedFile plistFile("dummy", "", plistOutput);
 
         check(100, 100,
-              "int main()\n"
+              "void f()\n"
               "{\n"
-              "  int i = *((int*)0);\n"
-              "  return 0;\n"
+              "  (void)(*((int*)0));\n"
               "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
         // we are not interested in the results - so just consume them
         ignore_errout();
@@ -213,26 +210,24 @@ private:
 
     void one_error_less_files() {
         check(1, 1,
-              "int main()\n"
+              "void f()\n"
               "{\n"
-              "  {int i = *((int*)0);}\n"
-              "  return 0;\n"
+              "  (void)(*((int*)0));\n"
               "}");
-        ASSERT_EQUALS("[" + fprefix() + "_" + zpad3(1) + ".cpp:3:14]: (error) Null pointer dereference: (int*)0 [nullPointer]\n", errout_str());
+        ASSERT_EQUALS("[" + fprefix() + "_" + zpad3(1) + ".c:3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n", errout_str());
     }
 
     void one_error_several_files() {
         const int num_files = 20;
         check(num_files, num_files,
-              "int main()\n"
+              "void f()\n"
               "{\n"
-              "  {int i = *((int*)0);}\n"
-              "  return 0;\n"
+              "  (void)(*((int*)0));\n"
               "}");
         {
             std::string expected;
             for (int i = 1; i <= num_files; ++i) {
-                expected += "[" + fprefix() + "_" + zpad3(i) + ".cpp:3:14]: (error) Null pointer dereference: (int*)0 [nullPointer]\n";
+                expected += "[" + fprefix() + "_" + zpad3(i) + ".c:3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n";
             }
             ASSERT_EQUALS(expected, errout_str());
         }
@@ -294,20 +289,19 @@ private:
               dinit(CheckOptions,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(1) + ".cpp: ") != std::string::npos);
-        ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(2) + ".cpp: ") != std::string::npos);
+        ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(1) + ".c: ") != std::string::npos);
+        ASSERT(output_s.find("Check time: " + fprefix() + "_" + zpad3(2) + ".c: ") != std::string::npos);
     }
 
     void suppress_error_library() {
         SUPPRESS;
         const Settings settingsOld = settings; // TODO: get rid of this
-        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        const char xmldata[] = R"(<def format="2"><markup ext=".c" reporterrors="false"/></def>)";
         settings = settingsBuilder().libraryxml(xmldata).build();
         check(1, 0,
-              "int main()\n"
+              "void f()\n"
               "{\n"
-              "  int i = *((int*)0);\n"
-              "  return 0;\n"
+              "  (void)(*((int*)0));\n"
               "}");
         ASSERT_EQUALS("", errout_str());
         settings = settingsOld;
@@ -318,14 +312,14 @@ private:
         ScopedFile inc_h(fprefix() + ".h",
                          "inline void f()\n"
                          "{\n"
-                         "  (void)*((int*)0);\n"
+                         "  (void)(*((int*)0));\n"
                          "}");
         check(2, 2,
               "#include \"" + inc_h.name() + "\"");
         // these are not actually made unique by the implementation. That needs to be done by the given ErrorLogger
         ASSERT_EQUALS(
-            "[" + inc_h.name() + ":3:11]: (error) Null pointer dereference: (int*)0 [nullPointer]\n"
-            "[" + inc_h.name() + ":3:11]: (error) Null pointer dereference: (int*)0 [nullPointer]\n",
+            "[" + inc_h.name() + ":3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n"
+            "[" + inc_h.name() + ":3:12]: (error) Null pointer dereference: (int*)0 [nullPointer]\n",
             errout_str());
     }
 

@@ -169,10 +169,9 @@ private:
     {
         REDIRECT;
         ScopedFile file(fname,
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         int called = 0;
@@ -239,25 +238,24 @@ private:
     }
 
     void checkWithFile() const {
-        checkWithFileInternal("file.cpp", false);
+        checkWithFileInternal("file.c", false);
     }
 
     void checkWithFileWithTools() const {
-        checkWithFileInternal("file_tools.cpp", true);
+        checkWithFileInternal("file_tools.c", true);
     }
 
     void checkWithFileWithToolsNoCommand() const {
-        checkWithFileInternal("file_tools_nocmd.cpp", true, true);
+        checkWithFileInternal("file_tools_nocmd.c", true, true);
     }
 
     void checkWithFSInternal(const std::string& fname, bool tools, bool nocmd = false) const
     {
         REDIRECT;
         ScopedFile file(fname,
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         int called = 0;
@@ -324,27 +322,26 @@ private:
     }
 
     void checkWithFS() const {
-        checkWithFSInternal("fs.cpp", false);
+        checkWithFSInternal("fs.c", false);
     }
 
     void checkWithFSWithTools() const {
-        checkWithFSInternal("fs_tools.cpp", true);
+        checkWithFSInternal("fs_tools.c", true);
     }
 
     void checkWithFSWithToolsNoCommand() const {
-        checkWithFSInternal("fs_tools_nocmd.cpp", true, true);
+        checkWithFSInternal("fs_tools_nocmd.c", true, true);
     }
 
     void suppress_error_library() const
     {
-        ScopedFile file("suppr_err_lib.cpp",
-                        "int main()\n"
+        ScopedFile file("suppr_err_lib.c",
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
-        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        const char xmldata[] = R"(<def format="2"><markup ext=".c" reporterrors="false"/></def>)";
         const Settings s = settingsBuilder().libraryxml(xmldata).build();
         Suppressions supprs;
         ErrorLogger2 errorLogger;
@@ -363,11 +360,11 @@ private:
         ScopedFile file("inc.h",
                         "inline void f()\n"
                         "{\n"
-                        "  (void)*((int*)0);\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
-        ScopedFile test_file_a("a.cpp",
+        ScopedFile test_file_a("a.c",
                                "#include \"inc.h\"");
-        ScopedFile test_file_b("b.cpp",
+        ScopedFile test_file_b("b.c",
                                "#include \"inc.h\"");
 
         // this is the "simple" format
@@ -384,16 +381,16 @@ private:
         // the internal errorlist is cleared after each check() call
         ASSERT_EQUALS(2, errorLogger.errmsgs.size());
         auto it = errorLogger.errmsgs.cbegin();
-        ASSERT_EQUALS("a.cpp", it->file0);
+        ASSERT_EQUALS("a.c", it->file0);
         ASSERT_EQUALS("nullPointer", it->id);
         ++it;
-        ASSERT_EQUALS("b.cpp", it->file0);
+        ASSERT_EQUALS("b.c", it->file0);
         ASSERT_EQUALS("nullPointer", it->id);
     }
 
     void unique_errors_2() const
     {
-        ScopedFile test_file("c.cpp",
+        ScopedFile test_file("c.c",
                              "void f()\n"
                              "{\n"
                              "const long m[9] = {};\n"
@@ -415,7 +412,7 @@ private:
         // the internal errorlist is cleared after each check() call
         ASSERT_EQUALS(2, errorLogger.errmsgs.size());
         auto it = errorLogger.errmsgs.cbegin();
-        ASSERT_EQUALS("c.cpp", it->file0);
+        ASSERT_EQUALS("c.c", it->file0);
         ASSERT_EQUALS(1, it->callStack.size());
         {
             auto stack = it->callStack.cbegin();
@@ -424,7 +421,7 @@ private:
         }
         ASSERT_EQUALS("arrayIndexOutOfBounds", it->id);
         ++it;
-        ASSERT_EQUALS("c.cpp", it->file0);
+        ASSERT_EQUALS("c.c", it->file0);
         ASSERT_EQUALS(1, it->callStack.size());
         {
             auto stack = it->callStack.cbegin();
@@ -478,10 +475,10 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        std::vector<std::string> files{"/some/path/test.cpp"};
+        std::vector<std::string> files{"/some/path/test.c"};
         simplecpp::TokenList tokens1(files);
         const std::string expected = "  <rawtokens>\n"
-                                     "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                     "    <file index=\"0\" name=\"test.c\"/>\n"
                                      "  </rawtokens>\n";
         ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
 
@@ -493,7 +490,7 @@ private:
         simplecpp::OutputList outputList;
         const simplecpp::TokenList tokens2(fin, files, "", &outputList);
         const std::string expected2 = "  <rawtokens>\n"
-                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                      "    <file index=\"0\" name=\"test.c\"/>\n"
                                       "    <file index=\"1\" name=\"\"/>\n"
                                       "    <tok fileIndex=\"1\" linenr=\"1\" column=\"1\" str=\"//x &#10;y\"/>\n"
                                       "    <tok fileIndex=\"1\" linenr=\"3\" column=\"1\" str=\";\"/>\n"
@@ -510,7 +507,7 @@ private:
             Settings s;
             s.libraries.emplace_back("std.cfg");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            //std::vector<std::string> files{ "/some/path/test.cpp" };
+            //std::vector<std::string> files{ "/some/path/test.c" };
             const std::string expected = "  <library lib=\"std.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
         }
