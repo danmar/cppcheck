@@ -78,12 +78,6 @@ public:
         mSuppressionsUi = s;
     }
 
-    /**
-     * @brief method that is run in a thread
-     *
-     */
-    void run() override;
-
     void stop();
 
     /**
@@ -137,6 +131,12 @@ protected:
     std::shared_ptr<Suppressions> mSuppressions;
 
 private:
+    /**
+     * @brief method that is run in a thread
+     *
+     */
+    void run() override;
+
     void runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName);
 
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
