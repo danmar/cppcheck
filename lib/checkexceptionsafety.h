@@ -82,6 +82,7 @@ private:
     void rethrowCopyError(const Token * tok, const std::string &varname);
     void catchExceptionByValueError(const Token *tok);
     void noexceptThrowError(const Token * tok);
+    void entryPointThrowError(const Token * tok);
     /** Missing exception specification */
     void unhandledExceptionSpecificationError(const Token * tok1, const Token * tok2, const std::string & funcname);
     /** Rethrow without currently handled exception */
