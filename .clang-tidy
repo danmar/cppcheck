@@ -18,7 +18,6 @@ Checks: >
         -objc-*,
         -openmp-*,
         -zircon-*,
-        cert-err34-c,
         cppcoreguidelines-pro-type-static-cast-downcast,
         cppcoreguidelines-rvalue-reference-param-not-moved,
         google-explicit-constructor,
