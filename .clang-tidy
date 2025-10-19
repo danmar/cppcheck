@@ -24,6 +24,7 @@ Checks: >
         google-explicit-constructor,
         -bugprone-assignment-in-if-condition,
         -bugprone-branch-clone,
+        -bugprone-command-processor,
         -bugprone-easily-swappable-parameters,
         -bugprone-empty-catch,
         -bugprone-macro-parentheses,
