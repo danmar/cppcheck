@@ -1394,8 +1394,8 @@ namespace {
             if (conditions1.empty())
                 return unknown();
             std::unordered_map<nonneg int, ValueFlow::Value> condValues = executeAll(conditions1, &b);
-            bool allNegated = true;
             {
+                bool allNegated = true;
                 ValueFlow::Value negatedValue = unknown();
                 for (const auto& p : condValues) {
                     const ValueFlow::Value& v = p.second;
