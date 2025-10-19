@@ -130,6 +130,7 @@ Does not improve the readability.
 `modernize-use-designated-initializers`<br/>
 `readability-enum-initial-value`<br/>
 `modernize-use-trailing-return-type`<br/>
+`bugprone-command-processor`<br/>
 
 To be evaluated (need to remove exclusion).
 
