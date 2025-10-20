@@ -388,9 +388,6 @@ private:
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const;
 
-    /** Check configuration (unknown macros etc) */
-    void checkConfiguration() const;
-
     void invalidConstFunctionTypeError(const Token *tok) const;
 
     /**
