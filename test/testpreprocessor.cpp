@@ -53,7 +53,7 @@ private:
     std::string expandMacros(const char (&code)[size], ErrorLogger &errorLogger) const {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1 = simplecpp::TokenList(code, size-1, files, "file.cpp", &outputList);
+        const simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
         Preprocessor p(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess(tokens1, "", files, true);
         p.reportOutput(outputList, true);
@@ -69,7 +69,7 @@ private:
         if (tokenlist.front())
             throw std::runtime_error("token list not empty");
 
-        const simplecpp::TokenList tokens1(code, size-1, files, file0);
+        const simplecpp::TokenList tokens1(code, files, file0);
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
@@ -85,7 +85,7 @@ private:
     std::vector<RemarkComment> getRemarkComments(const char (&code)[size], ErrorLogger& errorLogger) const
     {
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(code, size-1, files, "test.cpp");
+        const simplecpp::TokenList tokens1(code, files, "test.cpp");
 
         const Preprocessor preprocessor(settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         return preprocessor.getRemarkComments(tokens1);
@@ -365,7 +365,7 @@ private:
             settings.userUndefs.insert(arg+2);
         std::vector<std::string> files;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,size-1,files);
+        simplecpp::TokenList tokens(code,files);
         tokens.removeComments();
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
         const std::set<std::string> configs = preprocessor.getConfigs(tokens);
@@ -379,7 +379,7 @@ private:
     std::size_t getHash(const char (&code)[size]) {
         std::vector<std::string> files;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,size-1,files);
+        simplecpp::TokenList tokens(code,files);
         tokens.removeComments();
         Preprocessor preprocessor(settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
         return preprocessor.calculateHash(tokens, "");
@@ -534,7 +534,7 @@ private:
                                 "2\n"
                                 "#endif\n";
         std::vector<std::string> files;
-        simplecpp::TokenList tokens(filedata, sizeof(filedata), files, "test.c");
+        simplecpp::TokenList tokens(filedata, files, "test.c");
 
         // preprocess code with unix32 platform..
         {
