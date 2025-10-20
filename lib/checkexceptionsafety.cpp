@@ -297,19 +297,9 @@ void CheckExceptionSafety::nothrowThrows()
             continue;
 
         bool isNoExcept = false, isEntryPoint = false;
-
-        // check noexcept and noexcept(true) functions
-        if (function->isNoExcept()) {
-            isNoExcept = true;
-        }
-
-        // check throw() functions
-        else if (function->isThrow() && !function->throwArg) {
-            isNoExcept = true;
-        }
-
-        // check __attribute__((nothrow)) or __declspec(nothrow) functions
-        else if (function->isAttributeNothrow()) {
+        if (function->isNoExcept() || // noexcept and noexcept(true) functions
+            (function->isThrow() && !function->throwArg) || //  throw() functions
+            function->isAttributeNothrow()) { // __attribute__((nothrow)) or __declspec(nothrow) functions
             isNoExcept = true;
         }
         else if (mSettings->library.isentrypoint(function->name())) {
@@ -317,6 +307,7 @@ void CheckExceptionSafety::nothrowThrows()
         }
         if (!isNoExcept && !isEntryPoint)
             continue;
+        
         if (const Token* throws = functionThrows(function)) {
             if (isEntryPoint)
                 entryPointThrowError(throws);
