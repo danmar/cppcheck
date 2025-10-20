@@ -5631,8 +5631,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
         findGarbageCode();
     });
 
-    checkConfiguration();
-
     // if (x) MACRO() ..
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "if (")) {
@@ -8219,14 +8217,6 @@ void Tokenizer::unhandled_macro_class_x_y(const Token *tok, const std::string& t
                 bracket + "' is not handled. You can use -I or --include to add handling of this code.");
 }
 
-void Tokenizer::macroWithSemicolonError(const Token *tok, const std::string &macroName) const
-{
-    reportError(tok,
-                Severity::information,
-                "macroWithSemicolon",
-                "Ensure that '" + macroName + "' is defined either using -I, --include or -D.");
-}
-
 void Tokenizer::invalidConstFunctionTypeError(const Token *tok) const
 {
     reportError(tok,
@@ -8287,25 +8277,6 @@ bool Tokenizer::isOneNumber(const std::string &s)
     return isNumberOneOf(s, 1L, "1.0");
 }
 // ------------------------------------------------------------------------
-void Tokenizer::checkConfiguration() const
-{
-    if (!mSettings.checkConfiguration)
-        return;
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%name% ("))
-            continue;
-        if (tok->isControlFlowKeyword())
-            continue;
-        for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
-            if (tok2->str() == ";") {
-                macroWithSemicolonError(tok, tok->str());
-                break;
-            }
-            if (Token::Match(tok2, "(|{"))
-                tok2 = tok2->link();
-        }
-    }
-}
 
 void Tokenizer::validateC() const
 {
@@ -11033,6 +11004,5 @@ void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& setti
     tokenizer.invalidConstFunctionTypeError(nullptr);
     // checkLibraryNoReturn
     tokenizer.unhandled_macro_class_x_y(nullptr, "", "", "", "");
-    tokenizer.macroWithSemicolonError(nullptr, "");
     tokenizer.unhandledCharLiteral(nullptr, "");
 }

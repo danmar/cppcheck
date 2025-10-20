@@ -370,15 +370,6 @@ void CheckStl::iteratorsError(const Token* tok, const std::string& containerName
                 "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, Certainty::normal);
 }
 
-void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2)
-{
-    std::list<const Token*> callstack = { tok, containerTok };
-    reportError(callstack, Severity::error, "iterators2",
-                "$symbol:" + containerName1 + "\n"
-                "$symbol:" + containerName2 + "\n"
-                "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, Certainty::normal);
-}
-
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName)
 {
     std::list<const Token*> callstack = { tok, containerTok };
@@ -3453,7 +3444,6 @@ void CheckStl::getErrorMessages(ErrorLogger* errorLogger, const Settings* settin
     c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
     c.invalidIteratorError(nullptr, "iterator");
     c.iteratorsError(nullptr, "container1", "container2");
-    c.iteratorsError(nullptr, nullptr, "container0", "container1");
     c.iteratorsError(nullptr, nullptr, "container");
     c.invalidContainerLoopError(nullptr, nullptr, ErrorPath{});
     c.invalidContainerError(nullptr, nullptr, nullptr, ErrorPath{});
