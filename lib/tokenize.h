@@ -390,7 +390,6 @@ private:
 
     /** Check configuration (unknown macros etc) */
     void checkConfiguration() const;
-    void macroWithSemicolonError(const Token *tok, const std::string &macroName) const;
 
     void invalidConstFunctionTypeError(const Token *tok) const;
 
