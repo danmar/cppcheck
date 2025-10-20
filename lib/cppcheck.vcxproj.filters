@@ -224,6 +224,9 @@
     <ClCompile Include="findtoken.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="regex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="checkbufferoverrun.h">
@@ -476,6 +479,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
