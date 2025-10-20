@@ -307,7 +307,7 @@ void CheckExceptionSafety::nothrowThrows()
         }
         if (!isNoExcept && !isEntryPoint)
             continue;
-        
+
         if (const Token* throws = functionThrows(function)) {
             if (isEntryPoint)
                 entryPointThrowError(throws);
