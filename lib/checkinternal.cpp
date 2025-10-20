@@ -337,13 +337,6 @@ void CheckInternal::checkExtraWhitespace()
     }
 }
 
-void CheckInternal::multiComparePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
-{
-    reportError(tok, Severity::error, "multiComparePatternError",
-                "Bad multicompare pattern (a %cmd% must be first unless it is %or%,%op%,%cop%,%name%,%oror%) inside Token::" + funcname + "() call: \"" + pattern + "\""
-                );
-}
-
 void CheckInternal::simplePatternError(const Token* tok, const std::string& pattern, const std::string &funcname)
 {
     reportError(tok, Severity::warning, "simplePatternError",
@@ -409,7 +402,6 @@ void CheckInternal::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogg
 void CheckInternal::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
 {
     CheckInternal c(nullptr, settings, errorLogger);
-    c.multiComparePatternError(nullptr, ";|%type%", "Match");
     c.simplePatternError(nullptr, "class {", "Match");
     c.complexPatternError(nullptr, "%type% ( )", "Match");
     c.missingPercentCharacterError(nullptr, "%num", "Match");
