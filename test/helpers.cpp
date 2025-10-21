@@ -113,15 +113,15 @@ ScopedFile::~ScopedFile() {
 
 void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
-    const simplecpp::TokenList tokens1(code, size, files, file0);
+    simplecpp::TokenList tokens1(code, size, files, file0);
 
-    Preprocessor preprocessor(tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
-    simplecpp::TokenList tokens2 = preprocessor.preprocess(tokens1, "", files, true);
+    Preprocessor preprocessor(tokens1, tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
+    simplecpp::TokenList tokens2 = preprocessor.preprocess("", files, true);
 
     // Tokenizer..
     tokenizer.list.createTokens(std::move(tokens2));
 
-    std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+    std::list<Directive> directives = preprocessor.createDirectives();
     tokenizer.setDirectives(std::move(directives));
 }
 

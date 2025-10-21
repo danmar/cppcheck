@@ -531,10 +531,10 @@ private:
         std::vector<std::string> files;
 
         const char code[] = "void f();\nint x;\n";
-        const simplecpp::TokenList tokens(code, files, "m1.c");
+        simplecpp::TokenList tokens(code, files, "m1.c");
 
-        Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
-        ASSERT(preprocessor.loadFiles(tokens, files));
+        Preprocessor preprocessor(tokens, settings, errorLogger, Standards::Language::C);
+        ASSERT(preprocessor.loadFiles(files));
 
         AddonInfo premiumaddon;
         premiumaddon.name = "premiumaddon.json";
@@ -546,10 +546,10 @@ private:
 
         settings.premiumArgs = "misra-c-2012";
         CppCheck check(settings, supprs, errorLogger, false, {});
-        const size_t hash1 = check.calculateHash(preprocessor, tokens);
+        const size_t hash1 = check.calculateHash(preprocessor);
 
         settings.premiumArgs = "";
-        const size_t hash2 = check.calculateHash(preprocessor, tokens);
+        const size_t hash2 = check.calculateHash(preprocessor);
 
         // cppcheck-suppress knownConditionTrueFalse
         ASSERT(hash1 != hash2);
