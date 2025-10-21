@@ -81,6 +81,7 @@ private:
         TEST_CASE(getDumpFileContentsLibrary);
         TEST_CASE(premiumResultsCache);
         TEST_CASE(toomanyconfigs);
+        TEST_CASE(purgedConfiguration);
     }
 
     void getErrorMessages() const {
@@ -568,7 +569,7 @@ private:
         // this is the "simple" format
         const auto s = dinit(Settings,
                              $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
-                                 $.severity.enable (Severity::information);
+                             $.severity.enable (Severity::information);
                              $.maxConfigs = 2);
         Suppressions supprs;
         ErrorLogger2 errorLogger;
@@ -582,6 +583,33 @@ private:
         ASSERT_EQUALS(1, errorLogger.errmsgs.size());
         const auto it = errorLogger.errmsgs.cbegin();
         ASSERT_EQUALS("a.c:0:0: information: Too many #ifdef configurations - cppcheck only checks 2 of 4 configurations. Use --force to check all configurations. [toomanyconfigs]", it->toString(false, templateFormat, ""));
+    }
+
+    void purgedConfiguration() const
+    {
+        ScopedFile test_file("test.cpp",
+                             "#ifdef X\n"
+                             "#endif\n"
+                             "int main() {}\n");
+
+        // this is the "simple" format
+        const auto s = dinit(Settings,
+                             $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
+                             $.severity.enable (Severity::information);
+                             $.debugwarnings = true);
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file.path(), Path::identify(test_file.path(), false), 0)));
+        // TODO: how to properly disable these warnings?
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        // the internal errorlist is cleared after each check() call
+        ASSERT_EQUALS(1, errorLogger.errmsgs.size());
+        auto it = errorLogger.errmsgs.cbegin();
+        ASSERT_EQUALS("test.cpp:0:0: information: The configuration 'X' was not checked because its code equals another one. [purgedConfiguration]",
+                      it->toString(false, templateFormat, ""));
     }
 
     // TODO: test suppressions
