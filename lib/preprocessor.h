@@ -143,12 +143,10 @@ public:
     static bool hasErrors(const simplecpp::Output &output);
 
 protected:
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
-
-    static bool hasErrors(const simplecpp::OutputList &outputList);
+    bool reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
 private:
-    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+    bool handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
 
