@@ -118,6 +118,7 @@ private:
         TEST_CASE(initvar_derived_pod_struct_with_union); // #11101
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
+        TEST_CASE(initvar_derived_private_constructor);
         TEST_CASE(initvar_copy_constructor); // ticket #1611
         TEST_CASE(initvar_nested_constructor); // ticket #1375
         TEST_CASE(initvar_nocopy1);            // ticket #2474
@@ -1608,6 +1609,15 @@ private:
                   "{ }", dinit(CheckOptions, $.s = &s));
             ASSERT_EQUALS("", errout_str());
         }
+    }
+    void initvar_derived_private_constructor() {
+        check("class B { int i; };\n"
+              "class D : B {\n"
+              "    explicit D(int) {}\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:1:1]: (style) The class 'B' does not declare a constructor although it has private member variables which likely require initialization. [noConstructor]\n"
+                      "[test.cpp:3:14]: (warning) Member variable 'B::i' is not initialized in the constructor. Maybe it should be initialized directly in the class B? [uninitDerivedMemberVarPrivate]\n",
+                      errout_str());
     }
 
     void initvar_copy_constructor() { // ticket #1611

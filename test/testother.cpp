@@ -256,6 +256,8 @@ private:
         TEST_CASE(raceAfterInterlockedDecrement);
 
         TEST_CASE(testUnusedLabel);
+        TEST_CASE(testUnusedLabelConfiguration);
+        TEST_CASE(testUnusedLabelSwitchConfiguration);
 
         TEST_CASE(testEvaluationOrder);
         TEST_CASE(testEvaluationOrderSelfAssignment);
@@ -11792,6 +11794,36 @@ private:
               "    label:\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6:5]: (style) Label 'label' is not used. [unusedLabel]\n", errout_str());
+    }
+
+
+    void testUnusedLabelConfiguration() {
+        checkP("void f() {\n"
+               "#ifdef X\n"
+               "    goto END;\n"
+               "#endif\n"
+               "END:\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:5:1]: (style) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. [unusedLabelConfiguration]\n",
+                      errout_str());
+    }
+
+    void testUnusedLabelSwitchConfiguration() {
+        checkP("void f(int i) {\n"
+               "    switch (i) {\n"
+               "    default:\n"
+               "        break;\n"
+               "#ifdef X\n"
+               "    case 1:\n"
+               "        goto END;\n"
+               "#endif\n"
+               "    case 2:\n"
+               "    END:\n"
+               "        return;\n"
+               "    }\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:10:5]: (warning) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. Should this be a 'case' of the enclosing switch()? [unusedLabelSwitchConfiguration]\n",
+                      errout_str());
     }
 
     // TODO: only used in a single place
