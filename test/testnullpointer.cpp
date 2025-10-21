@@ -4237,7 +4237,7 @@ private:
 
     void nullpointerOutOfResources() {
         check("void f() {\n"
-              "    FILE* fid = fopen(\"x.txt\", \"w\");\n"              
+              "    FILE* fid = fopen(\"x.txt\", \"w\");\n"
               "    fprintf(fid, \"abcdef\");\n"
               "    fclose(fid);\n"
               "}\n");
