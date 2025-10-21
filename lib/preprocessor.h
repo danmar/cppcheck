@@ -140,12 +140,11 @@ public:
      */
     void dump(std::ostream &out) const;
 
-    static bool hasErrors(const simplecpp::Output &output);
-
-protected:
     bool reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
 private:
+    static bool hasErrors(const simplecpp::Output &output);
+
     bool handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);

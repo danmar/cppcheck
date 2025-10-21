@@ -88,8 +88,8 @@ private:
         TEST_CASE(suppressingSyntaxErrorsFS); // #7076
         TEST_CASE(suppressingSyntaxErrorsInlineFiles); // #5917
         TEST_CASE(suppressingSyntaxErrorsInlineFS); // #5917
-        TEST_CASE(suppressingSyntaxErrorsWhileFileReadFiles); // PR #1333
-        TEST_CASE(suppressingSyntaxErrorsWhileFileReadFS); // PR #1333
+        TEST_CASE(suppressingSimplecppErrorsWhileFileReadFiles); // PR #1333
+        TEST_CASE(suppressingSimplecppErrorsWhileFileReadFS); // PR #1333
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunctionFiles);
@@ -1341,7 +1341,7 @@ private:
         suppressingSyntaxErrorsInlineInternal(&TestSuppressions::checkSuppressionFS);
     }
 
-    void suppressingSyntaxErrorsWhileFileReadInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxError while file read should be suppressible (PR #1333)
+    void suppressingSimplecppErrorsWhileFileReadInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxError while file read should be suppressible (PR #1333)
         const char code[] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
                             "{\n"
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
@@ -1355,16 +1355,16 @@ private:
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
                             "[!ENDIF!][!//\n"
                             "};";
-        ASSERT_EQUALS(0, (this->*check)(code, "syntaxError:test.cpp:4"));
+        ASSERT_EQUALS(0, (this->*check)(code, "preprocessorErrorDirective:test.cpp:4"));
         ASSERT_EQUALS("", errout_str());
     }
 
-    void suppressingSyntaxErrorsWhileFileReadFiles() {
-        suppressingSyntaxErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
+    void suppressingSimplecppErrorsWhileFileReadFiles() {
+        suppressingSimplecppErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
-    void suppressingSyntaxErrorsWhileFileReadFS() {
-        suppressingSyntaxErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
+    void suppressingSimplecppErrorsWhileFileReadFS() {
+        suppressingSimplecppErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
     // TODO: this tests an internal function - should it be private?

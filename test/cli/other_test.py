@@ -3888,8 +3888,9 @@ int 你=0;
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
+        # TODO: lacks column information
         # TODO: should report another ID
-        '{}:2:5: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [syntaxError]'.format(test_file)
+        '{}:2:0: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [preprocessorErrorDirective]'.format(test_file)
     ]
 
 
