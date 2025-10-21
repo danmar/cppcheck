@@ -569,7 +569,7 @@ private:
         // this is the "simple" format
         const auto s = dinit(Settings,
                              $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
-                             $.severity.enable (Severity::information);
+                                 $.severity.enable (Severity::information);
                              $.maxConfigs = 2);
         Suppressions supprs;
         ErrorLogger2 errorLogger;
@@ -595,7 +595,7 @@ private:
         // this is the "simple" format
         const auto s = dinit(Settings,
                              $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
-                             $.severity.enable (Severity::information);
+                                 $.severity.enable (Severity::information);
                              $.debugwarnings = true);
         Suppressions supprs;
         ErrorLogger2 errorLogger;
