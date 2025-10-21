@@ -65,7 +65,7 @@ private:
         simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
         PreprocessorTest p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess("", files, true);
-        p.reportOutput(outputList, true);
+        (void)p.reportOutput(outputList, true);
         return tokens2.stringify();
     }
 
@@ -129,15 +129,15 @@ private:
         simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
         // TODO: we should be using the actual Preprocessor implementation
         PreprocessorTest preprocessor(tokens, settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
+
+        // TODO: should be possible without a Preprocessor instance
+        if (preprocessor.reportOutput(outputList, true))
+            return {};
+
         if (inlineSuppression)
             preprocessor.inlineSuppressions(*inlineSuppression);
         preprocessor.removeComments();
         preprocessor.simplifyPragmaAsm();
-
-        preprocessor.reportOutput(outputList, true);
-
-        if (PreprocessorTest::hasErrors(outputList))
-            return {};
 
         std::map<std::string, std::string> cfgcode;
         if (cfgs.empty())

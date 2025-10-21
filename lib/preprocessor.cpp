@@ -753,18 +753,10 @@ bool Preprocessor::hasErrors(const simplecpp::Output &output)
     return false;
 }
 
-bool Preprocessor::hasErrors(const simplecpp::OutputList &outputList)
-{
-    const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) {
-        return hasErrors(output);
-    });
-    return it != outputList.cend();
-}
-
-void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
+bool Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
 {
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
-    reportOutput(outputList, showerror);
+    const bool hasError = reportOutput(outputList, showerror);
     if (throwError) {
         const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
             return hasErrors(output);
@@ -773,6 +765,7 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
             throw *it;
         }
     }
+    return hasError;
 }
 
 bool Preprocessor::loadFiles(std::vector<std::string> &files)
@@ -781,8 +774,7 @@ bool Preprocessor::loadFiles(std::vector<std::string> &files)
 
     simplecpp::OutputList outputList;
     mFileCache = simplecpp::load(mTokens, files, dui, &outputList);
-    handleErrors(outputList, false);
-    return !hasErrors(outputList);
+    return !handleErrors(outputList, false);
 }
 
 void Preprocessor::removeComments()
@@ -825,7 +817,7 @@ simplecpp::TokenList Preprocessor::preprocess(const std::string &cfg, std::vecto
     mMacroUsage = std::move(macroUsage);
     mIfCond = std::move(ifCond);
 
-    handleErrors(outputList, throwError);
+    (void)handleErrors(outputList, throwError);
 
     tokens2.removeComments();
 
@@ -859,11 +851,14 @@ std::string Preprocessor::getcode(const std::string &cfg, std::vector<std::strin
     return ret.str();
 }
 
-void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
+bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
 {
+    bool hasError = false;
+
     for (const simplecpp::Output &out : outputList) {
         switch (out.type) {
         case simplecpp::Output::ERROR:
+            hasError = true;
             if (!startsWith(out.msg,"#error") || showerror)
                 error(out.location.file(), out.location.line, out.msg);
             break;
@@ -871,6 +866,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::PORTABILITY_BACKSLASH:
             break;
         case simplecpp::Output::MISSING_HEADER: {
+            // not considered an "error"
             const std::string::size_type pos1 = out.msg.find_first_of("<\"");
             const std::string::size_type pos2 = out.msg.find_first_of(">\"", pos1 + 1U);
             if (pos1 < pos2 && pos2 != std::string::npos)
@@ -880,15 +876,19 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+            hasError = true;
             error(out.location.file(), out.location.line, out.msg);
             break;
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
         case simplecpp::Output::FILE_NOT_FOUND:
         case simplecpp::Output::DUI_ERROR:
+            hasError = true;
             error("", 0, out.msg);
             break;
         }
     }
+
+    return hasError;
 }
 
 void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
