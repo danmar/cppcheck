@@ -2415,10 +2415,12 @@ static bool isNonConstPtrCast(const Token* tok)
     return !vt || (vt->pointer > 0 && !vt->isConst(vt->pointer));
 }
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
+bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed)
 {
-    if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
-        return false; // TODO: log bailout?
+    if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd)) {
+        reportError(func->functionScope->bodyStart, Severity::debug, "bailoutIfdef", "bailing out because of #ifdef");
+        return false;
+    }
 
     auto getFuncTok = [](const Token* tok) -> const Token* {
         if (Token::simpleMatch(tok, "this"))

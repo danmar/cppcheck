@@ -1218,8 +1218,10 @@ void CheckOther::checkVariableScope()
         if (!isPtrOrRef && !isSimpleType && !astIsContainer(var->nameToken()))
             continue;
 
-        if (mTokenizer->hasIfdef(var->nameToken(), var->scope()->bodyEnd))
-            continue; // TODO: log bailout?
+        if (mTokenizer->hasIfdef(var->nameToken(), var->scope()->bodyEnd)) {
+            reportError(var->nameToken(), Severity::debug, "bailoutIfdef", "bailing out because of #ifdef");
+            continue;
+        }
 
         // reference of range for loop variable..
         if (Token::Match(var->nameToken()->previous(), "& %var% = %var% .")) {

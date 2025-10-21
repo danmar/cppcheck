@@ -337,8 +337,10 @@ void CheckCondition::checkBadBitmaskCheck()
 
             // If there are #ifdef in the expression don't warn about redundant | to avoid FP
             const auto& startStop = tok->findExpressionStartEndTokens();
-            if (mTokenizer->hasIfdef(startStop.first, startStop.second))
-                continue; // TODO: log bailout?
+            if (mTokenizer->hasIfdef(startStop.first, startStop.second)) {
+                reportError(startStop.first, Severity::debug, "bailoutIfdef", "bailing out because of #ifdef");
+                continue;
+            }
 
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->getKnownIntValue() == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->getKnownIntValue() == 0);
@@ -768,11 +770,15 @@ void CheckCondition::multiCondition2()
 
                             if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
                                 isSameExpression(true, cond1, secondCondition, *mSettings, true, true, &errorPath)) {
-                                if (!isAliased(vars) && !mTokenizer->hasIfdef(cond1, secondCondition)) {
-                                    identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
-                                    return ChildrenToVisit::done;
+                                if (!isAliased(vars)) {
+                                    if (!mTokenizer->hasIfdef(cond1, secondCondition)) {
+                                        identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
+                                        return ChildrenToVisit::done;
+                                    }
+                                    else {
+                                        reportError(cond1, Severity::debug, "bailoutIfdef", "bailing out because of #ifdef");
+                                    }
                                 }
-                                // TODO: log bailout?
                             }
                             return ChildrenToVisit::none;
                         });
