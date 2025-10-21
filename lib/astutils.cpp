@@ -2203,7 +2203,7 @@ static bool hasNoreturnFunction(const Token* tok, const Library& library, const 
 {
     if (!tok)
         return false;
-    const Token* ftok = tok->str() == "(" ? tok->previous() : nullptr;
+    const Token* ftok = (tok->str() == "(" && !tok->isCast()) ? tok->previous() : nullptr;
     while (Token::simpleMatch(ftok, "("))
         ftok = ftok->astOperand1();
     if (ftok) {
