@@ -328,8 +328,26 @@ bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size)
 
 //---------------------------------------------------------------------------
 
+#ifdef STORE_INPUT_DIR
+#include <atomic>
+#include <fstream>
+
+static void storeInput(const uint8_t* data, size_t size)
+{
+    static std::atomic_uint64_t num(0);
+    {
+        std::ofstream out(STORE_INPUT_DIR "/" + std::to_string(num++));
+        out.write(reinterpret_cast<const char*>(data), size);
+    }
+}
+#endif
+
 bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
 {
+#ifdef STORE_INPUT_DIR
+    storeInput(data, size);
+#endif
+
     simplecpp::OutputList outputList;
     simplecpp::TokenList tokens(data, size, mFiles, file0, &outputList);
 
