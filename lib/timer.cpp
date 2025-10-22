@@ -83,9 +83,6 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
         }
         ++ordinal;
     }
-
-    const double secOverall = overallData.seconds();
-    std::cout << "Overall time: " << secOverall << "s" << std::endl;
 }
 
 void TimerResults::addResults(const std::string& str, std::clock_t clocks)
@@ -141,4 +138,38 @@ void Timer::stop()
     }
 
     mStopped = true;
+}
+
+WholeProgramTimer::~WholeProgramTimer()
+{
+    stop();
+}
+
+void WholeProgramTimer::stop()
+{
+    if (mCancelled)
+        return;
+    const auto end = std::chrono::high_resolution_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - mStart);
+
+    // Extract hours
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(diff);
+    diff -= hours; // Subtract the extracted hours
+
+    // Extract minutes
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(diff);
+    diff -= minutes; // Subtract the extracted minutes
+
+    // Extract seconds
+    auto seconds = static_cast<double>(diff.count()) / std::chrono::microseconds::period::den;
+
+    std::string ellapsedTime;
+    if (hours.count() > 0)
+        ellapsedTime += std::to_string(hours.count()) + "h ";
+    if (minutes.count() > 0)
+        ellapsedTime += std::to_string(minutes.count()) + "m ";
+    ellapsedTime += std::to_string(seconds) + "s ";
+
+    std::lock_guard<std::mutex> l(stdCoutLock);
+    std::cout << "Overall time: " << ellapsedTime << std::endl;
 }

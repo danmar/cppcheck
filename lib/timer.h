@@ -93,5 +93,22 @@ private:
     const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
     bool mStopped{};
 };
+
+class CPPCHECKLIB WholeProgramTimer {
+public:
+    WholeProgramTimer()
+        : mStart(std::chrono::high_resolution_clock::now())
+    {}
+    ~WholeProgramTimer();
+
+    void stop();
+
+    void cancell() {
+        mCancelled = true;
+    }
+private:
+    std::chrono::system_clock::time_point mStart;
+    bool mCancelled{false};
+};
 //---------------------------------------------------------------------------
 #endif // timerH
