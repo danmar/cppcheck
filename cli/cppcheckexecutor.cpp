@@ -429,7 +429,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     return ret;
 }
 
-int CppCheckExecutor::check_wrapper(const Settings& settings, Suppressions& supprs)
+int CppCheckExecutor::check_wrapper(const Settings& settings, Suppressions& supprs) const
 {
 #ifdef USE_WINDOWS_SEH
     if (settings.exceptionHandling) {

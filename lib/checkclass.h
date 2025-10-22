@@ -237,7 +237,7 @@ private:
     static bool isMemberFunc(const Scope *scope, const Token *tok);
     static bool isConstMemberFunc(const Scope *scope, const Token *tok);
     enum class MemberAccess : std::uint8_t { NONE, SELF, MEMBER };
-    bool checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const;
+    bool checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed);
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
