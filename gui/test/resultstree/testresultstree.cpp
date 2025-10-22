@@ -66,6 +66,7 @@ public:
     QString output;
 };
 
+// cppcheck-suppress-begin [functionStatic,functionConst]
 // Mock GUI...
 ProjectFile::ProjectFile(QObject *parent) : QObject(parent) {}
 ProjectFile *ProjectFile::mActiveProject;
@@ -127,6 +128,7 @@ void ThreadResult::reportErr(const ErrorMessage & /*unused*/) {
 void ThreadResult::reportProgress(const std::string &/*filename*/, const char /*stage*/[], const std::size_t /*value*/) {
     throw 1;
 }
+// cppcheck-suppress-end [functionStatic,functionConst]
 
 // Test...
 
@@ -144,6 +146,7 @@ void TestResultsTree::test1() const
     QCOMPARE(tree.isRowHidden(0,QModelIndex()), false); // Show item
 }
 
+// cppcheck-suppress functionStatic
 void TestResultsTree::duplicateResults() const
 {
     // #14359 - filter out duplicate warnings
@@ -302,6 +305,7 @@ void TestResultsTree::testReportType() const
              "missingReturn,Mandatory,17.4");
 }
 
+// cppcheck-suppress functionStatic
 void TestResultsTree::testReportTypeIcon() const {
     ResultsTree tree(nullptr);
     tree.setReportType(ReportType::misraC2012);

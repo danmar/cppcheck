@@ -199,6 +199,7 @@ void TestProjectFile::getCheckingSuppressionsStar() const
     QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "*.cpp");
 }
 
+// cppcheck-suppress functionStatic
 void TestProjectFile::emptyUserInclude() const
 {
     ProjectFile projectFile;
