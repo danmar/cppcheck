@@ -66,6 +66,7 @@ public:
     QString output;
 };
 
+// cppcheck-suppress-begin [functionStatic,functionConst]
 // Mock GUI...
 ProjectFile::ProjectFile(QObject *parent) : QObject(parent) {}
 ProjectFile *ProjectFile::mActiveProject;
@@ -115,6 +116,7 @@ void ThreadResult::reportOut(const std::string & /*unused*/, Color /*unused*/) {
 void ThreadResult::reportErr(const ErrorMessage & /*unused*/) {
     throw 1;
 }
+// cppcheck-suppress-end [functionStatic,functionConst]
 
 // Test...
 
