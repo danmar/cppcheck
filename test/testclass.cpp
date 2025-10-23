@@ -8129,7 +8129,7 @@ private:
                                      "    C() {\n"
                                      "        S s;\n"
                                      "        s.i = 1;\n"
-                                     "        p = std::make_unique<T>(s);
+                                     "        p = std::make_unique<T>(s);\n"
                                      "    }\n"
                                      "    std::unique_ptr<T> p;\n"
                                      "};");
