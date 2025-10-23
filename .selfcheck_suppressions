@@ -16,7 +16,6 @@ constVariablePointer:*/moc_test*.cpp
 # --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-autoNoType
 # ticket 11631
 templateInstantiation:test/testutils.cpp
 
