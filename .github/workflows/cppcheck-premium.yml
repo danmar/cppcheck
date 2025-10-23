@@ -6,15 +6,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'releases/**'
-      - '2.*'
-    tags:
-      - '2.*'
-  pull_request:
-  workflow_dispatch:
-    inputs:
-      premium_version:
-        description: 'Cppcheck Premium version'
 
 permissions:
   contents: read
