@@ -172,11 +172,36 @@ private:
     }
 
     void join() const {
+        ASSERT_EQUALS("", Path::join("", ""));
+        ASSERT_EQUALS("b", Path::join("", "b"));
+        ASSERT_EQUALS("/b", Path::join("", "/b"));
+        ASSERT_EQUALS("/b", Path::join("", "\\b"));
+
         ASSERT_EQUALS("a", Path::join("a", ""));
-        ASSERT_EQUALS("a", Path::join("", "a"));
         ASSERT_EQUALS("a/b", Path::join("a", "b"));
-        ASSERT_EQUALS("a/b", Path::join("a/", "b"));
         ASSERT_EQUALS("/b", Path::join("a", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a", "\\b"));
+
+        ASSERT_EQUALS("a/", Path::join("a/", ""));
+        ASSERT_EQUALS("a/b", Path::join("a/", "b"));
+        ASSERT_EQUALS("/b", Path::join("a/", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a/", "\\b"));
+
+        ASSERT_EQUALS("a/", Path::join("a\\", ""));
+        ASSERT_EQUALS("a/b", Path::join("a\\", "b"));
+        ASSERT_EQUALS("/b", Path::join("a\\", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a\\", "\\b"));
+
+        // TODO: how to absolute Windows path in path2?
+        //ASSERT_EQUALS("", Path::join("a", "s:/b"));
+
+        //ASSERT_EQUALS("", Path::join("S:\\a", "S:/b"));
+        //ASSERT_EQUALS("", Path::join("S:\\a", "S:\\b"));
+        //ASSERT_EQUALS("", Path::join("S:\\a", "/b"));
+
+        //ASSERT_EQUALS("", Path::join("S:/a", "S:/b"));
+        //ASSERT_EQUALS("", Path::join("S:/a", "S:\\b"));
+        //ASSERT_EQUALS("", Path::join("S:/a", "/b"));
     }
 
     void isDirectory() const {

@@ -47,7 +47,7 @@
 #include <ctime>
 #include <iostream>
 #include <iterator>
-#include <exception>
+#include <limits>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -4209,7 +4209,7 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
-static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope)
+static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope, Standards::cstd_t cStandard)
 {
     const Token* const tok1 = tok;
     Token* tok2 = tok;
@@ -4229,7 +4229,9 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
             }
             if (tok2->isCpp() && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
-            if (tok2->isCpp() && Token::simpleMatch(tok2, "decltype (")) {
+            bool isC23 = tok2->isC() && cStandard >= Standards::C23;
+            if (((tok2->isCpp() || isC23) && Token::Match(tok2, "decltype|typeof (")) ||
+                (tok2->isC() && Token::simpleMatch(tok2, "__typeof ("))) {
                 typeCount = 1;
                 tok2 = tok2->linkAt(1)->next();
                 continue;
@@ -4762,7 +4764,7 @@ void Tokenizer::setVarIdPass1()
             }
 
             try { /* Ticket #8151 */
-                decl = setVarIdParseDeclaration(tok2, variableMap, scopeStack.top().isExecutable);
+                decl = setVarIdParseDeclaration(tok2, variableMap, scopeStack.top().isExecutable, mSettings.standards.c);
             } catch (const Token * errTok) {
                 syntaxError(errTok);
             }
@@ -4782,11 +4784,19 @@ void Tokenizer::setVarIdPass1()
                                               variableMap.map(true),
                                               mTemplateVarIdUsage);
                     }
-                    if (Token *declTypeTok = Token::findsimplematch(tok, "decltype (", tok2)) {
-                        for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
-                            if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
-                                declTok->varId(variableMap.map(false).find(declTok->str())->second);
-                        }
+                }
+
+                Token *declTypeTok = nullptr;
+                if (cpp || mSettings.standards.c >= Standards::C23) {
+                    declTypeTok = Token::findmatch(tok, "decltype|typeof (", tok2);
+                } else {
+                    declTypeTok = Token::findsimplematch(tok, "__typeof (");
+                }
+
+                if (declTypeTok) {
+                    for (Token *declTok = declTypeTok->linkAt(1); declTok != declTypeTok; declTok = declTok->previous()) {
+                        if (declTok->isName() && !Token::Match(declTok->previous(), "::|.") && variableMap.hasVariable(declTok->str()))
+                            declTok->varId(variableMap.map(false).find(declTok->str())->second);
                     }
                 }
 
@@ -5620,8 +5630,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     Timer::run("Tokenizer::simplifyTokens1::simplifyTokenList1::findGarbageCode", showTime, mTimerResults, [&]() {
         findGarbageCode();
     });
-
-    checkConfiguration();
 
     // if (x) MACRO() ..
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
@@ -8209,14 +8217,6 @@ void Tokenizer::unhandled_macro_class_x_y(const Token *tok, const std::string& t
                 bracket + "' is not handled. You can use -I or --include to add handling of this code.");
 }
 
-void Tokenizer::macroWithSemicolonError(const Token *tok, const std::string &macroName) const
-{
-    reportError(tok,
-                Severity::information,
-                "macroWithSemicolon",
-                "Ensure that '" + macroName + "' is defined either using -I, --include or -D.");
-}
-
 void Tokenizer::invalidConstFunctionTypeError(const Token *tok) const
 {
     reportError(tok,
@@ -8277,25 +8277,6 @@ bool Tokenizer::isOneNumber(const std::string &s)
     return isNumberOneOf(s, 1L, "1.0");
 }
 // ------------------------------------------------------------------------
-void Tokenizer::checkConfiguration() const
-{
-    if (!mSettings.checkConfiguration)
-        return;
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%name% ("))
-            continue;
-        if (tok->isControlFlowKeyword())
-            continue;
-        for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ")"; tok2 = tok2->next()) {
-            if (tok2->str() == ";") {
-                macroWithSemicolonError(tok, tok->str());
-                break;
-            }
-            if (Token::Match(tok2, "(|{"))
-                tok2 = tok2->link();
-        }
-    }
-}
 
 void Tokenizer::validateC() const
 {
@@ -11023,6 +11004,5 @@ void Tokenizer::getErrorMessages(ErrorLogger& errorLogger, const Settings& setti
     tokenizer.invalidConstFunctionTypeError(nullptr);
     // checkLibraryNoReturn
     tokenizer.unhandled_macro_class_x_y(nullptr, "", "", "", "");
-    tokenizer.macroWithSemicolonError(nullptr, "");
     tokenizer.unhandledCharLiteral(nullptr, "");
 }

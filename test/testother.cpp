@@ -25,6 +25,7 @@
 #include "standards.h"
 
 #include <cstddef>
+#include <sstream>
 #include <string>
 
 static std::string unionZeroInitMessage(int lno, int cno, const std::string &varName, const std::string &largestMemberName)
@@ -255,6 +256,8 @@ private:
         TEST_CASE(raceAfterInterlockedDecrement);
 
         TEST_CASE(testUnusedLabel);
+        TEST_CASE(testUnusedLabelConfiguration);
+        TEST_CASE(testUnusedLabelSwitchConfiguration);
 
         TEST_CASE(testEvaluationOrder);
         TEST_CASE(testEvaluationOrderSelfAssignment);
@@ -8040,6 +8043,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(const std::vector<int>& v) {\n" // #14193
+              "    for (const int& r1 : v) {\n"
+              "        for (const int& r2 : v) {\n"
+              "            if (&r1 == &r2) {}\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void duplicateExpressionTernary() { // #6391
@@ -11782,6 +11794,36 @@ private:
               "    label:\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6:5]: (style) Label 'label' is not used. [unusedLabel]\n", errout_str());
+    }
+
+
+    void testUnusedLabelConfiguration() {
+        checkP("void f() {\n"
+               "#ifdef X\n"
+               "    goto END;\n"
+               "#endif\n"
+               "END:\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:5:1]: (style) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. [unusedLabelConfiguration]\n",
+                      errout_str());
+    }
+
+    void testUnusedLabelSwitchConfiguration() {
+        checkP("void f(int i) {\n"
+               "    switch (i) {\n"
+               "    default:\n"
+               "        break;\n"
+               "#ifdef X\n"
+               "    case 1:\n"
+               "        goto END;\n"
+               "#endif\n"
+               "    case 2:\n"
+               "    END:\n"
+               "        return;\n"
+               "    }\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:10:5]: (warning) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. Should this be a 'case' of the enclosing switch()? [unusedLabelSwitchConfiguration]\n",
+                      errout_str());
     }
 
     // TODO: only used in a single place

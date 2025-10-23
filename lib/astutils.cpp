@@ -37,7 +37,6 @@
 #include "checkclass.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cstring>
 #include <functional>
 #include <initializer_list>
@@ -1203,6 +1202,8 @@ static const Token * followVariableExpression(const Settings& settings, const To
         return tok;
     if (hasUnknownVars(varTok))
         return tok;
+    if (astIsRangeBasedForDecl(var->nameToken()))
+        return tok;
     if (var->isVolatile())
         return tok;
     if (!var->isLocal() && !var->isConst())
@@ -2202,7 +2203,7 @@ static bool hasNoreturnFunction(const Token* tok, const Library& library, const 
 {
     if (!tok)
         return false;
-    const Token* ftok = tok->str() == "(" ? tok->previous() : nullptr;
+    const Token* ftok = (tok->str() == "(" && !tok->isCast()) ? tok->previous() : nullptr;
     while (Token::simpleMatch(ftok, "("))
         ftok = ftok->astOperand1();
     if (ftok) {

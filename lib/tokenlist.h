@@ -25,7 +25,7 @@
 #include "standards.h"
 
 #include <cstddef>
-#include <iosfwd>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>

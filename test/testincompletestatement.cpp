@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "fixture.h"
 
+#include <cstddef>
 #include <string>
 
 class TestIncompleteStatement : public TestFixture {

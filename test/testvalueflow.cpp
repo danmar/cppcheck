@@ -172,6 +172,7 @@ private:
 
         mNewTemplate = false;
         TEST_CASE(valueFlowBailoutIncompleteVar);
+        TEST_CASE(valueFlowBailoutNoreturn);
         mNewTemplate = true;
 
         TEST_CASE(performanceIfCount);
@@ -9075,6 +9076,16 @@ private:
             "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_1\n"
             "[test.cpp:6]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_2\n",
             errout_str());
+    }
+
+    void valueFlowBailoutNoreturn() { // #13718
+        bailout(
+            "void f(const int* p) {\n"
+            "    if (p)\n"
+            "        (void)*p;\n"
+            "}\n"
+            );
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout_str());
     }
 
     void performanceIfCount() {

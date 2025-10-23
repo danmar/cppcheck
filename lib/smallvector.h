@@ -24,7 +24,7 @@
 static constexpr std::size_t DefaultSmallVectorSize = 3;
 
 #ifdef HAVE_BOOST
-#include <boost/container/small_vector.hpp>
+#include <boost/container/small_vector.hpp> // IWYU pragma: export
 
 template<typename T, std::size_t N = DefaultSmallVectorSize>
 using SmallVector = boost::container::small_vector<T, N>;

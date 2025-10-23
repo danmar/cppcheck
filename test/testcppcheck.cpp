@@ -31,10 +31,8 @@
 #include "suppressions.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdlib>
 #include <list>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -82,6 +80,8 @@ private:
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
         TEST_CASE(premiumResultsCache);
+        TEST_CASE(toomanyconfigs);
+        TEST_CASE(purgedConfiguration);
     }
 
     void getErrorMessages() const {
@@ -170,10 +170,9 @@ private:
     {
         REDIRECT;
         ScopedFile file(fname,
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         int called = 0;
@@ -240,25 +239,24 @@ private:
     }
 
     void checkWithFile() const {
-        checkWithFileInternal("file.cpp", false);
+        checkWithFileInternal("file.c", false);
     }
 
     void checkWithFileWithTools() const {
-        checkWithFileInternal("file_tools.cpp", true);
+        checkWithFileInternal("file_tools.c", true);
     }
 
     void checkWithFileWithToolsNoCommand() const {
-        checkWithFileInternal("file_tools_nocmd.cpp", true, true);
+        checkWithFileInternal("file_tools_nocmd.c", true, true);
     }
 
     void checkWithFSInternal(const std::string& fname, bool tools, bool nocmd = false) const
     {
         REDIRECT;
         ScopedFile file(fname,
-                        "int main()\n"
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
         int called = 0;
@@ -325,27 +323,26 @@ private:
     }
 
     void checkWithFS() const {
-        checkWithFSInternal("fs.cpp", false);
+        checkWithFSInternal("fs.c", false);
     }
 
     void checkWithFSWithTools() const {
-        checkWithFSInternal("fs_tools.cpp", true);
+        checkWithFSInternal("fs_tools.c", true);
     }
 
     void checkWithFSWithToolsNoCommand() const {
-        checkWithFSInternal("fs_tools_nocmd.cpp", true, true);
+        checkWithFSInternal("fs_tools_nocmd.c", true, true);
     }
 
     void suppress_error_library() const
     {
-        ScopedFile file("suppr_err_lib.cpp",
-                        "int main()\n"
+        ScopedFile file("suppr_err_lib.c",
+                        "void f()\n"
                         "{\n"
-                        "  int i = *((int*)0);\n"
-                        "  return 0;\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
 
-        const char xmldata[] = R"(<def format="2"><markup ext=".cpp" reporterrors="false"/></def>)";
+        const char xmldata[] = R"(<def format="2"><markup ext=".c" reporterrors="false"/></def>)";
         const Settings s = settingsBuilder().libraryxml(xmldata).build();
         Suppressions supprs;
         ErrorLogger2 errorLogger;
@@ -364,11 +361,11 @@ private:
         ScopedFile file("inc.h",
                         "inline void f()\n"
                         "{\n"
-                        "  (void)*((int*)0);\n"
+                        "  (void)(*((int*)0));\n"
                         "}");
-        ScopedFile test_file_a("a.cpp",
+        ScopedFile test_file_a("a.c",
                                "#include \"inc.h\"");
-        ScopedFile test_file_b("b.cpp",
+        ScopedFile test_file_b("b.c",
                                "#include \"inc.h\"");
 
         // this is the "simple" format
@@ -385,16 +382,16 @@ private:
         // the internal errorlist is cleared after each check() call
         ASSERT_EQUALS(2, errorLogger.errmsgs.size());
         auto it = errorLogger.errmsgs.cbegin();
-        ASSERT_EQUALS("a.cpp", it->file0);
+        ASSERT_EQUALS("a.c", it->file0);
         ASSERT_EQUALS("nullPointer", it->id);
         ++it;
-        ASSERT_EQUALS("b.cpp", it->file0);
+        ASSERT_EQUALS("b.c", it->file0);
         ASSERT_EQUALS("nullPointer", it->id);
     }
 
     void unique_errors_2() const
     {
-        ScopedFile test_file("c.cpp",
+        ScopedFile test_file("c.c",
                              "void f()\n"
                              "{\n"
                              "const long m[9] = {};\n"
@@ -416,7 +413,7 @@ private:
         // the internal errorlist is cleared after each check() call
         ASSERT_EQUALS(2, errorLogger.errmsgs.size());
         auto it = errorLogger.errmsgs.cbegin();
-        ASSERT_EQUALS("c.cpp", it->file0);
+        ASSERT_EQUALS("c.c", it->file0);
         ASSERT_EQUALS(1, it->callStack.size());
         {
             auto stack = it->callStack.cbegin();
@@ -425,7 +422,7 @@ private:
         }
         ASSERT_EQUALS("arrayIndexOutOfBounds", it->id);
         ++it;
-        ASSERT_EQUALS("c.cpp", it->file0);
+        ASSERT_EQUALS("c.c", it->file0);
         ASSERT_EQUALS(1, it->callStack.size());
         {
             auto stack = it->callStack.cbegin();
@@ -479,10 +476,10 @@ private:
         Suppressions supprs;
         ErrorLogger2 errorLogger;
         CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        std::vector<std::string> files{"/some/path/test.cpp"};
+        std::vector<std::string> files{"/some/path/test.c"};
         simplecpp::TokenList tokens1(files);
         const std::string expected = "  <rawtokens>\n"
-                                     "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                     "    <file index=\"0\" name=\"test.c\"/>\n"
                                      "  </rawtokens>\n";
         ASSERT_EQUALS(expected, cppcheck.getDumpFileContentsRawTokens(files, tokens1));
 
@@ -490,11 +487,10 @@ private:
                             "y\n"
                             ";\n";
 
-        std::istringstream fin(code);
         simplecpp::OutputList outputList;
-        const simplecpp::TokenList tokens2(fin, files, "", &outputList);
+        const simplecpp::TokenList tokens2(code, files, "", &outputList);
         const std::string expected2 = "  <rawtokens>\n"
-                                      "    <file index=\"0\" name=\"test.cpp\"/>\n"
+                                      "    <file index=\"0\" name=\"test.c\"/>\n"
                                       "    <file index=\"1\" name=\"\"/>\n"
                                       "    <tok fileIndex=\"1\" linenr=\"1\" column=\"1\" str=\"//x &#10;y\"/>\n"
                                       "    <tok fileIndex=\"1\" linenr=\"3\" column=\"1\" str=\";\"/>\n"
@@ -511,7 +507,7 @@ private:
             Settings s;
             s.libraries.emplace_back("std.cfg");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            //std::vector<std::string> files{ "/some/path/test.cpp" };
+            //std::vector<std::string> files{ "/some/path/test.c" };
             const std::string expected = "  <library lib=\"std.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
         }
@@ -535,8 +531,8 @@ private:
 
         std::vector<std::string> files;
 
-        std::istringstream istr("void f();\nint x;\n");
-        const simplecpp::TokenList tokens(istr, files, "m1.c");
+        const char code[] = "void f();\nint x;\n";
+        const simplecpp::TokenList tokens(code, files, "m1.c");
 
         Preprocessor preprocessor(settings, errorLogger, Standards::Language::C);
         ASSERT(preprocessor.loadFiles(tokens, files));
@@ -558,6 +554,62 @@ private:
 
         // cppcheck-suppress knownConditionTrueFalse
         ASSERT(hash1 != hash2);
+    }
+
+    void toomanyconfigs() const
+    {
+        ScopedFile test_file_a("a.c",
+                               "#if DEF_1\n"
+                               "#endif\n"
+                               "#if DEF_2\n"
+                               "#endif\n"
+                               "#if DEF_3\n"
+                               "#endif");
+
+        // this is the "simple" format
+        const auto s = dinit(Settings,
+                             $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
+                                 $.severity.enable (Severity::information);
+                             $.maxConfigs = 2);
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_a.path(), Path::identify(test_file_a.path(), false), 0)));
+        // TODO: how to properly disable these warnings?
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        // the internal errorlist is cleared after each check() call
+        ASSERT_EQUALS(1, errorLogger.errmsgs.size());
+        const auto it = errorLogger.errmsgs.cbegin();
+        ASSERT_EQUALS("a.c:0:0: information: Too many #ifdef configurations - cppcheck only checks 2 of 4 configurations. Use --force to check all configurations. [toomanyconfigs]", it->toString(false, templateFormat, ""));
+    }
+
+    void purgedConfiguration() const
+    {
+        ScopedFile test_file("test.cpp",
+                             "#ifdef X\n"
+                             "#endif\n"
+                             "int main() {}\n");
+
+        // this is the "simple" format
+        const auto s = dinit(Settings,
+                             $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
+                                 $.severity.enable (Severity::information);
+                             $.debugwarnings = true);
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file.path(), Path::identify(test_file.path(), false), 0)));
+        // TODO: how to properly disable these warnings?
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        // the internal errorlist is cleared after each check() call
+        ASSERT_EQUALS(1, errorLogger.errmsgs.size());
+        auto it = errorLogger.errmsgs.cbegin();
+        ASSERT_EQUALS("test.cpp:0:0: information: The configuration 'X' was not checked because its code equals another one. [purgedConfiguration]",
+                      it->toString(false, templateFormat, ""));
     }
 
     // TODO: test suppressions

@@ -33,6 +33,7 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "json.h"
+#include "path.h"
 #include "sarifreport.h"
 #include "settings.h"
 #include "singleexecutor.h"
