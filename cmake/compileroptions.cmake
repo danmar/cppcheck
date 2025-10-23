@@ -146,6 +146,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # this is reported even when it is unnecessary i.e. -Wswitch-enum warnings have been mitigated
     add_compile_options_safe(-Wno-switch-default)
 
+    # these are experimental warning which might produce false positives
+    add_compile_options_safe(-Wno-thread-safety-negative)
+    add_compile_options_safe(-Wno-thread-safety-beta)
+
     # warnings we are currently not interested in
     add_compile_options(-Wno-four-char-constants)
     add_compile_options(-Wno-weak-vtables)
