@@ -60,7 +60,7 @@ jobs:
           cp cppcheck.exe cppcheck-mingw/
           cp -R cfg platforms cppcheck-mingw/
           cp /mingw64/bin/libgcc_s_seh-1.dll cppcheck-mingw/
-          cp /mingw64/bin/libstdc++6.dll cppcheck-mingw/
+          cp /mingw64/bin/libstdc*.dll cppcheck-mingw/
           cp /mingw64/bin/libwinpthread-1.dll cppcheck-mingw/
 
       - uses: actions/upload-artifact@v4
