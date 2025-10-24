@@ -271,15 +271,13 @@ public:
 
     static std::string plistHeader(const std::string &version);
     static std::string plistData(const ErrorMessage &msg);
-    static std::string plistFooter(const std::vector<std::string> *files) {
+    static std::string plistFooter(const std::vector<std::string>& files) {
         std::ostringstream ostr;
         ostr << " </array>\r\n"
-             << " <key>files</key>\r\n"
-             << " <array>\r\n";
-        if (files) {
-            for (const std::string& file : *files)
-                ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
-        }
+            << " <key>files</key>\r\n"
+            << " <array>\r\n";
+        for (const std::string& file : files)
+            ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
         ostr << " </array>\r\n"
              << "</dict>\r\n"
              << "</plist>";

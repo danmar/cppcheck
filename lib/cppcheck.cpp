@@ -123,11 +123,15 @@ public:
         mErrorList.clear();
     }
 
-    void openPlist(const std::string& filename, const std::vector<std::string>* files)
+    void openPlist(const std::string& filename)
     {
         mPlistFile.open(filename);
         mPlistFile << ErrorLogger::plistHeader(version());
-        mPlistFilenames = files;
+    }
+
+    void setPlistFilenames(std::vector<std::string> files)
+    {
+        mPlistFilenames = std::move(files);
     }
 
     void closePlist()
@@ -276,8 +280,8 @@ private:
     using Location = std::pair<std::string, int>;
     std::map<Location, std::set<std::string>> mLocationMacros; // What macros are used on a location?
 
-    const std::vector<std::string>* mPlistFilenames{};
     std::ofstream mPlistFile;
+    std::vector<std::string> mPlistFilenames;
 
     unsigned int mExitCode{};
 
@@ -996,7 +1000,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                 filename2 = file.spath();
             const std::size_t fileNameHash = std::hash<std::string> {}(file.spath());
             filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
-            mLogger->openPlist(filename2, &files);
+            mLogger->openPlist(filename2);
         }
 
         // Parse comments and then remove them
@@ -1287,6 +1291,10 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             // dumped all configs, close root </dumps> element now
             fdump << "</dumps>" << std::endl;
             fdump.close();
+        }
+
+        if (!mSettings.plistOutput.empty()) {
+            mLogger->setPlistFilenames(std::move(files));
         }
 
         executeAddons(dumpFile, file);
