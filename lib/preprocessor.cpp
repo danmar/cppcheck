@@ -759,7 +759,7 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
 
     simplecpp::OutputList outputList;
-    mFileCache = simplecpp::load(rawtokens, files, dui, &outputList);
+    mFileCache = simplecpp::load(rawtokens, files, dui, &outputList, std::move(mFileCache));
     handleErrors(outputList, false);
     return !hasErrors(outputList);
 }
