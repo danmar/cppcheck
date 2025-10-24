@@ -2,10 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: CIFuzz
 
-on:
-  push:
-    branches:
-      - 'main'
+on: [pull_request]
 
 permissions:
   contents: read
