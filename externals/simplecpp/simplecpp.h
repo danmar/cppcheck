@@ -9,6 +9,7 @@
 #include <cctype>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <iosfwd>
 #include <list>
 #include <map>
