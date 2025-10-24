@@ -312,6 +312,7 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
     }
 }
 
+// cppcheck-suppress unusedFunction
 std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::TokenList &tokens) const
 {
     std::vector<RemarkComment> ret;

@@ -104,11 +104,6 @@ public:
         return mRemarkComments;
     }
 
-    void setRemarkComments(std::vector<RemarkComment> remarkComments)
-    {
-        mRemarkComments = std::move(remarkComments);
-    }
-
     void setLocationMacros(const Token* startTok, const std::vector<std::string>& files)
     {
         mLocationMacros.clear();
