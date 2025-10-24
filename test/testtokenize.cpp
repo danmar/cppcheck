@@ -295,6 +295,7 @@ private:
         TEST_CASE(simplifyInitVar2);
         TEST_CASE(simplifyInitVar3);
         TEST_CASE(simplifyInitVar4);
+        TEST_CASE(simplifyInitVar5);
 
         TEST_CASE(bitfields1);
         TEST_CASE(bitfields2);
@@ -4676,6 +4677,11 @@ private:
         ASSERT_EQUALS("void f ( ) {\n"
                       "uint32_t x { 0 } ;\n"
                       "}", tokenizeAndStringify(code));
+    }
+
+    void simplifyInitVar5() { // #14218
+        const char code[] = "int c[1]{}, b;";
+        ASSERT_EQUALS("int c [ 1 ] { } ; int b ;", tokenizeAndStringify(code));
     }
 
     void bitfields1() {

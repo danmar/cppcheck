@@ -11,6 +11,7 @@ simplifyUsing:*/moc_*.cpp
 funcArgNamesDifferent:*/moc_*.cpp
 naming-varname:*/ui_*.h
 functionStatic:*/ui_fileview.h
+constVariablePointer:*/moc_test*.cpp
 
 # --debug-warnings suppressions
 valueFlowBailout
