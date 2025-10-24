@@ -375,6 +375,7 @@ private:
             std::set<std::string> configDefines = { "__cplusplus" };
             preprocessor.getConfigs("", tokens, configDefines, configs);
         }
+        configs.sort();
         std::string ret;
         for (const std::string & config : configs)
             ret += config + '\n';
