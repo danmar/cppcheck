@@ -131,7 +131,9 @@ public:
 
     void setPlistFilenames(std::vector<std::string> files)
     {
-        mPlistFilenames = std::move(files);
+        if (mPlistFile.is_open()) {
+            mPlistFilenames = std::move(files);
+        }
     }
 
     void closePlist()
@@ -139,6 +141,7 @@ public:
         if (mPlistFile.is_open()) {
             mPlistFile << ErrorLogger::plistFooter(mPlistFilenames);
             mPlistFile.close();
+            mPlistFilenames.clear();
         }
     }
 
