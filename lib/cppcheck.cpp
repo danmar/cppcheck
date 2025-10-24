@@ -1040,14 +1040,14 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         std::set<std::string> configDefines = { "__cplusplus" };
 
         preprocessor.setLoadCallback([&](simplecpp::FileData& data) {
-                preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
-                preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
-                data.tokens.removeComments();
-                preprocessor.createDirectives(data.tokens, directives);
-                preprocessor.simplifyPragmaAsm(data.tokens);
-                if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force)
-                    preprocessor.getConfigs(data.filename, data.tokens, configDefines, configurations);
-            });
+            preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
+            preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
+            data.tokens.removeComments();
+            preprocessor.createDirectives(data.tokens, directives);
+            preprocessor.simplifyPragmaAsm(data.tokens);
+            if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force)
+                preprocessor.getConfigs(data.filename, data.tokens, configDefines, configurations);
+        });
 
         Preprocessor::setPlatformInfo(tokens1, mSettings);
 
