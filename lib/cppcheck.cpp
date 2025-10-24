@@ -1044,7 +1044,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         std::list<std::string> configurations;
         std::set<std::string> configDefines = { "__cplusplus" };
 
-        preprocessor.setLoadCallback([&](auto& data) {
+        preprocessor.setLoadCallback([&](simplecpp::FileData& data) {
                 preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
                 preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
                 data.tokens.removeComments();
