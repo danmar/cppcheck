@@ -274,8 +274,8 @@ public:
     static std::string plistFooter(const std::vector<std::string>& files) {
         std::ostringstream ostr;
         ostr << " </array>\r\n"
-            << " <key>files</key>\r\n"
-            << " <array>\r\n";
+             << " <key>files</key>\r\n"
+             << " <array>\r\n";
         for (const std::string& file : files)
             ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
         ostr << " </array>\r\n"
