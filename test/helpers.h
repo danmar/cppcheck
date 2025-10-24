@@ -165,27 +165,6 @@ private:
     const std::string mFullPath;
 };
 
-class PreprocessorHelper
-{
-public:
-    /**
-     * Get preprocessed code for a given configuration
-     *
-     * Note: for testing only.
-     *
-     * @param filedata file data including preprocessing 'if', 'define', etc
-     * @param cfg configuration to read out
-     * @param filename name of source file
-     * @param inlineSuppression the inline suppressions
-     */
-    static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr);
-
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c");
-
-private:
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::list<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression);
-};
-
 namespace cppcheck {
     template<typename T>
     std::size_t count_all_of(const std::string& str, T sub) {

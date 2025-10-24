@@ -93,7 +93,7 @@ private:
 
     static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
     {
-        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, size, std::set<std::string>{cfg}, filename, inlineSuppression);
+        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, size, std::list<std::string>{cfg}, filename, inlineSuppression);
         const auto it = cfgcode.find(cfg);
         if (it == cfgcode.end())
             return "";
@@ -112,7 +112,7 @@ private:
         return getcode(settings, errorlogger, code, size-1, {}, filename, nullptr);
     }
 
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::list<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
     {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
@@ -131,8 +131,10 @@ private:
             return {};
 
         std::map<std::string, std::string> cfgcode;
-        if (cfgs.empty())
-            cfgs = preprocessor.getConfigs(tokens);
+        if (cfgs.empty()) {
+            std::set<std::string> configDefines = { "__cplusplus" };
+            preprocessor.getConfigs(filename, tokens, configDefines, cfgs);
+        }
         for (const std::string & config : cfgs) {
             try {
                 const bool writeLocations = (strstr(code, "#file") != nullptr) || (strstr(code, "#include") != nullptr);
