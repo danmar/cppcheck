@@ -1036,15 +1036,19 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         preprocessor.createDirectives(tokens1, directives);
         preprocessor.simplifyPragmaAsm(tokens1);
 
+        // This needs to be a linked list to allow new configurations to be discovered
+        // and added while iterating and checking existing configurations
         std::list<std::string> configurations;
         std::set<std::string> configDefines = { "__cplusplus" };
 
         preprocessor.setLoadCallback([&](simplecpp::FileData& data) {
+            // Do preprocessing on included file
             preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
             preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
             data.tokens.removeComments();
             preprocessor.createDirectives(data.tokens, directives);
             preprocessor.simplifyPragmaAsm(data.tokens);
+            // Discover new configurations from included file
             if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force)
                 preprocessor.getConfigs(data.filename, data.tokens, configDefines, configurations);
         });
