@@ -154,6 +154,9 @@ private:
      * @brief Get dumpfile <rawtokens> contents, this is only public for testing purposes
      */
     std::string getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const;
+    std::string CppCheck::getDumpFileContentsRawTokens(const std::string& header, const std::string& footer) const;
+    std::string getDumpFileContentsRawTokensHeader(const std::vector<std::string>& files) const;
+    std::string getDumpFileContentsRawTokensFooter(const simplecpp::TokenList& tokens1) const;
 
     std::string getLibraryDumpData() const;
 

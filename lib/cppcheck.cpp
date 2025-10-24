@@ -1006,6 +1006,11 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             mLogger->openPlist(filename2);
         }
 
+        std::string dumpFooter;
+        if (mSettings.dump || !mSettings.addons.empty()) {
+            dumpFooter += getDumpFileContentsRawTokensFooter(tokens1);
+        }
+
         // Parse comments and then remove them
         preprocessor.addRemarkComments(tokens1, mLogger->remarkComments());
         preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
@@ -1289,7 +1294,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         // TODO: will not be closed if we encountered an exception
         if (fdump.is_open()) {
             // dump all filenames, raw tokens, suppressions
-            fdump << getDumpFileContentsRawTokens(files, tokens1);
+            std::string dumpHeader = getDumpFileContentsRawTokensHeader(files);
+            fdump << getDumpFileContentsRawTokens(dumpHeader, dumpFooter);
             mSuppressions.nomsg.dump(fdump);
             // dumped all configs, close root </dumps> element now
             fdump << "</dumps>" << std::endl;
@@ -1974,6 +1980,23 @@ bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
 std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const {
     std::string dumpProlog;
     dumpProlog += "  <rawtokens>\n";
+    dumpProlog += getDumpFileContentsRawTokensHeader(files);
+    dumpProlog += getDumpFileContentsRawTokensFooter(tokens1);
+    dumpProlog += "  </rawtokens>\n";
+    return dumpProlog;
+}
+
+std::string CppCheck::getDumpFileContentsRawTokens(const std::string& header, const std::string& footer) const {
+    std::string dumpProlog;
+    dumpProlog += "  <rawtokens>\n";
+    dumpProlog += header;
+    dumpProlog += footer;
+    dumpProlog += "  </rawtokens>\n";
+    return dumpProlog;
+}
+
+std::string CppCheck::getDumpFileContentsRawTokensHeader(const std::vector<std::string>& files) const {
+    std::string dumpProlog;
     for (unsigned int i = 0; i < files.size(); ++i) {
         dumpProlog += "    <file index=\"";
         dumpProlog += std::to_string(i);
@@ -1981,7 +2004,12 @@ std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string
         dumpProlog += ErrorLogger::toxml(Path::getRelativePath(files[i], mSettings.basePaths));
         dumpProlog += "\"/>\n";
     }
-    for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+    return dumpProlog;
+}
+
+std::string CppCheck::getDumpFileContentsRawTokensFooter(const simplecpp::TokenList& tokens1) const {
+    std::string dumpProlog;
+    for (const simplecpp::Token* tok = tokens1.cfront(); tok; tok = tok->next) {
         dumpProlog += "    <tok ";
 
         dumpProlog += "fileIndex=\"";
@@ -1992,7 +2020,7 @@ std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string
         dumpProlog += std::to_string(tok->location.line);
         dumpProlog += "\" ";
 
-        dumpProlog +="column=\"";
+        dumpProlog += "column=\"";
         dumpProlog += std::to_string(tok->location.col);
         dumpProlog += "\" ";
 
@@ -2002,6 +2030,5 @@ std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string
 
         dumpProlog += "/>\n";
     }
-    dumpProlog += "  </rawtokens>\n";
     return dumpProlog;
 }

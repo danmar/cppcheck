@@ -323,7 +323,7 @@ std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::Toke
     return ret;
 }
 
-void Preprocessor::createDirectives(const simplecpp::TokenList &tokens, std::list<Directive>& directives) const
+void Preprocessor::createDirectives(const simplecpp::TokenList &tokens, std::list<Directive>& directives)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
