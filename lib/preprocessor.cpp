@@ -973,7 +973,7 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
     return (std::hash<std::string>{})(hashData);
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList) const
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList)
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
 }

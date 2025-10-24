@@ -113,7 +113,7 @@ public:
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
 
-    void createDirectives(const simplecpp::TokenList &tokens, std::list<Directive>& directives) const;
+    static void createDirectives(const simplecpp::TokenList &tokens, std::list<Directive>& directives);
 
     void getConfigs(const std::string& filename, const simplecpp::TokenList& tokens, std::set<std::string>& defined, std::list<std::string>& configs) const;
 
@@ -139,7 +139,7 @@ public:
      */
     std::size_t calculateHash(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList &tokenList) const;
+    static void simplifyPragmaAsm(simplecpp::TokenList &tokenList);
 
     static void getErrorMessages(ErrorLogger &errorLogger, const Settings &settings);
 
