@@ -132,7 +132,7 @@ private:
 
         std::map<std::string, std::string> cfgcode;
         if (cfgs.empty()) {
-            cfgs.push_back("");
+            cfgs.emplace_back("");
             std::set<std::string> configDefines = { "__cplusplus" };
             preprocessor.getConfigs(filename, tokens, configDefines, cfgs);
         }
