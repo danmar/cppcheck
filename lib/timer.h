@@ -79,6 +79,14 @@ public:
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
 
+    using tp = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
+    static tp now() {
+        return std::chrono::high_resolution_clock::now();
+    }
+
+    static void calculateAndOutputTimeDiff(const tp& start, const tp& end);
+
     void stop();
 
     static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
@@ -93,5 +101,6 @@ private:
     const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
     bool mStopped{};
 };
+
 //---------------------------------------------------------------------------
 #endif // timerH

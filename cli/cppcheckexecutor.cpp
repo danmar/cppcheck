@@ -38,6 +38,7 @@
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
+#include "timer.h"
 #include "utils.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
@@ -259,6 +260,7 @@ namespace {
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
+    auto startTime{Timer::now()};
     Settings settings;
     CmdLineLoggerStd logger;
     Suppressions supprs;
@@ -276,6 +278,9 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     mFileSettings = parser.getFileSettings();
 
     const int ret = check_wrapper(settings, supprs);
+
+    if (settings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
+        Timer::calculateAndOutputTimeDiff(startTime, Timer::now());
 
     return ret;
 }

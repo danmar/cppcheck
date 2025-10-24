@@ -1505,7 +1505,9 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 {
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
-        executeAddons(f, file.spath());
+        Timer::run("CppCheck::executeAddons", mSettings.showtime, &s_timerResults, [&]() {
+            executeAddons(f, file.spath());
+        });
     }
 }
 
