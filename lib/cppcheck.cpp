@@ -1057,6 +1057,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                 configurations = { "" };
                 preprocessor.getConfigs(file.spath(), tokens1, configDefines, configurations);
                 preprocessor.loadFiles(tokens1, files);
+                configurations.sort();
             });
         } else {
             configurations = { mSettings.userDefines };
