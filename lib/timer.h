@@ -79,11 +79,13 @@ public:
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
 
-    static std::chrono::system_clock::time_point now() {
+    using tp = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
+    static tp now() {
         return std::chrono::high_resolution_clock::now();
     }
 
-    static void calculateAndOutputTimeDiff(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end);
+    static void calculateAndOutputTimeDiff(const tp& start, const tp& end);
 
     void stop();
 

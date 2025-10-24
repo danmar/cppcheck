@@ -140,7 +140,7 @@ void Timer::stop()
     mStopped = true;
 }
 
-void Timer::calculateAndOutputTimeDiff(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end)
+void Timer::calculateAndOutputTimeDiff(const tp& start, const tp& end)
 {
     auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
