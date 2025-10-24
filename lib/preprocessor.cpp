@@ -764,12 +764,9 @@ bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<
     return !hasErrors(outputList);
 }
 
-void Preprocessor::removeComments(simplecpp::TokenList &tokens) const
+void Preprocessor::removeComments(simplecpp::TokenList &tokens)
 {
     tokens.removeComments();
-    for (const auto &filedata : mFileCache) {
-        filedata->tokens.removeComments();
-    }
 }
 
 void Preprocessor::setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings)

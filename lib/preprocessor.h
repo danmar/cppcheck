@@ -122,7 +122,7 @@ public:
 
     bool loadFiles(const simplecpp::TokenList& rawtokens, std::vector<std::string>& files);
 
-    void removeComments(simplecpp::TokenList &tokens) const;
+    static void removeComments(simplecpp::TokenList &tokens);
 
     static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
 

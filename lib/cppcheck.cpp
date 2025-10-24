@@ -1014,7 +1014,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         // Parse comments and then remove them
         preprocessor.addRemarkComments(tokens1, mLogger->remarkComments());
         preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
-        tokens1.removeComments();
+        preprocessor.removeComments(tokens1);
 
         if (!mSettings.buildDir.empty()) {
             analyzerInformation.reset(new AnalyzerInformation);
@@ -1049,7 +1049,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             // Do preprocessing on included file
             preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
             preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
-            data.tokens.removeComments();
+            preprocessor.removeComments(data.tokens);
             preprocessor.createDirectives(data.tokens, directives);
             preprocessor.simplifyPragmaAsm(data.tokens);
             // Discover new configurations from included file
@@ -1978,12 +1978,9 @@ bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
 }
 
 std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const {
-    std::string dumpProlog;
-    dumpProlog += "  <rawtokens>\n";
-    dumpProlog += getDumpFileContentsRawTokensHeader(files);
-    dumpProlog += getDumpFileContentsRawTokensFooter(tokens1);
-    dumpProlog += "  </rawtokens>\n";
-    return dumpProlog;
+    std::string header = getDumpFileContentsRawTokensHeader(files);
+    std::string footer = getDumpFileContentsRawTokensFooter(tokens1);
+    return getDumpFileContentsRawTokens(header, footer);
 }
 
 std::string CppCheck::getDumpFileContentsRawTokens(const std::string& header, const std::string& footer) const {
