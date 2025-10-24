@@ -140,17 +140,9 @@ void Timer::stop()
     mStopped = true;
 }
 
-WholeProgramTimer::~WholeProgramTimer()
+void Timer::calculateAndOutputTimeDiff(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end)
 {
-    stop();
-}
-
-void WholeProgramTimer::stop()
-{
-    if (mCancelled)
-        return;
-    const auto end = std::chrono::high_resolution_clock::now();
-    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - mStart);
+    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
     // Extract hours
     auto hours = std::chrono::duration_cast<std::chrono::hours>(diff);

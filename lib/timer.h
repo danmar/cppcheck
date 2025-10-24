@@ -79,6 +79,12 @@ public:
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
 
+    static std::chrono::system_clock::time_point now() {
+        return std::chrono::high_resolution_clock::now();
+    }
+
+    static void calculateAndOutputTimeDiff(const std::chrono::system_clock::time_point& start, const std::chrono::system_clock::time_point& end);
+
     void stop();
 
     static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
@@ -94,21 +100,5 @@ private:
     bool mStopped{};
 };
 
-class CPPCHECKLIB WholeProgramTimer {
-public:
-    WholeProgramTimer()
-        : mStart(std::chrono::high_resolution_clock::now())
-    {}
-    ~WholeProgramTimer();
-
-    void stop();
-
-    void cancell() {
-        mCancelled = true;
-    }
-private:
-    std::chrono::system_clock::time_point mStart;
-    bool mCancelled{false};
-};
 //---------------------------------------------------------------------------
 #endif // timerH

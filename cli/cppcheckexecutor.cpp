@@ -409,7 +409,7 @@ namespace {
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
-    WholeProgramTimer timer;
+    auto startTime{Timer::now()};
     Settings settings;
     CmdLineLoggerStd logger;
     Suppressions supprs;
@@ -421,15 +421,15 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
-    if (settings.showtime == SHOWTIME_MODES::SHOWTIME_NONE)
-        timer.cancell();
-
     settings.loadSummaries();
 
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
 
     const int ret = check_wrapper(settings, supprs);
+
+    if (settings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
+        Timer::calculateAndOutputTimeDiff(startTime, Timer::now());
 
     return ret;
 }

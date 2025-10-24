@@ -248,7 +248,7 @@ private:
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // once: top5 results + overall + empty line
-        TODO_ASSERT_EQUALS(5 + 1 + 1, 2, cppcheck::count_all_of(output_s, '\n'));
+        TODO_ASSERT_EQUALS(5 + 1 + 1, 1, cppcheck::count_all_of(output_s, '\n'));
         // should only report the top5 once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
         TODO_ASSERT(output_s.find("2 result(s)") != std::string::npos);
