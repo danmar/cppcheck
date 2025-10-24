@@ -177,7 +177,7 @@ public:
     static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], const std::string &filename = "file.c");
 
 private:
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression);
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::list<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression);
 };
 
 namespace cppcheck {

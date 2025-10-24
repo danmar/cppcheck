@@ -3034,6 +3034,9 @@ std::pair<simplecpp::FileData *, bool> simplecpp::FileDataCache::tryload(FileDat
     mIdMap.emplace(fileId, data);
     mData.emplace_back(data);
 
+    if (mCallback)
+        mCallback(*data);
+
     return {data, true};
 }
 

@@ -414,6 +414,12 @@ namespace simplecpp {
             return mData.cend();
         }
 
+        using callback_type = std::function<void (FileData &)>;
+
+        void set_callback(callback_type cb) {
+            mCallback = cb;
+        }
+
     private:
         struct FileID {
 #ifdef SIMPLECPP_WINDOWS
@@ -460,6 +466,7 @@ namespace simplecpp {
         container_type mData;
         name_map_type mNameMap;
         id_map_type mIdMap;
+        callback_type mCallback;
     };
 
     SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);

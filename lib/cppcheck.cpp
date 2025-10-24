@@ -105,6 +105,11 @@ public:
         closePlist();
     }
 
+    std::vector<RemarkComment>& remarkComments()
+    {
+        return mRemarkComments;
+    }
+
     void setRemarkComments(std::vector<RemarkComment> remarkComments)
     {
         mRemarkComments = std::move(remarkComments);
@@ -1010,14 +1015,14 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         }
 
         // Parse comments and then remove them
-        mLogger->setRemarkComments(preprocessor.getRemarkComments(tokens1));
+        preprocessor.addRemarkComments(tokens1, mLogger->remarkComments());
         preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
         if (mSettings.dump || !mSettings.addons.empty()) {
             std::ostringstream oss;
             mSuppressions.nomsg.dump(oss);
             dumpProlog += oss.str();
         }
-        preprocessor.removeComments(tokens1);
+        tokens1.removeComments();
 
         if (!mSettings.buildDir.empty()) {
             analyzerInformation.reset(new AnalyzerInformation);
@@ -1039,19 +1044,34 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         }
 
         // Get directives
-        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+        std::list<Directive> directives;
+        preprocessor.createDirectives(tokens1, directives);
         preprocessor.simplifyPragmaAsm(tokens1);
+
+        std::list<std::string> configurations;
+        std::set<std::string> configDefines = { "__cplusplus" };
+
+        preprocessor.setLoadCallback([&](auto& data) {
+                preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
+                preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
+                data.tokens.removeComments();
+                preprocessor.createDirectives(data.tokens, directives);
+                preprocessor.simplifyPragmaAsm(data.tokens);
+                if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force)
+                    preprocessor.getConfigs(data.filename, data.tokens, configDefines, configurations);
+            });
 
         Preprocessor::setPlatformInfo(tokens1, mSettings);
 
         // Get configurations..
-        std::set<std::string> configurations;
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
             Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
-                configurations = preprocessor.getConfigs(tokens1);
+                configurations = { "" };
+                preprocessor.getConfigs(file.spath(), tokens1, configDefines, configurations);
+                preprocessor.loadFiles(tokens1, files);
             });
         } else {
-            configurations.insert(mSettings.userDefines);
+            configurations = { mSettings.userDefines };
         }
 
         if (mSettings.checkConfiguration) {

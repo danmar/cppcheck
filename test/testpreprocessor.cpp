@@ -312,7 +312,11 @@ private:
         simplecpp::TokenList tokens(code, size-1,files);
         tokens.removeComments();
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
-        const std::set<std::string> configs = preprocessor.getConfigs(tokens);
+        std::list<std::string> configs;
+        {
+            std::set<std::string> configDefines = { "__cplusplus" };
+            preprocessor.getConfigs("", tokens, configDefines, configs);
+        }
         std::string ret;
         for (const std::string & config : configs)
             ret += config + '\n';

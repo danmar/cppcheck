@@ -306,9 +306,6 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
         return;
     std::list<BadInlineSuppression> err;
     ::addInlineSuppressions(tokens, mSettings, suppressions, err);
-    for (const auto &filedata : mFileCache) {
-        ::addInlineSuppressions(filedata->tokens, mSettings, suppressions, err);
-    }
     for (const BadInlineSuppression &bad : err) {
         error(bad.file, bad.line, bad.errmsg);
     }
@@ -324,43 +321,28 @@ std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::Toke
     return ret;
 }
 
-std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &tokens) const
+void Preprocessor::createDirectives(const simplecpp::TokenList &tokens, std::list<Directive>& directives) const
 {
-    // directive list..
-    std::list<Directive> directives;
-
-    std::vector<const simplecpp::TokenList *> list;
-    list.reserve(1U + mFileCache.size());
-    list.push_back(&tokens);
-    std::transform(mFileCache.cbegin(), mFileCache.cend(), std::back_inserter(list),
-                   [](const std::unique_ptr<simplecpp::FileData> &filedata) {
-        return &filedata->tokens;
-    });
-
-    for (const simplecpp::TokenList *tokenList : list) {
-        for (const simplecpp::Token *tok = tokenList->cfront(); tok; tok = tok->next) {
-            if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
+    for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
+        if ((tok->op != '#') || (tok->previous && tok->previous->location.line == tok->location.line))
+            continue;
+        if (tok->next && tok->next->str() == "endfile")
+            continue;
+        Directive directive(tok->location, "");
+        for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
+            if (tok2->comment)
                 continue;
-            if (tok->next && tok->next->str() == "endfile")
-                continue;
-            Directive directive(tok->location, "");
-            for (const simplecpp::Token *tok2 = tok; tok2 && tok2->location.line == directive.linenr; tok2 = tok2->next) {
-                if (tok2->comment)
-                    continue;
-                if (!directive.str.empty() && (tok2->location.col > tok2->previous->location.col + tok2->previous->str().size()))
-                    directive.str += ' ';
-                if (directive.str == "#" && tok2->str() == "file")
-                    directive.str += "include";
-                else
-                    directive.str += tok2->str();
+            if (!directive.str.empty() && (tok2->location.col > tok2->previous->location.col + tok2->previous->str().size()))
+                directive.str += ' ';
+            if (directive.str == "#" && tok2->str() == "file")
+                directive.str += "include";
+            else
+                directive.str += tok2->str();
 
-                directive.strTokens.emplace_back(*tok2);
-            }
-            directives.push_back(std::move(directive));
+            directive.strTokens.emplace_back(*tok2);
         }
+        directives.push_back(std::move(directive));
     }
-
-    return directives;
 }
 
 static std::string readcondition(const simplecpp::Token *iftok, const std::set<std::string> &defined, const std::set<std::string> &undefined)
@@ -512,7 +494,13 @@ static const simplecpp::Token *gotoEndIf(const simplecpp::Token *cmdtok)
     return nullptr;
 }
 
-static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, const std::string &userDefines, const std::set<std::string> &undefined, std::set<std::string> &ret)
+static void insertUniqueCfg(std::list<std::string>& configs, std::string&& cfg)
+{
+    if (std::find(configs.begin(), configs.end(), cfg) == configs.end())
+        configs.push_back(std::move(cfg));
+}
+
+static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string> &defined, const std::string &userDefines, const std::set<std::string> &undefined, std::list<std::string> &ret)
 {
     std::vector<std::string> configs_if;
     std::vector<std::string> configs_ifndef;
@@ -573,7 +561,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
 
             configs_if.push_back((cmdtok->str() == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str() == "ifndef") ? std::move(config) : std::string());
-            ret.insert(cfg(configs_if,userDefines));
+            insertUniqueCfg(ret, cfg(configs_if,userDefines));
         } else if (cmdtok->str() == "elif" || cmdtok->str() == "else") {
             if (getConfigsElseIsFalse(configs_if,userDefines)) {
                 tok = gotoEndIf(tok);
@@ -602,10 +590,10 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 if (isUndefined(config,undefined))
                     config.clear();
                 configs_if.push_back(std::move(config));
-                ret.insert(cfg(configs_if, userDefines));
+                insertUniqueCfg(ret, cfg(configs_if, userDefines));
             } else if (!configs_ifndef.empty()) {
                 configs_if.push_back(configs_ifndef.back());
-                ret.insert(cfg(configs_if, userDefines));
+                insertUniqueCfg(ret, cfg(configs_if, userDefines));
             }
         } else if (cmdtok->str() == "endif" && !sameline(tok, cmdtok->next)) {
             if (!configs_if.empty())
@@ -615,19 +603,19 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         } else if (cmdtok->str() == "error") {
             if (!configs_ifndef.empty() && !configs_ifndef.back().empty()) {
                 if (configs_ifndef.size() == 1U)
-                    ret.erase(emptyString);
+                    ret.remove(emptyString);
                 std::vector<std::string> configs(configs_if);
                 configs.push_back(configs_ifndef.back());
-                ret.erase(cfg(configs, userDefines));
-                std::set<std::string> temp;
+                ret.remove(cfg(configs, userDefines));
+                std::list<std::string> temp;
                 temp.swap(ret);
-                for (const std::string &c: temp) {
+                for (std::string &c: temp) {
                     if (c.find(configs_ifndef.back()) != std::string::npos)
-                        ret.insert(c);
+                        insertUniqueCfg(ret, std::move(c));
                     else if (c.empty())
-                        ret.insert("");
+                        insertUniqueCfg(ret, "");
                     else
-                        ret.insert(c + ";" + configs_ifndef.back());
+                        insertUniqueCfg(ret, c + ";" + configs_ifndef.back());
                 }
                 if (!elseError.empty())
                     elseError += ';';
@@ -637,10 +625,10 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 const std::string &last = configs_if.back();
                 if (last.size() > 2U && last.compare(last.size()-2U,2,"=0") == 0) {
                     std::vector<std::string> configs(configs_if);
-                    ret.erase(cfg(configs, userDefines));
+                    ret.remove(cfg(configs, userDefines));
                     configs[configs.size() - 1U] = last.substr(0,last.size()-2U);
                     if (configs.size() == 1U)
-                        ret.erase("");
+                        ret.remove("");
                     if (!elseError.empty())
                         elseError += ';';
                     elseError += cfg(configs, userDefines);
@@ -651,26 +639,17 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         }
     }
     if (!elseError.empty())
-        ret.insert(std::move(elseError));
+        insertUniqueCfg(ret, std::move(elseError));
 }
 
 
-std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &tokens) const
+void Preprocessor::getConfigs(const std::string& filename, const simplecpp::TokenList &tokens, std::set<std::string>& defined, std::list<std::string>& configs) const
 {
-    std::set<std::string> ret = { "" };
     if (!tokens.cfront())
-        return ret;
+        return;
 
-    std::set<std::string> defined = { "__cplusplus" };
-
-    ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
-
-    for (const auto &filedata : mFileCache) {
-        if (!mSettings.configurationExcluded(filedata->filename))
-            ::getConfigs(filedata->tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
-    }
-
-    return ret;
+    if (!mSettings.configurationExcluded(filename))
+        ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, configs);
 }
 
 static void splitcfg(const std::string &cfg, std::list<std::string> &defines, const std::string &defaultValue)
@@ -771,6 +750,16 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
             throw *it;
         }
     }
+}
+
+bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
+{
+    const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
+
+    simplecpp::OutputList outputList;
+    mFileCache = simplecpp::load(rawtokens, files, dui, &outputList);
+    handleErrors(outputList, false);
+    return !hasErrors(outputList);
 }
 
 void Preprocessor::removeComments(simplecpp::TokenList &tokens) const
@@ -985,9 +974,6 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (const auto &filedata : mFileCache) {
-        Preprocessor::simplifyPragmaAsmPrivate(filedata->tokens);
-    }
 }
 
 void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList)

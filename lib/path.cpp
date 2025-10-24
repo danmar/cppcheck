@@ -230,6 +230,7 @@ bool Path::acceptFile(const std::string &path, const std::set<std::string> &extr
 static bool hasEmacsCppMarker(const char* path)
 {
     // TODO: identify is called three times for each file
+    // Preprocessor::loadFiles() -> createDUI()
     // Preprocessor::preprocess() -> createDUI()
     // TokenList::createTokens() -> TokenList::determineCppC()
 #ifdef LOG_EMACS_MARKER

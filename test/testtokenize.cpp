@@ -570,7 +570,8 @@ private:
         std::vector<std::string> files;
         const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
         Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
-        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+        std::list<Directive> directives;
+        preprocessor.createDirectives(tokens1, directives);
 
         TokenList tokenlist{settings, Path::identify(filename, false)};
         Tokenizer tokenizer(std::move(tokenlist), *this);

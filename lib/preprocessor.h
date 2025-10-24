@@ -114,11 +114,14 @@ public:
 
     void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
 
-    std::list<Directive> createDirectives(const simplecpp::TokenList &tokens) const;
+    void createDirectives(const simplecpp::TokenList &tokens, std::list<Directive>& directives) const;
 
-    std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
+    void getConfigs(const std::string& filename, const simplecpp::TokenList& tokens, std::set<std::string>& defined, std::list<std::string>& configs) const;
 
     std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
+    void addRemarkComments(const simplecpp::TokenList& tokens, std::vector<RemarkComment>& remarkComments) const;
+
+    bool loadFiles(const simplecpp::TokenList& rawtokens, std::vector<std::string>& files);
 
     void removeComments(simplecpp::TokenList &tokens) const;
 
@@ -148,6 +151,10 @@ public:
 
     static bool hasErrors(const simplecpp::Output &output);
 
+    void setLoadCallback(simplecpp::FileDataCache::callback_type cb) {
+        mFileCache.set_callback(std::move(cb));
+    }
+
 private:
     void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
@@ -167,8 +174,6 @@ private:
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
     static bool hasErrors(const simplecpp::OutputList &outputList);
-
-    void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
     const Settings& mSettings;
     ErrorLogger &mErrorLogger;

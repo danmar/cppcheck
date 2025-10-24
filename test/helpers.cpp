@@ -117,7 +117,7 @@ ScopedFile::~ScopedFile() {
 // TODO: we should be using the actual Preprocessor implementation
 std::string PreprocessorHelper::getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const std::string &filedata, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression)
 {
-    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), std::set<std::string>{cfg}, filename, inlineSuppression);
+    std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, filedata.c_str(), std::list<std::string>{cfg}, filename, inlineSuppression);
     const auto it = cfgcode.find(cfg);
     if (it == cfgcode.end())
         return "";
@@ -129,7 +129,7 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
     return getcode(settings, errorlogger, code, {}, filename, nullptr);
 }
 
-std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& settings, ErrorLogger& errorlogger, const char code[], std::list<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
@@ -148,8 +148,10 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
         return {};
 
     std::map<std::string, std::string> cfgcode;
-    if (cfgs.empty())
-        cfgs = preprocessor.getConfigs(tokens);
+    if (cfgs.empty()) {
+        std::set<std::string> configDefines = { "__cplusplus" };
+        preprocessor.getConfigs(filename, tokens, configDefines, cfgs);
+    }
     for (const std::string & config : cfgs) {
         try {
             // TODO: also preserve location information when #include exists - enabling that will fail since #line is treated like a regular token
@@ -174,7 +176,8 @@ void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &f
     // Tokenizer..
     tokenizer.list.createTokens(std::move(tokens2));
 
-    std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+    std::list<Directive> directives;
+    preprocessor.createDirectives(tokens1, directives);
     tokenizer.setDirectives(std::move(directives));
 }
 
