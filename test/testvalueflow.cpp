@@ -172,6 +172,7 @@ private:
 
         mNewTemplate = false;
         TEST_CASE(valueFlowBailoutIncompleteVar);
+        TEST_CASE(valueFlowBailoutNoreturn);
         mNewTemplate = true;
 
         TEST_CASE(performanceIfCount);
@@ -7535,10 +7536,9 @@ private:
 
     void valueFlowUnknownFunctionReturnMalloc() { // #4626
         const char *code;
-        const Settings s = settingsBuilder().library("std.cfg").build();
 
         code = "ptr = malloc(10);";
-        const auto& values = tokenValues(code, "(", &s);
+        const auto& values = tokenValues(code, "(");
         ASSERT_EQUALS(1, values.size());
         ASSERT_EQUALS(true, values.front().isIntValue());
         ASSERT_EQUALS(true, values.front().isPossible());
@@ -9076,6 +9076,16 @@ private:
             "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_1\n"
             "[test.cpp:6]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_2\n",
             errout_str());
+    }
+
+    void valueFlowBailoutNoreturn() { // #13718
+        bailout(
+            "void f(const int* p) {\n"
+            "    if (p)\n"
+            "        (void)*p;\n"
+            "}\n"
+            );
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout_str());
     }
 
     void performanceIfCount() {

@@ -1102,6 +1102,7 @@ Cppcheck already contains configurations for several libraries. They can be load
 ## Using a .cfg file
 
 To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the currently existing libraries:
+
 | .cfg file         | Library       | Comment       |
 | ----------------- | ------------- | ------------- |
 | avr.cfg           |               |               |
@@ -1111,7 +1112,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | cairo.cfg         | [cairo](https://www.cairographics.org/) | |
 | cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of |
 |                   |               |the Cppcheck code base |
-| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) |
+| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) | |
 | dpdk.cfg          |               |               |
 | embedded_sql.cfg  |               |               |
 | emscripten.cfg | | |
@@ -1144,7 +1145,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | sdl.cfg | | |
 | sfml.cfg | | |
 | sqlite3.cfg | [SQLite](https://www.sqlite.org/) | |
-| std.cfg | C/C++ standard library | Loaded by default
+| std.cfg | C/C++ standard library | Loaded by default |
 | tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) | |
 | vcl.cfg | | |
 | windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) | |

@@ -79,7 +79,6 @@ private:
         TEST_CASE(entrypointsWinU);
         TEST_CASE(entrypointsUnix);
 
-        TEST_CASE(includes);
         TEST_CASE(virtualFunc);
         TEST_CASE(parensInit);
         TEST_CASE(typeInCast);
@@ -91,7 +90,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         Platform::Type platform = Platform::Type::Native;
         const Settings* s = nullptr;
         bool cpp = true;
@@ -730,21 +728,6 @@ private:
         check("int _init() { }\n"
               "int _fini() { }\n", dinit(CheckOptions, $.s = &s));
         ASSERT_EQUALS("", errout_str());
-    }
-
-    // TODO: fails because the location information is not be preserved by PreprocessorHelper::getcode()
-    void includes()
-    {
-        // #11483
-        const char inc[] = "class A {\n"
-                           "public:\n"
-                           "    void f() {}\n"
-                           "};";
-        const char code[] = R"(#include "test.h")";
-        ScopedFile header("test.h", inc);
-        const std::string processed = PreprocessorHelper::getcodeforcfg(settings, *this, code, "", "test.cpp");
-        check(processed);
-        TODO_ASSERT_EQUALS("[test.h:3:6]: (style) The function 'f' is never used. [unusedFunction]\n", "[test.cpp:3:6]: (style) The function 'f' is never used. [unusedFunction]\n", errout_str());
     }
 
     void virtualFunc()

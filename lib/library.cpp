@@ -35,7 +35,6 @@
 #include <iostream>
 #include <list>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
@@ -178,8 +177,8 @@ static std::vector<std::string> getnames(const char *names)
 
 static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
 {
-    std::istringstream istr(valid + ',');
-    tokenList.createTokens(istr); // TODO: check result?
+    const std::string str(valid + ',');
+    tokenList.createTokensFromBuffer(str.data(), str.size()); // TODO: check result?
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
             tok->str("-" + tok->strAt(1));
@@ -2001,7 +2000,7 @@ Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeNam
 
 bool Library::hasAnyTypeCheck(const std::string& typeName) const
 {
-    return std::any_of(mData->mTypeChecks.begin(), mData->mTypeChecks.end(), [&](const std::pair<std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
+    return std::any_of(mData->mTypeChecks.begin(), mData->mTypeChecks.end(), [&](const std::pair<const std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
         return tc.first.second == typeName;
     });
 }

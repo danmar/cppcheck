@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "fixture.h"
 
+#include <cstddef>
 #include <string>
 
 class TestString : public TestFixture {
@@ -62,12 +63,12 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool cpp = true;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         SimpleTokenizer2 tokenizer(settings, *this, code, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenize..

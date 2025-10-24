@@ -33,7 +33,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <sstream>
 #include <stack>
 #include <unordered_set>
 #include <utility>
@@ -256,7 +255,7 @@ static std::string unescape(const std::string &in)
     return out;
 }
 
-void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
+void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command, bool doUnescape)
 {
     std::string defs;
 
@@ -281,10 +280,12 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command)
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
-            if (defval.size() >= 3 && startsWith(defval,"=\"") && defval.back()=='\"')
-                defval = "=" + unescape(defval.substr(2, defval.size() - 3));
-            else if (defval.size() >= 5 && startsWith(defval, "=\\\"") && endsWith(defval, "\\\""))
-                defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
+            if (doUnescape) {
+                if (defval.size() >= 3 && startsWith(defval,"=\"") && defval.back()=='\"')
+                    defval = "=" + unescape(defval.substr(2, defval.size() - 3));
+                else if (defval.size() >= 5 && startsWith(defval, "=\\\"") && endsWith(defval, "\\\""))
+                    defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
+            }
             if (!defval.empty())
                 defs += defval;
             defs += ';';
@@ -362,8 +363,10 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         const std::string directory = std::move(dirpath);
 
+        bool doUnescape = false;
         std::string command;
         if (obj.count("arguments")) {
+            doUnescape = false;
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
                     if (arg.is<std::string>()) {
@@ -378,6 +381,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
                 return false;
             }
         } else if (obj.count("command")) {
+            doUnescape = true;
             if (obj["command"].is<std::string>()) {
                 command = obj["command"].get<std::string>();
             } else {
@@ -413,7 +417,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         else
             path = Path::simplifyPath(directory + file);
         FileSettings fs{path, Standards::Language::None, 0}; // file will be identified later on
-        fsParseCommand(fs, command); // read settings; -D, -I, -U, -std, -m*, -f*
+        fsParseCommand(fs, command, doUnescape); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         // Assign a unique index to each file path. If the file path already exists in the map,
@@ -533,8 +537,7 @@ namespace {
             // TODO: improve evaluation
             const Settings s;
             TokenList tokenlist(s, Standards::Language::C);
-            std::istringstream istr(c);
-            tokenlist.createTokens(istr); // TODO: check result
+            tokenlist.createTokensFromBuffer(c.data(), c.size()); // TODO: check result
             // TODO: put in a helper
             // generate links
             {

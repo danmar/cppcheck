@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "fixture.h"
 
+#include <cstddef>
 #include <string>
 
 class TestUnusedPrivateFunction : public TestFixture {
@@ -88,12 +89,12 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         Platform::Type platform = Platform::Type::Native;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const CheckOptions& options = make_default_obj()) {
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
         const Settings settings1 = settingsBuilder(settings).platform(options.platform).build();
 
         SimpleTokenizer2 tokenizer(settings1, *this, code, "test.cpp");

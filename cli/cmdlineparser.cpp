@@ -51,12 +51,15 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
+#include "regex.h"
+
 // xml is used for rules
 #include "xml.h"
 #endif
@@ -1273,6 +1276,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
+            std::string regex_err;
+            auto regex = Regex::create(rule.pattern, regex_err);
+            if (!regex) {
+                mLogger.printError("failed to compile rule pattern '" + rule.pattern + "' (" + regex_err + ").");
+                return Result::Fail;
+            }
+            rule.regex = std::move(regex);
             mSettings.rules.emplace_back(std::move(rule));
 #else
             mLogger.printError("Option --rule cannot be used as Cppcheck has not been built with rules support.");
@@ -1349,6 +1359,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is using the unsupported tokenlist '" + rule.tokenlist + "'.");
                         return Result::Fail;
                     }
+
+                    std::string regex_err;
+                    auto regex = Regex::create(rule.pattern, regex_err);
+                    if (!regex) {
+                        mLogger.printError("unable to load rule-file '" + ruleFile + "' - pattern '" + rule.pattern + "' failed to compile (" + regex_err + ").");
+                        return Result::Fail;
+                    }
+                    rule.regex = std::move(regex);
 
                     if (rule.severity == Severity::none) {
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule has an invalid severity.");
@@ -1607,18 +1625,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         if (!mSettings.platform.set(platform, errstr, lookupPaths, mSettings.debuglookup || mSettings.debuglookupPlatform)) {
             mLogger.printError(errstr);
             return Result::Fail;
-        }
-
-        // TODO: remove
-        // these are loaded via external files and thus have Settings::PlatformFile set instead.
-        // override the type so they behave like the regular platforms.
-        if (platform == "unix32-unsigned") {
-            mSettings.platform.type = Platform::Type::Unix32;
-            mLogger.printMessage("The platform 'unix32-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix32 --funsigned-char' instead");
-        }
-        else if (platform == "unix64-unsigned") {
-            mSettings.platform.type = Platform::Type::Unix64;
-            mLogger.printMessage("The platform 'unix64-unsigned' has been deprecated and will be removed in Cppcheck 2.19. Please use '--platform=unix64 --funsigned-char' instead");
         }
     }
 

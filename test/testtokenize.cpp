@@ -218,6 +218,9 @@ private:
         TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl30);
         TEST_CASE(vardecl31); // function pointer init
+        TEST_CASE(vardecl32);
+        TEST_CASE(vardecl33);
+        TEST_CASE(vardecl34);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -269,6 +272,10 @@ private:
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
+        TEST_CASE(functionAttributeListAfter2);
+        TEST_CASE(cppMaybeUnusedBefore);
+        TEST_CASE(cppMaybeUnusedAfter);
+        TEST_CASE(cppMaybeUnusedStructuredBinding);
 
         TEST_CASE(splitTemplateRightAngleBrackets);
 
@@ -288,6 +295,7 @@ private:
         TEST_CASE(simplifyInitVar2);
         TEST_CASE(simplifyInitVar3);
         TEST_CASE(simplifyInitVar4);
+        TEST_CASE(simplifyInitVar5);
 
         TEST_CASE(bitfields1);
         TEST_CASE(bitfields2);
@@ -307,6 +315,7 @@ private:
         TEST_CASE(bitfields18);
         TEST_CASE(bitfields19); // ticket #13733
         TEST_CASE(bitfields20);
+        TEST_CASE(bitfields21);
 
         TEST_CASE(simplifyNamespaceStd);
 
@@ -350,6 +359,7 @@ private:
         TEST_CASE(simplifyOperatorName27);
         TEST_CASE(simplifyOperatorName28);
         TEST_CASE(simplifyOperatorName29); // spaceship operator
+        TEST_CASE(simplifyOperatorName30);
         TEST_CASE(simplifyOperatorName31); // #6342
         TEST_CASE(simplifyOperatorName32); // #10256
         TEST_CASE(simplifyOperatorName33); // #10138
@@ -497,6 +507,7 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    // TODO: use options
     template<size_t size>
     std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], bool expand = true, Platform::Type platform = Platform::Type::Native,
                                       bool cpp = true, Standards::cppstd_t cppstd = Standards::CPP11, Standards::cstd_t cstd = Standards::C11) {
@@ -560,15 +571,16 @@ private:
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
     }
 
-    void directiveDump(const char filedata[], std::ostream& ostr) {
-        directiveDump(filedata, "test.c", settingsDefault, ostr);
+    template<size_t size>
+    void directiveDump(const char (&code)[size], std::ostream& ostr) {
+        directiveDump(code, "test.c", settingsDefault, ostr);
     }
 
-    void directiveDump(const char filedata[], const char filename[], const Settings& settings, std::ostream& ostr) {
-        std::istringstream istr(filedata);
+    template<size_t size>
+    void directiveDump(const char (&code)[size], const char filename[], const Settings& settings, std::ostream& ostr) {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(istr, files, filename, &outputList);
+        const simplecpp::TokenList tokens1(code, files, filename, &outputList);
         Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
         std::list<Directive> directives;
         preprocessor.createDirectives(tokens1, directives);
@@ -911,9 +923,8 @@ private:
         {
             TokenList tokenlist{settings1, Standards::Language::C}; // headers are treated as C files
             const char code[] = "void foo(int i) { reinterpret_cast<char>(i) };";
-            std::istringstream istr(code);
             tokenlist.appendFileIfNew("test.h");
-            ASSERT(tokenlist.createTokens(istr));
+            ASSERT(tokenlist.createTokensFromString(code));
             Tokenizer tokenizer(std::move(tokenlist), *this);
             ASSERT_THROW_INTERNAL(tokenizer.simplifyTokens1(""), SYNTAX);
         }
@@ -1098,6 +1109,9 @@ private:
         ASSERT_EQUALS("asm ( \"mov ax , bx\" ) ; int a ;", tokenizeAndStringify("asm { mov ax,bx } int a;"));
         ASSERT_EQUALS("asm\n\n( \"mov ax , bx\" ) ;", tokenizeAndStringify("__asm\nmov ax,bx\n__endasm;"));
         ASSERT_EQUALS("asm\n\n( \"push b ; for if\" ) ;", tokenizeAndStringify("__asm\npush b ; for if\n__endasm;"));
+        ASSERT_EQUALS("asm ( \"\"mov ax , bx\"\" ) ;", tokenizeAndStringify("asm volatile (\"mov ax , bx\");"));
+        ASSERT_EQUALS("asm ( \"\"mov ax , bx\"\" ) ;", tokenizeAndStringify("asm goto (\"mov ax , bx\");"));
+        ASSERT_EQUALS("asm ( \"\"mov ax , bx\"\" ) ;", tokenizeAndStringify("asm inline (\"mov ax , bx\");"));
 
         // 'asm ( ) ;' should be in the same line
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );"));
@@ -2767,6 +2781,27 @@ private:
         }
     }
 
+    void vardecl32() {
+        {
+            const char code[] = "static enum { E } f() { return E; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 f ( ) { return E ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
+    void vardecl33() {
+        {
+            const char code[] = "static enum { E } *f() { return NULL; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 * f ( ) { return NULL ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
+    void vardecl34() {
+        {
+            const char code[] = "static enum { E } const *f() { return NULL; }";
+            ASSERT_EQUALS("enum Anonymous0 { E } ; static enum Anonymous0 const * f ( ) { return NULL ; }", tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        }
+    }
+
     void volatile_variables() {
         {
             const char code[] = "volatile int a=0;\n"
@@ -4164,6 +4199,66 @@ private:
         ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
+    void functionAttributeListAfter2() {
+        const char code[] = "[[noreturn]] void func1(const char *format, ...) __attribute__((format(printf, 1, 2)));\n" // #14181
+                            "void func2() __attribute__((unused));\n"; // #14183
+        const char expected[] = "void func1 ( const char * format , ... ) ; void func2 ( ) ;";
+
+        // tokenize..
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+
+        ASSERT(func1 && func1->isAttributeNoreturn());
+        ASSERT(func2 && func2->isAttributeUnused());
+    }
+
+    void cppMaybeUnusedBefore() {
+        const char code[] = "[[maybe_unused]] int var {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedAfter() {
+        const char code[] = "int var [[maybe_unused]] {};";
+        const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedStructuredBinding() {
+        const char code[] = "[[maybe_unused]] auto [var1, var2] = f();";
+        const char expected[] = "auto [ var1 , var2 ] = f ( ) ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var1 = Token::findsimplematch(tokenizer.tokens(), "var1");
+        ASSERT(var1 && var1->isAttributeMaybeUnused());
+        const Token *var2 = Token::findsimplematch(tokenizer.tokens(), "var2");
+        ASSERT(var2 && var2->isAttributeMaybeUnused());
+    }
+
 
     void splitTemplateRightAngleBrackets() {
         {
@@ -4585,6 +4680,11 @@ private:
                       "}", tokenizeAndStringify(code));
     }
 
+    void simplifyInitVar5() { // #14218
+        const char code[] = "int c[1]{}, b;";
+        ASSERT_EQUALS("int c [ 1 ] { } ; int b ;", tokenizeAndStringify(code));
+    }
+
     void bitfields1() {
         const char code1[] = "struct A { bool x : 1; };";
         ASSERT_EQUALS("struct A { bool x ; } ;", tokenizeAndStringify(code1));
@@ -4869,6 +4969,16 @@ private:
     void bitfields20() {
         const char code[] = "struct S { volatile ::uint32_t a : 10; };";
         ASSERT_EQUALS("struct S { volatile :: uint32_t a ; } ;", tokenizeAndStringify(code));
+    }
+
+    void bitfields21() {
+        const char code[] = "struct S { uint32_t a : 1, b : 1; };";
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+        const Token *a = Token::findsimplematch(tokenizer.tokens(), "a");
+        ASSERT_EQUALS(1, a->bits());
+        const Token *b = Token::findsimplematch(tokenizer.tokens(), "b");
+        ASSERT_EQUALS(1, b->bits());
     }
 
     void simplifyNamespaceStd() {
@@ -5328,29 +5438,6 @@ private:
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
-    void simplifyOperatorName31() { // #6342
-        const char code[] = "template <typename T>\n"
-                            "struct B {\n"
-                            "    typedef T A[3];\n"
-                            "    operator A& () { return x_; }\n"
-                            "    A x_;\n"
-                            "};";
-        ASSERT_EQUALS("template < typename T >\nstruct B {\n\nT ( & operatorT ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void simplifyOperatorName32() { // #10256
-        const char code[] = "void f(int* = nullptr) {}\n";
-        ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void simplifyOperatorName33() { // #10138
-        const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
-        ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
-        ASSERT_EQUALS("", errout_str());
-    }
-
     void simplifyOperatorName10() { // #8746
         const char code1[] = "using a::operator=;";
         ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code1));
@@ -5625,6 +5712,43 @@ private:
     void simplifyOperatorName29() {
         const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         ASSERT_EQUALS("auto operator<=> ( ) ;", tokenizeAndStringify("auto operator<=>();", settings));
+    }
+
+    void simplifyOperatorName30() { // #14151
+        const char code[] = "struct S { int operator()() const { return 42; } };\n"
+                            "int f() {\n"
+                            "    S s;\n"
+                            "    return int{ s.operator()() };\n"
+                            "}\n";
+        ASSERT_EQUALS("struct S { int operator() ( ) const { return 42 ; } } ;\n"
+                      "int f ( ) {\n"
+                      "S s ;\n"
+                      "return int { s . operator() ( ) } ;\n"
+                      "}", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyOperatorName31() { // #6342
+        const char code[] = "template <typename T>\n"
+                            "struct B {\n"
+                            "    typedef T A[3];\n"
+                            "    operator A& () { return x_; }\n"
+                            "    A x_;\n"
+                            "};";
+        ASSERT_EQUALS("template < typename T >\nstruct B {\n\nT ( & operatorT ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyOperatorName32() { // #10256
+        const char code[] = "void f(int* = nullptr) {}\n";
+        ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void simplifyOperatorName33() { // #10138
+        const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
+        ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout_str());
     }
 
     void simplifyOverloadedOperators1() {
@@ -6205,12 +6329,12 @@ private:
         Z3
     };
 
-    std::string testAst(const char code[], AstStyle style = AstStyle::Simple) {
+    template<size_t size>
+    std::string testAst(const char (&data)[size], AstStyle style = AstStyle::Simple) {
         // tokenize given code..
         TokenList tokenlist{settings0, Standards::Language::CPP};
-        std::istringstream istr(code);
         tokenlist.appendFileIfNew("test.cpp");
-        if (!tokenlist.createTokens(istr))
+        if (!tokenlist.createTokensFromString(data))
             return "ERROR";
 
         Tokenizer tokenizer(std::move(tokenlist), *this);
@@ -8049,7 +8173,8 @@ private:
     }
 
 #define checkHdrs(...) checkHdrs_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string checkHdrs_(const char* file, int line, const char code[], bool checkHeadersFlag) {
+    template<size_t size>
+    std::string checkHdrs_(const char* file, int line, const char (&code)[size], bool checkHeadersFlag) {
         const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
         SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
@@ -8202,9 +8327,9 @@ private:
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
-        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
+        auto testIsCpp11init_ = [this](const char* file, int line, const std::string& code, const char* find, Token::Cpp11init expected) {
             SimpleTokenizer tokenizer(settingsDefault, *this);
-            ASSERT_LOC(tokenizer.tokenize(code), file, line);
+            ASSERT_LOC(tokenizer.tokenize(code.data(), code.size()), file, line);
 
             const Token* tok = Token::findsimplematch(tokenizer.tokens(), find, strlen(find));
             ASSERT_LOC(tok, file, line);
@@ -8213,44 +8338,44 @@ private:
 
         testIsCpp11init("class X : public A<int>, C::D {};",
                         "D {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("auto f() -> void {}",
                         "void {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("auto f() & -> void {}",
                         "void {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("auto f() const noexcept(false) -> void {}",
                         "void {",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "{ return",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "vector",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "std ::",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("class X{};",
                         "{ }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("class X{}", // forgotten ; so not properly recognized as a class
                         "{ }",
-                        TokenImpl::Cpp11init::CPP11INIT);
+                        Token::Cpp11init::CPP11INIT);
 
         testIsCpp11init("namespace abc::def { TEST(a, b) {} }",
                         "{ TEST",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
         testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
                         "{ TEST",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("enum { e = decltype(s)::i };",
                         "{ e",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("template <typename T>\n" // #11378
                         "class D<M<T, 1>> : public B<M<T, 1>, T> {\n"
@@ -8258,7 +8383,7 @@ private:
                         "    D(int x) : B<M<T, 1>, T>(x) {}\n"
                         "};\n",
                         "{ public:",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("template <typename T>\n"
                         "class D<M<T, 1>> : B<M<T, 1>, T> {\n"
@@ -8266,7 +8391,7 @@ private:
                         "    D(int x) : B<M<T, 1>, T>(x) {}\n"
                         "};\n",
                         "{ public:",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("using namespace std;\n"
                         "namespace internal {\n"
@@ -8276,21 +8401,21 @@ private:
                         "    S::S() {}\n"
                         "}\n",
                         "{ } }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("template <std::size_t N>\n"
                         "struct C : public C<N - 1>, public B {\n"
                         "    ~C() {}\n"
                         "};\n",
                         "{ } }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("struct S { int i; } s;\n"
                         "struct T : decltype (s) {\n"
                         "    T() : decltype(s) ({ 0 }) { }\n"
                         "};\n",
                         "{ } }",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("struct S {};\n"
                         "template<class... Args>\n"
@@ -8300,21 +8425,21 @@ private:
                         "    void operator()(Args...) {}\n"
                         "};\n",
                         "{ void",
-                        TokenImpl::Cpp11init::NOINIT);
+                        Token::Cpp11init::NOINIT);
 
         testIsCpp11init("struct S {\n"
                         "    std::uint8_t* p;\n"
                         "    S() : p{ new std::uint8_t[1]{} } {}\n"
                         "};\n",
                         "{ } } {",
-                        TokenImpl::Cpp11init::CPP11INIT);
+                        Token::Cpp11init::CPP11INIT);
 
         testIsCpp11init("struct S {\n"
                         "    S() : p{new (malloc(4)) int{}} {}\n"
                         "    int* p;\n"
                         "};\n",
                         "{ } } {",
-                        TokenImpl::Cpp11init::CPP11INIT);
+                        Token::Cpp11init::CPP11INIT);
 
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash
                                              "template<typename T> auto f(T t) -> X<decltype(t + 1)> {}\n"));
@@ -8628,7 +8753,7 @@ private:
     }
 
     void dumpFallthrough() {
-        const char * code = "void f(int n) {\n"
+        const char code[] = "void f(int n) {\n"
                             "    void g(), h(), i();\n"
                             "    switch (n) {\n"
                             "        case 1:\n"
@@ -8652,61 +8777,12 @@ private:
     }
 
     void simplifyRedundantParentheses() {
-        const char *code = "int f(struct S s) {\n"
-                           "    return g(1, &(int){ s.i });\n"
-                           "}\n";
+        const char code[] = "int f(struct S s) {\n"
+                            "    return g(1, &(int){ s.i });\n"
+                            "}\n";
         SimpleTokenizer tokenizer(settingsDefault, *this, false);
         ASSERT_NO_THROW(tokenizer.tokenize(code));
     }
 };
 
 REGISTER_TEST(TestTokenizer)
-
-class TestTokenizerCompileLimits : public TestFixture
-{
-public:
-    TestTokenizerCompileLimits() : TestFixture("TestTokenizerCompileLimits") {}
-
-private:
-    void run() override
-    {
-        TEST_CASE(test); // #5592 crash: gcc: testsuit: gcc.c-torture/compile/limits-declparen.c
-    }
-
-#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const std::string& code) {
-        // tokenize..
-        SimpleTokenizer tokenizer(settingsDefault, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
-
-        if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
-        return "";
-    }
-
-    void test() {
-        const char raw_code[] = "#define PTR1 (* (* (* (*\n"
-                                "#define PTR2 PTR1 PTR1 PTR1 PTR1\n"
-                                "#define PTR3 PTR2 PTR2 PTR2 PTR2\n"
-                                "#define PTR4 PTR3 PTR3 PTR3 PTR3\n"
-                                "\n"
-                                "#define RBR1 ) ) ) )\n"
-                                "#define RBR2 RBR1 RBR1 RBR1 RBR1\n"
-                                "#define RBR3 RBR2 RBR2 RBR2 RBR2\n"
-                                "#define RBR4 RBR3 RBR3 RBR3 RBR3\n"
-                                "\n"
-                                "int PTR4 q4_var RBR4 = 0;\n";
-
-        // Preprocess file..
-        std::istringstream fin(raw_code);
-        simplecpp::OutputList outputList;
-        std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(fin, files, "", &outputList);
-        const std::string filedata = tokens1.stringify();
-        const std::string code = PreprocessorHelper::getcodeforcfg(settingsDefault, *this, filedata, "", "test.c");
-
-        ASSERT_THROW_INTERNAL_EQUALS(tokenizeAndStringify(code), AST, "maximum AST depth exceeded");
-    }
-};
-
-REGISTER_TEST(TestTokenizerCompileLimits)

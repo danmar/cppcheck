@@ -24,7 +24,6 @@
 #include "check.h"
 #include "config.h"
 
-#include <list>
 #include <map>
 #include <string>
 
@@ -34,8 +33,6 @@ class Settings;
 class Token;
 class Type;
 class Variables;
-class Variable;
-class Function;
 class Tokenizer;
 
 /// @addtogroup Checks
@@ -60,17 +57,13 @@ private:
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check for unused function variables */
-    void checkFunctionVariableUsage_iterateScopes(const Scope* scope, Variables& variables);
+    void checkFunctionVariableUsage_iterateScopes(const Scope* scope, Variables& variables) const;
     void checkFunctionVariableUsage();
 
     /** @brief %Check that all struct members are used */
     void checkStructMemberUsage();
 
-    bool isRecordTypeWithoutSideEffects(const Type* type);
-    bool isVariableWithoutSideEffects(const Variable& var, const Type* type = nullptr);
     bool isEmptyType(const Type* type);
-    bool isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-                                      std::list<const Function*> checkedFuncs);
 
     // Error messages..
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, const std::string& prefix = "struct");
@@ -95,8 +88,6 @@ private:
                "- unassigned variable\n"
                "- unused struct member\n";
     }
-
-    std::map<const Type *,bool> mIsRecordTypeWithoutSideEffectsMap;
 
     std::map<const Type *,bool> mIsEmptyTypeMap;
 

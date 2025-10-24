@@ -37,7 +37,6 @@
 #include "checkclass.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cstring>
 #include <functional>
 #include <initializer_list>
@@ -427,6 +426,12 @@ bool isStlStringType(const Token* tok)
 {
     return Token::Match(tok, "std :: string|wstring|u16string|u32string !!::") ||
            (Token::simpleMatch(tok, "std :: basic_string <") && !Token::simpleMatch(tok->linkAt(3), "> ::"));
+}
+
+bool isVoidCast(const Token* tok)
+{
+    return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() &&
+           tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
 bool isTemporary(const Token* tok, const Library* library, bool unknown)
@@ -1062,7 +1067,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect)
+bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
 {
     const Token* r = nullptr;
     if (indirect)
@@ -1196,6 +1201,8 @@ static const Token * followVariableExpression(const Settings& settings, const To
     if (!varTok)
         return tok;
     if (hasUnknownVars(varTok))
+        return tok;
+    if (astIsRangeBasedForDecl(var->nameToken()))
         return tok;
     if (var->isVolatile())
         return tok;
@@ -2196,7 +2203,7 @@ static bool hasNoreturnFunction(const Token* tok, const Library& library, const 
 {
     if (!tok)
         return false;
-    const Token* ftok = tok->str() == "(" ? tok->previous() : nullptr;
+    const Token* ftok = (tok->str() == "(" && !tok->isCast()) ? tok->previous() : nullptr;
     while (Token::simpleMatch(ftok, "("))
         ftok = ftok->astOperand1();
     if (ftok) {
@@ -2906,7 +2913,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
                 // TODO: Is global variable really changed by function call?
                 return true;
         }
-        int i = 1;
+        nonneg int i = 1;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         auto expr = getExprTok();
@@ -2916,7 +2923,10 @@ static bool isExpressionChangedAt(const F& getExprTok,
             aliased = isAliasOf(tok, expr, &i);
         if (!aliased)
             return false;
-        if (isVariableChanged(tok, indirect + i, settings, depth))
+        i += indirect;
+        if (tok->valueType() && tok->valueType()->pointer)
+            i = std::min(i, tok->valueType()->pointer);
+        if (isVariableChanged(tok, i, settings, depth))
             return true;
         // TODO: Try to traverse the lambda function
         if (Token::Match(tok, "%var% ("))

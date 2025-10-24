@@ -30,10 +30,10 @@ public:
 
 private:
     const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).library("std.cfg").library("qt.cfg").build();
+    const Settings settings_i = settingsBuilder(settings).certainty(Certainty::inconclusive).build();
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = true;
         bool cpp = true;
     };
@@ -41,7 +41,7 @@ private:
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings &settings1 = options.inconclusive ? settings_i : settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);

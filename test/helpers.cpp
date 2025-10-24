@@ -30,7 +30,6 @@
 #include <iostream>
 #include <fstream>
 #include <list>
-#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -45,8 +44,6 @@
 #include <simplecpp.h>
 
 #include "xml.h"
-
-class SuppressionList;
 
 const Settings SimpleTokenizer::s_settings;
 
@@ -165,10 +162,9 @@ std::map<std::string, std::string> PreprocessorHelper::getcode(const Settings& s
 }
 
 void SimpleTokenizer2::preprocess(const char code[], std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
+void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
-    // TODO: get rid of stream
-    std::istringstream istr(code);
-    const simplecpp::TokenList tokens1(istr, files, file0);
+    const simplecpp::TokenList tokens1(code, size, files, file0);
 
     Preprocessor preprocessor(tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
     simplecpp::TokenList tokens2 = preprocessor.preprocess(tokens1, "", files, true);

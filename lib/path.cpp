@@ -449,9 +449,13 @@ bool Path::exists(const std::string &path, bool* isdir)
     return type == S_IFREG;
 }
 
-std::string Path::join(const std::string& path1, const std::string& path2) {
+std::string Path::join(std::string path1, std::string path2)
+{
+    path1 = fromNativeSeparators(std::move(path1));
+    path2 = fromNativeSeparators(std::move(path2));
     if (path1.empty() || path2.empty())
         return path1 + path2;
+    // this matches the behavior of std::filesystem::path::operator/=() and os.path.join()
     if (path2.front() == '/')
         return path2;
     return ((path1.back() == '/') ? path1 : (path1 + "/")) + path2;

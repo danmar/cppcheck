@@ -36,6 +36,7 @@
 #include "vfvalue.h"
 
 #include <algorithm> // find_if()
+#include <cassert>
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
@@ -43,6 +44,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
 
 //---------------------------------------------------------------------------
@@ -1212,7 +1214,7 @@ void CheckOther::checkVariableScope()
             continue;
 
         const bool isPtrOrRef = var->isPointer() || var->isReference();
-        const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || (var->typeStartToken()->isC() && var->type() && var->type()->isStructType());
+        const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || var->typeStartToken()->isC() || symbolDatabase->isRecordTypeWithoutSideEffects(var->type());
         if (!isPtrOrRef && !isSimpleType && !astIsContainer(var->nameToken()))
             continue;
 
@@ -1641,6 +1643,21 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
     return false;
 }
 
+static bool isCastToVoid(const Variable* var)
+{
+    if (!var)
+        return false;
+    if (!var->scope())
+        return false;
+    for (const Token* tok = var->scope()->bodyStart; tok != var->scope()->bodyEnd; tok = tok->next()) {
+        if (tok->varId() != var->declarationId())
+            continue;
+        if (isVoidCast(tok->astParent()))
+            return true;
+    }
+    return false;
+}
+
 void CheckOther::checkConstVariable()
 {
     if ((!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC()) && !mSettings->isPremiumEnabled("constVariable"))
@@ -1688,6 +1705,8 @@ void CheckOther::checkConstVariable()
         if (var->nameToken()->isExpandedMacro())
             continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
+            continue;
+        if (isCastToVoid(var))
             continue;
         if (isVariableChanged(var, *mSettings))
             continue;
@@ -1893,7 +1912,7 @@ void CheckOther::checkConstPointer()
                 if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken() == lhs && !lhs->variable()->isConst())
                     takingRef = true;
                 if (lhs && lhs->valueType() && lhs->valueType()->pointer && (lhs->valueType()->constness & 1) == 0 &&
-                    parent->valueType() && parent->valueType()->pointer)
+                    parent->valueType() && parent->valueType()->pointer && lhs->variable() != var)
                     nonConstPtrAssignment = true;
                 if (!takingRef && !nonConstPtrAssignment)
                     continue;
@@ -1910,14 +1929,19 @@ void CheckOther::checkConstPointer()
             }
         } else {
             int argn = -1;
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-|<<|;"))
                 continue;
-            if (hasIncDecPlus && !parent->astParent())
+            if (hasIncDecPlus && (!parent->astParent() || parent->astParent()->str() == ";"))
                 continue;
             if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
-            if (Token::simpleMatch(parent, "=") && parent->astOperand1() == tok)
-                continue;
+            if (Token::simpleMatch(parent, "=")) {
+                const Token* lhs = parent->astOperand1();
+                if (lhs == tok)
+                    continue;
+                if (lhs && lhs->valueType() && lhs->valueType()->isConst(vt->pointer))
+                    continue;
+            }
             if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function()) {
                     const bool isCastArg = parent->isCast() && !ftok->function()->getOverloadedFunctions().empty(); // assume that cast changes the called function
@@ -4306,7 +4330,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
     }
     errorPath.emplace_back(tok, "");
     reportError(
-        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE570, Certainty::normal);
+        std::move(errorPath), Severity::error, id, verb + " pointers that point to different objects", CWE758, Certainty::normal);
 }
 
 void CheckOther::checkModuloOfOne()
@@ -4334,6 +4358,139 @@ void CheckOther::checkModuloOfOne()
 void CheckOther::checkModuloOfOneError(const Token *tok)
 {
     reportError(tok, Severity::style, "moduloofone", "Modulo of one is always equal to zero");
+}
+
+static const std::string noname;
+
+struct UnionMember {
+    UnionMember()
+        : name(noname)
+        , size(0) {}
+
+    UnionMember(const std::string &name, size_t size)
+        : name(name)
+        , size(size) {}
+
+    const std::string &name;
+    size_t size;
+};
+
+struct Union {
+    explicit Union(const Scope &scope)
+        : scope(&scope)
+        , name(scope.className) {}
+
+    const Scope *scope;
+    const std::string &name;
+    std::vector<UnionMember> members;
+
+    const UnionMember *largestMember() const {
+        const UnionMember *largest = nullptr;
+        for (const UnionMember &m : members) {
+            if (m.size == 0)
+                return nullptr;
+            if (largest == nullptr || m.size > largest->size)
+                largest = &m;
+        }
+        return largest;
+    }
+
+    bool isLargestMemberFirst() const {
+        const UnionMember *largest = largestMember();
+        return largest == nullptr || largest == &members[0];
+    }
+};
+
+static UnionMember parseUnionMember(const Variable &var,
+                                    const Settings &settings)
+{
+    const Token *nameToken = var.nameToken();
+    if (nameToken == nullptr)
+        return UnionMember();
+
+    const ValueType *vt = nameToken->valueType();
+    size_t size = 0;
+    if (var.isArray()) {
+        size = var.dimension(0);
+    } else if (vt != nullptr) {
+        size = ValueFlow::getSizeOf(*vt, settings,
+                                    ValueFlow::Accuracy::ExactOrZero);
+    }
+    return UnionMember(nameToken->str(), size);
+}
+
+static std::vector<Union> parseUnions(const SymbolDatabase &symbolDatabase,
+                                      const Settings &settings)
+{
+    std::vector<Union> unions;
+
+    for (const Scope &scope : symbolDatabase.scopeList) {
+        if (scope.type != ScopeType::eUnion)
+            continue;
+
+        Union u(scope);
+        for (const Variable &var : scope.varlist) {
+            u.members.push_back(parseUnionMember(var, settings));
+        }
+        unions.push_back(u);
+    }
+
+    return unions;
+}
+
+static bool isZeroInitializer(const Token *tok)
+{
+    return Token::Match(tok, "= { 0| } ;");
+}
+
+
+void CheckOther::checkUnionZeroInit()
+{
+    if (!mSettings->severity.isEnabled(Severity::portability))
+        return;
+
+    logChecker("CheckOther::checkUnionZeroInit"); // portability
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    std::unordered_map<const Scope *, Union> unionsByScopeId;
+    const std::vector<Union> unions = parseUnions(*symbolDatabase, *mSettings);
+    for (const Union &u : unions) {
+        unionsByScopeId.emplace(u.scope, u);
+    }
+
+    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (!tok->isName() || !isZeroInitializer(tok->next()))
+            continue;
+
+        const ValueType *vt = tok->valueType();
+        if (vt == nullptr || vt->typeScope == nullptr)
+            continue;
+        auto it = unionsByScopeId.find(vt->typeScope);
+        if (it == unionsByScopeId.end())
+            continue;
+        const Union &u = it->second;
+        if (!u.isLargestMemberFirst()) {
+            const UnionMember *largestMember = u.largestMember();
+            if (largestMember == nullptr) {
+                throw InternalError(tok, "Largest union member not found",
+                                    InternalError::INTERNAL);
+            }
+            assert(largestMember != nullptr);
+            unionZeroInitError(tok, *largestMember);
+        }
+    }
+}
+
+void CheckOther::unionZeroInitError(const Token *tok,
+                                    const UnionMember& largestMember)
+{
+    reportError(tok, Severity::portability, "UnionZeroInit",
+                (tok != nullptr ? "$symbol:" + tok->str() + "\n" : "") +
+                "Zero initializing union '$symbol' does not guarantee " +
+                "its complete storage to be zero initialized as its largest member " +
+                "is not declared as the first member. Consider making " +
+                largestMember.name + " the first member or favor memset().");
 }
 
 //-----------------------------------------------------------------------------
@@ -4554,6 +4711,7 @@ void CheckOther::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
     checkOther.checkAccessOfMovedVariable();
     checkOther.checkModuloOfOne();
     checkOther.checkOverlappingWrite();
+    checkOther.checkUnionZeroInit();
 }
 
 void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
@@ -4636,4 +4794,5 @@ void CheckOther::getErrorMessages(ErrorLogger *errorLogger, const Settings *sett
     const std::vector<const Token *> nullvec;
     c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
     c.checkModuloOfOneError(nullptr);
+    c.unionZeroInitError(nullptr, UnionMember());
 }

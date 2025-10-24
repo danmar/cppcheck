@@ -65,13 +65,13 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
 
       - name: CMake build (with GUI)
         if: matrix.build_gui
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -111,16 +111,16 @@ jobs:
       - name: Build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-w"
+          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-Werror"
 
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes CXXOPTS="-w"
+          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-Werror" testrunner
 
       - name: Run test
         run: |
-          make -j$(nproc) check HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes test
 
       # requires python3
       - name: Run extra tests

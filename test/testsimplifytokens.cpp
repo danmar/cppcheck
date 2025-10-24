@@ -166,7 +166,6 @@ private:
 
     struct TokOptions
     {
-        TokOptions() = default;
         bool cpp = true;
         Platform::Type type = Platform::Type::Native;
     };
@@ -184,7 +183,6 @@ private:
 
     struct TokenizeAndStringifyOptions
     {
-        TokenizeAndStringifyOptions() = default;
         Platform::Type platform = Platform::Type::Native;
         bool cpp = true;
     };

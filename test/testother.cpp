@@ -25,14 +25,28 @@
 #include "standards.h"
 
 #include <cstddef>
+#include <sstream>
 #include <string>
+
+static std::string unionZeroInitMessage(int lno, int cno, const std::string &varName, const std::string &largestMemberName)
+{
+    std::stringstream ss;
+    ss << "[test.cpp:" << lno << ":" << cno << "]: (portability) ";
+    ss << "Zero initializing union '" << varName << "' ";
+    ss << "does not guarantee its complete storage to be zero initialized as its largest member is not declared as the first member. ";
+    ss << "Consider making " << largestMemberName << " the first member or favor memset(). [UnionZeroInit]";
+    ss << std::endl;
+    return ss.str();
+}
 
 class TestOther : public TestFixture {
 public:
     TestOther() : TestFixture("TestOther") {}
 
 private:
-    /*const*/ Settings _settings = settingsBuilder().library("std.cfg").build();
+    const Settings settings0 = settingsBuilder().library("std.cfg").build();
+    /*const*/ Settings settings1 = settingsBuilder().library("std.cfg").severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance).build();
+    const Settings settings2 = settingsBuilder(settings1).certainty(Certainty::inconclusive).build();
 
     void run() override {
         mNewTemplate = true;
@@ -242,6 +256,8 @@ private:
         TEST_CASE(raceAfterInterlockedDecrement);
 
         TEST_CASE(testUnusedLabel);
+        TEST_CASE(testUnusedLabelConfiguration);
+        TEST_CASE(testUnusedLabelSwitchConfiguration);
 
         TEST_CASE(testEvaluationOrder);
         TEST_CASE(testEvaluationOrderSelfAssignment);
@@ -307,57 +323,57 @@ private:
 
         TEST_CASE(knownConditionFloating);
         TEST_CASE(knownConditionPrefixed);
+
+        TEST_CASE(unionZeroInitBasic);
+        TEST_CASE(unionZeroInitArrayMember);
+        TEST_CASE(unionZeroInitStructMember);
+        TEST_CASE(unionZeroInitUnknownType);
+        TEST_CASE(unionZeroInitBitfields);
     }
+
+    struct CheckOptions
+    {
+        bool cpp = true;
+        bool inconclusive = true;
+        bool verbose = false;
+        Settings* settings = nullptr;
+    };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
-        if (!settings) {
-            settings = &_settings;
+    void check_(const char* file, int line, const char (&code)[size], const CheckOptions& opt = make_default_obj{}) {
+        // TODO: do not modify object passed into
+        Settings* settings;
+        if (!opt.settings) {
+            settings = &settings1;
         }
-        settings->severity.enable(Severity::style);
-        settings->severity.enable(Severity::warning);
-        settings->severity.enable(Severity::portability);
-        settings->severity.enable(Severity::performance);
-        settings->standards.c = Standards::CLatest;
-        settings->standards.cpp = Standards::CPPLatest;
-        settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings->verbose = verbose;
+        else {
+            settings = opt.settings;
+            settings->severity.enable(Severity::style);
+            settings->severity.enable(Severity::warning);
+            settings->severity.enable(Severity::portability);
+            settings->severity.enable(Severity::performance);
+        }
+        settings->certainty.setEnabled(Certainty::inconclusive, opt.inconclusive);
+        settings->verbose = opt.verbose;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this, cpp);
+        SimpleTokenizer tokenizer(*settings, *this, opt.cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckOther>(tokenizer, this);
-
-        (void)runSimpleChecks; // TODO Remove this
-    }
-
-    template<size_t size>
-    void check_(const char* file, int line, const char (&code)[size], Settings *s) {
-        check_(file, line, code, true, true, true, false, s);
     }
 
     struct CheckPOptions
     {
-        CheckPOptions() = default;
         bool cpp = true;
     };
 
 #define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkP_(const char* file, int line, const char (&code)[size], const CheckPOptions& options = make_default_obj()) {
-        Settings* settings = &_settings;
-        settings->severity.enable(Severity::style);
-        settings->severity.enable(Severity::warning);
-        settings->severity.enable(Severity::portability);
-        settings->severity.enable(Severity::performance);
-        settings->standards.c = Standards::CLatest;
-        settings->standards.cpp = Standards::CPPLatest;
-        settings->certainty.enable(Certainty::inconclusive);
-
-        SimpleTokenizer2 tokenizer(*settings, *this, code, options.cpp ? "test.cpp" : "test.c");
+        SimpleTokenizer2 tokenizer(settings2, *this, code, options.cpp ? "test.cpp" : "test.c");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -370,7 +386,7 @@ private:
     void checkInterlockedDecrement(const char (&code)[size]) {
         /*const*/ Settings settings = settingsBuilder().platform(Platform::Type::Win32A).build();
 
-        check(code, true, false, true, false, &settings);
+        check(code, dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
     }
 
     void emptyBrackets() {
@@ -1085,6 +1101,7 @@ private:
         // classes may have extra side effects
         check("class fred {\n"
               "public:\n"
+              "    fred();\n"
               "    void x();\n"
               "};\n"
               "void test(int a) {\n"
@@ -1094,6 +1111,28 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("class fred {\n" // #2062
+              "public:\n"
+              "    void x();\n"
+              "};\n"
+              "void test(int a) {\n"
+              "    fred f;\n"
+              "    if (a == 2) {\n"
+              "        f.x();\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6:10]: (style) The scope of the variable 'f' can be reduced. [variableScope]\n", errout_str());
+
+        check("struct S { int a, b; };\n"
+              "bool f() {\n"
+              "    S s{};\n"
+              "    {\n"
+              "        bool b = s.a && a.b;\n"
+              "        return b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:7]: (style) The scope of the variable 's' can be reduced. [variableScope]\n", errout_str());
     }
 
     void varScope10() {
@@ -1195,7 +1234,7 @@ private:
               "    else if(b);\n"
               "    else if(c);\n"
               "    else;\n"
-              "}", true, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1407,7 +1446,7 @@ private:
               "        currtime = time(&dummy);\n"
               "        if (currtime > t) {}\n"
               "    }\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:2:12]: (style) The scope of the variable 'currtime' can be reduced. [variableScope]\n", errout_str());
     }
 
@@ -1460,7 +1499,7 @@ private:
               "        s.i = 0;\n"
               "        g(e, s);\n"
               "    }\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:4:12]: (style) The scope of the variable 'e' can be reduced. [variableScope]\n"
                       "[test.c:5:14]: (style) The scope of the variable 's' can be reduced. [variableScope]\n",
                       errout_str());
@@ -1719,7 +1758,7 @@ private:
               "    else{\n"
               "         for( i = 0U; i < 5U; i++ ) {}\n"
               "    }\n"
-              "}\n", true, false);
+              "}\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:2:14]: (style) The scope of the variable 'i' can be reduced. [variableScope]\n", errout_str());
     }
 
@@ -1734,7 +1773,7 @@ private:
               "            for( i = 0U; i < 5U; i++ ) {}\n"
               "        }\n"
               "    }\n"
-              "}\n", true, false);
+              "}\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:2:14]: (style) The scope of the variable 'i' can be reduced. [variableScope]\n", errout_str());
     }
 
@@ -2225,10 +2264,16 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
+    struct CheckInvalidPointerCastOptions
+    {
+        bool portability = true;
+        bool inconclusive = false;
+    };
+
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void checkInvalidPointerCast_(const char* file, int line, const char (&code)[size], bool portability = true, bool inconclusive = false) {
-        /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
+    void checkInvalidPointerCast_(const char* file, int line, const char (&code)[size], const CheckInvalidPointerCastOptions& opt = make_default_obj{}) {
+        /*const*/ Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, opt.portability).certainty(Certainty::inconclusive, opt.inconclusive).build();
         settings.platform.defaultSign = 's';
 
         // Tokenize..
@@ -2287,24 +2332,24 @@ private:
 
         checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
-                                "}", true, false);
+                                "}");
         ASSERT_EQUALS("", errout_str());
 
         checkInvalidPointerCast("void test(float* data) {\n"
                                 "    f.write((char*)data,sizeof(float));\n"
-                                "}", true, true); // #3639
+                                "}", dinit(CheckInvalidPointerCastOptions, $.inconclusive = true)); // #3639
         ASSERT_EQUALS("[test.cpp:2:13]: (portability, inconclusive) Casting from float * to signed char * is not portable due to different binary data representations on different platforms. [invalidPointerCast]\n", errout_str());
 
 
         checkInvalidPointerCast("long long* test(float* f) {\n"
                                 "    return (long long*)f;\n"
-                                "}", false);
+                                "}", dinit(CheckInvalidPointerCastOptions, $.portability = false));
         ASSERT_EQUALS("", errout_str());
 
         checkInvalidPointerCast("long long* test(float* f, char* c) {\n"
                                 "    foo((long long*)f);\n"
                                 "    return reinterpret_cast<long long*>(c);\n"
-                                "}", true);
+                                "}");
         ASSERT_EQUALS("[test.cpp:2:9]: (portability) Casting from float * to signed long long * is not portable due to different binary data representations on different platforms. [invalidPointerCast]\n", errout_str());
 
         checkInvalidPointerCast("Q_DECLARE_METATYPE(int*)"); // #4135 - don't crash
@@ -2524,7 +2569,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:1:42]: (performance) Function parameter 't' should be passed by const reference. [passedByValue]\n", errout_str());
 
-        /*const*/ Settings settings0 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
+        /*const*/ Settings settingsUnix64 = settingsBuilder(settings0).platform(Platform::Type::Unix64).build();
         check("struct S {\n" // #12138
               "    union {\n"
               "        int a = 0;\n"
@@ -2541,7 +2586,7 @@ private:
               "};\n"
               "void f(S s) {\n"
               "    if (s.x > s.y) {}\n"
-              "}\n", /*cpp*/ true, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings0);
+              "}\n", dinit(CheckOptions, $.settings = &settingsUnix64));
         ASSERT_EQUALS("", errout_str());
 
         check("struct S { std::list<int> l; };\n" // #12147
@@ -2581,10 +2626,10 @@ private:
         check("void f(const std::array<int, 10> a[]) {}\n"); // #13524
         ASSERT_EQUALS("", errout_str());
 
-        /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
+        /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
-              /*cpp*/ true, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
+              dinit(CheckOptions, $.settings = &settingsWin64));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2728,12 +2773,12 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            /*const*/ Settings s32 = settingsBuilder(_settings).platform(Platform::Type::Unix32).build();
-            check(code, &s32);
+            /*const*/ Settings s32 = settingsBuilder(settings0).platform(Platform::Type::Unix32).build();
+            check(code, dinit(CheckOptions, $.settings = &s32));
             ASSERT_EQUALS("[test.cpp:5:10]: (performance) Function parameter 'x' should be passed by const reference. [passedByValue]\n", errout_str());
 
-            /*const*/ Settings s64 = settingsBuilder(_settings).platform(Platform::Type::Unix64).build();
-            check(code, &s64);
+            /*const*/ Settings s64 = settingsBuilder(settings0).platform(Platform::Type::Unix64).build();
+            check(code, dinit(CheckOptions, $.settings = &s64));
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -3298,6 +3343,10 @@ private:
               "    }\n"
               "    std::vector<V> v;\n"
               "};\n");
+        ASSERT_EQUALS("", errout_str());
+
+        // #14136
+        check("void f(int& x) { (void)x; }\n");
         ASSERT_EQUALS("", errout_str());
 
         check("void e();\n"
@@ -4497,6 +4546,40 @@ private:
         ASSERT_EQUALS("[test.cpp:2:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n"
                       "[test.cpp:5:18]: (style) Parameter 's' can be declared as pointer to const [constParameterPointer]\n",
                       errout_str());
+
+        check("struct T;\n"
+              "void use(const T*);\n"
+              "void f(T* tok0) {\n"
+              "    T *tok1 = tok0;\n"
+              "    const T *tok2 = tok1;\n"
+              "    use(tok2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:8]: (style) Variable 'tok1' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
+
+        check("struct S { S* next; };\n" // #14119
+              "void f(S* s) {\n"
+              "    for (S* p = s->next; p != nullptr; p = p->next) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:13]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
+
+        check("void f(int* p) {\n"
+              "    for (int* q = p; q;)\n"
+              "        break;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:15]: (style) Variable 'q' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
+
+        check("void g(const int*);\n" // #14148
+              "void f() {\n"
+              "    int a[] = {1, 2, 3};\n"
+              "    for (int* p = a; *p != 3; p++) {\n"
+              "        g(p);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:15]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
+                      errout_str());
     }
 
     void constArray() {
@@ -4741,7 +4824,7 @@ private:
               "    case 3:\n"
               "      strcpy(str, \"b'\");\n"
               "    }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
                            "",
                            errout_str());
@@ -4772,7 +4855,7 @@ private:
               "      strcpy(str, \"b'\");\n"
               "      z++;\n"
               "    }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
                            "",
                            errout_str());
@@ -4801,7 +4884,7 @@ private:
               "    case 3:\n"
               "      strcpy(str, \"b'\");\n"
               "    }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #5158 "segmentation fault (valid code)"
@@ -4815,7 +4898,7 @@ private:
               "} deflate_state;\n"
               "void f(deflate_state *s) {\n"
               "    s->dyn_ltree[0].fc.freq++;\n"
-              "}\n", true, false, false);
+              "}\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #6132 "crash: daca: kvirc CheckOther::checkRedundantAssignment()"
@@ -4825,7 +4908,7 @@ private:
               "} else {\n"
               "KviKvsScript :: run ( m_szCompletionCallback , out ? out : ( g_pApp . activeConsole ( ) ) , & vParams ) ;\n"
               "}\n"
-              "}\n", true, false, true);
+              "}\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -4986,7 +5069,7 @@ private:
               "        y++;\n"
               "    }\n"
               "    bar(y);\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
         check("void foo()\n"
               "{\n"
@@ -5040,7 +5123,7 @@ private:
               "        y--;\n"
               "    }\n"
               "    bar(y);\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
         check("void foo()\n"
               "{\n"
@@ -5396,20 +5479,20 @@ private:
               "            continue;\n"
               "        }\n"
               "    }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:5:13]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("int foo(int a) {\n"
               "    return 0;\n"
               "    return(a-1);\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("int foo(int a) {\n"
               "  A:"
               "    return(0);\n"
               "    goto A;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -5424,7 +5507,7 @@ private:
         check("void foo() {\n"
               "    exit(0);\n"
               "    break;\n"
-              "}", true, false, false, false, &settings);
+              "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("class NeonSession {\n"
@@ -5433,16 +5516,16 @@ private:
               "void NeonSession::exit()\n"
               "{\n"
               "    SAL_INFO(\"ucb.ucp.webdav\", \"neon commands cannot be aborted\");\n"
-              "}", true, false, false, false, &settings);
+              "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void NeonSession::exit()\n"
               "{\n"
               "    SAL_INFO(\"ucb.ucp.webdav\", \"neon commands cannot be aborted\");\n"
-              "}", true, false, false, false, &settings);
+              "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("", errout_str());
 
-        check("void foo() { xResAccess->exit(); }", true, false, false, false, &settings);
+        check("void foo() { xResAccess->exit(); }", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo(int a)\n"
@@ -5456,7 +5539,7 @@ private:
               "            c++;\n"
               "            break;\n"
               "         }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:7:13]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("void foo(int a)\n"
@@ -5480,7 +5563,7 @@ private:
               "            break;\n"
               "          }\n"
               "       }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:6:13]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("void foo(int a)\n"
@@ -5492,7 +5575,7 @@ private:
               "          }\n"
               "          a+=2;\n"
               "       }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:6:13]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("void foo(int a)\n"
@@ -5509,44 +5592,44 @@ private:
         check("int foo() {\n"
               "    throw 0;\n"
               "    return 1;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("void foo() {\n"
               "    throw 0;\n"
               "    return;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("int foo() {\n"
               "    throw = 0;\n"
               "    return 1;\n"
-              "}", false, false, false);
+              "}", dinit(CheckOptions, $.cpp = false, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int foo() {\n"
               "    return 0;\n"
               "    return 1;\n"
-              "}", true, false, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("int foo() {\n"
               "    return 0;\n"
               "    foo();\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Statements following 'return' will never be executed. [unreachableCode]\n", errout_str());
 
         check("int foo(int unused) {\n"
               "    return 0;\n"
               "    (void)unused;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int foo(int unused1, int unused2) {\n"
               "    return 0;\n"
               "    (void)unused1;\n"
               "    (void)unused2;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int foo(int unused1, int unused2) {\n"
@@ -5554,7 +5637,7 @@ private:
               "    (void)unused1;\n"
               "    (void)unused2;\n"
               "    foo();\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:5:5]: (style) Statements following 'return' will never be executed. [unreachableCode]\n", errout_str());
 
         check("int foo() {\n"
@@ -5572,7 +5655,7 @@ private:
               "        return 0;\n"
               "    }\n"
               "    return 124;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:4:9]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         check("void foo() {\n"
@@ -5580,7 +5663,7 @@ private:
               "        return;\n"
               "        break;\n"
               "    }\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:4:9]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         // #5707
@@ -5591,14 +5674,14 @@ private:
               "    }\n"
               "    return 0;\n"
               "    j=2;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:7:5]: (style) Statements following 'return' will never be executed. [unreachableCode]\n", errout_str());
 
         check("int foo() {\n"
               "    return 0;\n"
               "  label:\n"
               "    throw 0;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:3]: (style) Label 'label' is not used. [unusedLabel]\n", errout_str());
 
         check("struct A {\n"
@@ -5640,23 +5723,21 @@ private:
               "    return 0;\n"
               "\n" // #endif
               "    return 1;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
         check("int foo() {\n"
               "\n" // #ifdef A
               "    return 0;\n"
               "\n" // #endif
               "    return 1;\n"
-              "}", true, true, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:5:5]: (style, inconclusive) Consecutive return, break, continue, goto or throw statements are unnecessary. [duplicateBreak]\n", errout_str());
 
         // #4711 lambda functions
         check("int f() {\n"
               "    return g([](int x){(void)x+1; return x;});\n"
               "}",
-              true,
-              false,
-              false);
+              dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // #4756
@@ -5670,7 +5751,7 @@ private:
               "             __asm__ (\"rorw $8, %w0\" : \"=r\" (__v) : \"0\" (__x) : \"cc\");\n"
               "         (void)__v;\n"
               "     }));\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // #6008
@@ -5679,7 +5760,7 @@ private:
               "        int sum = a_ + b_;\n"
               "        return sum;\n"
               "    };\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // #5789
@@ -5687,20 +5768,20 @@ private:
               "    uint64_t enter, exit;\n"
               "    uint64_t events;\n"
               "    per_state_info() : enter(0), exit(0), events(0) {}\n"
-              "};", true, false, false);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // #6664
         check("void foo() {\n"
               "    (beat < 100) ? (void)0 : exit(0);\n"
               "    bar();\n"
-              "}", true, false, false, false, &settings);
+              "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    (beat < 100) ? exit(0) : (void)0;\n"
               "    bar();\n"
-              "}", true, false, false, false, &settings);
+              "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("", errout_str());
 
         // #8261
@@ -5708,7 +5789,7 @@ private:
         TODO_ASSERT_THROW(check("void foo() {\n"
                                 "    (beat < 100) ? (void)0 : throw(0);\n"
                                 "    bar();\n"
-                                "}", true, false, false, false, &settings), InternalError);
+                                "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings)), InternalError);
         //ASSERT_EQUALS("", errout_str());
 
         check("int foo() {\n"
@@ -5885,7 +5966,7 @@ private:
               "    }\n"
               "    var = 42;\n"
               "    return ret();\n"
-              "}\n", /*cpp*/ false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #13516
@@ -6339,7 +6420,7 @@ private:
               "    b = 300\n"
               "  };\n"
               "};\n"
-              "const int DFLT_TIMEOUT = A::b % 1000000 ;\n", true, false, false);
+              "const int DFLT_TIMEOUT = A::b % 1000000 ;\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -6464,10 +6545,10 @@ private:
                             "    do_something();\n"
                             "}\n";
 
-        check(code, true);
+        check(code);
         ASSERT_EQUALS("[test.cpp:7:5]: (style) Instance of 'cb_watch_bool' object is destroyed immediately. [unusedScopedObject]\n", errout_str());
 
-        check(code, false);
+        check(code, dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #2639
@@ -6509,7 +6590,7 @@ private:
                             "  do_something();\n"
                             "}\n";
 
-        check(code, true);
+        check(code);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -6522,7 +6603,7 @@ private:
                             "  }\n"
                             "  Foo(char x, int y) { }\n"
                             "};\n";
-        check(code, true);
+        check(code);
         ASSERT_EQUALS("[test.cpp:4:5]: (style) Instance of 'Foo' object is destroyed immediately. [unusedScopedObject]\n", errout_str());
     }
 
@@ -6537,7 +6618,7 @@ private:
               "    int{ i };\n"
               "    int{ g() };\n" // don't warn
               "    g();\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (style) Instance of 'int' object is destroyed immediately. [unusedScopedObject]\n"
                       "[test.cpp:4:5]: (style) Instance of 'int' object is destroyed immediately. [unusedScopedObject]\n"
                       "[test.cpp:6:5]: (style) Instance of 'int' object is destroyed immediately. [unusedScopedObject]\n"
@@ -6547,19 +6628,19 @@ private:
 
         check("void f(int j) {\n"
               "    for (; bool(j); ) {}\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("void g() {\n"
               "    float (f);\n"
               "    float (*p);\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         check("int f(int i) {\n"
               "    void();\n"
               "    return i;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -6572,7 +6653,7 @@ private:
               "int f() {\n"
               "    M::N::S();\n"
               "    return 0;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:7:11]: (style) Instance of 'M::N::S' object is destroyed immediately. [unusedScopedObject]\n", errout_str());
 
         check("void f() {\n" // #10057
@@ -6580,7 +6661,7 @@ private:
               "    std::string{ \"abc\" };\n"
               "    std::pair<int, int>(1, 2);\n"
               "    (void)0;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:10]: (style) Instance of 'std::string' object is destroyed immediately. [unusedScopedObject]\n"
                       "[test.cpp:3:10]: (style) Instance of 'std::string' object is destroyed immediately. [unusedScopedObject]\n"
                       "[test.cpp:4:10]: (style) Instance of 'std::pair' object is destroyed immediately. [unusedScopedObject]\n",
@@ -6597,7 +6678,7 @@ private:
               "        std::scoped_lock(m);\n"
               "    }\n"
               "    std::mutex m;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3:14]: (style) Instance of 'std::lock_guard' object is destroyed immediately. [unusedScopedObject]\n"
                       "[test.cpp:6:14]: (style) Instance of 'std::scoped_lock' object is destroyed immediately. [unusedScopedObject]\n"
                       "[test.cpp:9:14]: (style) Instance of 'std::scoped_lock' object is destroyed immediately. [unusedScopedObject]\n",
@@ -6606,7 +6687,7 @@ private:
         check("struct S { int i; };\n"
               "namespace {\n"
               "    S s() { return ::S{42}; }\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -6619,7 +6700,7 @@ private:
               "void t0() { f() = {}; }\n"
               "void t1() { g() = {}; }\n"
               "void t2() { h() = {}; }\n"
-              "void t3() { *i() = {}; }\n", true);
+              "void t3() { *i() = {}; }\n");
         ASSERT_EQUALS("[test.cpp:6:19]: (style) Instance of 'S' object is destroyed immediately, assignment has no effect. [unusedScopedObject]\n", errout_str());
     }
 
@@ -6663,7 +6744,7 @@ private:
 
         check("void f(char c) {\n"
               "    printf(\"%i\", a + b ? 1 : 2);\n"
-              "}",true,false,false);
+              "}",dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:2:24]: (style) Clarify calculation precedence for '+' and '?'. [clarifyCalculation]\n", errout_str());
 
         check("void f() {\n"
@@ -6857,7 +6938,7 @@ private:
               "    else\n"
               "        ret = (unsigned char)value;\n"
               "    return ret;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -7166,11 +7247,7 @@ private:
 
         // make sure there are not "same expression" fp when there are different casts
         check("void f(long x) { if ((int32_t)x == (int64_t)x) {} }",
-              true,  // filename
-              false, // inconclusive
-              false, // runSimpleChecks
-              false, // verbose
-              nullptr   // settings
+              dinit(CheckOptions, $.inconclusive = false)
               );
         ASSERT_EQUALS("", errout_str());
 
@@ -7225,7 +7302,7 @@ private:
         check("void f() {\n"
               "    enum { Four = 4 };\n"
               "    if (Four == 4) {}"
-              "}", true, true, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:3:14]: (style) The comparison 'Four == 4' is always true. [knownConditionTrueFalse]\n",
                       errout_str());
 
@@ -7238,7 +7315,7 @@ private:
         check("void f() {\n"
               "    enum { Four = 4 };\n"
               "    _Static_assert(Four == 4, \"\");\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -7251,7 +7328,7 @@ private:
               "    enum { FourInEnumOne = 4 };\n"
               "    enum { FourInEnumTwo = 4 };\n"
               "    if (FourInEnumOne == FourInEnumTwo) {}\n"
-              "}", true, true, false);
+              "}");
         ASSERT_EQUALS("[test.cpp:4:23]: (style) The comparison 'FourInEnumOne == FourInEnumTwo' is always true because 'FourInEnumOne' and 'FourInEnumTwo' represent the same value. [knownConditionTrueFalse]\n",
                       errout_str());
 
@@ -7290,7 +7367,7 @@ private:
         check("float f(float x) { return x-x; }"); // ticket #4485 (Inf)
         ASSERT_EQUALS("", errout_str());
 
-        check("float f(float x) { return (X double)x == (X double)x; }", true, false, false);
+        check("float f(float x) { return (X double)x == (X double)x; }", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("struct X { float f; };\n"
@@ -7364,7 +7441,7 @@ private:
 
         check("void foo() {\n"
               "    if ((mystrcmp(a, b) == 0) || (mystrcmp(a, b) == 0)) {}\n"
-              "}", true, false, true, false, &settings);
+              "}", dinit(CheckOptions, $.inconclusive = false, $.settings = &settings));
         ASSERT_EQUALS("[test.cpp:2:31]: (style) Same expression on both sides of '||'. [duplicateExpression]\n", errout_str());
 
         check("void GetValue() { return rand(); }\n"
@@ -7405,7 +7482,7 @@ private:
 
         check("void f(A *src) {\n"
               "    if (dynamic_cast<B*>(src) || dynamic_cast<B*>(src)) {}\n"
-              "}\n", true, false, false); // don't run simplifications
+              "}\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:2:31]: (style) Same expression on both sides of '||'. [duplicateExpression]\n", errout_str());
 
         // #5819
@@ -7966,6 +8043,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(const std::vector<int>& v) {\n" // #14193
+              "    for (const int& r1 : v) {\n"
+              "        for (const int& r2 : v) {\n"
+              "            if (&r1 == &r2) {}\n"
+              "        }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void duplicateExpressionTernary() { // #6391
@@ -8000,18 +8086,18 @@ private:
             const char code[] = "void foo(bool flag) {\n"
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
-            /*const*/ Settings settings = _settings;
+            /*const*/ Settings settings = settings0;
             settings.platform.sizeof_int = 4;
             settings.platform.int_bit = 32;
 
             settings.platform.sizeof_long = 4;
             settings.platform.long_bit = 32;
-            check(code, &settings);
+            check(code, dinit(CheckOptions, $.settings = &settings));
             ASSERT_EQUALS("[test.cpp:2:21]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
 
             settings.platform.sizeof_long = 8;
             settings.platform.long_bit = 64;
-            check(code, &settings);
+            check(code, dinit(CheckOptions, $.settings = &settings));
             ASSERT_EQUALS("", errout_str());
         }
     }
@@ -8754,9 +8840,9 @@ private:
             const char code[] = "void foo(unsigned int x) {\n"
                                 "  if (x < 0) {}\n"
                                 "}";
-            check(code, true, false, true, false);
+            check(code, dinit(CheckOptions, $.inconclusive = false));
             ASSERT_EQUALS("[test.cpp:2:9]: (style) Checking if unsigned expression 'x' is less than zero. [unsignedLessThanZero]\n", errout_str());
-            check(code, true, false, true, true);
+            check(code, dinit(CheckOptions, $.inconclusive = false, $.verbose = true));
             ASSERT_EQUALS("[test.cpp:2:9]: (style) Checking if unsigned expression 'x' is less than zero. [unsignedLessThanZero]\n", errout_str());
         }
 
@@ -8775,9 +8861,9 @@ private:
                                 "  int y = 0;\n"
                                 "  if (x < y) {}\n"
                                 "}";
-            check(code, true, false, true, false);
+            check(code, dinit(CheckOptions, $.inconclusive = false));
             ASSERT_EQUALS("[test.cpp:3:9]: (style) Checking if unsigned expression 'x' is less than zero. [unsignedLessThanZero]\n", errout_str());
-            check(code, true, false, true, true);
+            check(code, dinit(CheckOptions, $.inconclusive = false, $.verbose = true));
             ASSERT_EQUALS("[test.cpp:2:11] -> [test.cpp:3:9]: (style) Checking if unsigned expression 'x' is less than zero. [unsignedLessThanZero]\n", errout_str());
         }
         check("void foo(unsigned x) {\n"
@@ -8936,9 +9022,9 @@ private:
                                 "  if (x <= n);\n"
                                 "}\n"
                                 "foo<0>();";
-            check(code, true, false);
+            check(code, dinit(CheckOptions, $.inconclusive = false));
             ASSERT_EQUALS("", errout_str());
-            check(code, true, true);
+            check(code);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -8960,12 +9046,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3:13]: (style) Checking if unsigned expression 'value' is less than zero. [unsignedLessThanZero]\n", errout_str());
 
         // #9040
-        /*const*/ Settings settings1 = settingsBuilder().platform(Platform::Type::Win64).build();
+        /*const*/ Settings settingsWin64 = settingsBuilder().platform(Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
               "    return i >= 0;\n"
-              "}\n", &settings1);
+              "}\n", dinit(CheckOptions, $.settings = &settingsWin64));
         ASSERT_EQUALS("", errout_str());
 
         // #10612
@@ -9007,9 +9093,9 @@ private:
                                 "  int y = 0;\n"
                                 "  if (x >= y) {}\n"
                                 "}";
-            check(code, true, false, true, false);
+            check(code, dinit(CheckOptions, $.inconclusive = false));
             ASSERT_EQUALS("[test.cpp:3:9]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not. [pointerPositive]\n", errout_str());
-            check(code, true, false, true, true);
+            check(code, dinit(CheckOptions, $.inconclusive = false, $.verbose = true));
             ASSERT_EQUALS("[test.cpp:2:11] -> [test.cpp:3:9]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not. [pointerPositive]\n", errout_str());
         }
         check("void foo(const int* x) {\n"
@@ -9028,9 +9114,9 @@ private:
                                 "  if (x < y) {}\n"
                                 "}";
 
-            check(code, true, false, true, false);
+            check(code, dinit(CheckOptions, $.inconclusive = false));
             ASSERT_EQUALS("[test.cpp:3:9]: (style) A pointer can not be negative so it is either pointless or an error to check if it is. [pointerLessThanZero]\n", errout_str());
-            check(code, true, false, true, true);
+            check(code, dinit(CheckOptions, $.inconclusive = false, $.verbose = true));
             ASSERT_EQUALS("[test.cpp:2:16] -> [test.cpp:3:9]: (style) A pointer can not be negative so it is either pointless or an error to check if it is. [pointerLessThanZero]\n", errout_str());
         }
 
@@ -9504,9 +9590,9 @@ private:
                                 "        tok->str(tok->strAt(2));\n"
                                 "    }\n"
                                 "}";
-        check(code5618, true, true);
+        check(code5618);
         ASSERT_EQUALS("", errout_str());
-        check(code5618, true, false);
+        check(code5618, dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // #5890 - crash: wesnoth desktop_util.cpp / unicode.hpp
@@ -9526,7 +9612,7 @@ private:
               " \n"
               "void foo() {\n"
               "  const CD cd(CD::getOne());\n"
-              "}", true, true);
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n" // #10545
@@ -9539,7 +9625,7 @@ private:
               "    if (i != 0)\n"
               "        return old;\n"
               "    return {};\n"
-              "}", true, /*inconclusive*/ true);
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("struct X { int x; };\n" // #10191
@@ -9557,7 +9643,7 @@ private:
               "        modify();\n"
               "        return x.x;\n"
               "    }\n"
-              "};\n", true, /*inconclusive*/ true);
+              "};\n");
         ASSERT_EQUALS("", errout_str());
 
         // #10704
@@ -10379,7 +10465,7 @@ private:
               "    u.l1 = 1;\n"
               "    lTotal += u.b.b1;\n"
               "    u.l1 = 2;\n" //Should not show RedundantAssignment
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #5115 "redundantAssignment when using a union"
@@ -10397,7 +10483,7 @@ private:
               "    } u;\n"
               "    u.l1 = 1;\n"
               "    u.l1 = 2;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:13:10] -> [test.cpp:14:10]: (style) Variable 'u.l1' is reassigned a value before the old one has been used. [redundantAssignment]\n", errout_str());
 
         // Ticket #10093 "redundantAssignment when using a union"
@@ -10421,7 +10507,7 @@ private:
               "    m.u16.ab = 47;\n"
               "    m.u16.cd = 0;\n"
               "    m.u16.ab = m.u32.abcd / 53;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #10093 "redundantAssignment when using a union"
@@ -10439,7 +10525,7 @@ private:
               "    u.as_int = 42;\n"
               "    fn(&u.as_char[0], 4);\n"
               "    u.as_int = 0;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // Ticket #5115 "redundantAssignment when using a union"
@@ -10450,7 +10536,7 @@ private:
               "    } addr;\n"
               "    addr.s8 = ptr;\n"
               "    addr.u64 += 8;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n" // #12895
@@ -10485,7 +10571,7 @@ private:
               "   }\n"
               "   catch (const uno::Exception&)  {\n"
               "   }\n"
-              "}", true, true);
+              "}");
         ASSERT_EQUALS("", errout_str());
 
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
@@ -10494,7 +10580,7 @@ private:
               "    BitmapBuffer aDstBuf;\n"
               "    aSrcBuf.mnBitCount = nDestBits;\n"
               "    bConverted = ::ImplFastBitmapConversion( aDstBuf, aSrcBuf, aTwoRects );\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3:24] -> [test.c:5:24]: (style) Variable 'aSrcBuf.mnBitCount' is reassigned a value before the old one has been used. [redundantAssignment]\n", errout_str());
         check("void ConvertBitmapData(sal_uInt16 nDestBits) {\n"
               "    BitmapBuffer aSrcBuf;\n"
@@ -11108,32 +11194,32 @@ private:
               "  if (a < 0)\n"
               "    return a++,\n"
               "  do_something();\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", "", errout_str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return a++, do_something();\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return a+5,\n"
               "  do_something();\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", "", errout_str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return a+5, do_something();\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
               "    return c<int,\nint>::b;\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         // #4943 take care of C++11 initializer lists
@@ -11144,7 +11230,7 @@ private:
               "        { \"2\" },\n"
               "        { \"3\" }\n"
               "    };\n"
-              "}", true, false, false);
+              "}", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -11160,7 +11246,7 @@ private:
               "    explicit B(A a) : a(std::move(a)) {}\n"
               "    void Init(A _a) { a = std::move(_a); }\n"
               "    A a;"
-              "};", true, false, true);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A\n"
@@ -11173,7 +11259,7 @@ private:
               "    explicit B(A a) : a{std::move(a)} {}\n"
               "    void Init(A _a) { a = std::move(_a); }\n"
               "    A a;"
-              "};", true, false, true);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A\n"
@@ -11187,7 +11273,7 @@ private:
               "    void Init(A _a) { a = std::move(_a); }\n"
               "    A a;"
               "    A a2;"
-              "};", true, false, true);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
 
         check("struct A\n"
@@ -11201,7 +11287,7 @@ private:
               "    void Init(A _a) { a = std::move(_a); }\n"
               "    A a;"
               "    A a2;"
-              "};", true, false, true);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:8:14]: (performance) Function parameter 'a2' should be passed by const reference. [passedByValue]\n", errout_str());
 
         check("struct A\n"
@@ -11215,7 +11301,7 @@ private:
               "    void Init(A _a) { a = std::move(_a); }\n"
               "    A a;"
               "    A a2;"
-              "};", true, false, true);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:8:14]: (performance) Function parameter 'a2' should be passed by const reference. [passedByValue]\n", errout_str());
 
         check("std::map<int, int> m;\n" // #10817
@@ -11258,7 +11344,7 @@ private:
               "    int i1 : 16;\n"
               "    unsigned short u16;\n"
               "};\n"
-              "void f(S s) {}\n", true, true, true, false, &settingsUnix32);
+              "void f(S s) {}\n", dinit(CheckOptions, $.settings = &settingsUnix32));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -11307,12 +11393,12 @@ private:
     void redundantPointerOp() {
         check("int *f(int *x) {\n"
               "    return &*x;\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:12]: (style) Redundant pointer operation on 'x' - it's already a pointer. [redundantPointerOp]\n", errout_str());
 
         check("int *f(int *y) {\n"
               "    return &(*y);\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:12]: (style) Redundant pointer operation on 'y' - it's already a pointer. [redundantPointerOp]\n", errout_str());
 
         check("int f() {\n" // #10991
@@ -11320,18 +11406,18 @@ private:
               "    int result1 = *(&value);\n"
               "    int result2 = *&value;\n"
               "    return result1 + result2;\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3:19]: (style) Redundant pointer operation on 'value' - it's already a variable. [redundantPointerOp]\n"
                       "[test.cpp:4:19]: (style) Redundant pointer operation on 'value' - it's already a variable. [redundantPointerOp]\n",
                       errout_str());
 
         check("void f(int& a, int b) {\n"
               "    *(&a) = b;\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:5]: (style) Redundant pointer operation on 'a' - it's already a variable. [redundantPointerOp]\n",
                       errout_str());
 
-        check("void f(int**& p) {}\n", true, true);
+        check("void f(int**& p) {}\n");
         ASSERT_EQUALS("", errout_str());
 
         checkP("#define	RESTORE(ORIG, COPY) { *ORIG = *COPY; }\n"
@@ -11343,38 +11429,38 @@ private:
         // no warning for bitwise AND
         check("void f(const int *b) {\n"
               "    int x = 0x20 & *b;\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // No message for double pointers to structs
         check("void f(struct foo **my_struct) {\n"
               "    char **pass_to_func = &(*my_struct)->buf;\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // another double pointer to struct - with an array
         check("void f(struct foo **my_struct) {\n"
               "    char **pass_to_func = &(*my_struct)->buf[10];\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("", errout_str());
 
         // double pointer to array
         check("void f(char **ptr) {\n"
               "    int *x = &(*ptr)[10];\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:10]: (style) Variable 'x' can be declared as pointer to const [constVariablePointer]\n", errout_str());
 
         // function calls
         check("void f(Mutex *mut) {\n"
               "    pthread_mutex_lock(&*mut);\n"
-              "}\n", true, false);
+              "}\n", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:2:24]: (style) Redundant pointer operation on 'mut' - it's already a pointer. [redundantPointerOp]\n", errout_str());
 
         // make sure we got the AST match for "(" right
         check("void f(char *ptr) {\n"
               "    if (&*ptr == NULL)\n"
               "        return;\n"
-              "}\n", true, true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:2:9]: (style) Redundant pointer operation on 'ptr' - it's already a pointer. [redundantPointerOp]\n", errout_str());
 
         // no warning for macros
@@ -11395,7 +11481,7 @@ private:
     void test_isSameExpression() { // see #5738
         check("bool isInUnoIncludeFile(StringRef name) {"
               "   return  name.startswith(SRCDIR \"/com/\") || name.startswith(SRCDIR \"/uno/\");\n"
-              "};", true, false);
+              "};", dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -11710,50 +11796,70 @@ private:
         ASSERT_EQUALS("[test.cpp:6:5]: (style) Label 'label' is not used. [unusedLabel]\n", errout_str());
     }
 
-    #define checkCustomSettings(...) checkCustomSettings_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkCustomSettings_(const char* file, int line, const char code[], bool cpp = true, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
-        if (!settings) {
-            settings = &_settings;
-        }
-        settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings->verbose = verbose;
 
+    void testUnusedLabelConfiguration() {
+        checkP("void f() {\n"
+               "#ifdef X\n"
+               "    goto END;\n"
+               "#endif\n"
+               "END:\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:5:1]: (style) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. [unusedLabelConfiguration]\n",
+                      errout_str());
+    }
+
+    void testUnusedLabelSwitchConfiguration() {
+        checkP("void f(int i) {\n"
+               "    switch (i) {\n"
+               "    default:\n"
+               "        break;\n"
+               "#ifdef X\n"
+               "    case 1:\n"
+               "        goto END;\n"
+               "#endif\n"
+               "    case 2:\n"
+               "    END:\n"
+               "        return;\n"
+               "    }\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:10:5]: (warning) Label 'END' is not used. There is #if in function body so the label might be used in code that is removed by the preprocessor. Should this be a 'case' of the enclosing switch()? [unusedLabelSwitchConfiguration]\n",
+                      errout_str());
+    }
+
+    // TODO: only used in a single place
+#define checkCustomSettings(...) checkCustomSettings_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void checkCustomSettings_(const char* file, int line, const char (&code)[size], const Settings& settings) {
         // Tokenize..
-        SimpleTokenizer tokenizer(*settings, *this, cpp);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckOther>(tokenizer, this);
-
-        (void)runSimpleChecks; // TODO Remove this
-    }
-
-    void checkCustomSettings_(const char* file, int line, const char code[], Settings *s) {
-        checkCustomSettings_(file, line, code, true, true, true, false, s);
     }
 
     void testEvaluationOrder() {
         check("void f() {\n"
               "  int x = dostuff();\n"
               "  return x + x++;\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3:12]: (error) Expression 'x+x++' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
 
         // #7226
         check("long int f1(const char *exp) {\n"
               "  return strtol(++exp, (char **)&exp, 10);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("long int f1(const char *exp) {\n"
               "  return dostuff(++exp, exp, 10);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:2:23]: (error) Expression '++exp,exp' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
 
         check("void f() {\n"
               "  int a;\n"
               "  while (a=x(), a==123) {}\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         // # 8717
@@ -11761,19 +11867,19 @@ private:
               "    char **local_argv = safe_malloc(sizeof (*local_argv));\n"
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  int x = 0;\n"
               "  return 0 + x++;\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(int x, int y) {\n"
               "  int a[10];\n"
               "  a[x+y] = a[y+x]++;;\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3:10]: (error) Expression 'a[x+y]=a[y+x]++' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
 
         check("void f(int i) {\n"
@@ -11792,11 +11898,11 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2:22]: (error) Expression '~(-(++i))+i' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
 
-        /*const*/ Settings settings11 = settingsBuilder(_settings).cpp(Standards::CPP11).build();
+        const Settings settings11 = settingsBuilder(settings0).cpp(Standards::CPP11).certainty(Certainty::inconclusive).build();
 
         checkCustomSettings("void f(int i) {\n"
                             "  i = i++ + 2;\n"
-                            "}", &settings11);
+                            "}", settings11);
         ASSERT_EQUALS("[test.cpp:2:11]: (error) Expression 'i+++2' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
     }
 
@@ -11804,7 +11910,7 @@ private:
         // self assignment
         check("void f() {\n"
               "  int x = x = y + 1;\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS(
             "[test.c:2:9]: (style) Redundant assignment of 'x' to itself. [selfAssignment]\n"
             "[test.c:2:9]: (style) Redundant assignment of 'x' to itself. [selfAssignment]\n",   // duplicate
@@ -11824,13 +11930,13 @@ private:
         // FP
         check("void f(int id) {\n"
               "  id = dostuff(id += 42);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         // FN
         check("void f(int id) {\n"
               "  id = id + dostuff(id += 42);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         TODO_ASSERT_EQUALS("error", "", errout_str());
     }
 
@@ -11838,19 +11944,19 @@ private:
         check("int f(void) {\n"
               "  int t;\n"
               "  return (unsigned char)(t=1,t^c);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(void) {\n"
               "  int t;\n"
               "  dostuff(t=1,t^c);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:3:14]: (error) Expression 't=1,t^c' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
 
         check("void f(void) {\n"
               "  int t;\n"
               "  dostuff((t=1,t),2);\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         // #8230
@@ -11858,28 +11964,28 @@ private:
               "    do\n"
               "        ;\n"
               "    while (++fp, (*fp) <= 0177);\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void hprf(const char* fp) {\n"
               "    do\n"
               "        ;\n"
               "    while (i++, ++fp, (*fp) <= 0177);\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const char* fp) {\n"
               "    do\n"
               "        ;\n"
               "    while (f(++fp, (*fp) <= 7));\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:4:18]: (error) Expression '++fp,(*fp)<=7' depends on order of evaluation of side effects [unknownEvaluationOrder]\n", errout_str());
     }
 
     void testEvaluationOrderSizeof() {
         check("void f(char *buf) {\n"
               "  dostuff(buf++, sizeof(*buf));"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -11898,7 +12004,7 @@ private:
               "  if (0 > d.n) {\n"
               "    return;\n"
               "  }\n"
-              "}", false);
+              "}", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:8:11]: (style) Checking if unsigned expression 'd.n' is less than zero. [unsignedLessThanZero]\n"
                       "[test.c:12:9]: (style) Checking if unsigned expression 'd.n' is less than zero. [unsignedLessThanZero]\n",
                       errout_str());
@@ -12160,9 +12266,7 @@ private:
               "        for (auto &j : g(std::move(l))) { (void)j; }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4:20]: (style) Variable 'j' can be declared as reference to const [constVariableReference]\n"
-                      "[test.cpp:4:36]: (warning) Access of moved variable 'l'. [accessMoved]\n",
-                      errout_str());
+        ASSERT_EQUALS("[test.cpp:4:36]: (warning) Access of moved variable 'l'. [accessMoved]\n", errout_str());
     }
 
     void moveCallback()
@@ -12306,7 +12410,7 @@ private:
               "void Fred::func2(int c, int b, int a) { }\n"
               "void Fred::func3(int c, int b, int a) { }\n"
               "void Fred::func4(int c, int b, int a) { }\n",
-              true, false);
+              dinit(CheckOptions, $.inconclusive = false));
         ASSERT_EQUALS("[test.cpp:3:16] -> [test.cpp:4:16]: (warning) Function 'func2' argument order different: declaration 'a, b, c' definition 'c, b, a' [funcArgOrderDifferent]\n"
                       "[test.cpp:5:12] -> [test.cpp:6:16]: (warning) Function 'func3' argument order different: declaration ', b, c' definition 'c, b, a' [funcArgOrderDifferent]\n"
                       "[test.cpp:9:20] -> [test.cpp:14:22]: (warning) Function 'func2' argument order different: declaration 'a, b, c' definition 'c, b, a' [funcArgOrderDifferent]\n"
@@ -12410,7 +12514,7 @@ private:
               "static int f(void) {\n"
               "    int a;\n"
               "    return 0;\n"
-              "}\n", false);
+              "}\n", dinit(CheckOptions, $.cpp = false));
         ASSERT_EQUALS("[test.c:1:12] -> [test.c:4:9]: (style) Local variable 'a' shadows outer variable [shadowVariable]\n", errout_str());
 
         check("int f() {\n" // #12591
@@ -13226,6 +13330,90 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2:13] -> [test.cpp:3:11]: (style) The comparison 'i > +1' is always false. [knownConditionTrueFalse]\n",
             errout_str());
+    }
+
+    void unionZeroInitBasic() {
+        check(
+            "union bad_union_0 {\n"
+            "  char c;\n"
+            "  long long i64;\n"
+            "  void *p;\n"
+            "};\n"
+            "\n"
+            "typedef union {\n"
+            "  char c;\n"
+            "  int i;\n"
+            "} bad_union_1;\n"
+            "\n"
+            "extern void e(union bad_union_0 *);\n"
+            "\n"
+            "void\n"
+            "foo(void)\n"
+            "{\n"
+            "  union { int i; char c; } good0 = {0};\n"
+            "  union { int i; char c; } good1 = {};\n"
+            "\n"
+            "  union { char c; int i; } bad0 = {0};\n"
+            "  union bad_union_0 bad1 = {0};\n"
+            "  e(&bad1);\n"
+            "  bad_union_1 bad2 = {0};\n"
+            "}");
+        const std::string exp = unionZeroInitMessage(20, 28, "bad0", "i") +
+                                unionZeroInitMessage(21, 21, "bad1", "i64") +
+                                unionZeroInitMessage(23, 15, "bad2", "i");
+        ASSERT_EQUALS(exp, errout_str());
+    }
+
+    void unionZeroInitArrayMember() {
+        check(
+            "void foo(void) {\n"
+            " union { int c; char s8[2]; } u = {0};\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void unionZeroInitStructMember() {
+        check(
+            "void foo(void) {\n"
+            "  union {\n"
+            "    int c;\n"
+            "     struct {\n"
+            "       char x;\n"
+            "       struct {\n"
+            "         char y;\n"
+            "       } s1;\n"
+            "    } s0;\n"
+            "  } u = {0};\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void unionZeroInitUnknownType() {
+        check(
+            "union u {\n"
+            "  Unknown x;\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void unionZeroInitBitfields() {
+        check(
+            "typedef union Evex {\n"
+            "  int u32;\n"
+            "  struct {\n"
+            "    char mmm:3,\n"
+            "         b4:1,\n"
+            "         r4:1,\n"
+            "         b3:1,\n"
+            "         x3:1,\n"
+            "         r3:1;\n"
+            "  } extended;\n"
+            "} Evex;\n"
+            "\n"
+            "void foo(void) {\n"
+            "  Evex evex = {0};\n"
+            "}");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

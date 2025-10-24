@@ -54,7 +54,7 @@
     ++*static_cast<int*>(nullptr); // NOLINT(clang-analyzer-core.NullDereference)
 }
 
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) && !defined(_AIX)
 /*static*/ int my_fpe() // NOLINT(misc-use-internal-linkage)
 {
     if (feenableexcept(FE_ALL_EXCEPT) == -1)
@@ -80,7 +80,7 @@ int main(int argc, const char * const argv[])
         my_abort();
     else if (strcmp(argv[1], "segv") == 0)
         my_segv();
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) && !defined(_AIX)
     else if (strcmp(argv[1], "fpe") == 0)
         return my_fpe();
 #endif

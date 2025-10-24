@@ -25,7 +25,7 @@
 #include "standards.h"
 
 #include <cstddef>
-#include <iosfwd>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,9 +98,16 @@ public:
      * - multiline strings are not handled.
      * - UTF in the code are not handled.
      * - comments are not handled.
-     * @param code input stream for code
      */
-    bool createTokens(std::istream &code);
+    bool createTokensFromBuffer(const uint8_t* data, size_t size);
+    bool createTokensFromBuffer(const char* data, size_t size) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size);
+    }
+    template<size_t size>
+    // cppcheck-suppress unusedFunction - used in tests only
+    bool createTokensFromString(const char (&data)[size]) {
+        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1);
+    }
 
     void createTokens(simplecpp::TokenList&& tokenList);
 
@@ -208,7 +215,7 @@ public:
     }
 
 private:
-    bool createTokensInternal(std::istream &code, const std::string& file0);
+    bool createTokensFromBufferInternal(const uint8_t* data, std::size_t size, const std::string& file0);
 
     /** Token list */
     std::shared_ptr<TokensFrontBack> mTokensFrontBack;

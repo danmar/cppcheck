@@ -70,7 +70,6 @@ private:
     /** @brief %Check if there is a redundant check for none-nullness of parameter before Match functions, such as (tok && Token::Match(tok, "foo")) */
     void checkRedundantTokCheck();
 
-    void multiComparePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void simplePatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void complexPatternError(const Token *tok, const std::string &pattern, const std::string &funcname);
     void missingPercentCharacterError(const Token *tok, const std::string &pattern, const std::string &funcname);

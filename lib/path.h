@@ -201,9 +201,11 @@ public:
     static bool exists(const std::string &path, bool* isdir = nullptr);
 
     /**
-     * join 2 paths with '/' separators
+     * @brief join 2 paths with '/' separators
+     * if path2 is an absolute path path1 will be dismissed.
+     * @return the joined path with normalized slashes
      */
-    static std::string join(const std::string& path1, const std::string& path2);
+    static std::string join(std::string path1, std::string path2);
 };
 
 /// @}

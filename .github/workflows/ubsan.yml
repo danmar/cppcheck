@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.9.1
+      QT_VERSION: 6.10.0
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
       # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
@@ -36,10 +36,10 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
-      - name: Set up Python 3.13
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           check-latest: true
 
       - name: Install missing software on ubuntu
@@ -71,10 +71,9 @@ jobs:
           python3 -m pip install pytest-xdist
           python3 -m pip install psutil
 
-      # TODO: disable warnings
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_UNDEFINED=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_UNDEFINED=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         env:
           CC: clang-21
           CXX: clang++-21
@@ -145,8 +144,8 @@ jobs:
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json frontend || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json -Ifrontend cli || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json --enable=internal lib || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt --addon=naming.json -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt --addon=naming.json -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -Icli -Ifrontend test/*.cpp || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -Icli tools/dmake/*.cpp || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
           exit $ec

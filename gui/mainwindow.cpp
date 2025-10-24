@@ -295,6 +295,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionC11->setActionGroup(mCStandardActions);
     //mUI->mActionC17->setActionGroup(mCStandardActions);
     //mUI->mActionC23->setActionGroup(mCStandardActions);
+    //mUI->mActionC2Y->setActionGroup(mCStandardActions);
 
     mUI->mActionCpp03->setActionGroup(mCppStandardActions);
     mUI->mActionCpp11->setActionGroup(mCppStandardActions);
@@ -421,6 +422,7 @@ void MainWindow::loadSettings()
     mUI->mActionC11->setChecked(standards.c == Standards::C11);
     //mUI->mActionC17->setChecked(standards.c == Standards::C17);
     //mUI->mActionC23->setChecked(standards.c == Standards::C23);
+    //mUI->mActionC2Y->setChecked(standards.c == Standards::C2Y);
     standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     mUI->mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
     mUI->mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
@@ -522,6 +524,8 @@ void MainWindow::saveSettings() const
     //    mSettings->setValue(SETTINGS_STD_C, "C17");
     //if (mUI->mActionC23->isChecked())
     //    mSettings->setValue(SETTINGS_STD_C, "C23");
+    //if (mUI->mActionC2Y->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_C, "C2Y");
 
     if (mUI->mActionCpp03->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++03");
@@ -729,8 +733,11 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    // TODO: apply enforcedLanguage?
-    cppcheck.check(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code.toStdString());
+    {
+        const std::string code_s = code.toStdString();
+        // TODO: apply enforcedLanguage?
+        cppcheck.checkBuffer(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), reinterpret_cast<const std::uint8_t*>(code_s.data()), code_s.size());
+    }
     analysisDone();
 
     // Expand results
@@ -1227,7 +1234,7 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
     settings.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
     settings.quiet = false;
     settings.verbose = true;
-    settings.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
+    settings.force = mSettings->value(SETTINGS_CHECK_FORCE, 0).toBool();
     settings.outputFormat = Settings::OutputFormat::text;
     settings.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     settings.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
@@ -1710,7 +1717,7 @@ void MainWindow::complianceReport()
     }
 
     QTemporaryFile tempResults;
-    tempResults.open();
+    (void)tempResults.open(); // TODO: check result
     tempResults.close();
 
     mUI->mResults->save(tempResults.fileName(), Report::XMLV2, mCppcheckCfgProductName);
