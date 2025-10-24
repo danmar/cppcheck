@@ -123,16 +123,17 @@ public:
         mErrorList.clear();
     }
 
-    void openPlist(const std::string& filename, const std::vector<std::string>& files)
+    void openPlist(const std::string& filename, const std::vector<std::string>* files)
     {
         mPlistFile.open(filename);
-        mPlistFile << ErrorLogger::plistHeader(version(), files);
+        mPlistFile << ErrorLogger::plistHeader(version());
+        mPlistFilenames = files;
     }
 
     void closePlist()
     {
         if (mPlistFile.is_open()) {
-            mPlistFile << ErrorLogger::plistFooter();
+            mPlistFile << ErrorLogger::plistFooter(mPlistFilenames);
             mPlistFile.close();
         }
     }
@@ -275,6 +276,7 @@ private:
     using Location = std::pair<std::string, int>;
     std::map<Location, std::set<std::string>> mLocationMacros; // What macros are used on a location?
 
+    const std::vector<std::string>* mPlistFilenames{};
     std::ofstream mPlistFile;
 
     unsigned int mExitCode{};
@@ -994,22 +996,12 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                 filename2 = file.spath();
             const std::size_t fileNameHash = std::hash<std::string> {}(file.spath());
             filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
-            mLogger->openPlist(filename2, files);
-        }
-
-        std::string dumpProlog;
-        if (mSettings.dump || !mSettings.addons.empty()) {
-            dumpProlog += getDumpFileContentsRawTokens(files, tokens1);
+            mLogger->openPlist(filename2, &files);
         }
 
         // Parse comments and then remove them
         preprocessor.addRemarkComments(tokens1, mLogger->remarkComments());
         preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
-        if (mSettings.dump || !mSettings.addons.empty()) {
-            std::ostringstream oss;
-            mSuppressions.nomsg.dump(oss);
-            dumpProlog += oss.str();
-        }
         tokens1.removeComments();
 
         if (!mSettings.buildDir.empty()) {
@@ -1106,7 +1098,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         createDumpFile(mSettings, file, fileIndex, fdump, dumpFile);
         if (fdump.is_open()) {
             fdump << getLibraryDumpData();
-            fdump << dumpProlog;
             if (!mSettings.dump)
                 filesDeleter.addFile(dumpFile);
         }
@@ -1289,8 +1280,11 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 
         // TODO: will not be closed if we encountered an exception
-        // dumped all configs, close root </dumps> element now
         if (fdump.is_open()) {
+            // dump all filenames, raw tokens, suppressions
+            fdump << getDumpFileContentsRawTokens(files, tokens1);
+            mSuppressions.nomsg.dump(fdump);
+            // dumped all configs, close root </dumps> element now
             fdump << "</dumps>" << std::endl;
             fdump.close();
         }
