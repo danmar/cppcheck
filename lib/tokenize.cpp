@@ -7450,9 +7450,9 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             else if (Token::Match(varName, "%name% [")) {
                 tok2 = varName->next();
 
-                while (Token::Match(tok2->link(), "] ,|=|["))
+                while (Token::Match(tok2->link(), "] [,=[{]"))
                     tok2 = tok2->link()->next();
-                if (!Token::Match(tok2, "=|,"))
+                if (!Token::Match(tok2, "[=,{]"))
                     tok2 = nullptr;
                 if (tok2 && tok2->str() == "=") {
                     while (tok2 && tok2->str() != "," && tok2->str() != ";") {
@@ -7522,9 +7522,11 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                         varTok = varTok->next();
                     if (!varTok)
                         syntaxError(tok2); // invalid code
-                    TokenList::insertTokens(eq, varTok, 2);
-                    eq->str(";");
-                    eq->isSplittedVarDeclEq(true);
+                    if (eq->str() == "=") {
+                        TokenList::insertTokens(eq, varTok, 2);
+                        eq->str(";");
+                        eq->isSplittedVarDeclEq(true);
+                    }
 
                     // "= x, "   =>   "= x; type "
                     if (tok2->str() == ",") {
