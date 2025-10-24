@@ -370,7 +370,7 @@ private:
         simplecpp::TokenList tokens(code,files);
         tokens.removeComments();
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
-        std::list<std::string> configs;
+        std::list<std::string> configs = { "" };
         {
             std::set<std::string> configDefines = { "__cplusplus" };
             preprocessor.getConfigs("", tokens, configDefines, configs);
