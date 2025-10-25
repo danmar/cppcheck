@@ -122,7 +122,7 @@ void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vecto
     tokenizer.list.createTokens(std::move(tokens2));
 
     std::list<Directive> directives;
-    preprocessor.createDirectives(tokens1, directives);
+    Preprocessor::createDirectives(tokens1, directives);
     tokenizer.setDirectives(std::move(directives));
 }
 
