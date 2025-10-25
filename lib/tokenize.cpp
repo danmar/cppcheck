@@ -1089,6 +1089,17 @@ void Tokenizer::simplifyTypedef()
                 typedefInfo.column = typedefToken->column();
                 typedefInfo.used = t.second.isUsed();
                 typedefInfo.isFunctionPointer = Token::Match(t.second.nameToken(), "%name% ) (");
+                if (typedefInfo.isFunctionPointer) {
+                    const Token* tok = typedefToken;
+                    while (tok != t.second.endToken()) {
+                        TypedefToken ttok;
+                        ttok.name = tok->str();
+                        ttok.lineNumber = tok->linenr();
+                        ttok.column = tok->column();
+                        typedefInfo.typedefInfoTokens.emplace_back(ttok);
+                        tok = tok->next();
+                    }
+                }
                 mTypedefInfo.push_back(std::move(typedefInfo));
 
                 t.second.removeDeclaration();
@@ -1612,6 +1623,17 @@ void Tokenizer::simplifyTypedefCpp()
         typedefInfo.column = typeName->column();
         typedefInfo.used = false;
         typedefInfo.isFunctionPointer = Token::Match(typeName, "%name% ) (");
+        if (typedefInfo.isFunctionPointer) {
+            const Token* t = typeDef;
+            while (t != tok) {
+                TypedefToken ttok;
+                ttok.name = t->str();
+                ttok.lineNumber = t->linenr();
+                ttok.column = t->column();
+                typedefInfo.typedefInfoTokens.emplace_back(ttok);
+                t = t->next();
+            }
+        }
         mTypedefInfo.push_back(std::move(typedefInfo));
 
         while (!done) {
@@ -6291,6 +6313,16 @@ std::string Tokenizer::dumpTypedefInfo() const
 
         outs += "/>";
         outs += '\n';
+        for (const auto& t : typedefInfo.typedefInfoTokens) {
+            outs += "      <token ";
+            outs += "column=\"";
+            outs += std::to_string(t.column);
+            outs += "\" ";
+            outs += "str=\"";
+            outs += ErrorLogger::toxml(t.name);
+            outs += "\"/>";
+            outs += '\n';
+        }
     }
     outs += "  </typedef-info>";
     outs += '\n';
