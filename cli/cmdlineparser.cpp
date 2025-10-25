@@ -398,6 +398,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     bool executorAuto = true;
 
+    Regex::Type regexType = Regex::Type::Unknown;
+
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
             mPathNames.emplace_back(Path::fromNativeSeparators(Path::removeQuotationMarks(argv[i])));
@@ -1207,6 +1209,26 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
             mSettings.quiet = true;
 
+        // Rule given at command line
+        else if (std::strncmp(argv[i], "--regex=", 7) == 0) {
+#ifdef HAVE_RULES
+            const std::string type = 7 + argv[i];
+            if (type == "pcre") {
+                regexType = Regex::Type::Pcre;
+            }
+            else if (type == "std") {
+                regexType = Regex::Type::Std;
+            }
+            else {
+                mLogger.printError("unknown regex type '" + type + "'.");
+                return Result::Fail;
+            }
+#else
+            mLogger.printError("Option --regex cannot be used as Cppcheck has not been built with rules support.");
+            return Result::Fail;
+#endif
+        }
+
         // Output relative paths
         else if (std::strcmp(argv[i], "-rp") == 0 || std::strcmp(argv[i], "--relative-paths") == 0)
             mSettings.relativePaths = true;
@@ -1276,8 +1298,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
+            // TODO: the type breaks the left-to-right processing
             std::string regex_err;
-            auto regex = Regex::create(rule.pattern, regex_err);
+            auto regex = Regex::create(rule.pattern, regexType, regex_err);
             if (!regex) {
                 mLogger.printError("failed to compile rule pattern '" + rule.pattern + "' (" + regex_err + ").");
                 return Result::Fail;
@@ -1360,8 +1383,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         return Result::Fail;
                     }
 
+                    // TODO: the type breaks the left-to-right processing
                     std::string regex_err;
-                    auto regex = Regex::create(rule.pattern, regex_err);
+                    auto regex = Regex::create(rule.pattern, regexType, regex_err);
                     if (!regex) {
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - pattern '" + rule.pattern + "' failed to compile (" + regex_err + ").");
                         return Result::Fail;
