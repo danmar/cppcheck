@@ -1977,13 +1977,15 @@ bool CppCheck::isPremiumCodingStandardId(const std::string& id) const {
     return false;
 }
 
-std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const {
+std::string CppCheck::getDumpFileContentsRawTokens(const std::vector<std::string>& files, const simplecpp::TokenList& tokens1) const
+{
     std::string header = getDumpFileContentsRawTokensHeader(files);
     std::string footer = getDumpFileContentsRawTokensFooter(tokens1);
     return getDumpFileContentsRawTokens(header, footer);
 }
 
-std::string CppCheck::getDumpFileContentsRawTokens(const std::string& header, const std::string& footer) const {
+std::string CppCheck::getDumpFileContentsRawTokens(const std::string& header, const std::string& footer)
+{
     std::string dumpProlog;
     dumpProlog += "  <rawtokens>\n";
     dumpProlog += header;
@@ -1992,7 +1994,8 @@ std::string CppCheck::getDumpFileContentsRawTokens(const std::string& header, co
     return dumpProlog;
 }
 
-std::string CppCheck::getDumpFileContentsRawTokensHeader(const std::vector<std::string>& files) const {
+std::string CppCheck::getDumpFileContentsRawTokensHeader(const std::vector<std::string>& files) const
+{
     std::string dumpProlog;
     for (unsigned int i = 0; i < files.size(); ++i) {
         dumpProlog += "    <file index=\"";
@@ -2004,7 +2007,8 @@ std::string CppCheck::getDumpFileContentsRawTokensHeader(const std::vector<std::
     return dumpProlog;
 }
 
-std::string CppCheck::getDumpFileContentsRawTokensFooter(const simplecpp::TokenList& tokens1) const {
+std::string CppCheck::getDumpFileContentsRawTokensFooter(const simplecpp::TokenList& tokens1)
+{
     std::string dumpProlog;
     for (const simplecpp::Token* tok = tokens1.cfront(); tok; tok = tok->next) {
         dumpProlog += "    <tok ";

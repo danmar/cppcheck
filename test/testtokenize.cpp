@@ -583,7 +583,7 @@ private:
         const simplecpp::TokenList tokens1(code, files, filename, &outputList);
         Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
         std::list<Directive> directives;
-        preprocessor.createDirectives(tokens1, directives);
+        Preprocessor::createDirectives(tokens1, directives);
 
         TokenList tokenlist{settings, Path::identify(filename, false)};
         Tokenizer tokenizer(std::move(tokenlist), *this);
