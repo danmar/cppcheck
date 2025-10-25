@@ -1489,7 +1489,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const TokenList &list)
         const std::string err = rule.regex->match(str, f);
         if (!err.empty()) {
             const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
-                                      emptyString,
+                                      "",
                                       Severity::error,
                                       err,
                                       "pcre_exec",

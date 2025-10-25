@@ -722,7 +722,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     bool newFunc = true; // Is this function already in the database?
                     auto range = scope->functionMap.equal_range(tok->str());
                     for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
-                        if (it->second->argsMatch(scope, it->second->argDef, argStart, emptyString, 0)) {
+                        if (it->second->argsMatch(scope, it->second->argDef, argStart, "", 0)) {
                             newFunc = false;
                             break;
                         }
@@ -806,7 +806,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                             bool newFunc = true; // Is this function already in the database?
                             auto range = scope->functionMap.equal_range(ftok->str());
                             for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
-                                if (it->second->argsMatch(scope, it->second->argDef, argStart, emptyString, 0)) {
+                                if (it->second->argsMatch(scope, it->second->argDef, argStart, "", 0)) {
                                     newFunc = false;
                                     break;
                                 }
@@ -3444,7 +3444,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
             const Function *f = it->second;
             if (f->hasBody())
                 continue;
-            if (f->argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
+            if (f->argsMatch(scope, f->argDef, argStart, "", 0)) {
                 function = const_cast<Function *>(it->second);
                 break;
             }
@@ -3802,7 +3802,7 @@ std::string Type::name() const
     else if (start->str() == "class")
         start = start->tokAt(1);
     else if (!start->isName())
-        return emptyString;
+        return "";
     const Token* next = start;
     while (Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
         if (Token::Match(next, "<|(|[") && next->link())
@@ -4894,7 +4894,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
                 }
 
                 // check for matching function parameters
-                match = match && argsMatch(baseType->classScope, func->argDef, argDef, emptyString, 0);
+                match = match && argsMatch(baseType->classScope, func->argDef, argDef, "", 0);
 
                 // check for matching cv-ref qualifiers
                 match = match
@@ -6473,7 +6473,7 @@ static T* findTypeImpl(S& thisScope, const std::string & name)
         return it->second;
 
     // is type defined in anonymous namespace..
-    it = thisScope.definedTypesMap.find(emptyString);
+    it = thisScope.definedTypesMap.find("");
     if (it != thisScope.definedTypesMap.end()) {
         for (S *scope : thisScope.nestedList) {
             if (scope->className.empty() && (scope->type == ScopeType::eNamespace || scope->isClassOrStructOrUnion())) {
