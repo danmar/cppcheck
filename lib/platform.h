@@ -44,6 +44,7 @@ namespace tinyxml2 {
  * @brief Platform settings
  */
 class CPPCHECKLIB Platform {
+    friend class TestPlatform;
 private:
     static long long min_value(std::uint8_t bit) {
         assert(bit > 0);
@@ -78,6 +79,9 @@ private:
 
     /** provides list of defines specified by the limit.h/climits includes */
     std::string getLimitsDefines(bool c99) const;
+
+    /** load platform from xml document, primarily for testing */
+    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
 public:
     Platform();
 
@@ -150,15 +154,13 @@ public:
 
     /**
      * load platform file
-     * @param exename application path
+     * @param paths the additional paths to look into
      * @param filename platform filename
      * @param debug log verbose information about the lookup
      * @return returns true if file was loaded successfully
      */
-    bool loadFromFile(const char exename[], const std::string &filename, bool debug = false);
+    bool loadFromFile(const std::vector<std::string>& paths, const std::string &filename, bool debug = false);
 
-    /** load platform from xml document, primarily for testing */
-    bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
 
     /**
      * @brief Returns true if platform type is Windows
