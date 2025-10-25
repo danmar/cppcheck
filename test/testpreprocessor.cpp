@@ -122,7 +122,7 @@ private:
         Preprocessor preprocessor(settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
         if (inlineSuppression)
             preprocessor.inlineSuppressions(tokens, *inlineSuppression);
-        preprocessor.removeComments(tokens);
+        Preprocessor::removeComments(tokens);
         preprocessor.simplifyPragmaAsm(tokens);
 
         preprocessor.reportOutput(outputList, true);
@@ -369,7 +369,7 @@ private:
         std::vector<std::string> files;
         // TODO: this adds an empty filename
         simplecpp::TokenList tokens(code,files);
-        tokens.removeComments();
+        Preprocessor::removeComments(tokens);
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
         std::list<std::string> configs = { "" };
         {
@@ -388,7 +388,7 @@ private:
         std::vector<std::string> files;
         // TODO: this adds an empty filename
         simplecpp::TokenList tokens(code,files);
-        tokens.removeComments();
+        Preprocessor::removeComments(tokens);
         Preprocessor preprocessor(settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
         return preprocessor.calculateHash(tokens, "");
     }
