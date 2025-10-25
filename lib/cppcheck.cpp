@@ -1014,7 +1014,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         // Parse comments and then remove them
         preprocessor.addRemarkComments(tokens1, mLogger->remarkComments());
         preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
-        preprocessor.removeComments(tokens1);
+        Preprocessor::removeComments(tokens1);
 
         if (!mSettings.buildDir.empty()) {
             analyzerInformation.reset(new AnalyzerInformation);
@@ -1037,7 +1037,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
         // Get directives
         std::list<Directive> directives;
-        preprocessor.createDirectives(tokens1, directives);
+        Preprocessor::createDirectives(tokens1, directives);
         preprocessor.simplifyPragmaAsm(tokens1);
 
         // This needs to be a linked list to allow new configurations to be discovered
@@ -1049,8 +1049,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             // Do preprocessing on included file
             preprocessor.addRemarkComments(data.tokens, mLogger->remarkComments());
             preprocessor.inlineSuppressions(data.tokens, mSuppressions.nomsg);
-            preprocessor.removeComments(data.tokens);
-            preprocessor.createDirectives(data.tokens, directives);
+            Preprocessor::removeComments(data.tokens);
+            Preprocessor::createDirectives(data.tokens, directives);
             preprocessor.simplifyPragmaAsm(data.tokens);
             // Discover new configurations from included file
             if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force)
