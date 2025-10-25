@@ -655,6 +655,11 @@ private:
     /** sizeof information for known types */
     std::map<std::string, int> mTypeSize;
 
+    struct TypedefToken {
+        std::string name;
+        int lineNumber;
+        int column;
+    };
     struct TypedefInfo {
         std::string name;
         std::string filename;
@@ -662,6 +667,7 @@ private:
         int column;
         bool used;
         bool isFunctionPointer;
+        std::vector<TypedefToken> typedefInfoTokens;
     };
     std::vector<TypedefInfo> mTypedefInfo;
 
