@@ -123,7 +123,7 @@ private:
         if (inlineSuppression)
             preprocessor.inlineSuppressions(tokens, *inlineSuppression);
         Preprocessor::removeComments(tokens);
-        preprocessor.simplifyPragmaAsm(tokens);
+        Preprocessor::simplifyPragmaAsm(tokens);
 
         preprocessor.reportOutput(outputList, true);
 

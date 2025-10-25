@@ -159,8 +159,6 @@ private:
 
     void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
-    static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
-
     /**
      * Include file types.
      */

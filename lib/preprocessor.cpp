@@ -972,11 +972,6 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
 
 void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList)
 {
-    Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-}
-
-void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList)
-{
     // assembler code..
     for (simplecpp::Token *tok = tokenList.front(); tok; tok = tok->next) {
         if (tok->op != '#')
