@@ -191,7 +191,7 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
     }
 
     // Output a warning for the user if he tries to exclude headers
-    const std::vector<std::string>& ignored = getIgnoredPaths();
+    const std::vector<std::string>& ignored = mIgnoredPaths;
     const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
         return Path::isHeader(i);
     });
@@ -200,8 +200,8 @@ bool CmdLineParser::fillSettingsFromArgs(int argc, const char* const argv[])
         mLogger.printMessage("Please use --suppress for ignoring results from the header files.");
     }
 
-    const std::vector<std::string>& pathnamesRef = getPathNames();
-    const std::list<FileSettings>& fileSettingsRef = getFileSettings();
+    const std::vector<std::string>& pathnamesRef = mPathNames;
+    const std::list<FileSettings>& fileSettingsRef = mFileSettings;
 
     // the inputs can only be used exclusively - CmdLineParser should already handle this
     assert(!(!pathnamesRef.empty() && !fileSettingsRef.empty()));
