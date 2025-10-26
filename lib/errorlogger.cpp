@@ -57,7 +57,7 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
 };
 
 ErrorMessage::ErrorMessage()
-    : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
+    : severity(Severity::none), cwe(0U), certainty(Certainty::normal)
 {}
 
 // TODO: id and msg are swapped compared to other calls
@@ -67,8 +67,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
     file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(0U),
-    certainty(certainty),
-    hash(0)
+    certainty(certainty)
 {
     // set the summary and verbose messages
     setmsg(msg);
@@ -82,15 +81,14 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
     file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
-    certainty(certainty),
-    hash(0)
+    certainty(certainty)
 {
     // set the summary and verbose messages
     setmsg(msg);
 }
 
 ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity severity, std::string id, const std::string& msg, Certainty certainty)
-    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
+    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty)
 {
     // Format callstack
     for (auto it = callstack.cbegin(); it != callstack.cend(); ++it) {
@@ -125,7 +123,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 
     setmsg(msg);
 
-    hash = 0; // calculateWarningHash(list, hashWarning.str());
+    // hash = calculateWarningHash(list, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
@@ -158,7 +156,7 @@ ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Seve
 
     setmsg(msg);
 
-    hash = 0; // calculateWarningHash(tokenList, hashWarning.str());
+    // hash = calculateWarningHash(tokenList, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)

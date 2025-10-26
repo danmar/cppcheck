@@ -145,6 +145,12 @@ picojson::array SarifReport::serializeResults() const
         message["text"] = picojson::value(finding.shortMessage());
         res["message"] = picojson::value(message);
         res["ruleId"] = picojson::value(finding.id);
+        if (finding.hash != 0) {
+            picojson::object partialFingerprints;
+            partialFingerprints["hash"] = picojson::value(std::to_string(finding.hash));
+            partialFingerprints["id"] = picojson::value(finding.id);
+            res["partialFingerprints"] = picojson::value(partialFingerprints);
+        }
         results.emplace_back(res);
     }
     return results;
