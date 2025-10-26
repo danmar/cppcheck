@@ -1,4 +1,4 @@
-# premium-misra-onfig
+# premium-misra-config
 
 **Message**: Unknown constant x, please review cppcheck options<br/>
 **Category**: Configuration<br/>
