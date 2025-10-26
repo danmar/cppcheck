@@ -4556,7 +4556,7 @@ private:
                                                 "   typedef fp16 ( *pfp16 ) ( void );\n"
                                                 "}\n");
         ASSERT_EQUALS("  <typedef-info>\n"
-                      "    <info name=\"fp16\" file=\"file.c\" line=\"2\" column=\"1\" used=\"1\" isFunctionPointer=\"1\"/>\n"
+                      "    <info name=\"fp16\" file=\"file.c\" line=\"2\" column=\"1\" used=\"1\" isFunctionPointer=\"1\">\n"
                       "      <token column=\"1\" str=\"typedef\"/>\n"
                       "      <token column=\"9\" str=\"void\"/>\n"
                       "      <token column=\"14\" str=\"(\"/>\n"
@@ -4567,8 +4567,9 @@ private:
                       "      <token column=\"25\" str=\"int16_t\"/>\n"
                       "      <token column=\"33\" str=\"n\"/>\n"
                       "      <token column=\"35\" str=\")\"/>\n"
+                      "    </info>\n"
                       "    <info name=\"int16_t\" file=\"file.c\" line=\"1\" column=\"1\" used=\"1\" isFunctionPointer=\"0\"/>\n"
-                      "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"20\" used=\"0\" isFunctionPointer=\"1\"/>\n"
+                      "    <info name=\"pfp16\" file=\"file.c\" line=\"4\" column=\"20\" used=\"0\" isFunctionPointer=\"1\">\n"
                       "      <token column=\"4\" str=\"typedef\"/>\n"
                       "      <token column=\"12\" str=\"void\"/>\n"
                       "      <token column=\"12\" str=\"(\"/>\n"
@@ -4586,6 +4587,7 @@ private:
                       "      <token column=\"35\" str=\"short\"/>\n"
                       "      <token column=\"35\" str=\"n\"/>\n"
                       "      <token column=\"35\" str=\")\"/>\n"
+                      "    </info>\n"
                       "  </typedef-info>\n",xml);
     }
 
