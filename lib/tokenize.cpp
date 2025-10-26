@@ -6285,6 +6285,7 @@ std::string Tokenizer::dumpTypedefInfo() const
     std::string outs = "  <typedef-info>";
     outs += '\n';
     for (const TypedefInfo &typedefInfo: mTypedefInfo) {
+        const bool toks = !typedefInfo.typedefInfoTokens.empty();
         outs += "    <info";
 
         outs += " name=\"";
@@ -6310,8 +6311,10 @@ std::string Tokenizer::dumpTypedefInfo() const
         outs += " isFunctionPointer=\"";
         outs += std::to_string(typedefInfo.isFunctionPointer);
         outs += "\"";
-
-        outs += "/>";
+        if (toks)
+            outs += ">";
+        else
+            outs += "/>";
         outs += '\n';
         for (const auto& t : typedefInfo.typedefInfoTokens) {
             outs += "      <token ";
@@ -6323,6 +6326,8 @@ std::string Tokenizer::dumpTypedefInfo() const
             outs += "\"/>";
             outs += '\n';
         }
+        if (toks)
+            outs += "    </info>\n";
     }
     outs += "  </typedef-info>";
     outs += '\n';
