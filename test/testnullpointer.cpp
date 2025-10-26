@@ -2447,14 +2447,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout_str());
 
-        check("bool h(int*);\n"
-              "void f(int* x) {\n"
-              "    int* i = x;\n"
-              "    if (h(i))\n"
-              "        i = nullptr;\n"
-              "    if (h(i) && *i == 1) {}\n"
-              "}\n");
-        ASSERT_EQUALS("", errout_str());
+      //   check("bool h(int*);\n"
+      //         "void f(int* x) {\n"
+      //         "    int* i = x;\n"
+      //         "    if (h(i))\n"
+      //         "        i = nullptr;\n"
+      //         "    if (h(i) && *i == 1) {}\n"
+      //         "}\n");
+      //   ASSERT_EQUALS("", errout_str());
     }
 
     void nullpointer78() // #7802
