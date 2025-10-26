@@ -194,6 +194,8 @@ void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred
 {
     if (mValues->empty())
         return;
+    if (!hasModifiableVars)
+        return;
 
     // TODO: how to delay until we actuallly modify?
     copyOnWrite();
@@ -234,6 +236,7 @@ void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
 
     copyOnWrite();
 
+    hasModifiableVars = false;
     for (auto&& p : (*pm.mValues)) {
         if (skipUnknown) {
             auto it = mValues->find(p.first);
@@ -241,6 +244,7 @@ void ProgramMemory::replace(ProgramMemory pm, bool skipUnknown)
                 continue;
         }
         (*mValues)[p.first] = std::move(p.second);
+        hasModifiableVars |= p.first.tok->varId() > 0;
     }
 }
 

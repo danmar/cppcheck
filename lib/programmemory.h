@@ -158,6 +158,7 @@ private:
     Map::iterator find(nonneg int exprid);
 
     std::shared_ptr<Map> mValues;
+    bool hasModifiableVars = false;
 };
 
 struct ProgramMemoryState {
