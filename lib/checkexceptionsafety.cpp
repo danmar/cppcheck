@@ -319,12 +319,12 @@ void CheckExceptionSafety::nothrowThrows()
 
 void CheckExceptionSafety::noexceptThrowError(const Token * const tok)
 {
-    reportError(tok, Severity::error, "throwInNoexceptFunction", "Exception thrown in function declared not to throw exceptions.", CWE398, Certainty::normal);
+    reportError(tok, Severity::error, "throwInNoexceptFunction", "Unhandled exception thrown in function declared not to throw exceptions.", CWE398, Certainty::normal);
 }
 
 void CheckExceptionSafety::entryPointThrowError(const Token * const tok)
 {
-    reportError(tok, Severity::error, "throwInEntryPoint", "Exception thrown in function that is an entry point.", CWE398, Certainty::normal);
+    reportError(tok, Severity::error, "throwInEntryPoint", "Unhandled exception thrown in function that is an entry point.", CWE398, Certainty::normal);
 }
 
 //--------------------------------------------------------------------------
