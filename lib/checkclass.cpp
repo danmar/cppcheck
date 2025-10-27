@@ -1342,7 +1342,7 @@ void CheckClass::privateFunctions()
 
         while (!privateFuncs.empty()) {
             const auto& pf = privateFuncs.front();
-            if (pf->token->isAttributeMaybeUnused()) {
+            if (pf->token->isAttributeMaybeUnused() || pf->token->isAttributeUnused()) {
                 privateFuncs.pop_front();
                 continue;
             }
