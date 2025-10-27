@@ -506,6 +506,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6:5]: (error) Exception thrown in function that is an entry point. [throwInEntryPoint]\n",
                       errout_str());
+
+        check("void f(int i) {\n"
+              "    if (i < 2)\n"
+              "        throw 0;\n"
+              "}\n"
+              "int main(int argc, char* argv[]) {\n"
+              "    try {\n"
+              "        f(argc);\n"
+              "    } catch (...) {\n"
+              "        return 1;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
