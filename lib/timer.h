@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <functional>
