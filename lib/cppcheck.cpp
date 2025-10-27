@@ -884,25 +884,19 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     return checkInternal(file, cfgname, fileIndex, f);
 }
 
-bool CppCheck::checkPlistOutput(const FileWithDetails& file, const std::vector<std::string>& files)
+void CppCheck::checkPlistOutput(const FileWithDetails& file, const std::vector<std::string>& files)
 {
     if (!mSettings.plistOutput.empty()) {
         const bool slashFound = file.spath().find('/') != std::string::npos;
         std::string filename = slashFound ? file.spath().substr(file.spath().rfind('/') + 1) : file.spath();
-        const std::size_t dotPosition = filename.find('.');
+        // Removes suffix from filename when it exists
+        const std::string noSuffixFilename = filename.substr(0, filename.find('.'));
 
-        if (dotPosition == std::string::npos) {
-            ErrorMessage::FileLocation loc(filename, 0, 0);
-            ErrorMessage errmsg({std::move(loc)}, "", Severity::error, "Filename '" + filename + "' does not contain dot", "filenameError", Certainty::normal);
-            mErrorLogger.reportErr(errmsg);
-            return false;
-        }
-
+        // the hash is added to handle when files in different folders have the same name
         const std::size_t fileNameHash = std::hash<std::string> {}(file.spath());
-        filename = mSettings.plistOutput + filename.substr(0, filename.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
+        filename = mSettings.plistOutput + noSuffixFilename + "_" + std::to_string(fileNameHash) + ".plist";
         mLogger->openPlist(filename, files);
     }
-    return true;
 }
 
 unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList)
@@ -1010,8 +1004,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         if (!preprocessor.loadFiles(tokens1, files))
             return mLogger->exitcode();
 
-        if (!checkPlistOutput(file, files))
-            return mLogger->exitcode();
+        checkPlistOutput(file, files);
 
         std::string dumpProlog;
         if (mSettings.dump || !mSettings.addons.empty()) {

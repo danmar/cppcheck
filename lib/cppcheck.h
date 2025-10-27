@@ -185,7 +185,7 @@ private:
      */
     unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex);
 
-    bool checkPlistOutput(const FileWithDetails& file, const std::vector<std::string>& files);
+    void checkPlistOutput(const FileWithDetails& file, const std::vector<std::string>& files);
 
     /**
      * @brief Check a file using buffer

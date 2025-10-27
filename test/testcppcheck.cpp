@@ -526,27 +526,33 @@ private:
     void checkPlistOutput() const {
         Suppressions supprs;
         ErrorLogger2 errorLogger;
-        std::vector<std::string> files = {"file.txt"};
+        std::vector<std::string> files = {"textfile.txt"};
 
         {
             const auto s = dinit(Settings, $.templateFormat = templateFormat, $.plistOutput = "output");
             ScopedFile file("file", "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            ASSERT_EQUALS(false, cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files));
+            cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
+            const std::string outputFile {"outputfile_4017852018407011111.plist"};
+            ASSERT(Path::exists(outputFile));
+            std::remove(outputFile.c_str());
         }
 
         {
             const auto s = dinit(Settings, $.plistOutput = "output");
             ScopedFile file("file.c", "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            ASSERT_EQUALS(true, cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files));
+            cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
+            const std::string outputFile {"outputfile_18314070737314589129.plist"};
+            ASSERT(Path::exists(outputFile));
+            std::remove(outputFile.c_str());
         }
 
         {
             Settings s;
             ScopedFile file("file.c", "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            ASSERT_EQUALS(true, cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files));
+            cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
         }
     }
 
