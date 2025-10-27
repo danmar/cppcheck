@@ -882,6 +882,12 @@ private:
               "    [[maybe_unused]] int f() { return 42; }\n"
               "};");
         ASSERT_EQUALS("", errout_str());
+
+        check("class C {\n"
+              "    [[maybe_unused]] static int f();\n"
+              "};\n"
+              "int C::f() { return 42; }\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void trailingReturn() {

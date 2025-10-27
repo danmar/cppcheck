@@ -1346,6 +1346,10 @@ void CheckClass::privateFunctions()
                 privateFuncs.pop_front();
                 continue;
             }
+            if (pf->tokenDef && pf->tokenDef->isAttributeMaybeUnused()) {
+                privateFuncs.pop_front();
+                continue;
+            }
             // Check that all private functions are used
             bool used = checkFunctionUsage(pf, scope); // Usage in this class
             // Check in friend classes
