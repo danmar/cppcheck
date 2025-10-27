@@ -889,7 +889,7 @@ void CppCheck::checkPlistOutput(const FileWithDetails& file, const std::vector<s
     if (!mSettings.plistOutput.empty()) {
         const bool slashFound = file.spath().find('/') != std::string::npos;
         std::string filename = slashFound ? file.spath().substr(file.spath().rfind('/') + 1) : file.spath();
-        // Removes suffix from filename when it exists
+        // removes suffix from filename when it exists
         const std::string noSuffixFilename = filename.substr(0, filename.find('.'));
 
         // the hash is added to handle when files in different folders have the same name
