@@ -1346,7 +1346,7 @@ void CheckClass::privateFunctions()
                 privateFuncs.pop_front();
                 continue;
             }
-            if (pf->tokenDef && pf->tokenDef->isAttributeMaybeUnused()) {
+            if (pf->tokenDef && (pf->tokenDef->isAttributeMaybeUnused() || pf->tokenDef->isAttributeUnused())) {
                 privateFuncs.pop_front();
                 continue;
             }

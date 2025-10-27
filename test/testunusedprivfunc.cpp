@@ -896,6 +896,12 @@ private:
               "    __attribute__((unused)) int f() { return 42; }\n"
               "};");
         ASSERT_EQUALS("", errout_str());
+
+        check("class C {\n"
+              "    __attribute__((unused)) int f();\n"
+              "};\n"
+              "int C::f() { return 42; }\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void trailingReturn() {
