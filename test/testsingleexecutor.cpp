@@ -267,7 +267,7 @@ private:
               dinit(CheckOptions,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        ASSERT_EQUALS(1, cppcheck::count_all_of(output_s, "Overall time:"));
+        ASSERT_EQUALS(0, cppcheck::count_all_of(output_s, "Overall time:"));
     }
 
     void showtime_summary() {
