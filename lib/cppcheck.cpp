@@ -893,7 +893,7 @@ bool CppCheck::checkPlistOutput(const FileWithDetails& file, const std::vector<s
 
         if (dotPosition == std::string::npos) {
             ErrorMessage::FileLocation loc(filename, 0, 0);
-            ErrorMessage errmsg({std::move(loc)}, "", Severity::error, "filename does not contain dot", "filenameError", Certainty::normal);
+            ErrorMessage errmsg({std::move(loc)}, "", Severity::error, "Filename '" + filename + "' does not contain dot", "filenameError", Certainty::normal);
             mErrorLogger.reportErr(errmsg);
             return false;
         }
