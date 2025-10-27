@@ -891,7 +891,7 @@ bool CppCheck::checkPlistOutput(const FileWithDetails& file, const std::vector<s
         std::string filename = slashFound ? file.spath().substr(file.spath().rfind('/') + 1) : file.spath();
         const std::size_t dotPosition = filename.find('.');
 
-        if(dotPosition == std::string::npos) {
+        if (dotPosition == std::string::npos) {
             ErrorMessage::FileLocation loc(filename, 0, 0);
             ErrorMessage errmsg({std::move(loc)}, "", Severity::error, "filename does not contain dot", "filenameError", Certainty::normal);
             mErrorLogger.reportErr(errmsg);
