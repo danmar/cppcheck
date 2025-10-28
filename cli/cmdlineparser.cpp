@@ -394,7 +394,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     std::string platform;
     char defaultSign = '\0';
 
-    std::vector<std::string> lookupPaths{argv[0]};
+    std::vector<std::string> lookupPaths{
+        Path::getCurrentPath(), // TODO: do we want to look in CWD?
+        Path::getPathFromFilename(argv[0])
+    };
 
     bool executorAuto = true;
 
@@ -1160,7 +1163,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     platform = project.guiProject.platform;
 
                 // look for external files relative to project first
-                lookupPaths.insert(lookupPaths.cbegin(), projectFile);
+                lookupPaths.insert(lookupPaths.cbegin(), Path::getPathFromFilename(projectFile));
 
                 const auto& projectFileGui = project.guiProject.projectFile;
                 if (!projectFileGui.empty()) {

@@ -208,8 +208,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
         for (const QFileInfo& item : dir.entryInfoList()) {
             const QString platformFile = item.fileName();
 
+            const std::vector<std::string> paths = {
+                Path::getCurrentPath(), // TODO: do we want to look in CWD?
+                applicationFilePath.toStdString(),
+            };
             Platform plat2;
-            if (!plat2.loadFromFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
+            if (!plat2.loadFromFile(paths, platformFile.toStdString()))
                 continue;
 
             if (platformFiles.indexOf(platformFile) == -1)
