@@ -110,13 +110,12 @@ private:
     struct CheckUninitVarOptions
     {
         bool cpp = true;
-        bool debugwarnings = false;
         const Settings *s = nullptr;
     };
 
 #define checkUninitVar(...) checkUninitVar_(__FILE__, __LINE__, __VA_ARGS__)
     void checkUninitVar_(const char* file, int line, const char code[], const CheckUninitVarOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).debugwarnings(options.debugwarnings).build();
+        const Settings& settings1 =options.s ? *options.s : settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);

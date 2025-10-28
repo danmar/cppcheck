@@ -5641,7 +5641,7 @@ private:
 
         // #13959
         const Settings settingsOld = settings;
-        settings = settingsBuilder(settingsOld).c(Standards::C23).build();
+        settings.standards.c = Standards::C23;
         code = "void f(int* p) {\n"
                "    if (p == nullptr)\n"
                "        return;\n"
@@ -5651,7 +5651,7 @@ private:
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT_EQUALS(true, value.isKnown());
 
-        settings = settingsBuilder(settingsOld).c(Standards::C17).build();
+        settings.standards.c = Standards::C17;
         value = valueOfTok(code, "p ) { }", &settings, /*cpp*/ false);
         ASSERT(value == ValueFlow::Value());
         settings = settingsOld;

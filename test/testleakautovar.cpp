@@ -29,7 +29,7 @@ public:
     TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {}
 
 private:
-    const Settings settings = settingsBuilder().library("std.cfg").build();
+    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
     void run() override {
         mNewTemplate = true;
@@ -223,7 +223,7 @@ private:
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).checkLibrary().build();
+        const Settings& settings1 = options.s ? *options.s : settings;
 
         // Tokenize..
         SimpleTokenizer tokenizer(settings1, *this, options.cpp);
@@ -235,10 +235,8 @@ private:
 
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const Settings & s) {
-        const Settings settings0 = settingsBuilder(s).checkLibrary().build();
-
         // Tokenize..
-        SimpleTokenizer tokenizer(settings0, *this);
+        SimpleTokenizer tokenizer(s, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for leaks..
@@ -454,7 +452,7 @@ private:
     }
 
     void assign22() { // #9139
-        const Settings s = settingsBuilder().library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("posix.cfg").checkLibrary().build();
         check("void f(char tempFileName[256]) {\n"
               "    const int fd = socket(AF_INET, SOCK_PACKET, 0 );\n"
               "}", dinit(CheckOptions, $.cpp = true, $.s = &s));
@@ -467,7 +465,7 @@ private:
     }
 
     void assign23() {
-        const Settings s = settingsBuilder().library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("posix.cfg").checkLibrary().build();
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -2277,7 +2275,7 @@ private:
     }
 
     void ifelse24() { // #1733
-        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").checkLibrary().build();
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
@@ -3190,7 +3188,7 @@ private:
                                    "    <arg nr=\"1\" direction=\"in\"/>\n"
                                    "  </function>\n"
                                    "</def>\n";
-        const Settings settingsLeakIgnore = settingsBuilder().libraryxml(xmldata).build();
+        const Settings settingsLeakIgnore = settingsBuilder().libraryxml(xmldata).checkLibrary().build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
