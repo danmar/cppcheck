@@ -1091,7 +1091,7 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
     if (!tok)
         return nullptr;
     for (const ValueFlow::Value& val : tok->values()) {
-        if (!val.isLocalLifetimeValue() && !val.isArgumentLifetimeValue())
+        if (!val.isLocalLifetimeValue())
             continue;
         if (contains({ValueFlow::Value::LifetimeKind::Address,
                       ValueFlow::Value::LifetimeKind::SubObject,
