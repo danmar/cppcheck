@@ -21,7 +21,7 @@ However, no warning is generated when:
 
 ## Motivation
 
-The same value indicates that there might be some logic error or copy paste mistake.
+The same value indicates that there might be some logic error or copy-paste mistake.
 
 ## Examples
 
