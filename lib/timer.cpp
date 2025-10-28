@@ -105,11 +105,13 @@ Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* tim
     , mStart(std::clock())
     , mShowTimeMode(showtimeMode)
     , mStopped(showtimeMode == SHOWTIME_MODES::SHOWTIME_NONE || showtimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+    , mStartTimePoint(Clock::now())
 {}
 
-Timer::Timer(bool fileTotal, std::string filename)
-    : mStr(std::move(filename))
-    , mStopped(!fileTotal)
+Timer::Timer(std::string str)
+    : mStr(std::move(str))
+    , mShowTimeMode(SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+    , mStartTimePoint(Clock::now())
 {}
 
 Timer::~Timer()
@@ -127,22 +129,25 @@ void Timer::stop()
             const double sec = static_cast<double>(diff) / CLOCKS_PER_SEC;
             std::lock_guard<std::mutex> l(stdCoutLock);
             std::cout << mStr << ": " << sec << "s" << std::endl;
-        } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
-            const double sec = static_cast<double>(diff) / CLOCKS_PER_SEC;
+        } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL && mStartTimePoint != TimePoint{}) {
             std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << "Check time: " << mStr << ": " << sec << "s" << std::endl;
+            std::cout << "Check time: " << mStr << ": " << getRealTimePassed() << std::endl;
         } else {
             if (mTimerResults)
                 mTimerResults->addResults(mStr, diff);
+            else if (mStr.empty() && mStartTimePoint != TimePoint{}) { // Get real time
+                std::lock_guard<std::mutex> l(stdCoutLock);
+                std::cout << "Overall time: " << getRealTimePassed() << std::endl;
+            }
         }
     }
 
     mStopped = true;
 }
 
-void Timer::calculateAndOutputTimeDiff(const tp& start, const tp& end)
+std::string Timer::getRealTimePassed()
 {
-    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - mStartTimePoint);
 
     // Extract hours
     auto hours = std::chrono::duration_cast<std::chrono::hours>(diff);
@@ -160,8 +165,5 @@ void Timer::calculateAndOutputTimeDiff(const tp& start, const tp& end)
         ellapsedTime += std::to_string(hours.count()) + "h ";
     if (minutes.count() > 0)
         ellapsedTime += std::to_string(minutes.count()) + "m ";
-    ellapsedTime += std::to_string(seconds) + "s ";
-
-    std::lock_guard<std::mutex> l(stdCoutLock);
-    std::cout << "Overall time: " << ellapsedTime << std::endl;
+    return (ellapsedTime + std::to_string(seconds) + "s ");
 }

@@ -260,7 +260,7 @@ namespace {
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
-    auto startTime{Timer::now()};
+    Timer realTimeClock("", SHOWTIME_MODES::SHOWTIME_SUMMARY);
     Settings settings;
     CmdLineLoggerStd logger;
     Suppressions supprs;
@@ -279,8 +279,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     const int ret = check_wrapper(settings, supprs);
 
-    if (settings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
-        Timer::calculateAndOutputTimeDiff(startTime, Timer::now());
+    if (settings.showtime == SHOWTIME_MODES::SHOWTIME_NONE)
+        realTimeClock.cancelRealTimeMeasurement();
 
     return ret;
 }

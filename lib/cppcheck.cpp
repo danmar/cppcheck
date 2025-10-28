@@ -895,7 +895,9 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     if (Settings::terminated())
         return mLogger->exitcode();
 
-    const Timer fileTotalTimer(mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL, file.spath());
+    Timer WholeFileTimer{file.spath()};
+    if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+        WholeFileTimer.cancelRealTimeMeasurement();
 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::toNativeSeparators(file.spath());
@@ -1311,8 +1313,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: clear earlier?
     mLogger->clear();
 
-    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
-        printTimerResults(mSettings.showtime);
+    printTimerResults(mSettings.showtime);
 
     return mLogger->exitcode();
 }

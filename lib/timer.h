@@ -74,21 +74,20 @@ private:
 class CPPCHECKLIB Timer {
 public:
     Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
-    Timer(bool fileTotal, std::string filename);
+    Timer(std::string str);
     ~Timer();
 
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
 
-    using tp = std::chrono::time_point<std::chrono::high_resolution_clock>;
-
-    static tp now() {
-        return std::chrono::high_resolution_clock::now();
-    }
-
-    static void calculateAndOutputTimeDiff(const tp& start, const tp& end);
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
 
     void stop();
+
+    void cancelRealTimeMeasurement() {
+        mStartTimePoint = TimePoint{};
+    }
 
     static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
         Timer t(std::move(str), showtimeMode, timerResults);
@@ -96,11 +95,15 @@ public:
     }
 
 private:
+
+    std::string getRealTimePassed();
+
     const std::string mStr;
     TimerResultsIntf* mTimerResults{};
     std::clock_t mStart = std::clock();
     const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
     bool mStopped{};
+    TimePoint mStartTimePoint{};
 };
 
 //---------------------------------------------------------------------------
