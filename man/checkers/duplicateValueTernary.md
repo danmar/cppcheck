@@ -7,11 +7,7 @@
 
 ## Description
 
-This checker detects when both branches of a ternary operator (`condition ? true_expr : false_expr`) evaluate to the same value, even though the expressions themselves may be syntactically different. This usually indicates a logic error where the condition serves no purpose since the result is always the same.
-
-The key difference from `duplicateExpressionTernary` is:
-- `duplicateValueTernary`: Triggered when expressions have the same **value** (e.g., `1` and `(int)1`)
-- `duplicateExpressionTernary`: Triggered when expressions are syntactically **identical** (e.g., `x` and `x`)
+This checker detects when both branches of a ternary operator (`condition ? true_expr : false_expr`) evaluate to the same value, even though the expressions themselves may be syntactically different.
 
 The warning is triggered when:
 - The second and third operands of a ternary operator evaluate to the same constant value
@@ -23,6 +19,10 @@ However, no warning is generated when:
 - Variables are modified between evaluations
 - The expressions involve non-constant computations
 
+## Why we warn
+
+The same value indicates that there might be some logic error or copy paste mistake.
+
 ## Examples
 
 ### Problematic code
@@ -33,17 +33,6 @@ int result = condition ? (int)1 : 1;  // Warning: duplicateValueTernary
 
 // Different cast syntax, same value
 int result = condition ? 1 : (int)1;  // Warning: duplicateValueTernary
-
-// Same constant value with different representations
-int result = condition ? (int)1 : 1;  // Warning: duplicateValueTernary
-```
-
-### Code that correctly triggers duplicateExpressionTernary instead
-
-```cpp
-// Identical expressions (not just values)
-int result = condition ? 1 : 1;       // Warning: duplicateExpressionTernary
-int result = condition ? (int)1 : (int)1;  // Warning: duplicateExpressionTernary
 ```
 
 ### Fixed code
@@ -57,16 +46,6 @@ int result = 1;  // OK - removed unnecessary ternary
 
 // Platform-dependent values are allowed
 int size = is_64bit ? sizeof(long) : sizeof(int);  // OK - may differ on platforms
-```
-
-### Exception: Platform-dependent values
-
-```cpp
-// This may NOT generate a warning if values differ across platforms
-int size = condition ? sizeof(long) : sizeof(int);  // OK on some platforms
-
-// Special case: +0.0 vs -0.0 are considered different
-double result = condition ? 0.0 : -0.0;  // OK - different floating-point values
 ```
 
 ## How to fix
