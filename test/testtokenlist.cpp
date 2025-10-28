@@ -157,8 +157,8 @@ private:
         const char code[] = "#include <sys/poll.h>";
         std::vector<std::string> files;
         simplecpp::TokenList tokens1(code, files, "poll.h", nullptr);
-        Preprocessor preprocessor(settingsDefault, *this, Path::identify(tokens1.getFiles()[0], false));
-        simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, "", files, true);
+        Preprocessor preprocessor(tokens1, settingsDefault, *this, Path::identify(tokens1.getFiles()[0], false));
+        simplecpp::TokenList tokensP = preprocessor.preprocess("", files, true);
         TokenList tokenlist(settingsDefault, Standards::Language::C); // headers are treated as C files
         tokenlist.createTokens(std::move(tokensP)); // do not assert
     }

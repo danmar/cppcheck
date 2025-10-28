@@ -847,7 +847,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     return returnValue;
 }
 
-std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simplecpp::TokenList& tokens, const std::string& filePath) const
+std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const std::string& filePath) const
 {
     std::ostringstream toolinfo;
     toolinfo << (mSettings.cppcheckCfgProductName.empty() ? CPPCHECK_VERSION_STRING : mSettings.cppcheckCfgProductName);
@@ -865,7 +865,7 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const simp
     toolinfo << mSettings.premiumArgs;
     // TODO: do we need to add more options?
     mSuppressions.nomsg.dump(toolinfo, filePath);
-    return preprocessor.calculateHash(tokens, toolinfo.str());
+    return preprocessor.calculateHash(toolinfo.str());
 }
 
 unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size)
@@ -938,8 +938,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                 std::vector<std::string> files;
                 simplecpp::TokenList tokens = createTokenList(files, nullptr);
                 if (analyzerInformation) {
-                    const Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
-                    hash = calculateHash(preprocessor, tokens);
+                    const Preprocessor preprocessor(tokens, mSettings, mErrorLogger, file.lang());
+                    hash = calculateHash(preprocessor);
                 }
                 tokenlist.createTokens(std::move(tokens));
                 // this is not a real source file - we just want to tokenize it. treat it as C anyways as the language needs to be determined.
@@ -984,9 +984,9 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             return mLogger->exitcode();
         }
 
-        Preprocessor preprocessor(mSettings, mErrorLogger, file.lang());
+        Preprocessor preprocessor(tokens1, mSettings, mErrorLogger, file.lang());
 
-        if (!preprocessor.loadFiles(tokens1, files))
+        if (!preprocessor.loadFiles(files))
             return mLogger->exitcode();
 
         if (!mSettings.plistOutput.empty()) {
@@ -1006,14 +1006,14 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 
         // Parse comments and then remove them
-        mLogger->setRemarkComments(preprocessor.getRemarkComments(tokens1));
-        preprocessor.inlineSuppressions(tokens1, mSuppressions.nomsg);
+        mLogger->setRemarkComments(preprocessor.getRemarkComments());
+        preprocessor.inlineSuppressions(mSuppressions.nomsg);
         if (mSettings.dump || !mSettings.addons.empty()) {
             std::ostringstream oss;
             mSuppressions.nomsg.dump(oss);
             dumpProlog += oss.str();
         }
-        preprocessor.removeComments(tokens1);
+        preprocessor.removeComments();
 
         if (!mSettings.buildDir.empty()) {
             analyzerInformation.reset(new AnalyzerInformation);
@@ -1022,7 +1022,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
         if (analyzerInformation) {
             // Calculate hash so it can be compared with old hash / future hashes
-            const std::size_t hash = calculateHash(preprocessor, tokens1, file.spath());
+            const std::size_t hash = calculateHash(preprocessor, file.spath());
             std::list<ErrorMessage> errors;
             if (!analyzerInformation->analyzeFile(mSettings.buildDir, file.spath(), cfgname, fileIndex, hash, errors)) {
                 while (!errors.empty()) {
@@ -1035,16 +1035,16 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 
         // Get directives
-        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
-        preprocessor.simplifyPragmaAsm(tokens1);
+        std::list<Directive> directives = preprocessor.createDirectives();
+        preprocessor.simplifyPragmaAsm();
 
-        Preprocessor::setPlatformInfo(tokens1, mSettings);
+        preprocessor.setPlatformInfo();
 
         // Get configurations..
         std::set<std::string> configurations;
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
             Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
-                configurations = preprocessor.getConfigs(tokens1);
+                configurations = preprocessor.getConfigs();
             });
         } else {
             configurations.insert(mSettings.userDefines);
@@ -1052,7 +1052,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
         if (mSettings.checkConfiguration) {
             for (const std::string &config : configurations)
-                (void)preprocessor.getcode(tokens1, config, files, false);
+                (void)preprocessor.getcode(config, files, false);
 
             if (analyzerInformation)
                 mLogger->setAnalyzerInfo(nullptr);
@@ -1125,7 +1125,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             if (mSettings.preprocessOnly) {
                 std::string codeWithoutCfg;
                 Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
-                    codeWithoutCfg = preprocessor.getcode(tokens1, currentConfig, files, true);
+                    codeWithoutCfg = preprocessor.getcode(currentConfig, files, true);
                 });
 
                 if (startsWith(codeWithoutCfg,"#file"))
@@ -1148,7 +1148,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                 // Create tokens, skip rest of iteration if failed
                 Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
-                    simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, currentConfig, files, true);
+                    simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, true);
                     tokenlist.createTokens(std::move(tokensP));
                 });
                 hasValidConfig = true;
