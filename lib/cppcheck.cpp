@@ -1313,7 +1313,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: clear earlier?
     mLogger->clear();
 
-    printTimerResults(mSettings.showtime);
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
+        printTimerResults(mSettings.showtime);
 
     return mLogger->exitcode();
 }
