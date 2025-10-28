@@ -1,7 +1,10 @@
 Release Notes for Cppcheck 2.19
 
 New checks:
--
+- Detect zero initialization of unions in which its largest member is not
+  declared as the first one. Depending on the compiler, there's no guarantee
+  that the complete union will be zero initialized in such scenarios leading to
+  potential access of uninitialized memory.
 
 Improved checking:
 -
@@ -21,4 +24,6 @@ Other:
 - Added make variables `CPPOPTS` to extend existing `CPPFLAGS`.
 - `CPPFLAGS` are not longer being passed to the linker command for `cppcheck` and `testrunner`.
 - Removed deprecated platforms `unix32-unsigned` and `unix64-unsigned`.
+- Updated Qt to 6.10.0 (official Windows release only).
+- The official Windows binary is now built against Boost 1.89 for increased performance.
 -

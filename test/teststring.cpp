@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "fixture.h"
 
+#include <cstddef>
 #include <string>
 
 class TestString : public TestFixture {
@@ -62,7 +63,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool cpp = true;
     };
 

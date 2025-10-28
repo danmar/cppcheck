@@ -295,6 +295,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionC11->setActionGroup(mCStandardActions);
     //mUI->mActionC17->setActionGroup(mCStandardActions);
     //mUI->mActionC23->setActionGroup(mCStandardActions);
+    //mUI->mActionC2Y->setActionGroup(mCStandardActions);
 
     mUI->mActionCpp03->setActionGroup(mCppStandardActions);
     mUI->mActionCpp11->setActionGroup(mCppStandardActions);
@@ -421,6 +422,7 @@ void MainWindow::loadSettings()
     mUI->mActionC11->setChecked(standards.c == Standards::C11);
     //mUI->mActionC17->setChecked(standards.c == Standards::C17);
     //mUI->mActionC23->setChecked(standards.c == Standards::C23);
+    //mUI->mActionC2Y->setChecked(standards.c == Standards::C2Y);
     standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     mUI->mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
     mUI->mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
@@ -522,6 +524,8 @@ void MainWindow::saveSettings() const
     //    mSettings->setValue(SETTINGS_STD_C, "C17");
     //if (mUI->mActionC23->isChecked())
     //    mSettings->setValue(SETTINGS_STD_C, "C23");
+    //if (mUI->mActionC2Y->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_C, "C2Y");
 
     if (mUI->mActionCpp03->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++03");
@@ -1713,7 +1717,7 @@ void MainWindow::complianceReport()
     }
 
     QTemporaryFile tempResults;
-    tempResults.open();
+    (void)tempResults.open(); // TODO: check result
     tempResults.close();
 
     mUI->mResults->save(tempResults.fileName(), Report::XMLV2, mCppcheckCfgProductName);

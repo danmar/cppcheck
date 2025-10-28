@@ -1226,6 +1226,10 @@ void CheckClass::initializationListUsage()
                         allowed = false;
                         return ChildrenToVisit::done;
                     }
+                    if (var2->isLocal() && isVariableChanged(var2->nameToken(), previousBeforeAstLeftmostLeaf(tok), var2->declarationId(), /*globalvar*/ false, *mSettings)) {
+                        allowed = false;
+                        return ChildrenToVisit::done;
+                    }
                 } else if (tok2->str() == "this") { // 'this' instance is not completely constructed in initialization list
                     allowed = false;
                     return ChildrenToVisit::done;
@@ -1338,7 +1342,11 @@ void CheckClass::privateFunctions()
 
         while (!privateFuncs.empty()) {
             const auto& pf = privateFuncs.front();
-            if (pf->token->isAttributeMaybeUnused()) {
+            if (pf->token->isAttributeMaybeUnused() || pf->token->isAttributeUnused()) {
+                privateFuncs.pop_front();
+                continue;
+            }
+            if (pf->tokenDef && (pf->tokenDef->isAttributeMaybeUnused() || pf->tokenDef->isAttributeUnused())) {
                 privateFuncs.pop_front();
                 continue;
             }

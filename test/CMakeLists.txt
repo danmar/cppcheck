@@ -7,7 +7,7 @@ if (BUILD_TESTS)
     list(APPEND testrunner_SOURCES ${hdrs} ${srcs})
 
     add_executable(testrunner ${testrunner_SOURCES})
-    target_link_libraries(testrunner cppcheck-core tinyxml2 simplecpp frontend cli)
+    target_link_libraries(testrunner cppcheck-core tinyxml2 picojson simplecpp frontend cli)
     if (WIN32 AND NOT BORLAND)
         if(NOT MINGW)
             target_link_libraries(testrunner Shlwapi.lib)

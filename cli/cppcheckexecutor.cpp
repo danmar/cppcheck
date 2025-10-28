@@ -33,6 +33,8 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "json.h"
+#include "path.h"
+#include "sarifreport.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
@@ -78,156 +80,6 @@
 #endif
 
 namespace {
-    class SarifReport {
-    public:
-        void addFinding(ErrorMessage msg) {
-            mFindings.push_back(std::move(msg));
-        }
-
-        picojson::array serializeRules() const {
-            picojson::array ret;
-            std::set<std::string> ruleIds;
-            for (const auto& finding : mFindings) {
-                // github only supports findings with locations
-                if (finding.callStack.empty())
-                    continue;
-                if (ruleIds.insert(finding.id).second) {
-                    picojson::object rule;
-                    rule["id"] = picojson::value(finding.id);
-                    // rule.shortDescription.text
-                    picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(finding.shortMessage());
-                    rule["shortDescription"] = picojson::value(shortDescription);
-                    // rule.fullDescription.text
-                    picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(finding.verboseMessage());
-                    rule["fullDescription"] = picojson::value(fullDescription);
-                    // rule.help.text
-                    picojson::object help;
-                    help["text"] = picojson::value(finding.verboseMessage()); // FIXME provide proper help text
-                    rule["help"] = picojson::value(help);
-                    // rule.properties.precision, rule.properties.problem.severity
-                    picojson::object properties;
-                    properties["precision"] = picojson::value(sarifPrecision(finding));
-                    const char* securitySeverity = nullptr;
-                    if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
-                        securitySeverity = "9.9"; // We see undefined behavior
-                    //else if (finding.severity == Severity::warning)
-                    //    securitySeverity = 5.1; // We see potential undefined behavior
-                    if (securitySeverity) {
-                        properties["security-severity"] = picojson::value(securitySeverity);
-                        const picojson::array tags{picojson::value("security")};
-                        properties["tags"] = picojson::value(tags);
-                    }
-                    rule["properties"] = picojson::value(properties);
-                    // rule.defaultConfiguration.level
-                    picojson::object defaultConfiguration;
-                    defaultConfiguration["level"] = picojson::value(sarifSeverity(finding));
-                    rule["defaultConfiguration"] = picojson::value(defaultConfiguration);
-
-                    ret.emplace_back(rule);
-                }
-            }
-            return ret;
-        }
-
-        static picojson::array serializeLocations(const ErrorMessage& finding) {
-            picojson::array ret;
-            for (const auto& location : finding.callStack) {
-                picojson::object physicalLocation;
-                picojson::object artifactLocation;
-                artifactLocation["uri"] = picojson::value(location.getfile(false));
-                physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
-                picojson::object region;
-                region["startLine"] = picojson::value(static_cast<int64_t>(location.line < 1 ? 1 : location.line));
-                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column < 1 ? 1 : location.column));
-                region["endLine"] = region["startLine"];
-                region["endColumn"] = region["startColumn"];
-                physicalLocation["region"] = picojson::value(region);
-                picojson::object loc;
-                loc["physicalLocation"] = picojson::value(physicalLocation);
-                ret.emplace_back(loc);
-            }
-            return ret;
-        }
-
-        picojson::array serializeResults() const {
-            picojson::array results;
-            for (const auto& finding : mFindings) {
-                // github only supports findings with locations
-                if (finding.callStack.empty())
-                    continue;
-                picojson::object res;
-                res["level"] = picojson::value(sarifSeverity(finding));
-                res["locations"] = picojson::value(serializeLocations(finding));
-                picojson::object message;
-                message["text"] = picojson::value(finding.shortMessage());
-                res["message"] = picojson::value(message);
-                res["ruleId"] = picojson::value(finding.id);
-                results.emplace_back(res);
-            }
-            return results;
-        }
-
-        picojson::value serializeRuns(const std::string& productName, const std::string& version) const {
-            picojson::object driver;
-            driver["name"] = picojson::value(productName);
-            driver["semanticVersion"] = picojson::value(version);
-            driver["informationUri"] = picojson::value("https://cppcheck.sourceforge.io");
-            driver["rules"] = picojson::value(serializeRules());
-            picojson::object tool;
-            tool["driver"] = picojson::value(driver);
-            picojson::object run;
-            run["tool"] = picojson::value(tool);
-            run["results"] = picojson::value(serializeResults());
-            picojson::array runs{picojson::value(run)};
-            return picojson::value(runs);
-        }
-
-        std::string serialize(std::string productName) const {
-            const auto nameAndVersion = Settings::getNameAndVersion(productName);
-            productName = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
-            std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
-            if (version.find(' ') != std::string::npos)
-                version.erase(version.find(' '), std::string::npos);
-
-            picojson::object doc;
-            doc["version"] = picojson::value("2.1.0");
-            doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
-            doc["runs"] = serializeRuns(productName, version);
-
-            return picojson::value(doc).serialize(true);
-        }
-    private:
-
-        static std::string sarifSeverity(const ErrorMessage& errmsg) {
-            if (ErrorLogger::isCriticalErrorId(errmsg.id))
-                return "error";
-            switch (errmsg.severity) {
-            case Severity::error:
-            case Severity::warning:
-            case Severity::style:
-            case Severity::portability:
-            case Severity::performance:
-                return "warning";
-            case Severity::information:
-            case Severity::internal:
-            case Severity::debug:
-            case Severity::none:
-                return "note";
-            }
-            return "note";
-        }
-
-        static std::string sarifPrecision(const ErrorMessage& errmsg) {
-            if (errmsg.certainty == Certainty::inconclusive)
-                return "medium";
-            return "high";
-        }
-
-        std::vector<ErrorMessage> mFindings;
-    };
-
     class CmdLineLoggerStd : public CmdLineLogger
     {
     public:
@@ -711,18 +563,20 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
 
     // TODO: there should be no need for verbose and default messages here
-    const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+    const std::string msgStr =
+        msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
 
     // Alert only about unique errors
     if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
         return;
 
-    if (mSettings.outputFormat == Settings::OutputFormat::sarif)
+    if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
         mSarifReport.addFinding(std::move(msgCopy));
-    else if (mSettings.outputFormat == Settings::OutputFormat::xml)
+    } else if (mSettings.outputFormat == Settings::OutputFormat::xml) {
         reportErr(msgCopy.toXML());
-    else
+    } else {
         reportErr(msgStr);
+    }
 }
 
 /**

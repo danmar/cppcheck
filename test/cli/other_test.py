@@ -1576,6 +1576,27 @@ void f() { }
     ]
 
 
+def test_rule_multiple_files(tmpdir):
+    stderr_exp = []
+    for i in range(10):
+        test_file = os.path.join(tmpdir, f'test_{i}.c')
+        stderr_exp.append("{}:4:0: style: found 'f' [rule]".format(test_file))
+        with open(test_file, 'wt') as f:
+            f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['-q', '--template=simple', '--rule=f', str(tmpdir)])
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    lines = stderr.splitlines()
+    lines.sort()
+    stderr_exp.sort()
+    assert lines == stderr_exp
+
+
 def test_filelist(tmpdir):
     list_dir = os.path.join(tmpdir, 'list-dir')
     os.mkdir(list_dir)
@@ -2085,7 +2106,7 @@ def test_def_undef(tmp_path):
 void f()
 {
 #ifndef DEF_1
-    {int i = *((int*)0);}
+    (void)(*((int*)0));
 #endif
 }
 """)
@@ -2103,7 +2124,7 @@ void f()
         'Checking {}: DEF_1=1...'.format(test_file)  # TODO: should not print DEF_1 - see #13335
     ]
     assert stderr.splitlines() == [
-        '{}:5:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:5:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
 
 
@@ -2115,10 +2136,10 @@ def test_def_def(tmp_path):  # #13334
 void f()
 {
 #if DEF_1 == 3
-    {int i = *((int*)0);}
+    (void)(*((int*)0));
 #endif
 #if DEF_1 == 7
-    {int i = *((int*)0);}
+    (void)(*((int*)0));
 #endif
 }
 """)
@@ -2136,7 +2157,7 @@ void f()
         'Checking {}: DEF_1=3;DEF_1=7...'.format(test_file)  # TODO: should not print DEF_1 twice - see #13335
     ]
     assert stderr.splitlines() == [
-        '{}:8:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:8:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
 
 
@@ -2148,7 +2169,7 @@ def test_def_undef_def(tmp_path):  # #13334
 void f()
 {
 #ifdef DEF_1
-    {int i = *((int*)0);}
+    (void)(*((int*)0));
 #endif
 }
 """)
@@ -2167,7 +2188,7 @@ void f()
         'Checking {}: DEF_1=1;DEF_1=1...'.format(test_file)  # TODO: should not print DEF_1 twice - see #13335
     ]
     assert stderr.splitlines() == [
-        '{}:5:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:5:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
 
 
@@ -2178,7 +2199,7 @@ def test_undef(tmp_path):
 void f()
 {
 #ifndef DEF_1
-    {int i = *((int*)0);}
+    (void)(*((int*)0));
 #endif
 }
 """)
@@ -2194,7 +2215,7 @@ void f()
         'Checking {} ...'.format(test_file)
     ]
     assert stderr.splitlines() == [
-        '{}:5:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:5:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
 
 
@@ -2208,7 +2229,7 @@ def test_undef_src(tmp_path):  # #13340
 void f()
 {
 #ifdef DEF_1
-    {int i = *((int*)0);}
+    (void)(*((int*)0));
 #endif
 }
 """)
@@ -2224,7 +2245,7 @@ void f()
         'Checking {} ...'.format(test_file)
     ]
     assert stderr.splitlines() == [
-        '{}:7:16: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:7:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
 
 
@@ -2623,7 +2644,7 @@ def test_debug(tmp_path):
         f.write(
 """void f
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -2649,7 +2670,7 @@ def test_debug_xml(tmp_path):
         f.write(
 """void f
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -2691,7 +2712,7 @@ def test_debug_verbose(tmp_path):
         f.write(
 """void f
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -2718,7 +2739,7 @@ def test_debug_verbose_xml(tmp_path):
         f.write(
 """void f
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -2764,7 +2785,7 @@ def __test_debug_template(tmp_path, verbose=False, debug=False):
 """template<class T> class TemplCl;
 void f()
 {
-    (void)*((int*)nullptr);
+    (void)(*((int*)nullptr));
 }
 """)
 
@@ -2803,7 +2824,7 @@ void f()
     else:
         assert stdout.count('### Template Simplifier pass ') == 1
     assert stderr.splitlines() == [
-        '{}:4:13: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
+        '{}:4:14: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
     ]
     return stdout
 
@@ -3408,7 +3429,7 @@ def __test_debug_normal(tmp_path, verbose):
         f.write(
 """void f()
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -3436,7 +3457,7 @@ def __test_debug_normal(tmp_path, verbose):
         assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
-        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
     return stdout
 
@@ -3458,7 +3479,7 @@ def __test_debug_simplified(tmp_path, verbose):
         f.write(
 """void f()
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -3480,7 +3501,7 @@ def __test_debug_simplified(tmp_path, verbose):
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
-        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
     return stdout
 
@@ -3501,7 +3522,7 @@ def __test_debug_symdb(tmp_path, verbose):
         f.write(
 """void f()
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -3523,7 +3544,7 @@ def __test_debug_symdb(tmp_path, verbose):
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
-        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
     return stdout
 
@@ -3545,7 +3566,7 @@ def __test_debug_ast(tmp_path, verbose):
         f.write(
 """void f()
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -3567,7 +3588,7 @@ def __test_debug_ast(tmp_path, verbose):
     assert stdout.find('##AST') != -1
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
-        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
     return stdout
 
@@ -3588,7 +3609,7 @@ def __test_debug_valueflow(tmp_path, verbose):
         f.write(
 """void f()
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 
@@ -3610,7 +3631,7 @@ def __test_debug_valueflow(tmp_path, verbose):
     assert stdout.find('##AST') == -1
     assert stdout.find('### Template Simplifier pass ') == -1
     assert stderr.splitlines() == [
-        '{}:3:13: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
     ]
     return stdout
 
@@ -3632,7 +3653,7 @@ def test_debug_syntaxerror_c(tmp_path):
 template<class T> class TemplCl;
 void f()
 {
-    (void)*((int*)0);
+    (void)(*((int*)0));
 }
 """)
 

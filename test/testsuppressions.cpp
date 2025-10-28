@@ -30,6 +30,7 @@
 #include "suppressions.h"
 #include "threadexecutor.h"
 
+#include <cstdint>
 #include <cstring>
 #include <list>
 #include <map>

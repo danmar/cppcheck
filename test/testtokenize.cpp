@@ -272,7 +272,7 @@ private:
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
-
+        TEST_CASE(functionAttributeListAfter2);
         TEST_CASE(cppMaybeUnusedBefore);
         TEST_CASE(cppMaybeUnusedAfter);
         TEST_CASE(cppMaybeUnusedStructuredBinding);
@@ -295,6 +295,7 @@ private:
         TEST_CASE(simplifyInitVar2);
         TEST_CASE(simplifyInitVar3);
         TEST_CASE(simplifyInitVar4);
+        TEST_CASE(simplifyInitVar5);
 
         TEST_CASE(bitfields1);
         TEST_CASE(bitfields2);
@@ -579,9 +580,9 @@ private:
     void directiveDump(const char (&code)[size], const char filename[], const Settings& settings, std::ostream& ostr) {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        const simplecpp::TokenList tokens1(code, size-1, files, filename, &outputList);
-        Preprocessor preprocessor(settings, *this, Path::identify(tokens1.getFiles()[0], false));
-        std::list<Directive> directives = preprocessor.createDirectives(tokens1);
+        simplecpp::TokenList tokens1(code, files, filename, &outputList);
+        Preprocessor preprocessor(tokens1, settings, *this, Path::identify(tokens1.getFiles()[0], false));
+        std::list<Directive> directives = preprocessor.createDirectives();
 
         TokenList tokenlist{settings, Path::identify(filename, false)};
         Tokenizer tokenizer(std::move(tokenlist), *this);
@@ -4197,6 +4198,25 @@ private:
         ASSERT(func8 && func8->isAttributeNoreturn() && func8->isAttributePure() && func8->isAttributeNothrow() && func8->isAttributeConst());
     }
 
+    void functionAttributeListAfter2() {
+        const char code[] = "[[noreturn]] void func1(const char *format, ...) __attribute__((format(printf, 1, 2)));\n" // #14181
+                            "void func2() __attribute__((unused));\n"; // #14183
+        const char expected[] = "void func1 ( const char * format , ... ) ; void func2 ( ) ;";
+
+        // tokenize..
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+        const Token * func2 = Token::findsimplematch(tokenizer.tokens(), "func2");
+
+        ASSERT(func1 && func1->isAttributeNoreturn());
+        ASSERT(func2 && func2->isAttributeUnused());
+    }
+
     void cppMaybeUnusedBefore() {
         const char code[] = "[[maybe_unused]] int var {};";
         const char expected[] = "int var { } ;";
@@ -4657,6 +4677,11 @@ private:
         ASSERT_EQUALS("void f ( ) {\n"
                       "uint32_t x { 0 } ;\n"
                       "}", tokenizeAndStringify(code));
+    }
+
+    void simplifyInitVar5() { // #14218
+        const char code[] = "int c[1]{}, b;";
+        ASSERT_EQUALS("int c [ 1 ] { } ; int b ;", tokenizeAndStringify(code));
     }
 
     void bitfields1() {

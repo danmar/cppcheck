@@ -34,6 +34,7 @@
 #include <cassert>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <sstream>
 #include <utility>
 
@@ -64,8 +65,9 @@ Directive::DirectiveToken::DirectiveToken(const simplecpp::Token & _tok) :
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang)
-    : mSettings(settings)
+Preprocessor::Preprocessor(simplecpp::TokenList& tokens, const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang)
+    : mTokens(tokens)
+    , mSettings(settings)
     , mErrorLogger(errorLogger)
     , mLang(lang)
 {
@@ -300,12 +302,12 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress Begin: No matching end");
 }
 
-void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions)
+void Preprocessor::inlineSuppressions(SuppressionList &suppressions)
 {
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::addInlineSuppressions(tokens, mSettings, suppressions, err);
+    ::addInlineSuppressions(mTokens, mSettings, suppressions, err);
     for (const auto &filedata : mFileCache) {
         ::addInlineSuppressions(filedata->tokens, mSettings, suppressions, err);
     }
@@ -314,24 +316,24 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppre
     }
 }
 
-std::vector<RemarkComment> Preprocessor::getRemarkComments(const simplecpp::TokenList &tokens) const
+std::vector<RemarkComment> Preprocessor::getRemarkComments() const
 {
     std::vector<RemarkComment> ret;
-    addRemarkComments(tokens, ret);
+    addRemarkComments(mTokens, ret);
     for (const auto &filedata : mFileCache) {
         addRemarkComments(filedata->tokens, ret);
     }
     return ret;
 }
 
-std::list<Directive> Preprocessor::createDirectives(const simplecpp::TokenList &tokens) const
+std::list<Directive> Preprocessor::createDirectives() const
 {
     // directive list..
     std::list<Directive> directives;
 
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + mFileCache.size());
-    list.push_back(&tokens);
+    list.push_back(&mTokens);
     std::transform(mFileCache.cbegin(), mFileCache.cend(), std::back_inserter(list),
                    [](const std::unique_ptr<simplecpp::FileData> &filedata) {
         return &filedata->tokens;
@@ -655,15 +657,15 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
 }
 
 
-std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &tokens) const
+std::set<std::string> Preprocessor::getConfigs() const
 {
     std::set<std::string> ret = { "" };
-    if (!tokens.cfront())
+    if (!mTokens.cfront())
         return ret;
 
     std::set<std::string> defined = { "__cplusplus" };
 
-    ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
+    ::getConfigs(mTokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
     for (const auto &filedata : mFileCache) {
         if (!mSettings.configurationExcluded(filedata->filename))
@@ -773,45 +775,45 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     }
 }
 
-bool Preprocessor::loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files)
+bool Preprocessor::loadFiles(std::vector<std::string> &files)
 {
     const simplecpp::DUI dui = createDUI(mSettings, "", mLang);
 
     simplecpp::OutputList outputList;
-    mFileCache = simplecpp::load(rawtokens, files, dui, &outputList);
+    mFileCache = simplecpp::load(mTokens, files, dui, &outputList);
     handleErrors(outputList, false);
     return !hasErrors(outputList);
 }
 
-void Preprocessor::removeComments(simplecpp::TokenList &tokens) const
+void Preprocessor::removeComments()
 {
-    tokens.removeComments();
+    mTokens.removeComments();
     for (const auto &filedata : mFileCache) {
         filedata->tokens.removeComments();
     }
 }
 
-void Preprocessor::setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings)
+void Preprocessor::setPlatformInfo()
 {
-    tokens.sizeOfType["bool"]          = settings.platform.sizeof_bool;
-    tokens.sizeOfType["short"]         = settings.platform.sizeof_short;
-    tokens.sizeOfType["int"]           = settings.platform.sizeof_int;
-    tokens.sizeOfType["long"]          = settings.platform.sizeof_long;
-    tokens.sizeOfType["long long"]     = settings.platform.sizeof_long_long;
-    tokens.sizeOfType["float"]         = settings.platform.sizeof_float;
-    tokens.sizeOfType["double"]        = settings.platform.sizeof_double;
-    tokens.sizeOfType["long double"]   = settings.platform.sizeof_long_double;
-    tokens.sizeOfType["bool *"]        = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["short *"]       = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["int *"]         = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["long *"]        = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["long long *"]   = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["float *"]       = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["double *"]      = settings.platform.sizeof_pointer;
-    tokens.sizeOfType["long double *"] = settings.platform.sizeof_pointer;
+    mTokens.sizeOfType["bool"]          = mSettings.platform.sizeof_bool;
+    mTokens.sizeOfType["short"]         = mSettings.platform.sizeof_short;
+    mTokens.sizeOfType["int"]           = mSettings.platform.sizeof_int;
+    mTokens.sizeOfType["long"]          = mSettings.platform.sizeof_long;
+    mTokens.sizeOfType["long long"]     = mSettings.platform.sizeof_long_long;
+    mTokens.sizeOfType["float"]         = mSettings.platform.sizeof_float;
+    mTokens.sizeOfType["double"]        = mSettings.platform.sizeof_double;
+    mTokens.sizeOfType["long double"]   = mSettings.platform.sizeof_long_double;
+    mTokens.sizeOfType["bool *"]        = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["short *"]       = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["int *"]         = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["long *"]        = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["long long *"]   = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["float *"]       = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["double *"]      = mSettings.platform.sizeof_pointer;
+    mTokens.sizeOfType["long double *"] = mSettings.platform.sizeof_pointer;
 }
 
-simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
+simplecpp::TokenList Preprocessor::preprocess(const std::string &cfg, std::vector<std::string> &files, bool throwError)
 {
     const simplecpp::DUI dui = createDUI(mSettings, cfg, mLang);
 
@@ -819,7 +821,7 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     std::list<simplecpp::MacroUsage> macroUsage;
     std::list<simplecpp::IfCond> ifCond;
     simplecpp::TokenList tokens2(files);
-    simplecpp::preprocess(tokens2, tokens1, files, mFileCache, dui, &outputList, &macroUsage, &ifCond);
+    simplecpp::preprocess(tokens2, mTokens, files, mFileCache, dui, &outputList, &macroUsage, &ifCond);
     mMacroUsage = std::move(macroUsage);
     mIfCond = std::move(ifCond);
 
@@ -830,9 +832,9 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     return tokens2;
 }
 
-std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
+std::string Preprocessor::getcode(const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
-    simplecpp::TokenList tokens2 = preprocess(tokens1, cfg, files, false);
+    simplecpp::TokenList tokens2 = preprocess(cfg, files, false);
     unsigned int prevfile = 0;
     unsigned int line = 1;
     std::ostringstream ret;
@@ -928,7 +930,9 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
 void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
-    Preprocessor preprocessor(settings, errorLogger, Standards::Language::CPP);
+    std::vector<std::string> files;
+    simplecpp::TokenList tokens(files);
+    Preprocessor preprocessor(tokens, settings, errorLogger, Standards::Language::CPP);
     preprocessor.missingInclude("", 1, "", UserHeader);
     preprocessor.missingInclude("", 1, "", SystemHeader);
     preprocessor.error("", 1, "#error message");   // #error ..
@@ -970,10 +974,10 @@ void Preprocessor::dump(std::ostream &out) const
     }
 }
 
-std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const
+std::size_t Preprocessor::calculateHash(const std::string &toolinfo) const
 {
     std::string hashData = toolinfo;
-    for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+    for (const simplecpp::Token *tok = mTokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment) {
             hashData += tok->str();
             hashData += static_cast<char>(tok->location.line);
@@ -992,9 +996,9 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
     return (std::hash<std::string>{})(hashData);
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList &tokenList) const
+void Preprocessor::simplifyPragmaAsm()
 {
-    Preprocessor::simplifyPragmaAsmPrivate(tokenList);
+    Preprocessor::simplifyPragmaAsmPrivate(mTokens);
     for (const auto &filedata : mFileCache) {
         Preprocessor::simplifyPragmaAsmPrivate(filedata->tokens);
     }

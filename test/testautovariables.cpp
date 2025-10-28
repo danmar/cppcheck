@@ -34,7 +34,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = true;
         bool cpp = true;
     };

@@ -90,7 +90,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         Platform::Type platform = Platform::Type::Native;
         const Settings* s = nullptr;
         bool cpp = true;

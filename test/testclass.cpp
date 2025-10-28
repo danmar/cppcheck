@@ -2633,7 +2633,6 @@ private:
 
     struct CheckVirtualDestructorOptions
     {
-        CheckVirtualDestructorOptions() = default;
         bool inconclusive = false;
     };
 
@@ -3656,7 +3655,6 @@ private:
 
     struct CheckConstOptions
     {
-        CheckConstOptions() = default;
         const Settings *s = nullptr;
         bool inconclusive = true;
     };
@@ -8119,6 +8117,21 @@ private:
                                      "\n"
                                      "private:\n"
                                      "    std::string st;\n"
+                                     "};");
+        ASSERT_EQUALS("", errout_str());
+
+        checkInitializationListUsage("struct S {\n" // #14189
+                                     "    S() {}\n"
+                                     "    int i{};\n"
+                                     "};\n"
+                                     "struct T { explicit T(const S&); };\n"
+                                     "class C {\n"
+                                     "    C() {\n"
+                                     "        S s;\n"
+                                     "        s.i = 1;\n"
+                                     "        p = std::make_unique<T>(s);\n"
+                                     "    }\n"
+                                     "    std::unique_ptr<T> p;\n"
                                      "};");
         ASSERT_EQUALS("", errout_str());
     }

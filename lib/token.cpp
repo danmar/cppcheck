@@ -153,7 +153,7 @@ void Token::update_property_info()
             if ((MathLib::isInt(mStr) || MathLib::isFloat(mStr)) && mStr.find('_') == std::string::npos)
                 tokType(eNumber);
             else
-                tokType(eName); // assume it is a user defined literal
+                tokType(eLiteral); // assume it is a user defined literal
         } else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                    (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
@@ -2680,7 +2680,7 @@ void Token::Impl::setCppcheckAttribute(CppcheckAttributesType type, MathLib::big
 
 bool Token::Impl::getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const
 {
-    CppcheckAttributes *attr = mCppcheckAttributes;
+    const CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
@@ -2737,4 +2737,17 @@ void Token::templateArgFrom(const Token* fromToken) {
     mImpl->mTemplateArgFileIndex = fromToken ? fromToken->mImpl->mFileIndex : -1;
     mImpl->mTemplateArgLineNumber = fromToken ? fromToken->mImpl->mLineNumber : -1;
     mImpl->mTemplateArgColumn = fromToken ? fromToken->mImpl->mColumn : -1;
+}
+
+const SmallVector<ReferenceToken>& Token::refs(bool temporary) const
+{
+    if (temporary) {
+        if (!mImpl->mRefsTemp)
+            mImpl->mRefsTemp.reset(new SmallVector<ReferenceToken>(followAllReferences(this, true)));
+        return *mImpl->mRefsTemp;
+    }
+
+    if (!mImpl->mRefs)
+        mImpl->mRefs.reset(new SmallVector<ReferenceToken>(followAllReferences(this, false)));
+    return *mImpl->mRefs;
 }

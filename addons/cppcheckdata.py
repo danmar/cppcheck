@@ -1341,7 +1341,7 @@ class CppcheckData:
             # Parse tokens
             elif node.tag == 'tokenlist' and event == 'start':
                 continue
-            elif node.tag == 'token' and event == 'start' and not iter_directive:
+            elif node.tag == 'token' and event == 'start' and not iter_directive and not iter_typedef_info:
                 cfg.tokenlist.append(Token(node))
 
             # Parse scopes

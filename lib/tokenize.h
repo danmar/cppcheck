@@ -388,10 +388,6 @@ private:
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const;
 
-    /** Check configuration (unknown macros etc) */
-    void checkConfiguration() const;
-    void macroWithSemicolonError(const Token *tok, const std::string &macroName) const;
-
     void invalidConstFunctionTypeError(const Token *tok) const;
 
     /**
@@ -659,6 +655,11 @@ private:
     /** sizeof information for known types */
     std::map<std::string, int> mTypeSize;
 
+    struct TypedefToken {
+        std::string name;
+        int lineNumber;
+        int column;
+    };
     struct TypedefInfo {
         std::string name;
         std::string filename;
@@ -666,6 +667,7 @@ private:
         int column;
         bool used;
         bool isFunctionPointer;
+        std::vector<TypedefToken> typedefInfoTokens;
     };
     std::vector<TypedefInfo> mTypedefInfo;
 

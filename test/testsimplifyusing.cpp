@@ -101,7 +101,6 @@ private:
 
     struct TokOptions
     {
-        TokOptions() = default;
         Platform::Type type = Platform::Type::Native;
         bool debugwarnings = true;
         bool preprocess = false;

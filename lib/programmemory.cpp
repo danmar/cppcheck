@@ -40,7 +40,7 @@
 #include <list>
 #include <memory>
 #include <stack>
-#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>

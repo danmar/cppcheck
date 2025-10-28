@@ -608,6 +608,8 @@ private:
             for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
+                if (v.conditional)
+                    continue;
                 if (lifeTok)
                     return Action::None;
                 lifeTok = v.tokvalue;
@@ -647,7 +649,8 @@ private:
         if (invalid())
             return Action::Invalid;
         // Follow references
-        auto refs = followAllReferences(tok);
+        // TODO: avoid copy
+        auto refs = tok->refs();
         const bool inconclusiveRefs = refs.size() != 1;
         if (std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
             return tok == ref.token;

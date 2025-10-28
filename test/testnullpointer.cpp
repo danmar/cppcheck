@@ -166,6 +166,7 @@ private:
         TEST_CASE(nullpointerStdStream);
         TEST_CASE(nullpointerSmartPointer);
         TEST_CASE(nullpointerOutOfMemory);
+        TEST_CASE(nullpointerOutOfResources);
         TEST_CASE(functioncall);
         TEST_CASE(functioncalllibrary); // use Library to parse function call
         TEST_CASE(functioncallDefaultArguments);
@@ -180,7 +181,6 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = false;
         bool cpp = true;
         Standards::cstd_t cstd = Standards::CLatest;
@@ -4233,6 +4233,18 @@ private:
                 "[test.cpp:4:9] -> [test.cpp:2:5]: (warning, inconclusive) Either the condition 'abc' is redundant or there is possible null pointer dereference: abc. [nullPointerRedundantCheck]\n",
                 errout_str());
         }
+    }
+
+    void nullpointerOutOfResources() {
+        check("void f() {\n"
+              "    FILE* fid = fopen(\"x.txt\", \"w\");\n"
+              "    fprintf(fid, \"abcdef\");\n"
+              "    fclose(fid);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3:13]: (warning) If resource allocation fails, then there is a possible null pointer dereference: fid [nullPointerOutOfResources]\n"
+            "[test.cpp:4:12]: (warning) If resource allocation fails, then there is a possible null pointer dereference: fid [nullPointerOutOfResources]\n",
+            errout_str());
     }
 
     void functioncalllibrary() {

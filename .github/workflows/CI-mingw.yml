@@ -72,4 +72,4 @@ jobs:
           export PATH="/mingw64/lib/ccache/bin:$PATH"
           # set RDYNAMIC to work around broken MinGW detection
           # use lld for faster linking
-          make VERBOSE=1 RDYNAMIC=-lshlwapi LDOPTS=-fuse-ld=lld -j$(nproc) CXXOPTS="-Werror" check
+          make VERBOSE=1 RDYNAMIC=-lshlwapi LDOPTS=-fuse-ld=lld -j$(nproc) CXXOPTS="-Werror" test

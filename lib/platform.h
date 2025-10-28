@@ -66,6 +66,16 @@ private:
         return (1ULL << bit) - 1ULL;
     }
 
+    void calculateBitMembers() {
+        short_bit = char_bit * sizeof_short;
+        int_bit = char_bit * sizeof_int;
+        long_bit = char_bit * sizeof_long;
+        long_long_bit = char_bit * sizeof_long_long;
+        float_bit = char_bit * sizeof_float;
+        double_bit = char_bit * sizeof_double;
+        long_double_bit = char_bit * sizeof_long_double;
+    }
+
     /** provides list of defines specified by the limit.h/climits includes */
     std::string getLimitsDefines(bool c99) const;
 public:
@@ -99,6 +109,9 @@ public:
     std::uint8_t int_bit;        /// bits in int
     std::uint8_t long_bit;       /// bits in long
     std::uint8_t long_long_bit;  /// bits in long long
+    std::uint8_t float_bit;  /// bits in float
+    std::uint8_t double_bit;  /// bits in double
+    std::uint8_t long_double_bit;  /// bits in long double
 
     /** size of standard types */
     std::size_t sizeof_bool;

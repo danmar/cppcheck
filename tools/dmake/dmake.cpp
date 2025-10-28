@@ -621,7 +621,7 @@ int main(int argc, char **argv)
          << "endif\n\n";
 
     // enable backtrac
-    fout << "RDYNAMIC=-rdynamic\n";
+    fout << "RDYNAMIC?=-rdynamic\n";
 
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
     fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
@@ -766,7 +766,7 @@ int main(int argc, char **argv)
     makeConditionalVariable(fout, "INCLUDE_FOR_LIB", "-Ilib -isystem externals -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
     makeConditionalVariable(fout, "INCLUDE_FOR_FE", "-Ilib");
     makeConditionalVariable(fout, "INCLUDE_FOR_CLI", "-Ilib -Ifrontend -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
-    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Ifrontend -Icli -isystem externals/simplecpp -isystem externals/tinyxml2");
+    makeConditionalVariable(fout, "INCLUDE_FOR_TEST", "-Ilib -Ifrontend -Icli -isystem externals/picojson -isystem externals/simplecpp -isystem externals/tinyxml2");
 
     makeConditionalVariable(fout, "CFLAGS_FOR_TEST", "-Wno-dollar-in-identifier-extension");
 

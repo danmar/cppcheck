@@ -23,6 +23,7 @@
 #include "helpers.h"
 #include "settings.h"
 
+#include <cstddef>
 #include <list>
 #include <string>
 
@@ -108,7 +109,6 @@ private:
 
     struct CheckUninitVarOptions
     {
-        CheckUninitVarOptions() = default;
         bool cpp = true;
         bool debugwarnings = false;
         const Settings *s = nullptr;
@@ -7934,6 +7934,20 @@ private:
                         "    int* p = &s.x;\n"
                         "    *p = 0;\n"
                         "    return s;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        valueFlowUninit("struct S { int i; };\n" // #14191
+                        "bool g(S*);\n"
+                        "void f( struct S *p) {\n"
+                        "    struct S s;\n"
+                        "    if (!p) {\n"
+                        "        p = &s;\n"
+                        "        if (g(p))\n"
+                        "            return;\n"
+                        "    }\n"
+                        "    printf(\"%i\", p->i);\n"
+                        "    p = &s;\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
     }

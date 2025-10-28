@@ -30,11 +30,10 @@ jobs:
           persist-credentials: false
 
       - name: Download cppcheckpremium release
-        if: false
         run: |
           premium_version=${{ inputs.premium_version }}
           if [ -z $premium_version ]; then
-            premium_version=24.11.0
+            premium_version=25.8.3
             #wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
             wget https://files.cppchecksolutions.com/$premium_version/ubuntu-24.04/cppcheckpremium-$premium_version-amd64.tar.gz -O cppcheckpremium.tar.gz
           else
@@ -42,15 +41,6 @@ jobs:
           fi
           tar xzf cppcheckpremium.tar.gz
           mv cppcheckpremium-$premium_version cppcheckpremium
-
-      - name: Download cppcheckpremium devdrop
-        run: |
-          wget https://files.cppchecksolutions.com/devdrop/cppcheckpremium-devdrop-20250713-amd64.tar.gz -O cppcheckpremium.tar.gz
-          tar xzvf cppcheckpremium.tar.gz
-          mv cppcheckpremium-devdrop-20250713 cppcheckpremium
-          # Overwrite cppcheck binary
-          make -j$(nproc) CXXOPTS="-Werror -O2" MATCHCOMPILER=yes
-          cp cppcheck cppcheckpremium/
 
       - name: Generate a license file
         run: |

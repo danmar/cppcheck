@@ -51,12 +51,15 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
+#include "regex.h"
+
 // xml is used for rules
 #include "xml.h"
 #endif
@@ -1273,6 +1276,13 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
+            std::string regex_err;
+            auto regex = Regex::create(rule.pattern, regex_err);
+            if (!regex) {
+                mLogger.printError("failed to compile rule pattern '" + rule.pattern + "' (" + regex_err + ").");
+                return Result::Fail;
+            }
+            rule.regex = std::move(regex);
             mSettings.rules.emplace_back(std::move(rule));
 #else
             mLogger.printError("Option --rule cannot be used as Cppcheck has not been built with rules support.");
@@ -1349,6 +1359,14 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule is using the unsupported tokenlist '" + rule.tokenlist + "'.");
                         return Result::Fail;
                     }
+
+                    std::string regex_err;
+                    auto regex = Regex::create(rule.pattern, regex_err);
+                    if (!regex) {
+                        mLogger.printError("unable to load rule-file '" + ruleFile + "' - pattern '" + rule.pattern + "' failed to compile (" + regex_err + ").");
+                        return Result::Fail;
+                    }
+                    rule.regex = std::move(regex);
 
                     if (rule.severity == Severity::none) {
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - a rule has an invalid severity.");
@@ -1727,9 +1745,9 @@ void CmdLineParser::printHelp() const
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
-        "    --disable=<id>       Disable individual checks.\n"
-        "                         Please refer to the documentation of --enable=<id>\n"
-        "                         for further details.\n"
+        "    --disable=<severity> Disable checks with the given severity.\n"
+        "                         Please refer to the documentation of --enable for\n"
+        "                         further details.\n"
         "    --dump               Dump xml data for each translation unit. The dump\n"
         "                         files have the extension .dump and contain ast,\n"
         "                         tokenlist, symboldatabase, valueflow.\n"
@@ -1739,31 +1757,24 @@ void CmdLineParser::printHelp() const
         "                         Example: '-DDEBUG=1 -D__cplusplus'.\n"
         "    -E                   Print preprocessor output on stdout and don't do any\n"
         "                         further processing.\n"
-        "    --enable=<id>        Enable additional checks. The available ids are:\n"
-        "                          * all\n"
-        "                                  Enable all checks. It is recommended to only\n"
-        "                                  use --enable=all when the whole program is\n"
-        "                                  scanned, because this enables unusedFunction.\n"
+        "    --enable=<severity>  Enable additional checks grouped by severity. The available\n"
+        "                         severities are:\n"
         "                          * warning\n"
-        "                                  Enable warning messages\n"
-        "                          * style\n"
-        "                                  Enable all coding style checks. All messages\n"
-        "                                  with the severities 'style', 'warning',\n"
-        "                                  'performance' and 'portability' are enabled.\n"
         "                          * performance\n"
-        "                                  Enable performance messages\n"
         "                          * portability\n"
-        "                                  Enable portability messages\n"
         "                          * information\n"
-        "                                  Enable information messages\n"
+        "                          * style\n"
+        "                                  Enable checks with severities 'style', 'warning',\n"
+        "                                  'performance' and 'portability'.\n"
         "                          * unusedFunction\n"
         "                                  Check for unused functions. It is recommended\n"
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"
-        "                                  Warn if there are missing includes.\n"
-        "                         Several ids can be given if you separate them with\n"
-        "                         commas. See also --std\n"
+        "                                  Check for missing include files.\n"
+        "                          * all\n"
+        "                                  Enable all checks.\n"
+        "                         Pass multiple severities as a comma-separated list.\n"
         "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"
         "                         the default '0'. '" << EXIT_FAILURE << "' is returned\n"
         "                         if arguments are not valid or if no input files are\n"

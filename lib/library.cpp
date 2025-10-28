@@ -2000,7 +2000,7 @@ Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeNam
 
 bool Library::hasAnyTypeCheck(const std::string& typeName) const
 {
-    return std::any_of(mData->mTypeChecks.begin(), mData->mTypeChecks.end(), [&](const std::pair<std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
+    return std::any_of(mData->mTypeChecks.begin(), mData->mTypeChecks.end(), [&](const std::pair<const std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
         return tc.first.second == typeName;
     });
 }
