@@ -152,9 +152,11 @@ public:
         std::string errorId;
         std::string fileName;
         std::string extraComment;
+        int fileIndex{};
         int lineNumber = NO_LINE;
         int lineBegin = NO_LINE;
         int lineEnd = NO_LINE;
+        int column{};
         Type type = Type::unique;
         std::string symbolName;
         std::string macroName;
