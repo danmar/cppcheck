@@ -15,7 +15,7 @@ The warning is triggered when:
 
 ## Motivation
 
-The same expressions indicates that there might be some logic error or copy paste mistake.
+The same expression indicates that there might be some logic error or copy paste mistake.
 
 ## Examples
 
