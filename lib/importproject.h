@@ -98,10 +98,10 @@ public:
     void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr, bool premium=false);
+    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
 protected:
     bool importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs, bool premium);
+    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
 
 private:
     struct SharedItemsProject {

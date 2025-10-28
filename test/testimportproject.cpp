@@ -456,7 +456,7 @@ private:
         Settings s;
         Suppressions supprs;
         TestImporter project;
-        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs, false));
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
         ASSERT_EQUALS(1, project.guiProject.pathNames.size());
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());
@@ -477,9 +477,10 @@ private:
                                "</project>";
         std::istringstream istr(xml);
         Settings s;
+        s.premium = true;
         Suppressions supprs;
         TestImporter project;
-        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs, true));
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
         ASSERT_EQUALS("--misra-c-2012", s.premiumArgs);
         ASSERT(s.addons.empty());
     }
