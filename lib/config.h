@@ -133,9 +133,6 @@
 
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
-#include <string>
-static const std::string emptyString;
-
 // Use the nonneg macro when you want to assert that a variable/argument is not negative
 #ifdef __CPPCHECK__
 #define nonneg   __cppcheck_low__(0)

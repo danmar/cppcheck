@@ -813,7 +813,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     unknown_elements.insert(typenodename);
             }
             if (platform.empty()) {
-                const PlatformType * const type_ptr = platform_type(type_name, emptyString);
+                const PlatformType * const type_ptr = platform_type(type_name, "");
                 if (type_ptr) {
                     if (*type_ptr == type)
                         return Error(ErrorCode::DUPLICATE_PLATFORM_TYPE, type_name);
