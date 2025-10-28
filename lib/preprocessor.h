@@ -141,7 +141,7 @@ public:
 
     bool reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
-    void error(const std::string &filename, unsigned int linenr, const std::string &msg, simplecpp::Output::Type type);
+    void error(const simplecpp::Location& loc, const std::string &msg, simplecpp::Output::Type type);
 
 private:
     static bool hasErrors(const simplecpp::Output &output);
@@ -158,7 +158,7 @@ private:
         SystemHeader
     };
 
-    void missingInclude(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &header, HeaderTypes headerType);
+    void missingInclude(const simplecpp::Location& loc, const std::string &header, HeaderTypes headerType);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 

@@ -3889,8 +3889,7 @@ int 你=0;
     assert exitcode == 0, stdout
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        # TODO: lacks column information
-        '{}:2:0: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [unhandledChar]'.format(test_file)
+        '{}:2:5: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [unhandledChar]'.format(test_file)
     ]
 
 
@@ -3921,9 +3920,8 @@ def test_simplecpp_include_nested_too_deeply(tmp_path):
     test_h = tmp_path / 'test_398.h'
     assert stderr.splitlines() == [
         # TODO: should only report the error once
-        # TODO: lacks column information
-        '{}:1:0: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h),
-        '{}:1:0: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h)
+        '{}:1:2: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h),
+        '{}:1:2: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h)
     ]
 
 
@@ -3944,9 +3942,8 @@ def test_simplecpp_syntax_error(tmp_path):
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         # TODO: should only report the error once
-        # TODO: lacks column information
-        '{}:1:0: error: No header in #include [syntaxError]'.format(test_file),
-        '{}:1:0: error: No header in #include [syntaxError]'.format(test_file)
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file)
     ]
 
 
