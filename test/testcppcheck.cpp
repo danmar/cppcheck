@@ -530,27 +530,31 @@ private:
 
         {
             const auto s = dinit(Settings, $.templateFormat = templateFormat, $.plistOutput = "output");
-            ScopedFile file("file", "");
+            const ScopedFile file("file", "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
-            const std::string outputFile {"outputfile_4017852018407011111.plist"};
+            const FileWithDetails fileWithDetails {file.path(), Path::identify(file.path(), false), 0};
+
+            cppcheck.checkPlistOutput(fileWithDetails, files);
+            const std::string outputFile {"outputfile_" + std::to_string(std::hash<std::string> {}(fileWithDetails.spath())) + ".plist"};
             ASSERT(Path::exists(outputFile));
             std::remove(outputFile.c_str());
         }
 
         {
             const auto s = dinit(Settings, $.plistOutput = "output");
-            ScopedFile file("file.c", "");
+            const ScopedFile file("file.c", "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
-            const std::string outputFile {"outputfile_18314070737314589129.plist"};
+            const FileWithDetails fileWithDetails {file.path(), Path::identify(file.path(), false), 0};
+
+            cppcheck.checkPlistOutput(fileWithDetails, files);
+            const std::string outputFile {"outputfile_" + std::to_string(std::hash<std::string> {}(fileWithDetails.spath())) + ".plist"};
             ASSERT(Path::exists(outputFile));
             std::remove(outputFile.c_str());
         }
 
         {
             Settings s;
-            ScopedFile file("file.c", "");
+            const ScopedFile file("file.c", "");
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
             cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
         }
