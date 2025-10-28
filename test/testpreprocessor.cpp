@@ -93,7 +93,7 @@ private:
 
     static std::string getcodeforcfg(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, const std::string &cfg, const std::string &filename, SuppressionList *inlineSuppression = nullptr)
     {
-        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, size, std::set<std::string>{cfg}, filename, inlineSuppression);
+        std::map<std::string, std::string> cfgcode = getcode(settings, errorlogger, code, size, std::list<std::string>{cfg}, filename, inlineSuppression);
         const auto it = cfgcode.find(cfg);
         if (it == cfgcode.end())
             return "";
@@ -112,7 +112,7 @@ private:
         return getcode(settings, errorlogger, code, size-1, {}, filename, nullptr);
     }
 
-    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::set<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
+    static std::map<std::string, std::string> getcode(const Settings& settings, ErrorLogger& errorlogger, const char* code, std::size_t size, std::list<std::string> cfgs, const std::string &filename, SuppressionList *inlineSuppression)
     {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
@@ -122,8 +122,8 @@ private:
         Preprocessor preprocessor(settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
         if (inlineSuppression)
             preprocessor.inlineSuppressions(tokens, *inlineSuppression);
-        preprocessor.removeComments(tokens);
-        preprocessor.simplifyPragmaAsm(tokens);
+        Preprocessor::removeComments(tokens);
+        Preprocessor::simplifyPragmaAsm(tokens);
 
         preprocessor.reportOutput(outputList, true);
 
@@ -131,8 +131,11 @@ private:
             return {};
 
         std::map<std::string, std::string> cfgcode;
-        if (cfgs.empty())
-            cfgs = preprocessor.getConfigs(tokens);
+        if (cfgs.empty()) {
+            cfgs.emplace_back("");
+            std::set<std::string> configDefines = { "__cplusplus" };
+            preprocessor.getConfigs(filename, tokens, configDefines, cfgs);
+        }
         for (const std::string & config : cfgs) {
             try {
                 const bool writeLocations = (strstr(code, "#file") != nullptr) || (strstr(code, "#include") != nullptr);
@@ -366,9 +369,14 @@ private:
         std::vector<std::string> files;
         // TODO: this adds an empty filename
         simplecpp::TokenList tokens(code,files);
-        tokens.removeComments();
+        Preprocessor::removeComments(tokens);
         Preprocessor preprocessor(settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
-        const std::set<std::string> configs = preprocessor.getConfigs(tokens);
+        std::list<std::string> configs = { "" };
+        {
+            std::set<std::string> configDefines = { "__cplusplus" };
+            preprocessor.getConfigs("", tokens, configDefines, configs);
+        }
+        configs.sort();
         std::string ret;
         for (const std::string & config : configs)
             ret += config + '\n';
@@ -380,7 +388,7 @@ private:
         std::vector<std::string> files;
         // TODO: this adds an empty filename
         simplecpp::TokenList tokens(code,files);
-        tokens.removeComments();
+        Preprocessor::removeComments(tokens);
         Preprocessor preprocessor(settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
         return preprocessor.calculateHash(tokens, "");
     }
