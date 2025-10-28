@@ -1069,10 +1069,12 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
 
 bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect)
 {
-    const Token* r = nullptr;
     if (indirect)
         *indirect = 1;
-    for (const ReferenceToken& ref : followAllReferences(tok)) {
+    if (!tok)
+        return false;
+    const Token* r = nullptr;
+    for (const ReferenceToken& ref : tok->refs()) {
         const bool pointer = astIsPointer(ref.token);
         r = findAstNode(expr, [&](const Token* childTok) {
             if (childTok->exprId() == 0)
@@ -1253,11 +1255,11 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     errors->push_back(std::move(item));
 }
 
-SmallVector<ReferenceToken> followAllReferences(const Token* tok,
-                                                bool temporary,
-                                                bool inconclusive,
-                                                ErrorPath errors,
-                                                int depth)
+static SmallVector<ReferenceToken> followAllReferencesInternal(const Token* tok,
+                                                               bool temporary = true,
+                                                               bool inconclusive = true,
+                                                               ErrorPath errors = ErrorPath{},
+                                                               int depth = 20)
 {
     struct ReferenceTokenLess {
         bool operator()(const ReferenceToken& x, const ReferenceToken& y) const {
@@ -1303,16 +1305,16 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                     return refs_result;
                 }
                 if (vartok)
-                    return followAllReferences(vartok, temporary, inconclusive, std::move(errors), depth - 1);
+                    return followAllReferencesInternal(vartok, temporary, inconclusive, std::move(errors), depth - 1);
             }
         }
     } else if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) {
         std::set<ReferenceToken, ReferenceTokenLess> result;
         const Token* tok2 = tok->astOperand2();
 
-        auto refs = followAllReferences(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
+        auto refs = followAllReferencesInternal(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.cbegin(), refs.cend());
-        refs = followAllReferences(tok2->astOperand2(), temporary, inconclusive, errors, depth - 1);
+        refs = followAllReferencesInternal(tok2->astOperand2(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.cbegin(), refs.cend());
 
         if (!inconclusive && result.size() != 1) {
@@ -1340,7 +1342,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
             if (returnTok == tok)
                 continue;
             for (const ReferenceToken& rt :
-                 followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
+                 followAllReferencesInternal(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
                 const Variable* argvar = rt.token->variable();
                 if (!argvar) {
                     SmallVector<ReferenceToken> refs_result;
@@ -1365,7 +1367,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                     er.emplace_back(returnTok, "Return reference.");
                     er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
                     auto refs =
-                        followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
+                        followAllReferencesInternal(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
                     result.insert(refs.cbegin(), refs.cend());
                     if (!inconclusive && result.size() > 1) {
                         SmallVector<ReferenceToken> refs_result;
@@ -1386,11 +1388,16 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
     return refs_result;
 }
 
+SmallVector<ReferenceToken> followAllReferences(const Token* tok, bool temporary)
+{
+    return followAllReferencesInternal(tok, temporary);
+}
+
 const Token* followReferences(const Token* tok, ErrorPath* errors)
 {
     if (!tok)
         return nullptr;
-    auto refs = followAllReferences(tok, true, false);
+    auto refs = followAllReferencesInternal(tok, true, false);
     if (refs.size() == 1) {
         if (errors)
             *errors = std::move(refs.front().errors);
