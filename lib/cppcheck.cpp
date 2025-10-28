@@ -884,6 +884,21 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
     return checkInternal(file, cfgname, fileIndex, f);
 }
 
+void CppCheck::checkPlistOutput(const FileWithDetails& file, const std::vector<std::string>& files)
+{
+    if (!mSettings.plistOutput.empty()) {
+        const bool slashFound = file.spath().find('/') != std::string::npos;
+        std::string filename = slashFound ? file.spath().substr(file.spath().rfind('/') + 1) : file.spath();
+        // removes suffix from filename when it exists
+        const std::string noSuffixFilename = filename.substr(0, filename.find('.'));
+
+        // the hash is added to handle when files in different folders have the same name
+        const std::size_t fileNameHash = std::hash<std::string> {}(file.spath());
+        filename = mSettings.plistOutput + noSuffixFilename + "_" + std::to_string(fileNameHash) + ".plist";
+        mLogger->openPlist(filename, files);
+    }
+}
+
 unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList)
 {
     // TODO: move to constructor when CppCheck no longer owns the settings
@@ -989,16 +1004,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         if (!preprocessor.loadFiles(files))
             return mLogger->exitcode();
 
-        if (!mSettings.plistOutput.empty()) {
-            std::string filename2;
-            if (file.spath().find('/') != std::string::npos)
-                filename2 = file.spath().substr(file.spath().rfind('/') + 1);
-            else
-                filename2 = file.spath();
-            const std::size_t fileNameHash = std::hash<std::string> {}(file.spath());
-            filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
-            mLogger->openPlist(filename2, files);
-        }
+        checkPlistOutput(file, files);
 
         std::string dumpProlog;
         if (mSettings.dump || !mSettings.addons.empty()) {

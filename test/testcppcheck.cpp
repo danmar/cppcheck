@@ -79,6 +79,7 @@ private:
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
+        TEST_CASE(checkPlistOutput);
         TEST_CASE(premiumResultsCache);
         TEST_CASE(toomanyconfigs);
         TEST_CASE(purgedConfiguration);
@@ -519,6 +520,43 @@ private:
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
             const std::string expected = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
+        }
+    }
+
+    void checkPlistOutput() const {
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+        std::vector<std::string> files = {"textfile.txt"};
+
+        {
+            const auto s = dinit(Settings, $.templateFormat = templateFormat, $.plistOutput = "output");
+            const ScopedFile file("file", "");
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
+            const FileWithDetails fileWithDetails {file.path(), Path::identify(file.path(), false), 0};
+
+            cppcheck.checkPlistOutput(fileWithDetails, files);
+            const std::string outputFile {"outputfile_" + std::to_string(std::hash<std::string> {}(fileWithDetails.spath())) + ".plist"};
+            ASSERT(Path::exists(outputFile));
+            std::remove(outputFile.c_str());
+        }
+
+        {
+            const auto s = dinit(Settings, $.plistOutput = "output");
+            const ScopedFile file("file.c", "");
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
+            const FileWithDetails fileWithDetails {file.path(), Path::identify(file.path(), false), 0};
+
+            cppcheck.checkPlistOutput(fileWithDetails, files);
+            const std::string outputFile {"outputfile_" + std::to_string(std::hash<std::string> {}(fileWithDetails.spath())) + ".plist"};
+            ASSERT(Path::exists(outputFile));
+            std::remove(outputFile.c_str());
+        }
+
+        {
+            Settings s;
+            const ScopedFile file("file.c", "");
+            CppCheck cppcheck(s, supprs, errorLogger, false, {});
+            cppcheck.checkPlistOutput(FileWithDetails(file.path(), Path::identify(file.path(), false), 0), files);
         }
     }
 
