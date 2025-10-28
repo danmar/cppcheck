@@ -19,7 +19,7 @@ However, no warning is generated when:
 - Variables are modified between evaluations
 - The expressions involve non-constant computations
 
-## Why we warn
+## Motivation
 
 The same value indicates that there might be some logic error or copy paste mistake.
 

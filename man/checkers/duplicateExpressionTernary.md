@@ -13,7 +13,7 @@ The warning is triggered when:
 - The second and third operands of a ternary operator are syntactically identical expressions
 - This includes cases where variables are referenced through aliases that resolve to the same expression
 
-## Why we warn
+## Motivation
 
 The same expressions indicates that there might be some logic error or copy paste mistake.
 
