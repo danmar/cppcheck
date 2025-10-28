@@ -99,15 +99,11 @@ public:
  * configurations that exist in a source file.
  */
 class CPPCHECKLIB WARN_UNUSED Preprocessor {
-    // TODO: get rid of this
-    friend class TestPreprocessor;
-
 public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(simplecpp::TokenList& tokens, const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang);
-    virtual ~Preprocessor() = default;
+    Preprocessor(simplecpp::TokenList& tokens, const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang);
 
     void inlineSuppressions(SuppressionList &suppressions);
 
@@ -146,10 +142,13 @@ public:
 
     static bool hasErrors(const simplecpp::Output &output);
 
+protected:
+    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
+    static bool hasErrors(const simplecpp::OutputList &outputList);
+
 private:
     void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
-
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
 
@@ -163,8 +162,6 @@ private:
 
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
-
-    static bool hasErrors(const simplecpp::OutputList &outputList);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
