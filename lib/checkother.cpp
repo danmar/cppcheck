@@ -2222,7 +2222,7 @@ static bool isConstStatement(const Token *tok, const Library& library, bool plat
         const bool isChained = succeeds(tok->astParent(), tok);
         if (Token::simpleMatch(tok->astParent(), "[")) {
             if (isChained)
-                return isConstStatement(tok->astOperand2(), library, platformIndependent) && 
+                return isConstStatement(tok->astOperand2(), library, platformIndependent) &&
                        isConstStatement(tok->astParent(), library, platformIndependent);
             return isNestedBracket && isConstStatement(tok->astOperand2(), library, platformIndependent);
         }
@@ -2993,10 +2993,10 @@ void CheckOther::checkDuplicateExpression()
             } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
                 if (isSameExpression(true, tok->astOperand1(), tok->astOperand2(), *mSettings, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, std::move(errorPath));
-                
+
                 else if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
-                    !isVariableChanged(tok->astParent(), /*indirect*/ 0, *mSettings) &&
-                    isConstStatement(tok->astOperand1(), mSettings->library, true) && isConstStatement(tok->astOperand2(), mSettings->library, true))
+                         !isVariableChanged(tok->astParent(), /*indirect*/ 0, *mSettings) &&
+                         isConstStatement(tok->astOperand1(), mSettings->library, true) && isConstStatement(tok->astOperand2(), mSettings->library, true))
                     duplicateValueTernaryError(tok);
             }
         }
