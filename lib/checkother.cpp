@@ -2163,7 +2163,7 @@ static bool isConstant(const Token* tok) {
     return tok && (tok->isEnumerator() || Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"));
 }
 
-static bool isConstStatement(const Token *tok, const Library& library, bool isNestedBracket = false)
+static bool isConstStatement(const Token *tok, const Library& library, bool platformIndependent, bool isNestedBracket = false)
 {
     if (!tok)
         return false;
@@ -2185,23 +2185,26 @@ static bool isConstStatement(const Token *tok, const Library& library, bool isNe
         tok2 = tok2->astParent();
     }
     if (Token::Match(tok, "&&|%oror%"))
-        return isConstStatement(tok->astOperand1(), library) && isConstStatement(tok->astOperand2(), library);
+        return isConstStatement(tok->astOperand1(), library, platformIndependent) && isConstStatement(tok->astOperand2(), library, platformIndependent);
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
-    if (Token::Match(tok->previous(), "sizeof|alignof|noexcept|typeid (") && tok->previous()->isKeyword())
+    if (Token::simpleMatch(tok->previous(), "sizeof ("))
+        return !platformIndependent;
+    if (Token::Match(tok->previous(), "alignof|noexcept|typeid (") && tok->previous()->isKeyword())
         return true;
     if (isCPPCast(tok)) {
         if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->linkAt(1)->previous(), "& >"))
             return false;
-        return isWithoutSideEffects(tok) && isConstStatement(tok->astOperand2(), library);
+        return isWithoutSideEffects(tok) && isConstStatement(tok->astOperand2(), library, platformIndependent);
     }
     if (tok->isCast() && tok->next() && tok->next()->isStandardType())
-        return isWithoutSideEffects(tok->astOperand1()) && isConstStatement(tok->astOperand1(), library);
+        return isWithoutSideEffects(tok->astOperand1()) && isConstStatement(tok->astOperand1(), library, platformIndependent);
     if (Token::simpleMatch(tok, "."))
-        return isConstStatement(tok->astOperand2(), library);
+        return isConstStatement(tok->astOperand2(), library, platformIndependent);
     if (Token::simpleMatch(tok, ",")) {
         if (tok->astParent()) // warn about const statement on rhs at the top level
-            return isConstStatement(tok->astOperand1(), library) && isConstStatement(tok->astOperand2(), library);
+            return isConstStatement(tok->astOperand1(), library, platformIndependent) &&
+                   isConstStatement(tok->astOperand2(), library, platformIndependent);
 
         const Token* lml = previousBeforeAstLeftmostLeaf(tok); // don't warn about matrix/vector assignment (e.g. Eigen)
         if (lml)
@@ -2209,18 +2212,21 @@ static bool isConstStatement(const Token *tok, const Library& library, bool isNe
         const Token* stream = lml;
         while (stream && Token::Match(stream->astParent(), ".|[|(|*"))
             stream = stream->astParent();
-        return (!stream || !isLikelyStream(stream)) && isConstStatement(tok->astOperand2(), library);
+        return (!stream || !isLikelyStream(stream)) && isConstStatement(tok->astOperand2(), library, platformIndependent);
     }
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
-        return isConstStatement(tok->astOperand1(), library) && isConstStatement(tok->astOperand2()->astOperand1(), library) && isConstStatement(tok->astOperand2()->astOperand2(), library);
+        return isConstStatement(tok->astOperand1(), library, platformIndependent) &&
+               isConstStatement(tok->astOperand2()->astOperand1(), library, platformIndependent) &&
+               isConstStatement(tok->astOperand2()->astOperand2(), library, platformIndependent);
     if (isBracketAccess(tok) && isWithoutSideEffects(tok->astOperand1(), /*checkArrayAccess*/ true, /*checkReference*/ false)) {
         const bool isChained = succeeds(tok->astParent(), tok);
         if (Token::simpleMatch(tok->astParent(), "[")) {
             if (isChained)
-                return isConstStatement(tok->astOperand2(), library) && isConstStatement(tok->astParent(), library);
-            return isNestedBracket && isConstStatement(tok->astOperand2(), library);
+                return isConstStatement(tok->astOperand2(), library, platformIndependent) && 
+                       isConstStatement(tok->astParent(), library, platformIndependent);
+            return isNestedBracket && isConstStatement(tok->astOperand2(), library, platformIndependent);
         }
-        return isConstStatement(tok->astOperand2(), library, /*isNestedBracket*/ !isChained);
+        return isConstStatement(tok->astOperand2(), library, platformIndependent, /*isNestedBracket*/ !isChained);
     }
     if (!tok->astParent() && findLambdaEndToken(tok))
         return true;
@@ -2331,7 +2337,7 @@ void CheckOther::checkIncompleteStatement()
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
             continue;
-        if (!isConstStatement(tok, mSettings->library))
+        if (!isConstStatement(tok, mSettings->library, false))
             continue;
         if (isVoidStmt(tok))
             continue;
@@ -2526,7 +2532,7 @@ void CheckOther::checkMisusedScopedObject()
                 if (Token::simpleMatch(parTok, "<") && parTok->link())
                     parTok = parTok->link()->next();
                 if (const Token* arg = parTok->astOperand2()) {
-                    if (!isConstStatement(arg, mSettings->library))
+                    if (!isConstStatement(arg, mSettings->library, false))
                         continue;
                     if (parTok->str() == "(") {
                         if (arg->varId() && !(arg->variable() && arg->variable()->nameToken() != arg))
@@ -2985,12 +2991,13 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             } else if (tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
-                if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
-                    !isVariableChanged(tok->astParent(), /*indirect*/ 0, *mSettings) &&
-                    isConstStatement(tok->astOperand1(), mSettings->library) && isConstStatement(tok->astOperand2(), mSettings->library))
-                    duplicateValueTernaryError(tok);
-                else if (isSameExpression(true, tok->astOperand1(), tok->astOperand2(), *mSettings, false, true, &errorPath))
+                if (isSameExpression(true, tok->astOperand1(), tok->astOperand2(), *mSettings, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, std::move(errorPath));
+                
+                else if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
+                    !isVariableChanged(tok->astParent(), /*indirect*/ 0, *mSettings) &&
+                    isConstStatement(tok->astOperand1(), mSettings->library, true) && isConstStatement(tok->astOperand2(), mSettings->library, true))
+                    duplicateValueTernaryError(tok);
             }
         }
     }
