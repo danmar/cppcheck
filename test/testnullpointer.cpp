@@ -1403,7 +1403,9 @@ private:
               "    if (x) p = q;\n"
               "    if (y ? p->x : p->y) { }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: p\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:13]: (warning) Possible null pointer dereference: p [nullPointer]\n"
+                      "[test.cpp:4:20]: (warning) Possible null pointer dereference: p [nullPointer]\n",
+                      errout_str());
     }
 
     void nullpointer21() {  // #4038 - fp: if (x) p=q; else return;
