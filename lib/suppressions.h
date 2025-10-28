@@ -149,9 +149,12 @@ public:
         std::string errorId;
         std::string fileName;
         std::string extraComment;
+        // TODO: use simplecpp::Location?
+        int fileIndex{};
         int lineNumber = NO_LINE; // TODO: needs to be unsigned
         int lineBegin = NO_LINE;
         int lineEnd = NO_LINE;
+        int column{};
         Type type = Type::unique;
         std::string symbolName;
         std::string macroName;
