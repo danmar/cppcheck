@@ -84,6 +84,7 @@ private:
 
         TEST_CASE(templateSimplification); //ticket #6183
         TEST_CASE(maybeUnused);
+        TEST_CASE(attributeUnused); // #14129
         TEST_CASE(trailingReturn);
     }
 
@@ -885,6 +886,19 @@ private:
 
         check("class C {\n"
               "    [[maybe_unused]] static int f();\n"
+              "};\n"
+              "int C::f() { return 42; }\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void attributeUnused() {
+        check("class C {\n"
+              "    __attribute__((unused)) int f() { return 42; }\n"
+              "};");
+        ASSERT_EQUALS("", errout_str());
+
+        check("class C {\n"
+              "    __attribute__((unused)) int f();\n"
               "};\n"
               "int C::f() { return 42; }\n");
         ASSERT_EQUALS("", errout_str());
