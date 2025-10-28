@@ -23,6 +23,10 @@ This checker is about C casts that converts to/from a pointer or reference.
 Dangerous conversions are covered by other warnings so this ID `cstyleCast` is primarily about
 writing warnings for casts that are currently safe.
 
+# Motivation
+
+The motivation of this checker is to modernize c++ code.
+
 ## How to fix
 
 You can use C++ casts such as `static_cast` to fix these warnings.
