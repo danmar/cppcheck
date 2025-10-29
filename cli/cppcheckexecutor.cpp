@@ -318,15 +318,9 @@ static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppres
         if (suppressed)
             continue;
 
-        bool skip = false;
-        for (const auto& filter : filters)
-        {
-            if (matchglob(filter, s.errorId))
-            {
-                skip = true;
-                break;
-            }
-        }
+        const bool skip = std::any_of(filters.cbegin(), filters.cend(), [&s](const std::string& filter) {
+            return matchglob(filter, s.errorId);
+        });
         if (skip)
             continue;
 
