@@ -784,16 +784,9 @@ unsigned int CppCheck::check(const FileWithDetails &file)
         ErrorMessage msg({}, file.spath(), Severity::information, "", "", Certainty::normal);
         (void)mSuppressions.nomsg.isSuppressed(SuppressionList::ErrorMessage::fromErrorMessage(msg, {}), true);
     }
-
-    unsigned int returnValue;
-    if (mSettings.clang)
-        returnValue = checkClang(file, 0);
-    else
-        returnValue = checkFile(file, "", 0);
-
     // TODO: call analyseClangTidy()
 
-    return returnValue;
+    return mSettings.clang ? checkClang(file, 0) : checkFile(file, "", 0);
 }
 
 unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size)
