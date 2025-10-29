@@ -197,6 +197,7 @@ private:
         TEST_CASE(duplicateExpression18);
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
+        TEST_CASE(duplicateValueTernarySizeof); // #13773
         TEST_CASE(duplicateExpressionTernary); // #6391
         TEST_CASE(duplicateExpressionTemplate); // #6930
         TEST_CASE(duplicateExpressionCompareWithZero);
@@ -8106,31 +8107,31 @@ private:
         check("void f() {\n"
               "    if( a ? (b ? false:false): false ) ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2:23]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:23]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
 
         check("int f1(int a) {return (a == 1) ? (int)1 : 1; }");
         ASSERT_EQUALS("[test.cpp:1:41]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
 
         check("int f2(int a) {return (a == 1) ? (int)1 : (int)1; }");
-        ASSERT_EQUALS("[test.cpp:1:41]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:41]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
 
         check("int f3(int a) {return (a == 1) ? 1 : (int)1; }");
         ASSERT_EQUALS("[test.cpp:1:36]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
 
         check("int f4(int a) {return (a == 1) ? 1 : 1; }");
-        ASSERT_EQUALS("[test.cpp:1:36]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:36]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
 
         check("int f5(int a) {return (a == (int)1) ? (int)1 : 1; }");
         ASSERT_EQUALS("[test.cpp:1:46]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
 
         check("int f6(int a) {return (a == (int)1) ? (int)1 : (int)1; }");
-        ASSERT_EQUALS("[test.cpp:1:46]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:46]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
 
         check("int f7(int a) {return (a == (int)1) ? 1 : (int)1; }");
         ASSERT_EQUALS("[test.cpp:1:41]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
 
         check("int f8(int a) {return (a == (int)1) ? 1 : 1; }");
-        ASSERT_EQUALS("[test.cpp:1:41]: (style) Same value in both branches of ternary operator. [duplicateValueTernary]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:1:41]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
 
         check("struct Foo {\n"
               "  std::vector<int> bar{1,2,3};\n"
@@ -8168,6 +8169,14 @@ private:
               "    return (x >= 0.0) ? 0.0 : -0.0;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void duplicateValueTernarySizeof() { // #13773
+        check("int f() { return x ? sizeof(uint32_t) : sizeof(unsigned int); }");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f() { return x ? sizeof(uint32_t) : sizeof(uint32_t); }");
+        ASSERT_EQUALS("[test.cpp:1:39]: (style) Same expression in both branches of ternary operator. [duplicateExpressionTernary]\n", errout_str());
     }
 
     void duplicateExpressionTemplate() {
