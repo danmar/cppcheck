@@ -3969,10 +3969,10 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("struct S { int i; };\n" // #14231
-            "void* f(S& s, int& v) {\n"
-            "    v = s.i;\n"
-            "    return (void*)&s;\n"
-            "}\n"); // don't crash
+              "void* f(S& s, int& v) {\n"
+              "    v = s.i;\n"
+              "    return (void*)&s;\n"
+              "}\n"); // don't crash
         ASSERT_EQUALS("", errout_str());
     }
 
