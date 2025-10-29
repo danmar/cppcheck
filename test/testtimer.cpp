@@ -33,7 +33,11 @@ private:
     }
 
     void result() const {
-        // TODO add some tests
+        TimerResultsData t1;
+        t1.mDuration = Duration{1234};
+        ASSERT(t1.getSeconds().count() > 1.233 && t1.getSeconds().count() < 1.235);
+
+        // TODO : more tests
     }
 };
 

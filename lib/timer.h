@@ -95,7 +95,7 @@ private:
     const std::string mStr;
     TimerResultsIntf* mTimerResults{};
     const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
-    TimePoint mStartTimePoint{};
+    TimePoint mStartTimePoint;
 };
 
 //---------------------------------------------------------------------------
