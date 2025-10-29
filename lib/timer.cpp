@@ -99,6 +99,8 @@ void Timer::stop()
     if ((mShowTimeMode != SHOWTIME_MODES::SHOWTIME_NONE) && mStartTimePoint != TimePoint{}) {
         Duration diff = std::chrono::duration_cast<Duration>(Clock::now() - mStartTimePoint);
         if (!mTimerResults) {
+            if (mShowTimeMode != SHOWTIME_MODES::SHOWTIME_FILE_TOTAL && mShowTimeMode != SHOWTIME_MODES::SHOWTIME_SUMMARY)
+                return;
             std::lock_guard<std::mutex> l(stdCoutLock);
             std::cout << (mStr == "Summary" ? "Overall time: " : "Check time: " + mStr + ": ")<< durationToString(diff) << std::endl;
         } else {
