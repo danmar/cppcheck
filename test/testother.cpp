@@ -3964,6 +3964,9 @@ private:
 
         check("void push(V& v) { v.push_back({ .x = 1 }); }"); // #14010
         ASSERT_EQUALS("", errout_str());
+
+        check("size_t* f(std::array<uint8_t, 128>& a) { return reinterpret_cast<size_t*>(a.data()); }\n"); // #14074
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {

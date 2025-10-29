@@ -1728,6 +1728,9 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 if (Token::simpleMatch(retTok, "&"))
                     retTok = retTok->astOperand1();
+                ValueFlow::Value ltVal = ValueFlow::getLifetimeObjValue(retTok);
+                if (ltVal.isLifetimeValue() && ltVal.tokvalue->varId() == var->declarationId())
+                    return true;
                 return ValueFlow::hasLifetimeToken(getParentLifetime(retTok), var->nameToken(), *mSettings);
             }))
                 continue;
