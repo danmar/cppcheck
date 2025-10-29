@@ -3967,6 +3967,13 @@ private:
 
         check("size_t* f(std::array<uint8_t, 128>& a) { return reinterpret_cast<size_t*>(a.data()); }\n"); // #14074
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int i; };\n" // #14231
+              "void* f(S& s, int& v) {\n"
+              "    v = s.i;\n"
+              "    return (void*)&s;\n"
+              "}\n"); // don't crash
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {

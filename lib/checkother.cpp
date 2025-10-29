@@ -1723,7 +1723,7 @@ void CheckOther::checkConstVariable()
                 if (retTok->varId() == var->declarationId())
                     return true;
                 while (retTok && retTok->isCast())
-                    retTok = retTok->astOperand2();
+                    retTok = retTok->astOperand2() ? retTok->astOperand2() : retTok->astOperand1();
                 while (Token::simpleMatch(retTok, "."))
                     retTok = retTok->astOperand2();
                 if (Token::simpleMatch(retTok, "&"))
