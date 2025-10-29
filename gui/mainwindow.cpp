@@ -1091,8 +1091,6 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
             return false;
         }
 
-        settings.premium = startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
-
         const auto cfgAddons = settings.addons;
         settings.addons.clear();
         for (const std::string& addon : cfgAddons) {

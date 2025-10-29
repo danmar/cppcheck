@@ -166,6 +166,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
         }
     }
 
+    settings.premium = startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
     settings.settingsFiles.emplace_back(std::move(fileName));
 
     return "";
