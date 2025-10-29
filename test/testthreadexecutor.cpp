@@ -234,8 +234,8 @@ private:
               dinit(CheckOptions,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        // for each file: top5 results + overall + empty line
-        ASSERT_EQUALS((5 + 1 + 1) * 2LL, cppcheck::count_all_of(output_s, '\n'));
+        // for each file: top5 results + overall
+        ASSERT_EQUALS((5 + 1) * 2LL, cppcheck::count_all_of(output_s, '\n'));
     }
 
     void showtime_top5_summary() {
@@ -245,8 +245,8 @@ private:
               dinit(CheckOptions,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        // once: top5 results + overall + empty line
-        ASSERT_EQUALS(5 + 1 + 1, cppcheck::count_all_of(output_s, '\n'));
+        // once: top5 results + overall
+        ASSERT_EQUALS(5 + 1, cppcheck::count_all_of(output_s, '\n'));
         // should only report the top5 once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
         ASSERT(output_s.find("2 result(s)") != std::string::npos);
