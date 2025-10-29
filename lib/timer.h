@@ -31,6 +31,10 @@
 #include <string>
 #include <utility>
 
+using Clock = std::chrono::high_resolution_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+using Duration = std::chrono::milliseconds;
+
 enum class SHOWTIME_MODES : std::uint8_t {
     SHOWTIME_NONE,
     SHOWTIME_FILE,
@@ -44,16 +48,15 @@ class CPPCHECKLIB TimerResultsIntf {
 public:
     virtual ~TimerResultsIntf() = default;
 
-    virtual void addResults(const std::string& str, std::clock_t clocks) = 0;
+    virtual void addResults(const std::string& timerName, Duration duation) = 0;
 };
 
 struct TimerResultsData {
-    std::clock_t mClocks{};
+    Duration mDuration;
     long mNumberOfResults{};
 
-    double seconds() const {
-        const double ret = static_cast<double>(static_cast<unsigned long>(mClocks)) / static_cast<double>(CLOCKS_PER_SEC);
-        return ret;
+    std::chrono::duration<double> getSeconds() const {
+        return std::chrono::duration_cast<std::chrono::duration<double>>(mDuration);
     }
 };
 
@@ -62,7 +65,7 @@ public:
     TimerResults() = default;
 
     void showResults(SHOWTIME_MODES mode) const;
-    void addResults(const std::string& str, std::clock_t clocks) override;
+    void addResults(const std::string& str, Duration duration) override;
 
     void reset();
 
@@ -74,20 +77,14 @@ private:
 class CPPCHECKLIB Timer {
 public:
     Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
-    Timer(std::string str);
     ~Timer();
 
     Timer(const Timer&) = delete;
     Timer& operator=(const Timer&) = delete;
 
-    using Clock = std::chrono::high_resolution_clock;
-    using TimePoint = std::chrono::time_point<Clock>;
-
     void stop();
 
-    void cancelRealTimeMeasurement() {
-        mStartTimePoint = TimePoint{};
-    }
+    static std::string durationToString(Duration duration);
 
     static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
         Timer t(std::move(str), showtimeMode, timerResults);
@@ -95,14 +92,9 @@ public:
     }
 
 private:
-
-    std::string getRealTimePassed();
-
     const std::string mStr;
     TimerResultsIntf* mTimerResults{};
-    std::clock_t mStart = std::clock();
     const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
-    bool mStopped{};
     TimePoint mStartTimePoint{};
 };
 

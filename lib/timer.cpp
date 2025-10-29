@@ -29,7 +29,7 @@ namespace {
     using dataElementType = std::pair<std::string, TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
     {
-        return lhs.second.seconds() > rhs.second.seconds();
+        return lhs.second.getSeconds() > rhs.second.getSeconds();
     }
 
     // TODO: remove and print through (synchronized) ErrorLogger instead
@@ -42,8 +42,6 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
     if (mode == SHOWTIME_MODES::SHOWTIME_NONE || mode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
         return;
-
-    TimerResultsData overallData;
     std::vector<dataElementType> data;
 
     {
@@ -61,23 +59,8 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
     for (auto iter=data.cbegin(); iter!=data.cend(); ++iter) {
-        const double sec = iter->second.seconds();
+        const double sec = iter->second.getSeconds().count();
         const double secAverage = sec / static_cast<double>(iter->second.mNumberOfResults);
-        bool hasParent = false;
-        {
-            // Do not use valueFlow.. in "Overall time" because those are included in Tokenizer already
-            if (startsWith(iter->first,"valueFlow"))
-                hasParent = true;
-
-            // Do not use inner timers in "Overall time"
-            const std::string::size_type pos = iter->first.rfind("::");
-            if (pos != std::string::npos)
-                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) {
-                    return d.first.size() == pos && iter->first.compare(0, d.first.size(), d.first) == 0;
-                });
-        }
-        if (!hasParent)
-            overallData.mClocks += iter->second.mClocks;
         if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5_FILE && mode != SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }
@@ -85,11 +68,11 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     }
 }
 
-void TimerResults::addResults(const std::string& str, std::clock_t clocks)
+void TimerResults::addResults(const std::string& str, Duration duration)
 {
     std::lock_guard<std::mutex> l(mResultsSync);
 
-    mResults[str].mClocks += clocks;
+    mResults[str].mDuration += duration;
     mResults[str].mNumberOfResults++;
 }
 
@@ -102,15 +85,7 @@ void TimerResults::reset()
 Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
     : mStr(std::move(str))
     , mTimerResults(timerResults)
-    , mStart(std::clock())
     , mShowTimeMode(showtimeMode)
-    , mStopped(showtimeMode == SHOWTIME_MODES::SHOWTIME_NONE || showtimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
-    , mStartTimePoint(Clock::now())
-{}
-
-Timer::Timer(std::string str)
-    : mStr(std::move(str))
-    , mShowTimeMode(SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
     , mStartTimePoint(Clock::now())
 {}
 
@@ -121,49 +96,35 @@ Timer::~Timer()
 
 void Timer::stop()
 {
-    if ((mShowTimeMode != SHOWTIME_MODES::SHOWTIME_NONE) && !mStopped) {
-        const std::clock_t end = std::clock();
-        const std::clock_t diff = end - mStart;
-
-        if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
-            const double sec = static_cast<double>(diff) / CLOCKS_PER_SEC;
+    if ((mShowTimeMode != SHOWTIME_MODES::SHOWTIME_NONE) && mStartTimePoint != TimePoint{}) {
+        Duration diff = std::chrono::duration_cast<Duration>(Clock::now() - mStartTimePoint);
+        if (!mTimerResults) {
             std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << mStr << ": " << sec << "s" << std::endl;
-        } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL && mStartTimePoint != TimePoint{}) {
-            std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << "Check time: " << mStr << ": " << getRealTimePassed() << std::endl;
+            std::cout << (mStr == "Summary" ? "Overall time: " : "Check time: " + mStr + ": ")<< durationToString(diff) << std::endl;
         } else {
-            if (mTimerResults)
-                mTimerResults->addResults(mStr, diff);
-            else if (mStr.empty() && mStartTimePoint != TimePoint{}) { // Get real time
-                std::lock_guard<std::mutex> l(stdCoutLock);
-                std::cout << "Overall time: " << getRealTimePassed() << std::endl;
-            }
+            mTimerResults->addResults(mStr, diff);
         }
     }
-
-    mStopped = true;
 }
 
-std::string Timer::getRealTimePassed()
+std::string Timer::durationToString(Duration duration)
 {
-    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - mStartTimePoint);
-
     // Extract hours
-    auto hours = std::chrono::duration_cast<std::chrono::hours>(diff);
-    diff -= hours; // Subtract the extracted hours
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+    duration -= hours; // Subtract the extracted hours
 
     // Extract minutes
-    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(diff);
-    diff -= minutes; // Subtract the extracted minutes
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    duration -= minutes; // Subtract the extracted minutes
 
     // Extract seconds
-    auto seconds = static_cast<double>(diff.count()) / std::chrono::microseconds::period::den;
+    std::chrono::duration<double> seconds = std::chrono::duration_cast<std::chrono::duration<double>>(duration);
 
     std::string ellapsedTime;
     if (hours.count() > 0)
         ellapsedTime += std::to_string(hours.count()) + "h ";
     if (minutes.count() > 0)
         ellapsedTime += std::to_string(minutes.count()) + "m ";
-    return (ellapsedTime + std::to_string(seconds) + "s ");
+    std::string secondsStr{std::to_string(seconds.count())};
+    return (ellapsedTime + secondsStr.substr(0, secondsStr.length() - 3) + "s ");
 }
