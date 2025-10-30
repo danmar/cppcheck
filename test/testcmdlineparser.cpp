@@ -118,7 +118,7 @@ private:
 
     class AsPremium {
     public:
-        AsPremium(Settings* settings): settings(settings), productName(settings->cppcheckCfgProductName), premium(settings->premium)
+        AsPremium(Settings* settings) : settings(settings), productName(settings->cppcheckCfgProductName), premium(settings->premium)
         {
             // set this so we think it is the premium
             settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
