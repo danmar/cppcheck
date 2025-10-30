@@ -1986,7 +1986,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 default:
                     break;
                 }
-                if (bits == 0 || bits >= 64)
+                if (bits == 0 || bits >= 63)
                     continue;
 
                 const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));

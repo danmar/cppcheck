@@ -1404,7 +1404,9 @@ private:
               "    if (x) p = q;\n"
               "    if (y ? p->x : p->y) { }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: p\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:13]: (warning) Possible null pointer dereference: p [nullPointer]\n"
+                      "[test.cpp:4:20]: (warning) Possible null pointer dereference: p [nullPointer]\n",
+                      errout_str());
     }
 
     void nullpointer21() {  // #4038 - fp: if (x) p=q; else return;
@@ -3373,7 +3375,7 @@ private:
               "    if (!p) {}\n"
               "    return q ? p->x : 0;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:3:16]: (warning) Either the condition '!p' is redundant or there is possible null pointer dereference: p. [nullPointerRedundantCheck]\n", errout_str());
 
         check("int f(ABC *p) {\n" // FP : return &&
               "    if (!p) {}\n"
@@ -3393,6 +3395,20 @@ private:
               "  pointer = func(sizeof pointer[0]);\n"
               "}");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct T {\n" // #14164
+              "    T* next;\n"
+              "    char op;\n"
+              "};\n"
+              "void h(int, char);\n"
+              "void g(const T* tok, bool b) {\n"
+              "    if (tok->op == '<') {\n"
+              "        while ((tok = tok->next) && tok->op != '>') {}\n"
+              "    }\n"
+              "    h(b ? 1 : 0, tok->op);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8:21] -> [test.cpp:10:18]: (warning) Either the condition 'tok=tok->next' is redundant or there is possible null pointer dereference: tok. [nullPointerRedundantCheck]\n",
+                      errout_str());
     }
 
     // Test CheckNullPointer::nullConstantDereference
