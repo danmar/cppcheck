@@ -116,10 +116,23 @@ private:
         logger->destroy();
     }
 
-    void asPremium() {
-        // set this so we think it is the premium
-        settings->premium = true;
-    }
+    class AsPremium {
+    public:
+        AsPremium(Settings* settings): settings(settings), productName(settings->cppcheckCfgProductName), premium(settings->premium)
+        {
+            // set this so we think it is the premium
+            settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
+            settings->premium = true;
+        }
+        ~AsPremium() {
+            settings->cppcheckCfgProductName = productName;
+            settings->premium = premium;
+        }
+    private:
+        Settings* const settings;
+        const std::string productName;
+        const bool premium;
+    };
 
     template<size_t size>
     CmdLineParser::Result parseFromArgs(const char* const (&argv)[size]) {
@@ -1533,7 +1546,7 @@ private:
 
     void premiumOptions1() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=autosar", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
@@ -1542,7 +1555,7 @@ private:
 
     void premiumOptions2() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=misra-c-2012", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
@@ -1551,7 +1564,7 @@ private:
 
     void premiumOptions3() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=misra-c++-2023", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
@@ -1560,7 +1573,7 @@ private:
 
     void premiumOptions4() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=cert-c++-2016", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
@@ -1569,7 +1582,7 @@ private:
 
     void premiumOptions5() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=safety", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT(settings->severity.isEnabled(Severity::error));
@@ -1578,7 +1591,7 @@ private:
 
     void premiumOptionsAll() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {
             "cppcheck",
             "--premium=autosar:all",
@@ -1595,7 +1608,7 @@ private:
 
     void premiumOptionsMetrics() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=metrics", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS("--metrics", settings->premiumArgs);
@@ -1606,7 +1619,7 @@ private:
 
     void premiumOptionsCertCIntPrecision() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium-cert-c-int-precision=12", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS("--cert-c-int-precision=12", settings->premiumArgs);
@@ -1614,7 +1627,7 @@ private:
 
     void premiumOptionsLicenseFile() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium-license-file=file.lic", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS("--license-file=file.lic", settings->premiumArgs);
@@ -1622,7 +1635,7 @@ private:
 
     void premiumOptionsInvalid1() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=misra", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: invalid --premium option 'misra'.\n", logger->str());
@@ -1630,7 +1643,7 @@ private:
 
     void premiumOptionsInvalid2() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=cert", "file.c"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Fail, parseFromArgs(argv));
         ASSERT_EQUALS("cppcheck: error: invalid --premium option 'cert'.\n", logger->str());
@@ -1638,7 +1651,7 @@ private:
 
     void premiumSafety() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=safety", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(true, settings->safety);
@@ -1646,7 +1659,7 @@ private:
 
     void premiumDebugProgress() {
         REDIRECT;
-        asPremium();
+        AsPremium asPremium(settings.get());
         const char * const argv[] = {"cppcheck", "--premium=debug-progress", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS("--debug-progress", settings->premiumArgs);
