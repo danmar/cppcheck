@@ -54,9 +54,9 @@ private:
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
+        (void)Preprocessor::reportOutput(settingsDefault, errorLogger, outputList, true);
         Preprocessor p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess("", files, true);
-        (void)p.reportOutput(outputList, true);
         return tokens2.stringify();
     }
 
@@ -118,12 +118,11 @@ private:
         std::vector<std::string> files;
 
         simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
+        if (Preprocessor::reportOutput(settings, errorlogger, outputList, true))
+            return {};
+
         // TODO: we should be using the actual Preprocessor implementation
         Preprocessor preprocessor(tokens, settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
-
-        // TODO: should be possible without a Preprocessor instance
-        if (preprocessor.reportOutput(outputList, true))
-            return {};
 
         if (inlineSuppression)
             preprocessor.inlineSuppressions(*inlineSuppression);

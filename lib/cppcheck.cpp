@@ -977,10 +977,10 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = createTokenList(files, &outputList);
 
-        Preprocessor preprocessor(tokens1, mSettings, mErrorLogger, file.lang());
-
-        if (preprocessor.reportOutput(outputList, true))
+        if (Preprocessor::reportOutput(mSettings, mErrorLogger,outputList, true))
             return mLogger->exitcode();
+
+        Preprocessor preprocessor(tokens1, mSettings, mErrorLogger, file.lang());
 
         if (!preprocessor.loadFiles(files))
             return mLogger->exitcode();

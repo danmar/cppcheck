@@ -140,7 +140,7 @@ public:
      */
     void dump(std::ostream &out) const;
 
-    bool reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+    static bool reportOutput(const Settings& settings, ErrorLogger& errorLogger, const simplecpp::OutputList &outputList, bool showerror);
 
 private:
     static bool hasErrors(const simplecpp::Output &output);
@@ -157,8 +157,8 @@ private:
         SystemHeader
     };
 
-    void missingInclude(const simplecpp::Location& loc, const std::string &header, HeaderTypes headerType);
-    void error(const simplecpp::Location& loc, const std::string &msg, simplecpp::Output::Type type);
+    static void missingInclude(const Settings& settings, ErrorLogger& errorLogger, const simplecpp::Location& loc, const std::string &header, HeaderTypes headerType);
+    static void error(const Settings& settings, ErrorLogger& errorLogger, const simplecpp::Location& loc, const std::string &msg, simplecpp::Output::Type type);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
@@ -171,8 +171,6 @@ private:
 
     simplecpp::FileDataCache mFileCache;
 
-    /** filename for cpp/c file - useful when reporting errors */
-    std::string mFile0; // TODO: this is never set
     Standards::Language mLang{Standards::Language::None};
 
     /** simplecpp tracking info */
