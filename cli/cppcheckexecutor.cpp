@@ -271,7 +271,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
-    Timer realTimeClock(OVERALL_TIMER, settings.showtime);
+    Timer realTimeClock(Timer::OVERALL, settings.showtime);
 
     settings.loadSummaries();
 

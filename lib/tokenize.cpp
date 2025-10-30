@@ -3405,7 +3405,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration, int fileIndex)
             return false;
     }
 
-    const SHOWTIME_MODES showTime = mTimerResults ? mSettings.showtime : SHOWTIME_MODES::SHOWTIME_NONE;
+    const ShowTime showTime = mTimerResults ? mSettings.showtime : ShowTime::NONE;
 
     Timer::run("Tokenizer::simplifyTokens1::createAst", showTime, mTimerResults, [&]() {
         list.createAst();
@@ -5624,7 +5624,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     validate();
 
-    const SHOWTIME_MODES showTime = mTimerResults ? mSettings.showtime : SHOWTIME_MODES::SHOWTIME_NONE;
+    const ShowTime showTime = mTimerResults ? mSettings.showtime : ShowTime::NONE;
 
     // Bail out if code is garbage
     Timer::run("Tokenizer::simplifyTokens1::simplifyTokenList1::findGarbageCode", showTime, mTimerResults, [&]() {

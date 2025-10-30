@@ -33,7 +33,7 @@
 #include <vector>
 
 class TokenList;
-enum class SHOWTIME_MODES : std::uint8_t;
+enum class ShowTime : std::uint8_t;
 struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
@@ -143,7 +143,7 @@ public:
     unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
 
     static void resetTimerResults();
-    static void printTimerResults(SHOWTIME_MODES mode);
+    static void printTimerResults(ShowTime mode);
 
 private:
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);

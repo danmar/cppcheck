@@ -52,7 +52,7 @@ private:
     struct CheckOptions
     {
         bool quiet = true;
-        SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ShowTime showtime = ShowTime::NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
     };
@@ -164,7 +164,7 @@ private:
               "void f()\n"
               "{\n"
               "  (void)(*((int*)0));\n"
-              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+              "}", dinit(CheckOptions, $.showtime = ShowTime::SUMMARY));
         // we are not interested in the results - so just consume them
         ignore_errout();
     }
@@ -233,7 +233,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
+                    $.showtime = ShowTime::TOP5_FILE));
         // for each file: top5 results + overall + empty line
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // for each file: top5 results + overall + empty line
@@ -245,7 +245,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
+                    $.showtime = ShowTime::TOP5_SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // once: top5 results + overall + empty line
         TODO_ASSERT_EQUALS(5 + 1 + 1, 1, cppcheck::count_all_of(output_s, '\n'));
@@ -259,7 +259,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
+                    $.showtime = ShowTime::FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         TODO_ASSERT_EQUALS(2, 0, cppcheck::count_all_of(output_s, "Overall time:"));
     }
@@ -269,7 +269,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+                    $.showtime = ShowTime::SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // should only report the actual summary once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
@@ -281,7 +281,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL));
+                    $.showtime = ShowTime::FILE_TOTAL));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_1.c: ") != std::string::npos);
         TODO_ASSERT(output_s.find("Check time: " + fprefix() + "_2.c: ") != std::string::npos);

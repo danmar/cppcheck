@@ -31,43 +31,39 @@
 #include <string>
 #include <utility>
 
-using Clock = std::chrono::high_resolution_clock;
-using TimePoint = std::chrono::time_point<Clock>;
-using Duration = std::chrono::milliseconds;
-
-static constexpr char OVERALL_TIMER[] = "Summary";
-
-enum class SHOWTIME_MODES : std::uint8_t {
-    SHOWTIME_NONE,
-    SHOWTIME_FILE,
-    SHOWTIME_FILE_TOTAL,
-    SHOWTIME_SUMMARY,
-    SHOWTIME_TOP5_SUMMARY,
-    SHOWTIME_TOP5_FILE
+enum class ShowTime : std::uint8_t {
+    NONE,
+    FILE,
+    FILE_TOTAL,
+    SUMMARY,
+    TOP5_SUMMARY,
+    TOP5_FILE
 };
 
 class CPPCHECKLIB TimerResultsIntf {
 public:
     virtual ~TimerResultsIntf() = default;
 
-    virtual void addResults(const std::string& timerName, Duration duation) = 0;
+    virtual void addResults(const std::string& timerName, std::chrono::milliseconds duation) = 0;
 };
 
 struct TimerResultsData {
-    Duration mDuration;
+    std::chrono::milliseconds mDuration;
     long mNumberOfResults{};
 
     std::chrono::duration<double> getSeconds() const {
         return std::chrono::duration_cast<std::chrono::duration<double>>(mDuration);
     }
+
+    static std::string durationToString(std::chrono::milliseconds duration);
 };
 
 class CPPCHECKLIB TimerResults : public TimerResultsIntf {
 public:
     TimerResults() = default;
 
-    void showResults(SHOWTIME_MODES mode) const;
-    void addResults(const std::string& str, Duration duration) override;
+    void showResults(ShowTime mode) const;
+    void addResults(const std::string& str, std::chrono::milliseconds duration) override;
 
     void reset();
 
@@ -78,7 +74,11 @@ private:
 
 class CPPCHECKLIB Timer {
 public:
-    Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    static constexpr char OVERALL[] = "Summary";
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
+
+    Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults = nullptr);
     ~Timer();
 
     Timer(const Timer&) = delete;
@@ -86,9 +86,7 @@ public:
 
     void stop();
 
-    static std::string durationToString(Duration duration);
-
-    static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
+    static void run(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
         Timer t(std::move(str), showtimeMode, timerResults);
         f();
     }
@@ -96,7 +94,7 @@ public:
 private:
     const std::string mStr;
     TimerResultsIntf* mTimerResults{};
-    const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
+    ShowTime mShowTimeMode = ShowTime::FILE_TOTAL;
     TimePoint mStartTimePoint;
 };
 

@@ -1155,7 +1155,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                 Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
                 try {
-                    if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
+                    if (mSettings.showtime != ShowTime::NONE)
                         tokenizer.setTimerResults(&s_timerResults);
                     tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
@@ -1311,7 +1311,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: clear earlier?
     mLogger->clear();
 
-    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
+    if (mSettings.showtime == ShowTime::FILE || mSettings.showtime == ShowTime::TOP5_FILE)
         printTimerResults(mSettings.showtime);
 
     return mLogger->exitcode();
@@ -1936,7 +1936,7 @@ void CppCheck::resetTimerResults()
     s_timerResults.reset();
 }
 
-void CppCheck::printTimerResults(SHOWTIME_MODES mode)
+void CppCheck::printTimerResults(ShowTime mode)
 {
     s_timerResults.showResults(mode);
 }
