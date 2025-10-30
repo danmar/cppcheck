@@ -6401,6 +6401,10 @@ private:
               "    s.i = o;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int N;\n" // #14234
+              "void f() { ::N = N; }\n");
+        ASSERT_EQUALS("[test.cpp:2:16]: (style) Redundant assignment of '::N' to itself. [selfAssignment]\n", errout_str());
     }
 
     void trac1132() {
