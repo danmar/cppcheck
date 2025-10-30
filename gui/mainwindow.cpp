@@ -2324,7 +2324,7 @@ void MainWindow::hideInformation() {
 }
 
 bool MainWindow::isCppcheckPremium() const {
-    return mCppcheckCfgProductName.startsWith("Cppcheck Premium ");
+    return Settings::isCppcheckPremium(mCppcheckCfgProductName.toStdString());
 }
 
 void MainWindow::changeReportType() {
