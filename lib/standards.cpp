@@ -36,8 +36,6 @@ static Standards::cstd_t mapC(simplecpp::cstd_t cstd) {
         return Standards::C17;
     case simplecpp::C23:
         return Standards::C23;
-    case simplecpp::C2Y:
-        return Standards::C2Y;
     case simplecpp::CUnknown:
         return Standards::CLatest;
     }
@@ -75,8 +73,6 @@ std::string Standards::getC(cstd_t c_std)
         return "c17";
     case C23:
         return "c23";
-    case C2Y:
-        return "c2y";
     }
     return "";
 }

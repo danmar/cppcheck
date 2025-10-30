@@ -229,7 +229,6 @@
      <addaction name="mActionC11"/>
      <!--addaction name="mActionC17"/-->
      <!--addaction name="mActionC23"/-->
-     <!--addaction name="mActionC2Y"/-->
     </widget>
     <addaction name="mActionAnalyzeFiles"/>
     <addaction name="mActionAnalyzeDirectory"/>
@@ -827,14 +826,6 @@
    </property>
    <property name="text">
     <string>C&amp;23</string>
-   </property>
-  </action-->
-  <!--action name="mActionC2Y">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>C&amp;2y</string>
    </property>
   </action-->
   <action name="mActionC89">
