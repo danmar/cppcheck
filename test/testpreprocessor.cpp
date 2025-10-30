@@ -49,23 +49,14 @@ public:
     TestPreprocessor() : TestFixture("TestPreprocessor") {}
 
 private:
-    class PreprocessorTest : public Preprocessor
-    {
-        friend class TestPreprocessor;
-    public:
-        PreprocessorTest(simplecpp::TokenList& tokens, const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang)
-            : Preprocessor(tokens, settings, errorLogger, lang)
-        {}
-    };
-
     template<size_t size>
     std::string expandMacros(const char (&code)[size], ErrorLogger &errorLogger) const {
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
-        PreprocessorTest p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
+        (void)Preprocessor::reportOutput(settingsDefault, errorLogger, outputList, true);
+        Preprocessor p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
         simplecpp::TokenList tokens2 = p.preprocess("", files, true);
-        p.reportOutput(outputList, true);
         return tokens2.stringify();
     }
 
@@ -127,17 +118,16 @@ private:
         std::vector<std::string> files;
 
         simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
+        if (Preprocessor::reportOutput(settings, errorlogger, outputList, true))
+            return {};
+
         // TODO: we should be using the actual Preprocessor implementation
-        PreprocessorTest preprocessor(tokens, settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
+        Preprocessor preprocessor(tokens, settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
+
         if (inlineSuppression)
             preprocessor.inlineSuppressions(*inlineSuppression);
         preprocessor.removeComments();
         preprocessor.simplifyPragmaAsm();
-
-        preprocessor.reportOutput(outputList, true);
-
-        if (PreprocessorTest::hasErrors(outputList))
-            return {};
 
         std::map<std::string, std::string> cfgcode;
         if (cfgs.empty())

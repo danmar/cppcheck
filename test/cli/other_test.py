@@ -3752,3 +3752,48 @@ int PTR4 q4_var RBR4 = 0;
     assert stderr.splitlines() == [
         '{}:12:5: error: maximum AST depth exceeded [internalAstError]'.format(test_file)
     ]
+
+
+def test_simplecpp_warning(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define warning "warn msg"
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
+
+
+def test_simplecpp_unhandled_char(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+int 你=0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:2:5: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [unhandledChar]'.format(test_file) # TODO: preprocessorErrorDirective seems wrong - used to be syntaxError
+    ]
+
+# TODO: test INCLUDE_NESTED_TOO_DEEPLY
+# TODO: test SYNTAX_ERROR

@@ -977,27 +977,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = createTokenList(files, &outputList);
 
-        // If there is a syntax error, report it and stop
-        const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
-            return Preprocessor::hasErrors(output);
-        });
-        if (output_it != outputList.cend()) {
-            const simplecpp::Output &output = *output_it;
-            std::string locfile = Path::fromNativeSeparators(output.location.file());
-            if (mSettings.relativePaths)
-                locfile = Path::getRelativePath(locfile, mSettings.basePaths);
-
-            ErrorMessage::FileLocation loc1(locfile, output.location.line, output.location.col);
-
-            ErrorMessage errmsg({std::move(loc1)},
-                                "", // TODO: is this correct?
-                                Severity::error,
-                                output.msg,
-                                "syntaxError",
-                                Certainty::normal);
-            mErrorLogger.reportErr(errmsg);
+        if (Preprocessor::reportOutput(mSettings, mErrorLogger,outputList, true))
             return mLogger->exitcode();
-        }
 
         Preprocessor preprocessor(tokens1, mSettings, mErrorLogger, file.lang());
 

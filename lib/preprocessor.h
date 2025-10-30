@@ -140,15 +140,12 @@ public:
      */
     void dump(std::ostream &out) const;
 
-    static bool hasErrors(const simplecpp::Output &output);
-
-protected:
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
-
-    static bool hasErrors(const simplecpp::OutputList &outputList);
+    static bool reportOutput(const Settings& settings, ErrorLogger& errorLogger, const simplecpp::OutputList &outputList, bool showerror);
 
 private:
-    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
+    static bool hasErrors(const simplecpp::Output &output);
+
+    bool handleErrors(const simplecpp::OutputList &outputList, bool throwError);
 
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
 
@@ -160,8 +157,8 @@ private:
         SystemHeader
     };
 
-    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
-    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
+    static void missingInclude(const Settings& settings, ErrorLogger& errorLogger, const simplecpp::Location& loc, const std::string &header, HeaderTypes headerType);
+    static void error(const Settings& settings, ErrorLogger& errorLogger, const simplecpp::Location& loc, const std::string &msg, simplecpp::Output::Type type);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
@@ -174,8 +171,6 @@ private:
 
     simplecpp::FileDataCache mFileCache;
 
-    /** filename for cpp/c file - useful when reporting errors */
-    std::string mFile0;
     Standards::Language mLang{Standards::Language::None};
 
     /** simplecpp tracking info */
