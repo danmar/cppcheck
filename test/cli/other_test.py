@@ -3752,3 +3752,49 @@ int PTR4 q4_var RBR4 = 0;
     assert stderr.splitlines() == [
         '{}:12:5: error: maximum AST depth exceeded [internalAstError]'.format(test_file)
     ]
+
+
+# do not report unmatched misra-* suppressions when misra is not provided
+def test_misra_disabled_unmatched(tmp_path):  #14232
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w"):
+        pass
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--suppress=misra-c2012-20.5',
+        '--suppress=uninitvar',
+        str(test_file)
+    ]
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stderr.splitlines() == [
+        'nofile:0:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+# do not report unmatched premium-* suppressions when application is not premium
+def test_premium_disabled_unmatched(tmp_path):  #13663
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w"):
+        pass
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--suppress=premium-misra-cpp-2023-12.2.1',
+        '--suppress=uninitvar',
+        str(test_file)
+    ]
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stderr.splitlines() == [
+        'nofile:0:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout

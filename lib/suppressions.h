@@ -34,7 +34,6 @@
 
 class Tokenizer;
 class ErrorMessage;
-class ErrorLogger;
 enum class Certainty : std::uint8_t;
 class FileWithDetails;
 
@@ -258,19 +257,19 @@ public:
      * @brief Returns list of unmatched local (per-file) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file, bool includeUnusedFunction) const;
+    std::list<Suppression> getUnmatchedLocalSuppressions(const FileWithDetails &file) const;
 
     /**
      * @brief Returns list of unmatched global (glob pattern) suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedGlobalSuppressions(bool includeUnusedFunction) const;
+    std::list<Suppression> getUnmatchedGlobalSuppressions() const;
 
     /**
      * @brief Returns list of unmatched inline suppressions.
      * @return list of unmatched suppressions
      */
-    std::list<Suppression> getUnmatchedInlineSuppressions(bool includeUnusedFunction) const;
+    std::list<Suppression> getUnmatchedInlineSuppressions() const;
 
     /**
      * @brief Returns list of all suppressions.
@@ -282,13 +281,6 @@ public:
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
      */
     void markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer);
-
-    /**
-     * Report unmatched suppressions
-     * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
-     * @return true is returned if errors are reported
-     */
-    static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger);
 
 private:
     mutable std::mutex mSuppressionsSync;

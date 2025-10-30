@@ -435,6 +435,9 @@ public:
     /** @brief The maximum time in seconds for the typedef simplification */
     std::size_t typedefMaxTime{};
 
+    /** @brief Error IDs which should not be reported as unmatchedSuppression */
+    std::vector<std::string> unmatchedSuppressionFilters;
+
     /** @brief defines given by the user */
     std::string userDefines;
 
