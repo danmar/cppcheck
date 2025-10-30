@@ -35,6 +35,8 @@ using Clock = std::chrono::high_resolution_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 using Duration = std::chrono::milliseconds;
 
+constexpr char* OVERALL_TIMER = "Summary";
+
 enum class SHOWTIME_MODES : std::uint8_t {
     SHOWTIME_NONE,
     SHOWTIME_FILE,
