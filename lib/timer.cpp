@@ -135,5 +135,5 @@ std::string TimerResultsData::durationToString(std::chrono::milliseconds duratio
     if (minutes.count() > 0)
         ellapsedTime += std::to_string(minutes.count()) + "m ";
     std::string secondsStr{std::to_string(seconds.count())};
-    return (ellapsedTime + secondsStr.substr(0, secondsStr.length() - 3) + "s ");
+    return (ellapsedTime + secondsStr.substr(0, secondsStr.length() - 3) + "s");
 }
