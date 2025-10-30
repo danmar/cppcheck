@@ -173,7 +173,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
 }
 
 bool Settings::isCppcheckPremium(const std::string& productName) {
-    return startsWith(productName, "Cppcheck Premium ");
+    return startsWith(productName, "Cppcheck Premium");
 }
 
 std::pair<std::string, std::string> Settings::getNameAndVersion(const std::string& productName) {
