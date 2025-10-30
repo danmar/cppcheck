@@ -1617,7 +1617,7 @@ bool isSameExpression(bool macro, const Token *tok1, const Token *tok2, const Se
     const Token *followTok1 = tok1, *followTok2 = tok2;
     while (Token::simpleMatch(followTok1, "::"))
         followTok1 = followTok1->astOperand2() ? followTok1->astOperand2() : followTok1->astOperand1();
-    while (Token::simpleMatch(followTok2, "::") && followTok2->astOperand2())
+    while (Token::simpleMatch(followTok2, "::"))
         followTok2 = followTok2->astOperand2() ? followTok2->astOperand2() : followTok2->astOperand1();
     if (isSameConstantValue(macro, followTok1, followTok2))
         return true;
