@@ -5,12 +5,6 @@ checkersReport
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
 naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
-simplifyUsing:*/moc_checkthread.cpp
-simplifyUsing:*/moc_codeeditstylecontrols.cpp
-simplifyUsing:*/moc_resultstree.cpp
-simplifyUsing:*/moc_resultsview.cpp
-simplifyUsing:*/moc_threadhandler.cpp
-simplifyUsing:*/moc_threadresult.cpp
 bitwiseOnBoolean:lib/library.cpp
 templateInstantiation:lib/checkunusedfunctions.cpp
 templateInstantiation:lib/errorlogger.cpp
