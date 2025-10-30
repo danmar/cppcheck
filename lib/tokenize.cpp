@@ -6318,6 +6318,9 @@ std::string Tokenizer::dumpTypedefInfo() const
         outs += '\n';
         for (const auto& t : typedefInfo.typedefInfoTokens) {
             outs += "      <token ";
+            outs += "line=\"";
+            outs += std::to_string(t.lineNumber);
+            outs += "\" ";
             outs += "column=\"";
             outs += std::to_string(t.column);
             outs += "\" ";
