@@ -118,7 +118,7 @@ private:
 
     void asPremium() {
         // set this so we think it is the premium
-        settings->cppcheckCfgProductName = "Cppcheck Premium 0.0.0";
+        settings->premium = true;
     }
 
     template<size_t size>
