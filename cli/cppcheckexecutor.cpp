@@ -339,27 +339,39 @@ bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, con
     assert(!(!files.empty() && !fileSettings.empty()));
 
     // bail out if there is a suppression of unmatchedSuppression which matches any file
-    const auto suppr = suppressions.getSuppressions();
+    auto suppr = suppressions.getSuppressions();
     if (std::any_of(suppr.cbegin(), suppr.cend(), [](const SuppressionList::Suppression& s) {
         return s.errorId == "unmatchedSuppression" && (s.fileName.empty() || s.fileName == "*") && s.lineNumber == SuppressionList::Suppression::NO_LINE;
     }))
         return false;
 
+    SuppressionList supprlist;
+
+    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
+    const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
+    // ignore all other suppressions if we use the unusedFunction hack
+    for (auto&& s : suppr)
+    {
+        if (doUnusedFunctionOnly && s.errorId != "unusedFunction")
+            continue;
+        supprlist.addSuppression(std::move(s));
+    }
+
     bool err = false;
 
     for (auto i = files.cbegin(); i != files.cend(); ++i) {
-        err |= ::reportUnmatchedSuppressions(suppressions.getUnmatchedLocalSuppressions(*i), errorLogger, settings.unmatchedSuppressionFilters);
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(*i), errorLogger, settings.unmatchedSuppressionFilters);
     }
 
     for (auto i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
-        err |= ::reportUnmatchedSuppressions(suppressions.getUnmatchedLocalSuppressions(i->file), errorLogger, settings.unmatchedSuppressionFilters);
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(i->file), errorLogger, settings.unmatchedSuppressionFilters);
     }
 
     if (settings.inlineSuppressions) {
-        err |= ::reportUnmatchedSuppressions(suppressions.getUnmatchedInlineSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedInlineSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
     }
 
-    err |= ::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
+    err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedGlobalSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
     return err;
 }
 
