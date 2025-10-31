@@ -19,6 +19,8 @@
 #ifndef EXECUTOR_H
 #define EXECUTOR_H
 
+#include "config.h"
+
 #include <cstddef>
 #include <list>
 #include <mutex>
@@ -41,7 +43,7 @@ class FileWithDetails;
  */
 class Executor {
 public:
-    Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    Executor(const std::list<FileWithDetails> &files LIFETIMEBOUND, const std::list<FileSettings>& fileSettings LIFETIMEBOUND, const Settings &settings LIFETIMEBOUND, Suppressions &suppressions LIFETIMEBOUND, ErrorLogger &errorLogger LIFETIMEBOUND);
     virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
