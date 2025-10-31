@@ -138,13 +138,11 @@ private:
         Token *last = token->tokAt(2);
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->strAt(1), "2");
-        // cppcheck-suppress redundantNextPrevious - this is intentional
         ASSERT_EQUALS(token->tokAt(2)->str(), "3");
         ASSERT_EQUALS_MSG(true, last->next() == nullptr, "Null was expected");
 
         ASSERT_EQUALS(last->str(), "3");
         ASSERT_EQUALS(last->strAt(-1), "2");
-        // cppcheck-suppress redundantNextPrevious - this is intentional
         ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
         ASSERT_EQUALS_MSG(true, token->previous() == nullptr, "Null was expected");
 
@@ -787,24 +785,18 @@ private:
 
     void matchOr() const {
         const SimpleTokenList bitwiseOr(";|;");
-        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.front(), "; %or%"));
         ASSERT_EQUALS(true,  Token::Match(bitwiseOr.front(), "; %op%"));
-        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(bitwiseOr.front(), "; %oror%"));
 
         const SimpleTokenList bitwiseOrAssignment(";|=;");
-        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false,  Token::Match(bitwiseOrAssignment.front(), "; %or%"));
         ASSERT_EQUALS(true,  Token::Match(bitwiseOrAssignment.front(), "; %op%"));
-        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(bitwiseOrAssignment.front(), "; %oror%"));
 
         const SimpleTokenList logicalOr(";||;");
-        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(false, Token::Match(logicalOr.front(), "; %or%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.front(), "; %op%"));
-        // cppcheck-suppress simplePatternError - this is intentional
         ASSERT_EQUALS(true,  Token::Match(logicalOr.front(), "; %oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.front(), "; &&|%oror%"));
         ASSERT_EQUALS(true,  Token::Match(logicalOr.front(), "; %oror%|&&"));

@@ -533,9 +533,7 @@ void CheckUnusedFunctions::updateFunctionData(const CheckUnusedFunctions& check)
         usage.fileIndex = entry.second.fileIndex;
         if (usage.filename.empty())
             usage.filename = entry.second.filename;
-        // cppcheck-suppress bitwiseOnBoolean - TODO: FP
         usage.usedOtherFile |= entry.second.usedOtherFile;
-        // cppcheck-suppress bitwiseOnBoolean - TODO: FP
         usage.usedSameFile |= entry.second.usedSameFile;
     }
     mFunctionDecl.insert(mFunctionDecl.cend(), check.mFunctionDecl.cbegin(), check.mFunctionDecl.cend());

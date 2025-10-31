@@ -3193,7 +3193,6 @@ void CheckClass::checkCopyCtorAndEqOperator()
 {
     // This is disabled because of #8388
     // The message must be clarified. How is the behaviour different?
-    // cppcheck-suppress unreachableCode - remove when code is enabled again
     if ((true) || !mSettings->severity.isEnabled(Severity::warning)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
