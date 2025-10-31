@@ -335,7 +335,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
     picojson::value compileCommands;
     istr >> compileCommands;
     if (!compileCommands.is<picojson::array>()) {
-        printError("compilation database is not a JSON array");
+        errors.emplace_back("compilation database is not a JSON array");
         return false;
     }
 
@@ -345,12 +345,12 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         picojson::object obj = fileInfo.get<picojson::object>();
 
         if (obj.count("directory") == 0) {
-            printError("'directory' field in compilation database entry missing");
+            errors.emplace_back("'directory' field in compilation database entry missing");
             return false;
         }
 
         if (!obj["directory"].is<std::string>()) {
-            printError("'directory' field in compilation database entry is not a string");
+            errors.emplace_back("'directory' field in compilation database entry is not a string");
             return false;
         }
 
@@ -377,7 +377,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
                     }
                 }
             } else {
-                printError("'arguments' field in compilation database entry is not a JSON array");
+                errors.emplace_back("'arguments' field in compilation database entry is not a JSON array");
                 return false;
             }
         } else if (obj.count("command")) {
@@ -385,16 +385,16 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             if (obj["command"].is<std::string>()) {
                 command = obj["command"].get<std::string>();
             } else {
-                printError("'command' field in compilation database entry is not a string");
+                errors.emplace_back("'command' field in compilation database entry is not a string");
                 return false;
             }
         } else {
-            printError("no 'arguments' or 'command' field found in compilation database entry");
+            errors.emplace_back("no 'arguments' or 'command' field found in compilation database entry");
             return false;
         }
 
         if (!obj.count("file") || !obj["file"].is<std::string>()) {
-            printError("skip compilation database entry because it does not have a proper 'file' field");
+            errors.emplace_back("skip compilation database entry because it does not have a proper 'file' field");
             continue;
         }
 
@@ -434,14 +434,14 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
     std::string line;
 
     if (!std::getline(istr,line)) {
-        printError("Visual Studio solution file is empty");
+        errors.emplace_back("Visual Studio solution file is empty");
         return false;
     }
 
     if (!startsWith(line, "Microsoft Visual Studio Solution File")) {
         // Skip BOM
         if (!std::getline(istr, line) || !startsWith(line, "Microsoft Visual Studio Solution File")) {
-            printError("Visual Studio solution file header not found");
+            errors.emplace_back("Visual Studio solution file header not found");
             return false;
         }
     }
@@ -466,14 +466,14 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
             vcxproj = path + vcxproj;
         vcxproj = Path::fromNativeSeparators(std::move(vcxproj));
         if (!importVcxproj(vcxproj, variables, "", fileFilters, sharedItemsProjects)) {
-            printError("failed to load '" + vcxproj + "' from Visual Studio solution");
+            errors.emplace_back("failed to load '" + vcxproj + "' from Visual Studio solution");
             return false;
         }
         found = true;
     }
 
     if (!found) {
-        printError("no projects found in Visual Studio solution file");
+        errors.emplace_back("no projects found in Visual Studio solution file");
         return false;
     }
 
@@ -730,7 +730,7 @@ bool ImportProject::importVcxproj(const std::string &filename,
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
-        printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        errors.emplace_back(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
     return importVcxproj(filename, doc, variables, additionalIncludeDirectories, fileFilters, cache);
@@ -749,7 +749,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
-        printError("Visual Studio project file has no XML root node");
+        errors.emplace_back("Visual Studio project file has no XML root node");
         return false;
     }
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
@@ -810,13 +810,13 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
                                 pathToSharedItemsFile = variables["ProjectDir"] + projectAttribute;
                             }
                             if (!simplifyPathWithVariables(pathToSharedItemsFile, variables)) {
-                                printError("Could not simplify path to referenced shared items project");
+                                errors.emplace_back("Could not simplify path to referenced shared items project");
                                 return false;
                             }
 
                             SharedItemsProject toAdd = importVcxitems(pathToSharedItemsFile, fileFilters, cache);
                             if (!toAdd.successful) {
-                                printError("Could not load shared items project \"" + pathToSharedItemsFile + "\" from original path \"" + std::string(projectAttribute) + "\".");
+                                errors.emplace_back("Could not load shared items project \"" + pathToSharedItemsFile + "\" from original path \"" + std::string(projectAttribute) + "\".");
                                 return false;
                             }
                             sharedItemsProjects.emplace_back(toAdd);
@@ -928,12 +928,12 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
-        printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        errors.emplace_back(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return result;
     }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
-        printError("Visual Studio project file has no XML root node");
+        errors.emplace_back("Visual Studio project file has no XML root node");
         return result;
     }
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
@@ -951,7 +951,7 @@ ImportProject::SharedItemsProject ImportProject::importVcxitems(const std::strin
 
                         result.sourceFiles.emplace_back(file);
                     } else {
-                        printError("Could not find shared items source file");
+                        errors.emplace_back("Could not find shared items source file");
                         return result;
                     }
                 }
@@ -979,12 +979,12 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(projectFilename.c_str());
     if (error != tinyxml2::XML_SUCCESS) {
-        printError(std::string("Borland project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        errors.emplace_back(std::string("Borland project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr) {
-        printError("Borland project file has no XML root node");
+        errors.emplace_back("Borland project file has no XML root node");
         return false;
     }
 
@@ -1296,12 +1296,12 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
     const std::string xmldata = istream_to_string(istr);
     const tinyxml2::XMLError error = doc.Parse(xmldata.data(), xmldata.size());
     if (error != tinyxml2::XML_SUCCESS) {
-        printError(std::string("Cppcheck GUI project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        errors.emplace_back(std::string("Cppcheck GUI project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
     }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
     if (rootnode == nullptr || strcmp(rootnode->Name(), CppcheckXml::ProjectElementName) != 0) {
-        printError("Cppcheck GUI project file has no XML root node");
+        errors.emplace_back("Cppcheck GUI project file has no XML root node");
         return false;
     }
 
@@ -1420,7 +1420,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
                 else if (strcmp(childname, Settings::SafeChecks::XmlExternalVariables) == 0)
                     temp.safeChecks.externalVariables = true;
                 else {
-                    printError("Unknown '" + std::string(Settings::SafeChecks::XmlRootName) + "' element '" + childname + "' in Cppcheck project file");
+                    errors.emplace_back("Unknown '" + std::string(Settings::SafeChecks::XmlRootName) + "' element '" + childname + "' in Cppcheck project file");
                     return false;
                 }
             }
@@ -1443,7 +1443,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings &setti
         else if (strcmp(name, CppcheckXml::ProjectNameElementName) == 0)
             ; // no-op
         else {
-            printError("Unknown element '" + std::string(name) + "' in Cppcheck project file");
+            errors.emplace_back("Unknown element '" + std::string(name) + "' in Cppcheck project file");
             return false;
         }
     }
@@ -1546,6 +1546,12 @@ void ImportProject::setRelativePaths(const std::string &filename)
         for (auto &includePath: fs.includePaths)
             includePath = Path::getRelativePath(includePath, basePaths);
     }
+}
+
+void ImportProject::printErrors() const
+{
+    for (const auto &error : errors)
+        printError(error);
 }
 
 void ImportProject::printError(const std::string &message)

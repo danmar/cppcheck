@@ -1191,14 +1191,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.libraries.emplace_back("windows");
             }
             if (projectType == ImportProject::Type::MISSING) {
+                project.printErrors();
                 mLogger.printError("failed to open project '" + projectFile + "'. The file does not exist.");
                 return Result::Fail;
             }
             if (projectType == ImportProject::Type::UNKNOWN) {
+                project.printErrors();
                 mLogger.printError("failed to load project '" + projectFile + "'. The format is unknown.");
                 return Result::Fail;
             }
             if (projectType == ImportProject::Type::FAILURE) {
+                project.printErrors();
                 mLogger.printError("failed to load project '" + projectFile + "'. An error occurred.");
                 return Result::Fail;
             }
