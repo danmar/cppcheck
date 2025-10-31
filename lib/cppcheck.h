@@ -68,9 +68,9 @@ public:
     /**
      * @brief Constructor.
      */
-    CppCheck(const Settings& settings,
-             Suppressions& supprs,
-             ErrorLogger &errorLogger,
+    CppCheck(LIFETIMEBOUND const Settings& settings,
+             LIFETIMEBOUND Suppressions& supprs,
+             LIFETIMEBOUND ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
              ExecuteCmdFn executeCommand);
 
