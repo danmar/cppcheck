@@ -612,6 +612,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()) &&
                             !astIsContainerView(tok->astParent()))
                             continue;
+                        if (tokvalue->str() == "=" && Token::simpleMatch(tokvalue->astOperand1(), "."))
+                            tokvalue = tokvalue->astOperand2();
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
                             isDeadTemporary(tokvalue, nullptr, mSettings->library)) {
