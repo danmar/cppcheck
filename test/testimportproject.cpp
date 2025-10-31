@@ -409,7 +409,8 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
-        ASSERT_EQUALS("cppcheck: error: no 'arguments' or 'command' field found in compilation database entry\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(1, importer.errors.size());
+        ASSERT_EQUALS("no 'arguments' or 'command' field found in compilation database entry", importer.errors[0]);
     }
 
     void importCompileCommandsDirectoryMissing() const {
@@ -419,7 +420,8 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
-        ASSERT_EQUALS("cppcheck: error: 'directory' field in compilation database entry missing\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(1, importer.errors.size());
+        ASSERT_EQUALS("'directory' field in compilation database entry missing", importer.errors[0]);
     }
 
     void importCompileCommandsDirectoryInvalid() const {
@@ -430,7 +432,8 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
-        ASSERT_EQUALS("cppcheck: error: 'directory' field in compilation database entry is not a string\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(1, importer.errors.size());
+        ASSERT_EQUALS("'directory' field in compilation database entry is not a string", importer.errors[0]);
     }
 
     void importCppcheckGuiProject() const {
