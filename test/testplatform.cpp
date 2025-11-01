@@ -52,7 +52,8 @@ private:
 
     static bool readPlatform(Platform& platform, const char* xmldata) {
         tinyxml2::XMLDocument doc;
-        return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc);
+        std::string errmsg; // TODO: use this
+        return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc, errmsg);
     }
 
     void empty() const {
