@@ -34,11 +34,10 @@ private:
 
     void result() const {
         TimerResultsData t1;
-        t1.mClocks = ~static_cast<std::clock_t>(0);
-        ASSERT(t1.seconds() > 100.0);
+        t1.mDuration = std::chrono::milliseconds{1234};
+        ASSERT(t1.getSeconds().count() > 1.233 && t1.getSeconds().count() < 1.235);
 
-        t1.mClocks = CLOCKS_PER_SEC * 5 / 2;
-        ASSERT(std::fabs(t1.seconds()-2.5) < 0.01);
+        // TODO : more tests
     }
 };
 

@@ -112,7 +112,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>

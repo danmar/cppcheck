@@ -51,7 +51,7 @@ class Regex;
 #endif
 
 struct Suppressions;
-enum class SHOWTIME_MODES : std::uint8_t;
+enum class ShowTime : std::uint8_t;
 namespace ValueFlow {
     class Value;
 }
@@ -416,7 +416,7 @@ public:
     SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
-    SHOWTIME_MODES showtime{};
+    ShowTime showtime{};
 
     /** Struct contains standards settings */
     Standards standards;
