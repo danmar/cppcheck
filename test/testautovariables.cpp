@@ -3937,6 +3937,16 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:6:30] -> [test.cpp:6:30] -> [test.cpp:6:21] -> [test.cpp:5:21] -> [test.cpp:8:12]: (error) Returning object that points to local variable 'a' that will be invalid when returning. [returnDanglingLifetime]\n",
             errout_str());
+
+        check("struct A { int& x; };\n" // #14247
+              "A f() {\n"
+              "    int x = 0;\n"
+              "    A a{.x = x};\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4:12] -> [test.cpp:5:12]: (error) Returning object that will be invalid when returning. [returnDanglingLifetime]\n",
+            errout_str());
     }
 
     void danglingLifetimeInitList() {
