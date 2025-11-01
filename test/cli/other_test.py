@@ -3841,14 +3841,16 @@ error2:lib\\test.c
         str(test_file)
     ]
 
+    lib_file = 'lib' + os.path.sep + 'test.c'
+
     ret, stdout, stderr = cppcheck(args)
     assert stdout == ''
     assert stderr.splitlines() == [
-        'lib/test.c:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
-        'lib/test.c:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
-        'lib/test.c:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
-        'lib/test.c:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
-        'lib/test.c:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
-        'lib/test.c:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
+        f'{lib_file}:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
     ]
     assert ret == 0, stdout
