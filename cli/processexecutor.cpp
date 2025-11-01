@@ -22,7 +22,7 @@
 
 #include "processexecutor.h"
 
-#if !defined(WIN32) && !defined(__MINGW32__)
+#if !defined(DISALLOW_PROCESS_EXECUTOR) && !defined(WIN32) && !defined(__MINGW32__)
 
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -471,4 +471,4 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
         mErrorLogger.reportErr(errmsg);
 }
 
-#endif // !WIN32
+#endif // !DISALLOW_PROCESS_EXECUTOR && !WIN32 && !__MINGW32__
