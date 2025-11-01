@@ -129,7 +129,7 @@ std::string SuppressionList::parseXmlFile(const char *filename)
             if (std::strcmp(name, "id") == 0)
                 s.errorId = text;
             else if (std::strcmp(name, "fileName") == 0)
-                s.fileName = text;
+                s.fileName = Path::simplifyPath(text);
             else if (std::strcmp(name, "lineNumber") == 0)
                 s.lineNumber = strToInt<int>(text);
             else if (std::strcmp(name, "symbolName") == 0)
@@ -569,7 +569,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
-        if (!s.isLocal() || s.fileName != file.spath())
+        if (!s.isLocal() || !PathMatch::match(s.fileName, file.spath()))
             continue;
         result.push_back(s);
     }

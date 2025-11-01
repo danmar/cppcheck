@@ -3798,3 +3798,59 @@ def test_premium_disabled_unmatched(tmp_path):  #13663
     ]
     assert stdout == ''
     assert ret == 0, stdout
+
+
+def test_unmatched_file(tmp_path):  # #14248 / #14249
+    lib_path = tmp_path / 'lib'
+    os.makedirs(lib_path)
+
+    test_file = lib_path / 'test.c'
+    with open(test_file, "w"):
+        pass
+
+    suppr_txt = tmp_path / 'suppr.txt'
+    with open(suppr_txt, "w") as f:
+        f.write('''
+error:lib/test.c
+error2:lib\\test.c
+''')
+
+    suppr_xml = tmp_path / 'suppr.xml'
+    with open(suppr_xml, "w") as f:
+        f.write('''
+<suppressions>
+    <suppress>
+        <id>error3</id>
+        <fileName>lib/test.c</fileName>
+    </suppress>
+    <suppress>
+        <id>error4</id>
+        <fileName>lib\\test.c</fileName>
+    </suppress>
+</suppressions>
+''')
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        f'--suppressions-list={suppr_txt}',
+        f'--suppress-xml={suppr_xml}',
+        '--suppress=error5:lib/test.c',
+        '--suppress=error6:lib\\test.c',
+        str(test_file)
+    ]
+
+    lib_file = 'lib' + os.path.sep + 'test.c'
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        f'{lib_file}:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
+    ]
+    assert ret == 0, stdout
