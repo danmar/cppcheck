@@ -789,7 +789,6 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
             (state == Status::SUFFIX_LITERAL));
 }
 
-// cppcheck-suppress unusedFunction
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
     return isValidIntegerSuffixIt(str.cbegin(), str.cend(), supportMicrosoftExtensions);

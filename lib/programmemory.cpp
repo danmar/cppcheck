@@ -96,7 +96,6 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
     return nullptr;
 }
 
-// cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint& result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
