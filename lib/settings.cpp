@@ -224,6 +224,7 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
         severity.enable(newSeverity);
         checks.enable(Checks::missingInclude);
         checks.enable(Checks::unusedFunction);
+        checks.enable(Checks::unmatchedSuppression);
     } else if (str == "warning") {
         severity.enable(Severity::warning);
     } else if (str == "style") {
@@ -234,10 +235,13 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
         severity.enable(Severity::portability);
     } else if (str == "information") {
         severity.enable(Severity::information);
+        checks.enable(Checks::unmatchedSuppression); // TODO: deprecated - remove in Cppcheck 2.18
     } else if (str == "unusedFunction") {
         checks.enable(Checks::unusedFunction);
     } else if (str == "missingInclude") {
         checks.enable(Checks::missingInclude);
+    } else if (str == "unmatchedSuppression") {
+        checks.enable(Checks::unmatchedSuppression);
     }
 #ifdef CHECK_INTERNAL
     else if (str == "internal") {
