@@ -327,6 +327,8 @@ public:
     /** Is checker id enabled by premiumArgs */
     bool isPremiumEnabled(const char id[]) const;
 
+    static bool isCppcheckPremium(const std::string& productName);
+
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
 

@@ -2207,7 +2207,6 @@ bool CmdLineParser::loadCppcheckCfg()
         mLogger.printError("could not load cppcheck.cfg - " + cfgErr);
         return false;
     }
-    mSettings.premium = startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
     return true;
 }
 
