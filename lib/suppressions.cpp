@@ -569,7 +569,7 @@ std::list<SuppressionList::Suppression> SuppressionList::getUnmatchedLocalSuppre
             continue;
         if (s.errorId == ID_CHECKERSREPORT)
             continue;
-        if (!s.isLocal() || s.fileName != file.spath())
+        if (!s.isLocal() || !PathMatch::match(s.fileName, file.spath()))
             continue;
         result.push_back(s);
     }
