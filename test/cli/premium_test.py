@@ -164,3 +164,20 @@ def test_help(tmpdir):
     assert stdout.startswith('Cppcheck ')  # check for product name - TODO: should be "Cppcheck Premium"
     assert '--premium=' in stdout, stdout  # check for premium option
     assert 'cppchecksolutions.com' in stdout, stdout  # check for premium help link
+
+
+def test_hash(tmpdir):
+    # Trac 14225 - warnings with hash
+    test_file = os.path.join(tmpdir, 'test.c')
+    addon_file = os.path.join(tmpdir, 'premiumaddon.py')
+
+    with open(test_file, 'wt') as f:
+        f.write('void foo();\n')
+
+    args = [f"--addon={addon_file}", '--xml', test_file]
+
+    with open(addon_file, 'wt') as f:
+        f.write('print(\'{"addon":"a","column":1,"errorId":"id","extra":"","file":"test.c","hash":123,"linenr":1,"message":"bug","severity":"error"}\')')
+
+    _, _, stderr = cppcheck(args)
+    assert '<error id="a-id" severity="error" msg="bug" verbose="bug" hash="123" ' in stderr
