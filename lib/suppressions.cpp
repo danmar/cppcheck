@@ -302,7 +302,6 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
     return "";
 }
 
-// cppcheck-suppress unusedFunction
 bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
@@ -446,7 +445,6 @@ bool SuppressionList::Suppression::isMatch(const SuppressionList::ErrorMessage &
     cppcheck::unreachable();
 }
 
-// cppcheck-suppress unusedFunction - used by GUI only
 std::string SuppressionList::Suppression::getText() const
 {
     std::string ret;
