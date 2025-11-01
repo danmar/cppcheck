@@ -37,6 +37,7 @@ class CPPCHECKLIB ValuePtr {
 public:
     using pointer = T*;
     using element_type = T;
+    // cppcheck-suppress simplifyUsing - TODO: fix this
     using cloner_type = decltype(&cloner<T>::apply);
 
     ValuePtr() : mPtr(nullptr), mClone() {}
