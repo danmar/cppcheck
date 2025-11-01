@@ -3800,7 +3800,7 @@ def test_premium_disabled_unmatched(tmp_path):  #13663
     assert ret == 0, stdout
 
 
-def test_unmatched_file(tmp_path):  # #14248
+def test_unmatched_file(tmp_path):  # #14248 / #14249
     lib_path = tmp_path / 'lib'
     os.makedirs(lib_path)
 
@@ -3847,6 +3847,7 @@ error2:lib\\test.c
         'lib/test.c:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
         'lib/test.c:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
         'lib/test.c:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
+        'lib/test.c:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
         'lib/test.c:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
         'lib/test.c:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
     ]

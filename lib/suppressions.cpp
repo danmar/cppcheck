@@ -129,7 +129,7 @@ std::string SuppressionList::parseXmlFile(const char *filename)
             if (std::strcmp(name, "id") == 0)
                 s.errorId = text;
             else if (std::strcmp(name, "fileName") == 0)
-                s.fileName = text;
+                s.fileName = Path::simplifyPath(text);
             else if (std::strcmp(name, "lineNumber") == 0)
                 s.lineNumber = strToInt<int>(text);
             else if (std::strcmp(name, "symbolName") == 0)
