@@ -352,7 +352,8 @@ bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, con
     // ignore all other suppressions if we use the unusedFunction hack
     for (auto&& s : suppr)
     {
-        if (doUnusedFunctionOnly && s.errorId != "unusedFunction")
+        // TODO: checkersReport should not be reported - see #13387
+        if (doUnusedFunctionOnly && s.errorId != "unusedFunction" && s.errorId != "checkersReport")
             continue;
         supprlist.addSuppression(std::move(s));
     }
