@@ -48,9 +48,13 @@ private:
     static void loadCfgFile(const QString &filename, CppcheckLibraryData &data, QString &res, bool removeFile = false);
     static void saveCfgFile(const QString &filename, CppcheckLibraryData &data);
 
+    // cppcheck-suppress naming-privateMemberVariable - TODO: fix this
     CppcheckLibraryData libraryData;
+    // cppcheck-suppress naming-privateMemberVariable - TODO: fix this
     CppcheckLibraryData fileLibraryData;
+    // cppcheck-suppress naming-privateMemberVariable - TODO: fix this
     QString result;
 
+    // cppcheck-suppress naming-privateMemberVariable - TODO: fix this
     static const QString TempCfgFile;
 };
