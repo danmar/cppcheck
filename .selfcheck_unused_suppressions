@@ -4,8 +4,5 @@ checkersReport
 # we are not using all methods of their interfaces
 unusedFunction:externals/*/*
 
-# usage is disabled
-unusedFunction:lib/symboldatabase.cpp
-
 # Q_OBJECT functions which are not called in our code
 unusedFunction:cmake.output.notest/gui/cppcheck-gui_autogen/*/moc_aboutdialog.cpp
