@@ -90,6 +90,24 @@ static const std::array<Platform::Type, 6> builtinPlatforms = {
     Platform::Type::Unix64
 };
 
+static std::string suppressionAsText(const SuppressionList::Suppression& s)
+{
+    std::string ret;
+    if (!s.errorId.empty())
+        ret = s.errorId;
+    if (!s.fileName.empty())
+        ret += " fileName=" + s.fileName;
+    if (s.lineNumber != SuppressionList::Suppression::NO_LINE)
+        ret += " lineNumber=" + std::to_string(s.lineNumber);
+    if (!s.symbolName.empty())
+        ret += " symbolName=" + s.symbolName;
+    if (s.hash > 0)
+        ret += " hash=" + std::to_string(s.hash);
+    if (startsWith(ret," "))
+        return ret.substr(1);
+    return ret;
+}
+
 QStringList ProjectFileDialog::getProjectConfigs(const QString &fileName)
 {
     if (!fileName.endsWith(".sln") && !fileName.endsWith(".vcxproj"))
@@ -808,7 +826,7 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
 void ProjectFileDialog::addSingleSuppression(const SuppressionList::Suppression &suppression)
 {
     mSuppressions += suppression;
-    mUI->mListSuppressions->addItem(QString::fromStdString(suppression.getText()));
+    mUI->mListSuppressions->addItem(QString::fromStdString(suppressionAsText(suppression)));
 }
 
 void ProjectFileDialog::setSuppressions(const QList<SuppressionList::Suppression> &suppressions)
@@ -949,7 +967,7 @@ int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
 {
     const std::string s = shortText.toStdString();
     auto it = std::find_if(mSuppressions.cbegin(), mSuppressions.cend(), [&](const SuppressionList::Suppression& sup) {
-        return sup.getText() == s;
+        return suppressionAsText(sup) == s;
     });
     return it == mSuppressions.cend() ? -1 : static_cast<int>(std::distance(mSuppressions.cbegin(), it));
 }

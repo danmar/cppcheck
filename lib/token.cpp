@@ -2630,7 +2630,6 @@ const ValueFlow::Value* Token::getMovedValue() const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-// cppcheck-suppress unusedFunction
 const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)

@@ -127,8 +127,6 @@ public:
 
         bool isMatch(const ErrorMessage &errmsg);
 
-        std::string getText() const;
-
         bool isWildcard() const {
             return fileName.find_first_of("?*") != std::string::npos;
         }

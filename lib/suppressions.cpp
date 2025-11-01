@@ -302,7 +302,6 @@ std::string SuppressionList::addSuppressions(std::list<Suppression> suppressions
     return "";
 }
 
-// cppcheck-suppress unusedFunction
 bool SuppressionList::updateSuppressionState(const SuppressionList::Suppression& suppression)
 {
     std::lock_guard<std::mutex> lg(mSuppressionsSync);
@@ -444,25 +443,6 @@ bool SuppressionList::Suppression::isMatch(const SuppressionList::ErrorMessage &
         return true;
     }
     cppcheck::unreachable();
-}
-
-// cppcheck-suppress unusedFunction - used by GUI only
-std::string SuppressionList::Suppression::getText() const
-{
-    std::string ret;
-    if (!errorId.empty())
-        ret = errorId;
-    if (!fileName.empty())
-        ret += " fileName=" + fileName;
-    if (lineNumber != NO_LINE)
-        ret += " lineNumber=" + std::to_string(lineNumber);
-    if (!symbolName.empty())
-        ret += " symbolName=" + symbolName;
-    if (hash > 0)
-        ret += " hash=" + std::to_string(hash);
-    if (startsWith(ret," "))
-        return ret.substr(1);
-    return ret;
 }
 
 bool SuppressionList::isSuppressed(const SuppressionList::ErrorMessage &errmsg, bool global)
