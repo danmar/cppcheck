@@ -337,7 +337,7 @@ private:
         bool cpp = true;
         bool inconclusive = true;
         bool verbose = false;
-        Settings* settings = nullptr;
+        Settings* settings = nullptr; // TODO: split from this
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)

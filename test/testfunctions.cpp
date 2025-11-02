@@ -117,16 +117,17 @@ private:
     struct CheckOptions
     {
         bool cpp = true;
-        const Settings* s = nullptr;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings& s = options.s ? *options.s : settings;
+        check_(file, line, code, settings, options.cpp);
+    }
 
-        // Tokenize..
-        SimpleTokenizer tokenizer(s, *this, options.cpp);
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& s, bool cpp = true) {
+        SimpleTokenizer tokenizer(s, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         runChecks<CheckFunctions>(tokenizer, this);
@@ -279,19 +280,19 @@ private:
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
-              "}", dinit(CheckOptions, $.s = &s));  // #4382 - there are no VLAs in C++
+              "}", s);  // #4382 - there are no VLAs in C++
         ASSERT_EQUALS("", errout_str());
 
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
-              "}", dinit(CheckOptions, $.cpp = false, $.s = &s)); // #7558 - no alternative to alloca in C89
+              "}", s, false); // #7558 - no alternative to alloca in C89
         ASSERT_EQUALS("", errout_str());
 
         check("void f()\n"
               "{\n"
               "    char *x = alloca(10);\n"
-              "}", dinit(CheckOptions, $.cpp = false, $.s = &s));
+              "}", s, false);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -776,7 +777,7 @@ private:
               "        memmove(&tgt, &src, sizeof src);\n"
               "        memset(&tgt + sizeof src, ' ', sizeof tgt - sizeof src);\n"
               "    }\n"
-              "}\n", dinit(CheckOptions, $.cpp = false, $.s = &settingsUnix32));
+              "}\n", settingsUnix32, false);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -1328,67 +1329,67 @@ private:
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:2:3]: (warning) Return value of function mystrcmp() is not used. [ignoredReturnValue]\n", errout_str());
 
         check("void foo() {\n"
               "  foo::mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:2:8]: (warning) Return value of function foo::mystrcmp() is not used. [ignoredReturnValue]\n", errout_str());
 
         check("void f() {\n"
               "  foo x;\n"
               "  x.mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Return value of function x.mystrcmp() is not used. [ignoredReturnValue]\n", errout_str());
 
         check("bool mystrcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition, but it returns a value. Assume it is the one specified in the library.
               "void foo() {\n"
               "    mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:3:5]: (warning) Return value of function mystrcmp() is not used. [ignoredReturnValue]\n", errout_str());
 
         check("void mystrcmp(char* a, char* b);\n" // cppcheck sees a custom strcmp definition which returns void!
               "void foo() {\n"
               "    mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    class mystrcmp { mystrcmp() {} };\n" // strcmp is a constructor definition here
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    return mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    return foo::mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    if(mystrcmp(a, b));\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    bool b = mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         // #6194
         check("void foo() {\n"
               "    MyStrCmp mystrcmp(x, y);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         // #6197
         check("void foo() {\n"
               "    abc::def.mystrcmp(a,b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         // #6233
@@ -1400,29 +1401,29 @@ private:
               "    lambda(13.3);\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str()); // TODO: use settings2?
 
         // #6669
         check("void foo(size_t size) {\n"
               "   void * res{malloc(size)};\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str()); // TODO: use settings2?
 
         // #7447
         check("void foo() {\n"
               "   int x{mystrcmp(a,b)};\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         // #7905
         check("void foo() {\n"
               "   int x({mystrcmp(a,b)});\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n" // don't crash
               "  DEBUG(123)(mystrcmp(a,b))(fd);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         check("struct teststruct {\n"
               "    int testfunc1() __attribute__ ((warn_unused_result)) { return 1; }\n"
               "    [[nodiscard]] int testfunc2() { return 1; }\n"
@@ -1433,7 +1434,7 @@ private:
               "    TestStruct1.testfunc1();\n"
               "    TestStruct1.testfunc2();\n"
               "    return 0;\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:4:18]: (warning) Return value of function testfunc1() is not used. [ignoredReturnValue]\n"
                       "[test.cpp:4:31]: (warning) Return value of function testfunc2() is not used. [ignoredReturnValue]\n"
                       "[test.cpp:8:17]: (warning) Return value of function TestStruct1.testfunc1() is not used. [ignoredReturnValue]\n"
@@ -1444,7 +1445,7 @@ private:
               "  std::tuple<a...> c{std::move(d)};\n"
               "  return std::get<0>(c);\n"
               "}");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str()); // TODO: use settings2?
 
         check("struct A { int x; };\n"
               "template <class... Ts>\n"
@@ -1452,25 +1453,25 @@ private:
               "    return {std::move(x), static_cast<int>(xs)...};\n"
               "}\n"
               "A g() { return f(1); }");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str()); // TODO: use settings2?
 
         // #8412 - unused operator result
         check("void foo() {\n"
               "  !mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:2:4]: (warning) Return value of function mystrcmp() is not used. [ignoredReturnValue]\n", errout_str());
 
         check("void f(std::vector<int*> v) {\n"
               "    delete *v.begin();\n"
               "}\n");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_EQUALS("", errout_str()); // TODO: use settings2?
 
         check("int __attribute__((pure)) p_foo(int);\n" // #12697
               "int __attribute__((const)) c_foo(int);\n"
               "void f() {\n"
               "    p_foo(0);\n"
               "    c_foo(0);\n"
-              "}\n");
+              "}\n"); // TODO: use settings2?
         ASSERT_EQUALS("[test.cpp:4:5]: (warning) Return value of function p_foo() is not used. [ignoredReturnValue]\n"
                       "[test.cpp:5:5]: (warning) Return value of function c_foo() is not used. [ignoredReturnValue]\n",
                       errout_str());
@@ -1489,7 +1490,7 @@ private:
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
-              "}", dinit(CheckOptions, $.s = &settings2));
+              "}", settings2);
         ASSERT_EQUALS("[test.cpp:2:3]: (style) Error code from the return value of function mystrcmp() is not used. [ignoredReturnErrorCode]\n", errout_str());
     }
 
@@ -1595,16 +1596,16 @@ private:
             {
                 const Settings s = settingsBuilder().c(Standards::C89).build();
 
-                check(code, dinit(CheckOptions, $.cpp = false, $.s = &s)); // c code (c89)
+                check(code, s, false); // c code (c89)
                 ASSERT_EQUALS("[test.c:1:17]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
             }
 
             {
                 const Settings s = settingsBuilder().c(Standards::C99).build();
-                check(code, dinit(CheckOptions, $.cpp = false, $.s = &s)); // c code (c99)
+                check(code, s, false); // c code (c99)
                 ASSERT_EQUALS("", errout_str());
 
-                check(code, dinit(CheckOptions, $.s = &s)); // c++ code
+                check(code, s); // c++ code
                 ASSERT_EQUALS("", errout_str());
             }
         }
@@ -1954,12 +1955,12 @@ private:
 
         check("void f() {\n"
               "    lib_func();"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         ASSERT_EQUALS("[test.cpp:2:5]: (information) --check-library: There is no matching configuration for function lib_func() [checkLibraryFunction]\n", errout_str());
 
         check("void f(void* v) {\n"
               "    lib_func(v);"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         ASSERT_EQUALS("[test.cpp:2:5]: (information) --check-library: There is no matching configuration for function lib_func() [checkLibraryFunction]\n", errout_str());
 
         // #10105
@@ -1975,7 +1976,7 @@ private:
               "\n"
               "        void testFunctionReturnType() {\n"
               "        }\n"
-              "};", dinit(CheckOptions, $.s = &s));
+              "};", s);
         ASSERT_EQUALS("", errout_str());
 
         // #11183
@@ -1985,7 +1986,7 @@ private:
               "\n"
               "void f() {\n"
               "    cb(std::string(\"\"));\n"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         TODO_ASSERT_EQUALS("", "[test.cpp:6:5]: (information) --check-library: There is no matching configuration for function cb() [checkLibraryFunction]\n", errout_str());
 
         // #7375
@@ -1993,38 +1994,38 @@ private:
               "    struct S { int i; char c; };\n"
               "    size_t s = sizeof(S);\n"
               "    static_assert(s == 9);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(char) {}\n"
               "void g() {\n"
               "    f(int8_t(1));\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::uint64_t& u) {\n"
               "    u = std::uint32_t(u) * std::uint64_t(100);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
-        check("void f() { throw(1); }\n", dinit(CheckOptions, $.s = &s)); // #8958
+        check("void f() { throw(1); }\n", s); // #8958
         ASSERT_EQUALS("", errout_str());
 
         check("using namespace std;\n"
-              "void f() { throw range_error(\"abc\"); }\n", dinit(CheckOptions, $.s = &s));
+              "void f() { throw range_error(\"abc\"); }\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("class C {\n" // #9002
               "public:\n"
               "    static int f() { return 1; }\n"
               "};\n"
-              "void g() { C::f(); }\n", dinit(CheckOptions, $.s = &s));
+              "void g() { C::f(); }\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::vector<std::string>& v) {\n" // #11223
               "    for (const auto& s : v)\n"
               "        s.find(\"\");\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("[test.cpp:3:11]: (warning) Return value of function s.find() is not used. [ignoredReturnValue]\n", errout_str());
 
         check("void f() {\n"
@@ -2034,19 +2035,19 @@ private:
               "    q->push_back(1);\n"
               "    auto* r = new std::vector<int>;\n"
               "    r->push_back(1);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    auto p = std::make_shared<std::vector<int>>();\n"
               "    p->push_back(1);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(std::vector<std::vector<int>>& v) {\n"
               "    auto it = v.begin();\n"
               "    it->push_back(1);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -2056,7 +2057,7 @@ private:
               "    w.push_back(1);\n"
               "    auto x = std::vector<int>(1);\n"
               "    x.push_back(1);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -2064,7 +2065,7 @@ private:
               "    p->push_back(1);\n"
               "    auto q{ std::make_shared<std::vector<int>>{} };\n"
               "    q->push_back(1);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:2:5]: (debug) auto token with no type. [autoNoType]\n"
                            "[test.cpp:4:5]: (debug) auto token with no type. [autoNoType]\n"
@@ -2077,12 +2078,12 @@ private:
               "    std::list<F>::iterator it;\n"
               "    for (it = l.begin(); it != l.end(); ++it)\n"
               "        it->g(0);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", filter_valueflow(errout_str()));
 
         check("auto f() {\n"
               "    return std::runtime_error(\"abc\");\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:1:1]: (debug) auto token with no type. [autoNoType]\n",
                            errout_str());
@@ -2095,7 +2096,7 @@ private:
               "void S::f(int i) const {\n"
               "    for (const std::shared_ptr<S>& c : v)\n"
               "        c->f(i);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("namespace N {\n"
@@ -2104,29 +2105,29 @@ private:
               "void f() {\n"
               "    const auto& t = N::S::s;\n"
               "    if (t.find(\"abc\") != t.end()) {}\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", filter_valueflow(errout_str()));
 
         check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
               "    auto& s = v[i][j];\n"
               "    s.insert(0);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("int f(const std::vector<std::string>& v, int i, char c) {\n"
               "    const auto& s = v[i];\n"
               "    return s.find(c);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #11604
               "    int (*g)() = nullptr;\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    INT (*g)() = nullptr;\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("struct T;\n"
@@ -2135,13 +2136,13 @@ private:
               "    auto p = get();\n"
               "    p->h(i);\n"
               "    p.reset(nullptr);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("[test.cpp:5:8]: (information) --check-library: There is no matching configuration for function T::h() [checkLibraryFunction]\n",
                       errout_str());
 
         check("struct S : std::vector<int> {\n"
               "    void f(int i) { push_back(i); }\n"
-              "};\n", dinit(CheckOptions, $.s = &s));
+              "};\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
@@ -2151,18 +2152,18 @@ private:
               "    auto h{ []() -> std::string { return \"xyz\"; } };\n"
               "    auto t = h();\n"
               "    if (t.at(0)) {}\n"
-              "};\n", dinit(CheckOptions, $.s = &s));
+              "};\n", s);
         ASSERT_EQUALS("", filter_valueflow(errout_str()));
 
         check("::std::string f(const char* c) {\n" // #12365
               "    return ::std::string(c);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("template <typename T>\n"
               "struct S : public std::vector<T> {\n"
               "    void resize(size_t n) { std::vector<T>::resize(n); }\n"
-              "};\n", dinit(CheckOptions, $.s = &s));
+              "};\n", s);
         ASSERT_EQUALS("", errout_str());
 
         check("struct P {\n" // #13105
@@ -2173,7 +2174,7 @@ private:
               "    auto it = m->find(i);\n"
               "    const bool b = it != m->end();\n"
               "    return b;\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         TODO_ASSERT_EQUALS("", "[test.cpp:6:5]: (debug) auto token with no type. [autoNoType]\n", errout_str());
     }
 

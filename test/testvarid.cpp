@@ -266,15 +266,17 @@ private:
     struct TokenizeOptions
     {
         bool cpp = true;
-        const Settings *s = nullptr;
     };
 
 #define tokenize(...) tokenize_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenize_(const char* file, int line, const char (&code)[size], const TokenizeOptions& options = make_default_obj()) {
-        const Settings *settings1 = options.s ? options.s : &settings;
+        return tokenize_(file, line, code, settings, options.cpp);
+    }
 
-        SimpleTokenizer tokenizer(*settings1, *this, options.cpp);
+    template<size_t size>
+    std::string tokenize_(const char* file, int line, const char (&code)[size], const Settings& settings1, bool cpp = true) {
+        SimpleTokenizer tokenizer(settings1, *this, cpp);
         ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         // result..
@@ -2296,7 +2298,7 @@ private:
                        "4: if ( v@2 . front ( ) . i@3 ) { }\n"
                        "5: }\n"
                        "6: } ;\n";
-            ASSERT_EQUALS(expected, tokenize(code, dinit(TokenizeOptions, $.s = &s)));
+            ASSERT_EQUALS(expected, tokenize(code, s));
         }
 
         {
@@ -2314,7 +2316,7 @@ private:
                        "5: std :: vector < U * > * p@2 ; p@2 = g ( ) ;\n"
                        "6: auto t@3 ; t@3 = p@2 . front ( ) . t@4 ;\n"
                        "7: }\n";
-            ASSERT_EQUALS(expected, tokenize(code, dinit(TokenizeOptions, $.s = &s)));
+            ASSERT_EQUALS(expected, tokenize(code, s));
         }
     }
 
@@ -4460,7 +4462,7 @@ private:
         const char* exp = "1: int f ( double a@1 , double b@2 , double c@3 ) {\n"
                           "2: return static_cast < int > ( std :: ceil ( std :: min ( a@1 , std :: min ( b@2 , c@3 ) ) ) ) ;\n"
                           "3: }\n";
-        ASSERT_EQUALS(exp, tokenize(code, dinit(TokenizeOptions, $.s = &s))); // don't crash
+        ASSERT_EQUALS(exp, tokenize(code, s)); // don't crash
     }
 
     void structuredBindings() {

@@ -48,7 +48,7 @@ private:
 
     struct CheckOptions
     {
-        const Settings* settings = nullptr;
+        const Settings* settings = nullptr; // TODO: split from this
         Standards::cppstd_t standard = Standards::cppstd_t::CPP11;
     };
 

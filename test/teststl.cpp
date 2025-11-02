@@ -183,16 +183,19 @@ private:
     struct CheckOptions
     {
         bool inconclusive = false;
-        const Settings* s = nullptr;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings* s = options.s ? options.s : (options.inconclusive ? &settings_i : &settings);
+        const Settings& s = options.inconclusive ? settings_i : settings;
 
-        // Tokenize..
-        SimpleTokenizer tokenizer(*s, *this);
+        check_(file, line, code, s);
+    }
+
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& s) {
+        SimpleTokenizer tokenizer(s, *this);
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
@@ -2643,7 +2646,7 @@ private:
 
         check("void f() {\n"
               "    const char a[][5] = { \"1\", \"true\", \"on\", \"yes\" };\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2660,7 +2663,7 @@ private:
               "}\n"
               "void g(const std::vector<int>& w) {\n"
               "    f(-1, w);\n"
-              "}\n", dinit(CheckOptions, $.s = &s));
+              "}\n", s);
         ASSERT_EQUALS("[test.cpp:5:9]: warning: Array index -1 is out of bounds. [negativeContainerIndex]\n"
                       "[test.cpp:8:8]: note: Calling function 'f', 1st argument '-1' value is -1\n"
                       "[test.cpp:3:9]: note: Assuming condition is false\n"
@@ -3786,7 +3789,7 @@ private:
                                 "{\n"
                                 "    if (x.size() == 0) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:7:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3798,7 +3801,7 @@ private:
                                 "{\n"
                                 "    if (x.size() == 0) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3810,7 +3813,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() == 0) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3822,7 +3825,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (0 == x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3834,7 +3837,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() != 0) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3846,7 +3849,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (0 != x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3858,7 +3861,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() > 0) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3870,7 +3873,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (0 < x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:13]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3882,7 +3885,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() >= 1) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3894,7 +3897,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size() < 1) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3906,7 +3909,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (1 <= x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3918,7 +3921,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (1 > x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:13]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3930,7 +3933,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:9]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3942,7 +3945,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    if (!x.size()) {}\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:10]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3961,7 +3964,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    fun(!x.size());\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:10]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -3973,7 +3976,7 @@ private:
                                 "    std::list<int> x;\n"
                                 "    fun(a && x.size());\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS("[test.cpp:4:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n", errout_str());
             check(code);
             ASSERT_EQUALS("", errout_str());
@@ -4010,7 +4013,7 @@ private:
                             "{\n"
                             "    if (f.x.size() == 0) {}\n"
                             "}";
-        check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+        check(code, settingsCpp03);
         ASSERT_EQUALS(
             "[test.cpp:10:11]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n"
             "[test.cpp:10:11]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n",   // duplicate
@@ -4033,7 +4036,7 @@ private:
                                 "int main() {\n"
                                 "    if (zzz->x.size() > 0) { }\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS(
                 "[test.cpp:10:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n"
                 "[test.cpp:10:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n",   // duplicate
@@ -4052,7 +4055,7 @@ private:
                                 "    Zzz * zzz;\n"
                                 "    if (zzz->x.size() > 0) { }\n"
                                 "}";
-            check(code, dinit(CheckOptions, $.s = &settingsCpp03));
+            check(code, settingsCpp03);
             ASSERT_EQUALS(
                 "[test.cpp:10:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n"
                 "[test.cpp:10:14]: (performance) Possible inefficient checking for 'x' emptiness. [stlSize]\n",   // duplicate
@@ -6806,13 +6809,13 @@ private:
                                 "    }\n"
                                 "}\n";
             s.standards.cpp = Standards::CPP11;
-            check(code, dinit(CheckOptions, $.s = &s));
+            check(code, s);
             ASSERT_EQUALS("", errout_str());
             s.standards.cpp = Standards::CPP14;
-            check(code, dinit(CheckOptions, $.s = &s));
+            check(code, s);
             ASSERT_EQUALS("", errout_str());
             s.standards.cpp = Standards::CPP17;
-            check(code, dinit(CheckOptions, $.s = &s));
+            check(code, s);
             ASSERT_EQUALS("[test.cpp:3:18]: (performance) Searching before insertion is not necessary. [stlFindInsert]\n", errout_str());
         }
 
@@ -6827,7 +6830,7 @@ private:
                   "      if(x.find(5) == x.end())\n"
                   "         x[5] = data;\n"
                   "   }\n"
-                  "}", dinit(CheckOptions, $.s = &s));
+                  "}", s);
             ASSERT_EQUALS("", errout_str());
 
             s.standards.cpp = Standards::CPP11;
@@ -6839,7 +6842,7 @@ private:
                   "      if(x.find(5) == x.end())\n"
                   "         x[5] = data;\n"
                   "   }\n"
-                  "}", dinit(CheckOptions, $.s = &s));
+                  "}", s);
             ASSERT_EQUALS("[test.cpp:7:17]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'. [stlFindInsert]\n", errout_str());
 
             check("void foo() {\n"
@@ -6850,7 +6853,7 @@ private:
                   "      if(x.find(5) == x.end())\n"
                   "         x[5] = data;\n"
                   "   }\n"
-                  "}");
+                  "}"); // TODO: use s?
             ASSERT_EQUALS("[test.cpp:7:17]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.try_emplace(5, data);'. [stlFindInsert]\n", errout_str());
         }
     }

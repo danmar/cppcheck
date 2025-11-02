@@ -91,17 +91,21 @@ private:
     struct CheckOptions
     {
         Platform::Type platform = Platform::Type::Native;
-        const Settings* s = nullptr;
         bool cpp = true;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).platform(options.platform).build();
+        // TODO: avoid copy
+        const Settings settings1 = (options.platform == Platform::Type::Native) ? settings : settingsBuilder(settings).platform(options.platform).build();
 
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        check_(file, line, code, settings1, options.cpp);
+    }
+
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& settings1, bool cpp = true) {
+        SimpleTokenizer tokenizer(settings1, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for unused functions..
@@ -694,10 +698,10 @@ private:
 
         const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int WinMain() { }", dinit(CheckOptions, $.s = &s));
+        check("int WinMain() { }", s);
         ASSERT_EQUALS("", errout_str());
 
-        check("int _tmain() { }", dinit(CheckOptions, $.s = &s));
+        check("int _tmain() { }", s);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -710,10 +714,10 @@ private:
 
         const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int wWinMain() { }", dinit(CheckOptions, $.s = &s));
+        check("int wWinMain() { }", s);
         ASSERT_EQUALS("", errout_str());
 
-        check("int _tmain() { }", dinit(CheckOptions, $.s = &s));
+        check("int _tmain() { }", s);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -726,7 +730,7 @@ private:
         const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
 
         check("int _init() { }\n"
-              "int _fini() { }\n", dinit(CheckOptions, $.s = &s));
+              "int _fini() { }\n", s);
         ASSERT_EQUALS("", errout_str());
     }
 
