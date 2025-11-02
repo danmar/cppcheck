@@ -1990,6 +1990,12 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
                 break;
             }
 
+            if (!p.errors.empty())
+                errorMessage += ": \n";
+
+            for (const auto &error : p.errors)
+                errorMessage += "\n - " + QString::fromStdString(error);
+
             if (!errorMessage.isEmpty()) {
                 QMessageBox msg(QMessageBox::Critical,
                                 tr("Cppcheck"),
