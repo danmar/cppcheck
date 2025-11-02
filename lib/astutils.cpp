@@ -1022,6 +1022,11 @@ const Token* isInLoopCondition(const Token* tok)
     return Token::Match(top->previous(), "for|while (") ? top : nullptr;
 }
 
+bool isDesignatedInitializer(const Token* tok)
+{
+    return tok && tok->isUnaryOp(".");
+}
+
 /// If tok2 comes after tok1
 bool precedes(const Token * tok1, const Token * tok2)
 {

@@ -266,6 +266,11 @@ bool isStructuredBindingVariable(const Variable* var);
 const Token* isInLoopCondition(const Token* tok);
 
 /**
+ * Is token the dot of a designated initializer?
+ */
+bool isDesignatedInitializer(const Token* tok);
+
+/**
  * Is token used as boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
 CPPCHECKLIB bool isUsedAsBool(const Token* tok, const Settings& settings);
