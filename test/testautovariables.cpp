@@ -3947,6 +3947,14 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4:12] -> [test.cpp:5:12]: (error) Returning object that will be invalid when returning. [returnDanglingLifetime]\n",
             errout_str());
+
+        check("struct A { int x; int& r};\n"
+              "A f(int& r) {\n"
+              "    int x = 0;\n"
+              "    A a{.x = x, .r = r};\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void danglingLifetimeInitList() {
