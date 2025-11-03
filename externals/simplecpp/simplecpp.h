@@ -16,6 +16,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 #if __cplusplus >= 202002L
 #  include <version>
@@ -41,7 +42,7 @@
 #endif
 
 #ifndef _WIN32
-#  include <sys/stat.h>
+#  include <sys/types.h>
 #endif
 
 #if defined(_MSC_VER)
@@ -69,16 +70,15 @@ namespace simplecpp {
 
     using TokenString = std::string;
     class Macro;
-    class FileDataCache;
 
     /**
      * Location in source code
      */
     class SIMPLECPP_LIB Location {
     public:
-        explicit Location(const std::vector<std::string> &f) : files(f), fileIndex(0), line(1U), col(0U) {}
+        explicit Location(const std::vector<std::string> &f) : files(f) {}
 
-        Location(const Location &loc) : files(loc.files), fileIndex(loc.fileIndex), line(loc.line), col(loc.col) {}
+        Location(const Location &loc) = default;
 
         Location &operator=(const Location &other) {
             if (this != &other) {
@@ -109,9 +109,9 @@ namespace simplecpp {
         }
 
         const std::vector<std::string> &files;
-        unsigned int fileIndex;
-        unsigned int line;
-        unsigned int col;
+        unsigned int fileIndex{};
+        unsigned int line{1};
+        unsigned int col{};
     private:
         static const std::string emptyFileName;
     };
@@ -123,12 +123,14 @@ namespace simplecpp {
     class SIMPLECPP_LIB Token {
     public:
         Token(const TokenString &s, const Location &loc, bool wsahead = false) :
-            whitespaceahead(wsahead), location(loc), previous(nullptr), next(nullptr), nextcond(nullptr), string(s) {
+            whitespaceahead(wsahead), location(loc), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), whitespaceahead(tok.whitespaceahead), location(tok.location), previous(nullptr), next(nullptr), nextcond(nullptr), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {}
+            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), whitespaceahead(tok.whitespaceahead), location(tok.location), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {}
+
+        Token &operator=(const Token &tok) = delete;
 
         const TokenString& str() const {
             return string;
@@ -153,9 +155,8 @@ namespace simplecpp {
         bool number;
         bool whitespaceahead;
         Location location;
-        Token *previous;
-        Token *next;
-        mutable const Token *nextcond;
+        Token *previous{};
+        Token *next{};
 
         const Token *previousSkipComments() const {
             const Token *tok = this->previous;
@@ -195,14 +196,10 @@ namespace simplecpp {
         TokenString string;
 
         std::set<const Macro*> mExpandedFrom;
-
-        // Not implemented - prevent assignment
-        Token &operator=(const Token &tok);
     };
 
     /** Output from preprocessor */
     struct SIMPLECPP_LIB Output {
-        explicit Output(const std::vector<std::string> &files) : type(ERROR), location(files) {}
         enum Type : std::uint8_t {
             ERROR, /* #error */
             WARNING, /* #warning */
@@ -215,7 +212,7 @@ namespace simplecpp {
             FILE_NOT_FOUND,
             DUI_ERROR
         } type;
-        explicit Output(const std::vector<std::string>& files, Type type, const std::string& msg) : type(type), location(files), msg(msg) {}
+        Output(Type type, const Location& loc, std::string msg) : type(type), location(loc), msg(std::move(msg)) {}
         Location location;
         std::string msg;
     };
@@ -360,9 +357,8 @@ namespace simplecpp {
         std::string readUntil(Stream &stream, const Location &location, char start, char end, OutputList *outputList);
         void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
-        std::string lastLine(int maxsize=1000) const;
         const Token* lastLineTok(int maxsize=1000) const;
-        bool isLastLinePreprocessor(int maxsize=1000) const;
+        const Token* isLastLinePreprocessor(int maxsize=1000) const;
 
         unsigned int fileIndex(const std::string &filename);
 
@@ -393,14 +389,14 @@ namespace simplecpp {
      * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
-        DUI() : clearIncludeCache(false), removeComments(false) {}
+        DUI() = default;
         std::list<std::string> defines;
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
         std::string std;
-        bool clearIncludeCache;
-        bool removeComments; /** remove comment tokens from included files */
+        bool clearIncludeCache{};
+        bool removeComments{}; /** remove comment tokens from included files */
     };
 
     struct SIMPLECPP_LIB FileData {
@@ -426,7 +422,7 @@ namespace simplecpp {
 
         void insert(FileData data) {
             // NOLINTNEXTLINE(misc-const-correctness) - FP
-            FileData *const newdata = new FileData(std::move(data));
+            auto *const newdata = new FileData(std::move(data));
 
             mData.emplace_back(newdata);
             mNameMap.emplace(newdata->filename, newdata);
