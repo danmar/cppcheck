@@ -1340,8 +1340,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation
 
     // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
     // TODO: log message when this is active?
-    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
-    const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
+    const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
 
     if (!doUnusedFunctionOnly) {
         const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;

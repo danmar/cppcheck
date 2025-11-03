@@ -554,8 +554,9 @@ public:
 
     void setCheckLevel(CheckLevel level);
 
-
     static ExecutorType defaultExecutor();
+
+    static bool unusedFunctionOnly();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);

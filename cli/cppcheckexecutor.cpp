@@ -347,8 +347,7 @@ bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, con
 
     SuppressionList supprlist;
 
-    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
-    const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
+    const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
     // ignore all other suppressions if we use the unusedFunction hack
     for (auto&& s : suppr)
     {

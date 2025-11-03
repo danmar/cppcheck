@@ -715,3 +715,9 @@ Settings::ExecutorType Settings::defaultExecutor()
 #endif
     return defaultExecutor;
 }
+
+bool Settings::unusedFunctionOnly()
+{
+    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
+    return unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
+}
