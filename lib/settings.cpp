@@ -25,6 +25,8 @@
 #include "vfvalue.h"
 
 #include <cctype>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <map>

@@ -19,7 +19,6 @@
 #include "suppressions.h"
 
 #include "errorlogger.h"
-#include "errortypes.h"
 #include "filesettings.h"
 #include "path.h"
 #include "pathmatch.h"

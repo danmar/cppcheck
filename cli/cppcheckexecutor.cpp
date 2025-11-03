@@ -32,7 +32,6 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
-#include "json.h"
 #include "path.h"
 #include "sarifreport.h"
 #include "settings.h"
@@ -49,7 +48,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <ctime>
