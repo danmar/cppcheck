@@ -38,8 +38,6 @@ class Token;
 /** @brief simple math functions that uses operands stored in std::string. useful when performing math on tokens. */
 
 class CPPCHECKLIB MathLib {
-    friend class TestMathLib;
-
 public:
 #if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
     using bigint = boost::multiprecision::int128_t;
