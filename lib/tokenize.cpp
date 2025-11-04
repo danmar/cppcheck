@@ -9902,13 +9902,18 @@ void Tokenizer::simplifyAsm()
             Token *endasm = tok->next();
             const Token *firstSemiColon = nullptr;
             int comment = 0;
-            while (Token::Match(endasm, "%num%|%name%|,|:|;") || (endasm && (endasm->isLiteral() || endasm->linenr() == comment))) {
+            while (Token::Match(endasm, "%num%|%name%|,|:|;|*|(") || (endasm && (endasm->isLiteral() || endasm->linenr() == comment))) {
                 if (Token::Match(endasm, "_asm|__asm|__endasm"))
                     break;
                 if (endasm->str() == ";") {
                     comment = endasm->linenr();
                     if (!firstSemiColon)
                         firstSemiColon = endasm;
+                }
+                if (endasm->str() == "(") {
+                    if (!firstSemiColon)
+                        endasm = endasm->link();
+                    break;
                 }
                 endasm = endasm->next();
             }
@@ -9920,6 +9925,12 @@ void Tokenizer::simplifyAsm()
             } else if (firstSemiColon) {
                 instruction = tok->next()->stringifyList(firstSemiColon);
                 Token::eraseTokens(tok, firstSemiColon);
+            } else if (Token::Match(endasm, ") { !!}")) {
+                tok->deleteThis();
+                tok = endasm->tokAt(2);
+                endasm = endasm->linkAt(1);
+                instruction = tok->stringifyList(endasm);
+                Token::eraseTokens(tok, endasm);
             } else if (!endasm) {
                 instruction = tok->next()->stringifyList(endasm);
                 Token::eraseTokens(tok, endasm);
