@@ -2873,7 +2873,9 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
             {
                 // Skip static variable
                 it = std::find_if(it, scope->varlist.cend(), [&](const Variable &var)
-                                  { return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str()); });
+                {
+                    return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str());
+                });
                 if (it == scope->varlist.cend())
                     return;
                 if (hasDesignatedInitializers)
