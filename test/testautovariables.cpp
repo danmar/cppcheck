@@ -3945,7 +3945,7 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:4:12] -> [test.cpp:5:12]: (error) Returning object that will be invalid when returning. [returnDanglingLifetime]\n",
+            "[test.cpp:4:14] -> [test.cpp:3:9] -> [test.cpp:5:12]: (error) Returning object that points to local variable 'x' that will be invalid when returning. [returnDanglingLifetime]\n",
             errout_str());
 
         check("struct A { int x; int& r};\n"
