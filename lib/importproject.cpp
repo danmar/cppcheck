@@ -1548,13 +1548,3 @@ void ImportProject::setRelativePaths(const std::string &filename)
     }
 }
 
-void ImportProject::printErrors() const
-{
-    for (const auto &error : errors)
-        printError(error);
-}
-
-void ImportProject::printError(const std::string &message)
-{
-    std::cout << "cppcheck: error: " << message << std::endl;
-}

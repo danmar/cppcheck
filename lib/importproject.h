@@ -99,8 +99,6 @@ public:
     void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    void printErrors() const;
-
     Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
 protected:
     bool importCompileCommands(std::istream &istr);
@@ -119,8 +117,6 @@ private:
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importBcb6Prj(const std::string &projectFilename);
-
-    static void printError(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
 

@@ -1163,6 +1163,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
             projectType = project.import(projectFile, &mSettings, &mSuppressions);
+
+            auto printImportErrors = [&]() {
+                for (const auto &error : project.errors)
+                    mLogger.printError(error);
+            };
+
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
                 for (const std::string &lib : project.guiProject.libraries)
                     mSettings.libraries.emplace_back(lib);
@@ -1191,17 +1197,17 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.libraries.emplace_back("windows");
             }
             if (projectType == ImportProject::Type::MISSING) {
-                project.printErrors();
+                printImportErrors();
                 mLogger.printError("failed to open project '" + projectFile + "'. The file does not exist.");
                 return Result::Fail;
             }
             if (projectType == ImportProject::Type::UNKNOWN) {
-                project.printErrors();
+                printImportErrors();
                 mLogger.printError("failed to load project '" + projectFile + "'. The format is unknown.");
                 return Result::Fail;
             }
             if (projectType == ImportProject::Type::FAILURE) {
-                project.printErrors();
+                printImportErrors();
                 mLogger.printError("failed to load project '" + projectFile + "'. An error occurred.");
                 return Result::Fail;
             }
