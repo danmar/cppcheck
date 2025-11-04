@@ -2870,30 +2870,30 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 "Passed to constructor of '" + t->name() + "'.",
                 ValueFlow::Value::LifetimeKind::SubObject,
                 [&](LifetimeStore &ls)
+            {
+                // Skip static variable
+                it = std::find_if(it, scope->varlist.cend(), [&](const Variable &var)
+                                  { return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str()); });
+                if (it == scope->varlist.cend())
+                    return;
+                if (hasDesignatedInitializers)
+                    ls.argtok = ls.argtok->astOperand2();
+                const Variable &var = *it;
+                if (var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike && !var.valueType()->container->view)
+                    return; // TODO: check in isLifetimeBorrowed()?
+                if (var.isReference() || var.isRValueReference())
                 {
-                    // Skip static variable
-                    it = std::find_if(it, scope->varlist.cend(), [&](const Variable &var)
-                                      { return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str()); });
-                    if (it == scope->varlist.cend())
-                        return;
-                    if (hasDesignatedInitializers)
-                        ls.argtok = ls.argtok->astOperand2();
-                    const Variable &var = *it;
-                    if (var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike && !var.valueType()->container->view)
-                        return; // TODO: check in isLifetimeBorrowed()?
-                    if (var.isReference() || var.isRValueReference())
-                    {
-                        ls.byRef(tok, tokenlist, errorLogger, settings);
-                    }
-                    else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings))
-                    {
-                        ls.byVal(tok, tokenlist, errorLogger, settings);
-                    }
-                    if (hasDesignatedInitializers)
-                        it = scope->varlist.cbegin();
-                    else
-                        it++;
-                });
+                    ls.byRef(tok, tokenlist, errorLogger, settings);
+                }
+                else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings))
+                {
+                    ls.byVal(tok, tokenlist, errorLogger, settings);
+                }
+                if (hasDesignatedInitializers)
+                    it = scope->varlist.cbegin();
+                else
+                    it++;
+            });
         } else {
             const Function* constructor = findConstructor(scope, tok, args);
             valueFlowLifetimeUserConstructor(tok, constructor, t->name(), args, tokenlist, errorLogger, settings);
