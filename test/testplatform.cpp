@@ -50,7 +50,12 @@ private:
         TEST_CASE(wrong_root_node);
     }
 
-    static bool readPlatform(Platform& platform, const char* xmldata) {
+    class PlatformTest : public Platform
+    {
+        friend class TestPlatform;
+    };
+
+    static bool readPlatform(PlatformTest& platform, const char* xmldata) {
         tinyxml2::XMLDocument doc;
         return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc);
     }
@@ -58,7 +63,7 @@ private:
     void empty() const {
         // An empty platform file does not change values, only the type.
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
-        Platform platform;
+        PlatformTest platform;
         // TODO: this should fail - platform files need to be complete
         TODO_ASSERT(!readPlatform(platform, xmldata));
     }
@@ -221,7 +226,7 @@ private:
                                    "    <wchar_t>2</wchar_t>\n"
                                    "  </sizeof>\n"
                                    " </platform>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
@@ -265,7 +270,7 @@ private:
                                    "    <wchar_t>11</wchar_t>\n"
                                    "  </sizeof>\n"
                                    " </platform>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
@@ -309,7 +314,7 @@ private:
                                    "    <wchar_t1>11</wchar_t1>\n"
                                    "  </sizeof1>\n"
                                    " </platform>";
-        Platform platform;
+        PlatformTest platform;
         // TODO: needs to fail - files need to be complete
         TODO_ASSERT(!readPlatform(platform, xmldata));
     }
@@ -335,7 +340,7 @@ private:
                                    "    <wchar_t>0</wchar_t>\n"
                                    "  </sizeof>\n"
                                    " </platform>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
         ASSERT(!platform.isWindows());
@@ -378,7 +383,7 @@ private:
                                    "    <wchar_t>2</wchar_t>\n"
                                    "  </sizeof>\n"
                                    " </platform>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
 
@@ -403,7 +408,7 @@ private:
                                    "    <wchar_t></wchar_t>\n"
                                    "  </sizeof>\n"
                                    " </platform>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
 
@@ -434,14 +439,14 @@ private:
 
     void no_root_node() const {
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
 
     void wrong_root_node() const {
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platforms/>";
-        Platform platform;
+        PlatformTest platform;
         ASSERT(!readPlatform(platform, xmldata));
     }
 };
