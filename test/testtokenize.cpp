@@ -1116,6 +1116,15 @@ private:
         ASSERT_EQUALS(";\n\nasm ( \"\"mov ax,bx\"\" ) ;", tokenizeAndStringify(";\n\n__asm__ volatile ( \"mov ax,bx\" );"));
 
         ASSERT_EQUALS("void func1 ( ) ;", tokenizeAndStringify("void func1() __asm__(\"...\") __attribute__();"));
+
+        // #14250 - assembler function
+        const char code[] = "__asm void dostuff(uint32_t x) { "
+                            "%reg x "
+                            "  e_lis r7, (lf)@h "
+                            "%error "
+                            "}";
+        ASSERT_EQUALS("void dostuff ( uint32_t x ) { asm ( \"% reg x e_lis r7 , ( lf ) @ h % error\" ) ; }",
+                      tokenizeAndStringify(code));
     }
 
     // #4725 - ^{}
