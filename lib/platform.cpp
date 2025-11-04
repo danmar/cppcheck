@@ -180,7 +180,7 @@ bool Platform::loadFromFile(const std::vector<std::string>& paths, const std::st
     std::vector<std::string> filenames;
     if (is_abs_path)
     {
-        filenames.push_back(fullfilename);
+        filenames.push_back(std::move(fullfilename));
     }
     else {
         // TODO: drop duplicated paths

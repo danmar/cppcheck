@@ -142,7 +142,7 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
         filename = sourcefile;
     else
         filename = sourcefile.substr(pos + 1);
-    return Path::join(buildDir, filename) + ".analyzerinfo";
+    return Path::join(buildDir, std::move(filename)) + ".analyzerinfo";
 }
 
 bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fileIndex, std::size_t hash, std::list<ErrorMessage> &errors)

@@ -4442,7 +4442,7 @@ static std::vector<Union> parseUnions(const SymbolDatabase &symbolDatabase,
         for (const Variable &var : scope.varlist) {
             u.members.push_back(parseUnionMember(var, settings));
         }
-        unions.push_back(u);
+        unions.push_back(std::move(u));
     }
 
     return unions;
