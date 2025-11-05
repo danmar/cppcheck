@@ -895,7 +895,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     if (Settings::terminated())
         return mLogger->exitcode();
 
-    const Timer fileTotalTimer{file.spath(), mSettings.showtime};
+    const Timer fileTotalTimer{file.spath(), mSettings.showtime, nullptr, Timer::Type::FILE};
 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::toNativeSeparators(file.spath());

@@ -74,11 +74,16 @@ private:
 
 class CPPCHECKLIB Timer {
 public:
-    static constexpr char OVERALL[] = "Summary";
     using Clock = std::chrono::high_resolution_clock;
     using TimePoint = std::chrono::time_point<Clock>;
 
-    Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    enum class Type : std::uint8_t {
+        FILE,
+        OVERALL,
+        OTHER
+    };
+
+    Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults = nullptr, Type type = Type::OTHER);
     ~Timer();
 
     Timer(const Timer&) = delete;
@@ -92,10 +97,11 @@ public:
     }
 
 private:
-    const std::string mStr;
-    TimerResultsIntf* mTimerResults{};
-    ShowTime mShowTimeMode = ShowTime::FILE_TOTAL;
-    TimePoint mStartTimePoint;
+    const std::string mName;
+    ShowTime mMode{};
+    Type mType{};
+    TimePoint mStart;
+    TimerResultsIntf* mResults{};
 };
 
 //---------------------------------------------------------------------------

@@ -25,8 +25,6 @@
 #include <utility>
 #include <vector>
 
-constexpr char Timer::OVERALL[];
-
 namespace {
     using dataElementType = std::pair<std::string, TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
@@ -84,11 +82,12 @@ void TimerResults::reset()
     mResults.clear();
 }
 
-Timer::Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults)
-    : mStr(std::move(str))
-    , mTimerResults(timerResults)
-    , mShowTimeMode(showtimeMode)
-    , mStartTimePoint(Clock::now())
+Timer::Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults, Type type)
+    : mName(std::move(str))
+    , mMode(showtimeMode)
+    , mType(type)
+    , mStart(Clock::now())
+    , mResults(timerResults)
 {}
 
 Timer::~Timer()
@@ -98,22 +97,26 @@ Timer::~Timer()
 
 void Timer::stop()
 {
-    if ((mShowTimeMode != ShowTime::NONE) && mStartTimePoint != TimePoint{}) {
-        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - mStartTimePoint);
-        if (!mTimerResults) {
-            if (mStr == OVERALL
-                && (mShowTimeMode != ShowTime::TOP5_SUMMARY && mShowTimeMode != ShowTime::TOP5_FILE && mShowTimeMode != ShowTime::SUMMARY))
-                return;
-            if (mStr != OVERALL
-                && (mShowTimeMode != ShowTime::FILE && mShowTimeMode != ShowTime::FILE_TOTAL))
-                return;
+    if (mMode == ShowTime::NONE)
+        return;
+    if (mType == Type::OVERALL && mMode != ShowTime::TOP5_SUMMARY && mMode != ShowTime::SUMMARY) {
+        mMode = ShowTime::NONE;
+        return;
+    }
+    if (mType == Type::FILE && mMode != ShowTime::TOP5_FILE && mMode != ShowTime::FILE && mMode != ShowTime::FILE_TOTAL) {
+        mMode = ShowTime::NONE;
+        return;
+    }
+    if (mStart != TimePoint{}) {
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - mStart);
+        if (!mResults) {
             std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << (mStr == OVERALL ? "Overall time: " : "Check time: " + mStr + ": ")<< TimerResultsData::durationToString(diff) << std::endl;
+            std::cout << (mType == Type::OVERALL ? "Overall time: " : "Check time: " + mName + ": ") << TimerResultsData::durationToString(diff) << std::endl;
         } else {
-            mTimerResults->addResults(mStr, diff);
+            mResults->addResults(mName, diff);
         }
     }
-    mShowTimeMode = ShowTime::NONE; // prevent multiple stops
+    mMode = ShowTime::NONE; // prevent multiple stops
 }
 
 std::string TimerResultsData::durationToString(std::chrono::milliseconds duration)
