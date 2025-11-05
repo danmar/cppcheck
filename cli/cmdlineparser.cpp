@@ -1190,6 +1190,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_VCXPROJ) {
                 mSettings.libraries.emplace_back("windows");
             }
+            for (const auto &error : project.errors)
+                mLogger.printError(error);
             if (projectType == ImportProject::Type::MISSING) {
                 mLogger.printError("failed to open project '" + projectFile + "'. The file does not exist.");
                 return Result::Fail;

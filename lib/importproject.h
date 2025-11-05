@@ -74,6 +74,7 @@ public:
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
     std::list<FileSettings> fileSettings;
+    std::vector<std::string> errors;
 
     ImportProject() = default;
     virtual ~ImportProject() = default;
@@ -112,12 +113,10 @@ private:
     };
 
     bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    static SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importBcb6Prj(const std::string &projectFilename);
-
-    static void printError(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
 
