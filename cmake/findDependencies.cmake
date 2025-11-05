@@ -45,8 +45,6 @@ if(HAVE_RULES)
     endif()
 endif()
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
 find_package(Python COMPONENTS Interpreter)
 
 if(NOT Python_Interpreter_FOUND)
