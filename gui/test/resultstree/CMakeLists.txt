@@ -6,10 +6,6 @@ qt_wrap_cpp(test-resultstree_SRC
         ${CMAKE_SOURCE_DIR}/gui/threadhandler.h
         ${CMAKE_SOURCE_DIR}/gui/threadresult.h
 )
-if(USE_BUNDLED_TINYXML2)
-    list(APPEND test-resultstree_SRC $<TARGET_OBJECTS:tinyxml2_objs>)
-endif()
-list(APPEND test-resultstree_SRC $<TARGET_OBJECTS:simplecpp_objs> $<TARGET_OBJECTS:cppcheck-core>)
 add_custom_target(build-resultstree-deps SOURCES ${test-resultstree_SRC})
 add_dependencies(gui-build-deps build-resultstree-deps)
 add_executable(test-resultstree
@@ -21,22 +17,14 @@ add_executable(test-resultstree
         ${CMAKE_SOURCE_DIR}/gui/report.cpp
         ${CMAKE_SOURCE_DIR}/gui/xmlreportv2.cpp
         )
-target_include_directories(test-resultstree PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib)
-target_externals_include_directories(test-resultstree PRIVATE ${CMAKE_SOURCE_DIR}/externals/simplecpp)
-if(USE_BUNDLED_TINYXML2)
-    target_externals_include_directories(test-resultstree PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
-else()
-    target_include_directories(test-resultstree SYSTEM PRIVATE ${tinyxml2_INCLUDE_DIRS})
-endif()
+target_include_directories(test-resultstree PRIVATE ${CMAKE_SOURCE_DIR}/gui)
+target_link_libraries(test-resultstree cppcheck-core simplecpp tinyxml2)
 if (HAVE_RULES)
     target_link_libraries(test-resultstree ${PCRE_LIBRARY})
     target_include_directories(test-resultstree SYSTEM PRIVATE ${PCRE_INCLUDE})
 endif()
 target_compile_definitions(test-resultstree PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(test-resultstree ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB} ${QT_TEST_LIB})
-if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-    target_link_libraries(test-resultstree ${tinyxml2_LIBRARIES})
-endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
@@ -48,6 +36,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # caused by mocs
     target_compile_options_safe(test-resultstree -Wno-useless-cast)
+    # caused by mocks
+    target_compile_options_safe(test-resultstree -Wno-suggest-attribute=noreturn)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # caused by mocks
     target_compile_options_safe(test-resultstree -Wno-suggest-attribute=noreturn)
 endif()
