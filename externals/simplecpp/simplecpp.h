@@ -157,6 +157,7 @@ namespace simplecpp {
         Location location;
         Token *previous{};
         Token *next{};
+        mutable const Token *nextcond{};
 
         const Token *previousSkipComments() const {
             const Token *tok = this->previous;
