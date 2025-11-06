@@ -1012,7 +1012,14 @@ private:
         }
     }
 
-#define LOADLIBERROR(xmldata, errorcode) loadLibError(xmldata, errorcode, __FILE__, __LINE__)
+#define LOADLIBERROR(...) loadLibError(__FILE__, __LINE__, __VA_ARGS__)
+    template<std::size_t size>
+    void loadLibError(const char* file, unsigned line, const char (&xmldata)[size], Library::ErrorCode errorcode) const {
+        Library library;
+        Library::Error liberr;
+        assertEquals(file, line, true, LibraryHelper::loadxmldata(library, liberr, xmldata, size-1));
+        assertEquals(file, line, true, errorcode == liberr.errorcode);
+    }
 
     void version() const {
         {
@@ -1051,14 +1058,6 @@ private:
             const std::string& s = Library::Container::toString(y);
             ASSERT_EQUALS(i, static_cast<uint16_t>(Library::Container::yieldFrom(s)));
         }
-    }
-
-    template<std::size_t size>
-    void loadLibError(const char (&xmldata)[size], Library::ErrorCode errorcode, const char* file, unsigned line) const {
-        Library library;
-        Library::Error liberr;
-        assertEquals(file, line, true, LibraryHelper::loadxmldata(library, liberr, xmldata, size-1));
-        assertEquals(file, line, true, errorcode == liberr.errorcode);
     }
 
 #define LOADLIB_ERROR_INVALID_RANGE(valid) LOADLIBERROR("<?xml version=\"1.0\"?>\n" \

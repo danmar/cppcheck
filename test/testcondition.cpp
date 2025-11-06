@@ -515,7 +515,16 @@ private:
                       errout_str());
     }
 
-#define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)
+#define checkPureFunction(...) checkPureFunction_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void checkPureFunction_(const char* file, int line, const char (&code)[size]) {
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        runChecks<CheckCondition>(tokenizer, this);
+    }
+
     void multicompare() {
         check("void foo(int x)\n"
               "{\n"
@@ -572,15 +581,6 @@ private:
               "    else if (i != 3) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
-    }
-
-    template<size_t size>
-    void checkPureFunction_(const char (&code)[size], const char* file, int line) {
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-
-        runChecks<CheckCondition>(tokenizer, this);
     }
 
     void overlappingElseIfCondition() {

@@ -5276,9 +5276,9 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-#define ctu(code) ctu_(code, __FILE__, __LINE__)
+#define ctu(...) ctu_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void ctu_(const char (&code)[size], const char* file, int line) {
+    void ctu_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);

@@ -297,8 +297,8 @@ private:
         return false;
     }
 
-#define testValueOfXInconclusive(code, linenr, value) testValueOfXInconclusive_(code, linenr, value, __FILE__, __LINE__)
-    bool testValueOfXInconclusive_(const char code[], unsigned int linenr, int value, const char* file, int line) {
+#define testValueOfXInconclusive(...) testValueOfXInconclusive_(__FILE__, __LINE__, __VA_ARGS__)
+    bool testValueOfXInconclusive_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -374,8 +374,8 @@ private:
         return false;
     }
 
-#define getErrorPathForX(code, linenr) getErrorPathForX_(code, linenr, __FILE__, __LINE__)
-    std::string getErrorPathForX_(const char code[], unsigned int linenr, const char* file, int line) {
+#define getErrorPathForX(...) getErrorPathForX_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string getErrorPathForX_(const char* file, int line, const char code[], unsigned int linenr) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -470,9 +470,9 @@ private:
         return false;
     }
 
-#define testConditionalValueOfX(code, linenr, value) testConditionalValueOfX_(code, linenr, value, __FILE__, __LINE__)
+#define testConditionalValueOfX(...) testConditionalValueOfX_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool testConditionalValueOfX_(const char (&code)[size], unsigned int linenr, int value, const char* file, int line) {
+    bool testConditionalValueOfX_(const char* file, int line, const char (&code)[size], unsigned int linenr, int value) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -9115,7 +9115,7 @@ private:
         ASSERT_EQUALS(1U, tokenValues(code, "v .", &s).size());
     }
 
-#define testBitfields(structBody, expectedSize) testBitfields_(__FILE__, __LINE__, structBody, expectedSize)
+#define testBitfields(...) testBitfields_(__FILE__, __LINE__, __VA_ARGS__)
     void testBitfields_(const char *file, int line, const std::string &structBody, std::size_t expectedSize) {
         const Settings settingsUnix64 = settingsBuilder().platform(Platform::Type::Unix64).build();
         const std::string code = "struct S { " + structBody + " }; const std::size_t size = sizeof(S);";
