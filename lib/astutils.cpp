@@ -2636,7 +2636,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings &settings,
            (Token::simpleMatch(tok2->astParent(), ".") && !Token::Match(tok2->astParent()->astParent(), "[(,]")) ||
            (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->") ||
            (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1())) {
-        if (tok2->astParent() && (tok2->astParent()->isUnaryOp("*") || (astIsLHS(tok2) && tok2->astParent()->originalName() == "->") && !hasOverloadedMemberAccess(tok2->astOperand2())))
+        if (tok2->astParent() && (tok2->astParent()->isUnaryOp("*") || (astIsLHS(tok2) && tok2->astParent()->originalName() == "->" && !hasOverloadedMemberAccess(tok2->astOperand2()))))
             derefs++;
         if (derefs > indirect)
             break;
