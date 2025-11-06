@@ -79,7 +79,6 @@ private:
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
-        TEST_CASE(tooManyConfigsError);
         TEST_CASE(checkPlistOutput);
         TEST_CASE(premiumResultsCache);
         TEST_CASE(toomanyconfigs);
@@ -90,6 +89,13 @@ private:
         ErrorLogger2 errorLogger;
         CppCheck::getErrorMessages(errorLogger);
         ASSERT(!errorLogger.ids.empty());
+        ASSERT(!errorLogger.errmsgs.empty());
+
+        const auto it = std::next(errorLogger.errmsgs.cbegin());
+        const std::string shortMsg = it->toString(false, templateFormat, "");
+        const std::string debugMsg = it->toString(true, templateFormat, "");
+        ASSERT_EQUALS(shortMsg, "nofile:0:0: information: Too many #ifdef configurations - cppcheck only checks 12 configurations. Use --force to check all configurations. For more details, use --enable=information. [toomanyconfigs]");
+        ASSERT_EQUALS(debugMsg, "nofile:0:0: information: The checking of the file will be interrupted because there are too many #ifdef configurations. Checking of all #ifdef configurations can be forced by --force command line option or from GUI preferences. However that may increase the checking time. For more details, use --enable=information. [toomanyconfigs]");
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
@@ -521,81 +527,6 @@ private:
             CppCheck cppcheck(s, supprs, errorLogger, false, {});
             const std::string expected = "  <library lib=\"std.cfg\"/>\n  <library lib=\"posix.cfg\"/>\n";
             ASSERT_EQUALS(expected, cppcheck.getLibraryDumpData());
-        }
-    }
-
-    void tooManyConfigsError() const {
-        Suppressions supprs;
-        ErrorLogger2 errorLogger;
-
-        {
-            const Settings s;
-            CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            cppcheck.tooManyConfigsError("file", 0);
-            ASSERT_EQUALS(0, errorLogger.errmsgs.size());
-        }
-
-        {
-            const auto s = dinit(Settings, $.severity.enable (Severity::information));
-            CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            cppcheck.tooManyConfigsError("", 0);
-            ASSERT_EQUALS(0, errorLogger.errmsgs.size());
-        }
-
-        const std::string forceFlagInstruction {"The checking of the file will be interrupted because there are too many "
-                                                "#ifdef configurations. Checking of all #ifdef configurations can be forced "
-                                                "by --force command line option or from GUI preferences. However that may "
-                                                "increase the checking time."};
-
-        {
-            const auto s = dinit(Settings, $.templateFormat = templateFormat, $.severity.enable (Severity::information));
-            CppCheck cppcheck(s, supprs, errorLogger, false, {});
-
-            const int numberOfConfigurations = s.maxConfigs+1;
-            cppcheck.tooManyConfigsError("file", numberOfConfigurations);
-
-            ASSERT_EQUALS(1, errorLogger.errmsgs.size());
-            auto it = errorLogger.errmsgs.cbegin();
-            const std::string shortMsg = it->toString(false, templateFormat, "");
-            const std::string debugMsg = it->toString(true, templateFormat, "");
-
-            ASSERT_EQUALS(shortMsg, "file:0:0: information: Too many #ifdef configurations - cppcheck only checks " + std::to_string(s.maxConfigs) + " of " + std::to_string(numberOfConfigurations) + " configurations. Use --force to check all configurations. [toomanyconfigs]");
-            ASSERT_EQUALS(debugMsg, "file:0:0: information: " + forceFlagInstruction + " [toomanyconfigs]");
-            errorLogger.errmsgs.clear();
-        }
-
-        {
-            const auto s = dinit(Settings, $.templateFormat = templateFormat);
-            CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            cppcheck.mTooManyConfigs = true;
-
-            cppcheck.tooManyConfigsError("", 0);
-
-            ASSERT_EQUALS(1, errorLogger.errmsgs.size());
-            auto it = errorLogger.errmsgs.cbegin();
-            const std::string shortMsg = it->toString(false, templateFormat, "");
-            const std::string debugMsg = it->toString(true, templateFormat, "");
-
-            ASSERT_EQUALS(shortMsg, "nofile:0:0: information: Too many #ifdef configurations - cppcheck only checks " + std::to_string(s.maxConfigs) + " configurations. Use --force to check all configurations. For more details, use --enable=information. [toomanyconfigs]");
-            ASSERT_EQUALS(debugMsg, "nofile:0:0: information: " + forceFlagInstruction + " For more details, use --enable=information. [toomanyconfigs]");
-            errorLogger.errmsgs.clear();
-        }
-
-        {
-            const auto s = dinit(Settings, $.templateFormat = templateFormat, $.severity.enable (Severity::information));
-            CppCheck cppcheck(s, supprs, errorLogger, false, {});
-            cppcheck.mTooManyConfigs = true;
-
-            cppcheck.tooManyConfigsError("file", 0);
-
-            ASSERT_EQUALS(1, errorLogger.errmsgs.size());
-            auto it = errorLogger.errmsgs.cbegin();
-            const std::string shortMsg = it->toString(false, templateFormat, "");
-            const std::string debugMsg = it->toString(true, templateFormat, "");
-
-            ASSERT_EQUALS(shortMsg, "file:0:0: information: Too many #ifdef configurations - cppcheck only checks " + std::to_string(s.maxConfigs) + " configurations. [toomanyconfigs]");
-            ASSERT_EQUALS(debugMsg, "file:0:0: information: " + forceFlagInstruction + " [toomanyconfigs]");
-            errorLogger.errmsgs.clear();
         }
     }
 
