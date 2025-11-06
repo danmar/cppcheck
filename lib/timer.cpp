@@ -138,5 +138,8 @@ std::string TimerResultsData::durationToString(std::chrono::milliseconds duratio
     if (minutes.count() > 0)
         ellapsedTime += std::to_string(minutes.count()) + "m ";
     std::string secondsStr{std::to_string(seconds.count())};
-    return (ellapsedTime + secondsStr.substr(0, secondsStr.length() - 3) + "s");
+    auto pos = secondsStr.find_first_of('.');
+    if (pos != std::string::npos && (pos + 4) < secondsStr.size())
+        secondsStr = secondsStr.substr(0, pos + 4); // keep three decimal
+    return (ellapsedTime + secondsStr + "s");
 }
