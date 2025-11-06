@@ -45,8 +45,10 @@ public:
 
 private:
     const Settings settings0 = settingsBuilder().library("qt.cfg").build();
-    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").build();
-    const Settings settings_windows = settingsBuilder().library("windows.cfg").build();
+    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").debugwarnings().build();
+    const Settings settings2 = settingsBuilder(settings1).cpp(Standards::CPP11).c(Standards::C11).build();
+    const Settings settings3 = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
+    const Settings settings_windows = settingsBuilder().library("windows.cfg").debugwarnings().cpp(Standards::CPP11).build();
 
     void run() override {
         mNewTemplate = true;
@@ -518,7 +520,7 @@ private:
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], const TokenizeOptions& opt = make_default_obj{}) {
-        const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(opt.cppstd).c(opt.cstd).platform(opt.platform).build();
+        const Settings settings = settingsBuilder(settings1).cpp(opt.cppstd).c(opt.cstd).platform(opt.platform).build();
 
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this, opt.cpp);
@@ -531,10 +533,7 @@ private:
 
     // TODO: get rid of this
     std::string tokenizeAndStringify_(const char* file, int linenr, const std::string& code) {
-        const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(Standards::CPP11).c(Standards::C11).build();
-
-        // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
+        SimpleTokenizer tokenizer(settings2, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
 
         if (tokenizer.tokens())
@@ -555,7 +554,7 @@ private:
 #define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char (&code)[size], Platform::Type platform = Platform::Type::Native) {
-        const Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(Standards::CPP11).platform(platform).build();
+        const Settings settings = settingsBuilder(settings_windows).platform(platform).build();
 
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this);
@@ -569,9 +568,7 @@ private:
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     std::string tokenizeDebugListing_(const char* file, int line, const char (&code)[size], bool cpp = true) {
-        const Settings settings = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
-
-        SimpleTokenizer tokenizer(settings, *this, cpp);
+        SimpleTokenizer tokenizer(settings3, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // result..
