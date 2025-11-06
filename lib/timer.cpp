@@ -140,6 +140,6 @@ std::string TimerResultsData::durationToString(std::chrono::milliseconds duratio
     std::string secondsStr{std::to_string(seconds.count())};
     auto pos = secondsStr.find_first_of('.');
     if (pos != std::string::npos && (pos + 4) < secondsStr.size())
-        secondsStr = secondsStr.substr(0, pos + 4); // keep three decimal
+        secondsStr.resize(pos + 4); // keep three decimal
     return (ellapsedTime + secondsStr + "s");
 }
