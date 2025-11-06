@@ -3986,3 +3986,41 @@ def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, exp
             '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks {} of {} configurations. Use --force to check all configurations. [toomanyconfigs]'
             .format(test_file, max_configs, number_of_configs)
         ]
+
+
+# The implementation for "A::a" is missing - so don't check if "A::b" is used or not
+def test_unused_private_function_incomplete_impl(tmpdir):
+    test_inc = os.path.join(tmpdir, 'test.h')
+    with open(test_inc, 'wt') as f:
+        f.write(
+            """
+            class A
+            {
+            public:
+                A();
+                void a();
+            private:
+                void b();
+            };
+            """)
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write(
+            """
+            #include "test.h"
+            
+            A::A() { }
+            void A::b() { }
+            """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        test_file
+    ]
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stdout == ''
+    assert stderr.splitlines() == []
+    assert ret == 0, stdout

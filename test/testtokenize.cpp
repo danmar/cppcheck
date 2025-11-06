@@ -599,6 +599,8 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens1(code, files, filename, &outputList);
         Preprocessor preprocessor(tokens1, settings, *this, Path::identify(tokens1.getFiles()[0], false));
+        (void)preprocessor.reportOutput(outputList, true);
+        ASSERT(preprocessor.loadFiles(files));
         std::list<Directive> directives = preprocessor.createDirectives();
 
         TokenList tokenlist{settings, Path::identify(filename, false)};
@@ -8582,9 +8584,9 @@ private:
                                 "#define macro2 val\n"
                                 "#file \"inc2.h\"\n"
                                 "#define macro3 val\n"
-                                "#endfile\n"
+                                "#endfile\n" // TODO
                                 "#define macro4 val\n"
-                                "#endfile\n"
+                                "#endfile\n" // TODO
                                 "#define macro5 val\n";
         const char dumpdata[] = "  <directivelist>\n"
                                 "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro1 val\">\n"
