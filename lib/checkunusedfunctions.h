@@ -38,12 +38,6 @@ class Tokenizer;
 /// @{
 
 class CPPCHECKLIB CheckUnusedFunctions {
-    friend class TestSuppressions;
-    friend class TestSingleExecutorBase;
-    friend class TestProcessExecutorBase;
-    friend class TestThreadExecutorBase;
-    friend class TestUnusedFunctions;
-
 public:
     CheckUnusedFunctions() = default;
 
