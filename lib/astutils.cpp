@@ -2619,7 +2619,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
 
 static bool hasOverloadedMemberAccess(const Token* tok)
 {
-    if (!Token::simpleMatch(tok, ".))
+    if (!Token::simpleMatch(tok, "."))
         return false;
     const Token* varTok = tok->astOperand2();
     return !varTok || !varTok->variable() || !varTok->variable()->valueType() || varTok->variable()->valueType()->pointer == 0;
