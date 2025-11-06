@@ -310,8 +310,8 @@ private:
 
 #define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string compareVaridsForVariable_(const char* file, int line, const char (&code)[size], const char varname[], bool cpp = true) {
-        SimpleTokenizer tokenizer(settings, *this, cpp);
+    std::string compareVaridsForVariable_(const char* file, int line, const char (&code)[size], const char varname[]) {
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC((tokenizer.tokenize)(code), file, line);
 
         unsigned int varid = ~0U;

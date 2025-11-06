@@ -418,7 +418,7 @@ private:
 
 #define testLifetimeOfX(...) testLifetimeOfX_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    bool testLifetimeOfX_(const char* file, int line, const char (&code)[size], unsigned int linenr, const char value[], ValueFlow::Value::LifetimeScope lifetimeScope = ValueFlow::Value::LifetimeScope::Local) {
+    bool testLifetimeOfX_(const char* file, int line, const char (&code)[size], unsigned int linenr, const char value[]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -427,7 +427,7 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
                 if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
-                    return v.isLifetimeValue() && v.lifetimeScope == lifetimeScope && Token::simpleMatch(v.tokvalue, value, len);
+                    return v.isLifetimeValue() && v.lifetimeScope == ValueFlow::Value::LifetimeScope::Local && Token::simpleMatch(v.tokvalue, value, len);
                 }))
                     return true;
             }
@@ -508,8 +508,8 @@ private:
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
-    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
-        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr, s);
+    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], ValueFlow::Value::ValueType vt) {
+        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr);
         values.remove_if([&](const ValueFlow::Value& v) {
             return v.valueType != vt;
         });
@@ -518,9 +518,9 @@ private:
 
 #define lifetimeValues(...) lifetimeValues_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::vector<std::string> lifetimeValues_(const char* file, int line, const char (&code)[size], const char tokstr[], const Settings *s = nullptr) {
+    std::vector<std::string> lifetimeValues_(const char* file, int line, const char (&code)[size], const char tokstr[]) {
         std::vector<std::string> result;
-        SimpleTokenizer tokenizer(s ? *s : settings, *this);
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         if (!tok)
@@ -546,11 +546,9 @@ private:
                               int line,
                               const char code[],
                               const char tokstr[],
-                              int value,
-                              const Settings* s = nullptr,
-                              bool cpp = true)
+                              int value)
     {
-        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr, s, cpp));
+        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr));
         return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& v) {
             return v.isKnown() && v.isIntValue() && v.intvalue == value;
         });

@@ -3611,8 +3611,7 @@ private:
                         "        if (y != 0) return;\n"
                         "        i++;\n"
                         "    }\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n"
@@ -3622,8 +3621,7 @@ private:
                         "        if (y != 0) return;\n"
                         "        i++;\n"
                         "    }\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n"
@@ -3892,8 +3890,7 @@ private:
         valueFlowUninit("void f() {\n"
                         "    int x;\n"
                         "    char *p = (char*)&x + 1;\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n"
@@ -7371,8 +7368,7 @@ private:
                         "void foo() {\n"
                         "    A a;\n"
                         "    x = a.m;\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         // Unknown type (C)
