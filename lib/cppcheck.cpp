@@ -1686,6 +1686,9 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
         msg << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.\n";
     else if (file.empty())
         msg << " configurations. Use --force to check all configurations. For more details, use --enable=information.\n";
+    else
+        msg << " configurations.\n";
+
     msg << "The checking of the file will be interrupted because there are too many "
         "#ifdef configurations. Checking of all #ifdef configurations can be forced "
         "by --force command line option or from GUI preferences. However that may "
