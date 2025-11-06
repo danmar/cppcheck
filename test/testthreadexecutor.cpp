@@ -52,7 +52,7 @@ private:
     struct CheckOptions
     {
         bool quiet = true;
-        SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ShowTime showtime = ShowTime::NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
     };
@@ -163,7 +163,7 @@ private:
               "void f()\n"
               "{\n"
               "  (void)(*((int*)0));\n"
-              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+              "}", dinit(CheckOptions, $.showtime = ShowTime::SUMMARY));
         // we are not interested in the results - so just consume them
         ignore_errout();
     }
@@ -232,10 +232,9 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
-        // for each file: top5 results + overall + empty line
+                    $.showtime = ShowTime::TOP5_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        // for each file: top5 results + overall + empty line
+        // for each file: top5 results + newline + overall
         ASSERT_EQUALS((5 + 1 + 1) * 2LL, cppcheck::count_all_of(output_s, '\n'));
     }
 
@@ -244,10 +243,10 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
+                    $.showtime = ShowTime::TOP5_SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        // once: top5 results + overall + empty line
-        ASSERT_EQUALS(5 + 1 + 1, cppcheck::count_all_of(output_s, '\n'));
+        // once: top5 results + newline
+        ASSERT_EQUALS(5 + 1, cppcheck::count_all_of(output_s, '\n'));
         // should only report the top5 once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
         ASSERT(output_s.find("2 result(s)") != std::string::npos);
@@ -258,9 +257,9 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
+                    $.showtime = ShowTime::FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        ASSERT_EQUALS(2, cppcheck::count_all_of(output_s, "Overall time:"));
+        ASSERT_EQUALS(0, cppcheck::count_all_of(output_s, "Overall time:"));
     }
 
     void showtime_summary() {
@@ -268,7 +267,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+                    $.showtime = ShowTime::SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // should only report the actual summary once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
@@ -280,7 +279,7 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL));
+                    $.showtime = ShowTime::FILE_TOTAL));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         ASSERT(output_s.find("Check time: " + fprefix() + "_1.c: ") != std::string::npos);
         ASSERT(output_s.find("Check time: " + fprefix() + "_2.c: ") != std::string::npos);

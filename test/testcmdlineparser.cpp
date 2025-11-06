@@ -2157,21 +2157,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY);
+        ASSERT(settings->showtime == ShowTime::SUMMARY);
     }
 
     void showtimeFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=file", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE);
+        ASSERT(settings->showtime == ShowTime::FILE);
     }
 
     void showtimeFileTotal() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=file-total", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL);
+        ASSERT(settings->showtime == ShowTime::FILE_TOTAL);
     }
 
     void showtimeTop5() {
@@ -2185,21 +2185,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5_file", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
+        ASSERT(settings->showtime == ShowTime::TOP5_FILE);
     }
 
     void showtimeTop5Summary() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=top5_summary", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY);
+        ASSERT(settings->showtime == ShowTime::TOP5_SUMMARY);
     }
 
     void showtimeNone() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=none", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_NONE);
+        ASSERT(settings->showtime == ShowTime::NONE);
     }
 
     void showtimeEmpty() {

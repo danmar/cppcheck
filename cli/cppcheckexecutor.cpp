@@ -38,6 +38,7 @@
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
+#include "timer.h"
 #include "utils.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
@@ -269,6 +270,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (Settings::terminated()) {
         return EXIT_SUCCESS;
     }
+
+    Timer realTimeClock("", settings.showtime, nullptr, Timer::Type::OVERALL);
 
     settings.loadSummaries();
 

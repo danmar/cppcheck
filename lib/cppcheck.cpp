@@ -910,7 +910,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     if (Settings::terminated())
         return mLogger->exitcode();
 
-    const Timer fileTotalTimer(mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL, file.spath());
+    const Timer fileTotalTimer{file.spath(), mSettings.showtime, nullptr, Timer::Type::FILE};
 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::toNativeSeparators(file.spath());
@@ -1161,7 +1161,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                 Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
                 try {
-                    if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
+                    if (mSettings.showtime != ShowTime::NONE)
                         tokenizer.setTimerResults(&s_timerResults);
                     tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
 
@@ -1307,7 +1307,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: clear earlier?
     mLogger->clear();
 
-    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
+    if (mSettings.showtime == ShowTime::FILE || mSettings.showtime == ShowTime::TOP5_FILE)
         printTimerResults(mSettings.showtime);
 
     return mLogger->exitcode();
@@ -1501,7 +1501,9 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 {
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
-        executeAddons(f, file.spath());
+        Timer::run("CppCheck::executeAddons", mSettings.showtime, &s_timerResults, [&]() {
+            executeAddons(f, file.spath());
+        });
     }
 }
 
@@ -1933,7 +1935,7 @@ void CppCheck::resetTimerResults()
     s_timerResults.reset();
 }
 
-void CppCheck::printTimerResults(SHOWTIME_MODES mode)
+void CppCheck::printTimerResults(ShowTime mode)
 {
     s_timerResults.showResults(mode);
 }

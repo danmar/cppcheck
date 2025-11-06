@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <functional>
@@ -30,38 +31,39 @@
 #include <string>
 #include <utility>
 
-enum class SHOWTIME_MODES : std::uint8_t {
-    SHOWTIME_NONE,
-    SHOWTIME_FILE,
-    SHOWTIME_FILE_TOTAL,
-    SHOWTIME_SUMMARY,
-    SHOWTIME_TOP5_SUMMARY,
-    SHOWTIME_TOP5_FILE
+enum class ShowTime : std::uint8_t {
+    NONE,
+    FILE,
+    FILE_TOTAL,
+    SUMMARY,
+    TOP5_SUMMARY,
+    TOP5_FILE
 };
 
 class CPPCHECKLIB TimerResultsIntf {
 public:
     virtual ~TimerResultsIntf() = default;
 
-    virtual void addResults(const std::string& str, std::clock_t clocks) = 0;
+    virtual void addResults(const std::string& timerName, std::chrono::milliseconds duation) = 0;
 };
 
 struct TimerResultsData {
-    std::clock_t mClocks{};
+    std::chrono::milliseconds mDuration;
     long mNumberOfResults{};
 
-    double seconds() const {
-        const double ret = static_cast<double>(static_cast<unsigned long>(mClocks)) / static_cast<double>(CLOCKS_PER_SEC);
-        return ret;
+    std::chrono::duration<double> getSeconds() const {
+        return std::chrono::duration_cast<std::chrono::duration<double>>(mDuration);
     }
+
+    static std::string durationToString(std::chrono::milliseconds duration);
 };
 
 class CPPCHECKLIB TimerResults : public TimerResultsIntf {
 public:
     TimerResults() = default;
 
-    void showResults(SHOWTIME_MODES mode) const;
-    void addResults(const std::string& str, std::clock_t clocks) override;
+    void showResults(ShowTime mode) const;
+    void addResults(const std::string& str, std::chrono::milliseconds duration) override;
 
     void reset();
 
@@ -72,8 +74,16 @@ private:
 
 class CPPCHECKLIB Timer {
 public:
-    Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
-    Timer(bool fileTotal, std::string filename);
+    using Clock = std::chrono::high_resolution_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
+
+    enum class Type : std::uint8_t {
+        FILE,
+        OVERALL,
+        OTHER
+    };
+
+    Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults = nullptr, Type type = Type::OTHER);
     ~Timer();
 
     Timer(const Timer&) = delete;
@@ -81,17 +91,18 @@ public:
 
     void stop();
 
-    static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
+    static void run(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
         Timer t(std::move(str), showtimeMode, timerResults);
         f();
     }
 
 private:
-    const std::string mStr;
-    TimerResultsIntf* mTimerResults{};
-    std::clock_t mStart = std::clock();
-    const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
-    bool mStopped{};
+    const std::string mName;
+    ShowTime mMode{};
+    Type mType{};
+    TimePoint mStart;
+    TimerResultsIntf* mResults{};
 };
+
 //---------------------------------------------------------------------------
 #endif // timerH

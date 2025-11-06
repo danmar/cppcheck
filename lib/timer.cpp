@@ -29,7 +29,7 @@ namespace {
     using dataElementType = std::pair<std::string, TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
     {
-        return lhs.second.seconds() > rhs.second.seconds();
+        return lhs.second.getSeconds() > rhs.second.getSeconds();
     }
 
     // TODO: remove and print through (synchronized) ErrorLogger instead
@@ -38,12 +38,10 @@ namespace {
 
 // TODO: this does not include any file context when SHOWTIME_FILE thus rendering it useless - should we include the logging with the progress logging?
 // that could also get rid of the broader locking
-void TimerResults::showResults(SHOWTIME_MODES mode) const
+void TimerResults::showResults(ShowTime mode) const
 {
-    if (mode == SHOWTIME_MODES::SHOWTIME_NONE || mode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+    if (mode == ShowTime::NONE || mode == ShowTime::FILE_TOTAL)
         return;
-
-    TimerResultsData overallData;
     std::vector<dataElementType> data;
 
     {
@@ -61,38 +59,20 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
     for (auto iter=data.cbegin(); iter!=data.cend(); ++iter) {
-        const double sec = iter->second.seconds();
+        const double sec = iter->second.getSeconds().count();
         const double secAverage = sec / static_cast<double>(iter->second.mNumberOfResults);
-        bool hasParent = false;
-        {
-            // Do not use valueFlow.. in "Overall time" because those are included in Tokenizer already
-            if (startsWith(iter->first,"valueFlow"))
-                hasParent = true;
-
-            // Do not use inner timers in "Overall time"
-            const std::string::size_type pos = iter->first.rfind("::");
-            if (pos != std::string::npos)
-                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) {
-                    return d.first.size() == pos && iter->first.compare(0, d.first.size(), d.first) == 0;
-                });
-        }
-        if (!hasParent)
-            overallData.mClocks += iter->second.mClocks;
-        if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5_FILE && mode != SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY) || (ordinal<=5)) {
+        if ((mode != ShowTime::TOP5_FILE && mode != ShowTime::TOP5_SUMMARY) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }
         ++ordinal;
     }
-
-    const double secOverall = overallData.seconds();
-    std::cout << "Overall time: " << secOverall << "s" << std::endl;
 }
 
-void TimerResults::addResults(const std::string& str, std::clock_t clocks)
+void TimerResults::addResults(const std::string& str, std::chrono::milliseconds duration)
 {
     std::lock_guard<std::mutex> l(mResultsSync);
 
-    mResults[str].mClocks += clocks;
+    mResults[str].mDuration += duration;
     mResults[str].mNumberOfResults++;
 }
 
@@ -102,17 +82,12 @@ void TimerResults::reset()
     mResults.clear();
 }
 
-Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
-    : mStr(std::move(str))
-    , mTimerResults(timerResults)
-    , mStart(std::clock())
-    , mShowTimeMode(showtimeMode)
-    , mStopped(showtimeMode == SHOWTIME_MODES::SHOWTIME_NONE || showtimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
-{}
-
-Timer::Timer(bool fileTotal, std::string filename)
-    : mStr(std::move(filename))
-    , mStopped(!fileTotal)
+Timer::Timer(std::string str, ShowTime showtimeMode, TimerResultsIntf* timerResults, Type type)
+    : mName(std::move(str))
+    , mMode(showtimeMode)
+    , mType(type)
+    , mStart(Clock::now())
+    , mResults(timerResults)
 {}
 
 Timer::~Timer()
@@ -122,23 +97,49 @@ Timer::~Timer()
 
 void Timer::stop()
 {
-    if ((mShowTimeMode != SHOWTIME_MODES::SHOWTIME_NONE) && !mStopped) {
-        const std::clock_t end = std::clock();
-        const std::clock_t diff = end - mStart;
-
-        if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
-            const double sec = static_cast<double>(diff) / CLOCKS_PER_SEC;
+    if (mMode == ShowTime::NONE)
+        return;
+    if (mType == Type::OVERALL && mMode != ShowTime::TOP5_SUMMARY && mMode != ShowTime::SUMMARY) {
+        mMode = ShowTime::NONE;
+        return;
+    }
+    if (mType == Type::FILE && mMode != ShowTime::TOP5_FILE && mMode != ShowTime::FILE && mMode != ShowTime::FILE_TOTAL) {
+        mMode = ShowTime::NONE;
+        return;
+    }
+    if (mStart != TimePoint{}) {
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - mStart);
+        if (!mResults) {
             std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << mStr << ": " << sec << "s" << std::endl;
-        } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
-            const double sec = static_cast<double>(diff) / CLOCKS_PER_SEC;
-            std::lock_guard<std::mutex> l(stdCoutLock);
-            std::cout << "Check time: " << mStr << ": " << sec << "s" << std::endl;
+            std::cout << (mType == Type::OVERALL ? "Overall time: " : "Check time: " + mName + ": ") << TimerResultsData::durationToString(diff) << std::endl;
         } else {
-            if (mTimerResults)
-                mTimerResults->addResults(mStr, diff);
+            mResults->addResults(mName, diff);
         }
     }
+    mMode = ShowTime::NONE; // prevent multiple stops
+}
 
-    mStopped = true;
+std::string TimerResultsData::durationToString(std::chrono::milliseconds duration)
+{
+    // Extract hours
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(duration);
+    duration -= hours; // Subtract the extracted hours
+
+    // Extract minutes
+    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    duration -= minutes; // Subtract the extracted minutes
+
+    // Extract seconds
+    std::chrono::duration<double> seconds = std::chrono::duration_cast<std::chrono::duration<double>>(duration);
+
+    std::string ellapsedTime;
+    if (hours.count() > 0)
+        ellapsedTime += std::to_string(hours.count()) + "h ";
+    if (minutes.count() > 0)
+        ellapsedTime += std::to_string(minutes.count()) + "m ";
+    std::string secondsStr{std::to_string(seconds.count())};
+    auto pos = secondsStr.find_first_of('.');
+    if (pos != std::string::npos && (pos + 4) < secondsStr.size())
+        secondsStr.resize(pos + 4); // keep three decimal
+    return (ellapsedTime + secondsStr + "s");
 }
