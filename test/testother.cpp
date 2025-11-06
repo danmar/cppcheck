@@ -3974,6 +3974,13 @@ private:
               "    return (void*)&s;\n"
               "}\n"); // don't crash
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int i; };\n" // #14251
+              "struct T { std::optional<S> s; };\n"
+              "void f(T& t) {\n"
+              "    t.s->i = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void constParameterCallback() {
