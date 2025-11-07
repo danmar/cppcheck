@@ -6404,6 +6404,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
 
 //---------------------------------------------------------------------------
 
+// cppcheck-suppress unusedFunction
 const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 {
     auto it = std::find_if(scopeList.cbegin(), scopeList.cend(), [&](const Scope& s) {

@@ -190,7 +190,6 @@ public:
     }
 
     /** Verbose message (may be the same as the short message) */
-    // cppcheck-suppress unusedFunction - used by GUI only
     const std::string &verboseMessage() const {
         return mVerboseMessage;
     }

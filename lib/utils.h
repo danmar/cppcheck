@@ -291,7 +291,6 @@ T strToInt(const std::string& str)
  * \return size of array
  * */
 template<typename T, int size>
-// cppcheck-suppress unusedFunction - only used in conditional code
 std::size_t getArrayLength(const T (& /*unused*/)[size])
 {
     return size;

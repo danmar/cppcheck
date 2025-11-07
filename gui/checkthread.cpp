@@ -124,7 +124,6 @@ void CheckThread::analyseWholeProgram(const std::list<FileWithDetails> &files, c
     start();
 }
 
-// cppcheck-suppress unusedFunction - TODO: false positive
 void CheckThread::run()
 {
     mState = Running;

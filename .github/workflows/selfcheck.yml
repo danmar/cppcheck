@@ -16,7 +16,6 @@ permissions:
   contents: read
 
 jobs:
-  # TODO: enable information
   build:
 
     runs-on: ubuntu-22.04
@@ -77,11 +76,10 @@ jobs:
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
 
-      # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction)
         if: false # TODO: fails with preprocessorErrorDirective - see #10667
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction,information --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
@@ -103,10 +101,9 @@ jobs:
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.notest gui-build-deps
 
-      # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / no test)
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction,information --exception-handling -rp=. --project=cmake.output.notest/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
@@ -122,10 +119,10 @@ jobs:
           # make sure the precompiled headers exist
           make -C cmake.output.notest_nogui lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
 
-      # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / no test / no gui)
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib -D__CPPCHECK__ -D__GNUC__ --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest_nogui/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          supprs="--suppress=unusedFunction:lib/errorlogger.h:193 --suppress=unusedFunction:lib/importproject.cpp:1508 --suppress=unusedFunction:lib/importproject.cpp:1532"
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib -D__CPPCHECK__ -D__GNUC__ --enable=unusedFunction,information --exception-handling -rp=. --project=cmake.output.notest_nogui/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr $supprs
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
@@ -145,11 +142,10 @@ jobs:
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.notest_nocli gui-build-deps
 
-      # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / no test / no cli)
         if: false  # TODO: the findings are currently too intrusive
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest_nocli/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction,information --exception-handling -rp=. --project=cmake.output.notest_nocli/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
@@ -165,11 +161,10 @@ jobs:
           # make sure the precompiled headers exist
           make -C cmake.output.notest_nocli_nogui lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
 
-      # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / no test / no cli / no gui)
         if: false  # TODO: the findings are currently too intrusive
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest_nocli_nogui/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ --enable=unusedFunction,information --exception-handling -rp=. --project=cmake.output.notest_nocli_nogui/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
           UNUSEDFUNCTION_ONLY: 1
@@ -193,11 +188,10 @@ jobs:
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output.corpus gui-build-deps
 
-      # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / corpus / no test / callgrind)
         run: |
           # TODO: fix -rp so the suppressions actually work
-          valgrind --tool=callgrind ./cppcheck --template=selfcheck --error-exitcode=0 --library=cppcheck-lib --library=qt -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.corpus/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr 2>callgrind.log || (cat callgrind.log && false)
+          valgrind --tool=callgrind ./cppcheck --template=selfcheck --error-exitcode=0 --library=cppcheck-lib --library=qt -D__GNUC__ -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --enable=unusedFunction,information --exception-handling -rp=. --project=cmake.output.corpus/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr 2>callgrind.log || (cat callgrind.log && false)
           cat callgrind.log
           callgrind_annotate --auto=no > callgrind.annotated.log
           head -50 callgrind.annotated.log
