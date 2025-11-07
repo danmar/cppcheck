@@ -35,6 +35,7 @@ public:
 
 private:
     const Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
+    const Settings settings0_i = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
     const Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
     const Settings settings2 = settingsBuilder().severity(Severity::style).library("std.cfg").certainty(Certainty::inconclusive).build();
     const Settings settings3 = settingsBuilder().severity(Severity::style).library("std.cfg").severity(Severity::warning).build();
@@ -3655,16 +3656,19 @@ private:
 
     struct CheckConstOptions
     {
-        const Settings *s = nullptr;
         bool inconclusive = true;
     };
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkConst_(const char* file, int line, const char (&code)[size], const CheckConstOptions& options = make_default_obj()) {
-        const Settings settings = settingsBuilder(options.s ? *options.s : settings0).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings& settings = options.inconclusive ? settings0_i : settings0;
 
-        // Tokenize..
+        checkConst_(file, line, code, settings);
+    }
+
+    template<size_t size>
+    void checkConst_(const char* file, int line, const char (&code)[size], const Settings& settings) {
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
@@ -7747,7 +7751,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
+        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").certainty(Certainty::inconclusive).build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
@@ -7755,7 +7759,7 @@ private:
                    "};\n"
                    "void S::f() {\n"
                    "    std::vector<data>::const_iterator end = std.end();\n"
-                   "}\n", dinit(CheckConstOptions, $.s = &s));
+                   "}\n", s);
         ASSERT_EQUALS("[test.cpp:4:10] -> [test.cpp:6:9]: (style, inconclusive) Technically the member function 'S::f' can be const. [functionConst]\n", errout_str());
     }
 

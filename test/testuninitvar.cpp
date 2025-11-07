@@ -110,19 +110,31 @@ private:
     struct CheckUninitVarOptions
     {
         bool cpp = true;
-        const Settings *s = nullptr;
     };
 
 #define checkUninitVar(...) checkUninitVar_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkUninitVar_(const char* file, int line, const char code[], const CheckUninitVarOptions& options = make_default_obj()) {
-        const Settings& settings1 =options.s ? *options.s : settings;
+    template<size_t size>
+    void checkUninitVar_(const char* file, int line, const char (&code)[size], const CheckUninitVarOptions& options = make_default_obj()) {
+        checkUninitVar_(file, line, code, settings, options.cpp);
+    }
 
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+    template<size_t size>
+    void checkUninitVar_(const char* file, int line, const char (&code)[size], const Settings& settings1, bool cpp = true) {
+        SimpleTokenizer tokenizer(settings1, *this, cpp);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
+        checkuninitvar.check();
+    }
+
+    // TODO: get rid of this
+    void checkUninitVar_(const char* file, int line, const std::string& code) {
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        // Check for redundant code..
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
         checkuninitvar.check();
     }
 
@@ -845,7 +857,7 @@ private:
             checkUninitVar("void f() {\n"
                            "  Fred _tm;\n"
                            "  _tm.dostuff();\n"
-                           "}", dinit(CheckUninitVarOptions, $.s = &s));
+                           "}", s);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -2435,18 +2447,18 @@ private:
     void func_uninit_var() {
         const std::string funca("int a(int x) { return x + x; }");
 
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int x;\n"
-                        "    a(x);\n"
-                        "}").c_str());
+        checkUninitVar(funca +
+                       "void b() {\n"
+                       "    int x;\n"
+                       "    a(x);\n"
+                       "}");
         ASSERT_EQUALS("[test.cpp:3:7]: (error) Uninitialized variable: x [legacyUninitvar]\n", errout_str());
 
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int *p;\n"
-                        "    a(*p);\n"
-                        "}").c_str());
+        checkUninitVar(funca +
+                       "void b() {\n"
+                       "    int *p;\n"
+                       "    a(*p);\n"
+                       "}");
         ASSERT_EQUALS("[test.cpp:3:8]: (error) Uninitialized variable: p [legacyUninitvar]\n", errout_str());
     }
 
@@ -2456,19 +2468,19 @@ private:
         const std::string funca("void a(int *p) { *p = 0; }");
 
         // ok - initialized pointer
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int buf[10];\n"
-                        "    a(buf);\n"
-                        "}").c_str());
+        checkUninitVar(funca +
+                       "void b() {\n"
+                       "    int buf[10];\n"
+                       "    a(buf);\n"
+                       "}");
         ASSERT_EQUALS("", errout_str());
 
         // not ok - uninitialized pointer
-        checkUninitVar((funca +
-                        "void b() {\n"
-                        "    int *p;\n"
-                        "    a(p);\n"
-                        "}").c_str());
+        checkUninitVar(funca +
+                       "void b() {\n"
+                       "    int *p;\n"
+                       "    a(p);\n"
+                       "}");
         ASSERT_EQUALS("[test.cpp:3:7]: (error) Uninitialized variable: p [legacyUninitvar]\n", errout_str());
     }
 
@@ -3591,6 +3603,17 @@ private:
     }
 
 #define valueFlowUninit(...) valueFlowUninit_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void valueFlowUninit_(const char* file, int line, const char (&code)[size], bool cpp = true)
+    {
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        // Check for redundant code..
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        (checkuninitvar.valueFlowUninit)();
+    }
+
     void valueFlowUninit2_value()
     {
         valueFlowUninit("void f() {\n"
@@ -3600,8 +3623,7 @@ private:
                         "        if (y != 0) return;\n"
                         "        i++;\n"
                         "    }\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n"
@@ -3611,8 +3633,7 @@ private:
                         "        if (y != 0) return;\n"
                         "        i++;\n"
                         "    }\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n"
@@ -3881,8 +3902,7 @@ private:
         valueFlowUninit("void f() {\n"
                         "    int x;\n"
                         "    char *p = (char*)&x + 1;\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         valueFlowUninit("void f() {\n"
@@ -4588,7 +4608,7 @@ private:
                            "    struct AB ab;\n"
                            "    uninitvar_funcArgInTest(&ab);\n"
                            "    x = ab;\n"
-                           "}\n", dinit(CheckUninitVarOptions, $.cpp = false, $.s = &s));
+                           "}\n", s, false);
             ASSERT_EQUALS("[test.c:5:9]: (error) Uninitialized struct member: ab.a [uninitStructMember]\n", errout_str());
 
             checkUninitVar("struct AB { int a; };\n"
@@ -4596,7 +4616,7 @@ private:
                            "    struct AB ab;\n"
                            "    uninitvar_funcArgOutTest(&ab);\n"
                            "    x = ab;\n"
-                           "}\n", dinit(CheckUninitVarOptions, $.cpp = false, $.s = &s));
+                           "}\n", s, false);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -5414,7 +5434,7 @@ private:
                        "        i = 0;\n"
                        "        return i;\n"
                        "    } while (0);\n"
-                       "}\n", dinit(CheckUninitVarOptions, $.s = &s));
+                       "}\n", s);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -5467,18 +5487,27 @@ private:
         TODO_ASSERT_EQUALS("", "[test.c:4:14]: (error) Uninitialized variable: d [legacyUninitvar]\n", errout_str());
     }
 
+#define ctu(...) ctu_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void valueFlowUninit_(const char* file, int line, const char (&code)[size], bool cpp = true)
-    {
-        SimpleTokenizer tokenizer(settings, *this, cpp);
+    void ctu_(const char* file, int line, const char (&code)[size]) {
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
-        (checkuninitvar.valueFlowUninit)();
+        CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
+
+        // Check code..
+        std::list<Check::FileInfo*> fileInfo;
+        Check& c = getCheck<CheckUninitVar>();
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings, ""));
+        c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
+        while (!fileInfo.empty()) {
+            delete fileInfo.back();
+            fileInfo.pop_back();
+        }
+        delete ctu;
     }
 
-#define ctu(code) ctu_(__FILE__, __LINE__, code)
     void valueFlowUninitTest() {
         // #9735 - FN
         valueFlowUninit("typedef struct\n"
@@ -7351,8 +7380,7 @@ private:
                         "void foo() {\n"
                         "    A a;\n"
                         "    x = a.m;\n"
-                        "}",
-                        true);
+                        "}");
         ASSERT_EQUALS("", errout_str());
 
         // Unknown type (C)
@@ -7949,26 +7977,6 @@ private:
                         "    p = &s;\n"
                         "}\n");
         ASSERT_EQUALS("", errout_str());
-    }
-
-    template<size_t size>
-    void ctu_(const char* file, int line, const char (&code)[size]) {
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-
-        CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
-
-        // Check code..
-        std::list<Check::FileInfo*> fileInfo;
-        Check& c = getCheck<CheckUninitVar>();
-        fileInfo.push_back(c.getFileInfo(tokenizer, settings, ""));
-        c.analyseWholeProgram(*ctu, fileInfo, settings, *this); // TODO: check result
-        while (!fileInfo.empty()) {
-            delete fileInfo.back();
-            fileInfo.pop_back();
-        }
-        delete ctu;
     }
 
     void ctuTest() {

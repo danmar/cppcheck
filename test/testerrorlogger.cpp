@@ -314,8 +314,7 @@ private:
         }
     }
 
-    #define testReportType(reportType, severity, errorId, expectedClassification, expectedGuideline) \
-        testReportType_(__FILE__, __LINE__, reportType, severity, errorId, expectedClassification, expectedGuideline)
+    #define testReportType(...) testReportType_(__FILE__, __LINE__, __VA_ARGS__)
     void testReportType_(const char *file, int line, ReportType reportType, Severity severity, const std::string &errorId,
                          const std::string &expectedClassification, const std::string &expectedGuideline) const
     {

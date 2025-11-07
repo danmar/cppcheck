@@ -130,16 +130,18 @@ private:
 
     struct CheckOptions
     {
-        const Settings* s = nullptr;
         bool cpp = true;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings& settings = options.s ? *options.s : settings0;
+        check_(file, line, code, settings0, options.cpp);
+    }
 
-        SimpleTokenizer2 tokenizer(settings, *this, code, options.cpp ? "test.cpp" : "test.c");
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& settings, bool cpp = true) {
+        SimpleTokenizer2 tokenizer(settings, *this, code, cpp ? "test.cpp" : "test.c");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
@@ -515,7 +517,16 @@ private:
                       errout_str());
     }
 
-#define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)
+#define checkPureFunction(...) checkPureFunction_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    void checkPureFunction_(const char* file, int line, const char (&code)[size]) {
+        // Tokenize..
+        SimpleTokenizer tokenizer(settings1, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        runChecks<CheckCondition>(tokenizer, this);
+    }
+
     void multicompare() {
         check("void foo(int x)\n"
               "{\n"
@@ -572,15 +583,6 @@ private:
               "    else if (i != 3) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
-    }
-
-    template<size_t size>
-    void checkPureFunction_(const char (&code)[size], const char* file, int line) {
-        // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code), file, line);
-
-        runChecks<CheckCondition>(tokenizer, this);
     }
 
     void overlappingElseIfCondition() {
@@ -1309,27 +1311,27 @@ private:
         const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
         check("void f(char x) {\n"
               "  if (x == '1' || x == '2') {}\n"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(char x) {\n"
               "  if (x == '1' && x == '2') {}\n"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         ASSERT_EQUALS("[test.cpp:2:16]: (warning) Logical conjunction always evaluates to false: x == '1' && x == '2'. [incorrectLogicOperator]\n", errout_str());
 
         check("int f(char c) {\n"
               "  return (c >= 'a' && c <= 'z');\n"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         ASSERT_EQUALS("", errout_str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}", dinit(CheckOptions, $.s = &s));
+              "}", s);
         ASSERT_EQUALS("[test.cpp:2:20]: (warning, inconclusive) Logical conjunction always evaluates to false: c <= 'a' && c >= 'z'. [incorrectLogicOperator]\n", errout_str());
 
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
-              "}");
+              "}"); // TODO: use s?
         ASSERT_EQUALS("[test.cpp:2:13] -> [test.cpp:2:25]: (style) Return value 'c>='z'' is always false [knownConditionTrueFalse]\n", errout_str());
     }
 
@@ -6142,65 +6144,65 @@ private:
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:12]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false. [compareValueOutOfTypeRangeError]\n", errout_str());
 
         check("void f(unsigned char* b, int i) {\n" // #6372
               "  if (b[i] == 256) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:15]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false. [compareValueOutOfTypeRangeError]\n", errout_str());
 
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         // #10372
         check("void f(signed char x) {\n"
               "  if (x == 0xff) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:12]: (style) Comparing expression of type 'signed char' against value 255. Condition is always false. [compareValueOutOfTypeRangeError]\n", errout_str());
 
         check("void f(short x) {\n"
               "  if (x == 0xffff) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:12]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always false. [compareValueOutOfTypeRangeError]\n", errout_str());
 
         check("void f(int x) {\n"
               "  if (x == 0xffffffff) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(long x) {\n"
               "  if (x == ~0L) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(long long x) {\n"
               "  if (x == ~0LL) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         check("int f(int x) {\n"
               "    const int i = 0xFFFFFFFF;\n"
               "    if (x == i) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "  char c;\n"
               "  if ((c = foo()) != -1) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout_str());
 
         check("void f(int x) {\n"
               "  if (x < 3000000000) {}\n"
-              "}", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:11]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true. [compareValueOutOfTypeRangeError]\n", errout_str());
 
         check("void f(const signed char i) {\n" // #8545
@@ -6210,7 +6212,7 @@ private:
               "    if (i <  +128) {}\n" // warn
               "    if (i <= +127) {}\n" // warn
               "    if (i <= +126) {}\n"
-              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}\n", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:15]: (style) Comparing expression of type 'const signed char' against value -129. Condition is always true. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:3:15]: (style) Comparing expression of type 'const signed char' against value -128. Condition is always true. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:5:15]: (style) Comparing expression of type 'const signed char' against value 128. Condition is always true. [compareValueOutOfTypeRangeError]\n"
@@ -6234,7 +6236,7 @@ private:
               "    if (255 >  u) {}\n"
               "    if (255 <= u) {}\n"
               "    if (255 >= u) {}\n" // warn
-              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}\n", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:3:14]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:4:14]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true. [compareValueOutOfTypeRangeError]\n"
                       "[test.cpp:6:14]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false. [compareValueOutOfTypeRangeError]\n"
@@ -6247,7 +6249,7 @@ private:
 
         check("void f(bool b) {\n" // #14037
               "    if (b != 2) {}\n"
-              "}\n", dinit(CheckOptions, $.s = &settingsUnix64));
+              "}\n", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2:14]: (style) Comparing expression of type 'bool' against value 2. Condition is always true. [compareValueOutOfTypeRangeError]\n",
                       errout_str());
     }

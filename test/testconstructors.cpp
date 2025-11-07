@@ -31,19 +31,23 @@ public:
 
 private:
     const Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    const Settings settings_i = settingsBuilder(settings).certainty(Certainty::inconclusive).build();
 
     struct CheckOptions
     {
         bool inconclusive = false;
-        const Settings* s = nullptr;
     };
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void check_(const char* file, int line, const char (&code)[size], const CheckOptions& options = make_default_obj()) {
-        const Settings settings1 = settingsBuilder(options.s ? *options.s : settings).certainty(Certainty::inconclusive, options.inconclusive).build();
+        const Settings settings1 = options.inconclusive ? settings_i : settings;
 
-        // Tokenize..
+        check_(file, line, code, settings1);
+    }
+
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], const Settings& settings1) {
         SimpleTokenizer tokenizer(settings1, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
@@ -1593,7 +1597,7 @@ private:
                   "    Fred();\n"
                   "};\n"
                   "Fred::Fred()\n"
-                  "{ }", dinit(CheckOptions, $.s = &s));
+                  "{ }", s);
             ASSERT_EQUALS("[test.cpp:7:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor. [uninitMemberVarPrivate]\n", errout_str());
         }
 
@@ -1606,7 +1610,7 @@ private:
                   "    Fred();\n"
                   "};\n"
                   "Fred::Fred()\n"
-                  "{ }", dinit(CheckOptions, $.s = &s));
+                  "{ }", s);
             ASSERT_EQUALS("", errout_str());
         }
     }
@@ -2064,7 +2068,7 @@ private:
               "        d = rhs.get();\n"
               "    }\n"
               "    double d;\n"
-              "};", dinit(CheckOptions, $.s = &s));
+              "};", s);
         ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n" // #8485
@@ -2098,7 +2102,7 @@ private:
         check("struct S {\n"
               "    S& operator=(const S& s) { return *this; }\n"
               "    std::mutex m;\n"
-              "};\n", dinit(CheckOptions, $.s = &s));
+              "};\n", s);
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -3046,7 +3050,7 @@ private:
         check("struct C {\n" // #13989
               "    C() = default;\n"
               "    std::list<int>::const_iterator it;\n"
-              "};\n", dinit(CheckOptions, $.s = &s));
+              "};\n", s);
         ASSERT_EQUALS("[test.cpp:2:5]: (warning) Member variable 'C::it' is not initialized in the constructor. [uninitMemberVar]\n", errout_str());
     }
 
@@ -3257,7 +3261,7 @@ private:
               "    std::array<std::string, 2> e;\n"
               "    std::array<U, 2> f;\n"
               "S() {}\n"
-              "};\n", dinit(CheckOptions, $.s = &s));
+              "};\n", s);
 
         ASSERT_EQUALS("[test.cpp:10:1]: (warning) Member variable 'S::a' is not initialized in the constructor. [uninitMemberVar]\n"
                       "[test.cpp:10:1]: (warning) Member variable 'S::b' is not initialized in the constructor. [uninitMemberVar]\n"
@@ -3689,7 +3693,7 @@ private:
             check("class Foo {\n"
                   "    int foo;\n"
                   "    Foo() { }\n"
-                  "};", dinit(CheckOptions, $.s = &s));
+                  "};", s);
             ASSERT_EQUALS("", errout_str());
         }
 
@@ -3698,7 +3702,7 @@ private:
             check("class Foo {\n"
                   "    int foo;\n"
                   "    Foo() { }\n"
-                  "};", dinit(CheckOptions, $.s = &s));
+                  "};", s);
             ASSERT_EQUALS("[test.cpp:3:5]: (warning) Member variable 'Foo::foo' is not initialized in the constructor. [uninitMemberVarPrivate]\n", errout_str());
         }
     }
@@ -3760,7 +3764,7 @@ private:
               "    Fred() { }\n"
               "private:\n"
               "    int x;\n"
-              "};", dinit(CheckOptions, $.s = &s));
+              "};", s);
         ASSERT_EQUALS("", errout_str());
     }
 

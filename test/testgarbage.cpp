@@ -277,18 +277,6 @@ private:
 
 #define checkCodeInternal(...) checkCodeInternal_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string checkCode(const char (&code)[size], bool cpp = true) {
-        // double the tests - run each example as C as well as C++
-
-        // run alternate check first. It should only ensure stability - so we catch exceptions here.
-        try {
-            (void)checkCodeInternal(code, !cpp);
-        } catch (const InternalError&) {}
-
-        return checkCodeInternal(code, cpp);
-    }
-
-    template<size_t size>
     std::string checkCodeInternal_(const char* file, int line, const char (&code)[size], bool cpp) {
         // tokenize..
         SimpleTokenizer tokenizer(settings, *this, cpp);
@@ -300,6 +288,18 @@ private:
         }
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
+    }
+
+    template<size_t size>
+    std::string checkCode(const char (&code)[size], bool cpp = true) {
+        // double the tests - run each example as C as well as C++
+
+        // run alternate check first. It should only ensure stability - so we catch exceptions here.
+        try {
+            (void)checkCodeInternal(code, !cpp);
+        } catch (const InternalError&) {}
+
+        return checkCodeInternal(code, cpp);
     }
 
 #define getSyntaxError(...) getSyntaxError_(__FILE__, __LINE__, __VA_ARGS__)
