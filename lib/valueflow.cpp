@@ -2869,7 +2869,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 args,
                 "Passed to constructor of '" + t->name() + "'.",
                 ValueFlow::Value::LifetimeKind::SubObject,
-                [&](LifetimeStore &ls) {
+                [&](LifetimeStore& ls) {
                 // Skip static variable
                 it = std::find_if(it, scope->varlist.cend(), [&](const Variable &var) {
                     return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str());
@@ -2883,8 +2883,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                     return; // TODO: check in isLifetimeBorrowed()?
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
-                }
-                else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
+                } else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
                 if (hasDesignatedInitializers)
