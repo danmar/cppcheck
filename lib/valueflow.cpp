@@ -2860,6 +2860,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
         std::vector<const Token*> args = getArguments(tok);
         if (scope->numConstructors == 0) {
             auto it = scope->varlist.cbegin();
+            const bool hasDesignatedInitializers = !args.empty() && isDesignatedInitializer(args[0]->astOperand1());
             LifetimeStore::forEach(
                 tokenlist,
                 errorLogger,
@@ -2869,12 +2870,14 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 ValueFlow::Value::LifetimeKind::SubObject,
                 [&](LifetimeStore& ls) {
                 // Skip static variable
-                it = std::find_if(it, scope->varlist.cend(), [](const Variable& var) {
-                    return !var.isStatic();
+                it = std::find_if(it, scope->varlist.cend(), [&](const Variable &var) {
+                    return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str());
                 });
                 if (it == scope->varlist.cend())
                     return;
-                const Variable& var = *it;
+                if (hasDesignatedInitializers)
+                    ls.argtok = ls.argtok->astOperand2();
+                const Variable &var = *it;
                 if (var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike && !var.valueType()->container->view)
                     return; // TODO: check in isLifetimeBorrowed()?
                 if (var.isReference() || var.isRValueReference()) {
@@ -2882,7 +2885,10 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 } else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
-                it++;
+                if (hasDesignatedInitializers)
+                    it = scope->varlist.cbegin();
+                else
+                    it++;
             });
         } else {
             const Function* constructor = findConstructor(scope, tok, args);
