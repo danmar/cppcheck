@@ -4811,7 +4811,7 @@ void Tokenizer::setVarIdPass1()
                 if (cpp || mSettings.standards.c >= Standards::C23) {
                     declTypeTok = Token::findmatch(tok, "decltype|typeof (", tok2);
                 } else {
-                    declTypeTok = Token::findsimplematch(tok, "__typeof (");
+                    declTypeTok = Token::findsimplematch(tok, "__typeof (", tok2);
                 }
 
                 if (declTypeTok) {
