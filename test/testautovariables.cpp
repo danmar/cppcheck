@@ -511,7 +511,7 @@ private:
               "void f(int** q) {\n"
               "    S s;\n"
               "    s.p = a;\n"
-              "    *q = &s.p[0];\n";
+              "    *q = &s.p[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }
