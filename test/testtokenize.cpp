@@ -7994,6 +7994,12 @@ private:
                                              "int main() { \n"
                                              "    takesFunc([func = [](S s) { return s.c; }] {});\n"
                                              "}\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #14256
+                                             "    int i = 0;\n"
+                                             "    auto x = [i] mutable {};\n"
+                                             "}\n"));
+
         ignore_errout();
     }
     void checkIfCppCast() {
