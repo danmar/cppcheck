@@ -1081,7 +1081,7 @@ def test_markup_j(tmpdir):
                 lines.remove('{}/4 files checked 0% done'.format(i))
             else:
                 lines.remove('{}/4 files checked {}% done'.format(i, i * 25))
-        except ValueError as e:
+        except ValueError:
             assert False, f'failed {i}'
 
     assert sorted(lines) == [
