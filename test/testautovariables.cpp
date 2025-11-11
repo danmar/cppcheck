@@ -3985,6 +3985,12 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S { int i; bool b; };\n" // #14260
+              "void f() {\n"
+              "    struct S s = { .i = 0, true };\n"
+              "}\n"); // don't crash
+        ASSERT_EQUALS("", errout_str());
     }
 
     void danglingLifetimeInitList() {

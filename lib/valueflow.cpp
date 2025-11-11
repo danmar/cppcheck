@@ -2860,7 +2860,6 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
         std::vector<const Token*> args = getArguments(tok);
         if (scope->numConstructors == 0) {
             auto it = scope->varlist.cbegin();
-            const bool hasDesignatedInitializers = !args.empty() && isDesignatedInitializer(args[0]->astOperand1());
             LifetimeStore::forEach(
                 tokenlist,
                 errorLogger,
@@ -2869,13 +2868,18 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 "Passed to constructor of '" + t->name() + "'.",
                 ValueFlow::Value::LifetimeKind::SubObject,
                 [&](LifetimeStore& ls) {
+                const bool isDesignatedInitializerArg = isDesignatedInitializer(ls.argtok->astOperand1());
                 // Skip static variable
                 it = std::find_if(it, scope->varlist.cend(), [&](const Variable &var) {
-                    return !var.isStatic() && (!hasDesignatedInitializers || var.name() == ls.argtok->astOperand1()->astOperand1()->str());
+                    if (var.isStatic())
+                        return false;
+                    if (!isDesignatedInitializerArg)
+                        return true;
+                    return var.name() == ls.argtok->astOperand1()->astOperand1()->str();
                 });
                 if (it == scope->varlist.cend())
                     return;
-                if (hasDesignatedInitializers)
+                if (isDesignatedInitializerArg)
                     ls.argtok = ls.argtok->astOperand2();
                 const Variable &var = *it;
                 if (var.valueType() && var.valueType()->container && var.valueType()->container->stdStringLike && !var.valueType()->container->view)
@@ -2885,7 +2889,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 } else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
-                if (hasDesignatedInitializers)
+                if (isDesignatedInitializerArg) // TODO: handle mixed initialization?
                     it = scope->varlist.cbegin();
                 else
                     it++;
