@@ -99,6 +99,8 @@ static bool isAutoVar(const Token *tok)
         } while (Token::Match(tok, "%name% .|::"));
         if (Token::Match(tok, "%name% ("))
             return false;
+        if (tok->variable() && tok->variable()->isPointer())
+            return false;
     }
     return true;
 }

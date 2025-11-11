@@ -68,6 +68,7 @@ private:
         TEST_CASE(testautovar14); // ticket #4776 - assignment of function parameter, goto
         TEST_CASE(testautovar15); // ticket #6538
         TEST_CASE(testautovar16); // ticket #8114
+        TEST_CASE(testautovar17);
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
         TEST_CASE(testautovar_array3);
@@ -501,6 +502,17 @@ private:
               "  int dummy;\n"
               "  *result = (&dummy < ptr);\n"
               "}");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void testautovar17() {
+        check("struct S { int* p; };\n" // #14257
+              "int a[10];\n"
+              "void f(int** q) {\n"
+              "    S s;\n"
+              "    s.p = a;\n"
+              "    *q = &s.p[0];\n"
+              "}\n");
         ASSERT_EQUALS("", errout_str());
     }
 
