@@ -407,7 +407,9 @@ unsigned int ProcessExecutor::check()
                             fileCount++;
                             processedsize += size;
                             if (!mSettings.quiet)
-                                Executor::reportStatus(fileCount, mFiles.size() + mFileSettings.size(), processedsize, totalfilesize);
+                                Executor::reportStatus(fileCount, mFiles.size() + mFileSettings.size(), //processedsize, totalfilesize);
+                                                       mFileSettings.empty() ? processedsize : fileCount,
+                                                       mFileSettings.empty() ? totalfilesize : mFileSettings.size());
 
                             close(*rp);
                             rp = rpipes.erase(rp);

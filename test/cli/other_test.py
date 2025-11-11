@@ -1076,22 +1076,20 @@ def test_markup_j(tmpdir):
     assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     for i in range(1, 5):
-        lines.remove('{}/4 files checked 0% done'.format(i))
+        try:
+            if '{}/4 files checked 0% done'.format(i) in lines:
+                lines.remove('{}/4 files checked 0% done'.format(i))
+            else:
+                lines.remove('{}/4 files checked {}% done'.format(i, i * 25))
+        except ValueError as e:
+            assert False, f'failed {i}'
 
-    # this test started to fail in the -j2 injection run when using ThreadExecutor although it always specifies -j2.
-    # the order of the files in the output changed so just check for the file extentions
-    assert len(lines) == 4
-    assert lines[0].endswith('.cpp ...')
-    assert lines[1].endswith('.cpp ...')
-    assert lines[2].endswith('.qml ...')
-    assert lines[3].endswith('.qml ...')
-
-    #assert lines == [
-    #    'Checking {} ...'.format(test_file_2),
-    #    'Checking {} ...'.format(test_file_4),
-    #    'Checking {} ...'.format(test_file_1),
-    #    'Checking {} ...'.format(test_file_3)
-    #]
+    assert sorted(lines) == [
+        'Checking {} ...'.format(test_file_1),
+        'Checking {} ...'.format(test_file_2),
+        'Checking {} ...'.format(test_file_3),
+        'Checking {} ...'.format(test_file_4)
+    ]
     assert stderr == ''
 
 

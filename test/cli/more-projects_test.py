@@ -1061,3 +1061,39 @@ def test_project_file_no_analyze_all_vs_configs(tmp_path):
     ret, stdout, stderr = cppcheck(['--project=' + str(project_path)])
     assert ret == 0, stdout
     assert stderr == ''
+
+
+@pytest.mark.parametrize("j,executor", [
+    (1, "thread"),
+    (2, "thread"),
+    (2, "process"),
+])
+def test_project_progress(tmp_path, j, executor):
+    if sys.platform == 'win32' and executor == "process":
+        pytest.skip("process executor not supported on Windows")
+
+    code = 'x = 1;'
+    with open(tmp_path / 'test1.c', 'wt') as f:
+        f.write(code)
+    with open(tmp_path / 'test2.c', 'wt') as f:
+        f.write(code)
+
+    compilation_db = [
+        {"directory": str(tmp_path),
+         "command": "gcc -c test1.c",
+         "file": "test1.c",
+         "output": "test1.o"},
+        {"directory": str(tmp_path),
+         "command": "gcc -c test2.c",
+         "file": "test2.c",
+         "output": "test2.o"},
+    ]
+
+    project_file = tmp_path / 'compile_commands.json'
+
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    _, stdout, _ = cppcheck([f'--project={project_file}', f'-j{j}', f'--executor={executor}'])
+    assert '1/2 files checked 50% done' in stdout
+    assert '2/2 files checked 100% done' in stdout
