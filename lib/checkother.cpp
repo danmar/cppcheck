@@ -681,7 +681,7 @@ void CheckOther::checkRedundantAssignment()
                 // Is there a redundant assignment?
                 const Token *start;
                 if (tok->isAssignmentOp())
-                    start = tok->next();
+                    start = tok->astOperand2();
                 else
                     start = tok->findExpressionStartEndTokens().second->next();
 
