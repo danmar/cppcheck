@@ -319,6 +319,15 @@ private:
         TEST_CASE(dumpTemplateArgFrom);
     }
 
+    class TokenizerTest : public Tokenizer
+    {
+        friend class TestSimplifyTemplate;
+    public:
+        TokenizerTest(TokenList tokenList, ErrorLogger &errorLogger)
+            : Tokenizer(std::move(tokenList), errorLogger)
+        {}
+    };
+
     struct CheckOptions
     {
         bool debugwarnings = false;
@@ -5461,7 +5470,7 @@ private:
         tokenlist.appendFileIfNew("test.cpp");
         if (!tokenlist.createTokensFromString(data))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), *this);
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5531,7 +5540,7 @@ private:
         tokenlist.appendFileIfNew("test.cpp");
         if (!tokenlist.createTokensFromString(data))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), *this);
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5602,7 +5611,7 @@ private:
         TokenList tokenlist{settings, Standards::Language::CPP};
         if (!TokenListHelper::createTokensFromString(tokenlist, data, "test.cpp"))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), *this);
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 
@@ -5633,7 +5642,7 @@ private:
 
         if (!TokenListHelper::createTokensFromString(tokenlist, data, "test.cpp"))
             return false;
-        Tokenizer tokenizer(std::move(tokenlist), *this);
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
         tokenizer.createLinks();
         tokenizer.splitTemplateRightAngleBrackets(false);
 

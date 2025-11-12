@@ -49,7 +49,6 @@ class CPPCHECKLIB Tokenizer {
 
     friend class SymbolDatabase;
 
-    friend class TestSimplifyTemplate;
     friend class TestSimplifyTypedef;
     friend class TestTokenizer;
 
@@ -115,6 +114,7 @@ private:
     void removeExtraTemplateKeywords();
 
 
+protected:
     /** Split up template right angle brackets.
      * foo < bar < >> => foo < bar < > >
      */
@@ -353,11 +353,13 @@ private:
      */
     NORETURN void cppcheckError(const Token *tok) const;
 
+protected:
     /**
      * Setup links for tokens so that one can call Token::link().
      */
     void createLinks();
 
+private:
     /**
      * Setup links between < and >.
      */
@@ -645,8 +647,10 @@ private:
     /** Symbol database that all checks etc can use */
     SymbolDatabase* mSymbolDatabase{};
 
+protected:
     TemplateSimplifier * const mTemplateSimplifier;
 
+private:
     std::set<nonneg int> mTemplateVarIdUsage;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
