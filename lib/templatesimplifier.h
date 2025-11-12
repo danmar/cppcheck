@@ -265,6 +265,7 @@ public:
     static Token *findTemplateDeclarationEnd(Token *tok);
     static const Token *findTemplateDeclarationEnd(const Token *tok);
 
+protected:
     /**
      * Match template declaration/instantiation
      * @param instance template instantiation
@@ -275,6 +276,7 @@ public:
      */
     static bool instantiateMatch(const Token *instance, std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
+public: // TODO: only needs to be public for tests
     /**
      * Match template declaration/instantiation
      * @param tok The ">" token e.g. before "class"
@@ -283,6 +285,7 @@ public:
      */
     int getTemplateNamePosition(const Token *tok);
 
+private:
     /**
      * Get class template name position
      * @param tok The ">" token e.g. before "class"
@@ -307,6 +310,7 @@ public:
      * */
     static bool getTemplateNamePositionTemplateVariable(const Token *tok, int &namepos);
 
+public:
     /**
      * Simplify templates
      * @param maxtime time when the simplification should be stopped
@@ -322,6 +326,7 @@ public:
      */
     static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
 
+private:
     /**
      * Simplify constant calculations such as "1+2" => "3".
      * This also performs simple cleanup of parentheses etc.
@@ -336,7 +341,6 @@ public:
      */
     void simplifyTemplateArgs(Token *start, const Token *end, std::vector<newInstantiation>* newInst = nullptr);
 
-private:
     /**
      * Get template declarations
      * @return true if code has templates.

@@ -5952,7 +5952,7 @@ private:
 
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        return (TemplateSimplifier::instantiateMatch)(tokenizer.tokens(), numberOfArguments, false, patternAfter);
+        return (TemplateSimplifierTest::instantiateMatch)(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }
 
     void instantiateMatchTest() {
