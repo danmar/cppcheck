@@ -275,7 +275,7 @@ bool TemplateSimplifier::TokenAndName::isAliasToken(const Token *tok) const
 
 TemplateSimplifier::TemplateSimplifier(Tokenizer &tokenizer)
     : mTokenizer(tokenizer), mTokenList(mTokenizer.list), mSettings(mTokenizer.getSettings()),
-    mErrorLogger(mTokenizer.mErrorLogger)
+    mErrorLogger(mTokenizer.getErrorLogger())
 {}
 
 void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()

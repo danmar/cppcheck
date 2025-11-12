@@ -48,7 +48,6 @@ enum class Severity : std::uint8_t;
 class CPPCHECKLIB Tokenizer {
 
     friend class SymbolDatabase;
-    friend class TemplateSimplifier;
 
     friend class TestSimplifyTemplate;
     friend class TestSimplifyTypedef;
@@ -244,7 +243,9 @@ private:
 
     /**
      */
+public:
     bool simplifyUsing();
+private:
     void simplifyUsingError(const Token* usingStart, const Token* usingEnd);
 
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
