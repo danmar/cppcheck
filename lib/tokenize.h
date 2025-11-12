@@ -49,8 +49,6 @@ class CPPCHECKLIB Tokenizer {
 
     friend class SymbolDatabase;
 
-    friend class TestTokenizer;
-
 public:
     Tokenizer(TokenList tokenList, ErrorLogger &errorLogger);
     ~Tokenizer();
@@ -191,6 +189,7 @@ private:
      */
     void simplifyVariableMultipleAssign();
 
+protected:
     /**
      * Simplify the 'C Alternative Tokens'
      * Examples:
@@ -200,6 +199,7 @@ private:
      */
     bool simplifyCAlternativeTokens();
 
+private:
     /** Add braces to an if-block, for-block, etc.
      * @return true if no syntax errors
      */
@@ -307,10 +307,12 @@ private:
 
     void fillTypeSizes();
 
+protected:
     void combineOperators();
 
     void combineStringAndCharLiterals();
 
+private:
     void concatenateNegativeNumberAndAnyPositive();
 
     void simplifyExternC();
@@ -327,6 +329,7 @@ private:
 
     void findComplicatedSyntaxErrorsInTemplates();
 
+protected:
     /**
      * Modify strings in the token list by replacing hex and oct
      * values. E.g. "\x61" -> "a" and "\000" -> "\0"
@@ -360,12 +363,12 @@ protected:
      */
     void createLinks();
 
-private:
     /**
      * Setup links between < and >.
      */
     void createLinks2();
 
+private:
     /**
      * Set isCast() for C++ casts
      */
@@ -439,9 +442,11 @@ private:
      */
     void simplifyCppcheckAttribute();
 
+protected:
     /** Simplify c++20 spaceship operator */
     void simplifySpaceshipOperator();
 
+private:
     /**
      * Remove keywords "volatile", "inline", "register", and "restrict"
      */
@@ -528,11 +533,13 @@ private:
      */
     void simplifyCoroutines();
 
+protected:
     /**
      * Prepare ternary operators with parentheses so that the AST can be created
      * */
     void prepareTernaryOpForAST();
 
+private:
     /**
      * report error message
      */
