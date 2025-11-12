@@ -382,6 +382,7 @@ public:
     /** Syntax error. Unmatched character. */
     NORETURN void unmatchedToken(const Token *tok) const;
 
+private:
     /** Syntax error. C++ code in C file. */
     NORETURN void syntaxErrorC(const Token *tok, const std::string &what) const;
 
@@ -389,8 +390,6 @@ public:
     NORETURN void unknownMacroError(const Token *tok1) const;
 
     void unhandledCharLiteral(const Token *tok, const std::string& msg) const;
-
-private:
 
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const;
@@ -574,8 +573,10 @@ public:
 
     void dump(std::ostream &out) const;
 
+private:
     Token *deleteInvalidTypedef(Token *typeDef);
 
+public:
     /**
      * Get variable count.
      * @return number of variables
