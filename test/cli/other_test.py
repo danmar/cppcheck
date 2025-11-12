@@ -1082,7 +1082,7 @@ def test_markup_j(tmpdir):
             else:
                 lines.remove('{}/4 files checked {}% done'.format(i, i * 25))
         except ValueError:
-            assert False, f'failed {i}'
+            assert False, f"Expected progress message for file {i}/4 not found in output. Checked for '{{}}/4 files checked 0% done' and '{{}}/4 files checked {{}}% done'. Output lines: {lines}"
 
     assert sorted(lines) == [
         'Checking {} ...'.format(test_file_1),
