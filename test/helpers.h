@@ -231,6 +231,7 @@ struct LibraryHelper
 };
 
 class SimpleTokenizer2 : public Tokenizer {
+    friend class TestSimplifyTypedef; // TODO: get rid of this
 public:
     template<size_t size>
     SimpleTokenizer2(const Settings &settings, ErrorLogger &errorlogger, const char (&code)[size], const std::string& file0)

@@ -49,7 +49,6 @@ class CPPCHECKLIB Tokenizer {
 
     friend class SymbolDatabase;
 
-    friend class TestSimplifyTypedef;
     friend class TestTokenizer;
 
 public:
@@ -230,7 +229,9 @@ private:
      * typedef A mytype;
      * A c;
      */
+protected:
     void simplifyTypedef();
+private:
     void simplifyTypedefCpp();
     /**
      * Move typedef token to the left og the expression
@@ -398,12 +399,14 @@ private:
      */
     void validateC() const;
 
+protected:
     /**
      * assert that tokens are ok - used during debugging for example
      * to catch problems in simplifyTokenList1/2.
      */
     void validate() const;
 
+private:
     /** Detect unknown macros and throw unknownMacro */
     void reportUnknownMacros() const;
 
