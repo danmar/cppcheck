@@ -1077,7 +1077,7 @@ def test_markup_j(tmpdir):
     file_num = 1
     lines = []
     for line in stdout.splitlines():
-        if re.match('{}/4' files checked [0-9]+% done'.format(file_num), line):
+        if re.match('{}/4 files checked [0-9]+% done'.format(file_num), line):
             file_num += 1
         else:
             lines.append(line)
