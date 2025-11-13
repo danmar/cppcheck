@@ -126,11 +126,11 @@ Typically a `compile_commands.json` contains absolute paths. However no matter i
  * a file with relative path `src/test2.c` can be checked.
  * a file with relative path `src/test3.cpp` is not checked.
 
-### Exclude files matching a given pattern
+### Ignore/skip files matching a given pattern
 
-With `-i <str>` you can configure filename/directory patterns that should be excluded from checking.
+With `-i <str>` you can configure filename/directory patterns that should be ignored/skipped.
 
-> *Note*: If you want to filter out warnings for a header file then `-i` will not work. The option `--suppress` should be used instead. Any header included in a source file which is not excluded would be processed regardless the `-i` option applied to that header.
+> *Note*: If you want to filter out warnings for a header file then `-i` will not work. The option `--suppress` should be used instead. Any header included in a source file which is not ignored would be processed regardless the `-i` option applied to that header.
 
 Translation units are skipped if their *source filename* matches the exclusion pattern. This filtering happens *before* preprocessing, and the exclusion patterns are not applied during preprocessing or analysis.
 
