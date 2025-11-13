@@ -31,7 +31,7 @@ def test_missing_include(tmpdir):  # #11283
     args = ['--enable=missingInclude', '--template=simple', test_file]
 
     _, _, stderr = cppcheck(args)
-    assert stderr == '{}:2:0: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
+    assert stderr == '{}:2:18: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
 
 
 def __test_missing_include_check_config(tmpdir, use_j):
@@ -3853,3 +3853,97 @@ error2:lib\\test.c
         f'{lib_file}:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
     ]
     assert ret == 0, stdout
+
+
+def test_simplecpp_warning(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define warning "warn msg"
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
+
+
+def test_simplecpp_unhandled_char(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+int 你=0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:2:5: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [unhandledChar]'.format(test_file)
+    ]
+
+
+def test_simplecpp_include_nested_too_deeply(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write('#include "test.h"')
+
+    test_h = tmp_path / 'test.h'
+    with open(test_h, "w") as f:
+        f.write('#include "test_0.h"')
+
+    for i in range(400):
+        test_h = tmp_path / f'test_{i}.h'
+        with open(test_h, "w") as f:
+            f.write('#include "test_{}.h"'.format(i+1))
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    test_h = tmp_path / 'test_398.h'
+    assert stderr.splitlines() == [
+        # TODO: should only report the error once
+        '{}:1:2: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h),
+        '{}:1:2: error: #include nested too deeply [preprocessorErrorDirective]'.format(test_h)
+    ]
+
+
+def test_simplecpp_syntax_error(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write('#include ""')
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        # TODO: should only report the error once
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [preprocessorErrorDirective]'.format(test_file)
+    ]
