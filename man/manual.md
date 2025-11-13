@@ -130,7 +130,7 @@ Typically a `compile_commands.json` contains absolute paths. However no matter i
 
 With `-i <str>` you can configure filename/directory patterns that should be excluded from checking.
 
-> *Note*: If you want to filter out warnings for a header file then `-i` will not work. The option `--suppress` should be used instead.
+> *Note*: If you want to filter out warnings for a header file then `-i` will not work. The option `--suppress` should be used instead. Any header included in a source file which is not excluded would be processed regardless the `-i` option applied to that header.
 
 Translation units are skipped if their *source filename* matches the exclusion pattern. This filtering happens *before* preprocessing, and the exclusion patterns are not applied during preprocessing or analysis.
 
