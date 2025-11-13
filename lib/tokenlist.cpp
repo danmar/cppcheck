@@ -331,7 +331,11 @@ bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size)
 bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
 {
     simplecpp::OutputList outputList;
+#if defined(__cpp_lib_string_view)
+    simplecpp::TokenList tokens(std::string_view{reinterpret_cast<const char*>(data), size}, mFiles, file0, &outputList);
+#else
     simplecpp::TokenList tokens(data, size, mFiles, file0, &outputList);
+#endif
 
     createTokens(std::move(tokens));
 
@@ -1868,7 +1872,12 @@ namespace {
 
         ~OnException() {
 #ifndef _MSC_VER
-            if (std::uncaught_exception())
+#if defined(__cpp_lib_uncaught_exceptions)
+            const bool b = std::uncaught_exceptions() > 0;
+#else
+            const bool b = std::uncaught_exception();
+#endif
+            if (b)
                 f();
 #endif
         }

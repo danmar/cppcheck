@@ -120,7 +120,11 @@ private:
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
 
+#if defined(__cpp_lib_string_view)
+        simplecpp::TokenList tokens(std::string_view{code, size}, files, Path::simplifyPath(filename), &outputList);
+#else
         simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
+#endif
         // TODO: we should be using the actual Preprocessor implementation
         Preprocessor preprocessor(tokens, settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
 
@@ -372,8 +376,7 @@ private:
             ASSERT(settings.library.load("", library, false).errorcode == Library::ErrorCode::OK);
         std::vector<std::string> files;
         simplecpp::OutputList outputList;
-        // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,files,"",&outputList);
+        simplecpp::TokenList tokens(code,files,"test.c",&outputList);
         Preprocessor preprocessor(tokens, settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
         ASSERT(preprocessor.loadFiles(files));
         ASSERT(!preprocessor.reportOutput(outputList, true));
@@ -388,8 +391,7 @@ private:
     template<size_t size>
     std::size_t getHash(const char (&code)[size]) {
         std::vector<std::string> files;
-        // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,files,"");
+        simplecpp::TokenList tokens(code,files,"test.c");
         Preprocessor preprocessor(tokens, settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
         ASSERT(preprocessor.loadFiles(files));
         preprocessor.removeComments();
