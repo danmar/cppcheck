@@ -1074,16 +1074,14 @@ def test_markup_j(tmpdir):
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
-    for i in range(1, 5):
-        try:
-            if '{}/4 files checked 0% done'.format(i) in lines:
-                lines.remove('{}/4 files checked 0% done'.format(i))
-            else:
-                lines.remove('{}/4 files checked {}% done'.format(i, i * 25))
-        except ValueError:
-            assert False, f"Expected progress message for file {i}/4 not found in output. Checked for '{{}}/4 files checked 0% done' and '{{}}/4 files checked {{}}% done'. Output lines: {lines}"
-
+    file_num = 1
+    lines = []
+    for line in stdout.splitlines():
+        if re.match('{}/4' files checked [0-9]+% done'.format(file_num), line):
+            file_num += 1
+        else:
+            lines.append(line)
+    assert file_num == 5
     assert sorted(lines) == [
         'Checking {} ...'.format(test_file_1),
         'Checking {} ...'.format(test_file_2),
