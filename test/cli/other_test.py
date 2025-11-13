@@ -6,6 +6,7 @@ import sys
 import pytest
 import glob
 import json
+import re
 import subprocess
 import shutil
 
