@@ -1016,13 +1016,13 @@ def test_file_order(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_d),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_b),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_a),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -1044,13 +1044,13 @@ def test_markup(tmpdir):
     args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4, '-j1']
     out_lines = [
         'Checking {} ...'.format(test_file_2),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_4),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_1),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_3),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
@@ -1207,11 +1207,11 @@ def test_file_duplicate_2(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_b),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -1239,28 +1239,28 @@ def test_file_duplicate_3(tmpdir):
     if sys.platform == 'win32':
         assert lines == [
             'Checking {} ...'.format('a.c'),
-            '1/6 files checked 0% done',
+            '1/6 files checked 16% done',
             'Checking {} ...'.format('a.c'),
-            '2/6 files checked 0% done',
+            '2/6 files checked 33% done',
             'Checking {} ...'.format('a.c'),
-            '3/6 files checked 0% done',
+            '3/6 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '4/6 files checked 0% done',
+            '4/6 files checked 66% done',
             'Checking {} ...'.format(test_file_a),
-            '5/6 files checked 0% done',
+            '5/6 files checked 83% done',
             'Checking {} ...'.format(test_file_a),
-            '6/6 files checked 0% done'
+            '6/6 files checked 100% done'
         ]
     else:
         assert lines == [
             'Checking {} ...'.format('a.c'),
-            '1/4 files checked 0% done',
+            '1/4 files checked 25% done',
             'Checking {} ...'.format('a.c'),
-            '2/4 files checked 0% done',
+            '2/4 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '3/4 files checked 0% done',
+            '3/4 files checked 75% done',
             'Checking {} ...'.format(test_file_a),
-            '4/4 files checked 0% done'
+            '4/4 files checked 100% done'
         ]
     assert stderr == ''
 
@@ -1292,17 +1292,17 @@ def test_file_duplicate_4(tmpdir):
     # TODO: only a single file should be checked
     assert lines == [
         'Checking {} ...'.format('a.c'),
-        '1/6 files checked 0% done',
+        '1/6 files checked 16% done',
         'Checking {} ...'.format('a.c'),
-        '2/6 files checked 0% done',
+        '2/6 files checked 33% done',
         'Checking {} ...'.format('a.c'),
-        '3/6 files checked 0% done',
+        '3/6 files checked 50% done',
         'Checking {} ...'.format(test_file_a),
-        '4/6 files checked 0% done',
+        '4/6 files checked 66% done',
         'Checking {} ...'.format(test_file_a),
-        '5/6 files checked 0% done',
+        '5/6 files checked 83% done',
         'Checking {} ...'.format(test_file_a),
-        '6/6 files checked 0% done'
+        '6/6 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -1657,7 +1657,7 @@ def test_filelist(tmpdir):
     ]
     assert len(expected), len(lines)
     for i in range(1, len(expected)+1):
-        lines.remove('{}/{} files checked 0% done'.format(i, len(expected)))
+        lines.remove('{}/{} files checked {}% done'.format(i, len(expected), int(100 * i // len(expected))))
     assert lines == expected
 
 
