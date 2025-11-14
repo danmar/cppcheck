@@ -153,7 +153,7 @@ public:
         mProcessedSize += fileSize;
         mProcessedFiles++;
         if (!mSettings.quiet)
-            logForwarder.reportStatus(mProcessedFiles, mTotalFiles, mTotalFileSize>0 ? mProcessedSize : mProcessedFiles, mTotalFileSize>0 ? mTotalFileSize: mTotalFiles);
+            logForwarder.reportStatus(mProcessedFiles, mTotalFiles, mProcessedSize, mTotalFileSize);
     }
 
 private:
