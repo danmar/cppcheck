@@ -574,13 +574,13 @@ def test_project_file_order(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_d),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_b),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_a),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -648,11 +648,11 @@ def test_project_file_duplicate_2(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_b),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -696,18 +696,18 @@ def test_project_file_duplicate_3(tmpdir):
     if sys.platform == 'win32':
         assert lines == [
             'Checking {} ...'.format(test_file_a),
-            '1/3 files checked 0% done',
+            '1/3 files checked 33% done',
             'Checking {} ...'.format(test_file_a),
-            '2/3 files checked 0% done',
+            '2/3 files checked 66% done',
             'Checking {} ...'.format(test_file_a),
-            '3/3 files checked 0% done'
+            '3/3 files checked 100% done'
         ]
     else:
         assert lines == [
             'Checking {} ...'.format(test_file_a),
-            '1/2 files checked 0% done',
+            '1/2 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '2/2 files checked 0% done'
+            '2/2 files checked 100% done'
         ]
     assert stderr == ''
 
@@ -764,11 +764,11 @@ def test_project_file_duplicate_4(tmpdir):
     # TODO: only a single file should be checked
     assert lines == [
         'Checking {} ...'.format(test_file_a),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_a),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
