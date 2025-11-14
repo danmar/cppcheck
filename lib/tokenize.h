@@ -48,11 +48,6 @@ enum class Severity : std::uint8_t;
 class CPPCHECKLIB Tokenizer {
 
     friend class SymbolDatabase;
-    friend class TemplateSimplifier;
-
-    friend class TestSimplifyTemplate;
-    friend class TestSimplifyTypedef;
-    friend class TestTokenizer;
 
 public:
     Tokenizer(TokenList tokenList, ErrorLogger &errorLogger);
@@ -116,6 +111,7 @@ private:
     void removeExtraTemplateKeywords();
 
 
+protected:
     /** Split up template right angle brackets.
      * foo < bar < >> => foo < bar < > >
      */
@@ -193,6 +189,7 @@ private:
      */
     void simplifyVariableMultipleAssign();
 
+protected:
     /**
      * Simplify the 'C Alternative Tokens'
      * Examples:
@@ -202,6 +199,7 @@ private:
      */
     bool simplifyCAlternativeTokens();
 
+private:
     /** Add braces to an if-block, for-block, etc.
      * @return true if no syntax errors
      */
@@ -231,7 +229,9 @@ private:
      * typedef A mytype;
      * A c;
      */
+protected:
     void simplifyTypedef();
+private:
     void simplifyTypedefCpp();
     /**
      * Move typedef token to the left og the expression
@@ -244,7 +244,9 @@ private:
 
     /**
      */
+public:
     bool simplifyUsing();
+private:
     void simplifyUsingError(const Token* usingStart, const Token* usingEnd);
 
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
@@ -305,10 +307,12 @@ private:
 
     void fillTypeSizes();
 
+protected:
     void combineOperators();
 
     void combineStringAndCharLiterals();
 
+private:
     void concatenateNegativeNumberAndAnyPositive();
 
     void simplifyExternC();
@@ -325,6 +329,7 @@ private:
 
     void findComplicatedSyntaxErrorsInTemplates();
 
+protected:
     /**
      * Modify strings in the token list by replacing hex and oct
      * values. E.g. "\x61" -> "a" and "\000" -> "\0"
@@ -352,6 +357,7 @@ private:
      */
     NORETURN void cppcheckError(const Token *tok) const;
 
+protected:
     /**
      * Setup links for tokens so that one can call Token::link().
      */
@@ -362,6 +368,7 @@ private:
      */
     void createLinks2();
 
+private:
     /**
      * Set isCast() for C++ casts
      */
@@ -375,6 +382,7 @@ public:
     /** Syntax error. Unmatched character. */
     NORETURN void unmatchedToken(const Token *tok) const;
 
+private:
     /** Syntax error. C++ code in C file. */
     NORETURN void syntaxErrorC(const Token *tok, const std::string &what) const;
 
@@ -382,8 +390,6 @@ public:
     NORETURN void unknownMacroError(const Token *tok1) const;
 
     void unhandledCharLiteral(const Token *tok, const std::string& msg) const;
-
-private:
 
     /** Report that there is an unhandled "class x y {" code */
     void unhandled_macro_class_x_y(const Token *tok, const std::string& type, const std::string& x, const std::string& y, const std::string& bracket) const;
@@ -395,12 +401,14 @@ private:
      */
     void validateC() const;
 
+protected:
     /**
      * assert that tokens are ok - used during debugging for example
      * to catch problems in simplifyTokenList1/2.
      */
     void validate() const;
 
+private:
     /** Detect unknown macros and throw unknownMacro */
     void reportUnknownMacros() const;
 
@@ -433,9 +441,11 @@ private:
      */
     void simplifyCppcheckAttribute();
 
+protected:
     /** Simplify c++20 spaceship operator */
     void simplifySpaceshipOperator();
 
+private:
     /**
      * Remove keywords "volatile", "inline", "register", and "restrict"
      */
@@ -522,11 +532,13 @@ private:
      */
     void simplifyCoroutines();
 
+protected:
     /**
      * Prepare ternary operators with parentheses so that the AST can be created
      * */
     void prepareTernaryOpForAST();
 
+private:
     /**
      * report error message
      */
@@ -561,8 +573,10 @@ public:
 
     void dump(std::ostream &out) const;
 
+private:
     Token *deleteInvalidTypedef(Token *typeDef);
 
+public:
     /**
      * Get variable count.
      * @return number of variables
@@ -644,8 +658,10 @@ private:
     /** Symbol database that all checks etc can use */
     SymbolDatabase* mSymbolDatabase{};
 
+protected:
     TemplateSimplifier * const mTemplateSimplifier;
 
+private:
     std::set<nonneg int> mTemplateVarIdUsage;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to

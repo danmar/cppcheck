@@ -508,6 +508,15 @@ private:
         TEST_CASE(simplifyRedundantParentheses);
     }
 
+    class TokenizerTest : public Tokenizer
+    {
+        friend class TestTokenizer;
+    public:
+        TokenizerTest(TokenList tokenList, ErrorLogger &errorLogger)
+            : Tokenizer(std::move(tokenList), errorLogger)
+        {}
+    };
+
     struct TokenizeOptions
     {
         bool expand = true;
@@ -3782,7 +3791,7 @@ private:
 
     void simplifyString() {
         TokenList tokenlist{settings0, Standards::Language::CPP};
-        Tokenizer tokenizer(std::move(tokenlist), *this);
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
         ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
         ASSERT_EQUALS("\"\n\"", tokenizer.simplifyString("\"\\xa\""));
         ASSERT_EQUALS("\"3\"", tokenizer.simplifyString("\"\\x33\""));
@@ -6349,7 +6358,7 @@ private:
         if (!tokenlist.createTokensFromString(data))
             return "ERROR";
 
-        Tokenizer tokenizer(std::move(tokenlist), *this);
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
         tokenizer.combineStringAndCharLiterals();
         tokenizer.combineOperators();
         tokenizer.simplifySpaceshipOperator();
