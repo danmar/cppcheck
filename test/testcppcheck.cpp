@@ -89,6 +89,13 @@ private:
         ErrorLogger2 errorLogger;
         CppCheck::getErrorMessages(errorLogger);
         ASSERT(!errorLogger.ids.empty());
+        ASSERT(!errorLogger.errmsgs.empty());
+
+        const auto it = std::next(errorLogger.errmsgs.cbegin());
+        const std::string shortMsg = it->toString(false, templateFormat, "");
+        const std::string debugMsg = it->toString(true, templateFormat, "");
+        ASSERT_EQUALS(shortMsg, "nofile:0:0: information: Too many #ifdef configurations - cppcheck only checks 12 configurations. Use --force to check all configurations. For more details, use --enable=information. [toomanyconfigs]");
+        ASSERT_EQUALS(debugMsg, "nofile:0:0: information: The checking of the file will be interrupted because there are too many #ifdef configurations. Checking of all #ifdef configurations can be forced by --force command line option or from GUI preferences. However that may increase the checking time. For more details, use --enable=information. [toomanyconfigs]");
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
