@@ -126,13 +126,13 @@ Typically a `compile_commands.json` contains absolute paths. However no matter i
  * a file with relative path `src/test2.c` can be checked.
  * a file with relative path `src/test3.cpp` is not checked.
 
-### Excluding a file or folder from checking
+### Ignore files matching a given pattern
 
-The option `-i` specifies a pattern to files/folders to exclude. With this command no files in `src/c` are checked:
+With `-i <str>` you can configure filename/directory patterns that should be ignored.
 
-    cppcheck -isrc/c src
+A file that is ignored will not be checked directly (the complete translation unit is skipped). Any header #include'd from a source file which is not ignored is checked indirectly, regardless if the header is ignored.
 
-The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included.
+> *Note*: If you want to filter out warnings for a header file then `-i` will not work. Use suppressions instead.
 
 You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.  
 `**`: matches zero or more characters, including path separators  
@@ -144,6 +144,7 @@ A use case for `-i` is to check a project, but exclude certain files/folders:
     cppcheck --project=compile_commands.json -itest
 
 Typically a `compile_commands.json` contains absolute paths. However no matter if `compile_commands.json` contains absolute paths or relative paths, the option `-itest` would mean that:
+
  * a file with relative path `test1.cpp` can be checked.
  * a file with relative path `test/somefile.cpp` is not checked
 

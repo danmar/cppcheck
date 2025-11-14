@@ -104,14 +104,17 @@ need to use both approaches. Later chapters will describe this in more detail.
 
 With `--file-filter=<str>` you can configure file filter(s) and then only those files matching the filter will be checked.
 
-For example, this command below means that `src/test1.cpp` and `src/test/file1.cpp` could be checked, but `src/file2.cpp` will not be checked:
-
-    cppcheck src/ --file-filter=src/test*
-
 You can use `**`, `*` and `?` in the file filter pattern.  
 `**`: matches zero or more characters, including path separators  
 `*`: matches zero or more characters, excluding path separators  
 `?`: matches any single character except path separators
+
+For example, this command below means that `src/test1.cpp` could be checked, but `src/file2.cpp` and `src/test/file1.cpp` will not be checked:
+
+    cppcheck src/ --file-filter=src/test*
+
+Cppcheck first collects all files in the specified directory, then applies the filter. Therefore, the filter pattern
+must include the directory path you specified.
 
 A common use case for `--file-filter` is to check a project, but only check certain files:
 
@@ -122,13 +125,13 @@ Typically a `compile_commands.json` contains absolute paths. However no matter i
  * a file with relative path `src/test2.c` can be checked.
  * a file with relative path `src/test3.cpp` is not checked.
 
-### Excluding a file or folder from checking
+### Ignore files matching a given pattern
 
-The option `-i` specifies a pattern to files/folders to exclude. With this command no files in `src/c` are checked:
+With `-i <str>` you can configure filename/directory patterns that should be ignored.
 
-    cppcheck -isrc/c src
+A file that is ignored will not be checked directly (the complete translation unit is skipped). Any header #include'd from a source file which is not ignored is checked indirectly, regardless if the header is ignored.
 
-The `-i` option is not used during preprocessing, it can't be used to exclude headers that are included.
+> *Note*: If you want to filter out warnings for a header file then `-i` will not work. Use suppressions instead.
 
 You can use `**`, `*` and `?` in the pattern to specify excluded folders/files.  
 `**`: matches zero or more characters, including path separators  
@@ -149,8 +152,8 @@ By default Cppcheck uses an internal C/C++ parser. However there is an experimen
 
 Install `clang`. Then use Cppcheck option `--clang`.
 
-Technically, Cppcheck will execute `clang` with its `-ast-dump` option. The Clang output is then imported and converted into 
-the normal Cppcheck format. And then normal Cppcheck analysis is performed on that.
+Cppcheck executes clang with the -ast-dump option, imports the output, converts it to Cppcheck's internal format, and then
+performs standard analysis.
 
 You can also pass a custom Clang executable to the option by using for example `--clang=clang-10`. You can also pass it 
 with a path. On Windows it will append the `.exe` extension unless you use a path.
@@ -190,9 +193,8 @@ be improved.
 
 Cppcheck instantiates the templates in your code.
 
-If your templates are recursive this can lead to slow analysis that uses a lot
-of memory. Cppcheck will write information messages when there are potential
-problems.
+If your templates are recursive, this can lead to slow analysis and high memory usage. Cppcheck will write information
+messages when there are potential problems.
 
 Example code:
 
@@ -249,7 +251,7 @@ Using a Cppcheck build folder is not mandatory but it is recommended.
 
 Cppcheck save analyzer information in that folder.
 
-The advantages are;
+The advantages are:
 
 - It speeds up the analysis as it makes incremental analysis possible. Only changed files are analyzed when you recheck.
 - Whole program analysis also when multiple threads are used.
@@ -285,7 +287,7 @@ To ignore certain folders in the project you can use `-i`. This will skip the an
 
 ## CMake
 
-Generate a compile database:
+Generate a compile database (a JSON file containing compilation commands for each source file):
 
     cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
 
@@ -368,9 +370,12 @@ Here is a file that has 3 bugs (when x,y,z are assigned).
     #error C must be defined
     #endif
 
+The flag `-D` tells Cppcheck that a name is defined. Cppcheck will only analyze configurations that
+contain this define.
 
-The flag `-D` tells Cppcheck that a name is defined. There will be no Cppcheck analysis without this define.
-The flag `-U` tells Cppcheck that a name is not defined. There will be no Cppcheck analysis with this define.
+The flag `-U` tells Cppcheck that a name is not defined. Cppcheck will only analyze configurations
+that does not contain this define.
+
 The flag `--force` and `--max-configs` is used to control how many combinations are checked. When `-D` is used,
 Cppcheck will only check 1 configuration unless these are used.
 
@@ -476,7 +481,8 @@ build dir. For instance, the unusedFunction warnings require whole program analy
 
 If you want to filter out certain errors from being generated, then it is possible to suppress these.
 
-If you encounter a false positive, then please report it to the Cppcheck team so that it can be fixed.
+If you encounter a false positive, please report it to the Cppcheck team so that the issue can be
+fixed.
 
 ## Plain text suppressions
 
@@ -1034,7 +1040,7 @@ Example configuration of naming conventions:
 
 ### y2038.py
 
-[y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) checks Linux systems for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
+[y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) checks source code for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety.
 
 ## Running Addons
 
@@ -1073,6 +1079,7 @@ Cppcheck already contains configurations for several libraries. They can be load
 ## Using a .cfg file
 
 To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The table below shows the currently existing libraries:
+
 | .cfg file         | Library       | Comment       |
 | ----------------- | ------------- | ------------- |
 | avr.cfg           |               |               |
@@ -1082,7 +1089,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | cairo.cfg         | [cairo](https://www.cairographics.org/) | |
 | cppcheck-lib.cfg  | [Cppcheck](http://cppcheck.net/) | Used in selfcheck of |
 |                   |               |the Cppcheck code base |
-| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) |
+| cppunit.cfg       | [CppUnit](https://sourceforge.net/projects/cppunit/) | |
 | dpdk.cfg          |               |               |
 | embedded_sql.cfg  |               |               |
 | emscripten.cfg | | |
@@ -1115,7 +1122,7 @@ To use a .cfg file shipped with cppcheck, pass the `--library=<lib>` option. The
 | sdl.cfg | | |
 | sfml.cfg | | |
 | sqlite3.cfg | [SQLite](https://www.sqlite.org/) | |
-| std.cfg | C/C++ standard library | Loaded by default
+| std.cfg | C/C++ standard library | Loaded by default |
 | tinyxml2.cfg | [TinyXML-2](https://github.com/leethomason/tinyxml2) | |
 | vcl.cfg | | |
 | windows.cfg | [Win32 API](https://learn.microsoft.com/en-us/windows/win32/) | |
