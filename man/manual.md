@@ -144,6 +144,7 @@ A use case for `-i` is to check a project, but exclude certain files/folders:
     cppcheck --project=compile_commands.json -itest
 
 Typically a `compile_commands.json` contains absolute paths. However no matter if `compile_commands.json` contains absolute paths or relative paths, the option `-itest` would mean that:
+
  * a file with relative path `test1.cpp` can be checked.
  * a file with relative path `test/somefile.cpp` is not checked
 
