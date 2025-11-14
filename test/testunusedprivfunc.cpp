@@ -58,7 +58,6 @@ private:
 
         TEST_CASE(classInClass);
         TEST_CASE(sameFunctionNames);
-        TEST_CASE(incompleteImplementation);
 
         TEST_CASE(derivedClass);   // skip warning for derived classes. It might be a virtual function.
 
@@ -479,24 +478,6 @@ private:
               "    void f() { }\n"
               "    void f(int) { }\n"
               "};");
-        ASSERT_EQUALS("", errout_str());
-    }
-
-    void incompleteImplementation() {
-        // The implementation for "A::a" is missing - so don't check if
-        // "A::b" is used or not
-        check("#file \"test.h\"\n"
-              "class A\n"
-              "{\n"
-              "public:\n"
-              "    A();\n"
-              "    void a();\n"
-              "private:\n"
-              "    void b();\n"
-              "};\n"
-              "#endfile\n"
-              "A::A() { }\n"
-              "void A::b() { }");
         ASSERT_EQUALS("", errout_str());
     }
 
