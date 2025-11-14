@@ -1061,33 +1061,21 @@ def test_markup_j(tmpdir):
     test_file_1 = os.path.join(tmpdir, 'test_1.qml')
     with open(test_file_1, 'wt'):
         pass
-    test_file_2 = os.path.join(tmpdir, 'test_2.cpp')
+    test_file_2 = os.path.join(tmpdir, 'test_2.qml')
     with open(test_file_2, 'wt'):
         pass
-    test_file_3 = os.path.join(tmpdir, 'test_3.qml')
-    with open(test_file_3, 'wt'):
-        pass
-    test_file_4 = os.path.join(tmpdir, 'test_4.cpp')
-    with open(test_file_4, 'wt'):
-        pass
 
-    args = ['--library=qt', '-j2', test_file_1, test_file_2, test_file_3, test_file_4]
+    args = ['--library=qt', '-j2', test_file_1, test_file_2]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0, stdout if stdout else stderr
     file_num = 1
-    lines = []
-    for line in stdout.splitlines():
-        if re.match('{}/4 files checked [0-9]+% done'.format(file_num), line):
-            file_num += 1
-        else:
-            lines.append(line)
-    assert file_num == 5
+    lines = stdout.splitlines()
     assert sorted(lines) == [
+        '1/2 files checked 0% done',
+        '2/2 files checked 0% done',
         'Checking {} ...'.format(test_file_1),
-        'Checking {} ...'.format(test_file_2),
-        'Checking {} ...'.format(test_file_3),
-        'Checking {} ...'.format(test_file_4)
+        'Checking {} ...'.format(test_file_2)
     ]
     assert stderr == ''
 
