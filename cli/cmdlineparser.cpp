@@ -1838,7 +1838,7 @@ void CmdLineParser::printHelp(bool premium) const
         "    --include=<file>\n"
         "                         Force inclusion of a file before the checked file.\n"
         "    -i <str>             Skip translation units whose *source filename* matches\n"
-        "                         '<str>'. '<str>' can be a filename or directory.\n"
+        "                         <str>. <str> can be a filename or directory.\n"
         "                         Note: If you want to prevent warnings in some headers,\n"
         "                         use suppressions instead.\n"
         "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
