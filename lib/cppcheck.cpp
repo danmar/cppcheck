@@ -1142,11 +1142,23 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             try {
                 TokenList tokenlist{mSettings, file.lang()};
 
-                // Create tokens, skip rest of iteration if failed
-                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
-                    simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, true);
-                    tokenlist.createTokens(std::move(tokensP));
-                });
+                try {
+                    // Create tokens, skip rest of iteration if failed
+                    Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
+                        simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, true);
+                        tokenlist.createTokens(std::move(tokensP));
+                    });
+                } catch (const simplecpp::Output &o) {
+                    // #error etc during preprocessing
+                    configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
+                    --checkCount; // don't count invalid configurations
+
+                    if (!hasValidConfig && currCfg == *configurations.rbegin()) {
+                        // If there is no valid configuration then report error..
+                        preprocessor.error(o.location.file(), o.location.line, o.location.col, o.msg, o.type);
+                    }
+                    continue;
+                }
                 hasValidConfig = true;
 
                 Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
@@ -1215,17 +1227,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                     mErrorLogger.reportErr(errmsg);
                 }
-            } catch (const simplecpp::Output &o) {
-                // #error etc during preprocessing
-                configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
-                --checkCount; // don't count invalid configurations
-
-                if (!hasValidConfig && currCfg == *configurations.rbegin()) {
-                    // If there is no valid configuration then report error..
-                    preprocessor.error(o.location.file(), o.location.line, o.location.col, o.msg, o.type);
-                }
-                continue;
-
             } catch (const TerminateException &) {
                 // Analysis is terminated
                 if (analyzerInformation)
