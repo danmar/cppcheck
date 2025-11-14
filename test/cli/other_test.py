@@ -1077,10 +1077,10 @@ def test_markup_j(tmpdir):
     lines = stdout.splitlines()
 
     assert sorted(lines) == [
-        '1/4 files checked 0% done',
-        '2/4 files checked 0% done',
-        '3/4 files checked 0% done',
-        '4/4 files checked 0% done',
+        '1/4 files checked 25% done',
+        '2/4 files checked 50% done',
+        '3/4 files checked 75% done',
+        '4/4 files checked 100% done',
         'Checking {} ...'.format(test_file_1),
         'Checking {} ...'.format(test_file_2),
         'Checking {} ...'.format(test_file_3),
