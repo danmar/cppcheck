@@ -1293,7 +1293,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
 
             std::string regex_err;
-            auto regex = Regex::create(rule.pattern, regex_err);
+            auto regex = Regex::create(rule.pattern, Regex::Engine::Pcre, regex_err);
             if (!regex) {
                 mLogger.printError("failed to compile rule pattern '" + rule.pattern + "' (" + regex_err + ").");
                 return Result::Fail;
@@ -1350,6 +1350,19 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                                 }
                             }
                         }
+                        else if (std::strcmp(subname, "engine") == 0) {
+                            const char * const engine = empty_if_null(subtext);
+                            if (std::strcmp(engine, "pcre") == 0) {
+                                rule.engine = Regex::Engine::Pcre;
+                            }
+                            else if (std::strcmp(engine, "std") == 0) {
+                                rule.engine = Regex::Engine::Std;
+                            }
+                            else {
+                                mLogger.printError(std::string("unknown regex engine '") + engine + "'.");
+                                return Result::Fail;
+                            }
+                        }
                         else {
                             mLogger.printError("unable to load rule-file '" + ruleFile + "' - unknown element '" + subname + "' encountered in 'rule'.");
                             return Result::Fail;
@@ -1377,7 +1390,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     }
 
                     std::string regex_err;
-                    auto regex = Regex::create(rule.pattern, regex_err);
+                    auto regex = Regex::create(rule.pattern, rule.engine, regex_err);
                     if (!regex) {
                         mLogger.printError("unable to load rule-file '" + ruleFile + "' - pattern '" + rule.pattern + "' failed to compile (" + regex_err + ").");
                         return Result::Fail;
