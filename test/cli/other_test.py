@@ -1057,7 +1057,7 @@ def test_markup(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-def test_markup_j(tmpdir):
+def test_progress_markup_j(tmpdir):
     test_file_1 = os.path.join(tmpdir, 'test_1.qml')
     with open(test_file_1, 'wt'):
         pass
