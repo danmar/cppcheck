@@ -65,7 +65,7 @@ void Executor::reportStatus(std::size_t fileindex, std::size_t filecount, std::s
 {
     if (filecount > 1) {
         std::ostringstream oss;
-        const unsigned long percentDone = (sizetotal > 0) ? (100 * sizedone) / sizetotal : 0;
+        const unsigned long percentDone = (sizetotal > 0) ? (100 * sizedone) / sizetotal : (100 * fileindex / filecount);
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";

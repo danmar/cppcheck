@@ -574,13 +574,13 @@ def test_project_file_order(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_d),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_b),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_a),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -648,11 +648,11 @@ def test_project_file_duplicate_2(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_b),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -696,18 +696,18 @@ def test_project_file_duplicate_3(tmpdir):
     if sys.platform == 'win32':
         assert lines == [
             'Checking {} ...'.format(test_file_a),
-            '1/3 files checked 0% done',
+            '1/3 files checked 33% done',
             'Checking {} ...'.format(test_file_a),
-            '2/3 files checked 0% done',
+            '2/3 files checked 66% done',
             'Checking {} ...'.format(test_file_a),
-            '3/3 files checked 0% done'
+            '3/3 files checked 100% done'
         ]
     else:
         assert lines == [
             'Checking {} ...'.format(test_file_a),
-            '1/2 files checked 0% done',
+            '1/2 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '2/2 files checked 0% done'
+            '2/2 files checked 100% done'
         ]
     assert stderr == ''
 
@@ -764,11 +764,11 @@ def test_project_file_duplicate_4(tmpdir):
     # TODO: only a single file should be checked
     assert lines == [
         'Checking {} ...'.format(test_file_a),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_a),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -1061,3 +1061,39 @@ def test_project_file_no_analyze_all_vs_configs(tmp_path):
     ret, stdout, stderr = cppcheck(['--project=' + str(project_path)])
     assert ret == 0, stdout
     assert stderr == ''
+
+
+@pytest.mark.parametrize("j,executor", [
+    (1, "thread"),
+    (2, "thread"),
+    (2, "process"),
+])
+def test_project_progress(tmp_path, j, executor):
+    if sys.platform == 'win32' and executor == "process":
+        pytest.skip("process executor not supported on Windows")
+
+    code = 'x = 1;'
+    with open(tmp_path / 'test1.c', 'wt') as f:
+        f.write(code)
+    with open(tmp_path / 'test2.c', 'wt') as f:
+        f.write(code)
+
+    compilation_db = [
+        {"directory": str(tmp_path),
+         "command": "gcc -c test1.c",
+         "file": "test1.c",
+         "output": "test1.o"},
+        {"directory": str(tmp_path),
+         "command": "gcc -c test2.c",
+         "file": "test2.c",
+         "output": "test2.o"},
+    ]
+
+    project_file = tmp_path / 'compile_commands.json'
+
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    _, stdout, _ = cppcheck([f'--project={project_file}', f'-j{j}', f'--executor={executor}'])
+    assert '1/2 files checked 50% done' in stdout
+    assert '2/2 files checked 100% done' in stdout
