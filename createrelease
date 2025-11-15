@@ -27,7 +27,7 @@
 #
 # self check, fix critical issues:
 # make clean && make CXXOPTS=-O2 MATCHCOMPILER=yes -j4
-# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --suppress=normalCheckLevelMaxBranches --xml cli gui/*.cpp lib 2> selfcheck.xml
+# ./cppcheck -D__CPPCHECK__ -D__GNUC__=10 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -D__linux__ -D__gnu_linux__ -D__x86_64__ -D__STDC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --suppress=normalCheckLevelMaxBranches --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
 # Generate lib/checkers.cpp (TODO the premium checkers should not be statically coded)
 # cd ~/cppchecksolutions/cppcheck && python3 tools/get_checkers.py > lib/checkers.cpp

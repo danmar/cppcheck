@@ -380,7 +380,7 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
         absolute_path = absolute;
     if (!absolute_path.empty() && absolute_path.back() == '\\')
         absolute_path.pop_back();
-#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
+#elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__)
     // simplify the path since any non-existent part has to exist even if discarded by ".."
     std::string spath = Path::simplifyPath(filePath);
     char * absolute = realpath(spath.c_str(), nullptr);
