@@ -5507,7 +5507,7 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
     }
 }
 
-static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger &errorLogger, const Settings &settings)
+static void valueFlowForLoop(const TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger &errorLogger, const Settings &settings)
 {
     for (const Scope &scope : symboldatabase.scopeList) {
         if (scope.type != ScopeType::eFor)

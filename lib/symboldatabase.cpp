@@ -1556,6 +1556,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
     }
 }
 
+// cppcheck-suppress functionConst - has side effects
 void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 {
     for (const Scope& scope : scopeList) {
