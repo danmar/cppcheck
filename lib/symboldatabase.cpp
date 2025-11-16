@@ -8574,7 +8574,8 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::NOMATCH; // TODO
     }
     if (call->pointer > 0) {
-        if ((call->constness | func->constness) != func->constness)
+        const unsigned int mask = (1U << call->pointer) - 1;
+        if (((call->constness | func->constness) & mask) != (func->constness & mask))
             return ValueType::MatchResult::NOMATCH;
         if ((call->volatileness | func->volatileness) != func->volatileness)
             return ValueType::MatchResult::NOMATCH;
