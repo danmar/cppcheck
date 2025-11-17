@@ -312,7 +312,7 @@ void Preprocessor::inlineSuppressions(SuppressionList &suppressions)
         ::addInlineSuppressions(filedata->tokens, mSettings, suppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
-        error(bad.file, bad.line, bad.errmsg);
+        error(bad.file, bad.line, bad.errmsg, simplecpp::Output::ERROR); // TODO: use individual (non-fatal) ID
     }
 }
 
@@ -860,7 +860,7 @@ bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::ERROR:
             hasError = true;
             if (!startsWith(out.msg,"#error") || showerror)
-                error(out.location.file(), out.location.line, out.msg);
+                error(out.location.file(), out.location.line, out.msg, out.type);
             break;
         case simplecpp::Output::WARNING:
         case simplecpp::Output::PORTABILITY_BACKSLASH:
@@ -877,13 +877,13 @@ bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
             hasError = true;
-            error(out.location.file(), out.location.line, out.msg);
+            error(out.location.file(), out.location.line, out.msg, out.type);
             break;
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
         case simplecpp::Output::FILE_NOT_FOUND:
         case simplecpp::Output::DUI_ERROR:
             hasError = true;
-            error("", 0, out.msg);
+            error("", 0, out.msg, out.type);
             break;
         }
     }
@@ -891,7 +891,34 @@ bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
     return hasError;
 }
 
-void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg)
+static std::string simplecppErrToId(simplecpp::Output::Type type)
+{
+    switch (type) {
+    case simplecpp::Output::ERROR:
+        return "preprocessorErrorDirective";
+    case simplecpp::Output::SYNTAX_ERROR:
+        return "syntaxError";
+    case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+        return "unhandledChar";
+    case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+        return "includeNestedTooDeeply";
+    case simplecpp::Output::FILE_NOT_FOUND:
+        return "missingFile";
+    // should never occur
+    case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+    case simplecpp::Output::DUI_ERROR:
+    // handled separately
+    case simplecpp::Output::MISSING_HEADER:
+    // no handled at all (warnings)
+    case simplecpp::Output::WARNING:
+    case simplecpp::Output::PORTABILITY_BACKSLASH:
+        throw std::runtime_error("unexpected simplecpp::Output type " + std::to_string(type));
+    }
+
+    cppcheck::unreachable();
+}
+
+void Preprocessor::error(const std::string &filename, unsigned int linenr, const std::string &msg, simplecpp::Output::Type type)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
@@ -905,7 +932,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
                                         mFile0,
                                         Severity::error,
                                         msg,
-                                        "preprocessorErrorDirective",
+                                        simplecppErrToId(type),
                                         Certainty::normal));
 }
 
@@ -935,7 +962,11 @@ void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &se
     Preprocessor preprocessor(tokens, settings, errorLogger, Standards::Language::CPP);
     preprocessor.missingInclude("", 1, 2, "", UserHeader);
     preprocessor.missingInclude("", 1, 2, "", SystemHeader);
-    preprocessor.error("", 1, "#error message");   // #error ..
+    preprocessor.error("", 1, "message", simplecpp::Output::ERROR);
+    preprocessor.error("", 1, "message", simplecpp::Output::SYNTAX_ERROR);
+    preprocessor.error("", 1, "message", simplecpp::Output::UNHANDLED_CHAR_ERROR);
+    preprocessor.error("", 1, "message", simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY);
+    preprocessor.error("", 1, "message", simplecpp::Output::FILE_NOT_FOUND);
 }
 
 void Preprocessor::dump(std::ostream &out) const

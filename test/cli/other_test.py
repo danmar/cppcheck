@@ -3890,8 +3890,7 @@ int 你=0;
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         # TODO: lacks column information
-        # TODO: should report another ID
-        '{}:2:0: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [preprocessorErrorDirective]'.format(test_file)
+        '{}:2:0: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [unhandledChar]'.format(test_file)
     ]
 
 
@@ -3922,10 +3921,9 @@ def test_simplecpp_include_nested_too_deeply(tmp_path):
     test_h = tmp_path / 'test_398.h'
     assert stderr.splitlines() == [
         # TODO: should only report the error once
-        # TODO: should report another ID
         # TODO: lacks column information
-        '{}:1:0: error: #include nested too deeply [preprocessorErrorDirective]'.format(test_h),
-        '{}:1:0: error: #include nested too deeply [preprocessorErrorDirective]'.format(test_h)
+        '{}:1:0: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h),
+        '{}:1:0: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h)
     ]
 
 
@@ -3946,8 +3944,7 @@ def test_simplecpp_syntax_error(tmp_path):
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
         # TODO: should only report the error once
-        # TODO: should report another ID
         # TODO: lacks column information
-        '{}:1:0: error: No header in #include [preprocessorErrorDirective]'.format(test_file),
-        '{}:1:0: error: No header in #include [preprocessorErrorDirective]'.format(test_file)
+        '{}:1:0: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:0: error: No header in #include [syntaxError]'.format(test_file)
     ]
