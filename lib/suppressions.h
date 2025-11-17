@@ -55,7 +55,7 @@ public:
         const std::string &getFileName() const {
             return mFileName;
         }
-        int lineNumber;
+        int lineNumber; // TODO: need to be unsigned
         Certainty certainty;
         std::string symbolNames;
         std::set<std::string> macroNames;
@@ -149,7 +149,7 @@ public:
         std::string errorId;
         std::string fileName;
         std::string extraComment;
-        int lineNumber = NO_LINE;
+        int lineNumber = NO_LINE; // TODO: needs to be unsigned
         int lineBegin = NO_LINE;
         int lineEnd = NO_LINE;
         Type type = Type::unique;
