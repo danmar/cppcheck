@@ -1060,7 +1060,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 #endif
 
-        if (!mSettings.force && mSettings.isEnabled(Severity::information) && configurations.size() > mSettings.maxConfigs)
+        if (!mSettings.force && configurations.size() > mSettings.maxConfigs &&
+            mSettings.severity.isEnabled(Severity::information))
             tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
         FilesDeleter filesDeleter;
