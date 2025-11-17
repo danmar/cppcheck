@@ -142,6 +142,8 @@ public:
 
     bool reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
+    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
+
 private:
     static bool hasErrors(const simplecpp::Output &output);
 
@@ -158,7 +160,6 @@ private:
     };
 
     void missingInclude(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &header, HeaderTypes headerType);
-    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
@@ -172,7 +173,7 @@ private:
     simplecpp::FileDataCache mFileCache;
 
     /** filename for cpp/c file - useful when reporting errors */
-    std::string mFile0;
+    std::string mFile0; // TODO: this is never set
     Standards::Language mLang{Standards::Language::None};
 
     /** simplecpp tracking info */

@@ -1213,19 +1213,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                 if (!hasValidConfig && currCfg == *configurations.rbegin()) {
                     // If there is no valid configuration then report error..
-                    std::string locfile = Path::fromNativeSeparators(o.location.file());
-                    if (mSettings.relativePaths)
-                        locfile = Path::getRelativePath(locfile, mSettings.basePaths);
-
-                    ErrorMessage::FileLocation loc1(locfile, o.location.line, o.location.col);
-
-                    ErrorMessage errmsg({std::move(loc1)},
-                                        file.spath(),
-                                        Severity::error,
-                                        o.msg,
-                                        "preprocessorErrorDirective",
-                                        Certainty::normal);
-                    mErrorLogger.reportErr(errmsg);
+                    preprocessor.error(o.location.file(), o.location.line, o.msg);
                 }
                 continue;
 

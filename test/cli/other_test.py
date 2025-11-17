@@ -3429,7 +3429,8 @@ def test_preprocess_enforced_cpp(tmp_path):  # #10989
     assert exitcode == 0, stdout if stdout else stderr
     assert stdout.splitlines() == []
     assert stderr.splitlines() == [
-        '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
+        # TODO: lacks column information
+        '{}:2:0: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
     ]
 
 
@@ -3924,7 +3925,7 @@ def test_simplecpp_include_nested_too_deeply(tmp_path):
         # TODO: should report another ID
         # TODO: lacks column information
         '{}:1:0: error: #include nested too deeply [preprocessorErrorDirective]'.format(test_h),
-        '{}:1:2: error: #include nested too deeply [preprocessorErrorDirective]'.format(test_h)
+        '{}:1:0: error: #include nested too deeply [preprocessorErrorDirective]'.format(test_h)
     ]
 
 
@@ -3948,5 +3949,5 @@ def test_simplecpp_syntax_error(tmp_path):
         # TODO: should report another ID
         # TODO: lacks column information
         '{}:1:0: error: No header in #include [preprocessorErrorDirective]'.format(test_file),
-        '{}:1:2: error: No header in #include [preprocessorErrorDirective]'.format(test_file)
+        '{}:1:0: error: No header in #include [preprocessorErrorDirective]'.format(test_file)
     ]
