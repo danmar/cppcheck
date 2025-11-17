@@ -1631,7 +1631,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
     }
 
     std::ostringstream msg;
-    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.maxConfigs 
+    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.maxConfigs
         << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.";
 
     ErrorMessage errmsg(std::move(loclist),
