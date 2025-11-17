@@ -159,6 +159,7 @@ private:
     };
 
     void missingInclude(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &header, HeaderTypes headerType);
+    void error(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg, const std::string& id);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
 
