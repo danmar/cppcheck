@@ -425,6 +425,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     };
 
     bool executorAuto = true;
+    bool enableInformation = false;
+    bool enableUnmatchedSuppression = false;
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] != '-') {
@@ -694,6 +696,12 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mSettings.addEnabled("performance");
                 mSettings.addEnabled("portability");
             }
+                if (enable_arg.find("information") != std::string::npos) {
+                    enableInformation = true;
+                }
+                if (enable_arg.find("unmatchedSuppression") != std::string::npos) {
+                    enableUnmatchedSuppression = true;
+                }
         }
 
         // --error-exitcode=1
@@ -1576,6 +1584,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             return Result::Fail;
         }
     }
+
+    if (enableInformation && !enableUnmatchedSuppression)
+        mLogger.printMessage("unmatchedSuppression is no longer included in --enable=information starting with Cppcheck 2.18. Please use --enable=unmatchedSuppression instead.");
 
     // TODO: bail out?
     if (!executorAuto && mSettings.useSingleJob())
