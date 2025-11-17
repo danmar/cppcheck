@@ -2719,7 +2719,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     }
     else {
         const std::string msg = foundAllBaseClasses ?
-                                "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\nThe member function '$symbol' can be made a static " :
+                                "Technically the member function '$symbol' can be static (but you may consider moving to anonymous namespace).\nThe member function '$symbol' can be made a static " :
                                 "Either there is a missing 'override', or the member function '$symbol' can be static.\nUnless it overrides a base class member, the member function '$symbol' can be made a static ";
         reportError(toks, Severity::performance, "functionStatic",
                     "$symbol:" + classname + "::" + funcname +"\n"
@@ -2728,7 +2728,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
                     "is it a function that must not access members of class instances? And maybe it is more appropriate "
-                    "to move this function to an unnamed namespace.", CWE398, Certainty::inconclusive);
+                    "to move this function to an anonymous namespace.", CWE398, Certainty::inconclusive);
     }
 }
 

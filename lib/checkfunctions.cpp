@@ -719,8 +719,8 @@ void CheckFunctions::copyElisionError(const Token *tok)
     reportError(tok,
                 Severity::performance,
                 "returnStdMoveLocal",
-                "Using std::move for returning object by-value from function will affect copy elision optimization."
-                " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local");
+                "Using std::move for returning object by-value from function will affect copy elision optimization.\n"
+                "More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local");
 }
 
 void CheckFunctions::useStandardLibrary()
