@@ -432,10 +432,6 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
             returnValue = settings.exitCode;
     }
 
-    if (!settings.checkConfiguration) {
-        cppcheck.tooManyConfigsError("",0U);
-    }
-
     stdLogger.writeCheckersReport(supprs);
 
     if (settings.outputFormat == Settings::OutputFormat::xml) {

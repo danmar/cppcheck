@@ -1060,13 +1060,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 #endif
 
-        if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
-            if (mSettings.severity.isEnabled(Severity::information)) {
-                tooManyConfigsError(Path::toNativeSeparators(file.spath()),configurations.size());
-            } else {
-                mTooManyConfigs = true;
-            }
-        }
+        if (!mSettings.force && configurations.size() > mSettings.maxConfigs)
+            tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
         FilesDeleter filesDeleter;
 
@@ -1630,12 +1625,7 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
 
 void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfConfigurations)
 {
-    if (!mSettings.severity.isEnabled(Severity::information) && !mTooManyConfigs)
-        return;
-
-    mTooManyConfigs = false;
-
-    if (mSettings.severity.isEnabled(Severity::information) && file.empty())
+    if (!mSettings.severity.isEnabled(Severity::information))
         return;
 
     std::list<ErrorMessage::FileLocation> loclist;
@@ -1669,8 +1659,6 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
 
 void CppCheck::purgedConfigurationMessage(const std::string &file, const std::string& configuration)
 {
-    mTooManyConfigs = false;
-
     if (mSettings.severity.isEnabled(Severity::information) && file.empty())
         return;
 
@@ -1699,7 +1687,6 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
 
     CppCheck cppcheck(settings, supprs, errorlogger, true, nullptr);
     cppcheck.purgedConfigurationMessage("","");
-    cppcheck.mTooManyConfigs = true;
     cppcheck.tooManyConfigsError("",0U);
     // TODO: add functions to get remaining error messages
 
