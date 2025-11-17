@@ -1060,7 +1060,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 #endif
 
-        if (!mSettings.force && configurations.size() > mSettings.maxConfigs)
+        if (!mSettings.force && mSettings.isEnabled(Severity::information) && configurations.size() > mSettings.maxConfigs)
             tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
         FilesDeleter filesDeleter;
@@ -1625,27 +1625,14 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
 
 void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfConfigurations)
 {
-    if (!mSettings.severity.isEnabled(Severity::information))
-        return;
-
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
         loclist.emplace_back(file, 0, 0);
     }
 
     std::ostringstream msg;
-    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.maxConfigs;
-    if (numberOfConfigurations > mSettings.maxConfigs)
-        msg << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.\n";
-    if (file.empty())
-        msg << " configurations. Use --force to check all configurations. For more details, use --enable=information.\n";
-    msg << "The checking of the file will be interrupted because there are too many "
-        "#ifdef configurations. Checking of all #ifdef configurations can be forced "
-        "by --force command line option or from GUI preferences. However that may "
-        "increase the checking time.";
-    if (file.empty())
-        msg << " For more details, use --enable=information.";
-
+    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.maxConfigs 
+        << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.";
 
     ErrorMessage errmsg(std::move(loclist),
                         "",
