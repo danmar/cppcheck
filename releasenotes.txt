@@ -27,4 +27,5 @@ Other:
 - Removed deprecated platforms `unix32-unsigned` and `unix64-unsigned`.
 - Updated Qt to 6.10.0 (official Windows release only).
 - The official Windows binary is now built against Boost 1.89 for increased performance.
+- Added support for `std::regex` as the regular engine for rules. It can be specified using the `engine` element in a rule XML.
 -
