@@ -13,6 +13,7 @@ GUI:
 -
 
 Changed interface:
+- some `preprocessorErrorDirective` and `syntaxError` errors got more specific error IDs.
 -
 
 Deprecations:

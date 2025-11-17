@@ -1213,7 +1213,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
                 if (!hasValidConfig && currCfg == *configurations.rbegin()) {
                     // If there is no valid configuration then report error..
-                    preprocessor.error(o.location.file(), o.location.line, o.msg);
+                    preprocessor.error(o.location.file(), o.location.line, o.msg, o.type);
                 }
                 continue;
 

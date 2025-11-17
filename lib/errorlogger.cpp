@@ -45,14 +45,17 @@
 const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "cppcheckError",
     "cppcheckLimit",
+    "includeNestedTooDeeply",
     "internalAstError",
     "instantiationError",
     "internalError",
+    "missingFile",
     "premium-internalError",
     "premium-invalidArgument",
     "premium-invalidLicense",
     "preprocessorErrorDirective",
     "syntaxError",
+    "unhandledChar",
     "unknownMacro"
 };
 

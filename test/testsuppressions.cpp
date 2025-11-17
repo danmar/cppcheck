@@ -1355,7 +1355,7 @@ private:
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
                             "[!ENDIF!][!//\n"
                             "};";
-        ASSERT_EQUALS(0, (this->*check)(code, "preprocessorErrorDirective:test.cpp:4"));
+        ASSERT_EQUALS(0, (this->*check)(code, "syntaxError:test.cpp:4"));
         ASSERT_EQUALS("", errout_str());
     }
 
