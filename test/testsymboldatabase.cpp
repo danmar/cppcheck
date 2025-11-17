@@ -535,6 +535,7 @@ private:
         TEST_CASE(findFunction59);
         TEST_CASE(findFunction60);
         TEST_CASE(findFunction61);
+        TEST_CASE(findFunction62); // #14272 - pointer passed to function is const
         TEST_CASE(findFunctionRef1);
         TEST_CASE(findFunctionRef2); // #13328
         TEST_CASE(findFunctionContainer);
@@ -8692,6 +8693,22 @@ private:
                       "}\n");
         const Token* fun = Token::findsimplematch(tokenizer.tokens(), "B ( ) {");
         ASSERT(fun && !fun->function());
+    }
+
+    void findFunction62() { // #14272
+        GET_SYMBOL_DB("class Token {\n"
+                      "    std::string stringifyList(const Token* end, bool attributes = true) const;\n"
+                      "    std::string stringifyList(bool varid = false) const;\n"
+                      "};\n"
+                      "\n"
+                      "void foo(const Token * const tokIf) {\n"
+                      "    tokIf->stringifyList(tokIf);\n"
+                      "}\n");
+        const Token* functionCall = Token::findsimplematch(tokenizer.tokens(), "stringifyList ( tokIf )");
+        ASSERT(functionCall);
+        ASSERT(functionCall->function());
+        ASSERT(functionCall->function()->token);
+        ASSERT_EQUALS(2, functionCall->function()->token->linenr());
     }
 
     void findFunctionRef1() {
