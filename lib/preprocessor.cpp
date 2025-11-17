@@ -307,7 +307,7 @@ void Preprocessor::inlineSuppressions(SuppressionList &suppressions)
         ::addInlineSuppressions(filedata->tokens, mSettings, suppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
-        error(bad.file, bad.line, bad.col, bad.errmsg, simplecpp::Output::ERROR); // TODO: use individual (non-fatal) ID
+        invalidSuppression(bad.file, bad.line, bad.col, bad.errmsg); // TODO: column is always 0
     }
 }
 
@@ -956,6 +956,11 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     mErrorLogger.reportErr(errmsg);
 }
 
+void Preprocessor::invalidSuppression(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg)
+{
+    error(filename, linenr, col, msg, "invalidSuppression");
+}
+
 void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
 {
     std::vector<std::string> files;
@@ -968,6 +973,7 @@ void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &se
     preprocessor.error("", 1, 2, "message", simplecpp::Output::UNHANDLED_CHAR_ERROR);
     preprocessor.error("", 1, 2, "message", simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY);
     preprocessor.error("", 1, 2, "message", simplecpp::Output::FILE_NOT_FOUND);
+    preprocessor.invalidSuppression("", 1, 2, "message");
 }
 
 void Preprocessor::dump(std::ostream &out) const
