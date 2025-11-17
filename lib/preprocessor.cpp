@@ -870,7 +870,7 @@ bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
             const std::string::size_type pos1 = out.msg.find_first_of("<\"");
             const std::string::size_type pos2 = out.msg.find_first_of(">\"", pos1 + 1U);
             if (pos1 < pos2 && pos2 != std::string::npos)
-                missingInclude(out.location.file(), out.location.line, out.msg.substr(pos1+1, pos2-pos1-1), out.msg[pos1] == '\"' ? UserHeader : SystemHeader);
+                missingInclude(out.location.file(), out.location.line, out.location.col, out.msg.substr(pos1+1, pos2-pos1-1), out.msg[pos1] == '\"' ? UserHeader : SystemHeader);
         }
         break;
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
@@ -910,14 +910,14 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 }
 
 // Report that include is missing
-void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
+void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &header, HeaderTypes headerType)
 {
     if (!mSettings.checks.isEnabled(Checks::missingInclude))
         return;
 
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        locationList.emplace_back(filename, linenr, 0);
+        locationList.emplace_back(filename, linenr, col);
     }
     ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
                         (headerType==SystemHeader) ?
@@ -933,8 +933,8 @@ void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &se
     std::vector<std::string> files;
     simplecpp::TokenList tokens(files);
     Preprocessor preprocessor(tokens, settings, errorLogger, Standards::Language::CPP);
-    preprocessor.missingInclude("", 1, "", UserHeader);
-    preprocessor.missingInclude("", 1, "", SystemHeader);
+    preprocessor.missingInclude("", 1, 2, "", UserHeader);
+    preprocessor.missingInclude("", 1, 2, "", SystemHeader);
     preprocessor.error("", 1, "#error message");   // #error ..
 }
 

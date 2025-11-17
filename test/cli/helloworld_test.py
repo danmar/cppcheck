@@ -357,7 +357,7 @@ def test_missing_include_system():  # #11283
     ]
 
     _, _, stderr = cppcheck(args, cwd=__script_dir)
-    assert stderr.replace('\\', '/') == 'helloworld/main.c:1:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
+    assert stderr.replace('\\', '/') == 'helloworld/main.c:1:2: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
 
 
 def test_sarif():

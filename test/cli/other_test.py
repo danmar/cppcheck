@@ -25,13 +25,13 @@ def test_missing_include(tmpdir):  # #11283
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write("""
-                #include "test.h"
-                """)
+#include "test.h"
+""")
 
     args = ['--enable=missingInclude', '--template=simple', test_file]
 
     _, _, stderr = cppcheck(args)
-    assert stderr == '{}:2:0: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
+    assert stderr == '{}:2:2: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
 
 
 def __test_missing_include_check_config(tmpdir, use_j):

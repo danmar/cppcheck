@@ -2424,7 +2424,7 @@ private:
         const char code[] = "#include \"header.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
     }
 
     // test for missing local include - no include path given
@@ -2440,7 +2440,7 @@ private:
         const char code[] = "#include \"header.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: \"header.h\" not found. [missingInclude]\n", errout_str());
     }
 
     // test for existing local include - include path provided
@@ -2490,7 +2490,7 @@ private:
         std::string code("#include \"" + header + "\"");
         (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: \"" + header + "\" not found. [missingInclude]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: \"" + header + "\" not found. [missingInclude]\n", errout_str());
     }
 
     // test for missing system include - system includes are not searched for in relative path
@@ -2506,7 +2506,7 @@ private:
         const char code[] = "#include <header.h>";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
 
     // test for missing system include
@@ -2520,7 +2520,7 @@ private:
         const char code[] = "#include <header.h>";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
 
     // test for existing system include in system include path
@@ -2570,7 +2570,7 @@ private:
         std::string code("#include <" + header + ">");
         (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
 
     // test for missing local and system include
@@ -2590,9 +2590,9 @@ private:
                             "#include \"header2.h\"";
         (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
-                      "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
-                      "test.c:3:0: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: \"missing.h\" not found. [missingInclude]\n"
+                      "test.c:2:2: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:3:2: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
 
     void testMissingIncludeCheckConfig() {
@@ -2626,12 +2626,12 @@ private:
                          "#include <" + missing4 + ">\n");
         (void)getcodeforcfg(settings, *this, code.data(), code.size(), "", "test.c");
 
-        ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
-                      "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
-                      "test.c:3:0: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
-                      "test.c:6:0: information: Include file: \"header4.h\" not found. [missingInclude]\n"
-                      "test.c:9:0: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
-                      "test.c:11:0: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
+        ASSERT_EQUALS("test.c:1:2: information: Include file: \"missing.h\" not found. [missingInclude]\n"
+                      "test.c:2:2: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:3:2: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:6:2: information: Include file: \"header4.h\" not found. [missingInclude]\n"
+                      "test.c:9:2: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
+                      "test.c:11:2: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout_str());
     }
 
     void hasInclude() {
