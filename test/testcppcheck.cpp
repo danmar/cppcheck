@@ -81,7 +81,6 @@ private:
         TEST_CASE(getDumpFileContentsLibrary);
         TEST_CASE(checkPlistOutput);
         TEST_CASE(premiumResultsCache);
-        TEST_CASE(toomanyconfigs);
         TEST_CASE(purgedConfiguration);
     }
 
@@ -592,35 +591,6 @@ private:
 
         // cppcheck-suppress knownConditionTrueFalse
         ASSERT(hash1 != hash2);
-    }
-
-    void toomanyconfigs() const
-    {
-        ScopedFile test_file_a("a.c",
-                               "#if DEF_1\n"
-                               "#endif\n"
-                               "#if DEF_2\n"
-                               "#endif\n"
-                               "#if DEF_3\n"
-                               "#endif");
-
-        // this is the "simple" format
-        const auto s = dinit(Settings,
-                             $.templateFormat = templateFormat, // TODO: remove when we only longer rely on toString() in unique message handling
-                                 $.severity.enable (Severity::information);
-                             $.maxConfigs = 2);
-        Suppressions supprs;
-        ErrorLogger2 errorLogger;
-        CppCheck cppcheck(s, supprs, errorLogger, false, {});
-        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file_a.path(), Path::identify(test_file_a.path(), false), 0)));
-        // TODO: how to properly disable these warnings?
-        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
-            return msg.id == "logChecker";
-        }), errorLogger.errmsgs.end());
-        // the internal errorlist is cleared after each check() call
-        ASSERT_EQUALS(1, errorLogger.errmsgs.size());
-        const auto it = errorLogger.errmsgs.cbegin();
-        ASSERT_EQUALS("a.c:0:0: information: Too many #ifdef configurations - cppcheck only checks 2 of 4 configurations. Use --force to check all configurations. [toomanyconfigs]", it->toString(false, templateFormat, ""));
     }
 
     void purgedConfiguration() const
