@@ -3947,7 +3947,7 @@ def test_simplecpp_syntax_error(tmp_path):
         # TODO: lacks column information
         '{}:1:0: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:0: error: No header in #include [syntaxError]'.format(test_file)
-
+    ]
 
 def test_max_configs(tmp_path):
     test_file = tmp_path / 'test.cpp'
@@ -3957,18 +3957,25 @@ def test_max_configs(tmp_path):
             f.write(f'#{dir} defined(X{i})\nx = {i};\n')
         f.write('#endif\n')
 
-    # default max configs is set to 12
-    _, stdout, stderr = cppcheck(['-v', '--enable=information', '--template=daca2', str(test_file)])
+    args = ['--enable=information', '--template=daca2', str(test_file)]
+
+    # default max configs is set to 12, warn if code contains more configurations than that
+    _, stdout, stderr = cppcheck(args)
     assert stderr.splitlines() == [
         '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks 12 of 20 configurations. Use --force to check all configurations. [toomanyconfigs]'.format(test_file)
     ]
 
     # set explicit max configs => do not warn
-    _, _, stderr = cppcheck(['--enable=information', '--template=daca2', '--max-configs=6', str(test_file)])
+    # configurations are likely skipped by intention
+    _, _, stderr = cppcheck(['--max-configs=6'] + args)
     assert stderr.splitlines() == []
 
-    # when using --check-configs, warn
-    _, _, stderr = cppcheck(['--check-config', '--template=daca2', '--max-configs=6', str(test_file)])
+    # when using --check-configs, warn if code contains more than max configs
+    _, _, stderr = cppcheck(['--check-config', '--max-configs=6'] + args)
     assert stderr.splitlines() == [
         '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks 6 of 20 configurations. Use --force to check all configurations. [toomanyconfigs]'.format(test_file)
     ]
+
+    # when using --check-configs, do not warn if code contains less than max configs
+    _, _, stderr = cppcheck(['--check-config', '--max-configs=60'] + args)
+    assert stderr.splitlines() == []
