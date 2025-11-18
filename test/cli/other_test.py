@@ -3960,7 +3960,7 @@ def test_max_configs(tmp_path):
     args = ['--enable=information', '--template=daca2', str(test_file)]
 
     # default max configs is set to 12, warn if code contains more configurations than that
-    _, stdout, stderr = cppcheck(args)
+    _, _, stderr = cppcheck(args)
     assert stderr.splitlines() == [
         '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks 12 of 20 configurations. Use --force to check all configurations. [toomanyconfigs]'.format(test_file)
     ]
