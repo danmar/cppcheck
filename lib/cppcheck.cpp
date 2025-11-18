@@ -1041,6 +1041,9 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             for (const std::string &config : configurations)
                 (void)preprocessor.getcode(config, files, false);
 
+            if (configurations.size() > mSettings.maxConfigs)
+                tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
+
             if (analyzerInformation)
                 mLogger->setAnalyzerInfo(nullptr);
             return 0;
@@ -1060,7 +1063,9 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 #endif
 
-        if (!mSettings.force && configurations.size() > mSettings.maxConfigs &&
+        if (!mSettings.force &&
+            configurations.size() > mSettings.maxConfigs &&
+            mSettings.maxConfigs == 12 && // <- do not warn if maxConfigs has been changed
             mSettings.severity.isEnabled(Severity::information))
             tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
