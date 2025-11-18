@@ -3947,6 +3947,8 @@ def test_simplecpp_syntax_error(tmp_path):
         # TODO: lacks column information
         '{}:1:0: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:0: error: No header in #include [syntaxError]'.format(test_file)
+
+
 def test_max_configs(tmp_path):
     test_file = tmp_path / 'test.cpp'
     with open(test_file, "w") as f:
