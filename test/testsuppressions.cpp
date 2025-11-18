@@ -703,6 +703,19 @@ private:
                       "[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n"
                       "[test.cpp:5:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-file :id0\n"
+                                        "// cppcheck-suppress :id\n"
+                                        "// cppcheck-suppress [:id1,id2]\n"
+                                        "// cppcheck-suppress-begin :id3\n"
+                                        "void f() {}\n"
+                                        "// cppcheck-suppress-end :id3\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) Failed to add suppression. Invalid id \":id0\" [invalidSuppression]\n"
+                      "[test.cpp:5:0]: (error) Failed to add suppression. Invalid id \":id\" [invalidSuppression]\n" // TODO: should we report the location of the suppression instead?
+                      "[test.cpp:5:0]: (error) Failed to add suppression. Invalid id \":id1\" [invalidSuppression]\n" // TODO: should we report the location of the suppression instead?
+                      "[test.cpp:4:0]: (error) Failed to add suppression. Invalid id \":id3\" [invalidSuppression]\n"
+                      "[test.cpp:5:0]: (information) Unmatched suppression: id2 [unmatchedSuppression]\n", errout_str()); // TODO: should we report the location of the suppression instead?
+
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    // cppcheck-suppress-begin uninitvar\n"
