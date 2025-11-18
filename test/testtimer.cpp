@@ -19,8 +19,7 @@
 #include "fixture.h"
 #include "timer.h"
 
-#include <cmath>
-#include <ctime>
+#include <chrono>
 
 class TestTimer : public TestFixture {
 public:

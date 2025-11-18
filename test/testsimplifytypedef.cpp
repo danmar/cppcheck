@@ -29,6 +29,8 @@
 #include <string>
 #include <utility>
 
+class ErrorLogger;
+
 class TestSimplifyTypedef : public TestFixture {
 public:
     TestSimplifyTypedef() : TestFixture("TestSimplifyTypedef") {}

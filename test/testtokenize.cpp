@@ -39,6 +39,8 @@
 
 #include <simplecpp.h>
 
+class ErrorLogger;
+
 class TestTokenizer : public TestFixture {
 public:
     TestTokenizer() : TestFixture("TestTokenizer") {}

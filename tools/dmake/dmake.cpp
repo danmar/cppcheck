@@ -33,6 +33,7 @@
 
 #include "../cli/filelister.h"
 #include "../lib/filesettings.h"
+#include "../lib/path.h"
 #include "../lib/pathmatch.h"
 #include "../lib/utils.h"
 

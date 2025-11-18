@@ -18,9 +18,8 @@
 
 #include "timer.h"
 
-#include "utils.h"
-
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <utility>
 #include <vector>

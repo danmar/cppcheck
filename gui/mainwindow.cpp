@@ -52,6 +52,7 @@
 #include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
+#include "utils.h"
 
 #include "ui_mainwindow.h"
 

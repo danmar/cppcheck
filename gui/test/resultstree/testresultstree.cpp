@@ -23,6 +23,7 @@
 // headers that declare mocked functions/variables
 #include "applicationlist.h"
 #include "common.h"
+#include "filesettings.h"
 #include "projectfile.h"
 #include "threadhandler.h"
 #include "threadresult.h"
@@ -33,6 +34,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "report.h"
+#include "resultitem.h"
 #include "showtypes.h"
 #include "suppressions.h"
 #include "xmlreport.h"

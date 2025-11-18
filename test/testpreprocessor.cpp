@@ -21,6 +21,7 @@
 // the code for a known configuration, it generates the code for each configuration.
 
 #include "errortypes.h"
+#include "library.h"
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h"

@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <list>
@@ -40,7 +41,6 @@
 #include <utility>
 #include <vector>
 
-class Platform;
 class Function;
 class Scope;
 class Settings;
