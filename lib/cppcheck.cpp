@@ -1063,12 +1063,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 #endif
 
-        if (!mSettings.force &&
-            configurations.size() > mSettings.maxConfigs &&
-            mSettings.maxConfigs == 12 && // <- do not warn if maxConfigs has been changed
-            mSettings.severity.isEnabled(Severity::information))
-            tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
-
         FilesDeleter filesDeleter;
 
         // write dump file xml prolog
@@ -1093,8 +1087,13 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!mSettings.force && ++checkCount > mSettings.maxConfigs)
+            if (!mSettings.force && ++checkCount > mSettings.maxConfigs) {
+                // if maxConfigs has default value then report information message that configurations are skipped
+                if (mSettings.maxConfigs == 12 && mSettings.severity.isEnabled(Severity::information))
+                    tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
+
                 break;
+            }
 
             std::string currentConfig;
 
