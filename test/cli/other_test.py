@@ -3971,7 +3971,7 @@ def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, exp
             f.write(f'#{dir} defined(X{i})\nx = {i};\n')
         f.write('#endif\n')
 
-    args = [f'--max-configs={max_configs}', '--enable=information', '--template=daca2', str(test_file)]
+    args = [f'--max-configs={max_configs}', '--enable=information', '--template=simple', str(test_file)]
 
     if check_config:
         args = ['--check-config'] + args
