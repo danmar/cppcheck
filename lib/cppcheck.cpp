@@ -857,6 +857,9 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const std:
     toolinfo << (mSettings.severity.isEnabled(Severity::portability) ? 'p' : ' ');
     toolinfo << (mSettings.severity.isEnabled(Severity::information) ? 'i' : ' ');
     toolinfo << mSettings.userDefines;
+    toolinfo << (mSettings.checkConfiguration ? 'c' : ' '); // --check-config
+    toolinfo << (mSettings.force ? 'f' : ' ');
+    toolinfo << mSettings.maxConfigs;
     toolinfo << std::to_string(static_cast<std::uint8_t>(mSettings.checkLevel));
     for (const auto &a : mSettings.addonInfos) {
         toolinfo << a.name;
