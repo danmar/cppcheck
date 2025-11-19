@@ -735,13 +735,13 @@ void CheckMemoryLeakStructMember::check()
     }
 }
 
-bool CheckMemoryLeakStructMember::isMalloc(const Variable* variable) const
+bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable) const
 {
     if (!variable)
         return false;
     const int declarationId(variable->declarationId());
     bool alloc = false;
-    for (const Token* tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
+    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (Token::Match(tok2, "= %varid% [;=]", declarationId))
             return false;
         if (Token::Match(tok2, "%varid% =", declarationId)) {
