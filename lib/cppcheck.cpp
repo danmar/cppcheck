@@ -1088,8 +1088,13 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
             if (!mSettings.force && ++checkCount > mSettings.maxConfigs) {
-                // if maxConfigs has default value then report information message that configurations are skipped
-                if (mSettings.maxConfigs == 12 && mSettings.severity.isEnabled(Severity::information))
+                // If maxConfigs has default value then report information message that configurations are skipped.
+                // If maxConfigs does not have default value then the user is explicitly skipping configurations so
+                // the information message is not reported, the whole purpose of setting i.e. --max-configs=1 is to
+                // skip configurations. When --check-config is used then tooManyConfigs will be reported even if the
+                // value is non-default.
+                const Settings defaultSettings;
+                if (mSettings.maxConfigs == defaultSettings.maxConfigs && mSettings.severity.isEnabled(Severity::information))
                     tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
                 break;
