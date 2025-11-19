@@ -51,12 +51,6 @@ Directive::Directive(const simplecpp::Location & _loc, std::string _str) :
     str(std::move(_str))
 {}
 
-Directive::Directive(std::string _file, const int _linenr, std::string _str) :
-    file(std::move(_file)),
-    linenr(_linenr),
-    str(std::move(_str))
-{}
-
 Directive::DirectiveToken::DirectiveToken(const simplecpp::Token & _tok) :
     line(_tok.location.line),
     column(_tok.location.col),

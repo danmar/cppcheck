@@ -1632,7 +1632,10 @@ private:
 
     void structmember15() { // #3088
         std::list<Directive> directives;
-        directives.emplace_back("test.cpp", 1, "#pragma pack(1)");
+        std::vector<std::string> f = { "test.cpp" };
+        simplecpp::Location loc(f);
+        loc.line = 1;
+        directives.emplace_back(loc, "#pragma pack(1)");
         checkStructMemberUsage("\nstruct Foo { int x; int y; };", dinit(CheckStructMemberUsageOptions, $.directives = &directives));
         ASSERT_EQUALS("", errout_str());
     }
