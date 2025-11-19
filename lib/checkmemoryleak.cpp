@@ -749,7 +749,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable* variable) const
             while (tok3 && tok3->isCast())
                 tok3 = tok3->astOperand2() ? tok3->astOperand2() : tok3->astOperand1();
             if ((tok3 && Token::Match(tok3->tokAt(-1), "%name% (") && mSettings->library.getAllocFuncInfo(tok3->tokAt(-1))) ||
-                (Token::simpleMatch(tok3, "new") && tok3->isCpp()) {
+                (Token::simpleMatch(tok3, "new") && tok3->isCpp())) {
                 alloc = true;
             }
         }
