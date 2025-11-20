@@ -390,9 +390,9 @@ def test_platform_lookup_path(tmpdir):
     path = os.path.dirname(__lookup_cppcheck_exe())
     env = os.environ.copy()
     env['PATH'] = path
-    exitcode, stdout, stderr, exe = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=c, cwd=str(tmpdir), env=env)
+    exitcode, stdout, stderr, _ = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=c, cwd=str(tmpdir), env=env)
     assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.splitlines()
+    lines = stdout.replace('\\', '/').splitlines()
     assert lines == [
         "looking for platform 'avr8.xml'",
         "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/avr8.xml".format(tmpdir, tmpdir),
@@ -401,6 +401,7 @@ def test_platform_lookup_path(tmpdir):
         "try to load platform file '{}/platforms/avr8.xml' ... Success".format(path),
         'Checking {} ...'.format(test_file)
     ]
+
 
 def test_platform_lookup_notfound(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
