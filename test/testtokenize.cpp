@@ -506,6 +506,10 @@ private:
         TEST_CASE(dumpFallthrough);
 
         TEST_CASE(simplifyRedundantParentheses);
+
+        TEST_CASE(simplifyEnum1);
+
+        TEST_CASE(simplifyEnum2);
     }
 
     class TokenizerTest : public Tokenizer
@@ -8809,6 +8813,28 @@ private:
                             "}\n";
         SimpleTokenizer tokenizer(settingsDefault, *this, false);
         ASSERT_NO_THROW(tokenizer.tokenize(code));
+    }
+
+    void simplifyEnum1() {
+        const char code[] = "static enum {A,B} ab;";
+        ASSERT_EQUALS("enum Anonymous0 { A , B } ; static enum Anonymous0 ab ;", tokenizeAndStringify(code));
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        tokenizer.tokenize(code);
+        const Token* tok = Token::findsimplematch(tokenizer.tokens(), "static");
+        ASSERT(tok);
+        ASSERT_EQUALS(tok->column(), 1);
+        ASSERT_EQUALS(tok->next()->column(), 8);
+    }
+
+    void simplifyEnum2() {
+        const char code[] = "enum AB {A,B}; enum AB static ab; ";
+        ASSERT_EQUALS("enum AB { A , B } ; static enum AB ab ;", tokenizeAndStringify(code));
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        tokenizer.tokenize(code);
+        const Token* tok = Token::findsimplematch(tokenizer.tokens(), "static");
+        ASSERT(tok);
+        ASSERT_EQUALS(tok->column(), 24);
+        ASSERT_EQUALS(tok->next()->column(), 16);
     }
 };
 
