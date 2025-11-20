@@ -386,19 +386,23 @@ def test_platform_lookup_path(tmpdir):
     with open(test_file, 'wt'):
         pass
 
-    c = 'cppcheck.exe' if sys.platform == 'win32' else 'cppcheck'
+    cppcheck = 'cppcheck' # No path
     path = os.path.dirname(__lookup_cppcheck_exe())
     env = os.environ.copy()
     env['PATH'] = path
-    exitcode, stdout, stderr, _ = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=c, cwd=str(tmpdir), env=env)
+    exitcode, stdout, stderr, _ = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
     assert exitcode == 0, stdout if stdout else stderr
-    lines = stdout.replace('\\', '/').splitlines()
+    lookup1 = os.path.join(tmpdir, 'avr8.xml')
+    lookup2 = os.path.join(tmpdir, 'platforms', 'avr8.xml')
+    lookup3 = os.path.join(path, 'avr8.xml')
+    lookup4 = os.path.join(path, 'platforms', 'avr8.xml')
+    lines = stdout.splitlines()
     assert lines == [
         "looking for platform 'avr8.xml'",
-        "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/avr8.xml".format(tmpdir, tmpdir),
-        "try to load platform file '{}/platforms/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/avr8.xml".format(tmpdir, tmpdir),
-        "try to load platform file '{}/avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/avr8.xml".format(path, path),
-        "try to load platform file '{}/platforms/avr8.xml' ... Success".format(path),
+        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(lookup1, lookup1),
+        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(lookup2, lookup2),
+        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(lookup3, lookup3),
+        "try to load platform file '{}' ... Success".format(lookup4),
         'Checking {} ...'.format(test_file)
     ]
 
