@@ -249,9 +249,6 @@ private:
 
     bool mUseGlobalSuppressions;
 
-    /** Are there too many configs? */
-    bool mTooManyConfigs{};
-
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
 

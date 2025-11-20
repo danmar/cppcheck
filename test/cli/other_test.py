@@ -3948,3 +3948,40 @@ def test_simplecpp_syntax_error(tmp_path):
         '{}:1:0: error: No header in #include [syntaxError]'.format(test_file),
         '{}:1:0: error: No header in #include [syntaxError]'.format(test_file)
     ]
+
+
+@pytest.mark.parametrize('max_configs,number_of_configs,check_config,expected_warn', [
+    # max configs = default, max configs < number of configs => warn
+    (12, 20, False, True),
+    (12, 20, True, True),
+
+    # max configs != default, max configs < number of configs => warn if --check-config
+    (6, 20, False, False),
+    (6, 20, True, True),
+
+    # max configs >= number of configs => no warning
+    (20, 20, False, False),
+    (20, 20, False, False)
+])
+def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, expected_warn):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        for i in range(1,number_of_configs):
+            dir = 'if' if i == 1 else 'elif'
+            f.write(f'#{dir} defined(X{i})\nx = {i};\n')
+        f.write('#endif\n')
+
+    args = [f'--max-configs={max_configs}', '--enable=information', '--template=simple', str(test_file)]
+
+    if check_config:
+        args = ['--check-config'] + args
+
+    # default max configs is set to 12, warn if code contains more configurations than that
+    _, _, stderr = cppcheck(args)
+    if not expected_warn:
+        assert stderr.splitlines() == []
+    else:
+        assert stderr.splitlines() == [
+            '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks {} of {} configurations. Use --force to check all configurations. [toomanyconfigs]'
+            .format(test_file, max_configs, number_of_configs)
+        ]
