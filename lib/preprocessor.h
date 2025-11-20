@@ -69,7 +69,6 @@ struct CPPCHECKLIB Directive {
 
     /** record a directive (possibly filtering src) */
     Directive(const simplecpp::Location & _loc, std::string _str);
-    Directive(std::string _file, int _linenr, std::string _str);
 };
 
 class CPPCHECKLIB RemarkComment {
