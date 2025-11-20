@@ -180,11 +180,10 @@ std::string SarifReport::serialize(std::string productName) const
         version.erase(version.find(' '), std::string::npos);
 
     picojson::object doc;
-    doc["version"] = picojson::value("2.1.0");
     doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
     doc["runs"] = serializeRuns(productName, version);
 
-    return picojson::value(doc).serialize(true);
+    return "{\n  \"version\": \"2.1.0\"," + picojson::value(doc).serialize(true).substr(1);
 }
 
 std::string SarifReport::sarifSeverity(const ErrorMessage& errmsg)

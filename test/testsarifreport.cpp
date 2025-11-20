@@ -98,6 +98,10 @@ private:
         ASSERT_EQUALS("2.1.0", root.at("version").get<std::string>());
         ASSERT(root.at("$schema").get<std::string>().find("sarif-schema-2.1.0") != std::string::npos);
 
+        // From SARIF specification (https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790730):
+        // Although the order in which properties appear in a JSON object value is not semantically significant, the version property SHOULD appear first.
+        ASSERT_EQUALS("{\n  \"version\": \"2.1.0\"", sarif.substr(0,22));
+
         const picojson::array& runs = root.at("runs").get<picojson::array>();
         ASSERT_EQUALS(1U, runs.size());
 
