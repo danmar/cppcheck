@@ -928,3 +928,53 @@ def test_config_invalid(tmpdir):
     ]
 
 # TODO: test with FILESDIR
+
+@pytest.mark.parametrize("type,file", [("library", "gnu.cfg"), ("platform", "avr8.xml")])
+def test_lookup_path(tmpdir, type, file):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    cppcheck = 'cppcheck' # No path
+    path = os.path.dirname(__lookup_cppcheck_exe())
+    env = os.environ.copy()
+    env['PATH'] = path
+    exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', f'--{type}={file}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+    assert exitcode == 0, stdout if stdout else stderr
+    def format_path(p):
+        return p.replace('\\', '/').replace('"', '\'')
+    lines = format_path(stdout).splitlines()
+
+    # TODO make lookups consistent between library and platform and add --debug-lookup={type} option
+
+    if type == 'platform':
+        def try_fail(f):
+            f = format_path(f)
+            return f"try to load {type} file '{f}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={f}"
+        def try_success(f):
+            f = format_path(f)
+            return f"try to load {type} file '{f}' ... Success"
+        assert lines == [
+            f"looking for {type} '{file}'",
+            try_fail(os.path.join(tmpdir, file)),
+            try_fail(os.path.join(tmpdir, 'platforms', file)),
+            try_fail(os.path.join(path, file)),
+            try_success(os.path.join(path, 'platforms', file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    elif type == 'library':
+        def try_fail(f):
+            return f"looking for {type} '{format_path(f)}'"
+        def try_success(f):
+            return f"looking for {type} '{format_path(f)}'"
+        assert lines == [
+            f"looking for {type} 'std.cfg'",
+            try_fail(os.path.join(path, 'std.cfg')),
+            try_success(os.path.join(path, 'cfg', 'std.cfg')),
+            f"looking for {type} '{file}'",
+            try_fail(os.path.join(path, file)),
+            try_success(os.path.join(path, 'cfg', file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    else:
+        assert False, type + " not tested properly"
