@@ -929,7 +929,7 @@ def test_config_invalid(tmpdir):
 
 # TODO: test with FILESDIR
 
-@pytest.mark.parametrize("type,file", [("addon", "misra.py"), ("library", "gnu.cfg"), ("platform", "avr8.xml")])
+@pytest.mark.parametrize("type,file", [("addon", "misra.py"), ("config", "cppcheck.cfg"), ("library", "gnu.cfg"), ("platform", "avr8.xml")])
 def test_lookup_path(tmpdir, type, file):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -939,7 +939,12 @@ def test_lookup_path(tmpdir, type, file):
     path = os.path.dirname(__lookup_cppcheck_exe())
     env = os.environ.copy()
     env['PATH'] = path + (';' if sys.platform == 'win32' else ':') + env.get('PATH', '')
-    exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', f'--{type}={file}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+    if type == 'config':
+        with open(os.path.join(path, "cppcheck.cfg"), 'wt') as f:
+            f.write('{}')
+        exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+    else:
+        exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', f'--{type}={file}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
     assert exitcode == 0, stdout if stdout else stderr
     def format_path(p):
         return p.replace('\\', '/').replace('"', '\'')
@@ -954,6 +959,13 @@ def test_lookup_path(tmpdir, type, file):
             f"looking for {type} '{file}'",
             try_fail(os.path.join(path, file)),
             try_success(os.path.join(path, 'addons', file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    elif type == 'config':
+        def try_success(f):
+            return f"looking for '{format_path(f)}'"
+        assert lines == [
+            try_success(os.path.join(path, file)),
             f'Checking {format_path(test_file)} ...'
         ]
     elif type == 'platform':
