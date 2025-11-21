@@ -392,11 +392,13 @@ def test_platform_lookup_path(tmpdir):
     env['PATH'] = path
     exitcode, stdout, stderr, _ = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
     assert exitcode == 0, stdout if stdout else stderr
+    def format_path(p):
+        return p.replace('\\', '/').replace('"', '\'')
     def try_fail(f):
-        f = f.replace('\\', '/').replace('"', '\'')
+        f = format_path(f)
         return "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(f, f)
     def try_success(f):
-        f = f.replace('\\', '/').replace('"', '\'')
+        f = format_path(f)
         return "try to load platform file '{}' ... Success".format(f)
     lines = stdout.replace('\\', '/').replace('"', '\'').splitlines()
     assert lines == [
@@ -405,7 +407,7 @@ def test_platform_lookup_path(tmpdir):
         try_fail(os.path.join(tmpdir, 'platforms', 'avr8.xml')),
         try_fail(os.path.join(path, 'avr8.xml')),
         try_success(os.path.join(path, 'platforms', 'avr8.xml')),
-        'Checking {} ...'.format(test_file)
+        'Checking {} ...'.format(format_path(test_file))
     ]
 
 
