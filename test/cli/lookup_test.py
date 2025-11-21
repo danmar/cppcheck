@@ -943,6 +943,7 @@ def test_lookup_path(tmpdir, type, file):
         with open(os.path.join(path, "cppcheck.cfg"), 'wt') as f:
             f.write('{}')
         exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+        os.remove(os.path.join(path, "cppcheck.cfg")) # clean up otherwise other tests may fail
     else:
         exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', f'--{type}={file}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
     assert exitcode == 0, stdout if stdout else stderr
