@@ -7990,6 +7990,12 @@ private:
                "};\n"
                "U<S*> u;\n";
         (void)valueOfTok(code, "new");
+
+        code = "void f() {\n" // #14287
+               "    auto a = { \"1\" };\n"
+               "    auto b = a;\n"
+               "}\n";
+        (void)valueOfTok(code, "b");
     }
 
     void valueFlowHang() {
