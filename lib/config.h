@@ -61,8 +61,7 @@
 // C++11 noexcept
 #if defined(__cpp_noexcept_function_type) || \
     (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || defined(__clang__) \
-    || defined(__CPPCHECK__)
+    || defined(__clang__)
 #  define NOEXCEPT noexcept
 #else
 #  define NOEXCEPT
@@ -71,8 +70,7 @@
 // C++11 noreturn
 #if __has_cpp_attribute (noreturn) \
     || (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || defined(__clang__) \
-    || defined(__CPPCHECK__)
+    || defined(__clang__)
 #  define NORETURN [[noreturn]]
 #elif defined(__GNUC__)
 #  define NORETURN __attribute__((noreturn))
@@ -95,8 +93,7 @@
 #if __cplusplus >= 201703L && __has_cpp_attribute (maybe_unused)
 #  define UNUSED [[maybe_unused]]
 #elif defined(__GNUC__) \
-    || defined(__clang__) \
-    || defined(__CPPCHECK__)
+    || defined(__clang__)
 #  define UNUSED __attribute__((unused))
 #else
 #  define UNUSED
@@ -112,8 +109,7 @@
 
 // deprecated
 #if defined(__GNUC__) \
-    || defined(__clang__) \
-    || defined(__CPPCHECK__)
+    || defined(__clang__)
 #  define DEPRECATED __attribute__((deprecated))
 #elif defined(_MSC_VER)
 #  define DEPRECATED __declspec(deprecated)
@@ -160,7 +156,7 @@
 #if defined(_WIN32)
 #define HAS_THREADING_MODEL_THREAD
 #define STDCALL __stdcall
-#elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)) || defined(__CPPCHECK__)
+#elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__))
 #define HAS_THREADING_MODEL_FORK
 #if !defined(DISALLOW_THREAD_EXECUTOR)
 #define HAS_THREADING_MODEL_THREAD
