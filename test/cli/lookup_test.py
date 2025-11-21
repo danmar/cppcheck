@@ -392,17 +392,19 @@ def test_platform_lookup_path(tmpdir):
     env['PATH'] = path
     exitcode, stdout, stderr, _ = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
     assert exitcode == 0, stdout if stdout else stderr
-    lookup1 = os.path.join(tmpdir, 'avr8.xml')
-    lookup2 = os.path.join(tmpdir, 'platforms', 'avr8.xml')
-    lookup3 = os.path.join(path, 'avr8.xml')
-    lookup4 = os.path.join(path, 'platforms', 'avr8.xml')
-    lines = stdout.splitlines()
+    def try_fail(f):
+        f = f.replace('\\', '/').replace('"', '\'')
+        return "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(f, f)
+    def try_success(f):
+        f = f.replace('\\', '/').replace('"', '\'')
+        return "try to load platform file '{}' ... Success".format(f)
+    lines = stdout.replace('\\', '/').replace('"', '\'').splitlines()
     assert lines == [
         "looking for platform 'avr8.xml'",
-        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(lookup1, lookup1),
-        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(lookup2, lookup2),
-        "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(lookup3, lookup3),
-        "try to load platform file '{}' ... Success".format(lookup4),
+        try_fail(os.path.join(tmpdir, 'avr8.xml')),
+        try_fail(os.path.join(tmpdir, 'platforms', 'avr8.xml')),
+        try_fail(os.path.join(path, 'avr8.xml')),
+        try_success(os.path.join(path, 'platforms', 'avr8.xml')),
         'Checking {} ...'.format(test_file)
     ]
 
