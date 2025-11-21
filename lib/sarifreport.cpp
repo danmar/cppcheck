@@ -25,6 +25,9 @@
 #include <set>
 #include <sstream>
 
+static const char sarifVersion[] = "2.1.0";
+static const char sarifSchema[] = "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
+
 void SarifReport::addFinding(ErrorMessage msg)
 {
     mFindings.push_back(std::move(msg));
@@ -180,14 +183,14 @@ std::string SarifReport::serialize(std::string productName) const
         version.erase(version.find(' '), std::string::npos);
 
     picojson::object doc;
-    doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
+    doc["$schema"] = picojson::value(sarifSchema);
     doc["runs"] = serializeRuns(productName, version);
 
     // Insert "version" property at the start.
     // From SARIF specification (https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html#_Toc141790730):
     // Although the order in which properties appear in a JSON object value is not semantically significant, the version property SHOULD appear first.
 
-    return "{\n  \"version\": \"2.1.0\"," + picojson::value(doc).serialize(true).substr(1);
+    return "{\n  \"version\": \"" + sarifVersion + "\"," + picojson::value(doc).serialize(true).substr(1);
 }
 
 std::string SarifReport::sarifSeverity(const ErrorMessage& errmsg)
