@@ -1968,8 +1968,6 @@ static const Token* skipCVRefs(const Token* tok, const Token* endTok)
 
 static bool isNotEqual(std::pair<const Token*, const Token*> x, std::pair<const Token*, const Token*> y)
 {
-    if (x == y)
-        return false;
     const Token* start1 = x.first;
     const Token* start2 = y.first;
     if (start1 == nullptr || start2 == nullptr)
