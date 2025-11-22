@@ -136,9 +136,6 @@ public:
     /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
 
-    /** @brief check all configurations (false if -D or --max-configs is used */
-    bool checkAllConfigurations = true;
-
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration{};
 
@@ -294,9 +291,31 @@ public:
     int loadAverage{};
 #endif
 
-    /** @brief Maximum number of configurations to check before bailing.
-        Default is 12. (--max-configs=N) */
-    int maxConfigs = 12;
+    /** --max-configs value */
+    int maxConfigsOption = 0; // "Not Assigned" value
+
+    /** max configs from --project option */
+    int maxConfigsProject = 0; // "Not Assigned" value
+
+    static const int maxConfigsNotAssigned;
+    static const int maxConfigsDefault;
+
+    bool isMaxConfigsAssigned() const {
+        return maxConfigsOption != maxConfigsNotAssigned || maxConfigsProject != maxConfigsNotAssigned;
+    }
+
+    /** @brief Maximum number of configurations to check before bailing. */
+    int getMaxConfigs() const {
+        if (force)
+            return 0x7fffffff;
+        if (maxConfigsOption != maxConfigsNotAssigned)
+            return maxConfigsOption;
+        if (maxConfigsProject != maxConfigsNotAssigned)
+            return maxConfigsProject;
+        if (!userDefines.empty())
+            return 1;
+        return maxConfigsDefault;
+    }
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth = 2;

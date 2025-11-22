@@ -1415,7 +1415,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-f", "--max-configs=12", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(12, settings->maxConfigs);
+        ASSERT_EQUALS(12, settings->maxConfigsOption);
         ASSERT_EQUALS(false, settings->force);
     }
 

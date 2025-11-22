@@ -43,6 +43,9 @@
 
 std::atomic<bool> Settings::mTerminated;
 
+const int Settings::maxConfigsNotAssigned = 0;
+const int Settings::maxConfigsDefault = 12;
+
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
 const char Settings::SafeChecks::XmlClasses[] = "class-public";
 const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
