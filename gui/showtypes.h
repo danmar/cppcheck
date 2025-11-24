@@ -21,8 +21,6 @@
 
 #include <cstdint>
 
-#include <QVariant>
-
 enum class Severity : std::uint8_t;
 
 /// @addtogroup GUI
@@ -102,21 +100,6 @@ public:
      * @return Severity converted to ShowTypes value
      */
     static ShowTypes::ShowType SeverityToShowType(Severity severity);
-
-    /**
-     * @brief Convert ShowType to severity string
-     * @param type ShowType to convert
-     * @return ShowType converted to severity
-     */
-    static Severity ShowTypeToSeverity(ShowTypes::ShowType type);
-
-    /**
-     * @brief Convert QVariant (that contains an int) to Showtypes value
-     *
-     * @param data QVariant (that contains an int) to be converted
-     * @return data converted to ShowTypes
-     */
-    static ShowTypes::ShowType VariantToShowType(const QVariant &data);
 
     bool mVisible[ShowNone];
 };

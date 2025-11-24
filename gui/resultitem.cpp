@@ -1,6 +1,6 @@
-/* -*- C++ -*-
+/*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
+#include "resultitem.h"
 
-class TestResultsTree : public QObject {
-    Q_OBJECT
-
-private slots:
-    void test1() const;
-    void multiLineResult() const;
-    void resultsInSameFile() const;
-    void testReportType() const;
-    void testGetGuidelineError() const;
-};
+ResultItem::ResultItem(QSharedPointer<ErrorItem> errorItem, Type type, int errorPathIndex)
+    : errorItem(std::move(errorItem)), mType(type), mErrorPathIndex(errorPathIndex)
+{}

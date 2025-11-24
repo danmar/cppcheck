@@ -81,6 +81,20 @@ public:
     QString toString() const;
     QString tool() const;
 
+    int getMainLocIndex() const {
+        return isClangResult() ? 0 : errorPath.size() - 1;
+    }
+
+    QString getFile() const {
+        return errorPath.isEmpty() ? QString() : errorPath[getMainLocIndex()].file;
+    }
+
+    bool isClangResult() const {
+        return errorId.startsWith("clang");
+    }
+
+    bool filterMatch(const QString& filter) const;
+
     QString file0;
     QString errorId;
     Severity severity;
@@ -100,33 +114,9 @@ public:
     QString tags;
 
     /**
-     * Compare "CID"
+     * Compare Hash and fields
      */
-    static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
+    static bool same(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
 };
-
-// NOLINTNEXTLINE(performance-no-int-to-ptr)
-Q_DECLARE_METATYPE(ErrorItem)
-
-/**
- * @brief A class containing error data for one shown error line.
- */
-class ErrorLine {
-public:
-    QString file;
-    int line;
-    QString file0;
-    QString errorId;
-    int cwe;
-    unsigned long long hash;
-    bool inconclusive;
-    Severity severity;
-    QString summary;
-    QString message;
-    QString sinceDate;
-    QString tags;
-    QString remark;
-};
-
 /// @}
 #endif // ERRORITEM_H

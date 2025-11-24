@@ -134,6 +134,115 @@ void TestResultsTree::test1() const
     QCOMPARE(tree.isRowHidden(0,QModelIndex()), false); // Show item
 }
 
+static QErrorPathItem createErrorPathItem(QString file, int line, int column, QString info) {
+    QErrorPathItem ret;
+    ret.file = std::move(file);
+    ret.line = line;
+    ret.column = column;
+    ret.info = std::move(info);
+    return ret;
+}
+
+static ErrorItem createErrorItem(const QString& file, int line, Severity sev, const QString& message, QString id) {
+    ErrorItem ret;
+    ret.errorId = std::move(id);
+    ret.severity = sev;
+    ret.cwe = ret.hash = 0;
+    ret.file0 = file;
+    ret.inconclusive = false;
+    ret.message = ret.summary = message;
+    ret.errorPath << createErrorPathItem(file, line, 1, message);
+    return ret;
+}
+
+void TestResultsTree::multiLineResult() const
+{
+    // Create tree with 1 multiline message
+    ResultsTree tree(nullptr);
+    ErrorItem errorItem = createErrorItem("file1.c", 10, Severity::style, "test", "bugId");
+    errorItem.errorPath << createErrorPathItem("file2.c", 23, 2, "abc");
+    tree.addErrorItem(errorItem);
+
+    // Verify model
+    const auto* model = dynamic_cast<QStandardItemModel*>(tree.model());
+    QVERIFY(model != nullptr);
+    QVERIFY(model->rowCount() == 1);
+
+    // Verify file item
+    const ResultItem* fileItem = dynamic_cast<ResultItem*>(model->item(0,0));
+    QVERIFY(fileItem != nullptr);
+    QCOMPARE(fileItem->getType(), ResultItem::Type::file);
+    QCOMPARE(fileItem->text(), "file2.c");
+    QCOMPARE(fileItem->getErrorPathItem().file, "file2.c");
+    QVERIFY(fileItem->rowCount() == 1);
+
+    // Verify message item
+    const ResultItem* res = dynamic_cast<ResultItem*>(fileItem->child(0,0));
+    QVERIFY(res != nullptr);
+    QCOMPARE(res->text(), "file2.c");
+    QVERIFY(res->errorItem != nullptr);
+    QCOMPARE(res->errorItem->toString(),
+             "file2.c:23:2:style: test [bugId]\n"
+             "file1.c:10:1:note: test\n"
+             "file2.c:23:2:note: abc");
+    QCOMPARE(res->getErrorPathItem().file, "file2.c");
+    QVERIFY(res->rowCount() == 2);
+    QVERIFY(res->columnCount() > 5);
+    // Verify both notes
+    for (int row = 0; row < 2; ++row) {
+        for (int col = 0; col < res->columnCount(); ++col) {
+            const ResultItem* item = dynamic_cast<ResultItem*>(res->child(row,col));
+            QVERIFY(item);
+            QCOMPARE(item->errorItem.get(), res->errorItem.get());
+            QCOMPARE(item->getType(), ResultItem::Type::note);
+            QCOMPARE(item->getErrorPathItem().file, row == 0 ? "file1.c" : "file2.c");
+        }
+    }
+}
+
+void TestResultsTree::resultsInSameFile() const
+{
+    ResultsTree tree(nullptr);
+    tree.addErrorItem(createErrorItem("file1.c", 10, Severity::style, "test", "bugId"));
+    tree.addErrorItem(createErrorItem("file1.c", 20, Severity::style, "test", "bugId"));
+    const auto* model = dynamic_cast<QStandardItemModel*>(tree.model());
+    QVERIFY(model != nullptr);
+    QVERIFY(model->rowCount() == 1);
+
+    const ResultItem* fileItem = dynamic_cast<ResultItem*>(model->item(0,0));
+    QVERIFY(fileItem != nullptr);
+    QCOMPARE(fileItem->getType(), ResultItem::Type::file);
+    QCOMPARE(fileItem->text(), "file1.c");
+    QCOMPARE(fileItem->getErrorPathItem().file, "file1.c");
+    QVERIFY(fileItem->rowCount() == 2);
+
+    const ResultItem* res1 = dynamic_cast<ResultItem*>(fileItem->child(0,0));
+    QVERIFY(res1 != nullptr);
+    QCOMPARE(res1->text(), "file1.c");
+    QVERIFY(res1->errorItem != nullptr);
+    QCOMPARE(res1->errorItem->toString(), "file1.c:10:1:style: test [bugId]");
+    QVERIFY(res1->rowCount() == 0);
+    for (int col = 0; col < fileItem->columnCount(); ++col) {
+        const ResultItem* item = dynamic_cast<ResultItem*>(fileItem->child(0,col));
+        QVERIFY(item);
+        QCOMPARE(item->errorItem.get(), res1->errorItem.get());
+        QCOMPARE(item->getType(), ResultItem::Type::message);
+    }
+
+    const ResultItem* res2 = dynamic_cast<ResultItem*>(fileItem->child(1,0));
+    QVERIFY(res2 != nullptr);
+    QCOMPARE(res2->text(), "file1.c");
+    QVERIFY(res2->errorItem != nullptr);
+    QCOMPARE(res2->errorItem->toString(), "file1.c:20:1:style: test [bugId]");
+    QVERIFY(res2->rowCount() == 0);
+    for (int col = 0; col < fileItem->columnCount(); ++col) {
+        const ResultItem* item = dynamic_cast<ResultItem*>(fileItem->child(1,col));
+        QVERIFY(item);
+        QCOMPARE(item->errorItem.get(), res2->errorItem.get());
+        QCOMPARE(item->getType(), ResultItem::Type::message);
+    }
+}
+
 void TestResultsTree::testReportType() const
 {
     TestReport report("{id},{classification},{guideline}");
