@@ -132,6 +132,8 @@ public:
 
     char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
+    bool windows{false}; // indicates if the platform is Windows
+
     enum Type : std::uint8_t {
         Unspecified, // No platform specified
         Native, // whatever system this code was compiled on
@@ -167,9 +169,7 @@ public:
      * @return true if Windows platform type.
      */
     bool isWindows() const {
-        return type == Type::Win32A ||
-               type == Type::Win32W ||
-               type == Type::Win64;
+        return windows;
     }
 
     const char *toString() const {
