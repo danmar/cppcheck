@@ -865,7 +865,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                         if (Token::findmatch(condBeg, ". %varid%", condEnd, assignToks.first->varId()))
                             break;
                     }
-                    ++identlevel3;
+                    ++indentlevel3;
                 }
 
                 else if (tok3->str() == "}") {
