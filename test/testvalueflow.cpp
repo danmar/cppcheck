@@ -9080,7 +9080,7 @@ private:
             "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_1\n"
             "[test.cpp:6]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_2\n",
             errout_str());
-        
+
         bailout(
             "std::string_view f() {\n"
             "    return \"abc\"sv;\n"
