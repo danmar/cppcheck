@@ -1521,6 +1521,8 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (Token::Match(tok->next(), "&|&&|* *| *| )|,|%var%|const"))
             continue;
+        if (Token::Match(tok->previous(), "%str%"))
+            continue;
         // Very likely a typelist
         if (Token::Match(tok->tokAt(-2), "%type% ,") || Token::Match(tok->next(), ", %type%"))
             continue;
