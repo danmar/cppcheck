@@ -9066,8 +9066,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 
-    void valueFlowBailoutIncompleteVar() { // #12526
-        bailout(
+    void valueFlowBailoutIncompleteVar() {
+        bailout( // #12526
             "int f1() {\n"
             "    return VALUE_1;\n"
             "}\n"
@@ -9080,6 +9080,13 @@ private:
             "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_1\n"
             "[test.cpp:6]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_2\n",
             errout_str());
+        
+        bailout(
+            "std::string_view f() {\n"
+            "    return \"abc\"sv;\n"
+            "}\n"
+            );
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout_str());
     }
 
     void valueFlowBailoutNoreturn() { // #13718
