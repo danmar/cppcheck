@@ -1084,13 +1084,11 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "* %name% =")) {
+        else if (Token::Match(ftok, "* %name% =") && (!func.isConstructor() || (!ftok->next()->variable() || ftok->next()->variable()->isArray()))) {
             assignVar(usage, ftok->next()->varId());
-        } else if (Token::Match(ftok, "( * %name% ) =")) {
+        } else if (Token::Match(ftok, "( * %name% ) =") && (!func.isConstructor() || (!ftok->tokAt(2)->variable() || ftok->tokAt(2)->variable()->isArray()))) {
             assignVar(usage, ftok->tokAt(2)->varId());
-        } else if (Token::Match(ftok, "* ( %name% ) =")) {
-            assignVar(usage, ftok->tokAt(2)->varId());
-        } else if (Token::Match(ftok, "* this . %name% =")) {
+        } else if (Token::Match(ftok, "* this . %name% =") && (!func.isConstructor() || (!ftok->tokAt(3)->variable() || ftok->tokAt(3)->variable()->isArray()))) {
             assignVar(usage, ftok->tokAt(3)->varId());
         } else if (astIsRangeBasedForDecl(ftok)) {
             if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {

@@ -4165,6 +4165,18 @@ private:
               "    std::map<int, int>* pMap = nullptr;\n"
               "};\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #6294
+              "    S() : r(new int) {\n"
+              "        *p = 0;\n"
+              "        *(q) = 1;\n"
+              "        *r = 2;\n"
+              "    }\n"
+              "    int *p, *q, *r;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning) Member variable 'S::p' is not initialized in the constructor. [uninitMemberVar]\n"
+                      "[test.cpp:2:5]: (warning) Member variable 'S::q' is not initialized in the constructor. [uninitMemberVar]\n",
+                      errout_str());
     }
 
     void uninitConstVar() {
