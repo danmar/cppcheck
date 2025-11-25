@@ -659,6 +659,19 @@ std::set<std::string> Preprocessor::getConfigs() const
 
     std::set<std::string> defined = { "__cplusplus" };
 
+    // Insert library defines
+    for (const auto &define : mSettings.library.defines()) {
+
+        const std::string::size_type paren = define.find("(");
+        const std::string::size_type space = define.find(" ");
+        std::string::size_type end = space;
+
+        if (paren != std::string::npos && paren < space)
+            end = paren;
+
+        defined.insert(define.substr(0, end));
+    }
+
     ::getConfigs(mTokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
     for (const auto &filedata : mFileCache) {
