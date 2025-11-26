@@ -303,5 +303,50 @@ void TestResultsTree::testGetGuidelineError() const
     QCOMPARE(report.output, "id1,Required,1.3");
 }
 
+void TestResultsTree::misraCReportShowClassifications() const
+{
+    ResultsTree tree(nullptr);
+    tree.showResults(ShowTypes::ShowType::ShowErrors, true);
+    tree.showResults(ShowTypes::ShowType::ShowWarnings, true);
+    tree.showResults(ShowTypes::ShowType::ShowStyle, true);
+    tree.setReportType(ReportType::misraC2012);
+    tree.addErrorItem(createErrorItem("file1.c", 10, Severity::style, "some rule text", "premium-misra-c-2012-1.1")); // Required
+    tree.addErrorItem(createErrorItem("file1.c", 20, Severity::style, "some rule text", "premium-misra-c-2012-1.2")); // Advisory
+    tree.addErrorItem(createErrorItem("file1.c", 30, Severity::style, "some rule text", "premium-misra-c-2012-9.1")); // Mandatory
+    QCOMPARE(tree.isRowHidden(0, QModelIndex()), false);
+
+    const auto* model = dynamic_cast<QStandardItemModel*>(tree.model());
+    QVERIFY(model != nullptr);
+    QVERIFY(model->rowCount() == 1);
+    const ResultItem* fileItem = dynamic_cast<ResultItem*>(model->item(0,0));
+    QVERIFY(fileItem != nullptr);
+    QVERIFY(fileItem->rowCount() == 3);
+
+    QCOMPARE(tree.isRowHidden(0, fileItem->index()), false);
+    QCOMPARE(tree.isRowHidden(1, fileItem->index()), false);
+    QCOMPARE(tree.isRowHidden(2, fileItem->index()), false);
+
+    tree.showResults(ShowTypes::ShowType::ShowErrors, false);
+    tree.showResults(ShowTypes::ShowType::ShowWarnings, true);
+    tree.showResults(ShowTypes::ShowType::ShowStyle, true);
+    QCOMPARE(tree.isRowHidden(0, fileItem->index()), false);
+    QCOMPARE(tree.isRowHidden(1, fileItem->index()), false);
+    QCOMPARE(tree.isRowHidden(2, fileItem->index()), true);
+
+    tree.showResults(ShowTypes::ShowType::ShowErrors, true);
+    tree.showResults(ShowTypes::ShowType::ShowWarnings, false);
+    tree.showResults(ShowTypes::ShowType::ShowStyle, true);
+    QCOMPARE(tree.isRowHidden(0, fileItem->index()), true);
+    QCOMPARE(tree.isRowHidden(1, fileItem->index()), false);
+    QCOMPARE(tree.isRowHidden(2, fileItem->index()), false);
+
+    tree.showResults(ShowTypes::ShowType::ShowErrors, true);
+    tree.showResults(ShowTypes::ShowType::ShowWarnings, true);
+    tree.showResults(ShowTypes::ShowType::ShowStyle, false);
+    QCOMPARE(tree.isRowHidden(0, fileItem->index()), false);
+    QCOMPARE(tree.isRowHidden(1, fileItem->index()), true);
+    QCOMPARE(tree.isRowHidden(2, fileItem->index()), false);
+}
+
 QTEST_MAIN(TestResultsTree)
 

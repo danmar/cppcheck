@@ -27,4 +27,5 @@ private slots:
     void resultsInSameFile() const;
     void testReportType() const;
     void testGetGuidelineError() const;
+    void misraCReportShowClassifications() const;
 };

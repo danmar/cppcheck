@@ -241,25 +241,12 @@ bool ResultsTree::addErrorItem(const ErrorItem& errorItem)
 
     QSharedPointer<ErrorItem> errorItemPtr{new ErrorItem(errorItem)};
 
-    bool showItem = true;
-
-    // Ids that are temporarily hidden..
-    if (mHiddenMessageId.contains(errorItem.errorId))
-        showItem = false;
-
-    //If specified, filter on summary, message, filename, and id
-    if (showItem && !mFilter.isEmpty() && !errorItem.filterMatch(mFilter))
-        showItem = false;
-
-    if (showItem) {
-        if (mReportType == ReportType::normal)
-            showItem = mShowSeverities.isShown(errorItemPtr->severity);
-        else {
-            errorItemPtr->guideline = getGuideline(mReportType, mGuideline, errorItemPtr->errorId, errorItemPtr->severity);
-            errorItemPtr->classification = getClassification(mReportType, errorItemPtr->guideline);
-            showItem = !errorItemPtr->classification.isEmpty() && mShowSeverities.isShown(getSeverityFromClassification(errorItemPtr->classification));
-        }
+    if (mReportType != ReportType::normal) {
+        errorItemPtr->guideline = getGuideline(mReportType, mGuideline, errorItemPtr->errorId, errorItemPtr->severity);
+        errorItemPtr->classification = getClassification(mReportType, errorItemPtr->guideline);
     }
+
+    const bool showItem = !isErrorItemHidden(errorItemPtr);
 
     // if there is at least one error that is not hidden, we have a visible error
     mVisibleErrors |= showItem;
@@ -540,28 +527,7 @@ void ResultsTree::refreshTree()
             }
 
             //Check if this error should be hidden
-            bool hide = child->hidden || mHiddenMessageId.contains(child->errorItem->errorId);
-
-            if (!hide) {
-                if (mReportType == ReportType::normal)
-                    hide = !mShowSeverities.isShown(child->errorItem->severity);
-                else {
-                    hide = child->errorItem->classification.isEmpty() || !mShowSeverities.isShown(child->errorItem->severity);
-                }
-            }
-
-            // If specified, filter on summary, message, filename, and id
-            if (!hide && !mFilter.isEmpty()) {
-                hide = !child->errorItem->filterMatch(mFilter);
-            }
-
-            // Tool filter
-            if (!hide) {
-                if (child->errorItem->errorId.startsWith("clang"))
-                    hide = !mShowClang;
-                else
-                    hide = !mShowCppcheck;
-            }
+            const bool hide = child->hidden || isErrorItemHidden(child->errorItem);
 
             if (!hide) {
                 showFile = true;
@@ -576,6 +542,32 @@ void ResultsTree::refreshTree()
         setRowHidden(i, QModelIndex(), !showFile);
     }
     sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
+}
+
+bool ResultsTree::isErrorItemHidden(const QSharedPointer<ErrorItem> errorItem) const {
+    //Check if this error should be hidden
+    if (mHiddenMessageId.contains(errorItem->errorId))
+        return true;
+
+    bool hide;
+    if (mReportType == ReportType::normal)
+        hide = !mShowSeverities.isShown(errorItem->severity);
+    else
+        hide = errorItem->classification.isEmpty() || !mShowSeverities.isShown(getSeverityFromClassification(errorItem->classification));
+
+    // If specified, filter on summary, message, filename, and id
+    if (!hide && !mFilter.isEmpty())
+        hide = !errorItem->filterMatch(mFilter);
+
+    // Tool filter
+    if (!hide) {
+        if (errorItem->isClangResult())
+            hide = !mShowClang;
+        else
+            hide = !mShowCppcheck;
+    }
+
+    return hide;
 }
 
 ResultItem *ResultsTree::ensureFileItem(const QSharedPointer<ErrorItem>& errorItem, bool hide)

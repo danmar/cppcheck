@@ -208,6 +208,13 @@ public:
 
     void setReportType(ReportType reportType);
 
+    /**
+     * @brief should errorItem be hidden by filter/severity/etc?
+     * @param errorItem error item
+     * @return true if error item should be hidden
+     */
+    bool isErrorItemHidden(const QSharedPointer<ErrorItem> errorItem) const;
+
 signals:
     /**
      * @brief Signal that results have been hidden or shown
