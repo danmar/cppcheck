@@ -762,27 +762,13 @@ void ResultsTree::startApplication(const ResultItem *target, int application)
     }
 
     if (target && application >= 0 && application < mApplications->getApplicationCount() && target->parent()) {
-        // Make sure we are working with the first column
-        if (target->column() != 0)
-            target = dynamic_cast<ResultItem*>(target->parent()->child(target->row(), 0));
-
-        if (!target || !target->errorItem) {
-            QMessageBox msg(QMessageBox::Critical,
-                            tr("Cppcheck"),
-                            tr("Internal error in %1, failed to find ErrorPathItem").arg(__FUNCTION__),
-                            QMessageBox::Ok,
-                            this);
-            msg.exec();
-            return;
-        }
-
-        const auto errorPathItem = target->getErrorPathItem();
+        const auto& errorPathItem = target->getErrorPathItem();
 
         //Replace (file) with filename
         QString file = QDir::toNativeSeparators(errorPathItem.file);
         qDebug() << "Opening file: " << file;
 
-        QFileInfo info(file);
+        const QFileInfo info(file);
         if (!info.exists()) {
             if (info.isAbsolute()) {
                 QMessageBox msgbox(this);
@@ -811,7 +797,7 @@ void ResultsTree::startApplication(const ResultItem *target, int application)
         QString params = app.getParameters();
         params.replace("(file)", file, Qt::CaseInsensitive);
 
-        params.replace("(line)", QString("%1").arg(errorPathItem.line), Qt::CaseInsensitive);
+        params.replace("(line)", QString::number(errorPathItem.line), Qt::CaseInsensitive);
 
         params.replace("(message)", target->errorItem->message, Qt::CaseInsensitive);
         params.replace("(severity)", severityToTranslatedString(target->errorItem->severity), Qt::CaseInsensitive);
