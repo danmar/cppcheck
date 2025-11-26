@@ -33,7 +33,7 @@ public:
     bool hidden{};
 
     QErrorPathItem getErrorPathItem() const {
-        if (!errorItem || errorItem->errorPath.isEmpty())
+        if (!errorItem || mErrorPathIndex < 0 || mErrorPathIndex >= errorItem->errorPath.size())
             return {};
         return errorItem->errorPath[mErrorPathIndex];
     }
