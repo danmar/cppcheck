@@ -424,7 +424,7 @@ protected:
     /**
      * @brief Create new normal item.
      *
-     * Normal item has left alignment and text set also as tooltip.
+     * Normal item has left alignment.
      * @param text text for the item
      * @param errorItem errorItem pointer
      * @param type (file/message)
