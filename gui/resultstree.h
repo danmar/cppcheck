@@ -392,7 +392,7 @@ protected:
      * @param icon Should a default backtrace item icon be added
      * @param type type of items to create file/message/note
      * @param errorPathIndex errorPathIndex
-     * @return newly created QStandardItem *
+     * @return newly created ResultItem *
      */
     ResultItem *addBacktraceFiles(ResultItem *parent,
                                   const QSharedPointer<ErrorItem>& errorItem,
