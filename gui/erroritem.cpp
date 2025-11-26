@@ -109,6 +109,6 @@ bool ErrorItem::filterMatch(const QString& filter) const
     return std::any_of(errorPath.cbegin(), errorPath.cend(),
                        [filter](const auto& e) {
         return e.file.contains(filter, Qt::CaseInsensitive) ||
-            e.info.contains(filter, Qt::CaseInsensitive);
+               e.info.contains(filter, Qt::CaseInsensitive);
     });
 }

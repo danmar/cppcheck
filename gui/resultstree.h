@@ -388,7 +388,7 @@ protected:
      * @return newly created QStandardItem *
      */
     ResultItem *addBacktraceFiles(ResultItem *parent,
-                                  QSharedPointer<ErrorItem> errorItem,
+                                  const QSharedPointer<ErrorItem>& errorItem,
                                   bool hide,
                                   const QString &icon,
                                   ResultItem::Type type,

@@ -295,7 +295,7 @@ bool ResultsTree::addErrorItem(const ErrorItem& errorItem)
 }
 
 ResultItem *ResultsTree::addBacktraceFiles(ResultItem *parent,
-                                           QSharedPointer<ErrorItem> errorItem,
+                                           const QSharedPointer<ErrorItem>& errorItem,
                                            const bool hide,
                                            const QString &icon,
                                            ResultItem::Type type,
