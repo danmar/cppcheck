@@ -494,9 +494,20 @@ def tr_str(td_th, line, id, cwe, severity, classification, guideline, message, t
     if classification:
         items.extend([classification, guideline])
     if htmlfile:
-        ret += '<%s><a href="%s#line-%d">%d</a></%s>' % (td_th, htmlfile, line, line, td_th)
+        if htmlfile.startswith("http://") or htmlfile.startswith("https://"):
+            # GitHub/GitLab style line anchor
+            href = f"{htmlfile.rstrip('#L1')}#L{line}"
+            # Emit **line number with link**
+            ret += f'<{td_th}><a href="{href}" target="_blank" rel="noopener noreferrer">{line}</a></{td_th}>'
+        else:
+            # local HTML annotated
+            href = f"{htmlfile}#line-{line}"
+            # Emit **line number with link**
+            ret += f'<{td_th}><a href="{href}">{line}</a></{td_th}>'
+
+        # Emit id, cwe, severity, classification, ...
         for item in items:
-            ret += '<%s>%s</%s>' % (td_th, item, td_th)
+            ret += f'<{td_th}>{item}</{td_th}>'
     else:
         items.insert(0,line)
         for item in items:
@@ -675,7 +686,9 @@ def main() -> None:
                               'written.')
     parser.add_argument('--source-dir', dest='source_dir',
                          help='Base directory where source code files can be '
-                              'found.')
+                              'found, or a URL to a remote GitHub/GitLab '
+                              'repository including a branch, e.g. '
+                              '--source-dir=https://github.com/<username>/<repo>/blob/<branch>/')
     parser.add_argument('--add-author-information', dest='add_author_information',
                         help='Blame information to include. '
                              'Adds specified author information. '
@@ -704,6 +717,10 @@ def main() -> None:
     source_dir = os.getcwd()
     if options.source_dir:
         source_dir = options.source_dir
+
+    is_remote = False
+    if source_dir.startswith("http://") or source_dir.startswith("https://"):
+        is_remote = True
 
     add_author_information = []
     if options.add_author_information:
@@ -753,9 +770,14 @@ def main() -> None:
     for error in contentHandler.errors:
         filename = error['file']
         if filename not in files:
-            files[filename] = {
-                'errors': [], 'htmlfile': str(file_no) + '.html'}
-            file_no = file_no + 1
+            if is_remote:
+                # Construct remote URL for GitHub/GitLab
+                # tr_str() will use the actual line number, so we can just start with line 1
+                remote_url = source_dir.rstrip('/') + '/' + filename + '#L1'
+                files[filename] = {'errors': [], 'htmlfile': remote_url}
+            else:
+                files[filename] = {'errors': [], 'htmlfile': str(file_no) + '.html'}
+                file_no += 1
         files[filename]['errors'].append(error)
 
     # Make sure that the report directory is created if it doesn't exist.
@@ -793,6 +815,11 @@ def main() -> None:
             lines.append(error['line'])
 
         if filename == '':
+            continue
+
+        if is_remote:
+            # Remote source: do NOT generate local annotated HTML files.
+            # The index will still point directly to GitHub/GitLab URLs.
             continue
 
         source_filename = os.path.join(source_dir, filename)
