@@ -419,7 +419,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     std::vector<std::string> lookupPaths{
         Path::getCurrentPath(), // TODO: do we want to look in CWD?
-        Path::getPathFromFilename(argv[0])
+        Path::getPathFromFilename(mSettings.exename),
     };
 
     bool executorAuto = true;
