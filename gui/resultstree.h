@@ -213,7 +213,7 @@ public:
      * @param errorItem error item
      * @return true if error item should be hidden
      */
-    bool isErrorItemHidden(const QSharedPointer<ErrorItem> errorItem) const;
+    bool isErrorItemHidden(const QSharedPointer<ErrorItem>& errorItem) const;
 
 signals:
     /**

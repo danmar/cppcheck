@@ -544,7 +544,7 @@ void ResultsTree::refreshTree()
     sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
 }
 
-bool ResultsTree::isErrorItemHidden(const QSharedPointer<ErrorItem> errorItem) const {
+bool ResultsTree::isErrorItemHidden(const QSharedPointer<ErrorItem>& errorItem) const {
     //Check if this error should be hidden
     if (mHiddenMessageId.contains(errorItem->errorId))
         return true;
