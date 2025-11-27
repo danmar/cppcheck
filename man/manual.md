@@ -287,15 +287,20 @@ To ignore certain folders in the project you can use `-i`. This will skip the an
 
     cppcheck --project=foobar.cppcheck -ifoo
 
-## CMake
+## Compilation database (cmake etc)
 
-Generate a compile database (a JSON file containing compilation commands for each source file):
+Many build systems can generate a compilation database (a JSON file containing compilation commands for each source file).
+Example `cmake` command to generate the file:
 
     cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON .
 
-The file `compile_commands.json` is created in the current folder. Now run Cppcheck like this:
+When you have a `compile_commands.json` file you can run Cppcheck like this:
 
     cppcheck --project=compile_commands.json
+
+By default only 1 configuration is checked because that is consistent with the compilation. If you want to check more configurations you can use `--max-configs` or `--force`. For example:
+
+    cppcheck --project=compile_commands.json --force
 
 To ignore certain folders you can use `-i`. This will skip analysis of source files in the `foo` folder.
 
@@ -338,11 +343,15 @@ To ignore certain folders in the project you can use `-i`. This will skip analys
 
 ## Other
 
-If you can generate a compile database, then it is possible to import that in Cppcheck.
+If you generate a compilation database, then it is possible to import that in Cppcheck.
 
-In Linux you can use for instance the `bear` (build ear) utility to generate a compile database from arbitrary build tools:
+### Makefile
+
+In Linux you can convert a Makefile to a compile_commands.json using for instance `bear` (build ear) utility:
 
     bear -- make
+
+If you don't use Linux; there are python scripts that converts a Makefile into a compilation database.
 
 # Preprocessor Settings
 
@@ -388,14 +397,14 @@ Example:
     cppcheck test.c
 
     # only test configuration "-DA"
-    # No bug is found (#error)
+    # No bug is found; because C is not defined the #error will cause a preprocessor error
     cppcheck -DA test.c
 
     # only test configuration "-DA -DC"
     # The first bug is found
     cppcheck -DA -DC test.c
 
-    # The configuration "-DC" is tested
+    # Test all configurations that does not define "A"
     # The last bug is found
     cppcheck -UA test.c
 
@@ -403,6 +412,13 @@ Example:
     # The two first bugs are found
     cppcheck --force -DA test.c
 
+    # only test 1 valid configuration
+    # Bug(s) will be found
+    cppcheck --max-configs=1 test.c
+
+    # test 2 valid configurations with "X" defined.
+    # Bug(s) will be found
+    cppcheck --max-configs=2 -DX test.c
 
 ## Include paths
 

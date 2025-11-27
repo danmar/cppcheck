@@ -34,6 +34,14 @@ private:
         TEST_CASE(loadCppcheckCfgSafety);
         TEST_CASE(getNameAndVersion);
         TEST_CASE(checkLevelDefault);
+
+        TEST_CASE(getMaxConfigsDefault);
+        TEST_CASE(getMaxConfigsOpt);
+        TEST_CASE(getMaxConfigsForce);
+        TEST_CASE(getMaxConfigsOptAndForce);
+        TEST_CASE(getMaxConfigsDefines);
+        TEST_CASE(getMaxConfigsDefinesAndOpt);
+        TEST_CASE(getMaxConfigsOptAndProject);
     }
 
     void simpleEnableGroup() const {
@@ -286,6 +294,52 @@ private:
         ASSERT_EQUALS(s.vfOptions.maxSubFunctionArgs, 256);
         ASSERT_EQUALS(true, s.vfOptions.doConditionExpressionAnalysis);
         ASSERT_EQUALS(-1, s.vfOptions.maxForwardBranches);
+    }
+
+    void getMaxConfigsDefault() const {
+        Settings s;
+        ASSERT_EQUALS(12, s.getMaxConfigs());
+    }
+
+    void getMaxConfigsOpt() const {
+        Settings s;
+        s.maxConfigsOption = 1;
+        ASSERT_EQUALS(1, s.getMaxConfigs());
+    }
+
+    void getMaxConfigsForce() const {
+        Settings s;
+        s.force = true;
+        ASSERT(s.getMaxConfigs() > 1000);
+    }
+
+    void getMaxConfigsOptAndForce() const {
+        Settings s;
+        s.maxConfigsOption = 1;
+        s.force = true;
+        ASSERT(s.getMaxConfigs() > 1000);
+    }
+
+    void getMaxConfigsDefines() const {
+        Settings s;
+        s.userDefines = "X=1";
+        ASSERT_EQUALS(1, s.getMaxConfigs());
+    }
+
+    void getMaxConfigsDefinesAndOpt() const {
+        Settings s;
+        s.userDefines = "X=1";
+        s.maxConfigsOption = 3;
+        ASSERT_EQUALS(3, s.getMaxConfigs());
+    }
+
+    void getMaxConfigsOptAndProject() const {
+        Settings s;
+        s.maxConfigsOption = 3;
+        s.maxConfigsProject = 1;
+        ASSERT_EQUALS(3, s.getMaxConfigs());
+        s.maxConfigsProject = 10;
+        ASSERT_EQUALS(3, s.getMaxConfigs());
     }
 };
 

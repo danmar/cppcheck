@@ -3952,8 +3952,8 @@ def test_simplecpp_syntax_error(tmp_path):
 
 @pytest.mark.parametrize('max_configs,number_of_configs,check_config,expected_warn', [
     # max configs = default, max configs < number of configs => warn
-    (12, 20, False, True),
-    (12, 20, True, True),
+    (None, 20, False, True),
+    (None, 20, True, True),
 
     # max configs != default, max configs < number of configs => warn if --check-config
     (6, 20, False, False),
@@ -3971,7 +3971,12 @@ def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, exp
             f.write(f'#{dir} defined(X{i})\nx = {i};\n')
         f.write('#endif\n')
 
-    args = [f'--max-configs={max_configs}', '--enable=information', '--template=simple', str(test_file)]
+    args = ['--enable=information', '--template=simple', str(test_file)]
+
+    if max_configs is None:
+        max_configs = 12  # default value
+    else:
+        args = [f'--max-configs={max_configs}'] + args
 
     if check_config:
         args = ['--check-config'] + args

@@ -859,7 +859,7 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const std:
     toolinfo << mSettings.userDefines;
     toolinfo << (mSettings.checkConfiguration ? 'c' : ' '); // --check-config
     toolinfo << (mSettings.force ? 'f' : ' ');
-    toolinfo << mSettings.maxConfigs;
+    toolinfo << mSettings.maxConfigsOption;
     toolinfo << std::to_string(static_cast<std::uint8_t>(mSettings.checkLevel));
     for (const auto &a : mSettings.addonInfos) {
         toolinfo << a.name;
@@ -907,6 +907,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
+
+    const int maxConfigs = mSettings.getMaxConfigs();
 
     mLogger->resetExitCode();
 
@@ -1032,7 +1034,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
         // Get configurations..
         std::set<std::string> configurations;
-        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
+        if (maxConfigs > 1) {
             Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
                 configurations = preprocessor.getConfigs();
             });
@@ -1044,7 +1046,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             for (const std::string &config : configurations)
                 (void)preprocessor.getcode(config, files, false);
 
-            if (configurations.size() > mSettings.maxConfigs)
+            if (configurations.size() > maxConfigs)
                 tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
             if (analyzerInformation)
@@ -1090,14 +1092,13 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!mSettings.force && ++checkCount > mSettings.maxConfigs) {
-                // If maxConfigs has default value then report information message that configurations are skipped.
-                // If maxConfigs does not have default value then the user is explicitly skipping configurations so
+            if (!mSettings.force && ++checkCount > maxConfigs) {
+                // If maxConfigs is not assigned then report information message that configurations are skipped.
+                // If maxConfigs is assigned then the user is explicitly skipping configurations so
                 // the information message is not reported, the whole purpose of setting i.e. --max-configs=1 is to
                 // skip configurations. When --check-config is used then tooManyConfigs will be reported even if the
                 // value is non-default.
-                const Settings defaultSettings;
-                if (mSettings.maxConfigs == defaultSettings.maxConfigs && mSettings.severity.isEnabled(Severity::information))
+                if (!mSettings.isMaxConfigsAssigned() && mSettings.severity.isEnabled(Severity::information))
                     tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
                 break;
@@ -1198,7 +1199,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     }
 
                     // Skip if we already met the same simplified token list
-                    if (mSettings.force || mSettings.maxConfigs > 1) {
+                    if (maxConfigs > 1) {
                         const std::size_t hash = tokenizer.list.calculateHash();
                         if (hashes.find(hash) != hashes.end()) {
                             if (mSettings.debugwarnings)
@@ -1644,7 +1645,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
     }
 
     std::ostringstream msg;
-    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.maxConfigs
+    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.getMaxConfigs()
         << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.";
 
     ErrorMessage errmsg(std::move(loclist),
