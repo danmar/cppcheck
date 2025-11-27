@@ -4598,6 +4598,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4:15]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str());
+
+        check("uintptr_t f(int* p) {\n"
+              "    return (uintptr_t)p;\n"
+              "}\n"
+              "uintptr_t g(int* p) {\n"
+              "    return static_cast<uintptr_t>(p);\n"
+              "}\n"
+              "U h(int* p) {\n"
+              "    return (U)p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n"
+                      "[test.cpp:4:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n",
+                      errout_str());
     }
 
     void constArray() {
