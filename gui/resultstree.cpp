@@ -521,7 +521,7 @@ void ResultsTree::refreshTree()
 
         for (int j = 0; j < errorcount; j++) {
             //Get the error itself
-            auto *child = dynamic_cast<ResultItem*>(fileItem->child(j, 0));
+            const auto *child = dynamic_cast<ResultItem*>(fileItem->child(j, 0));
             if (!child) {
                 continue;
             }
