@@ -311,6 +311,8 @@ private:
         TEST_CASE(getConfigs8);  // #if A==1  => cfg: A=1
         TEST_CASE(getConfigs10); // #5139
         TEST_CASE(getConfigs11); // #9832 - include guards
+        TEST_CASE(getConfigs12); // #14222
+        TEST_CASE(getConfigs13); // #14222
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -357,12 +359,14 @@ private:
     }
 
     template<size_t size>
-    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr) {
+    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr, const char *library = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
+        if (library)
+            ASSERT(settings.library.load("", library, false).errorcode == Library::ErrorCode::OK);
         std::vector<std::string> files;
         // TODO: this adds an empty filename
         simplecpp::TokenList tokens(code,files);
@@ -2262,6 +2266,20 @@ private:
                                 "#endif\n"
                                 "#endfile\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs12() { // #14222
+        const char filedata[] = "#ifdef INT8_MAX\n"
+                                "INT8_MAX\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, nullptr, "std.cfg"));
+    }
+
+    void getConfigs13() { // #14222
+        const char filedata[] = "#ifdef __builtin_bswap16\n"
+                                "__builtin_bswap16(x);\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, nullptr, "gnu.cfg"));
     }
 
     void getConfigsError() {
