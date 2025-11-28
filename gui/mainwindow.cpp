@@ -1535,11 +1535,10 @@ void MainWindow::enableCheckButtons(bool enable)
 
 void MainWindow::enableResultsButtons()
 {
-    const bool enabled = mUI->mResults->hasResults();
-    mUI->mActionClearResults->setEnabled(enabled);
-    mUI->mActionSave->setEnabled(enabled);
-    mUI->mActionPrint->setEnabled(enabled);
-    mUI->mActionPrintPreview->setEnabled(enabled);
+    mUI->mActionClearResults->setEnabled(mUI->mResults->hasResults());
+    mUI->mActionSave->setEnabled(true);
+    mUI->mActionPrint->setEnabled(true);
+    mUI->mActionPrintPreview->setEnabled(true);
 }
 
 void MainWindow::showStyle(bool checked)
@@ -1728,7 +1727,9 @@ void MainWindow::complianceReport()
 }
 
 void MainWindow::resultsAdded()
-{}
+{
+    enableResultsButtons();
+}
 
 void MainWindow::toggleMainToolBar()
 {
