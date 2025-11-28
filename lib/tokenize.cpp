@@ -8855,7 +8855,7 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok, code);
             }
         }
-        if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") && !Token::Match(tok, "%str% %str%"))
+        if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%|::") && !Token::Match(tok, "%str% %str%"))
             syntaxError(tok);
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% {|(")) {
             if (tok->strAt(1) == "(")
