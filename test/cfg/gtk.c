@@ -36,6 +36,7 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
         // cppcheck-suppress checkLibraryNoReturn
         g_assert_not_reached();
     }
+    // cppcheck-suppress constVariablePointer
     gpointer p = GINT_TO_POINTER(1);
     int i = GPOINTER_TO_INT(p);
     // cppcheck-suppress knownConditionTrueFalse

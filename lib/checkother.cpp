@@ -1831,6 +1831,11 @@ namespace {
     };
 }
 
+static bool isCastToInteger(const Token* tok)
+{
+    return tok && tok->isCast() && tok->valueType() && tok->valueType()->isIntegral() && tok->valueType()->pointer == 0;
+}
+
 void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style) &&
@@ -1882,6 +1887,8 @@ void CheckOther::checkConstPointer()
         else if (Token::simpleMatch(parent, "."))
             deref = MEMBER;
         else if (astIsRangeBasedForDecl(tok))
+            continue;
+        else if (isCastToInteger(parent))
             continue;
         if (deref != NONE) {
             const Token* gparent = parent->astParent();
