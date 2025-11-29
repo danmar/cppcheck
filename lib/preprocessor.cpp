@@ -307,7 +307,7 @@ void Preprocessor::inlineSuppressions(SuppressionList &suppressions)
         ::addInlineSuppressions(filedata->tokens, mSettings, suppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
-        error(bad.file, bad.line, bad.col, bad.errmsg, simplecpp::Output::ERROR); // TODO: use individual (non-fatal) ID
+        invalidSuppression(bad.file, bad.line, bad.col, bad.errmsg); // TODO: column is always 0
     }
 }
 
@@ -928,6 +928,11 @@ static std::string simplecppErrToId(simplecpp::Output::Type type)
 
 void Preprocessor::error(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg, simplecpp::Output::Type type)
 {
+    error(filename, linenr, col, msg, simplecppErrToId(type));
+}
+
+void Preprocessor::error(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg, const std::string& id)
+{
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
         std::string file = Path::fromNativeSeparators(filename);
@@ -940,7 +945,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, unsig
                                         mFile0,
                                         Severity::error,
                                         msg,
-                                        simplecppErrToId(type),
+                                        id,
                                         Certainty::normal));
 }
 
@@ -952,6 +957,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
+        // TODO: add relative path handling?
         locationList.emplace_back(filename, linenr, col);
     }
     ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
@@ -961,6 +967,11 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                         (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
                         Certainty::normal);
     mErrorLogger.reportErr(errmsg);
+}
+
+void Preprocessor::invalidSuppression(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg)
+{
+    error(filename, linenr, col, msg, "invalidSuppression");
 }
 
 void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &settings)
@@ -975,6 +986,7 @@ void Preprocessor::getErrorMessages(ErrorLogger &errorLogger, const Settings &se
     preprocessor.error("", 1, 2, "message", simplecpp::Output::UNHANDLED_CHAR_ERROR);
     preprocessor.error("", 1, 2, "message", simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY);
     preprocessor.error("", 1, 2, "message", simplecpp::Output::FILE_NOT_FOUND);
+    preprocessor.invalidSuppression("", 1, 2, "message");
 }
 
 void Preprocessor::dump(std::ostream &out) const
