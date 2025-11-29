@@ -307,6 +307,18 @@ private:
               "    return x.get();\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f(int* p) {\n" // #14294
+              "    return (int)p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n",
+                      errout_str());
+
+        check("int f(int* p) {\n"
+              "    return reinterpret_cast<int>(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n",
+                      errout_str());
     }
 };
 

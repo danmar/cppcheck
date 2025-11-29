@@ -40,6 +40,12 @@ namespace {
     Check64BitPortability instance;
 }
 
+static bool is32BitIntegerReturn(const Function* func, const Settings* settings)
+{
+    const ValueType* vt = func->arg->valueType();
+    return vt && vt->isIntegral() && vt->typeSize(settings->platform) < settings->platform.sizeof_pointer;
+}
+
 void Check64BitPortability::pointerassignment()
 {
     if (!mSettings->severity.isEnabled(Severity::portability))
@@ -57,7 +63,7 @@ void Check64BitPortability::pointerassignment()
         bool retPointer = false;
         if (scope->function->token->strAt(-1) == "*") // Function returns a pointer
             retPointer = true;
-        else if (Token::Match(scope->function->token->previous(), "int|long|DWORD")) // Function returns an integer
+        else if (is32BitIntegerReturn(scope->function, mSettings))
             ;
         else
             continue;
@@ -82,8 +88,17 @@ void Check64BitPortability::pointerassignment()
             if (retPointer && !returnType->typeScope && returnType->pointer == 0U)
                 returnIntegerError(tok);
 
-            if (!retPointer && returnType->pointer >= 1U)
-                returnPointerError(tok);
+            if (!retPointer) {
+                bool warn = returnType->pointer >= 1U;
+                if (!warn) {
+                    const Token* tok2 = tok->astOperand1();
+                    while (tok2 && tok2->isCast())
+                        tok2 = tok2->astOperand2() ? tok2->astOperand2() : tok2->astOperand1();
+                    warn = tok2 && tok2->valueType() && tok2->valueType()->pointer;
+                }
+                if (warn)
+                    returnPointerError(tok);
+            }
         }
     }
 
@@ -148,7 +163,7 @@ void Check64BitPortability::returnPointerError(const Token *tok)
                 "Returning an address value in a function with integer (int/long/etc) return type is not portable across "
                 "different platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in "
                 "64-bit Windows and Linux they are of different width. In worst case you end up casting 64-bit address down "
-                "to 32-bit integer. The safe way is to always return an integer.", CWE758, Certainty::normal);
+                "to 32-bit integer. The safe way is to return a type such as intptr_t.", CWE758, Certainty::normal);
 }
 
 void Check64BitPortability::returnIntegerError(const Token *tok)
