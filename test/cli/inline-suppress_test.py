@@ -36,7 +36,9 @@ def test_1():
         'proj-inline-suppress'
     ]
     ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
-    assert stderr == ''
+    assert stderr.splitlines() == [
+        "{}duplicate.cpp:3:0: error: suppression 'unreadVariable:proj-inline-suppress/duplicate.cpp:3' already exists [invalidSuppression]".format(__proj_inline_suppres_path)
+    ]
     assert stdout == ''
     assert ret == 0, stdout
 
