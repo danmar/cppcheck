@@ -207,6 +207,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
+        ASSERT_EQUALS("c++17", importer.fileSettings.cbegin()->standard);
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.cbegin()->includePaths.front());
     }
 
@@ -227,6 +228,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
+        ASSERT_EQUALS("c++17", importer.fileSettings.cbegin()->standard);
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.cbegin()->includePaths.front());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.cbegin()->includePaths.back());
     }
