@@ -105,8 +105,11 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 
     // determine prefix if specified
     if (posEndComment >= (pos1 + cppchecksuppress.size() + 1)) {
-        if (comment.at(pos1 + cppchecksuppress.size()) != '-')
+        const std::string suppressCmdString = comment.substr(pos1, pos2-pos1-1);
+        if (comment.at(pos1 + cppchecksuppress.size()) != '-') {
+            bad.emplace_back(tok->location.file(), tok->location.line, 0, "unknown suppression type '" + suppressCmdString + "'"); // TODO: set column
             return false;
+        }
 
         const unsigned int argumentLength =
             posEndComment - (pos1 + cppchecksuppress.size() + 1);
@@ -122,8 +125,10 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             errorType = SuppressionList::Type::blockEnd;
         else if ("macro" == suppressTypeString)
             errorType = SuppressionList::Type::macro;
-        else
+        else {
+            bad.emplace_back(tok->location.file(), tok->location.line, 0, "unknown suppression type '" + suppressCmdString + "'"); // TODO: set column
             return false;
+        }
     }
 
     if (comment[pos2] == '[') {
