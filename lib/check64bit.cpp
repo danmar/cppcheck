@@ -45,7 +45,7 @@ static bool is32BitIntegerReturn(const Function* func, const Settings* settings)
     if (settings->platform.sizeof_pointer != 8)
         return false;
     const ValueType* vt = func->arg->valueType();
-    return vt && vt->isIntegral() && vt->typeSize(settings->platform) == 4;
+    return vt && vt->pointer == 0 && vt->isIntegral() && vt->typeSize(settings->platform) == 4;
 }
 
 void Check64BitPortability::pointerassignment()
