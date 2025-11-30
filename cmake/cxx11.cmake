@@ -3,6 +3,6 @@ macro(use_cxx11)
     # Boost.Math requires C++14
     set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ standard to use")
   else()
-    set(CMAKE_CXX_STANDARD 11 CACHE STRING "C++ standard to use")
+    set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to use")
   endif()
 endmacro()
