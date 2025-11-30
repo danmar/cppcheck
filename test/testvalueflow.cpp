@@ -6451,7 +6451,7 @@ private:
         if (!values.front().isPossible())
             return "Possible";
         if (values.front().intvalue != i)
-            return "intvalue:" + std::to_string(values.front().intvalue);
+            return "intvalue:" + MathLib::toString(values.front().intvalue);
         return "";
     }
 
@@ -6469,7 +6469,7 @@ private:
         if (!values.front().isImpossible())
             return "Impossible";
         if (values.front().intvalue != i)
-            return "intvalue:" + std::to_string(values.front().intvalue);
+            return "intvalue:" + MathLib::toString(values.front().intvalue);
         return "";
     }
 
@@ -6487,7 +6487,7 @@ private:
         if (!values.front().isInconclusive())
             return "Inconclusive";
         if (values.front().intvalue != i)
-            return "intvalue:" + std::to_string(values.front().intvalue);
+            return "intvalue:" + MathLib::toString(values.front().intvalue);
         return "";
     }
 
@@ -6503,7 +6503,7 @@ private:
         if (!values.front().isKnown())
             return "Known";
         if (values.front().intvalue != i)
-            return "intvalue:" + std::to_string(values.front().intvalue);
+            return "intvalue:" + MathLib::toString(values.front().intvalue);
         return "";
     }
 
