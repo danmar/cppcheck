@@ -182,8 +182,6 @@ static std::string replaceAll(std::string s, const std::string& from, const std:
     return s;
 }
 
-const std::string simplecpp::Location::emptyFileName;
-
 void simplecpp::Location::adjust(const std::string &str)
 {
     if (strpbrk(str.c_str(), "\r\n") == nullptr) {
@@ -422,7 +420,7 @@ public:
     {
         if (!file) {
             files.push_back(filename);
-            throw simplecpp::Output(simplecpp::Output::FILE_NOT_FOUND, simplecpp::Location(files), "File is missing: " + filename);
+            throw simplecpp::Output(simplecpp::Output::FILE_NOT_FOUND, {}, "File is missing: " + filename);
         }
         init();
     }
@@ -564,11 +562,11 @@ void simplecpp::TokenList::dump(bool linenrs) const
 std::string simplecpp::TokenList::stringify(bool linenrs) const
 {
     std::ostringstream ret;
-    Location loc(files);
+    Location loc;
     bool filechg = true;
     for (const Token *tok = cfront(); tok; tok = tok->next) {
         if (tok->location.line < loc.line || tok->location.fileIndex != loc.fileIndex) {
-            ret << "\n#line " << tok->location.line << " \"" << tok->location.file() << "\"\n";
+            ret << "\n#line " << tok->location.line << " \"" << file(tok->location) << "\"\n";
             loc = tok->location;
             filechg = true;
         }
@@ -633,16 +631,16 @@ static bool isStringLiteralPrefix(const std::string &str)
            str == "R" || str == "uR" || str == "UR" || str == "LR" || str == "u8R";
 }
 
-void simplecpp::TokenList::lineDirective(unsigned int fileIndex, unsigned int line, Location *location)
+void simplecpp::TokenList::lineDirective(unsigned int fileIndex, unsigned int line, Location &location)
 {
-    if (fileIndex != location->fileIndex || line >= location->line) {
-        location->fileIndex = fileIndex;
-        location->line = line;
+    if (fileIndex != location.fileIndex || line >= location.line) {
+        location.fileIndex = fileIndex;
+        location.line = line;
         return;
     }
 
-    if (line + 2 >= location->line) {
-        location->line = line;
+    if (line + 2 >= location.line) {
+        location.line = line;
         while (cback()->op != '#')
             deleteToken(back());
         deleteToken(back());
@@ -660,10 +658,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
 
     const Token *oldLastToken = nullptr;
 
-    Location location(files);
-    location.fileIndex = fileIndex(filename);
-    location.line = 1U;
-    location.col  = 1U;
+    Location location(fileIndex(filename), 1, 1);
     while (stream.good()) {
         unsigned char ch = stream.readChar();
         if (!stream.good())
@@ -732,7 +727,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
                         while (numtok->comment)
                             numtok = numtok->previous;
                         lineDirective(fileIndex(replaceAll(strtok->str().substr(1U, strtok->str().size() - 2U),"\\\\","\\")),
-                                      std::atol(numtok->str().c_str()), &location);
+                                      std::atol(numtok->str().c_str()), location);
                     }
                     // #line 3
                     else if (llNextToken->str() == "line" &&
@@ -741,7 +736,7 @@ void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename,
                         const Token *numtok = cback();
                         while (numtok->comment)
                             numtok = numtok->previous;
-                        lineDirective(location.fileIndex, std::atol(numtok->str().c_str()), &location);
+                        lineDirective(location.fileIndex, std::atol(numtok->str().c_str()), location);
                     }
                 }
                 // #endfile
@@ -1478,6 +1473,12 @@ unsigned int simplecpp::TokenList::fileIndex(const std::string &filename)
     return files.size() - 1U;
 }
 
+const std::string& simplecpp::TokenList::file(const Location& loc) const
+{
+    static const std::string s_emptyFileName;
+    return loc.fileIndex < files.size() ? files[loc.fileIndex] : s_emptyFileName;
+}
+
 
 namespace simplecpp {
     class Macro;
@@ -1885,7 +1886,7 @@ namespace simplecpp {
             usageList.push_back(loc);
 
             if (nameTokInst->str() == "__FILE__") {
-                output.push_back(new Token('\"'+loc.file()+'\"', loc));
+                output.push_back(new Token('\"'+output.file(loc)+'\"', loc));
                 return nameTokInst->next;
             }
             if (nameTokInst->str() == "__LINE__") {
@@ -2637,7 +2638,7 @@ static void simplifyHasInclude(simplecpp::TokenList &expr, const simplecpp::DUI 
             }
         }
 
-        const std::string &sourcefile = tok->location.file();
+        const std::string &sourcefile = expr.file(tok->location);
         const bool systemheader = (tok1 && tok1->op == '<');
         std::string header;
         if (systemheader) {
@@ -3179,7 +3180,7 @@ simplecpp::FileDataCache simplecpp::load(const simplecpp::TokenList &rawtokens, 
             if (outputList) {
                 simplecpp::Output err = {
                     simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND,
-                    Location(filenames),
+                    {},
                     "Can not open include file '" + filename + "' that is explicitly included."
                 };
                 outputList->push_back(std::move(err));
@@ -3212,7 +3213,7 @@ simplecpp::FileDataCache simplecpp::load(const simplecpp::TokenList &rawtokens, 
         if (!rawtok || rawtok->str() != INCLUDE)
             continue;
 
-        const std::string &sourcefile = rawtok->location.file();
+        const std::string &sourcefile = rawtokens.file(rawtok->location);
 
         const Token * const htok = rawtok->nextSkipComments();
         if (!sameline(rawtok, htok))
@@ -3369,7 +3370,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 if (outputList) {
                     simplecpp::Output err = {
                         Output::DUI_ERROR,
-                        Location(files),
+                        {},
                         "unknown standard specified: '" + dui.std + "'"
                     };
                     outputList->push_back(std::move(err));
@@ -3539,7 +3540,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
                 const bool systemheader = (inctok->str()[0] == '<');
                 const std::string header(inctok->str().substr(1U, inctok->str().size() - 2U));
-                const FileData *const filedata = cache.get(rawtok->location.file(), header, dui, systemheader, files, outputList).first;
+                const FileData *const filedata = cache.get(rawtokens.file(rawtok->location), header, dui, systemheader, files, outputList).first;
                 if (filedata == nullptr) {
                     if (outputList) {
                         simplecpp::Output out = {
@@ -3632,7 +3633,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                                 tok = tok->next;
                             bool closingAngularBracket = false;
                             if (tok) {
-                                const std::string &sourcefile = rawtok->location.file();
+                                const std::string &sourcefile = rawtokens.file(rawtok->location);
                                 const bool systemheader = (tok && tok->op == '<');
                                 std::string header;
 
@@ -3740,7 +3741,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                         macros.erase(tok->str());
                 }
             } else if (ifstates.top() == True && rawtok->str() == PRAGMA && rawtok->next && rawtok->next->str() == ONCE && sameline(rawtok,rawtok->next)) {
-                pragmaOnce.insert(rawtok->location.file());
+                pragmaOnce.insert(rawtokens.file(rawtok->location));
             }
             if (ifstates.top() != True && rawtok->nextcond)
                 rawtok = rawtok->nextcond->previous;
@@ -3796,7 +3797,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             const std::list<Location>& temp = maybeUsedMacros[macro.name()];
             usage.insert(usage.end(), temp.begin(), temp.end());
             for (std::list<Location>::const_iterator usageIt = usage.begin(); usageIt != usage.end(); ++usageIt) {
-                MacroUsage mu(usageIt->files, macro.valueDefinedInCode());
+                MacroUsage mu(macro.valueDefinedInCode());
                 mu.macroName = macro.name();
                 mu.macroLocation = macro.defineLocation();
                 mu.useLocation = *usageIt;
