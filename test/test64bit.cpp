@@ -319,6 +319,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2:5]: (portability) Returning an address value in a function with integer return type is not portable. [CastAddressToIntegerAtReturn]\n",
                       errout_str());
+
+        check("bool f(const int* p) {\n"
+              "    return p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
