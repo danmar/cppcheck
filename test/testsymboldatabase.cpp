@@ -465,6 +465,8 @@ private:
         TEST_CASE(enum18);
         TEST_CASE(enum19);
 
+        TEST_CASE(struct1);
+
         TEST_CASE(sizeOfType);
 
         TEST_CASE(isImplicitlyVirtual);
@@ -6857,6 +6859,42 @@ private:
             ASSERT(K && K->valueType() && K->valueType()->isEnum());
             ASSERT_EQUALS(K->valueType()->type, ValueType::CHAR);
         }
+    }
+
+    void struct1() {
+        GET_SYMBOL_DB_C("struct deer {\n"
+                        "   uint16_t a;\n"
+                        "   uint16_t b;\n"
+                        "};\n"
+                        "void herd ( void ) {\n"
+                        "   struct deer {\n"
+                        "     uint16_t a;\n"
+                        "   };\n"
+                        "}");
+
+        ASSERT_EQUALS("", errout_str());
+        ASSERT(db);
+
+        const Token* deer = Token::findsimplematch(tokenizer.tokens(), "deer {");
+        ASSERT(deer);
+        ASSERT(deer->type());
+        ASSERT(deer->type()->classScope);
+        const Token* tok = deer->next();
+        ASSERT(tok->scope());
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, tok->scope()->type);
+        ASSERT_EQUALS(tok, tok->scope()->bodyStart);
+        ASSERT_EQUALS(tok->scope(), deer->type()->classScope);
+
+        const Token* secondDeer = Token::findsimplematch(tok, "deer {");
+        ASSERT(secondDeer);
+        ASSERT(secondDeer != deer);
+        ASSERT(secondDeer->type());
+        ASSERT(secondDeer->type()->classScope);
+        tok = secondDeer->next();
+        ASSERT(tok->scope());
+        ASSERT_EQUALS_ENUM(ScopeType::eStruct, tok->scope()->type);
+        ASSERT_EQUALS(tok, tok->scope()->bodyStart);
+        ASSERT_EQUALS(tok->scope(), secondDeer->type()->classScope);
     }
 
     void sizeOfType() {
