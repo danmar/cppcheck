@@ -146,8 +146,6 @@ public:
     const simplecpp::Output* handleErrors(const simplecpp::OutputList &outputList);
 
 private:
-    static bool hasErrors(const simplecpp::Output &output);
-
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
 
     /**

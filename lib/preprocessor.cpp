@@ -742,25 +742,6 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     return dui;
 }
 
-bool Preprocessor::hasErrors(const simplecpp::Output &output)
-{
-    switch (output.type) {
-    case simplecpp::Output::ERROR:
-    case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-    case simplecpp::Output::SYNTAX_ERROR:
-    case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-    case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-    case simplecpp::Output::FILE_NOT_FOUND:
-    case simplecpp::Output::DUI_ERROR:
-        return true;
-    case simplecpp::Output::WARNING:
-    case simplecpp::Output::MISSING_HEADER:
-    case simplecpp::Output::PORTABILITY_BACKSLASH:
-        break;
-    }
-    return false;
-}
-
 const simplecpp::Output* Preprocessor::handleErrors(const simplecpp::OutputList& outputList)
 {
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
