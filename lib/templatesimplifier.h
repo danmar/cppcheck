@@ -48,7 +48,7 @@ class CPPCHECKLIB TemplateSimplifier {
     friend class TestSimplifyTemplate;
 
 public:
-    explicit TemplateSimplifier(Tokenizer &tokenizer);
+    explicit TemplateSimplifier(LIFETIMEBOUND Tokenizer &tokenizer);
 
     const std::string& dump() const {
         return mDump;

@@ -1038,8 +1038,8 @@ public:
         const Scope *scope;
     };
 
-    Scope(const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_);
-    Scope(const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
+    Scope(LIFETIMEBOUND const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_);
+    Scope(LIFETIMEBOUND const SymbolDatabase &symdb_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
     const SymbolDatabase& symdb;
     std::string className;
@@ -1327,7 +1327,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    explicit SymbolDatabase(Tokenizer& tokenizer);
+    explicit SymbolDatabase(LIFETIMEBOUND Tokenizer& tokenizer);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
