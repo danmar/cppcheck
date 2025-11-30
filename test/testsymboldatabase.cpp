@@ -627,6 +627,8 @@ private:
         TEST_CASE(stdintFunction);
 
         TEST_CASE(userDefinedLiteral);
+
+        TEST_CASE(structsWithSameName);
     }
 
     void array() {
@@ -11353,6 +11355,28 @@ private:
         ASSERT(x);
         ASSERT(!x->varId());
         ASSERT(!x->variable());
+    }
+
+    void structsWithSameName() {
+        GET_SYMBOL_DB("struct deer {\n"
+                      "   uint16_t a;\n"
+                      "   uint16_t b;\n"
+                      "};\n"
+                      "void herd ( void ) {\n"
+                      "   struct deer {\n"
+                      "     uint16_t a;\n"
+                      "   };\n"
+                      "}");
+
+        ASSERT_EQUALS("", errout_str());
+
+        const Token* f = Token::findsimplematch(tokenizer.tokens(), "struct deer {");
+        ASSERT(f && f->tokAt(2) && f->tokAt(2)->valueType());
+        ASSERT_EQUALS(f->tokAt(2)->scope(),f->tokAt(2)->valueType()->typeScope);
+
+        f = Token::findsimplematch(tokenizer.tokens(), "{ struct deer {");
+        ASSERT(f && f->tokAt(3) && f->tokAt(3)->valueType());
+        ASSERT_EQUALS(f->tokAt(3)->scope(), f->tokAt(3)->valueType()->typeScope);
     }
 };
 
