@@ -1154,12 +1154,12 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                         }
                         else {
                             // #error etc during preprocessing
-                            configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + o->location.file() + ':' + std::to_string(o->location.line) + "] " + o->msg);
+                            configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + tokensP.file(o->location) + ':' + std::to_string(o->location.line) + "] " + o->msg);
                             --checkCount; // don't count invalid configurations
 
                             if (!hasValidConfig && currCfg == *configurations.rbegin()) {
                                 // If there is no valid configuration then report error..
-                                preprocessor.error(o->location.file(), o->location.line, o->location.col, o->msg, o->type);
+                                preprocessor.error(tokensP.file(o->location), o->location.line, o->location.col, o->msg, o->type);
                             }
                             skipCfg = true;
                         }
