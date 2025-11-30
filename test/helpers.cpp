@@ -116,7 +116,9 @@ void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vecto
     simplecpp::TokenList tokens1(code, size, files, file0);
 
     Preprocessor preprocessor(tokens1, tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
-    simplecpp::TokenList tokens2 = preprocessor.preprocess("", files, true);
+    simplecpp::OutputList outputList;
+    simplecpp::TokenList tokens2 = preprocessor.preprocess("", files, outputList);
+    (void)preprocessor.reportOutput(outputList, true);
 
     // Tokenizer..
     tokenizer.list.createTokens(std::move(tokens2));
