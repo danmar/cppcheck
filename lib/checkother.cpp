@@ -1468,8 +1468,8 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 //---------------------------------------------------------------------------
 void CheckOther::checkCommaSeparatedReturn()
 {
-    // This is experimental for now. See #5076
-    if ((true) || !mSettings->severity.isEnabled(Severity::style)) // NOLINT(readability-simplify-boolean-expr)
+    // TODO: This is experimental for now. See #5076
+    if ((true) || !mSettings->severity.isEnabled(Severity::style)) // NOLINT(readability-simplify-boolean-expr,readability-redundant-parentheses)
         return;
 
     // logChecker
