@@ -18,6 +18,8 @@
 
 #include "threadexecutor.h"
 
+#if !defined(DISALLOW_THREAD_EXECUTOR)
+
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -219,3 +221,5 @@ unsigned int ThreadExecutor::check()
 
     return result;
 }
+
+#endif // !DISALLOW_THREAD_EXECUTOR
