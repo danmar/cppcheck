@@ -67,6 +67,7 @@ unsigned int SingleExecutor::check()
             reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
     }
 
+    // TODO: CppCheckExecutor::check_internal() is also invoking the whole program analysis - is it run twice?
     if (mCppcheck.analyseWholeProgram())
         result++;
 
