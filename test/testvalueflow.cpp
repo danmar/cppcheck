@@ -7457,6 +7457,32 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::ValueType::BUFFER_SIZE));
 
+        code = "struct A {};\n" // #14305
+               "void* f() {\n"
+               "  A* x = new A();\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1, ValueFlow::Value::ValueType::BUFFER_SIZE));
+
+        code = "struct A {};\n"
+               "void* f() {\n"
+               "  void* x = new A;\n"
+               "  return x;\n"
+               "}";
+       {
+           auto values = tokenValues(code, "x ; }");
+           ASSERT_EQUALS(1, values.size());
+           ASSERT(values.front().isSymbolicValue());
+           // TODO: add BUFFER_SIZE value = 1
+       }
+
+        code = "struct B { int32_t i; };\n"
+               "void* f() {\n"
+               "  B* x = new B();\n"
+               "  return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 4, ValueFlow::Value::ValueType::BUFFER_SIZE));
+
         settings = settingsOld;
     }
 

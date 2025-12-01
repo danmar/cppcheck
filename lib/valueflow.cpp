@@ -7078,8 +7078,11 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
             if (!typeTok || !typeTok->varId())
                 typeTok = newTok->astParent()->previous(); // hack for "int** z = ..."
             if (typeTok && typeTok->valueType()) {
-                const MathLib::bigint typeSize = typeTok->valueType()->typeSize(settings.platform, typeTok->valueType()->pointer > 1);
-                if (typeSize >= 0)
+                ValueType vt = *typeTok->valueType();
+                if (vt.pointer > 0)
+                    --vt.pointer;
+                const MathLib::bigint typeSize = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::ExactOrZero);
+                if (typeSize > 0 || numElem == 0)
                     sizeValue = numElem * typeSize;
             }
         }
