@@ -4111,14 +4111,11 @@ def test_active_unusedfunction_only_builddir(tmp_path):
 
 
 def test_active_unusedfunction_only_misra(tmp_path):
-    # TODO: should only report a single active check
-    __test_active_checkers(tmp_path, 7, 1166, use_unusedfunction_only=True, use_misra=True)
+    __test_active_checkers(tmp_path, 1, 1166, use_unusedfunction_only=True, use_misra=True)
 
 
-@pytest.mark.xfail(strict=True)  # TODO: active count and checkers.txt differ
 def test_active_unusedfunction_only_misra_builddir(tmp_path):
-    # TODO: should only report a single active check
     checkers_exp = [
         'CheckUnusedFunctions::check'
     ]
-    __test_active_checkers(tmp_path, 7, 1166, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
+    __test_active_checkers(tmp_path, 1, 1166, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
