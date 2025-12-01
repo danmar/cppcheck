@@ -4,7 +4,6 @@ if(MSVC)
     # Visual Studio only sets _DEBUG
     add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 
-    add_definitions(-DWIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-DWIN32_LEAN_MEAN)
     add_definitions(-D_WIN64)
