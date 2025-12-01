@@ -1495,7 +1495,7 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 
 void CppCheck::executeAddons(const std::vector<std::string>& files, const std::string& file0)
 {
-    if (mSettings.addons.empty() || files.empty())
+    if (mSettings.addons.empty() || files.empty() || Settings::unusedFunctionOnly())
         return;
 
     const bool isCtuInfo = endsWith(files[0], ".ctu-info");
