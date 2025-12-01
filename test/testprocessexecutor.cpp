@@ -112,7 +112,7 @@ private:
     }
 
     void run() override {
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
         mNewTemplate = true;
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
