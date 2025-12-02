@@ -353,7 +353,7 @@ namespace simplecpp {
         void constFoldComparison(Token *tok);
         void constFoldBitwise(Token *tok);
         void constFoldLogicalOp(Token *tok);
-        void constFoldQuestionOp(Token **tok1);
+        void constFoldQuestionOp(Token *&tok1);
 
         std::string readUntil(Stream &stream, const Location &location, char start, char end, OutputList *outputList);
         void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
