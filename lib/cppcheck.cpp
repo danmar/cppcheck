@@ -424,6 +424,9 @@ static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
     return "";
 }
 
+/**
+ * @throws InternalError thrown when execution fails
+ */
 static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &defaultPythonExe,
                                                  const std::string &file,
@@ -1235,11 +1238,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                     mErrorLogger.reportErr(errmsg);
                 }
-            } catch (const TerminateException &) {
-                // Analysis is terminated
-                if (analyzerInformation)
-                    mLogger->setAnalyzerInfo(nullptr);
-                return mLogger->exitcode();
             } catch (const InternalError &e) {
                 ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, file.spath());
                 mErrorLogger.reportErr(errmsg);
