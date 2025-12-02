@@ -570,6 +570,13 @@ private:
               "    *s = &a[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("void f(int* p[]) {\n" // #7167
+              "    int a[4] = { 1, 2, 3 };\n"
+              "    p[0] = a;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Address of local auto-variable assigned to a function parameter. [autoVariables]\n",
+                      errout_str());
     }
 
     void testautovar_normal() {
