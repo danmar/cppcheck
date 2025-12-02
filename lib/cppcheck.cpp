@@ -1235,11 +1235,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                     mErrorLogger.reportErr(errmsg);
                 }
-            } catch (const TerminateException &) {
-                // Analysis is terminated
-                if (analyzerInformation)
-                    mLogger->setAnalyzerInfo(nullptr);
-                return mLogger->exitcode();
             } catch (const InternalError &e) {
                 ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, file.spath());
                 mErrorLogger.reportErr(errmsg);
