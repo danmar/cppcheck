@@ -88,18 +88,22 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     const std::string::size_type pos1 = comment.find_first_not_of("/* \t");
     if (pos1 == std::string::npos)
         return false;
-    if (pos1 + cppchecksuppress.size() >= comment.size())
-        return false;
     if (comment.substr(pos1, cppchecksuppress.size()) != cppchecksuppress)
         return false;
+    if (pos1 + cppchecksuppress.size() >= comment.size()) {
+        bad.emplace_back(tok->location.file(), tok->location.line, 0, "suppression without error ID");
+        return false;
+    }
 
     // check if it has a prefix
     const std::string::size_type posEndComment = comment.find_first_of(" [", pos1+cppchecksuppress.size());
 
     // skip spaces after "cppcheck-suppress" and its possible prefix
     const std::string::size_type pos2 = comment.find_first_not_of(' ', posEndComment);
-    if (pos2 == std::string::npos)
+    if (pos2 == std::string::npos) {
+        bad.emplace_back(tok->location.file(), tok->location.line, 0, "suppression without error ID");
         return false;
+    }
 
     SuppressionList::Type errorType = SuppressionList::Type::unique;
 
@@ -142,9 +146,11 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             s.lineNumber = tok->location.line;
         }
 
+        // TODO: return false?
         if (!errmsg.empty())
             bad.emplace_back(tok->location.file(), tok->location.line, tok->location.col, std::move(errmsg));
 
+        // TODO: report ones without ID - return false?
         std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const SuppressionList::Suppression& s) {
             return !s.errorId.empty();
         });
@@ -159,9 +165,12 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         s.type = errorType;
         s.lineNumber = tok->location.line;
 
+        // TODO: report when no ID - unreachable?
         if (!s.errorId.empty())
             inlineSuppressions.push_back(std::move(s));
 
+        // TODO: unreachable?
+        // TODO: return false?
         if (!errmsg.empty())
             bad.emplace_back(tok->location.file(), tok->location.line, tok->location.col, std::move(errmsg));
     }
