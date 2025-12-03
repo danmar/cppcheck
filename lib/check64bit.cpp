@@ -40,6 +40,13 @@ namespace {
     Check64BitPortability instance;
 }
 
+static bool isFunctionPointer(const Token* tok)
+{
+    if (!tok || !tok->variable())
+        return false;
+    return Token::Match(tok->variable()->nameToken(), "%name% ) (");
+}
+
 void Check64BitPortability::pointerassignment()
 {
     if (!mSettings->severity.isEnabled(Severity::portability))
@@ -103,7 +110,8 @@ void Check64BitPortability::pointerassignment()
                 !tok->astOperand2()->isNumber() &&
                 rhstype->pointer == 0U &&
                 rhstype->originalTypeName.empty() &&
-                rhstype->type == ValueType::Type::INT)
+                rhstype->type == ValueType::Type::INT &&
+                !isFunctionPointer(tok->astOperand1()))
                 assignmentIntegerToAddressError(tok);
 
             // Assign pointer to integer..
