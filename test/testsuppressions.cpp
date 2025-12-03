@@ -58,12 +58,14 @@ private:
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettingsFiles);
         TEST_CASE(suppressionsSettingsFS);
+#ifdef HAS_THREADING_MODEL_THREAD
         TEST_CASE(suppressionsSettingsThreadsFiles);
         TEST_CASE(suppressionsSettingsThreadsFS);
-#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#endif // HAS_THREADING_MODEL_THREAD
+#ifdef HAS_THREADING_MODEL_FORK
         TEST_CASE(suppressionsSettingsProcessesFiles);
         TEST_CASE(suppressionsSettingsProcessesFS);
-#endif
+#endif // HAS_THREADING_MODEL_FORK
         TEST_CASE(suppressionsMultiFileFiles);
         TEST_CASE(suppressionsMultiFileFS);
         TEST_CASE(suppressionsPathSeparator);
@@ -294,6 +296,7 @@ private:
         return exitCode;
     }
 
+#ifdef HAS_THREADING_MODEL_THREAD
     unsigned int checkSuppressionThreadsFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionThreads(code, false, suppression);
     }
@@ -341,8 +344,9 @@ private:
 
         return exitCode;
     }
+#endif // HAS_THREADING_MODEL_THREAD
 
-#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#ifdef HAS_THREADING_MODEL_FORK
     unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionProcesses(code, false, suppression);
     }
@@ -390,7 +394,7 @@ private:
 
         return exitCode;
     }
-#endif
+#endif // HAS_THREADING_MODEL_FORK
 
     // TODO: check all results
     void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
@@ -920,6 +924,7 @@ private:
         runChecks(&TestSuppressions::checkSuppressionFS);
     }
 
+#ifdef HAS_THREADING_MODEL_THREAD
     void suppressionsSettingsThreadsFiles() {
         runChecks(&TestSuppressions::checkSuppressionThreadsFiles);
     }
@@ -927,8 +932,9 @@ private:
     void suppressionsSettingsThreadsFS() {
         runChecks(&TestSuppressions::checkSuppressionThreadsFS);
     }
+#endif // HAS_THREADING_MODEL_THREAD
 
-#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#ifdef HAS_THREADING_MODEL_FORK
     void suppressionsSettingsProcessesFiles() {
         runChecks(&TestSuppressions::checkSuppressionProcessesFiles);
     }
@@ -936,7 +942,7 @@ private:
     void suppressionsSettingsProcessesFS() {
         runChecks(&TestSuppressions::checkSuppressionProcessesFS);
     }
-#endif
+#endif // HAS_THREADING_MODEL_FORK
 
     void suppressionsMultiFileInternal(unsigned int (TestSuppressions::*check)(std::map<std::string, std::string> &f, const std::string &)) {
         std::map<std::string, std::string> files;

@@ -22,7 +22,7 @@
 
 #include "processexecutor.h"
 
-#if !defined(_WIN32) && !defined(__MINGW32__)
+#ifdef HAS_THREADING_MODEL_FORK
 
 #include "cppcheck.h"
 #include "errorlogger.h"
