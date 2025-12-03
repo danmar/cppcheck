@@ -22,7 +22,7 @@
 
 #include "processexecutor.h"
 
-#if !defined(WIN32) && !defined(__MINGW32__)
+#if !defined(_WIN32) && !defined(__MINGW32__)
 
 #include "cppcheck.h"
 #include "errorlogger.h"

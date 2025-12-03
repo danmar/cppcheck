@@ -60,7 +60,7 @@ private:
         TEST_CASE(suppressionsSettingsFS);
         TEST_CASE(suppressionsSettingsThreadsFiles);
         TEST_CASE(suppressionsSettingsThreadsFS);
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
         TEST_CASE(suppressionsSettingsProcessesFiles);
         TEST_CASE(suppressionsSettingsProcessesFS);
 #endif
@@ -342,7 +342,7 @@ private:
         return exitCode;
     }
 
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
     unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionProcesses(code, false, suppression);
     }
@@ -928,7 +928,7 @@ private:
         runChecks(&TestSuppressions::checkSuppressionThreadsFS);
     }
 
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(_WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
     void suppressionsSettingsProcessesFiles() {
         runChecks(&TestSuppressions::checkSuppressionProcessesFiles);
     }
