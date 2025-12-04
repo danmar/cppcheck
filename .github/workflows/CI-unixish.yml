@@ -571,6 +571,13 @@ jobs:
           warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
           g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
 
+      - name: Test disabled executors
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          g++ -Ilib -c cli/threadexecutor.cpp -DDISALLOW_THREAD_EXECUTOR
+          test -z "$(nm threadexecutor.o)"
+          # TODO: test NO_* defines
+
       - name: Show all ignored files
         if: false  # TODO: currently lists all the contents of ignored folders - we only need what actually matched
         run: |

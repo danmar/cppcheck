@@ -19,6 +19,10 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "config.h"
+
+#ifdef HAS_THREADING_MODEL_THREAD
+
 #include "cppcheck.h"
 #include "executor.h"
 
@@ -51,5 +55,7 @@ public:
 };
 
 /// @}
+
+#endif // HAS_THREADING_MODEL_THREAD
 
 #endif // THREADEXECUTOR_H
