@@ -3986,3 +3986,34 @@ def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, exp
             '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks {} of {} configurations. Use --force to check all configurations. [toomanyconfigs]'
             .format(test_file, max_configs, number_of_configs)
         ]
+
+
+def test_no_valid_configuration(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""#include ""
+#ifdef DEF_1
+#include ""
+#endif
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--emit-duplicates',
+        '--enable=information',
+        '--suppress=checkersReport',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        # TODO: should only report the error once
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:0:0: information: This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details. [noValidConfiguration]'.format(test_file)
+    ]
