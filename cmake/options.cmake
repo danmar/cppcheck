@@ -92,12 +92,19 @@ option(DISALLOW_THREAD_EXECUTOR "Disallow usage of ThreadExecutor for -j"       
 if(DISALLOW_THREAD_EXECUTOR AND WIN32)
     message(FATAL_ERROR "Cannot disable usage of ThreadExecutor on Windows as no other executor implementation is currently available")
 endif()
+
+set(USE_INT128 "Off" CACHE STRING "Usage of 128-bit integer type")  # TODO: default to Auto when working
+set_property(CACHE USE_INT128 PROPERTY STRINGS Auto Off Native Boost)
+if (USE_INT128 STREQUAL "Native" AND MSVC)
+    message(FATAL_ERROR "Visual Studio has no native 128-bit integer support")
+endif()
+
 set(USE_BOOST "Auto" CACHE STRING "Usage of Boost")
 set_property(CACHE USE_BOOST PROPERTY STRINGS Auto Off On)
-option(USE_BOOST_INT128     "Usage of Boost.Multiprecision 128-bit integer for Mathlib"     OFF)
-if (NOT USE_BOOST AND USE_BOOST_INT128)
-    message(FATAL_ERROR "USE_BOOST_INT128 requires USE_BOOST to be enabled")
+if (USE_INT128 STREQUAL "Boost" AND NOT USE_BOOST)
+    message(FATAL_ERROR "USE_INT128=Boost requires USE_BOOST to be enabled")
 endif()
+
 option(USE_LIBCXX           "Use libc++ instead of libstdc++"                               OFF)
 
 option(DISABLE_CRTDBG_MAP_ALLOC "Disable usage of Visual Studio C++ memory leak detection in Debug build" OFF)

@@ -168,6 +168,7 @@ namespace ValueFlow
             return !(*this == rhs);
         }
 
+        // TODO: requires check fails with GCC using __int128
         template<class T, REQUIRES("T must be an arithmetic type", std::is_arithmetic<T> )>
         bool equalTo(const T& x) const {
             bool result = false;
@@ -316,6 +317,9 @@ namespace ValueFlow
 
         std::int8_t indirect{}; // TODO: can we reduce the size?
 
+#if defined(HAVE_INT128)
+        long long : 64;
+#endif
         /** int value (or sometimes bool value?) */
         MathLib::bigint intvalue{};
 

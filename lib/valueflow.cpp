@@ -4522,7 +4522,7 @@ struct ConditionHandler {
 
         MathLib::bigint getPath() const
         {
-            assert(std::abs(findPath(true_values) - findPath(false_values)) == 0);
+            assert(MathLib::abs(findPath(true_values) - findPath(false_values)) == 0);
             return findPath(true_values) | findPath(false_values);
         }
 

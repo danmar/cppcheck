@@ -358,12 +358,12 @@ private:
         // min/max and out-of-bounds - hex
         {
             constexpr MathLib::bigint i = 0xFFFFFFFFFFFFFFFF;
-            ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toBigNumber(MathLib::toString(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("0xFFFFFFFFFFFFFFFF"));
         }
         {
             constexpr MathLib::bigint i = -0xFFFFFFFFFFFFFFFF;
-            ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toBigNumber(MathLib::toString(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("-0xFFFFFFFFFFFFFFFF"));
         }
 
@@ -373,12 +373,12 @@ private:
         // min/max and out-of-bounds - octal
         {
             constexpr MathLib::bigint i = 01777777777777777777777;
-            ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toBigNumber(MathLib::toString(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("01777777777777777777777"));
         }
         {
             constexpr MathLib::bigint i = -01777777777777777777777;
-            ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toBigNumber(MathLib::toString(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("-01777777777777777777777"));
         }
 
@@ -388,12 +388,12 @@ private:
         // min/max and out-of-range - decimal
         {
             constexpr MathLib::bigint i = 18446744073709551615ULL;
-            ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toBigNumber(MathLib::toString(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("18446744073709551615"));
         }
         {
             constexpr MathLib::bigint i = -18446744073709551615ULL;
-            ASSERT_EQUALS(i, MathLib::toBigNumber(std::to_string(i)));
+            ASSERT_EQUALS(i, MathLib::toBigNumber(MathLib::toString(i)));
             ASSERT_EQUALS(i, MathLib::toBigNumber("-18446744073709551615"));
         }
 
@@ -530,12 +530,12 @@ private:
         // min/max and out-of-bounds - hex
         {
             constexpr MathLib::biguint u = 0xFFFFFFFFFFFFFFFF;
-            ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toBigUNumber(MathLib::toString(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("0xFFFFFFFFFFFFFFFF"));
         }
         {
             constexpr MathLib::biguint u = -0xFFFFFFFFFFFFFFFF;
-            ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toBigUNumber(MathLib::toString(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-0xFFFFFFFFFFFFFFFF"));
         }
 
@@ -545,12 +545,12 @@ private:
         // min/max and out-of-bounds - octal
         {
             constexpr MathLib::biguint u = 01777777777777777777777;
-            ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toBigUNumber(MathLib::toString(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("01777777777777777777777"));
         }
         {
             constexpr MathLib::biguint u = -01777777777777777777777;
-            ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toBigUNumber(MathLib::toString(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-01777777777777777777777"));
         }
 
@@ -560,12 +560,12 @@ private:
         // min/max and out-of-range - decimal
         {
             constexpr MathLib::biguint u = 18446744073709551615ULL;
-            ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toBigUNumber(MathLib::toString(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("18446744073709551615"));
         }
         {
             constexpr MathLib::biguint u = -18446744073709551615ULL;
-            ASSERT_EQUALS(u, MathLib::toBigUNumber(std::to_string(u)));
+            ASSERT_EQUALS(u, MathLib::toBigUNumber(MathLib::toString(u)));
             ASSERT_EQUALS(u, MathLib::toBigUNumber("-18446744073709551615"));
         }
 

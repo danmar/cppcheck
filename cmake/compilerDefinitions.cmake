@@ -35,11 +35,22 @@ if(HAVE_RULES)
     add_definitions(-DHAVE_RULES)
 endif()
 
+# Visual Studio has no native support
+if(USE_INT128 AND NOT MSVC)
+    add_definitions(-DHAVE_INT128)
+endif()
+
 if(Boost_FOUND)
     add_definitions(-DHAVE_BOOST)
-    if(USE_BOOST_INT128)
+    if(USE_INT128 STREQUAL "Boost")
         add_definitions(-DHAVE_BOOST_INT128)
     endif()
+endif()
+
+# Visual Studio falls back to Boost since it has no native 128-bit integer support
+if(USE_INT128 STREQUAL "Auto" AND Boost_FOUND)
+    add_definitions(-DHAVE_INT128)
+    add_definitions(-DHAVE_BOOST_INT128)
 endif()
 
 if(ENABLE_CHECK_INTERNAL)
