@@ -1430,7 +1430,7 @@ static bool compareKnownValue(const Token * const tok1, const Token * const tok2
     if (v1 == tok1->values().end()) {
         return false;
     }
-    if (v1->isNonValue() || v1->isContainerSizeValue() || v1->isSymbolicValue())
+    if (v1->isNonValue() || v1->isContainerSizeValue() || v1->isBufferSizeValue() || v1->isSymbolicValue())
         return false;
     const auto v2 = std::find_if(tok2->values().cbegin(), tok2->values().cend(), isKnownFn);
     if (v2 == tok2->values().end()) {
