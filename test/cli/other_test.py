@@ -3986,3 +3986,70 @@ def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, exp
             '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks {} of {} configurations. Use --force to check all configurations. [toomanyconfigs]'
             .format(test_file, max_configs, number_of_configs)
         ]
+
+
+def __test_active_checkers(tmp_path, active_cnt, total_cnt, use_misra=False, use_unusedfunction_only=False, checkers_exp=None):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'w') as f:
+        f.write('int i;')
+
+    build_dir = None
+    if checkers_exp is not None:
+        build_dir = tmp_path / 'b1'
+        os.makedirs(build_dir)
+
+    args = [
+        '-q',
+        '--enable=information',
+        '-j1',
+        str(test_file)
+    ]
+
+    if use_misra:
+        args += ['--addon=misra']
+    if build_dir:
+        args += ['--cppcheck-build-dir={}'.format(build_dir)]
+    else:
+        args += ['--no-cppcheck-build-dir']
+
+    env = {}
+    if use_unusedfunction_only:
+        env = {'UNUSEDFUNCTION_ONLY': '1'}
+        args += ['--enable=unusedFunction']
+    exitcode, stdout, stderr, _ = cppcheck_ex(args, remove_checkers_report=False, env=env)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        f'nofile:0:0: information: Active checkers: {active_cnt}/{total_cnt} (use --checkers-report=<filename> to see details) [checkersReport]',
+        ''  # TODO: get rid of extra newline
+    ]
+
+    if build_dir:
+        checkers_file = build_dir / 'checkers.txt'
+        with open(checkers_file, 'r') as f:
+            checkers = f.read().splitlines()
+
+        assert checkers == checkers_exp
+        assert len(checkers) == active_cnt
+
+
+def test_active_unusedfunction_only(tmp_path):
+    __test_active_checkers(tmp_path, 1, 966, use_unusedfunction_only=True)
+
+
+def test_active_unusedfunction_only_builddir(tmp_path):
+    checkers_exp = [
+        'CheckUnusedFunctions::check'
+    ]
+    __test_active_checkers(tmp_path, 1, 966, use_unusedfunction_only=True, checkers_exp=checkers_exp)
+
+
+def test_active_unusedfunction_only_misra(tmp_path):
+    __test_active_checkers(tmp_path, 1, 1166, use_unusedfunction_only=True, use_misra=True)
+
+
+def test_active_unusedfunction_only_misra_builddir(tmp_path):
+    checkers_exp = [
+        'CheckUnusedFunctions::check'
+    ]
+    __test_active_checkers(tmp_path, 1, 1166, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
