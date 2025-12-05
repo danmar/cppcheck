@@ -6983,6 +6983,15 @@ private:
                               "    return hash[0];\n"
                               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("template <int N>\n" // #14199
+                              "struct S {\n"
+                              "    int i;\n"
+                              "};\n"
+                              "void f() {\n"
+                              "    S<0> s;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:6:10]: (style) Unused variable: s [unusedVariable]", errout_str());
     }
 
     void localvarFuncPtr() {
