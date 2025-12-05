@@ -5861,6 +5861,12 @@ static void valueFlowSubFunction(const TokenList& tokenlist,
                         continue;
                 }
 
+                if (argvar->isReference() && isVariableChanged(argvar, settings)) {
+                    argvalues.remove_if([](const ValueFlow::Value& v) {
+                        return !v.isUninitValue();
+                    });
+                }
+
                 if (argvalues.empty())
                     continue;
 
