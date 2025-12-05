@@ -1046,8 +1046,13 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         }
 
         if (mSettings.checkConfiguration) {
-            for (const std::string &config : configurations)
+            for (const std::string &config : configurations) {
+                if (!mSettings.quiet && (!config.empty() && configurations.size() > 1)) {
+                    std::string fixedpath = Path::toNativeSeparators(file.spath());
+                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + config + "...", Color::FgGreen);
+                }
                 (void)preprocessor.getcode(config, files, false);
+            }
 
             if (configurations.size() > maxConfigs)
                 tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
