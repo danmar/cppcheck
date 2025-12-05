@@ -148,6 +148,15 @@ public:
     void clear() {
         mVarUsage.clear();
     }
+    void clearConst() {
+        std::set<int> keys;
+        for (const std::pair<const nonneg int, Variables::VariableUsage>& var : mVarUsage) {
+            if (var.second._var && var.second._var->isConst())
+                keys.emplace(var.first);
+        }
+        for (const int key : keys)
+            mvarUsage.erase(key);
+    }
     const std::map<nonneg int, VariableUsage> &varUsage() const {
         return mVarUsage;
     }
@@ -796,9 +805,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         // templates
         if (tok->isName() && endsWith(tok->str(), '>')) {
             // TODO: This is a quick fix to handle when constants are used
-            // as template parameters. Try to handle this better, perhaps
-            // only remove constants.
-            variables.clear();
+            // as template parameters.
+            variables.clearConst();
         }
 
         else if (Token::Match(tok->previous(), "[;{}]")) {
