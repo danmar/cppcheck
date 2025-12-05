@@ -155,7 +155,7 @@ public:
                 keys.emplace(var.first);
         }
         for (const int key : keys)
-            mvarUsage.erase(key);
+            mVarUsage.erase(key);
     }
     const std::map<nonneg int, VariableUsage> &varUsage() const {
         return mVarUsage;
