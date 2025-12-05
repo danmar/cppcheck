@@ -5,7 +5,9 @@ cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppchec
 gui_options="-DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt"
 ec=0
 
-# TODO: add --check-config
+if [ -n "$1" ]; then
+  selfcheck_options="$selfcheck_options $1"
+fi
 
 # self check externals
 ./cppcheck $selfcheck_options externals || ec=1
