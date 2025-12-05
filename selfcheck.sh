@@ -7,11 +7,6 @@ ec=0
 
 # TODO: add --check-config
 
-# early exit
-if [ $ec -eq 1 ]; then
-  exit $ec
-fi
-
 # self check externals
 ./cppcheck $selfcheck_options externals || ec=1
 # self check lib/cli
