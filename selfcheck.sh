@@ -27,4 +27,8 @@ mkdir b2
 ./cppcheck $selfcheck_options $cppcheck_options -Icli tools/dmake/*.cpp || ec=1
 # triage
 ./cppcheck $selfcheck_options $cppcheck_options $gui_options -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
+
+rm -rf b2
+rm -rf b1
+
 exit $ec
