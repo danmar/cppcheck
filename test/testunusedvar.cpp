@@ -6991,7 +6991,7 @@ private:
                               "void f() {\n"
                               "    S<0> s;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:6:10]: (style) Unused variable: s [unusedVariable]", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:10]: (style) Unused variable: s [unusedVariable]\n", errout_str());
     }
 
     void localvarFuncPtr() {
