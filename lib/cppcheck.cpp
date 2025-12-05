@@ -1045,6 +1045,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
         if (mSettings.checkConfiguration) {
             std::string fixedpath = Path::toNativeSeparators(file.spath());
             int checkConfig = 0;
+            // TODO: this logic differs from the actual one during analysis
+            // TODO: print invalid configurations
             for (const std::string &config : configurations) {
                 if (!mSettings.quiet && (!config.empty() && configurations.size() > 1)) {
                     mErrorLogger.reportOut("Checking " + fixedpath + ": " + config + "...", Color::FgGreen);
@@ -1196,6 +1198,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     if (!tokenizer.tokens())
                         continue;
 
+                    // TODO: unreachable
                     // skip rest of iteration if just checking configuration
                     if (mSettings.checkConfiguration)
                         continue;
