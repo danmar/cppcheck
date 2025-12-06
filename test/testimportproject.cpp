@@ -66,6 +66,7 @@ private:
         TEST_CASE(importCompileCommands12); // #13040: "directory" is parent directory, relative include paths
         TEST_CASE(importCompileCommands13); // #13333: duplicate file entries
         TEST_CASE(importCompileCommands14); // #14156
+        TEST_CASE(importCompileCommands15); // #14306
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCompileCommandsDirectoryMissing); // 'directory' field missing
@@ -387,6 +388,26 @@ private:
         ASSERT_EQUALS(1, importer.fileSettings.size());
         const FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS("TFS_LINUX_MODULE_NAME=\"tfs_linux\"", fs.defines);
+    }
+
+    void importCompileCommands15() const { // #14306
+        REDIRECT;
+        constexpr char json[] =
+            R"([
+                 {
+                   "directory": "C:\\Users\\abcd\\efg\\hijk",
+                   "command": "gcc \"-Ipath\\123\" \"-c\" test.c",
+                   "file": "test.c",
+                   "output": "test.obj"
+                 }
+               ])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS(1, fs.includePaths.size());
+        ASSERT_EQUALS("C:/Users/abcd/efg/hijk/path/123/", fs.includePaths.front());
     }
 
     void importCompileCommandsArgumentsSection() const {
