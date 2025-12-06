@@ -1,3 +1,7 @@
+if(BUILD_CORE_DLL)
+    set(BUILD_SHARED_LIBS On)
+endif()
+
 file(GLOB_RECURSE hdrs "*.h")
 file(GLOB_RECURSE srcs "*.cpp")
 
