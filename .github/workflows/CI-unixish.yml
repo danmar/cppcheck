@@ -576,6 +576,8 @@ jobs:
         run: |
           g++ -Ilib -c cli/threadexecutor.cpp -DDISALLOW_THREAD_EXECUTOR
           test -z "$(nm threadexecutor.o)"
+          g++ -Ilib -c cli/processexecutor.cpp -DDISALLOW_PROCESS_EXECUTOR
+          test -z "$(nm processexecutor.o)"
           # TODO: test NO_* defines
 
       - name: Show all ignored files
