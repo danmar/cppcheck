@@ -266,6 +266,11 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
             pos++;
         if (pos >= command.size())
             break;
+        bool wholeArgQuoted = false;
+        if (command[pos] == '"') {
+            wholeArgQuoted = true;
+            pos++;
+        }
         if (command[pos] != '/' && command[pos] != '-')
             continue;
         pos++;
@@ -273,10 +278,13 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
             break;
         const char F = command[pos++];
         if (std::strchr("DUI", F)) {
-            while (pos < command.size() && command[pos] == ' ')
+            while (pos < command.size() && command[pos] == ' ') {
                 ++pos;
+                wholeArgQuoted = false;
+            }
         }
-        std::string fval = readUntil(command, &pos, " =");
+        const char *readUntilChars = wholeArgQuoted ? " =\"" : " =";
+        std::string fval = readUntil(command, &pos, readUntilChars);
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
