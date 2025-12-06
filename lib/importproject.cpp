@@ -270,6 +270,8 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
         if (command[pos] == '"') {
             wholeArgQuoted = true;
             pos++;
+            if (pos >= command.size())
+                break;
         }
         if (command[pos] != '/' && command[pos] != '-')
             continue;
