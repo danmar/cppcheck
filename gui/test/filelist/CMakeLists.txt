@@ -5,10 +5,15 @@ add_executable(test-filelist
         ${test-filelist_SRC}
         testfilelist.cpp
         ${CMAKE_SOURCE_DIR}/gui/filelist.cpp
+        ${CMAKE_SOURCE_DIR}/lib/pathmatch.cpp
+        ${CMAKE_SOURCE_DIR}/lib/path.cpp
+        ${CMAKE_SOURCE_DIR}/lib/utils.cpp
+        $<TARGET_OBJECTS:simplecpp_objs>
         )
-target_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/gui)
+target_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib)
+target_externals_include_directories(test-filelist PRIVATE ${CMAKE_SOURCE_DIR}/externals/simplecpp)
 target_compile_definitions(test-filelist PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(test-filelist ${QT_CORE_LIB} ${QT_TEST_LIB} cppcheck-core simplecpp)
+target_link_libraries(test-filelist ${QT_CORE_LIB} ${QT_TEST_LIB})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if(QT_VERSION VERSION_GREATER_EQUAL "6.9.0")
