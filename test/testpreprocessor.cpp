@@ -55,8 +55,10 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
         Preprocessor p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
-        simplecpp::TokenList tokens2 = p.preprocess("", files, true);
         (void)p.reportOutput(outputList, true);
+        simplecpp::OutputList outputList_pp;
+        simplecpp::TokenList tokens2 = p.preprocess("", files, outputList_pp);
+        (void)p.reportOutput(outputList_pp, true);
         return tokens2.stringify();
     }
 
