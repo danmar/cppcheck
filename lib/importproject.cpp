@@ -210,11 +210,10 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     return ImportProject::Type::FAILURE;
 }
 
-static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
+static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[], bool str = false)
 {
     std::string ret;
     bool escapedString = false;
-    bool str = false;
     bool escape = false;
     for (; *pos < command.size() && (str || !std::strchr(until, command[*pos])); (*pos)++) {
         if (escape)
@@ -266,6 +265,13 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
             pos++;
         if (pos >= command.size())
             break;
+        bool wholeArgQuoted = false;
+        if (command[pos] == '"') {
+            wholeArgQuoted = true;
+            pos++;
+            if (pos >= command.size())
+                break;
+        }
         if (command[pos] != '/' && command[pos] != '-')
             continue;
         pos++;
@@ -276,7 +282,9 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
             while (pos < command.size() && command[pos] == ' ')
                 ++pos;
         }
-        std::string fval = readUntil(command, &pos, " =");
+        std::string fval = readUntil(command, &pos, " =", wholeArgQuoted);
+        if (wholeArgQuoted && fval.back() == '\"')
+            fval.resize(fval.size() - 1);
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
