@@ -599,6 +599,8 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens1(code, files, filename, &outputList);
         Preprocessor preprocessor(tokens1, settings, *this, Path::identify(tokens1.getFiles()[0], false));
+        (void)preprocessor.reportOutput(outputList, true);
+        ASSERT(preprocessor.loadFiles(files));
         std::list<Directive> directives = preprocessor.createDirectives();
 
         TokenList tokenlist{settings, Path::identify(filename, false)};
