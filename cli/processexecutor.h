@@ -19,6 +19,10 @@
 #ifndef PROCESSEXECUTOR_H
 #define PROCESSEXECUTOR_H
 
+#include "config.h"
+
+#ifdef HAS_THREADING_MODEL_FORK
+
 #include "cppcheck.h"
 #include "executor.h"
 
@@ -71,5 +75,7 @@ private:
 };
 
 /// @}
+
+#endif // HAS_THREADING_MODEL_FORK
 
 #endif // PROCESSEXECUTOR_H

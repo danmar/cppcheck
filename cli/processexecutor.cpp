@@ -22,7 +22,7 @@
 
 #include "processexecutor.h"
 
-#if !defined(_WIN32) && !defined(__MINGW32__)
+#ifdef HAS_THREADING_MODEL_FORK
 
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -471,4 +471,4 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
         mErrorLogger.reportErr(errmsg);
 }
 
-#endif // !WIN32
+#endif // HAS_THREADING_MODEL_FORK

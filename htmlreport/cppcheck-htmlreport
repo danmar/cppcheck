@@ -412,7 +412,7 @@ def filter_button(enabled_filters, id, function):
     enabled = enabled_filters.get(id, False)
     if not id:
         id = 'None'
-    return '\n        <label class="checkBtn%s"><input type="checkbox" onclick="%s(this)" id="%s"%s/>%s</label>'\
+    return '\n        <label class="checkBtn%s"><input type="checkbox" onclick="%s(this)" id="%s" %s>%s</label>'\
           % (' disabled' if not enabled else '', function, id, 'checked' if enabled else 'disabled', id)
 
 def filter_bar(enabled):
@@ -428,8 +428,8 @@ def filter_bar(enabled):
     , classification_bar
     ,''.join([filter_button(enabled, tool, 'toggleTool') for tool in ['cppcheck', 'clang-tidy']])
     ,'\n        | '
-    ,'\n        <label class="severityHeader">File: <input type="search" oninput="filterFile(this.value)"/></label>'
-    ,'\n        <label class="severityHeader">Filter: <input type="search" oninput="filterText(this.value)"/></label>'
+    ,'\n        <label class="severityHeader">File: <input type="search" oninput="filterFile(this.value)"></label>'
+    ,'\n        <label class="severityHeader">Filter: <input type="search" oninput="filterText(this.value)"></label>'
     ,'\n      </div>\n'])
 def git_blame(errors, path, file, blame_options):
     last_line= errors[-1]['line']
@@ -837,8 +837,8 @@ def main() -> None:
                     lexer = guess_lexer(content, stripnl=False)
                 except ClassNotFound:
                     sys.stderr.write("ERROR: Couldn't determine lexer for the file' " + source_filename + " '. Won't be able to syntax highlight this file.")
-                    output_file.write("\n <tr><td colspan=\"5\"> Could not generate content because pygments failed to determine the code type.</td></tr>")
-                    output_file.write("\n <tr><td colspan=\"5\"> Sorry about this.</td></tr>")
+                    output_file.write("\n <tr><td colspan=\"6\"> Could not generate content because pygments failed to determine the code type.</td></tr>")
+                    output_file.write("\n <tr><td colspan=\"6\"> Sorry about this.</td></tr>")
                     continue
 
             if options.source_encoding:
@@ -932,10 +932,10 @@ def main() -> None:
             htmlfile = data.get('htmlfile') if is_file else None
 
             output_file.write("\n      <tbody class=\"fileEntry\">")
-            output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % row_content)
+            output_file.write("\n       <tr><td colspan=\"6\">%s</td></tr>" % row_content)
 
             if filename in decode_errors:
-                output_file.write("\n       <tr><td colspan=\"5\">Could not generated due to UnicodeDecodeError</td></tr>")
+                output_file.write("\n       <tr><td colspan=\"6\">Could not generated due to UnicodeDecodeError</td></tr>")
 
             sorted_errors = sorted(data['errors'], key=lambda k: k['line'])
             blame_data = git_blame(sorted_errors, source_dir, filename, blame_options) if add_author_information else []

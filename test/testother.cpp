@@ -8203,6 +8203,18 @@ private:
               "    return (x >= 0.0) ? 0.0 : -0.0;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct A {};\n" // # 14300
+              "struct B {};\n"
+              "void f(bool x) {\n"
+              "    A* a = new A();\n"
+              "    B* b = new B();\n"
+              "    auto p = x ? static_cast<void*>(a) : static_cast<void*>(b);\n"
+              "    (void)p;\n"
+              "    delete a;\n"
+              "    delete b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void duplicateValueTernarySizeof() { // #13773

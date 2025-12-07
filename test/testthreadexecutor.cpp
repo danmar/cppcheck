@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "filesettings.h"
 #include "fixture.h"
+
+#ifdef HAS_THREADING_MODEL_THREAD
+#include "filesettings.h"
 #include "helpers.h"
 #include "redirect.h"
 #include "settings.h"
@@ -33,12 +35,21 @@
 #include <string>
 #include <utility>
 #include <vector>
+#endif // HAS_THREADING_MODEL_THREAD
 
 class TestThreadExecutorBase : public TestFixture {
 public:
-    TestThreadExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
+    TestThreadExecutorBase(const char * const name, bool useFS)
+        : TestFixture(name)
+#ifdef HAS_THREADING_MODEL_THREAD
+        , useFS(useFS)
+#endif // HAS_THREADING_MODEL_THREAD
+    {
+        (void)useFS;
+    }
 
 private:
+#ifdef HAS_THREADING_MODEL_THREAD
     /*const*/ Settings settings = settingsBuilder().library("std.cfg").build();
     bool useFS;
 
@@ -111,9 +122,11 @@ private:
         ThreadExecutor executor(filelist, fileSettings, s, supprs, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
     }
+#endif // HAS_THREADING_MODEL_THREAD
 
     void run() override {
         mNewTemplate = true;
+#ifdef HAS_THREADING_MODEL_THREAD
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
@@ -130,8 +143,10 @@ private:
         TEST_CASE(showtime_file_total);
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
+#endif // HAS_THREADING_MODEL_THREAD
     }
 
+#ifdef HAS_THREADING_MODEL_THREAD
     void deadlock_with_many_errors() {
         std::ostringstream oss;
         oss << "void f()\n"
@@ -313,6 +328,7 @@ private:
     }
 
     // TODO: test whole program analysis
+#endif // HAS_THREADING_MODEL_THREAD
 };
 
 class TestThreadExecutorFiles : public TestThreadExecutorBase {
