@@ -143,9 +143,13 @@ void CheckersReport::countCheckers()
         ++mAllCheckersCount;
     }
     if (mSettings.premiumArgs.find("misra-c-") != std::string::npos || mSettings.addons.count("misra")) {
+        const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
-            const bool active = isMisraRuleActive(mActiveCheckers, rule);
+            // this will return some rules as always active even if they are not in the active checkers.
+            // this leads to a difference in the shown count and in the checkers stored in the builddir
+            // TODO: fix this?
+            const bool active = !doUnusedFunctionOnly && isMisraRuleActive(mActiveCheckers, rule);
             if (active)
                 ++mActiveCheckersCount;
             ++mAllCheckersCount;

@@ -1495,7 +1495,7 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 
 void CppCheck::executeAddons(const std::vector<std::string>& files, const std::string& file0)
 {
-    if (mSettings.addons.empty() || files.empty())
+    if (mSettings.addons.empty() || files.empty() || Settings::unusedFunctionOnly())
         return;
 
     const bool isCtuInfo = endsWith(files[0], ".ctu-info");
@@ -1807,22 +1807,25 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 bool CppCheck::analyseWholeProgram()
 {
     bool errors = false;
-    // Analyse the tokens
-    CTU::FileInfo ctu;
-    if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
-    {
-        for (const Check::FileInfo *fi : mFileInfo) {
-            const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
-            if (fi2) {
-                ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
-                ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+
+    if (!Settings::unusedFunctionOnly()) {
+        // Analyse the tokens
+        CTU::FileInfo ctu;
+        if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
+        {
+            for (const Check::FileInfo *fi : mFileInfo) {
+                const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
+                if (fi2) {
+                    ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
+                    ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+                }
             }
         }
-    }
 
-    // cppcheck-suppress shadowFunction - TODO: fix this
-    for (Check *check : Check::instances())
-        errors |= check->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
+        // cppcheck-suppress shadowFunction - TODO: fix this
+        for (Check *check : Check::instances())
+            errors |= check->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
+    }
 
     if (mUnusedFunctionsCheck)
         errors |= mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
@@ -1832,9 +1835,16 @@ bool CppCheck::analyseWholeProgram()
 
 unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo)
 {
-    executeAddonsWholeProgram(files, fileSettings, ctuInfo);
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, mErrorLogger, buildDir);
+
+    if (mUnusedFunctionsCheck)
+        mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
+
+    if (Settings::unusedFunctionOnly())
+        return mLogger->exitcode();
+
+    executeAddonsWholeProgram(files, fileSettings, ctuInfo);
     std::list<Check::FileInfo*> fileInfoList;
     CTU::FileInfo ctuFileInfo;
 
@@ -1884,9 +1894,6 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
         check->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
-
-    if (mUnusedFunctionsCheck)
-        mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;
