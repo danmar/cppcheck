@@ -1316,7 +1316,7 @@ public:
         ExactOrZero,
         LowerBound,
     };
-     enum class SizeOf : std::uint8_t {
+    enum class SizeOf : std::uint8_t {
         Pointer,
         Pointee,
     };
