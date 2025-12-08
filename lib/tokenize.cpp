@@ -1023,7 +1023,6 @@ bool Tokenizer::isFunctionPointer(const Token* tok) {
     return Token::Match(tok, "%name% ) (");
 }
 
-
 void Tokenizer::simplifyTypedef()
 {
     // Simplify global typedefs that are not redefined with the fast 1-pass simplification.
@@ -1400,7 +1399,7 @@ void Tokenizer::simplifyTypedefCpp()
                 }
 
                 // function pointer
-                if (isFunctionPointer(tokOffset2)) {
+                if (Token::Match(tokOffset2, "* %name% ) (")) {
                     // name token wasn't a name, it was part of the type
                     typeEnd = typeEnd->next();
                     functionPtr = true;
