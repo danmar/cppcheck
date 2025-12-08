@@ -230,7 +230,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings &set
         dim.known = value->isKnown();
         dim.tok = nullptr;
         const auto sizeOf = array->valueType()->pointer > 1 ? ValueType::SizeOf::Pointer : ValueType::SizeOf::Pointee;
-        const MathLib::bigint typeSize = array->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, sizeOf);
+        const size_t typeSize = array->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, sizeOf);
         if (typeSize == 0)
             return false;
         dim.num = value->intvalue / typeSize;
@@ -586,7 +586,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (var->isPointerArray())
         v.intvalue = dim * mSettings->platform.sizeof_pointer;
     else {
-        const MathLib::bigint typeSize = bufTok->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
+        const size_t typeSize = bufTok->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
         v.intvalue = dim * typeSize;
     }
 
