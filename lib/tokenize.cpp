@@ -674,7 +674,7 @@ namespace {
                 return;
 
             mUsed = true;
-            const bool isFunctionPointer = Token::Match(mNameToken, "%name% )");
+            const bool isFunctionPointer = Tokenizer::isFunctionPointer(mNameToken);
 
             // Special handling for T(...) when T is a pointer
             if (Token::Match(tok, "%name% [({]") && !isFunctionPointer && !Token::simpleMatch(tok->linkAt(1), ") (")) {
@@ -1019,6 +1019,10 @@ namespace {
     };
 }
 
+bool Tokenizer::isFunctionPointer(const Token* tok) {
+    return Token::Match(tok, "%name% ) (");
+}
+
 void Tokenizer::simplifyTypedef()
 {
     // Simplify global typedefs that are not redefined with the fast 1-pass simplification.
@@ -1088,7 +1092,7 @@ void Tokenizer::simplifyTypedef()
                 typedefInfo.lineNumber = typedefToken->linenr();
                 typedefInfo.column = typedefToken->column();
                 typedefInfo.used = t.second.isUsed();
-                typedefInfo.isFunctionPointer = Token::Match(t.second.nameToken(), "%name% ) (");
+                typedefInfo.isFunctionPointer = isFunctionPointer(t.second.nameToken());
                 if (typedefInfo.isFunctionPointer) {
                     const Token* tok = typedefToken;
                     while (tok != t.second.endToken()) {
@@ -1622,7 +1626,7 @@ void Tokenizer::simplifyTypedefCpp()
         typedefInfo.lineNumber = typeName->linenr();
         typedefInfo.column = typeName->column();
         typedefInfo.used = false;
-        typedefInfo.isFunctionPointer = Token::Match(typeName, "%name% ) (");
+        typedefInfo.isFunctionPointer = isFunctionPointer(typeName);
         if (typedefInfo.isFunctionPointer) {
             const Token* t = typeDef;
             while (t != tok) {
@@ -7155,7 +7159,7 @@ void Tokenizer::simplifyFunctionPointers()
         while (Token::Match(tok2, "%type%|:: %type%|::"))
             tok2 = tok2->next();
 
-        if (!Token::Match(tok2, "%name% ) (") &&
+        if (!isFunctionPointer(tok2) &&
             !Token::Match(tok2, "%name% [ ] ) (") &&
             !(Token::Match(tok2, "%name% (") && Token::simpleMatch(tok2->linkAt(1), ") ) (")))
             continue;
@@ -7448,7 +7452,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             }
             // Function pointer
             if (Token::simpleMatch(varName, "( *") &&
-                Token::Match(varName->link()->previous(), "%name% ) (") &&
+                isFunctionPointer(varName->link()->previous()) &&
                 Token::simpleMatch(varName->link()->linkAt(1), ") =")) {
                 Token *endDecl = varName->link()->linkAt(1);
                 varName = varName->link()->previous();
@@ -9376,7 +9380,7 @@ Token* Tokenizer::getAttributeFuncTok(Token* tok, bool gccattr) const {
         if (Token::simpleMatch(prev, ")")) {
             if (Token::Match(prev->link()->previous(), "%name% ("))
                 return prev->link()->previous();
-            if (Token::Match(prev->link()->tokAt(-2), "%name% ) ("))
+            if (isFunctionPointer(prev->link()->tokAt(-2)))
                 return prev->link()->tokAt(-2);
         }
         if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->tokAt(-2), "operator %op% (") && isCPP())
