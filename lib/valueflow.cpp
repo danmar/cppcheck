@@ -423,14 +423,6 @@ void ValueFlow::combineValueProperties(const ValueFlow::Value &value1, const Val
         result.path = value1.path;
 }
 
-namespace {
-    struct Result
-    {
-        size_t total;
-        bool success;
-    };
-}
-
 static void valueFlowNumber(TokenList &tokenlist, const Settings& settings)
 {
     for (Token *tok = tokenlist.front(); tok;) {
