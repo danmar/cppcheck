@@ -1595,7 +1595,7 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
             const size_t sz = vt.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
-            if (sz <= 0)
+            if (sz == 0)
                 continue;
             long long mul = 1;
             for (const Token *arrtok = tok->linkAt(1)->previous(); arrtok; arrtok = arrtok->previous()) {
