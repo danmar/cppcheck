@@ -601,7 +601,7 @@ public:
     /**
      * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
      * @param s the string to check
-     * @return true in case is is one and false otherwise.
+     * @return true in case it is one and false otherwise.
      */
     static bool isOneNumber(const std::string &s);
 
@@ -612,6 +612,13 @@ public:
      * @return pointer to start brace of function scope or nullptr if not start.
      */
     static const Token * startOfExecutableScope(const Token * tok);
+
+    /**
+     * Helper function to check whether tok is the declaration of a function pointer
+     * @param the Token to check
+     * @return true in case tok is a function pointer and false otherwise.
+     */
+    static bool isFunctionPointer(const Token* tok);
 
     const Settings &getSettings() const {
         return mSettings;
