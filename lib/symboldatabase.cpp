@@ -8555,34 +8555,34 @@ size_t ValueType::getSizeOf( const Settings& settings, Accuracy accuracy, SizeOf
     if (type == ValueType::Type::RECORD && typeScope) {
         size_t currentBitCount = 0;
         size_t currentBitfieldAlloc = 0;
-        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, MathLib::bigint bits) -> size_t {
+        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, MathLib::bigint nBits) -> size_t {
             const size_t charBit = settings.platform.char_bit;
             size_t n = vt2.getSizeOf(settings, accuracy, SizeOf::Pointer, ++maxRecursion);
             size_t a = getAlignOf(vt2, settings, accuracy);
             if (n == 0 || a == 0)
                 return accuracy == Accuracy::ExactOrZero ? 0 : total;
-            if (bits == 0) {
+            if (nBits == 0) {
                 if (currentBitfieldAlloc == 0) {
-                    bits = n * charBit;
+                    nBits = n * charBit;
                 } else {
-                    bits = (currentBitfieldAlloc * charBit) - currentBitCount;
+                    nBits = (currentBitfieldAlloc * charBit) - currentBitCount;
                 }
             }
-            if (bits > 0) {
+            if (nBits > 0) {
                 size_t ret = total;
                 if (currentBitfieldAlloc == 0) {
                     currentBitfieldAlloc = n;
                     currentBitCount = 0;
-                } else if (currentBitCount + bits > charBit * currentBitfieldAlloc) {
+                } else if (currentBitCount + nBits > charBit * currentBitfieldAlloc) {
                     ret += currentBitfieldAlloc;
                     currentBitfieldAlloc = n;
                     currentBitCount = 0;
                 }
-                while (bits > charBit * currentBitfieldAlloc) {
+                while (nBits > charBit * currentBitfieldAlloc) {
                     ret += currentBitfieldAlloc;
-                    bits -= charBit * currentBitfieldAlloc;
+                    nBits -= charBit * currentBitfieldAlloc;
                 }
-                currentBitCount += bits;
+                currentBitCount += nBits;
                 return ret;
             }
             n *= dim;
