@@ -105,8 +105,11 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 
     // determine prefix if specified
     if (posEndComment >= (pos1 + cppchecksuppress.size() + 1)) {
-        if (comment.at(pos1 + cppchecksuppress.size()) != '-')
+        const std::string suppressCmdString = comment.substr(pos1, pos2-pos1-1);
+        if (comment.at(pos1 + cppchecksuppress.size()) != '-') {
+            bad.emplace_back(tok->location.file(), tok->location.line, 0, "unknown suppression type '" + suppressCmdString + "'"); // TODO: set column
             return false;
+        }
 
         const unsigned int argumentLength =
             posEndComment - (pos1 + cppchecksuppress.size() + 1);
@@ -122,8 +125,10 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             errorType = SuppressionList::Type::blockEnd;
         else if ("macro" == suppressTypeString)
             errorType = SuppressionList::Type::macro;
-        else
+        else {
+            bad.emplace_back(tok->location.file(), tok->location.line, 0, "unknown suppression type '" + suppressCmdString + "'"); // TODO: set column
             return false;
+        }
     }
 
     if (comment[pos2] == '[') {
@@ -742,38 +747,10 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     return dui;
 }
 
-bool Preprocessor::hasErrors(const simplecpp::Output &output)
-{
-    switch (output.type) {
-    case simplecpp::Output::ERROR:
-    case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-    case simplecpp::Output::SYNTAX_ERROR:
-    case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-    case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-    case simplecpp::Output::FILE_NOT_FOUND:
-    case simplecpp::Output::DUI_ERROR:
-        return true;
-    case simplecpp::Output::WARNING:
-    case simplecpp::Output::MISSING_HEADER:
-    case simplecpp::Output::PORTABILITY_BACKSLASH:
-        break;
-    }
-    return false;
-}
-
-bool Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
+const simplecpp::Output* Preprocessor::handleErrors(const simplecpp::OutputList& outputList)
 {
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
-    const bool hasError = reportOutput(outputList, showerror);
-    if (throwError) {
-        const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
-            return hasErrors(output);
-        });
-        if (it != outputList.cend()) {
-            throw *it;
-        }
-    }
-    return hasError;
+    return reportOutput(outputList, showerror);
 }
 
 bool Preprocessor::loadFiles(std::vector<std::string> &files)
@@ -782,7 +759,7 @@ bool Preprocessor::loadFiles(std::vector<std::string> &files)
 
     simplecpp::OutputList outputList;
     mFileCache = simplecpp::load(mTokens, files, dui, &outputList);
-    return !handleErrors(outputList, false);
+    return !handleErrors(outputList);
 }
 
 void Preprocessor::removeComments()
@@ -813,19 +790,16 @@ void Preprocessor::setPlatformInfo()
     mTokens.sizeOfType["long double *"] = mSettings.platform.sizeof_pointer;
 }
 
-simplecpp::TokenList Preprocessor::preprocess(const std::string &cfg, std::vector<std::string> &files, bool throwError)
+simplecpp::TokenList Preprocessor::preprocess(const std::string &cfg, std::vector<std::string> &files, simplecpp::OutputList& outputList)
 {
     const simplecpp::DUI dui = createDUI(mSettings, cfg, mLang);
 
-    simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
     std::list<simplecpp::IfCond> ifCond;
     simplecpp::TokenList tokens2(files);
     simplecpp::preprocess(tokens2, mTokens, files, mFileCache, dui, &outputList, &macroUsage, &ifCond);
     mMacroUsage = std::move(macroUsage);
     mIfCond = std::move(ifCond);
-
-    (void)handleErrors(outputList, throwError);
 
     tokens2.removeComments();
 
@@ -834,7 +808,9 @@ simplecpp::TokenList Preprocessor::preprocess(const std::string &cfg, std::vecto
 
 std::string Preprocessor::getcode(const std::string &cfg, std::vector<std::string> &files, const bool writeLocations)
 {
-    simplecpp::TokenList tokens2 = preprocess(cfg, files, false);
+    simplecpp::OutputList outputList;
+    simplecpp::TokenList tokens2 = preprocess(cfg, files, outputList);
+    handleErrors(outputList);
     unsigned int prevfile = 0;
     unsigned int line = 1;
     std::ostringstream ret;
@@ -859,14 +835,14 @@ std::string Preprocessor::getcode(const std::string &cfg, std::vector<std::strin
     return ret.str();
 }
 
-bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
+const simplecpp::Output* Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
 {
-    bool hasError = false;
+    const simplecpp::Output* out_ret = nullptr;
 
     for (const simplecpp::Output &out : outputList) {
         switch (out.type) {
         case simplecpp::Output::ERROR:
-            hasError = true;
+            out_ret = &out;
             if (!startsWith(out.msg,"#error") || showerror)
                 error(out.location.file(), out.location.line, out.location.col, out.msg, out.type);
             break;
@@ -884,19 +860,19 @@ bool Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
         case simplecpp::Output::SYNTAX_ERROR:
         case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            hasError = true;
+            out_ret = &out;
             error(out.location.file(), out.location.line, out.location.col, out.msg, out.type);
             break;
         case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
         case simplecpp::Output::FILE_NOT_FOUND:
         case simplecpp::Output::DUI_ERROR:
-            hasError = true;
+            out_ret = &out;
             error("", 0, 0, out.msg, out.type);
             break;
         }
     }
 
-    return hasError;
+    return out_ret;
 }
 
 static std::string simplecppErrToId(simplecpp::Output::Type type)

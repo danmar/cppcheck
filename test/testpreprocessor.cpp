@@ -55,13 +55,14 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
         Preprocessor p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
-        simplecpp::TokenList tokens2 = p.preprocess("", files, true);
+        ASSERT(p.loadFiles(files));
+        simplecpp::TokenList tokens2 = p.preprocess("", files, outputList);
         (void)p.reportOutput(outputList, true);
         return tokens2.stringify();
     }
 
     template<size_t size>
-    static void preprocess(const char (&code)[size], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
+    void preprocess(const char (&code)[size], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
     {
         if (!files.empty())
             throw std::runtime_error("file list not empty");
@@ -69,13 +70,15 @@ private:
         if (tokenlist.front())
             throw std::runtime_error("token list not empty");
 
-        const simplecpp::TokenList tokens1(code, files, file0);
+        simplecpp::OutputList outputList;
+        const simplecpp::TokenList tokens1(code, files, file0, &outputList);
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
         simplecpp::FileDataCache cache;
-        // TODO: provide and handle outputList
-        simplecpp::preprocess(tokens2, tokens1, files, cache, dui);
+        simplecpp::preprocess(tokens2, tokens1, files, cache, dui, &outputList);
+        Preprocessor preprocessor(tokens2, settingsDefault, *this, Standards::Language::C);
+        (void)preprocessor.reportOutput(outputList, true);
 
         // Tokenizer..
         tokenlist.createTokens(std::move(tokens2));
@@ -368,9 +371,12 @@ private:
         if (library)
             ASSERT(settings.library.load("", library, false).errorcode == Library::ErrorCode::OK);
         std::vector<std::string> files;
+        simplecpp::OutputList outputList;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,files);
+        simplecpp::TokenList tokens(code,files,"",&outputList);
         Preprocessor preprocessor(tokens, settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
+        ASSERT(preprocessor.loadFiles(files));
+        ASSERT(!preprocessor.reportOutput(outputList, true));
         preprocessor.removeComments();
         const std::set<std::string> configs = preprocessor.getConfigs();
         std::string ret;
@@ -383,8 +389,9 @@ private:
     std::size_t getHash(const char (&code)[size]) {
         std::vector<std::string> files;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,files);
+        simplecpp::TokenList tokens(code,files,"");
         Preprocessor preprocessor(tokens, settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
+        ASSERT(preprocessor.loadFiles(files));
         preprocessor.removeComments();
         return preprocessor.calculateHash("");
     }
@@ -2685,7 +2692,7 @@ private:
         ASSERT(getHash(code2) != getHash(code3));
     }
 
-    void standard() const {
+    void standard() {
 
         const char code[] = "int a;";
         // TODO: this bypasses the standard determined from the settings - the parameter should not be exposed
@@ -2727,7 +2734,8 @@ private:
             dui.std = "gnu77";
             std::vector<std::string> files;
             TokenList tokenlist{settingsDefault, Standards::Language::CPP};
-            preprocess(code, files, "test.cpp", tokenlist, dui);
+            // TODO: can this happen from application code? if yes we need to turn it into a proper error
+            ASSERT_THROW_EQUALS_2(preprocess(code, files, "test.cpp", tokenlist, dui), std::runtime_error, "unexpected simplecpp::Output type 9");
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
     }
