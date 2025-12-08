@@ -799,7 +799,7 @@ unsigned int CppCheck::check(const FileWithDetails &file)
     return returnValue;
 }
 
-unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const char* data, std::size_t size)
 {
     return checkBuffer(file, "", 0, data, size);
 }
@@ -874,14 +874,10 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const std:
     return preprocessor.calculateHash(toolinfo.str());
 }
 
-unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size)
+unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::string &cfgname, int fileIndex, const char* data, std::size_t size)
 {
     const auto f = [&file, data, size](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
-#if defined(__cpp_lib_string_view)
-        return simplecpp::TokenList{std::string_view{reinterpret_cast<const char*>(data), size}, files, file.spath(), outputList};
-#else
-        return simplecpp::TokenList{data, size, files, file.spath(), outputList};
-#endif
+        return simplecpp::TokenList{{data, size}, files, file.spath(), outputList};
     };
     return checkInternal(file, cfgname, fileIndex, f);
 }

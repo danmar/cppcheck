@@ -108,7 +108,7 @@ public:
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int checkBuffer(const FileWithDetails &file, const uint8_t* data, std::size_t size);
+    unsigned int checkBuffer(const FileWithDetails &file, const char* data, std::size_t size);
 
     /**
      * @brief Returns current version number as a string.
@@ -194,7 +194,7 @@ private:
      * @param size the size of the data to be read
      * @return number of errors found
      */
-    unsigned int checkBuffer(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size);
+    unsigned int checkBuffer(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const char* data, std::size_t size);
 
     // TODO: should use simplecpp::OutputList
     using CreateTokenListFn = std::function<simplecpp::TokenList (std::vector<std::string>&, std::list<simplecpp::Output>*)>;
