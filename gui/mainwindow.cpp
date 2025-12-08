@@ -1136,13 +1136,9 @@ bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
             supprs.nomsg.addSuppression(suppression); // TODO: check result
         }
 
-        // Only check the given -D configuration
-        if (!defines.isEmpty())
-            settings.maxConfigs = 1;
-
         // If importing a project, only check the given configuration
-        if (!mProjectFile->getImportProject().isEmpty())
-            settings.checkAllConfigurations = false;
+        if (mProjectFile->getImportProject().endsWith("json", Qt::CaseInsensitive))
+            settings.maxConfigsProject = 1;
 
         const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {
@@ -1539,11 +1535,10 @@ void MainWindow::enableCheckButtons(bool enable)
 
 void MainWindow::enableResultsButtons()
 {
-    const bool enabled = mUI->mResults->hasResults();
-    mUI->mActionClearResults->setEnabled(enabled);
-    mUI->mActionSave->setEnabled(enabled);
-    mUI->mActionPrint->setEnabled(enabled);
-    mUI->mActionPrintPreview->setEnabled(enabled);
+    mUI->mActionClearResults->setEnabled(mUI->mResults->hasResults());
+    mUI->mActionSave->setEnabled(true);
+    mUI->mActionPrint->setEnabled(true);
+    mUI->mActionPrintPreview->setEnabled(true);
 }
 
 void MainWindow::showStyle(bool checked)
@@ -1732,7 +1727,9 @@ void MainWindow::complianceReport()
 }
 
 void MainWindow::resultsAdded()
-{}
+{
+    enableResultsButtons();
+}
 
 void MainWindow::toggleMainToolBar()
 {

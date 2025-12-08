@@ -3686,13 +3686,13 @@ private:
         checkConst("class Fred {\n"
                    "    const std::string foo() { return \"\"; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:23]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:23]: (style) The member function 'Fred::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("class Fred {\n"
                    "    std::string s;\n"
                    "    const std::string & foo() { return \"\"; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:25]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:25]: (style) The member function 'Fred::foo' can be static. [functionStatic]\n", errout_str());
 
         // constructors can't be const..
         checkConst("class Fred {\n"
@@ -3731,7 +3731,7 @@ private:
                    "    int x;\n"
                    "    void b() { a(); }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4:10]: (performance, inconclusive) Technically the member function 'Fred::b' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) The member function 'Fred::b' can be static. [functionStatic]\n", errout_str());
 
         // static functions can't be const..
         checkConst("class foo\n"
@@ -3745,7 +3745,7 @@ private:
         checkConst("class Fred {\n"
                    "    const std::string foo() const throw() { return \"\"; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:23]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:23]: (style) The member function 'Fred::foo' can be static. [functionStatic]\n", errout_str());
     }
 
     void const2() {
@@ -3857,7 +3857,7 @@ private:
                    "    const std::string & foo();\n"
                    "};\n"
                    "const std::string & Fred::foo() { return \"\"; }");
-        ASSERT_EQUALS("[test.cpp:3:25] -> [test.cpp:5:27]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:25] -> [test.cpp:5:27]: (style) The member function 'Fred::foo' can be static. [functionStatic]\n", errout_str());
 
         // functions with a function call to a non-const member can't be const.. (#1305)
         checkConst("class Fred\n"
@@ -3993,7 +3993,7 @@ private:
                    "void Fred::foo() { }"
                    "void Fred::foo(std::string & a) { a = s; }"
                    "void Fred::foo(const std::string & a) { s = a; }");
-        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:7:12]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:7:12]: (style) The member function 'Fred::foo' can be static. [functionStatic]\n"
                       "[test.cpp:4:10] -> [test.cpp:7:32]: (style, inconclusive) Technically the member function 'Fred::foo' can be const. [functionConst]\n", errout_str());
 
         // check functions with different or missing parameter names
@@ -4010,11 +4010,11 @@ private:
                    "void Fred::foo3(int a, int b) { }\n"
                    "void Fred::foo4(int a, int b) { }\n"
                    "void Fred::foo5(int, int) { }");
-        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:9:12]: (performance, inconclusive) Technically the member function 'Fred::foo1' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:4:10] -> [test.cpp:10:12]: (performance, inconclusive) Technically the member function 'Fred::foo2' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:5:10] -> [test.cpp:11:12]: (performance, inconclusive) Technically the member function 'Fred::foo3' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:6:10] -> [test.cpp:12:12]: (performance, inconclusive) Technically the member function 'Fred::foo4' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:7:10] -> [test.cpp:13:12]: (performance, inconclusive) Technically the member function 'Fred::foo5' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:9:12]: (style) The member function 'Fred::foo1' can be static. [functionStatic]\n"
+                      "[test.cpp:4:10] -> [test.cpp:10:12]: (style) The member function 'Fred::foo2' can be static. [functionStatic]\n"
+                      "[test.cpp:5:10] -> [test.cpp:11:12]: (style) The member function 'Fred::foo3' can be static. [functionStatic]\n"
+                      "[test.cpp:6:10] -> [test.cpp:12:12]: (style) The member function 'Fred::foo4' can be static. [functionStatic]\n"
+                      "[test.cpp:7:10] -> [test.cpp:13:12]: (style) The member function 'Fred::foo5' can be static. [functionStatic]\n", errout_str());
 
         // check nested classes
         checkConst("class Fred {\n"
@@ -4245,7 +4245,7 @@ private:
                    "public:\n"
                    "    void foo() { }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4:10]: (performance, inconclusive) Technically the member function 'Fred::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) The member function 'Fred::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct fast_string\n"
                    "{\n"
@@ -4682,7 +4682,7 @@ private:
                    "public:\n"
                    "    void set(int i) { x = i; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4:10]: (performance, inconclusive) Technically the member function 'Fred::set' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) The member function 'Fred::set' can be static. [functionStatic]\n", errout_str());
     }
 
     void const19() {
@@ -4922,7 +4922,7 @@ private:
                    "        UnknownScope::x = x_;\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:4:17]: (performance, inconclusive) Technically the member function 'AA::vSetXPos' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:17]: (style) The member function 'AA::vSetXPos' can be static. [functionStatic]\n", errout_str());
 
     }
 
@@ -5097,7 +5097,7 @@ private:
                    "public:\n"
                    "    void f(){}\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Either there is a missing 'override', or the member function 'derived::f' can be static. [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) Either there is a missing 'override', or the member function 'derived::f' can be static. [functionStatic]\n", errout_str());
     }
 
     void const34() { // ticket #1964
@@ -5350,7 +5350,7 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:5:10] -> [test.cpp:7:12]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:10] -> [test.cpp:7:12]: (style) The member function 'Fred::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("class Fred\n"
                    "{\n"
@@ -5364,7 +5364,7 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:7:10] -> [test.cpp:9:12]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:10] -> [test.cpp:9:12]: (style) The member function 'Fred::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("namespace NS {\n"
                    "    class Fred\n"
@@ -5380,7 +5380,7 @@ private:
                    "    }\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:8:14] -> [test.cpp:10:16]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:14] -> [test.cpp:10:16]: (style) The member function 'NS::Fred::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("namespace NS {\n"
                    "    class Fred\n"
@@ -5396,7 +5396,7 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:8:14] -> [test.cpp:11:16]: (performance, inconclusive) Technically the member function 'NS::Fred::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:14] -> [test.cpp:11:16]: (style) The member function 'NS::Fred::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("class Foo {\n"
                    "    class Fred\n"
@@ -5412,7 +5412,7 @@ private:
                    "{\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:8:14] -> [test.cpp:11:17]: (performance, inconclusive) Technically the member function 'Foo::Fred::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:14] -> [test.cpp:11:17]: (style) The member function 'Foo::Fred::f' can be static. [functionStatic]\n", errout_str());
     }
 
     void const43() { // ticket 2377
@@ -5501,7 +5501,7 @@ private:
                    "    };\n"
                    "}");
 
-        ASSERT_EQUALS("[test.cpp:8:13]: (performance, inconclusive) Technically the member function 'tools::WorkspaceControl::toGrid' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:13]: (style) The member function 'tools::WorkspaceControl::toGrid' can be static. [functionStatic]\n", errout_str());
     }
 
     void const46() { // ticket 2663
@@ -5516,8 +5516,8 @@ private:
                    "    }\n"
                    "};");
 
-        ASSERT_EQUALS("[test.cpp:3:9]: (performance, inconclusive) Technically the member function 'Altren::fun1' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:7:9]: (performance, inconclusive) Technically the member function 'Altren::fun2' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:9]: (style) The member function 'Altren::fun1' can be static. [functionStatic]\n"
+                      "[test.cpp:7:9]: (style) The member function 'Altren::fun2' can be static. [functionStatic]\n", errout_str());
     }
 
     void const47() { // ticket 2670
@@ -5528,7 +5528,7 @@ private:
                    "  void bar() { foo(); }\n"
                    "};");
 
-        ASSERT_EQUALS("[test.cpp:4:8]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:8]: (style) The member function 'Altren::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("class Altren {\n"
                    "public:\n"
@@ -5537,7 +5537,7 @@ private:
                    "  void bar() { foo(1); }\n"
                    "};");
 
-        ASSERT_EQUALS("[test.cpp:4:8]: (performance, inconclusive) Technically the member function 'Altren::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
+        ASSERT_EQUALS("[test.cpp:4:8]: (style) The member function 'Altren::foo' can be static. [functionStatic]\n"
                       "[test.cpp:5:8]: (style, inconclusive) Technically the member function 'Altren::bar' can be const. [functionConst]\n", errout_str());
     }
 
@@ -5628,7 +5628,7 @@ private:
                    "private:\n"
                    "    int bar;\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:10]: (performance, inconclusive) Technically the member function 'foo::DoSomething' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:10]: (style) The member function 'foo::DoSomething' can be static. [functionStatic]\n", errout_str());
     }
 
     void const53() { // ticket 3049
@@ -5672,7 +5672,7 @@ private:
                    "    switch (x) { }\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'MyObject::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("class A\n"
                    "{\n"
@@ -5712,7 +5712,7 @@ private:
                    "\n"
                    "    return RET_NOK;\n"
                    "}");
-        ASSERT_EQUALS("[test.cpp:4:24] -> [test.cpp:9:19]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:24] -> [test.cpp:9:19]: (style) The member function 'A::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("class MyObject {\n"
                    "public:\n"
@@ -5720,7 +5720,7 @@ private:
                    "    for (int i = 0; i < 5; i++) { }\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'MyObject::foo' can be static. [functionStatic]\n", errout_str());
     }
 
     void const57() { // tickets #2669 and #2477
@@ -5745,9 +5745,9 @@ private:
                    "private:\n"
                    "  MyGUI::IntCoord mCoordValue;\n"
                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:7:13]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
+        TODO_ASSERT_EQUALS("[test.cpp:7:13]: (style) The member function 'MyGUI::types::TCoord::size' can be static. [functionStatic]\n"
                            "[test.cpp:15]: (style, inconclusive) Technically the member function 'SelectorControl::getSize' can be const.\n",
-                           "[test.cpp:7:13]: (performance, inconclusive) Technically the member function 'MyGUI::types::TCoord::size' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+                           "[test.cpp:7:13]: (style) The member function 'MyGUI::types::TCoord::size' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct Foo {\n"
                    "    Bar b;\n"
@@ -5778,7 +5778,7 @@ private:
                    "        b.run();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:10]: (performance, inconclusive) Technically the member function 'Bar::run' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
+        ASSERT_EQUALS("[test.cpp:2:10]: (style) The member function 'Bar::run' can be static. [functionStatic]\n"
                       "[test.cpp:6:10]: (style, inconclusive) Technically the member function 'Foo::foo' can be const. [functionConst]\n", errout_str());
     }
 
@@ -5788,14 +5788,14 @@ private:
                    "        f.clear();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:10]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:10]: (style) The member function 'MyObject::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct MyObject {\n"
                    "    int foo(Foo f) {\n"
                    "        return f.length();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:9]: (performance, inconclusive) Technically the member function 'MyObject::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:9]: (style) The member function 'MyObject::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct MyObject {\n"
                    "    Foo f;\n"
@@ -5883,7 +5883,7 @@ private:
                    "      inherited::set(inherited::Key(key));\n"
                    "  }\n"
                    "};\n", dinit(CheckConstOptions, $.inconclusive = false));
-        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:4:23]: (performance, inconclusive) Either there is a missing 'override', or the member function 'MixerParticipant::GetAudioFrame' can be static. [functionStatic]\n",
+        ASSERT_EQUALS("[test.cpp:2:9] -> [test.cpp:4:23]: (style) Either there is a missing 'override', or the member function 'MixerParticipant::GetAudioFrame' can be static. [functionStatic]\n",
                       errout_str());
     }
 
@@ -6202,7 +6202,7 @@ private:
                    "        if (N::i) {}\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:4:10]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) The member function 'S::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int i = 0;\n"
                    "struct S {\n"
@@ -6211,7 +6211,7 @@ private:
                    "        if (::i) {}\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:4:10]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) The member function 'S::f' can be static. [functionStatic]\n", errout_str());
 
         checkConst("namespace N {\n"
                    "    struct S {\n"
@@ -6234,7 +6234,7 @@ private:
                    "void S::f(const T* t) {\n"
                    "    const_cast<T*>(t)->e();\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:7:9]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n",
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:7:9]: (style) The member function 'S::f' can be static. [functionStatic]\n",
                       errout_str());
     }
 
@@ -6280,7 +6280,7 @@ private:
                    "        return nullptr;\n"
                    "    }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:3:11]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n",
+        ASSERT_EQUALS("[test.cpp:3:11]: (style) The member function 'A::f' can be static. [functionStatic]\n",
                       errout_str());
     }
 
@@ -6311,10 +6311,10 @@ private:
                    "void S::n() {\n"
                    "        this->h();\n"
                    "}\n");
-        ASSERT_EQUALS("[test.cpp:4:10] -> [test.cpp:11:9]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:5:10] -> [test.cpp:14:9]: (performance, inconclusive) Technically the member function 'S::h' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
+        ASSERT_EQUALS("[test.cpp:4:10] -> [test.cpp:11:9]: (style) The member function 'S::g' can be static. [functionStatic]\n"
+                      "[test.cpp:5:10] -> [test.cpp:14:9]: (style) The member function 'S::h' can be static. [functionStatic]\n"
                       "[test.cpp:6:10] -> [test.cpp:17:9]: (style, inconclusive) Technically the member function 'S::k' can be const. [functionConst]\n"
-                      "[test.cpp:7:10] -> [test.cpp:21:9]: (performance, inconclusive) Technically the member function 'S::m' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n",
+                      "[test.cpp:7:10] -> [test.cpp:21:9]: (style) The member function 'S::m' can be static. [functionStatic]\n",
                       errout_str());
     }
 
@@ -6674,7 +6674,7 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3:9]: (style, inconclusive) Technically the member function 'S::f' can be const. [functionConst]\n"
-                      "[test.cpp:8:9]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n",
+                      "[test.cpp:8:9]: (style) The member function 'S::g' can be static. [functionStatic]\n",
                       errout_str());
 
         checkConst("class C {\n" // #11653
@@ -6685,7 +6685,7 @@ private:
                    "    if (b)\n"
                    "        f(false);\n"
                    "}\n");
-        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:5:9]: (performance, inconclusive) Technically the member function 'C::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n",
+        ASSERT_EQUALS("[test.cpp:3:10] -> [test.cpp:5:9]: (style) The member function 'C::f' can be static. [functionStatic]\n",
                       errout_str());
     }
 
@@ -6948,8 +6948,8 @@ private:
                    "        return foo3();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:11:9]: (performance, inconclusive) Technically the member function 'Foo::bar3' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
-                      "[test.cpp:14:9]: (performance, inconclusive) Technically the member function 'Foo::bar4' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:11:9]: (style) The member function 'Foo::bar3' can be static. [functionStatic]\n"
+                      "[test.cpp:14:9]: (style) The member function 'Foo::bar4' can be static. [functionStatic]\n", errout_str());
     }
 
     void const_passThisToMemberOfOtherClass() {
@@ -6967,7 +6967,7 @@ private:
                    "        f.foo();\n"
                    "    }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:10]: (performance, inconclusive) Technically the member function 'Foo::foo' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:10]: (style) The member function 'Foo::foo' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct A;\n" // #5839 - operator()
                    "struct B {\n"
@@ -7035,25 +7035,25 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return ++a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return --a; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a++; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a--; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct S {\n" // #10077
                    "    int i{};\n"
@@ -7099,31 +7099,31 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return a=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a-=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a+=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a*=-1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a;\n"
                    "class Fred {\n"
                    "    void nextA() { return a/=-2; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
     }
 
     void constassign2() {
@@ -7155,31 +7155,31 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return s.a=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a-=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a+=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a*=-1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct A { int a; } s;\n"
                    "class Fred {\n"
                    "    void nextA() { return s.a/=-2; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("struct A { int a; };\n"
                    "class Fred {\n"
@@ -7247,25 +7247,25 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return ++a[0]; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return --a[0]; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]++; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]--; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
     }
 
     void constassignarray() {
@@ -7303,31 +7303,31 @@ private:
                    "class Fred {\n"
                    "    void nextA() { return a[0]=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]-=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]+=1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]*=-1; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
 
         checkConst("int a[2];\n"
                    "class Fred {\n"
                    "    void nextA() { return a[0]/=-2; }\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'Fred::nextA' can be static. [functionStatic]\n", errout_str());
     }
 
     // return pointer/reference => not const
@@ -7354,7 +7354,7 @@ private:
         checkConst("class Fred {\n"
                    "    UNKNOWN a() { return 0; };\n"
                    "};");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance, inconclusive) Technically the member function 'Fred::a' can be static.\n", "", errout_str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) The member function 'Fred::a' can be static.\n", "", errout_str());
 
         // #1579 - HDC
         checkConst("class Fred {\n"
@@ -7370,7 +7370,7 @@ private:
                    "    void f() const { };\n"
                    "    void a() { f(); };\n"
                    "};");
-        ASSERT_EQUALS("[test.cpp:2:10]: (performance, inconclusive) Technically the member function 'Fred::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n"
+        ASSERT_EQUALS("[test.cpp:2:10]: (style) The member function 'Fred::f' can be static. [functionStatic]\n"
                       "[test.cpp:3:10]: (style, inconclusive) Technically the member function 'Fred::a' can be const. [functionConst]\n", errout_str());
 
         // ticket #1593
@@ -7631,10 +7631,10 @@ private:
                             "};";
 
         checkConst(code);
-        ASSERT_EQUALS("[test.cpp:3:10]: (performance, inconclusive) Technically the member function 'foo::f' can be static (but you may consider moving to unnamed namespace). [functionStatic]\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'foo::f' can be static. [functionStatic]\n", errout_str());
 
-        checkConst(code, dinit(CheckConstOptions, $.inconclusive = false)); // TODO: Set inconclusive to true (preprocess it)
-        ASSERT_EQUALS("", errout_str());
+        checkConst(code, dinit(CheckConstOptions, $.inconclusive = false));
+        ASSERT_EQUALS("[test.cpp:3:10]: (style) The member function 'foo::f' can be static. [functionStatic]\n", errout_str());
     }
 
     void constFriend() { // ticket #1921

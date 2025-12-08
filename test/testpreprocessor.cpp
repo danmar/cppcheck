@@ -55,13 +55,14 @@ private:
         std::vector<std::string> files;
         simplecpp::TokenList tokens1 = simplecpp::TokenList(code, files, "file.cpp", &outputList);
         Preprocessor p(tokens1, settingsDefault, errorLogger, Path::identify(tokens1.getFiles()[0], false));
-        simplecpp::TokenList tokens2 = p.preprocess("", files, true);
+        ASSERT(p.loadFiles(files));
+        simplecpp::TokenList tokens2 = p.preprocess("", files, outputList);
         (void)p.reportOutput(outputList, true);
         return tokens2.stringify();
     }
 
     template<size_t size>
-    static void preprocess(const char (&code)[size], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
+    void preprocess(const char (&code)[size], std::vector<std::string> &files, const std::string& file0, TokenList& tokenlist, const simplecpp::DUI& dui)
     {
         if (!files.empty())
             throw std::runtime_error("file list not empty");
@@ -69,13 +70,15 @@ private:
         if (tokenlist.front())
             throw std::runtime_error("token list not empty");
 
-        const simplecpp::TokenList tokens1(code, files, file0);
+        simplecpp::OutputList outputList;
+        const simplecpp::TokenList tokens1(code, files, file0, &outputList);
 
         // Preprocess..
         simplecpp::TokenList tokens2(files);
         simplecpp::FileDataCache cache;
-        // TODO: provide and handle outputList
-        simplecpp::preprocess(tokens2, tokens1, files, cache, dui);
+        simplecpp::preprocess(tokens2, tokens1, files, cache, dui, &outputList);
+        Preprocessor preprocessor(tokens2, settingsDefault, *this, Standards::Language::C);
+        (void)preprocessor.reportOutput(outputList, true);
 
         // Tokenizer..
         tokenlist.createTokens(std::move(tokens2));
@@ -311,6 +314,8 @@ private:
         TEST_CASE(getConfigs8);  // #if A==1  => cfg: A=1
         TEST_CASE(getConfigs10); // #5139
         TEST_CASE(getConfigs11); // #9832 - include guards
+        TEST_CASE(getConfigs12); // #14222
+        TEST_CASE(getConfigs13); // #14222
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -357,16 +362,21 @@ private:
     }
 
     template<size_t size>
-    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr) {
+    std::string getConfigsStr(const char (&code)[size], const char *arg = nullptr, const char *library = nullptr) {
         Settings settings;
         if (arg && std::strncmp(arg,"-D",2)==0)
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
+        if (library)
+            ASSERT(settings.library.load("", library, false).errorcode == Library::ErrorCode::OK);
         std::vector<std::string> files;
+        simplecpp::OutputList outputList;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,files);
+        simplecpp::TokenList tokens(code,files,"",&outputList);
         Preprocessor preprocessor(tokens, settings, *this, Standards::Language::C); // TODO: do we need to consider #file?
+        ASSERT(preprocessor.loadFiles(files));
+        ASSERT(!preprocessor.reportOutput(outputList, true));
         preprocessor.removeComments();
         const std::set<std::string> configs = preprocessor.getConfigs();
         std::string ret;
@@ -379,8 +389,9 @@ private:
     std::size_t getHash(const char (&code)[size]) {
         std::vector<std::string> files;
         // TODO: this adds an empty filename
-        simplecpp::TokenList tokens(code,files);
+        simplecpp::TokenList tokens(code,files,"");
         Preprocessor preprocessor(tokens, settingsDefault, *this, Standards::Language::C); // TODO: do we need to consider #file?
+        ASSERT(preprocessor.loadFiles(files));
         preprocessor.removeComments();
         return preprocessor.calculateHash("");
     }
@@ -437,7 +448,7 @@ private:
         const auto settings = dinit(Settings, $.userDefines = "__cplusplus");
         const char code[] = "#error hello world!\n";
         (void)getcodeforcfg(settings, *this, code, "X", "test.c");
-        ASSERT_EQUALS("[test.c:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
+        ASSERT_EQUALS("[test.c:1:2]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
     }
 
     // Ticket #2919 - wrong filename reported for #error
@@ -447,7 +458,7 @@ private:
             const auto settings = dinit(Settings, $.userDefines = "TEST");
             const char code[] = "#file \"ab.h\"\n#error hello world!\n#endfile";
             (void)getcodeforcfg(settings, *this, code, "TEST", "test.c");
-            ASSERT_EQUALS("[ab.h:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
+            ASSERT_EQUALS("[ab.h:1:2]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
         }
 
         // After including a file
@@ -455,7 +466,7 @@ private:
             const auto settings = dinit(Settings, $.userDefines = "TEST");
             const char code[] = "#file \"ab.h\"\n\n#endfile\n#error aaa";
             (void)getcodeforcfg(settings, *this, code, "TEST", "test.c");
-            ASSERT_EQUALS("[test.c:2:0]: (error) #error aaa [preprocessorErrorDirective]\n", errout_str());
+            ASSERT_EQUALS("[test.c:2:2]: (error) #error aaa [preprocessorErrorDirective]\n", errout_str());
         }
     }
 
@@ -1529,7 +1540,7 @@ private:
             const std::map<std::string, std::string> actual = getcode(settings0, *this, filedata);
 
             ASSERT_EQUALS(0, actual.size());
-            ASSERT_EQUALS("[file.c:2:0]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
+            ASSERT_EQUALS("[file.c:2:14]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
         }
     }
 
@@ -1544,7 +1555,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[file.cpp:3:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:3:1]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
         }
 
         {
@@ -1557,7 +1568,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[abc.h:2:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
+            ASSERT_EQUALS("[abc.h:2:1]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
         }
 
         {
@@ -1570,7 +1581,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[file.cpp:2:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:2:1]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
         }
 
         {
@@ -1582,7 +1593,7 @@ private:
             const std::string actual(expandMacros(filedata, *this));
 
             ASSERT_EQUALS("", actual);
-            ASSERT_EQUALS("[file.cpp:2:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:2:11]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
         }
 
         {
@@ -1598,7 +1609,7 @@ private:
             // expand macros..
             (void)expandMacros(filedata, *this);
 
-            ASSERT_EQUALS("[file.cpp:7:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
+            ASSERT_EQUALS("[file.cpp:7:12]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported. [syntaxError]\n", errout_str());
         }
     }
 
@@ -1651,7 +1662,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("", actual.at(""));
-        ASSERT_EQUALS("[file.c:6:0]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'. [syntaxError]\n", errout_str());
+        ASSERT_EQUALS("[file.c:6:3]: (error) failed to expand 'BC', Wrong number of parameters for macro 'BC'. [syntaxError]\n", errout_str());
     }
 
     void newline_in_macro() {
@@ -1968,12 +1979,12 @@ private:
 
     void invalid_define_1() {
         (void)getcode(settings0, *this, "#define =\n");
-        ASSERT_EQUALS("[file.c:1:0]: (error) Failed to parse #define [syntaxError]\n", errout_str());
+        ASSERT_EQUALS("[file.c:1:2]: (error) Failed to parse #define [syntaxError]\n", errout_str());
     }
 
     void invalid_define_2() {  // #4036
         (void)getcode(settings0, *this, "#define () {(int f(x) }\n");
-        ASSERT_EQUALS("[file.c:1:0]: (error) Failed to parse #define [syntaxError]\n", errout_str());
+        ASSERT_EQUALS("[file.c:1:2]: (error) Failed to parse #define [syntaxError]\n", errout_str());
     }
 
     void inline_suppressions() {
@@ -2119,7 +2130,7 @@ private:
         const char code[] = "#elif (){\n";
         const std::string actual = getcodeforcfg(settings0, *this, code, "TEST", "test.c");
         ASSERT_EQUALS("", actual);
-        ASSERT_EQUALS("[test.c:1:0]: (error) #elif without #if [syntaxError]\n", errout_str());
+        ASSERT_EQUALS("[test.c:1:2]: (error) #elif without #if [syntaxError]\n", errout_str());
     }
 
     void getConfigs1() {
@@ -2264,6 +2275,20 @@ private:
         ASSERT_EQUALS("\n", getConfigsStr(filedata));
     }
 
+    void getConfigs12() { // #14222
+        const char filedata[] = "#ifdef INT8_MAX\n"
+                                "INT8_MAX\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, nullptr, "std.cfg"));
+    }
+
+    void getConfigs13() { // #14222
+        const char filedata[] = "#ifdef __builtin_bswap16\n"
+                                "__builtin_bswap16(x);\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\n", getConfigsStr(filedata, nullptr, "gnu.cfg"));
+    }
+
     void getConfigsError() {
         const char filedata1[] = "#ifndef X\n"
                                  "#error \"!X\"\n"
@@ -2368,8 +2393,8 @@ private:
         // Preprocess => don't crash..
         (void)getcode(settings0, *this, filedata);
         ASSERT_EQUALS(
-            "[file.c:1:0]: (error) Syntax error in #ifdef [syntaxError]\n"
-            "[file.c:1:0]: (error) Syntax error in #ifdef [syntaxError]\n", errout_str());
+            "[file.c:1:2]: (error) Syntax error in #ifdef [syntaxError]\n"
+            "[file.c:1:2]: (error) Syntax error in #ifdef [syntaxError]\n", errout_str());
     }
 
     void garbage() {
@@ -2385,7 +2410,7 @@ private:
         const auto settings = dinit(Settings, $.userDefines = "foo");
         const char code[] = "#error hello world!\n";
         (void)getcodeforcfg(settings, *this, code, "X", "./././test.c");
-        ASSERT_EQUALS("[test.c:1:0]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
+        ASSERT_EQUALS("[test.c:1:2]: (error) #error hello world! [preprocessorErrorDirective]\n", errout_str());
     }
 
     // test for existing local include
@@ -2631,7 +2656,7 @@ private:
 
         settings.standards.setStd("c++11");
         ASSERT_EQUALS("", getcodeforcfg(settings, *this, code, "", "test.cpp"));
-        ASSERT_EQUALS("[test.cpp:1:0]: (error) failed to evaluate #if condition, undefined function-like macro invocation: __has_include( ... ) [syntaxError]\n", errout_str()); // TODO: use individual ID
+        ASSERT_EQUALS("[test.cpp:1:2]: (error) failed to evaluate #if condition, undefined function-like macro invocation: __has_include( ... ) [syntaxError]\n", errout_str()); // TODO: use individual ID
 
         settings.standards.setStd("c++17");
         ASSERT_EQUALS("", getcodeforcfg(settings, *this, code, "", "test.cpp"));
@@ -2667,7 +2692,7 @@ private:
         ASSERT(getHash(code2) != getHash(code3));
     }
 
-    void standard() const {
+    void standard() {
 
         const char code[] = "int a;";
         // TODO: this bypasses the standard determined from the settings - the parameter should not be exposed
@@ -2709,7 +2734,8 @@ private:
             dui.std = "gnu77";
             std::vector<std::string> files;
             TokenList tokenlist{settingsDefault, Standards::Language::CPP};
-            preprocess(code, files, "test.cpp", tokenlist, dui);
+            // TODO: can this happen from application code? if yes we need to turn it into a proper error
+            ASSERT_THROW_EQUALS_2(preprocess(code, files, "test.cpp", tokenlist, dui), std::runtime_error, "unexpected simplecpp::Output type 9");
             ASSERT(!tokenlist.front()); // nothing is tokenized when an unknown standard is provided
         }
     }

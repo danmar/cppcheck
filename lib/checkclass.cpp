@@ -1084,13 +1084,11 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Assignment of array item of member variable?
-        else if (Token::Match(ftok, "* %name% =")) {
+        else if (Token::Match(ftok, "* %name% =") && (!func.isConstructor() || (!ftok->next()->variable() || ftok->next()->variable()->isArray()))) {
             assignVar(usage, ftok->next()->varId());
-        } else if (Token::Match(ftok, "( * %name% ) =")) {
+        } else if (Token::Match(ftok, "( * %name% ) =") && (!func.isConstructor() || (!ftok->tokAt(2)->variable() || ftok->tokAt(2)->variable()->isArray()))) {
             assignVar(usage, ftok->tokAt(2)->varId());
-        } else if (Token::Match(ftok, "* ( %name% ) =")) {
-            assignVar(usage, ftok->tokAt(2)->varId());
-        } else if (Token::Match(ftok, "* this . %name% =")) {
+        } else if (Token::Match(ftok, "* this . %name% =") && (!func.isConstructor() || (!ftok->tokAt(3)->variable() || ftok->tokAt(3)->variable()->isArray()))) {
             assignVar(usage, ftok->tokAt(3)->varId());
         } else if (astIsRangeBasedForDecl(ftok)) {
             if (const Variable* rangeVar = ftok->astParent()->astOperand1()->variable()) {
@@ -2132,10 +2130,6 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::checkConst()
 {
-    // This is an inconclusive check. False positives: #3322.
-    if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
-        return;
-
     if (!mSettings->severity.isEnabled(Severity::style) &&
         !mSettings->isPremiumEnabled("functionConst") &&
         !mSettings->isPremiumEnabled("functionStatic"))
@@ -2221,6 +2215,9 @@ void CheckClass::checkConst()
 
             const bool suggestStatic = memberAccessed != MemberAccess::MEMBER && !func.isOperator();
             if ((returnsPtrOrRef || func.isConst() || func.hasLvalRefQualifier()) && !suggestStatic)
+                continue;
+            if (!suggestStatic && !mSettings->certainty.isEnabled(Certainty::inconclusive))
+                // functionConst is inconclusive. False positives: #3322.
                 continue;
             if (suggestStatic && func.isConst()) {
                 const auto overloads = func.getOverloadedFunctions();
@@ -2719,16 +2716,10 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
     }
     else {
         const std::string msg = foundAllBaseClasses ?
-                                "Technically the member function '$symbol' can be static (but you may consider moving to unnamed namespace).\nThe member function '$symbol' can be made a static " :
-                                "Either there is a missing 'override', or the member function '$symbol' can be static.\nUnless it overrides a base class member, the member function '$symbol' can be made a static ";
-        reportError(toks, Severity::performance, "functionStatic",
-                    "$symbol:" + classname + "::" + funcname +"\n"
-                    + msg +
-                    "function. Making a function static can bring a performance benefit since no 'this' instance is "
-                    "passed to the function. This change should not cause compiler errors but it does not "
-                    "necessarily make sense conceptually. Think about your design and the task of the function first - "
-                    "is it a function that must not access members of class instances? And maybe it is more appropriate "
-                    "to move this function to an unnamed namespace.", CWE398, Certainty::inconclusive);
+                                "The member function '$symbol' can be static." :
+                                "Either there is a missing 'override', or the member function '$symbol' can be static.";
+        reportError(toks, Severity::style, "functionStatic",
+                    "$symbol:" + classname + "::" + funcname +"\n" + msg, CWE398, Certainty::normal);
     }
 }
 

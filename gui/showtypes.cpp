@@ -56,42 +56,6 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity severity)
     }
 }
 
-Severity ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
-{
-    switch (type) {
-    case ShowTypes::ShowStyle:
-        return Severity::style;
-
-    case ShowTypes::ShowErrors:
-        return Severity::error;
-
-    case ShowTypes::ShowWarnings:
-        return Severity::warning;
-
-    case ShowTypes::ShowPerformance:
-        return Severity::performance;
-
-    case ShowTypes::ShowPortability:
-        return Severity::portability;
-
-    case ShowTypes::ShowInformation:
-        return Severity::information;
-
-    case ShowTypes::ShowNone:
-    default:
-        return Severity::none;
-    }
-}
-
-ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
-{
-    const int value = data.toInt();
-    if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors) {
-        return ShowTypes::ShowNone;
-    }
-    return static_cast<ShowTypes::ShowType>(value);
-}
-
 void ShowTypes::load()
 {
     QSettings settings;

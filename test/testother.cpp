@@ -4598,6 +4598,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4:15]: (style) Variable 'p' can be declared as pointer to const [constVariablePointer]\n",
                       errout_str());
+
+        check("uintptr_t f(int* p) {\n"
+              "    return (uintptr_t)p;\n"
+              "}\n"
+              "uintptr_t g(int* p) {\n"
+              "    return static_cast<uintptr_t>(p);\n"
+              "}\n"
+              "U h(int* p) {\n"
+              "    return (U)p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n"
+                      "[test.cpp:4:18]: (style) Parameter 'p' can be declared as pointer to const [constParameterPointer]\n",
+                      errout_str());
     }
 
     void constArray() {
@@ -8188,6 +8201,18 @@ private:
 
         check("float f(float x) {\n" // # 11368
               "    return (x >= 0.0) ? 0.0 : -0.0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct A {};\n" // # 14300
+              "struct B {};\n"
+              "void f(bool x) {\n"
+              "    A* a = new A();\n"
+              "    B* b = new B();\n"
+              "    auto p = x ? static_cast<void*>(a) : static_cast<void*>(b);\n"
+              "    (void)p;\n"
+              "    delete a;\n"
+              "    delete b;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

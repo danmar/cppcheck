@@ -859,7 +859,7 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const std:
     toolinfo << mSettings.userDefines;
     toolinfo << (mSettings.checkConfiguration ? 'c' : ' '); // --check-config
     toolinfo << (mSettings.force ? 'f' : ' ');
-    toolinfo << mSettings.maxConfigs;
+    toolinfo << mSettings.maxConfigsOption;
     toolinfo << std::to_string(static_cast<std::uint8_t>(mSettings.checkLevel));
     for (const auto &a : mSettings.addonInfos) {
         toolinfo << a.name;
@@ -907,6 +907,8 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
     // TODO: move to constructor when CppCheck no longer owns the settings
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && !mUnusedFunctionsCheck)
         mUnusedFunctionsCheck.reset(new CheckUnusedFunctions());
+
+    const int maxConfigs = mSettings.getMaxConfigs();
 
     mLogger->resetExitCode();
 
@@ -1032,7 +1034,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
         // Get configurations..
         std::set<std::string> configurations;
-        if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
+        if (maxConfigs > 1) {
             Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
                 configurations = preprocessor.getConfigs();
             });
@@ -1044,7 +1046,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             for (const std::string &config : configurations)
                 (void)preprocessor.getcode(config, files, false);
 
-            if (configurations.size() > mSettings.maxConfigs)
+            if (configurations.size() > maxConfigs)
                 tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
             if (analyzerInformation)
@@ -1090,14 +1092,13 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
 
             // Check only a few configurations (default 12), after that bail out, unless --force
             // was used.
-            if (!mSettings.force && ++checkCount > mSettings.maxConfigs) {
-                // If maxConfigs has default value then report information message that configurations are skipped.
-                // If maxConfigs does not have default value then the user is explicitly skipping configurations so
+            if (!mSettings.force && ++checkCount > maxConfigs) {
+                // If maxConfigs is not assigned then report information message that configurations are skipped.
+                // If maxConfigs is assigned then the user is explicitly skipping configurations so
                 // the information message is not reported, the whole purpose of setting i.e. --max-configs=1 is to
                 // skip configurations. When --check-config is used then tooManyConfigs will be reported even if the
                 // value is non-default.
-                const Settings defaultSettings;
-                if (mSettings.maxConfigs == defaultSettings.maxConfigs && mSettings.severity.isEnabled(Severity::information))
+                if (!mSettings.isMaxConfigsAssigned() && mSettings.severity.isEnabled(Severity::information))
                     tooManyConfigsError(Path::toNativeSeparators(file.spath()), configurations.size());
 
                 break;
@@ -1141,11 +1142,31 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
             try {
                 TokenList tokenlist{mSettings, file.lang()};
 
-                // Create tokens, skip rest of iteration if failed
-                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
-                    simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, true);
-                    tokenlist.createTokens(std::move(tokensP));
-                });
+                {
+                    bool skipCfg = false;
+                    // Create tokens, skip rest of iteration if failed
+                    Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
+                        simplecpp::OutputList outputList_cfg;
+                        simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, outputList_cfg);
+                        const simplecpp::Output* o = preprocessor.handleErrors(outputList_cfg);
+                        if (!o) {
+                            tokenlist.createTokens(std::move(tokensP));
+                        }
+                        else {
+                            // #error etc during preprocessing
+                            configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + o->location.file() + ':' + std::to_string(o->location.line) + "] " + o->msg);
+                            --checkCount; // don't count invalid configurations
+
+                            if (!hasValidConfig && currCfg == *configurations.rbegin()) {
+                                // If there is no valid configuration then report error..
+                                preprocessor.error(o->location.file(), o->location.line, o->location.col, o->msg, o->type);
+                            }
+                            skipCfg = true;
+                        }
+                    });
+                    if (skipCfg)
+                        continue;
+                }
                 hasValidConfig = true;
 
                 Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
@@ -1198,7 +1219,7 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     }
 
                     // Skip if we already met the same simplified token list
-                    if (mSettings.force || mSettings.maxConfigs > 1) {
+                    if (maxConfigs > 1) {
                         const std::size_t hash = tokenizer.list.calculateHash();
                         if (hashes.find(hash) != hashes.end()) {
                             if (mSettings.debugwarnings)
@@ -1214,17 +1235,6 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                     ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                     mErrorLogger.reportErr(errmsg);
                 }
-            } catch (const simplecpp::Output &o) {
-                // #error etc during preprocessing
-                configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
-                --checkCount; // don't count invalid configurations
-
-                if (!hasValidConfig && currCfg == *configurations.rbegin()) {
-                    // If there is no valid configuration then report error..
-                    preprocessor.error(o.location.file(), o.location.line, o.msg, o.type);
-                }
-                continue;
-
             } catch (const TerminateException &) {
                 // Analysis is terminated
                 if (analyzerInformation)
@@ -1485,7 +1495,7 @@ void CppCheck::executeAddons(const std::string& dumpFile, const FileWithDetails&
 
 void CppCheck::executeAddons(const std::vector<std::string>& files, const std::string& file0)
 {
-    if (mSettings.addons.empty() || files.empty())
+    if (mSettings.addons.empty() || files.empty() || Settings::unusedFunctionOnly())
         return;
 
     const bool isCtuInfo = endsWith(files[0], ".ctu-info");
@@ -1644,7 +1654,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
     }
 
     std::ostringstream msg;
-    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.maxConfigs
+    msg << "Too many #ifdef configurations - cppcheck only checks " << mSettings.getMaxConfigs()
         << " of " << numberOfConfigurations << " configurations. Use --force to check all configurations.";
 
     ErrorMessage errmsg(std::move(loclist),
@@ -1797,22 +1807,25 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
 bool CppCheck::analyseWholeProgram()
 {
     bool errors = false;
-    // Analyse the tokens
-    CTU::FileInfo ctu;
-    if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
-    {
-        for (const Check::FileInfo *fi : mFileInfo) {
-            const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
-            if (fi2) {
-                ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
-                ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+
+    if (!Settings::unusedFunctionOnly()) {
+        // Analyse the tokens
+        CTU::FileInfo ctu;
+        if (mSettings.useSingleJob() || !mSettings.buildDir.empty())
+        {
+            for (const Check::FileInfo *fi : mFileInfo) {
+                const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
+                if (fi2) {
+                    ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
+                    ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
+                }
             }
         }
-    }
 
-    // cppcheck-suppress shadowFunction - TODO: fix this
-    for (Check *check : Check::instances())
-        errors |= check->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
+        // cppcheck-suppress shadowFunction - TODO: fix this
+        for (Check *check : Check::instances())
+            errors |= check->analyseWholeProgram(ctu, mFileInfo, mSettings, mErrorLogger);  // TODO: ctu
+    }
 
     if (mUnusedFunctionsCheck)
         errors |= mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
@@ -1822,9 +1835,16 @@ bool CppCheck::analyseWholeProgram()
 
 unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo)
 {
-    executeAddonsWholeProgram(files, fileSettings, ctuInfo);
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(mSettings, mErrorLogger, buildDir);
+
+    if (mUnusedFunctionsCheck)
+        mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
+
+    if (Settings::unusedFunctionOnly())
+        return mLogger->exitcode();
+
+    executeAddonsWholeProgram(files, fileSettings, ctuInfo);
     std::list<Check::FileInfo*> fileInfoList;
     CTU::FileInfo ctuFileInfo;
 
@@ -1874,9 +1894,6 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
     // cppcheck-suppress shadowFunction - TODO: fix this
     for (Check *check : Check::instances())
         check->analyseWholeProgram(ctuFileInfo, fileInfoList, mSettings, mErrorLogger);
-
-    if (mUnusedFunctionsCheck)
-        mUnusedFunctionsCheck->check(mSettings, mErrorLogger);
 
     for (Check::FileInfo *fi : fileInfoList)
         delete fi;

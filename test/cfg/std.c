@@ -5036,7 +5036,6 @@ void invalidPrintfArgType_printf(void)
     // #7016
     uint8_t n = 7;
     // TODO cppcheck-suppress invalidPrintfArgType_uint
-    // cppcheck-suppress valueFlowBailoutIncompleteVar
     printf("%" PRIi16 "\n", n);
 }
 

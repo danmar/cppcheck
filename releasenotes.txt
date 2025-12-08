@@ -42,5 +42,7 @@ Infrastructure & dependencies:
 - Updated Qt to 6.10.0 (official Windows release only).
 - The official Windows binary is now built against Boost 1.89 for increased performance.
 - Updated to simplecpp 1.6.2
+- The Visual Studio builds not longer set the `WIN32` define.
+- Added `DISALLOW_PROCESS_EXECUTOR` for building without fork().
 
 The changes focus heavily on stability (crash fixes), C/C++ compatibility, reducing false positives, and improving performance.

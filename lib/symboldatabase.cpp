@@ -1522,6 +1522,8 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (Token::Match(tok->next(), "&|&&|* *| *| )|,|%var%|const"))
             continue;
+        if (Token::Match(tok->previous(), "%str%"))
+            continue;
         // Very likely a typelist
         if (Token::Match(tok->tokAt(-2), "%type% ,") || Token::Match(tok->next(), ", %type%"))
             continue;
@@ -7032,7 +7034,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const 
         setValueType(parent, vt);
         return;
     }
-    if (Token::Match(parent->previous(), "%name% (") && parent->astOperand1() == tok && valuetype.pointer > 0U) {
+    if (Token::Match(parent->tokAt(-1), "%name% (") && !parent->tokAt(-1)->isKeyword() && parent->astOperand1() == tok && valuetype.pointer > 0U) {
         ValueType vt(valuetype);
         vt.pointer -= 1U;
         setValueType(parent, vt);

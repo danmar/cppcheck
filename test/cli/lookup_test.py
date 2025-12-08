@@ -381,6 +381,36 @@ def test_platform_lookup_ext(tmpdir):
     ]
 
 
+def test_platform_lookup_path(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    cppcheck = 'cppcheck' # No path
+    path = os.path.dirname(__lookup_cppcheck_exe())
+    env = os.environ.copy()
+    env['PATH'] = path
+    exitcode, stdout, stderr, _ = cppcheck_ex(args=['--debug-lookup=platform', '--platform=avr8.xml', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+    assert exitcode == 0, stdout if stdout else stderr
+    def format_path(p):
+        return p.replace('\\', '/').replace('"', '\'')
+    def try_fail(f):
+        f = format_path(f)
+        return "try to load platform file '{}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}".format(f, f)
+    def try_success(f):
+        f = format_path(f)
+        return "try to load platform file '{}' ... Success".format(f)
+    lines = stdout.replace('\\', '/').replace('"', '\'').splitlines()
+    assert lines == [
+        "looking for platform 'avr8.xml'",
+        try_fail(os.path.join(tmpdir, 'avr8.xml')),
+        try_fail(os.path.join(tmpdir, 'platforms', 'avr8.xml')),
+        try_fail(os.path.join(path, 'avr8.xml')),
+        try_success(os.path.join(path, 'platforms', 'avr8.xml')),
+        'Checking {} ...'.format(format_path(test_file))
+    ]
+
+
 def test_platform_lookup_notfound(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
@@ -898,3 +928,75 @@ def test_config_invalid(tmpdir):
     ]
 
 # TODO: test with FILESDIR
+
+@pytest.mark.parametrize("type,file", [("addon", "misra.py"), ("config", "cppcheck.cfg"), ("library", "gnu.cfg"), ("platform", "avr8.xml")])
+def test_lookup_path(tmpdir, type, file):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt'):
+        pass
+
+    cppcheck = 'cppcheck' # No path
+    path = os.path.dirname(__lookup_cppcheck_exe())
+    env = os.environ.copy()
+    env['PATH'] = path + (';' if sys.platform == 'win32' else ':') + env.get('PATH', '')
+    if type == 'config':
+        with open(os.path.join(path, "cppcheck.cfg"), 'wt') as f:
+            f.write('{}')
+        exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+        os.remove(os.path.join(path, "cppcheck.cfg")) # clean up otherwise other tests may fail
+    else:
+        exitcode, stdout, stderr, _ = cppcheck_ex(args=[f'--debug-lookup={type}', f'--{type}={file}', test_file], cppcheck_exe=cppcheck, cwd=str(tmpdir), env=env)
+    assert exitcode == 0, stdout if stdout else stderr
+    def format_path(p):
+        return p.replace('\\', '/').replace('"', '\'')
+    lines = format_path(stdout).splitlines()
+
+    if type == 'addon':
+        def try_fail(f):
+            return f"looking for {type} '{format_path(f)}'"
+        def try_success(f):
+            return f"looking for {type} '{format_path(f)}'"
+        assert lines == [
+            f"looking for {type} '{file}'",
+            try_fail(os.path.join(path, file)),
+            try_success(os.path.join(path, 'addons', file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    elif type == 'config':
+        def try_success(f):
+            return f"looking for '{format_path(f)}'"
+        assert lines == [
+            try_success(os.path.join(path, file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    elif type == 'platform':
+        def try_fail(f):
+            f = format_path(f)
+            return f"try to load {type} file '{f}' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={f}"
+        def try_success(f):
+            f = format_path(f)
+            return f"try to load {type} file '{f}' ... Success"
+        assert lines == [
+            f"looking for {type} '{file}'",
+            try_fail(os.path.join(tmpdir, file)),
+            try_fail(os.path.join(tmpdir, 'platforms', file)),
+            try_fail(os.path.join(path, file)),
+            try_success(os.path.join(path, 'platforms', file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    elif type == 'library':
+        def try_fail(f):
+            return f"looking for {type} '{format_path(f)}'"
+        def try_success(f):
+            return f"looking for {type} '{format_path(f)}'"
+        assert lines == [
+            f"looking for {type} 'std.cfg'",
+            try_fail(os.path.join(path, 'std.cfg')),
+            try_success(os.path.join(path, 'cfg', 'std.cfg')),
+            f"looking for {type} '{file}'",
+            try_fail(os.path.join(path, file)),
+            try_success(os.path.join(path, 'cfg', file)),
+            f'Checking {format_path(test_file)} ...'
+        ]
+    else:
+        assert False, type + " not tested properly"

@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "filesettings.h"
 #include "fixture.h"
+
+#ifdef HAS_THREADING_MODEL_FORK
+#include "filesettings.h"
 #include "helpers.h"
 #include "processexecutor.h"
 #include "redirect.h"
@@ -33,12 +35,21 @@
 #include <string>
 #include <utility>
 #include <vector>
+#endif // HAS_THREADING_MODEL_FORK
 
 class TestProcessExecutorBase : public TestFixture {
 public:
-    TestProcessExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
+    TestProcessExecutorBase(const char * const name, bool useFS)
+        : TestFixture(name)
+#ifdef HAS_THREADING_MODEL_FORK
+        , useFS(useFS)
+#endif // HAS_THREADING_MODEL_FORK
+    {
+        (void)useFS;
+    }
 
 private:
+#ifdef HAS_THREADING_MODEL_FORK
     /*const*/ Settings settings = settingsBuilder().library("std.cfg").build();
     bool useFS;
 
@@ -110,10 +121,11 @@ private:
         ProcessExecutor executor(filelist, fileSettings, s, supprs, *this, executeFn);
         ASSERT_EQUALS(result, executor.check());
     }
+#endif // HAS_THREADING_MODEL_FORK
 
     void run() override {
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
         mNewTemplate = true;
+#ifdef HAS_THREADING_MODEL_FORK
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
@@ -130,9 +142,10 @@ private:
         TEST_CASE(showtime_file_total);
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
-#endif // !WIN32
+#endif // HAS_THREADING_MODEL_FORK
     }
 
+#ifdef HAS_THREADING_MODEL_FORK
     void deadlock_with_many_errors() {
         std::ostringstream oss;
         oss << "void f()\n"
@@ -315,6 +328,7 @@ private:
     }
 
     // TODO: test whole program analysis
+#endif // HAS_THREADING_MODEL_FORK
 };
 
 class TestProcessExecutorFiles : public TestProcessExecutorBase {

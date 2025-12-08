@@ -18,6 +18,8 @@
 
 #include "threadexecutor.h"
 
+#ifdef HAS_THREADING_MODEL_THREAD
+
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -219,3 +221,5 @@ unsigned int ThreadExecutor::check()
 
     return result;
 }
+
+#endif // HAS_THREADING_MODEL_THREAD

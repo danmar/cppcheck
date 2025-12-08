@@ -1185,8 +1185,10 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     continue;
 
                 const Token* tok3 = tok2->next();
-                while (tok3 && tok3->isCast() && tok3->valueType() &&
-                       (tok3->valueType()->pointer || isSafeCast(tok3->valueType(), *mSettings)))
+                while (tok3 && tok3->isCast() &&
+                       (!tok3->valueType() ||
+                        tok3->valueType()->pointer ||
+                        isSafeCast(tok3->valueType(), *mSettings)))
                     tok3 = tok3->astOperand2() ? tok3->astOperand2() : tok3->astOperand1();
                 if (tok3 && tok3->varId() == varid)
                     tok2 = tok3->next();

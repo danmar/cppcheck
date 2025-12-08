@@ -407,8 +407,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
     }
 
-    bool def = false;
-    bool maxconfigs = false;
     bool debug = false;
     bool inputAsFilter = false; // set by: --file-filter=+
 
@@ -421,7 +419,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
     std::vector<std::string> lookupPaths{
         Path::getCurrentPath(), // TODO: do we want to look in CWD?
-        Path::getPathFromFilename(argv[0])
+        Path::getPathFromFilename(mSettings.exename),
     };
 
     bool executorAuto = true;
@@ -457,8 +455,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             if (!mSettings.userDefines.empty())
                 mSettings.userDefines += ";";
             mSettings.userDefines += define;
-
-            def = true;
         }
 
         // -E
@@ -801,8 +797,10 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         }
 
         // Force checking of files that have "too many" configurations
-        else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
+        else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0) {
             mSettings.force = true;
+            mSettings.maxConfigsOption = Settings::maxConfigsNotAssigned;
+        }
 
         else if (std::strcmp(argv[i], "--fsigned-char") == 0)
             defaultSign = 's';
@@ -974,9 +972,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
-            mSettings.maxConfigs = tmp;
+            mSettings.maxConfigsOption = tmp;
             mSettings.force = false;
-            maxconfigs = true;
         }
 
         // max ctu depth
@@ -1160,7 +1157,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 return Result::Fail;
             }
 
-            mSettings.checkAllConfigurations = false;     // Can be overridden with --max-configs or --force
             std::string projectFile = argv[i]+10;
             projectType = project.import(projectFile, &mSettings, &mSuppressions);
             if (projectType == ImportProject::Type::CPPCHECK_GUI) {
@@ -1187,6 +1183,8 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     }
                 }
             }
+            if (projectType == ImportProject::Type::COMPILE_DB)
+                mSettings.maxConfigsProject = 1;
             if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_VCXPROJ) {
                 mSettings.libraries.emplace_back("windows");
             }
@@ -1590,14 +1588,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     // replace static parts of the templates
     substituteTemplateFormatStatic(mSettings.templateFormat, !mSettings.outputFile.empty());
     substituteTemplateLocationStatic(mSettings.templateLocation, !mSettings.outputFile.empty());
-
-    if (mSettings.force || maxconfigs)
-        mSettings.checkAllConfigurations = true;
-
-    if (mSettings.force)
-        mSettings.maxConfigs = INT_MAX;
-    else if ((def || mSettings.preprocessOnly) && !maxconfigs)
-        mSettings.maxConfigs = 1U;
 
     if (debug) {
         mSettings.debugnormal = true;

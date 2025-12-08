@@ -4,10 +4,8 @@ if(MSVC)
     # Visual Studio only sets _DEBUG
     add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 
-    add_definitions(-DWIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-DWIN32_LEAN_MEAN)
-    add_definitions(-D_WIN64)
 endif()
 
 # TODO: this should probably apply to the compiler and not the platform - I think it is only "broken" with MinGW
@@ -50,6 +48,10 @@ endif()
 
 if(DISALLOW_THREAD_EXECUTOR)
     add_definitions(-DDISALLOW_THREAD_EXECUTOR)
+endif()
+
+if(DISALLOW_PROCESS_EXECUTOR)
+    add_definitions(-DDISALLOW_PROCESS_EXECUTOR)
 endif()
 
 if(MSVC AND DISABLE_CRTDBG_MAP_ALLOC)

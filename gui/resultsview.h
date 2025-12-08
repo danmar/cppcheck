@@ -324,9 +324,9 @@ public slots:
     /**
      * @brief Update detailed message when selected item is changed.
      *
-     * @param index Position of new selected item.
+     * @param item selected item
      */
-    void updateDetails(const QModelIndex &index);
+    void updateDetails(const ResultItem* item);
 
     /**
      * @brief Slot opening a print dialog to print the current report

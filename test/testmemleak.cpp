@@ -1941,6 +1941,18 @@ private:
                       "[test.cpp:10:5]: (error) Resource leak: s.fd [resourceLeak]\n"
                       "[test.cpp:16:1]: (error) Resource leak: s.fd [resourceLeak]\n",
                       errout_str());
+
+        check("struct S { int fd; };\n" // #13031
+              "void f() {\n"
+              "    struct S* s = malloc(sizeof(struct S));\n"
+              "    s->fd = open(\"abc\", O_RDWR | O_NOCTTY);\n"
+              "    if (s->fd < 0) {\n"
+              "        free(s);\n"
+              "        return NULL;\n"
+              "    }\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void failedAllocation() {
