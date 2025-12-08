@@ -131,6 +131,12 @@
 #  define RET_NONNULL
 #endif
 
+#if __cplusplus >= 202002L
+#  define EXPLICIT_THIS =, this
+#else
+#  define EXPLICIT_THIS =
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 // Use the nonneg macro when you want to assert that a variable/argument is not negative
