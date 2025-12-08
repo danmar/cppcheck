@@ -120,11 +120,8 @@ private:
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
 
-#if defined(__cpp_lib_string_view)
-        simplecpp::TokenList tokens(std::string_view{code, size}, files, Path::simplifyPath(filename), &outputList);
-#else
-        simplecpp::TokenList tokens(code, size, files, Path::simplifyPath(filename), &outputList);
-#endif
+        simplecpp::TokenList tokens({code, size}, files, Path::simplifyPath(filename), &outputList);
+
         // TODO: we should be using the actual Preprocessor implementation
         Preprocessor preprocessor(tokens, settings, errorlogger, Path::identify(tokens.getFiles()[0], false));
 
