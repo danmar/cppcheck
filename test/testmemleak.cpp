@@ -2338,7 +2338,7 @@ private:
               "void x() {\n"
               "    set_error(strdup(p));\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Allocation with strdup, set_error doesn't release it.\n", "", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:15]: (error) Allocation with strdup, set_error doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void f()\n"
               "{\n"

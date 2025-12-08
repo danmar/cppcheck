@@ -229,7 +229,8 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings &set
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
-        const MathLib::bigint typeSize = array->valueType()->typeSize(settings.platform, array->valueType()->pointer > 1);
+        const auto sizeOf = array->valueType()->pointer > 1 ? ValueType::SizeOf::Pointer : ValueType::SizeOf::Pointee;
+        const MathLib::bigint typeSize = array->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, sizeOf);
         if (typeSize == 0)
             return false;
         dim.num = value->intvalue / typeSize;
@@ -585,7 +586,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (var->isPointerArray())
         v.intvalue = dim * mSettings->platform.sizeof_pointer;
     else {
-        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(mSettings->platform);
+        const MathLib::bigint typeSize = bufTok->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
         v.intvalue = dim * typeSize;
     }
 
@@ -929,7 +930,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Settings &settings, const 
 {
     if (!offset)
         return false;
-    if (!argtok->valueType() || argtok->valueType()->typeSize(settings.platform) == 0)
+    if (!argtok->valueType() || argtok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee) == 0)
         return false;
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))
@@ -942,7 +943,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Settings &settings, const 
         return false;
     if (!indexTok->hasKnownIntValue())
         return false;
-    offset->value = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(settings.platform);
+    offset->value = indexTok->getKnownIntValue() * argtok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
     return true;
 }
 
@@ -1102,7 +1103,7 @@ void CheckBufferOverrun::objectIndex()
                         continue;
                 }
                 if (obj->valueType() && var->valueType() && (obj->isCast() || (obj->isCpp() && isCPPCast(obj)) || obj->valueType()->pointer)) { // allow cast to a different type
-                    const auto varSize = var->valueType()->typeSize(mSettings->platform);
+                    const auto varSize = var->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
                     if (varSize == 0)
                         continue;
                     if (obj->valueType()->type != var->valueType()->type) {

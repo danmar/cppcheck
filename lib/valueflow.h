@@ -61,16 +61,6 @@ namespace ValueFlow {
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 
-    enum class Accuracy : std::uint8_t {
-        ExactOrZero,
-        LowerBound,
-    };
-
-    size_t getSizeOf(const ValueType &vt,
-                     const Settings &settings,
-                     Accuracy accuracy,
-                     int maxRecursion = 0);
-
     const Value* findValue(const std::list<Value>& values,
                            const Settings& settings,
                            const std::function<bool(const Value&)> &pred);
