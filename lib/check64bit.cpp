@@ -52,7 +52,7 @@ static bool isFunctionPointer(const Token* tok)
 {
     if (!tok || !tok->variable())
         return false;
-    return Token::Match(tok->variable()->nameToken(), "%name% ) (");
+    return Tokenizer::isFunctionPointer(tok->variable()->nameToken());
 }
 
 void Check64BitPortability::pointerassignment()
