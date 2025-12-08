@@ -615,7 +615,7 @@ public:
 
     /**
      * Helper function to check whether tok is the declaration of a function pointer
-     * @param the Token to check
+     * @param tok the Token to check
      * @return true in case tok is a function pointer and false otherwise.
      */
     static bool isFunctionPointer(const Token* tok);
