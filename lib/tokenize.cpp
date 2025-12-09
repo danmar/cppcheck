@@ -669,7 +669,7 @@ namespace {
             return mNameToken ? mNameToken->str() : "";
         }
 
-        void replace(Token* tok) {
+        void replace(Token* tok, const std::string &originalname) {
             if (tok == mNameToken)
                 return;
 
@@ -701,7 +701,7 @@ namespace {
                         insertTokens(tok2, mRangeTypeQualifiers);
                     }
                     else { // functional-style cast
-                        tok->originalName(tok->str());
+                        tok->originalName(originalname);
                         tok->isSimplifiedTypedef(true);
                         tok->str("(");
                         Token* tok2 = insertTokens(tok, mRangeType);
@@ -721,14 +721,14 @@ namespace {
             if (isFunctionPointer && isCast(tok->previous())) {
                 tok->insertToken("*");
                 Token* const tok_1 = insertTokens(tok, std::pair<Token*, Token*>(mRangeType.first, mNameToken->linkAt(1)));
-                tok_1->originalName(tok->str());
+                tok_1->originalName(originalname);
                 tok->deleteThis();
                 return;
             }
 
             // Inherited type => skip "struct" / "class"
             if (Token::Match(mRangeType.first, "const| struct|class %name% {") && Token::Match(tok->previous(), "public|protected|private|<")) {
-                tok->originalName(tok->str());
+                tok->originalName(originalname);
                 tok->str(mRangeType.second->strAt(-1));
                 return;
             }
@@ -736,7 +736,7 @@ namespace {
             if (Token::Match(tok, "%name% ::")) {
                 if (Token::Match(mRangeType.first, "const| struct|class|union|enum %name% %name%|{") ||
                     Token::Match(mRangeType.first, "%name% %name% ;")) {
-                    tok->originalName(tok->str());
+                    tok->originalName(originalname);
                     tok->str(mRangeType.second->strAt(-1));
                 } else {
                     mReplaceFailed = true;
@@ -790,8 +790,8 @@ namespace {
             Token* const tok2 = insertTokens(tok, rangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
-            tok2->originalName(tok->str());
-            tok3->originalName(tok->str());
+            tok2->originalName(originalname);
+            tok3->originalName(originalname);
             Token *after = tok3;
             while (Token::Match(after, "%name%|*|&|&&|::"))
                 after = after->next();
@@ -1023,12 +1023,18 @@ void Tokenizer::simplifyTypedef()
 {
     // Simplify global typedefs that are not redefined with the fast 1-pass simplification.
     // Then use the slower old typedef simplification.
-    std::map<std::string, int> numberOfTypedefs;
+    std::map<std::string, std::set<std::string>> numberOfTypedefs;
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (tok->str() == "typedef") {
             TypedefSimplifier ts(tok);
-            if (!ts.fail())
-                numberOfTypedefs[ts.name()]++;
+            if (ts.fail() || !ts.nameToken())
+                continue;
+            std::string existing_data_type;
+            for (const Token* t = ts.getTypedefToken()->next(); t != ts.endToken(); t = t->next()) {
+                if (t != ts.nameToken())
+                    existing_data_type += t->str() + " ";
+            }
+            numberOfTypedefs[ts.name()].insert(existing_data_type);
             continue;
         }
     }
@@ -1046,8 +1052,7 @@ void Tokenizer::simplifyTypedef()
 
         if (indentlevel == 0 && tok->str() == "typedef") {
             TypedefSimplifier ts(tok);
-            if (!ts.fail() && numberOfTypedefs[ts.name()] == 1 &&
-                (numberOfTypedefs.find(ts.getTypedefToken()->strAt(1)) == numberOfTypedefs.end() || ts.getTypedefToken()->strAt(2) == "(")) {
+            if (!ts.fail() && numberOfTypedefs[ts.name()].size() == 1) {
                 if (mSettings.severity.isEnabled(Severity::portability) && ts.isInvalidConstFunctionType(typedefs))
                     invalidConstFunctionTypeError(tok->next());
                 typedefs.emplace(ts.name(), ts);
@@ -1060,8 +1065,11 @@ void Tokenizer::simplifyTypedef()
         auto it = typedefs.find(tok->str());
         if (it != typedefs.end() && it->second.canReplace(tok)) {
             std::set<std::string> r;
+            std::string originalname;
             while (it != typedefs.end() && r.insert(tok->str()).second) {
-                it->second.replace(tok);
+                if (originalname.empty())
+                    originalname = tok->str();
+                it->second.replace(tok, originalname);
                 it = typedefs.find(tok->str());
             }
         } else if (tok->str() == "enum") {
