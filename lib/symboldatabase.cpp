@@ -8492,19 +8492,19 @@ static size_t bitCeil(size_t x)
     return x + 1;
 }
 
-static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueType::Accuracy accuracy, int maxRecursion = 0)
+static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueType::Accuracy accuracy, ValueType::SizeOf sizeOf, int maxRecursion = 0)
 {
     if (maxRecursion == settings.vfOptions.maxAlignOfRecursion) {
         // TODO: add bailout message
         return 0;
     }
-    if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
+    if ((vt.pointer && sizeOf == ValueType::SizeOf::Pointer) || vt.reference != Reference::None || vt.isPrimitive()) {
         auto align = vt.getSizeOf(settings, accuracy, ValueType::SizeOf::Pointer);
         return align == 0 ? 0 : bitCeil(align);
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, MathLib::bigint /*bits*/) {
-            size_t a = getAlignOf(vt2, settings, accuracy, ++maxRecursion);
+            size_t a = getAlignOf(vt2, settings, accuracy, sizeOf, ++maxRecursion);
             return std::max(max, a);
         };
         Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
@@ -8558,7 +8558,7 @@ size_t ValueType::getSizeOf( const Settings& settings, Accuracy accuracy, SizeOf
         auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, MathLib::bigint nBits) -> size_t {
             const size_t charBit = settings.platform.char_bit;
             size_t n = vt2.getSizeOf(settings, accuracy, SizeOf::Pointer, ++maxRecursion);
-            size_t a = getAlignOf(vt2, settings, accuracy);
+            size_t a = getAlignOf(vt2, settings, accuracy, SizeOf::Pointer);
             if (n == 0 || a == 0)
                 return accuracy == Accuracy::ExactOrZero ? 0 : total;
             if (nBits == 0) {
@@ -8614,7 +8614,7 @@ size_t ValueType::getSizeOf( const Settings& settings, Accuracy accuracy, SizeOf
         if (accuracy == Accuracy::ExactOrZero && total == 0 && !result.success)
             return 0;
         total = std::max(size_t{1}, total);
-        size_t align = getAlignOf(*this, settings, accuracy);
+        size_t align = getAlignOf(*this, settings, accuracy, sizeOf);
         if (align == 0)
             return accuracy == Accuracy::ExactOrZero ? 0 : total;
         total += (align - (total % align)) % align;
