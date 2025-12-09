@@ -669,6 +669,9 @@ namespace {
             return mNameToken ? mNameToken->str() : "";
         }
 
+        /**
+         * @throws InternalError thrown if simplification failed
+         */
         void replace(Token* tok) {
             if (tok == mNameToken)
                 return;

@@ -658,6 +658,9 @@ static bool isQualifier(const Token* tok)
     return Token::Match(tok, "{|;");
 }
 
+/**
+ * @throws InternalError thrown if maximum AST depth is exceeded
+ */
 static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
 {
     Token *unaryop = tok;
@@ -694,6 +697,9 @@ static void skipGenericType(Token *&tok)
     }
 }
 
+/**
+ * @throws InternalError thrown if maximum AST depth is exceeded
+ */
 static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
 {
     Token *binop = tok;
@@ -730,6 +736,9 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
 
 static void compileExpression(Token *&tok, AST_state& state);
 
+/**
+ * @throws InternalError thrown if unexpected tokens are encountered
+ */
 static void compileTerm(Token *&tok, AST_state& state)
 {
     if (!tok)
@@ -929,6 +938,9 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
     return tok->strAt(-1) == ")" && iscast(tok->linkAt(-1), cpp);
 }
 
+/**
+ * @throws InternalError thrown if unexpected tokens are encountered
+ */
 static void compilePrecedence2(Token *&tok, AST_state& state)
 {
     auto doCompileScope = [&](const Token* tok) -> bool {
@@ -1419,6 +1431,9 @@ static void compileComma(Token *&tok, AST_state& state)
     }
 }
 
+/**
+ * @throws InternalError thrown if maximum AST depth is exceeded
+ */
 static void compileExpression(Token *&tok, AST_state& state)
 {
     if (state.depth > AST_MAX_DEPTH)
@@ -1555,6 +1570,9 @@ static Token *skipMethodDeclEnding(Token *tok)
     return nullptr;
 }
 
+/**
+ * @throws InternalError thrown in case of syntax error
+ */
 static Token * createAstAtToken(Token *tok)
 {
     const bool cpp = tok->isCpp();

@@ -168,12 +168,13 @@ public:
 
     /**
      * Create abstract syntax tree.
+     * @throws InternalError thrown if encountering an infinite loop in AST creation
      */
     void createAst() const;
 
     /**
      * Check abstract syntax tree.
-     * Throws InternalError on failure
+     * @throws InternalError thrown if validation fails
      */
     void validateAst(bool print) const;
 
