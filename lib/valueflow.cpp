@@ -6897,10 +6897,7 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
             if (!typeTok || !typeTok->varId())
                 typeTok = newTok->astParent()->previous(); // hack for "int** z = ..."
             if (typeTok && typeTok->valueType()) {
-                ValueType vt = *typeTok->valueType();
-                if (vt.pointer > 0)
-                    --vt.pointer;
-                const size_t typeSize = vt.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
+                const size_t typeSize = typeTok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
                 if (typeSize > 0 || numElem == 0)
                     sizeValue = numElem * typeSize;
             }
