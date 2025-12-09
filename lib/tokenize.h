@@ -376,17 +376,25 @@ private:
 
 public:
 
-    /** Syntax error */
+    /** Syntax error
+     * @throws InternalError thrown unconditionally
+     */
     NORETURN void syntaxError(const Token *tok, const std::string &code = "") const;
 
-    /** Syntax error. Unmatched character. */
+    /** Syntax error. Unmatched character.
+     * @throws InternalError thrown unconditionally
+     */
     NORETURN void unmatchedToken(const Token *tok) const;
 
 private:
-    /** Syntax error. C++ code in C file. */
+    /** Syntax error. C++ code in C file.
+     * @throws InternalError thrown unconditionally
+     */
     NORETURN void syntaxErrorC(const Token *tok, const std::string &what) const;
 
-    /** Warn about unknown macro(s), configuration is recommended */
+    /** Warn about unknown macro(s), configuration is recommended #
+     * @throws InternalError thrown unconditionally
+     */
     NORETURN void unknownMacroError(const Token *tok1) const;
 
     void unhandledCharLiteral(const Token *tok, const std::string& msg) const;

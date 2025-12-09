@@ -4234,6 +4234,9 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
+/**
+ * @throws Token* thrown when closing brackets are missing
+ */
 static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope, Standards::cstd_t cStandard)
 {
     const Token* const tok1 = tok;
