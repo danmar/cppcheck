@@ -5228,6 +5228,13 @@ private:
                               "    }\n"
                               "}");
         ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n" // #13303
+                              "    std::vector<int>::const_iterator it = v.cbegin();\n"
+                              "    if (*it == 0)\n"
+                              "        it = v.cend();\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:12]: (style) Variable 'it' is assigned a value that is never used. [unreadVariable]\n", errout_str());
     }
 
     void localvaralias19() { // #9828
