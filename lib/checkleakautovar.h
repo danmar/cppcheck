@@ -119,7 +119,9 @@ private:
     /** check for leaks in all scopes */
     void check();
 
-    /** check for leaks in a function scope */
+    /** check for leaks in a function scope
+     * @throws InternalError thrown if recursion count is exceeded
+     */
     bool checkScope(const Token * startToken,
                     VarInfo &varInfo,
                     std::set<int> notzero,

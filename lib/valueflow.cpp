@@ -3789,6 +3789,9 @@ static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const S
     }
 }
 
+/**
+ * @throws InternalError thrown if start token precedes end token
+ */
 template<class ContainerOfValue>
 static void valueFlowForwardConst(Token* start,
                                   const Token* end,

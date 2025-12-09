@@ -29,6 +29,9 @@
 class Tokenizer;
 
 namespace clangimport {
+    /**
+     * @throws InternalError thrown on incorrectly linked tokens
+     */
     void CPPCHECKLIB parseClangAstDump(Tokenizer &tokenizer, std::istream &f);
 }
 

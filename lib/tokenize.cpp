@@ -669,6 +669,9 @@ namespace {
             return mNameToken ? mNameToken->str() : "";
         }
 
+        /**
+         * @throws InternalError thrown if simplification failed
+         */
         void replace(Token* tok, const std::string &originalname) {
             if (tok == mNameToken)
                 return;
@@ -4242,6 +4245,9 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
+/**
+ * @throws Token* thrown when closing brackets are missing
+ */
 static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope, Standards::cstd_t cStandard)
 {
     const Token* const tok1 = tok;
