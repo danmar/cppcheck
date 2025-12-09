@@ -79,6 +79,7 @@ LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/ctu.o \
               $(libcppdir)/errorlogger.o \
               $(libcppdir)/errortypes.o \
+              $(libcppdir)/filelister.o \
               $(libcppdir)/findtoken.o \
               $(libcppdir)/forwardanalyzer.o \
               $(libcppdir)/fwdanalysis.o \
@@ -271,6 +272,9 @@ $(libcppdir)/errorlogger.o: ../lib/errorlogger.cpp ../externals/tinyxml2/tinyxml
 
 $(libcppdir)/errortypes.o: ../lib/errortypes.cpp ../lib/config.h ../lib/errortypes.h ../lib/utils.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/errortypes.cpp
+
+$(libcppdir)/filelister.o: ../lib/filelister.cpp ../lib/config.h ../lib/filelister.h ../lib/filesettings.h ../lib/mathlib.h ../lib/path.h ../lib/pathmatch.h ../lib/platform.h ../lib/standards.h ../lib/utils.h
+	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/filelister.cpp
 
 $(libcppdir)/findtoken.o: ../lib/findtoken.cpp ../lib/astutils.h ../lib/config.h ../lib/errortypes.h ../lib/findtoken.h ../lib/library.h ../lib/mathlib.h ../lib/smallvector.h ../lib/standards.h ../lib/templatesimplifier.h ../lib/token.h ../lib/utils.h ../lib/vfvalue.h
 	$(CXX) ${LIB_FUZZING_ENGINE} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/findtoken.cpp
