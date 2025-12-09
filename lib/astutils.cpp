@@ -3686,7 +3686,7 @@ bool isGlobalData(const Token *expr)
                 globalData = true;
                 return ChildrenToVisit::none;
             }
-            if (lhsvar->isArgument() && (!lhstype || (lhstype->type <= ValueType::Type::VOID && !lhstype->container))) {
+            if (lhsvar->isArgument() && lhstype->type <= ValueType::Type::VOID && !lhstype->container) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
