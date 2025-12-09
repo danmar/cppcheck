@@ -8504,7 +8504,7 @@ static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueTyp
     }
     if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
         auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, MathLib::bigint /*bits*/) {
-            size_t a = getAlignOf(vt2, settings, accuracy, sizeOf, ++maxRecursion);
+            size_t a = getAlignOf(vt2, settings, accuracy, ValueType::SizeOf::Pointer, ++maxRecursion);
             return std::max(max, a);
         };
         Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
