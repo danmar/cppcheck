@@ -3678,7 +3678,7 @@ bool isGlobalData(const Token *expr)
             // TODO check if pointer points at local data
             const Variable *lhsvar = tok->astOperand1()->variable();
             const ValueType *lhstype = tok->astOperand1()->valueType();
-            if (lhsvar->isPointer()) {
+            if (lhsvar->isPointer() || !lhstype || lhstype == ValueType::Type::ITERATOR) {
                 globalData = true;
                 return ChildrenToVisit::none;
             }
