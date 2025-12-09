@@ -1283,12 +1283,6 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (!tok->astOperand1())
                 continue;
 
-            const Token *iteratorToken = tok->astOperand1();
-            while (Token::Match(iteratorToken, "[.*]"))
-                iteratorToken = iteratorToken->astOperand1();
-            if (iteratorToken && iteratorToken->variable() && iteratorToken->variable()->typeEndToken()->str().find("iterator") != std::string::npos)
-                continue;
-
             const Token *op1tok = tok->astOperand1();
             while (Token::Match(op1tok, ".|[|*"))
                 op1tok = op1tok->astOperand1();
