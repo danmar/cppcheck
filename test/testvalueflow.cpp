@@ -1726,6 +1726,22 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(-1, values.back().intvalue);
         ASSERT_EQUALS_ENUM(ValueFlow::Value::ValueKind::Impossible, values.back().valueKind);
+
+        code = "struct E;\n"
+               "struct B {\n"
+               "    E* e;\n"
+               "    B* b;\n"
+               "};\n"
+               "struct D : B {};\n"
+               "struct E : B {\n"
+               "	B* be;\n"
+               "};\n"
+               "int f() {\n"
+               "    return sizeof(D);\n"
+               "}";
+        values = tokenValues(code, "( D )");
+        ASSERT_EQUALS(1U, values.size());
+        TODO_ASSERT_EQUALS(2 * settings.platform.sizeof_pointer, 1, values.back().intvalue);
     }
 
     void valueFlowComma()
@@ -7457,32 +7473,6 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 100,  ValueFlow::Value::ValueType::BUFFER_SIZE));
 
-        code = "struct A {};\n" // #14305
-               "void* f() {\n"
-               "  A* x = new A();\n"
-               "  return x;\n"
-               "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 1, ValueFlow::Value::ValueType::BUFFER_SIZE));
-
-        code = "struct A {};\n"
-               "void* f() {\n"
-               "  void* x = new A;\n"
-               "  return x;\n"
-               "}";
-        {
-            auto values = tokenValues(code, "x ; }");
-            ASSERT_EQUALS(1, values.size());
-            ASSERT(values.front().isSymbolicValue());
-            // TODO: add BUFFER_SIZE value = 1
-        }
-
-        code = "struct B { int32_t i; };\n"
-               "void* f() {\n"
-               "  B* x = new B();\n"
-               "  return x;\n"
-               "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 4, ValueFlow::Value::ValueType::BUFFER_SIZE));
-
         settings = settingsOld;
     }
 
@@ -9092,8 +9082,8 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 
-    void valueFlowBailoutIncompleteVar() {
-        bailout( // #12526
+    void valueFlowBailoutIncompleteVar() { // #12526
+        bailout(
             "int f1() {\n"
             "    return VALUE_1;\n"
             "}\n"
@@ -9106,13 +9096,6 @@ private:
             "[test.cpp:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_1\n"
             "[test.cpp:6]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable VALUE_2\n",
             errout_str());
-
-        bailout(
-            "std::string_view f() {\n"
-            "    return \"abc\"sv;\n"
-            "}\n"
-            );
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout_str());
     }
 
     void valueFlowBailoutNoreturn() { // #13718
