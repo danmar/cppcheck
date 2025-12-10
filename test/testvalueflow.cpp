@@ -7485,12 +7485,12 @@ private:
                "  void* x = new A;\n"
                "  return x;\n"
                "}";
-       {
-           auto values = tokenValues(code, "x ; }");
-           ASSERT_EQUALS(1, values.size());
-           ASSERT(values.front().isSymbolicValue());
-           // TODO: add BUFFER_SIZE value = 1
-       }
+        {
+            auto values = tokenValues(code, "x ; }");
+            ASSERT_EQUALS(1, values.size());
+            ASSERT(values.front().isSymbolicValue());
+            // TODO: add BUFFER_SIZE value = 1
+        }
 
         code = "struct B { int32_t i; };\n"
                "void* f() {\n"
