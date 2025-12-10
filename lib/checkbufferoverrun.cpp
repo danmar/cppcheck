@@ -96,7 +96,7 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
     std::string digits_string;
     bool i_d_x_f_found = false;
     int parameterLength = 0;
-    int inputArgNr = formatStringArgNr;
+    nonneg int inputArgNr = formatStringArgNr;
     for (std::size_t i = 1; i + 1 < formatString.length(); ++i) {
         if (formatString[i] == '\\') {
             if (i < formatString.length() - 1 && formatString[i + 1] == '0')
