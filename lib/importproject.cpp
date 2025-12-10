@@ -108,6 +108,64 @@ std::string ImportProject::collectArgs(const std::string &cmd, std::vector<std::
     return "";
 }
 
+void ImportProject::parseArgs(FileSettings &fs, const std::vector<std::string> &args)
+{
+    std::string defs;
+    std::string optArg;
+    auto argPtr = args.cbegin();
+
+    // Check for an option and extract its argument
+    const auto getOptArg = [&](const std::string &name) {
+        if (argPtr == args.cend())
+            return false;
+        if (!startsWith(*argPtr, name))
+            return false;
+        if (argPtr->size() == name.size()) {
+            // Flag and argument are separated
+            argPtr++;
+            if (argPtr == args.cend())
+                return false;
+            optArg = *argPtr;
+        } else {
+            // Flag and argument are concatenated
+            optArg = argPtr->substr(name.size());
+        }
+        return true;
+    };
+
+    for (; argPtr != args.cend(); argPtr++) {
+        if (getOptArg("-I") || getOptArg("/I")) {
+            if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), optArg) == fs.includePaths.cend())
+                fs.includePaths.push_back(std::move(optArg));
+        } else if (getOptArg("-isystem")) {
+            fs.systemIncludePaths.push_back(std::move(optArg));
+        } else if (getOptArg("-D") || getOptArg("/D")) {
+            defs += optArg + ";";
+        } else if (getOptArg("-U") || getOptArg("/U")) {
+            fs.undefs.insert(std::move(optArg));
+        } else if (getOptArg("-std=") || getOptArg("/std:")) {
+            fs.standard = std::move(optArg);
+        } else if (getOptArg("-f")) {
+            if (optArg == "pic")
+                defs += "__pic__;";
+            else if (optArg == "PIC")
+                defs += "__PIC__;";
+            else if (optArg == "pie")
+                defs += "__pie__;";
+            else if (optArg == "PIE")
+                defs += "__PIE__;";
+        } else if (getOptArg("-m")) {
+            if (optArg == "unicode")
+                defs += "UNICODE;";
+        }
+
+        if (argPtr == args.cend())
+            break;
+    }
+
+    fsSetDefines(fs, std::move(defs));
+}
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
     PathMatch matcher(ipaths, Path::getCurrentPath());
