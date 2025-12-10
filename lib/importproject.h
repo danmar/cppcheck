@@ -69,7 +69,6 @@ public:
         CPPCHECK_GUI
     };
 
-    static void fsParseCommand(FileSettings& fs, const std::string& command, bool doUnescape);
     static void fsSetDefines(FileSettings& fs, std::string defs);
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
