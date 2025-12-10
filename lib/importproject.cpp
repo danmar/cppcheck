@@ -495,29 +495,29 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         const std::string directory = std::move(dirpath);
 
-        bool doUnescape = false;
-        std::string command;
+        std::vector<std::string> arguments;
         if (obj.count("arguments")) {
-            doUnescape = false;
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
-                    if (arg.is<std::string>()) {
-                        std::string str = arg.get<std::string>();
-                        if (str.find(' ') != std::string::npos)
-                            str = "\"" + str + "\"";
-                        command += str + " ";
-                    }
+                    if (arg.is<std::string>())
+                        arguments.push_back(arg.get<std::string>());
                 }
             } else {
                 errors.emplace_back("'arguments' field in compilation database entry is not a JSON array");
                 return false;
             }
         } else if (obj.count("command")) {
-            doUnescape = true;
+            std::string command;
             if (obj["command"].is<std::string>()) {
                 command = obj["command"].get<std::string>();
             } else {
                 errors.emplace_back("'command' field in compilation database entry is not a string");
+                return false;
+            }
+
+            std::string error = collectArgs(command, arguments);
+            if (!error.empty()) {
+                errors.emplace_back(error);
                 return false;
             }
         } else {
@@ -549,7 +549,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         else
             path = Path::simplifyPath(directory + file);
         FileSettings fs{path, Standards::Language::None, 0}; // file will be identified later on
-        fsParseCommand(fs, command, doUnescape); // read settings; -D, -I, -U, -std, -m*, -f*
+        parseArgs(fs, arguments);
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         // Assign a unique index to each file path. If the file path already exists in the map,
