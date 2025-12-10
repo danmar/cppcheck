@@ -42,6 +42,72 @@
 
 #include "json.h"
 
+std::string ImportProject::collectArgs(const std::string &cmd, std::vector<std::string> &args)
+{
+    args.clear();
+
+    std::string::size_type pos = 0;
+    const std::string::size_type end = cmd.size();
+    std::string arg;
+
+    bool inDoubleQuotes = false;
+    bool inSingleQuotes = false;
+
+    while (pos < end) {
+        char c = cmd[pos++];
+
+        if (c == ' ') {
+            if (inDoubleQuotes || inSingleQuotes) {
+                arg.push_back(c);
+                continue;
+            }
+
+            if (!arg.empty())
+                args.push_back(arg);
+            arg.clear();
+
+            pos = cmd.find_first_not_of(' ', pos);
+
+            continue;
+        }
+
+        if (c == '\"' && !inSingleQuotes) {
+            inDoubleQuotes = !inDoubleQuotes;
+            continue;
+        }
+
+        if (c == '\'' && !inDoubleQuotes) {
+            inSingleQuotes = !inSingleQuotes;
+            continue;
+        }
+
+        if (c == '\\' && !inSingleQuotes) {
+            if (pos == end) {
+                arg.push_back('\\');
+                break;
+            }
+
+            c = cmd[pos++];
+
+            if (!std::strchr("\\\"\' ", c))
+                arg.push_back('\\');
+
+            arg.push_back(c);
+            continue;
+        }
+
+        arg.push_back(c);
+    }
+
+    if (inSingleQuotes || inDoubleQuotes)
+        return "Missing closing quote in command string";
+
+    if (!arg.empty())
+        args.push_back(arg);
+
+    return "";
+}
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
     PathMatch matcher(ipaths, Path::getCurrentPath());

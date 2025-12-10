@@ -103,6 +103,7 @@ public:
 protected:
     bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
+    static std::string collectArgs(const std::string &cmd, std::vector<std::string> &args);
 
 private:
     struct SharedItemsProject {
