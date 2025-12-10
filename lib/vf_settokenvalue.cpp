@@ -83,8 +83,8 @@ namespace ValueFlow
         // If the sign is the same there is no truncation
         if (vt1->sign == vt2->sign)
             return value;
-        const size_t n1 = getSizeOf(*vt1, settings, ValueFlow::Accuracy::ExactOrZero);
-        const size_t n2 = getSizeOf(*vt2, settings, ValueFlow::Accuracy::ExactOrZero);
+        const size_t n1 = vt1->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
+        const size_t n2 = vt2->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
         ValueType::Sign sign = ValueType::Sign::UNSIGNED;
         if (n1 < n2)
             sign = vt2->sign;
@@ -225,7 +225,7 @@ namespace ValueFlow
     {
         // Skip setting values that are too big since its ambiguous
         if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok)
-            && getSizeOf(*tok->valueType(), settings, ValueFlow::Accuracy::LowerBound)
+            && tok->valueType()->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer)
             >= sizeof(MathLib::bigint))
             return;
 
@@ -379,8 +379,8 @@ namespace ValueFlow
             const ValueType &valueType = ValueType::parseDecl(castType, settings);
             if (value.isImpossible() && value.isIntValue() && value.intvalue < 0
                 && astIsUnsigned(tok) && valueType.sign == ValueType::SIGNED && tok->valueType()
-                && getSizeOf(*tok->valueType(), settings, ValueFlow::Accuracy::ExactOrZero)
-                >= getSizeOf(valueType, settings, ValueFlow::Accuracy::ExactOrZero))
+                && tok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer)
+                >= valueType.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer))
                 return;
             setTokenValueCast(parent, valueType, value, settings);
         }
@@ -642,9 +642,7 @@ namespace ValueFlow
                     if (v.isIntValue() || v.isSymbolicValue()) {
                         const ValueType *dst = tok->valueType();
                         if (dst) {
-                            const size_t sz = ValueFlow::getSizeOf(*dst,
-                                                                   settings,
-                                                                   ValueFlow::Accuracy::ExactOrZero);
+                            const size_t sz = dst->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
                             MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue + 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue < v.intvalue) {
@@ -674,9 +672,7 @@ namespace ValueFlow
                     if (v.isIntValue() || v.isSymbolicValue()) {
                         const ValueType *dst = tok->valueType();
                         if (dst) {
-                            const size_t sz = ValueFlow::getSizeOf(*dst,
-                                                                   settings,
-                                                                   ValueFlow::Accuracy::ExactOrZero);
+                            const size_t sz = dst->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
                             MathLib::bigint newvalue = ValueFlow::truncateIntValue(v.intvalue - 1, sz, dst->sign);
                             if (v.bound != ValueFlow::Value::Bound::Point) {
                                 if (newvalue > v.intvalue) {

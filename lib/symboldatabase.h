@@ -1312,7 +1312,15 @@ public:
 
     bool isVolatile(nonneg int indirect = 0) const;
 
-    MathLib::bigint typeSize(const Platform &platform, bool p=false) const;
+    enum class Accuracy : std::uint8_t {
+        ExactOrZero,
+        LowerBound,
+    };
+    enum class SizeOf : std::uint8_t {
+        Pointer,
+        Pointee,
+    };
+    size_t getSizeOf(const Settings& settings, Accuracy accuracy, SizeOf sizeOf, int maxRecursion = 0) const;
 
     /// Check if type is the same ignoring const and references
     bool isTypeEqual(const ValueType* that) const;

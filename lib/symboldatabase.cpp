@@ -45,6 +45,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <sstream>
 #include <stack>
 #include <string>
@@ -8421,40 +8422,187 @@ bool ValueType::isVolatile(nonneg int indirect) const
         return false;
     return volatileness & (1 << (pointer - indirect));
 }
-MathLib::bigint ValueType::typeSize(const Platform &platform, bool p) const
+
+namespace {
+    struct Result
+    {
+        size_t total;
+        bool success;
+    };
+}
+
+template<class F>
+static Result accumulateStructMembers(const Scope* scope, F f, ValueType::Accuracy accuracy)
 {
-    if (p && pointer)
-        return platform.sizeof_pointer;
-
-    if (typeScope && typeScope->definedType && typeScope->definedType->sizeOf)
-        return typeScope->definedType->sizeOf;
-
-    switch (type) {
-    case ValueType::Type::BOOL:
-        return platform.sizeof_bool;
-    case ValueType::Type::CHAR:
-        return 1;
-    case ValueType::Type::SHORT:
-        return platform.sizeof_short;
-    case ValueType::Type::WCHAR_T:
-        return platform.sizeof_wchar_t;
-    case ValueType::Type::INT:
-        return platform.sizeof_int;
-    case ValueType::Type::LONG:
-        return platform.sizeof_long;
-    case ValueType::Type::LONGLONG:
-        return platform.sizeof_long_long;
-    case ValueType::Type::FLOAT:
-        return platform.sizeof_float;
-    case ValueType::Type::DOUBLE:
-        return platform.sizeof_double;
-    case ValueType::Type::LONGDOUBLE:
-        return platform.sizeof_long_double;
-    default:
-        break;
+    size_t total = 0;
+    std::set<const Scope*> anonScopes;
+    for (const Variable& var : scope->varlist) {
+        if (var.isStatic())
+            continue;
+        const MathLib::bigint bits = var.nameToken() ? var.nameToken()->bits() : -1;
+        if (const ValueType* vt = var.valueType()) {
+            if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
+                return {0, false};
+            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), MathLib::bigint(1), [](MathLib::bigint i1, const Dimension& dim) {
+                return i1 * dim.num;
+            });
+            if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
+                const auto ret = anonScopes.insert(var.nameToken()->scope());
+                if (ret.second)
+                    total = f(total, *vt, dim, bits);
+            }
+            else
+                total = f(total, *vt, dim, bits);
+        }
+        if (accuracy == ValueType::Accuracy::ExactOrZero && total == 0 && bits == -1)
+            return {0, false};
     }
+    return {total, true};
+}
 
-    // Unknown invalid size
+
+static size_t bitCeil(size_t x)
+{
+    if (x <= 1)
+        return 1;
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    x |= x >> 32;
+    return x + 1;
+}
+
+static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueType::Accuracy accuracy, ValueType::SizeOf sizeOf, int maxRecursion = 0)
+{
+    if (maxRecursion == settings.vfOptions.maxAlignOfRecursion) {
+        // TODO: add bailout message
+        return 0;
+    }
+    if ((vt.pointer && sizeOf == ValueType::SizeOf::Pointer) || vt.reference != Reference::None || vt.isPrimitive()) {
+        auto align = vt.getSizeOf(settings, accuracy, ValueType::SizeOf::Pointer);
+        return align == 0 ? 0 : bitCeil(align);
+    }
+    if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
+        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, MathLib::bigint /*bits*/) {
+            size_t a = getAlignOf(vt2, settings, accuracy, ValueType::SizeOf::Pointer, ++maxRecursion);
+            return std::max(max, a);
+        };
+        Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
+        size_t total = result.total;
+        if (const Type* dt = vt.typeScope->definedType) {
+            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
+                if (bi.type && bi.type->classScope)
+                    v += accumulateStructMembers(bi.type->classScope, accHelper, accuracy).total;
+                return v;
+            });
+        }
+        return result.success ? std::max<size_t>(1, total) : total;
+    }
+    if (vt.type == ValueType::Type::CONTAINER)
+        return settings.platform.sizeof_pointer; // Just guess
+    return 0;
+}
+
+size_t ValueType::getSizeOf( const Settings& settings, Accuracy accuracy, SizeOf sizeOf, int maxRecursion) const
+{
+    if (maxRecursion == settings.vfOptions.maxSizeOfRecursion) {
+        // TODO: add bailout message
+        return 0;
+    }
+    const auto& platform = settings.platform;
+    if (sizeOf == SizeOf::Pointer && (pointer || reference != Reference::None))
+        return platform.sizeof_pointer;
+    if (type == ValueType::Type::BOOL || type == ValueType::Type::CHAR)
+        return 1;
+    if (type == ValueType::Type::SHORT)
+        return platform.sizeof_short;
+    if (type == ValueType::Type::WCHAR_T)
+        return platform.sizeof_wchar_t;
+    if (type == ValueType::Type::INT)
+        return platform.sizeof_int;
+    if (type == ValueType::Type::LONG)
+        return platform.sizeof_long;
+    if (type == ValueType::Type::LONGLONG)
+        return platform.sizeof_long_long;
+    if (type == ValueType::Type::FLOAT)
+        return platform.sizeof_float;
+    if (type == ValueType::Type::DOUBLE)
+        return platform.sizeof_double;
+    if (type == ValueType::Type::LONGDOUBLE)
+        return platform.sizeof_long_double;
+    if (type == ValueType::Type::CONTAINER)
+        return 3 * platform.sizeof_pointer; // Just guess
+    if (type == ValueType::Type::RECORD && typeScope) {
+        size_t currentBitCount = 0;
+        size_t currentBitfieldAlloc = 0;
+        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, MathLib::bigint nBits) -> size_t {
+            const size_t charBit = settings.platform.char_bit;
+            size_t n = vt2.getSizeOf(settings, accuracy, SizeOf::Pointer, ++maxRecursion);
+            size_t a = getAlignOf(vt2, settings, accuracy, SizeOf::Pointer);
+            if (n == 0 || a == 0)
+                return accuracy == Accuracy::ExactOrZero ? 0 : total;
+            if (nBits == 0) {
+                if (currentBitfieldAlloc == 0) {
+                    nBits = n * charBit;
+                } else {
+                    nBits = (currentBitfieldAlloc * charBit) - currentBitCount;
+                }
+            }
+            if (nBits > 0) {
+                size_t ret = total;
+                if (currentBitfieldAlloc == 0) {
+                    currentBitfieldAlloc = n;
+                    currentBitCount = 0;
+                } else if (currentBitCount + nBits > charBit * currentBitfieldAlloc) {
+                    ret += currentBitfieldAlloc;
+                    currentBitfieldAlloc = n;
+                    currentBitCount = 0;
+                }
+                while (nBits > charBit * currentBitfieldAlloc) {
+                    ret += currentBitfieldAlloc;
+                    nBits -= charBit * currentBitfieldAlloc;
+                }
+                currentBitCount += nBits;
+                return ret;
+            }
+            n *= dim;
+            size_t padding = (a - (total % a)) % a;
+            if (currentBitCount > 0) {
+                bool fitsInBitfield = currentBitCount + (n * charBit) <= currentBitfieldAlloc * charBit;
+                bool isAligned = currentBitCount % (charBit * a) == 0;
+                if (vt2.isIntegral() && fitsInBitfield && isAligned) {
+                    currentBitCount += charBit * n;
+                    return total;
+                }
+                n += currentBitfieldAlloc;
+                currentBitfieldAlloc = 0;
+                currentBitCount = 0;
+            }
+            return typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
+        };
+        Result result = accumulateStructMembers(typeScope, accHelper, accuracy);
+        size_t total = result.total;
+        if (currentBitCount > 0)
+            total += currentBitfieldAlloc;
+        if (const ::Type* dt = typeScope->definedType) {
+            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const ::Type::BaseInfo& bi) {
+                if (bi.type && bi.type->classScope)
+                    v += accumulateStructMembers(bi.type->classScope, accHelper, accuracy).total;
+                return v;
+            });
+        }
+        if (accuracy == Accuracy::ExactOrZero && total == 0 && !result.success)
+            return 0;
+        total = std::max(size_t{1}, total);
+        size_t align = getAlignOf(*this, settings, accuracy, sizeOf);
+        if (align == 0)
+            return accuracy == Accuracy::ExactOrZero ? 0 : total;
+        total += (align - (total % align)) % align;
+        return total;
+    }
     return 0;
 }
 

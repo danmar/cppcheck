@@ -45,7 +45,7 @@ static bool is32BitIntegerReturn(const Function* func, const Settings* settings)
     if (settings->platform.sizeof_pointer != 8)
         return false;
     const ValueType* vt = func->arg->valueType();
-    return vt && vt->pointer == 0 && vt->isIntegral() && vt->typeSize(settings->platform) == 4;
+    return vt && vt->pointer == 0 && vt->isIntegral() && vt->getSizeOf(*settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer) == 4;
 }
 
 static bool isFunctionPointer(const Token* tok)
