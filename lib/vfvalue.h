@@ -45,9 +45,7 @@ namespace ValueFlow
         enum class Bound : std::uint8_t { Upper, Lower, Point };
 
         explicit Value(MathLib::bigint val = 0, Bound b = Bound::Point) :
-            valueType(ValueType::INT),
             bound(b),
-            flow(Flow::UNKNOWN),
             safe(false),
             conditional(false),
             macro(false),
@@ -214,7 +212,7 @@ namespace ValueFlow
             ITERATOR_START,
             ITERATOR_END,
             SYMBOLIC
-        } valueType : 4;
+        } valueType = ValueType::INT;
         bool isIntValue() const {
             return valueType == ValueType::INT;
         }
@@ -269,19 +267,7 @@ namespace ValueFlow
         }
 
         /** The value bound  */
-        Bound bound : 2;
-
-        enum class Flow : std::uint8_t {
-            UNKNOWN,
-            FORWARD,
-            REVERSE
-        } flow : 2;
-        bool isReverse() const {
-            return flow == Flow::REVERSE;
-        }
-        void setFlow(Flow f) {
-            flow = f;
-        }
+        Bound bound = Bound::Point;
 
         /** value relies on safe checking */
         // cppcheck-suppress premium-misra-cpp-2023-12.2.1
@@ -360,7 +346,19 @@ namespace ValueFlow
         };
         UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
 
-        long long : 24; // padding
+        enum class Flow : std::uint8_t {
+            UNKNOWN,
+            FORWARD,
+            REVERSE
+        } flow = Flow::UNKNOWN;
+        bool isReverse() const {
+            return flow == Flow::REVERSE;
+        }
+        void setFlow(Flow f) {
+            flow = f;
+        }
+
+        long long : 16; // padding
 
         /** Path id */
         MathLib::bigint path{};
