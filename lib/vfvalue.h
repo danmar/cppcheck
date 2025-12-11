@@ -276,8 +276,12 @@ namespace ValueFlow
             FORWARD,
             REVERSE
         } flow : 2;
-        bool isReverse() const { return flow == Flow::REVERSE; }
-        void setFlow(Flow f) { flow = f; }
+        bool isReverse() const {
+            return flow == Flow::REVERSE;
+        }
+        void setFlow(Flow f) {
+            flow = f;
+        }
 
         /** value relies on safe checking */
         // cppcheck-suppress premium-misra-cpp-2023-12.2.1
