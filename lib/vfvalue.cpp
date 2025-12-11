@@ -27,7 +27,9 @@
 
 namespace ValueFlow {
     Value::Value(const Token *c, MathLib::bigint val, Bound b)
-        : bound(b),
+        : valueType(ValueType::INT),
+        bound(b),
+        flow(Flow::UNKNOWN),
         safe(false),
         conditional(false),
         macro(false),
