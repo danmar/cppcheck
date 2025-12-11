@@ -10080,14 +10080,7 @@ void Tokenizer::simplifyBitfields()
 
         bool isEnum = false;
         if (tok->str() == "}") {
-            const Token *type = tok->link()->previous();
-            while (type && type->isName()) {
-                if (type->str() == "enum") {
-                    isEnum = true;
-                    break;
-                }
-                type = type->previous();
-            }
+            isEnum = isEnumStart(tok->link());
         }
 
         const auto tooLargeError = [this](const Token *tok) {
