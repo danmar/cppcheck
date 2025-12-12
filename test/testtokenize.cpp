@@ -276,7 +276,8 @@ private:
         TEST_CASE(functionAttributeListAfter);
         TEST_CASE(functionAttributeListAfter2);
         TEST_CASE(cppMaybeUnusedBefore);
-        TEST_CASE(cppMaybeUnusedAfter);
+        TEST_CASE(cppMaybeUnusedAfter1);
+        TEST_CASE(cppMaybeUnusedAfter2);
         TEST_CASE(cppMaybeUnusedStructuredBinding);
 
         TEST_CASE(splitTemplateRightAngleBrackets);
@@ -4258,9 +4259,22 @@ private:
         ASSERT(var && var->isAttributeMaybeUnused());
     }
 
-    void cppMaybeUnusedAfter() {
+    void cppMaybeUnusedAfter1() {
         const char code[] = "int var [[maybe_unused]] {};";
         const char expected[] = "int var { } ;";
+
+        SimpleTokenizer tokenizer(settings0, *this);
+        ASSERT(tokenizer.tokenize(code));
+
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *var = Token::findsimplematch(tokenizer.tokens(), "var");
+        ASSERT(var && var->isAttributeMaybeUnused());
+    }
+
+    void cppMaybeUnusedAfter2() {
+        const char code[] = "std::string var [[maybe_unused]];";
+        const char expected[] = "std :: string var ;";
 
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT(tokenizer.tokenize(code));
