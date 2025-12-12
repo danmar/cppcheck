@@ -10078,10 +10078,7 @@ void Tokenizer::simplifyBitfields()
         if (!Token::Match(tok, ";|{|}|public:|protected:|private:"))
             continue;
 
-        bool isEnum = false;
-        if (tok->str() == "}") {
-            isEnum = isEnumStart(tok->link());
-        }
+        const bool isEnum = tok->str() == "}" && isEnumStart(tok->link());
 
         const auto tooLargeError = [this](const Token *tok) {
             const auto max = std::numeric_limits<short>::max();
