@@ -416,6 +416,8 @@ private:
             TokenList::deleteTokens(tok);
         }
 
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigNumber("''"), INTERNAL, "Internal Error. MathLib::toBigNumber: characterLiteralToLL('') => empty character literal");
+
         // TODO: test binary
         // TODO: test floating point
 
@@ -588,6 +590,8 @@ private:
             TokenList::deleteTokens(tok);
         }
 
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toBigUNumber("''"), INTERNAL, "Internal Error. MathLib::toBigUNumber: characterLiteralToLL('') => empty character literal");
+
         // TODO: test binary
         // TODO: test floating point
 
@@ -736,6 +740,8 @@ private:
         ASSERT_EQUALS("0.0",  MathLib::toString(MathLib::toDoubleNumber("-0")));
         ASSERT_EQUALS("0.0",  MathLib::toString(MathLib::toDoubleNumber("-0.")));
         ASSERT_EQUALS("0.0",  MathLib::toString(MathLib::toDoubleNumber("-0.0")));
+
+        ASSERT_THROW_INTERNAL_EQUALS(MathLib::toDoubleNumber("''"), INTERNAL, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL('') => empty character literal");
     }
 
     void isint() const {

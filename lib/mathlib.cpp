@@ -344,8 +344,13 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str, const Token * co
         return static_cast<biguint>(static_cast<bigint>(doubleval));
     }
 
-    if (isCharLiteral(str))
-        return simplecpp::characterLiteralToLL(str);
+    if (isCharLiteral(str)) {
+        try {
+            return simplecpp::characterLiteralToLL(str);
+        } catch (const std::runtime_error& e) {
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        }
+    }
 
     try {
         std::size_t idx = 0;
@@ -429,8 +434,13 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str, const Token * cons
         return static_cast<bigint>(doubleval);
     }
 
-    if (isCharLiteral(str))
-        return simplecpp::characterLiteralToLL(str);
+    if (isCharLiteral(str)) {
+        try {
+            return simplecpp::characterLiteralToLL(str);
+        } catch (const std::runtime_error& e) {
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        }
+    }
 
     try {
         std::size_t idx = 0;
@@ -505,7 +515,7 @@ double MathLib::toDoubleNumber(const std::string &str, const Token * const tok)
     if (isCharLiteral(str)) {
         try {
             return simplecpp::characterLiteralToLL(str);
-        } catch (const std::exception& e) {
+        } catch (const std::runtime_error& e) {
             throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
         }
     }

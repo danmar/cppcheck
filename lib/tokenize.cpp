@@ -3470,7 +3470,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration, int fileIndex)
             if (tok->tokType() == Token::eChar && tok->values().empty()) {
                 try {
                     simplecpp::characterLiteralToLL(tok->str());
-                } catch (const std::exception &e) {
+                } catch (const std::runtime_error &e) {
                     unhandledCharLiteral(tok, e.what());
                 }
             }
