@@ -4945,6 +4945,20 @@ private:
                       tokenizeAndStringify("struct AB {\n"
                                            "  enum Foo {A,B} foo : 4;\n"
                                            "};"));
+
+        ASSERT_EQUALS("struct S {\n" // #14324
+                      "enum E : int { E0 , E1 } ; enum E e ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct S {\n"
+                                           "    enum E : int { E0, E1 } e : 2;\n"
+                                           "};\n"));
+
+        ASSERT_EQUALS("struct S {\n"
+                      "enum class E : std :: uint8_t { E0 , E1 } ; enum E e ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct S {\n"
+                                           "    enum class E : std::uint8_t { E0, E1 } e : 2;\n"
+                                           "};\n"));
     }
 
     void bitfields16() {
