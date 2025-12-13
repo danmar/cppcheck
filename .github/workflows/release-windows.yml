@@ -31,12 +31,12 @@ jobs:
       BOOST_MINOR_VERSION: 89
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
       - name: Set up Visual Studio environment
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
 
       - name: Download PCRE
         run: |
@@ -66,7 +66,7 @@ jobs:
       # available modules: https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-modules
       # available tools:   https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-tools
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
@@ -89,7 +89,7 @@ jobs:
           del build\bin\Release\cppcheck-gui.ilk || exit /b !errorlevel!
           del build\bin\Release\cppcheck-gui.pdb || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: deploy
           path: build\bin\Release
@@ -103,7 +103,7 @@ jobs:
         env:
           _CL_: /WX
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: bin
           path: bin
@@ -152,7 +152,7 @@ jobs:
           :: copy libcrypto-3-x64.dll and libssl-3-x64.dll
           copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSLv3\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: collect
           path: win_installer\files
@@ -167,7 +167,7 @@ jobs:
           @echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
           msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: installer
           path: win_installer/Build/
@@ -203,7 +203,7 @@ jobs:
           del win_installer\files\Qt6Svg.dll || exit /b !errorlevel!
           del win_installer\files\vc_redist.x64.exe || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: portable
           path: win_installer\files
