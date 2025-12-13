@@ -5345,8 +5345,8 @@ private:
         ASSERT_EQUALS("; x = 123 ;", tokenizeAndStringify(";x=({123;});"));
         ASSERT_EQUALS("; x = y ;", tokenizeAndStringify(";x=({y;});"));
         // #13419: Do not simplify compound statements in for loop
-        ASSERT_EQUALS("void foo ( int x ) { for ( ; ( { { } ; x < 1 ; } ) ; ) }",
-                      tokenizeAndStringify("void foo(int x) { for (;({ {}; x<1; });) }"));
+        ASSERT_EQUALS("void foo ( int x ) { for ( ; ( { { } ; x < 1 ; } ) { ; } ) }",
+                      tokenizeAndStringify("void foo(int x) { for (;({ {}; x<1; });); }"));
     }
 
     void simplifyOperatorName1() {
@@ -7626,6 +7626,11 @@ private:
                                      "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("{ for (()()) }"), SYNTAX); // #11643
+
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f(const std::vector<std::string>& v) {\n" // #14326
+                                                   "    for (const std::string&s : v)\n"
+                                                   "}"),
+                                                   SYNTAX);
 
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));

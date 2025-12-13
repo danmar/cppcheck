@@ -3672,8 +3672,7 @@ private:
     }
 
     void symboldatabase36() { // ticket #4892
-        check("void struct ( ) { if ( 1 ) } int main ( ) { }");
-        ASSERT_EQUALS("", errout_str());
+        ASSERT_THROW_INTERNAL(check("void struct ( ) { if ( 1 ) } int main ( ) { }"), SYNTAX);
     }
 
     void symboldatabase37() {
