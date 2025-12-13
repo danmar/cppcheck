@@ -6515,6 +6515,13 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:7:17] -> [test.cpp:7:24] -> [test.cpp:8:10] -> [test.cpp:9:18]: (error) Reference to vec1 that may be invalid. [invalidContainerReference]\n",
             errout_str());
+
+        // #14326
+        check("void f(const std::vector<std::string>& v)\n"
+              "{\n"
+              "for (const std::string&s : v)\n"
+              "}\n"); // don't crash
+        ASSERT_EQUALS("", errout_str());
     }
 
     void invalidContainerLoop() {
