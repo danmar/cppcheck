@@ -1138,7 +1138,7 @@ void CheckStl::invalidContainer()
                     continue;
                 if (!astIsContainer(contTok))
                     continue;
-                for (const Token* tok2 = blockStart; tok2 != blockEnd; tok2 = tok2->next()) {
+                for (const Token* tok2 = blockStart; tok2 && tok2 != blockEnd; tok2 = tok2->next()) {
                     bool bail = false;
                     for (const InvalidContainerAnalyzer::Info::Reference& r : analyzer.invalidatesContainer(tok2)) {
                         if (!astIsContainer(r.tok))
