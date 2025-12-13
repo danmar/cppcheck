@@ -31,7 +31,7 @@ jobs:
           key: ${{ github.workflow }}-${{ runner.os }}
 
       - name: Cache Cppcheck
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: cppcheck
           key: ${{ runner.os }}-scriptcheck-cppcheck-${{ github.sha }}
@@ -62,7 +62,7 @@ jobs:
 
       # TODO: bailout on error
       - name: Restore Cppcheck
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: cppcheck
           key: ${{ runner.os }}-scriptcheck-cppcheck-${{ github.sha }}
