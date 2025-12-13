@@ -7630,7 +7630,7 @@ private:
         ASSERT_THROW_INTERNAL(tokenizeAndStringify("void f(const std::vector<std::string>& v) {\n" // #14326
                                                    "    for (const std::string&s : v)\n"
                                                    "}"),
-                                                   SYNTAX);
+                              SYNTAX);
 
         ASSERT_NO_THROW(tokenizeAndStringify("S* g = ::new(ptr) S();")); // #12552
         ASSERT_NO_THROW(tokenizeAndStringify("void f(int* p) { return ::delete p; }"));
