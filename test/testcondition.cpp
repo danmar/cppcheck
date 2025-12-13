@@ -777,7 +777,7 @@ private:
 
         check("void f(size_t x) {\n"
               "    if (x == sizeof(long)) {}\n"
-              "    else { if (x == sizeof(long long))} {}\n"
+              "    else { if (x == sizeof(long long)) {} }\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

@@ -5345,7 +5345,7 @@ private:
         ASSERT_EQUALS("; x = 123 ;", tokenizeAndStringify(";x=({123;});"));
         ASSERT_EQUALS("; x = y ;", tokenizeAndStringify(";x=({y;});"));
         // #13419: Do not simplify compound statements in for loop
-        ASSERT_EQUALS("void foo ( int x ) { for ( ; ( { { } ; x < 1 ; } ) { ; } ) }",
+        ASSERT_EQUALS("void foo ( int x ) { for ( ; ( { { } ; x < 1 ; } ) ; ) { ; } }",
                       tokenizeAndStringify("void foo(int x) { for (;({ {}; x<1; });); }"));
     }
 
