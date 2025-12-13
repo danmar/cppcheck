@@ -25,7 +25,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04 # run on the latest image only
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
@@ -60,13 +60,13 @@ jobs:
           #sed -i 's|"security-severity":.*||' results.sarif
           cat results.sarif
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: results
           path: results.sarif
 
       - name: Upload report
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@1b168cd39490f61582a9beae412bb7057a6b2c4e # v4.31.8
         with:
           sarif_file: results.sarif
           category: cppcheckpremium

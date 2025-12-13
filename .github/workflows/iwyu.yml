@@ -42,7 +42,7 @@ jobs:
       QT_VERSION: 6.10.0
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
@@ -107,7 +107,7 @@ jobs:
       # Also the shell is broken afterwards:
       # OCI runtime exec failed: exec failed: unable to start container process: exec: "sh": executable file not found in $PATH: unknown
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
@@ -160,13 +160,13 @@ jobs:
           IWYU: include-what-you-use
           IWYU_CLANG_INC: ${{ matrix.clang_inc }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: success() || failure()
         with:
           name: Compilation Database (include-what-you-use - ${{ matrix.os }} ${{ matrix.stdlib }})
           path: ./cmake.output/compile_commands.json
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ contains(matrix.os, 'macos') && (success() || failure()) }}
         with:
           name: macOS Mappings
@@ -174,7 +174,7 @@ jobs:
             ./iwyu-mapgen-apple-libc.py
             ./macos.imp
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: success() || failure()
         with:
           name: Logs (include-what-you-use - ${{ matrix.os }} ${{ matrix.stdlib }})
@@ -199,7 +199,7 @@ jobs:
       QT_VERSION: 6.10.0
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
 
@@ -223,7 +223,7 @@ jobs:
           sudo apt-get install -y libc++-21-dev
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v4
+        uses: jurplel/install-qt-action@d325aaf2a8baeeda41ad0b5d39f84a6af9bcf005 # v4.3.0
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
@@ -255,13 +255,13 @@ jobs:
           # TODO: run multi-threaded
           find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-21 --print=changes --extra-arg=-w --extra-arg=-stdlib=${{ matrix.stdlib }} -p cmake.output > clang-include-cleaner.log 2>&1
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: success() || failure()
         with:
           name: Compilation Database (clang-include-cleaner - ${{ matrix.stdlib }})
           path: ./cmake.output/compile_commands.json
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: success() || failure()
         with:
           name: Logs (clang-include-cleaner - ${{ matrix.stdlib }})
