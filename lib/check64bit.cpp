@@ -45,7 +45,14 @@ static bool is32BitIntegerReturn(const Function* func, const Settings* settings)
     if (settings->platform.sizeof_pointer != 8)
         return false;
     const ValueType* vt = func->arg->valueType();
-    return vt && vt->pointer == 0 && vt->isIntegral() && vt->typeSize(settings->platform) == 4;
+    return vt && vt->pointer == 0 && vt->isIntegral() && vt->getSizeOf(*settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer) == 4;
+}
+
+static bool isFunctionPointer(const Token* tok)
+{
+    if (!tok || !tok->variable())
+        return false;
+    return Tokenizer::isFunctionPointer(tok->variable()->nameToken());
 }
 
 void Check64BitPortability::pointerassignment()
@@ -120,7 +127,8 @@ void Check64BitPortability::pointerassignment()
                 !tok->astOperand2()->isNumber() &&
                 rhstype->pointer == 0U &&
                 rhstype->originalTypeName.empty() &&
-                rhstype->type == ValueType::Type::INT)
+                rhstype->type == ValueType::Type::INT &&
+                !isFunctionPointer(tok->astOperand1()))
                 assignmentIntegerToAddressError(tok);
 
             // Assign pointer to integer..

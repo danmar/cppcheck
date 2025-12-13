@@ -1198,13 +1198,40 @@ The output screen says:
                        Default is reading from stdin.
        --report-dir=REPORT_DIR
                        The directory where the html report content is written.
-       --source-dir=SOURCE_DIR
-                       Base directory where source code files can be found.
+       --source-dir=SOURCE_DIR|URL
+                       Base directory where source code files can be found, or
+                       a URL to a remote GitHub/GitLab repository including a
+                       branch, e.g.:
+                         --source-dir=https://github.com/<username>/<repo>/blob/<branch>/
 
 Example usage:
 
     cppcheck gui/test.cpp --xml 2> err.xml
     cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
+
+or
+    cppcheck gui/test.cpp --xml 2> err.xml
+    cppcheck-htmlreport --file=err.xml --report-dir=test1 \
+         --source-dir=https://github.com/<username>/<repo>/blob/<branch>/
+
+## Choosing Between Local Annotated HTML and Remote Repository Links
+
+cppcheck-htmlreport supports two modes for linking to source files:
+ - Local annotated HTML files (default when `--source-dir` is a filesystem path)
+ - Remote GitHub/GitLab links (when `--source-dir` is a URL)
+
+Pointing `--source-dir` to a filesystem path generates local annotated HTML files.
+This is useful when you need a fully self-contained report that works offline,
+includes inline annotations, and is ideal for small or medium projects where
+generation is fast.
+Using a remote GitHub/GitLab URL avoids generating per-file HTML and keeps the
+summary report lightweight and fast to produce. This mode is ideal when the
+source is already hosted online and local duplication is unnecessary.
+Remote mode is especially helpful when the HTML report may be public or widely
+distributed but the source code should remain private, since access control is
+handled by the hosting service.
+In general, local mode fits air-gapped environments, while remote mode works
+best for CI workflows and large or private repositories.
 
 # Check Level
 

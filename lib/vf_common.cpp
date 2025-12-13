@@ -114,7 +114,7 @@ namespace ValueFlow
     {
         const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
 
-        return getSizeOf(valueType, settings, ValueFlow::Accuracy::ExactOrZero);
+        return valueType.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
     }
 
     // Handle various constants..
@@ -125,7 +125,7 @@ namespace ValueFlow
                 MathLib::bigint signedValue = MathLib::toBigNumber(tok);
                 const ValueType* vt = tok->valueType();
                 if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0
-                    && getSizeOf(*vt, settings, ValueFlow::Accuracy::ExactOrZero)
+                    && vt->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer)
                     < sizeof(MathLib::bigint)) {
                     MathLib::bigint minValue{}, maxValue{};
                     if (getMinMaxValues(tok->valueType(), settings.platform, minValue, maxValue))
@@ -160,9 +160,7 @@ namespace ValueFlow
                 (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
                  (tok->next()->astOperand2()->variable() && !tok->next()->astOperand2()->variable()->isArray())) &&
                 !tok->next()->astOperand2()->valueType()->isEnum()) { // <- TODO this is a bailout, handle enum with non-int types
-                const size_t sz = getSizeOf(*tok->next()->astOperand2()->valueType(),
-                                            settings,
-                                            ValueFlow::Accuracy::ExactOrZero);
+                const size_t sz = tok->next()->astOperand2()->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
                 if (sz) {
                     Value value(sz);
                     value.setKnown();
@@ -181,7 +179,7 @@ namespace ValueFlow
             }
             if (Token::simpleMatch(tok, "sizeof ( *")) {
                 const ValueType *vt = tok->tokAt(2)->valueType();
-                const size_t sz = vt ? getSizeOf(*vt, settings, ValueFlow::Accuracy::ExactOrZero)
+                const size_t sz = vt ? vt->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer)
                                      : 0;
                 if (sz > 0) {
                     Value value(sz);
@@ -243,9 +241,7 @@ namespace ValueFlow
                         if (var->type()->classScope && var->type()->classScope->enumType)
                             size = getSizeOfType(var->type()->classScope->enumType, settings);
                     } else if (var->valueType()) {
-                        size = getSizeOf(*var->valueType(),
-                                         settings,
-                                         ValueFlow::Accuracy::ExactOrZero);
+                        size = var->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
                     } else if (!var->type()) {
                         size = getSizeOfType(var->typeStartToken(), settings);
                     }
@@ -294,7 +290,7 @@ namespace ValueFlow
                 }
             } else if (!tok2->type()) {
                 const ValueType& vt = ValueType::parseDecl(tok2, settings);
-                size_t sz = getSizeOf(vt, settings, ValueFlow::Accuracy::ExactOrZero);
+                size_t sz = vt.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
                 const Token* brac = tok2->astParent();
                 while (Token::simpleMatch(brac, "[")) {
                     const Token* num = brac->astOperand2();

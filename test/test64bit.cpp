@@ -67,6 +67,12 @@ private:
               "    t.a[i][j] = new std::vector<int>;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("int f();\n" // #11522
+              "void g() {\n"
+              "    int (*fp)() = *(int(*)())f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void novardecl() {

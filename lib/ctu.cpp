@@ -368,7 +368,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    const auto typeSize = argtok->valueType()->typeSize(tokenizer.getSettings().platform);
+                    const auto typeSize = argtok->valueType()->getSizeOf(tokenizer.getSettings(), ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
                     functionCall.callArgValue.value = typeSize > 0 ? argtok->variable()->dimension(0) * typeSize : -1;
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
@@ -382,7 +382,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    functionCall.callArgValue.value = argtok->astOperand1()->valueType()->typeSize(tokenizer.getSettings().platform);
+                    functionCall.callArgValue.value = argtok->astOperand1()->valueType()->getSizeOf(tokenizer.getSettings(), ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
                 }

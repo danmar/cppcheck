@@ -3459,9 +3459,7 @@ void CheckClass::checkReturnByReference()
                 const bool isView = isContainer && var->valueType()->container->view;
                 bool warn = isContainer && !isView;
                 if (!warn && !isView) {
-                    const std::size_t size = ValueFlow::getSizeOf(*var->valueType(),
-                                                                  *mSettings,
-                                                                  ValueFlow::Accuracy::LowerBound);
+                    const std::size_t size = var->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer);
                     if (size > 2 * mSettings->platform.sizeof_pointer)
                         warn = true;
                 }

@@ -396,7 +396,6 @@ private:
     }
 #endif // HAS_THREADING_MODEL_FORK
 
-    // TODO: check all results
     void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate errors are present
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
@@ -720,6 +719,40 @@ private:
                       "[test.cpp:6:0]: (error) unknown suppression type 'cppcheck-suppress-end-unknown' [invalidSuppression]\n"
                       "[test.cpp:4:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
 
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-file\n"
+                                        "// cppcheck-suppress\n"
+                                        "// cppcheck-suppress \n"
+                                        "// cppcheck-suppress\t\n"
+                                        "// cppcheck-suppress []\n" // TODO
+                                        "// cppcheck-suppress-macro\n"
+                                        "// cppcheck-suppress-begin\n"
+                                        "// cppcheck-suppress-begin id0\n"
+                                        "void f() {}\n"
+                                        "// cppcheck-suppress-end\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:2:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:3:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:4:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:6:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:7:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:10:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:8:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
+
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress:\n"
+                                        "// cppcheck-suppress-unknown\n"
+                                        "// cppcheck-suppress-begin-unknown\n"
+                                        "// cppcheck-suppress-begin\n"
+                                        "void f() {}\n"
+                                        "// cppcheck-suppress-end-unknown\n",
+                                        ""));
+        // TODO: actually these are all invalid types
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:2:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:3:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:4:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:6:0]: (error) suppression without error ID [invalidSuppression]\n", errout_str());
+
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    // cppcheck-suppress-begin uninitvar\n"
@@ -915,13 +948,14 @@ private:
                                      "uninitvar"));
         ASSERT_EQUALS("", errout_str());
 
-        // cppcheck-suppress-macro
+        // TODO: check result
         (this->*check)("// cppcheck-suppress-macro zerodiv\n"
                        "#define DIV(A,B) A/B\n"
                        "a = DIV(10,0);\n",
                        "");
         ASSERT_EQUALS("", errout_str());
 
+        // TODO: check result
         (this->*check)("// cppcheck-suppress-macro abc\n"
                        "#define DIV(A,B) A/B\n"
                        "a = DIV(10,1);\n",

@@ -1602,6 +1602,9 @@ void CppCheck::executeAddons(const std::vector<std::string>& files, const std::s
             }
             errmsg.file0 = file0;
 
+            if (obj.count("cwe")>0)
+                errmsg.cwe = CWE(obj["cwe"].get<std::int64_t>());
+
             if (obj.count("hash")>0)
                 errmsg.hash = obj["hash"].get<std::int64_t>();
 

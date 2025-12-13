@@ -784,7 +784,7 @@ nonneg int Token::getStrSize(const Token *tok, const Settings &settings)
     if (tok->valueType()) {
         ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        sizeofType = ValueFlow::getSizeOf(vt, settings, ValueFlow::Accuracy::ExactOrZero);
+        sizeofType = vt.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
     }
     return getStrArraySize(tok) * sizeofType;
 }

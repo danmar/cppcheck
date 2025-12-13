@@ -423,187 +423,6 @@ void ValueFlow::combineValueProperties(const ValueFlow::Value &value1, const Val
         result.path = value1.path;
 }
 
-namespace {
-    struct Result
-    {
-        size_t total;
-        bool success;
-    };
-}
-
-template<class F>
-static Result accumulateStructMembers(const Scope* scope, F f, ValueFlow::Accuracy accuracy)
-{
-    size_t total = 0;
-    std::set<const Scope*> anonScopes;
-    for (const Variable& var : scope->varlist) {
-        if (var.isStatic())
-            continue;
-        const MathLib::bigint bits = var.nameToken() ? var.nameToken()->bits() : -1;
-        if (const ValueType* vt = var.valueType()) {
-            if (vt->type == ValueType::Type::RECORD && vt->typeScope == scope)
-                return {0, false};
-            const MathLib::bigint dim = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), MathLib::bigint(1), [](MathLib::bigint i1, const Dimension& dim) {
-                return i1 * dim.num;
-            });
-            if (var.nameToken()->scope() != scope && var.nameToken()->scope()->definedType) { // anonymous union
-                const auto ret = anonScopes.insert(var.nameToken()->scope());
-                if (ret.second)
-                    total = f(total, *vt, dim, bits);
-            }
-            else
-                total = f(total, *vt, dim, bits);
-        }
-        if (accuracy == ValueFlow::Accuracy::ExactOrZero && total == 0 && bits == -1)
-            return {0, false};
-    }
-    return {total, true};
-}
-
-static size_t bitCeil(size_t x)
-{
-    if (x <= 1)
-        return 1;
-    --x;
-    x |= x >> 1;
-    x |= x >> 2;
-    x |= x >> 4;
-    x |= x >> 8;
-    x |= x >> 16;
-    x |= x >> 32;
-    return x + 1;
-}
-
-static size_t getAlignOf(const ValueType& vt, const Settings& settings, ValueFlow::Accuracy accuracy, int maxRecursion = 0)
-{
-    if (maxRecursion == settings.vfOptions.maxAlignOfRecursion) {
-        // TODO: add bailout message
-        return 0;
-    }
-    if (vt.pointer || vt.reference != Reference::None || vt.isPrimitive()) {
-        auto align = ValueFlow::getSizeOf(vt, settings, accuracy);
-        return align == 0 ? 0 : bitCeil(align);
-    }
-    if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        auto accHelper = [&](size_t max, const ValueType& vt2, size_t /*dim*/, MathLib::bigint /*bits*/) {
-            size_t a = getAlignOf(vt2, settings, accuracy, ++maxRecursion);
-            return std::max(max, a);
-        };
-        Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
-        size_t total = result.total;
-        if (const Type* dt = vt.typeScope->definedType) {
-            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
-                if (bi.type && bi.type->classScope)
-                    v += accumulateStructMembers(bi.type->classScope, accHelper, accuracy).total;
-                return v;
-            });
-        }
-        return result.success ? std::max<size_t>(1, total) : total;
-    }
-    if (vt.type == ValueType::Type::CONTAINER)
-        return settings.platform.sizeof_pointer; // Just guess
-    return 0;
-}
-
-size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings &settings, Accuracy accuracy, int maxRecursion)
-{
-    if (maxRecursion == settings.vfOptions.maxSizeOfRecursion) {
-        // TODO: add bailout message
-        return 0;
-    }
-    if (vt.pointer || vt.reference != Reference::None)
-        return settings.platform.sizeof_pointer;
-    if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
-        return 1;
-    if (vt.type == ValueType::Type::SHORT)
-        return settings.platform.sizeof_short;
-    if (vt.type == ValueType::Type::WCHAR_T)
-        return settings.platform.sizeof_wchar_t;
-    if (vt.type == ValueType::Type::INT)
-        return settings.platform.sizeof_int;
-    if (vt.type == ValueType::Type::LONG)
-        return settings.platform.sizeof_long;
-    if (vt.type == ValueType::Type::LONGLONG)
-        return settings.platform.sizeof_long_long;
-    if (vt.type == ValueType::Type::FLOAT)
-        return settings.platform.sizeof_float;
-    if (vt.type == ValueType::Type::DOUBLE)
-        return settings.platform.sizeof_double;
-    if (vt.type == ValueType::Type::LONGDOUBLE)
-        return settings.platform.sizeof_long_double;
-    if (vt.type == ValueType::Type::CONTAINER)
-        return 3 * settings.platform.sizeof_pointer; // Just guess
-    if (vt.type == ValueType::Type::RECORD && vt.typeScope) {
-        size_t currentBitCount = 0;
-        size_t currentBitfieldAlloc = 0;
-        auto accHelper = [&](size_t total, const ValueType& vt2, size_t dim, MathLib::bigint bits) -> size_t {
-            const size_t charBit = settings.platform.char_bit;
-            size_t n = ValueFlow::getSizeOf(vt2, settings,accuracy, ++maxRecursion);
-            size_t a = getAlignOf(vt2, settings, accuracy);
-            if (n == 0 || a == 0)
-                return accuracy == Accuracy::ExactOrZero ? 0 : total;
-            if (bits == 0) {
-                if (currentBitfieldAlloc == 0) {
-                    bits = n * charBit;
-                } else {
-                    bits = (currentBitfieldAlloc * charBit) - currentBitCount;
-                }
-            }
-            if (bits > 0) {
-                size_t ret = total;
-                if (currentBitfieldAlloc == 0) {
-                    currentBitfieldAlloc = n;
-                    currentBitCount = 0;
-                } else if (currentBitCount + bits > charBit * currentBitfieldAlloc) {
-                    ret += currentBitfieldAlloc;
-                    currentBitfieldAlloc = n;
-                    currentBitCount = 0;
-                }
-                while (bits > charBit * currentBitfieldAlloc) {
-                    ret += currentBitfieldAlloc;
-                    bits -= charBit * currentBitfieldAlloc;
-                }
-                currentBitCount += bits;
-                return ret;
-            }
-            n *= dim;
-            size_t padding = (a - (total % a)) % a;
-            if (currentBitCount > 0) {
-                bool fitsInBitfield = currentBitCount + (n * charBit) <= currentBitfieldAlloc * charBit;
-                bool isAligned = currentBitCount % (charBit * a) == 0;
-                if (vt2.isIntegral() && fitsInBitfield && isAligned) {
-                    currentBitCount += charBit * n;
-                    return total;
-                }
-                n += currentBitfieldAlloc;
-                currentBitfieldAlloc = 0;
-                currentBitCount = 0;
-            }
-            return vt.typeScope->type == ScopeType::eUnion ? std::max(total, n) : total + padding + n;
-        };
-        Result result = accumulateStructMembers(vt.typeScope, accHelper, accuracy);
-        size_t total = result.total;
-        if (currentBitCount > 0)
-            total += currentBitfieldAlloc;
-        if (const Type* dt = vt.typeScope->definedType) {
-            total = std::accumulate(dt->derivedFrom.begin(), dt->derivedFrom.end(), total, [&](size_t v, const Type::BaseInfo& bi) {
-                if (bi.type && bi.type->classScope)
-                    v += accumulateStructMembers(bi.type->classScope, accHelper, accuracy).total;
-                return v;
-            });
-        }
-        if (accuracy == Accuracy::ExactOrZero && total == 0 && !result.success)
-            return 0;
-        total = std::max(size_t{1}, total);
-        size_t align = getAlignOf(vt, settings, accuracy);
-        if (align == 0)
-            return accuracy == Accuracy::ExactOrZero ? 0 : total;
-        total += (align - (total % align)) % align;
-        return total;
-    }
-    return 0;
-}
-
 static void valueFlowNumber(TokenList &tokenlist, const Settings& settings)
 {
     for (Token *tok = tokenlist.front(); tok;) {
@@ -3683,8 +3502,8 @@ static bool isTruncated(const ValueType* src, const ValueType* dst, const Settin
     if (src->smartPointer && dst->smartPointer)
         return false;
     if ((src->isIntegral() && dst->isIntegral()) || (src->isFloat() && dst->isFloat())) {
-        const size_t srcSize = ValueFlow::getSizeOf(*src, settings, ValueFlow::Accuracy::LowerBound);
-        const size_t dstSize = ValueFlow::getSizeOf(*dst, settings, ValueFlow::Accuracy::LowerBound);
+        const size_t srcSize = src->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer);
+        const size_t dstSize = dst->getSizeOf(settings, ValueType::Accuracy::LowerBound, ValueType::SizeOf::Pointer);
         if (srcSize > dstSize)
             return true;
         if (srcSize == dstSize && src->sign != dst->sign)
@@ -4207,10 +4026,10 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
     if (!dst || !dst->isIntegral())
         return values;
 
-    const size_t sz = ValueFlow::getSizeOf(*dst, settings, ValueFlow::Accuracy::ExactOrZero);
+    const size_t sz = dst->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
 
     if (src) {
-        const size_t osz = ValueFlow::getSizeOf(*src, settings, ValueFlow::Accuracy::ExactOrZero);
+        const size_t osz = src->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
         if (osz >= sz && dst->sign == ValueType::Sign::SIGNED && src->sign == ValueType::Sign::UNSIGNED) {
             values.remove_if([&](const ValueFlow::Value& value) {
                 if (!value.isIntValue())
@@ -7078,8 +6897,9 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
             if (!typeTok || !typeTok->varId())
                 typeTok = newTok->astParent()->previous(); // hack for "int** z = ..."
             if (typeTok && typeTok->valueType()) {
-                const MathLib::bigint typeSize = typeTok->valueType()->typeSize(settings.platform, typeTok->valueType()->pointer > 1);
-                if (typeSize >= 0)
+                const auto sizeOf = typeTok->valueType()->pointer > 1 ? ValueType::SizeOf::Pointer : ValueType::SizeOf::Pointee;
+                const size_t typeSize = typeTok->valueType()->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, sizeOf);
+                if (typeSize > 0 || numElem == 0)
                     sizeValue = numElem * typeSize;
             }
         }
