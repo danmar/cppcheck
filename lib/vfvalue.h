@@ -346,7 +346,19 @@ namespace ValueFlow
         };
         UnknownFunctionReturn unknownFunctionReturn{UnknownFunctionReturn::no};
 
-        long long : 24; // padding
+        enum class Flow : std::uint8_t {
+            UNKNOWN,
+            FORWARD,
+            REVERSE
+        } flow = Flow::UNKNOWN;
+        bool isReverse() const {
+            return flow == Flow::REVERSE;
+        }
+        void setFlow(Flow f) {
+            flow = f;
+        }
+
+        long long : 16; // padding
 
         /** Path id */
         MathLib::bigint path{};

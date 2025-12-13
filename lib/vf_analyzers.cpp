@@ -1604,6 +1604,7 @@ ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, co
 
 ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const Settings& settings)
 {
+    value.setFlow(ValueFlow::Value::Flow::REVERSE);
     if (value.isContainerSizeValue())
         return ContainerExpressionAnalyzer(exprTok, std::move(value), settings);
     return ExpressionAnalyzer(exprTok, std::move(value), settings);
