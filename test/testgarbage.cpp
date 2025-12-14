@@ -883,8 +883,7 @@ private:
     }
 
     void garbageCode102() { // #6846 (segmentation fault)
-        (void)checkCode("struct Object { ( ) ; Object & operator= ( Object ) { ( ) { } if ( this != & b ) } }");
-        ignore_errout(); // we do not care about the output
+        ASSERT_THROW_INTERNAL(checkCode("struct Object { ( ) ; Object & operator= ( Object ) { ( ) { } if ( this != & b ) } }"), SYNTAX);
     }
 
     void garbageCode103() { // #6824
@@ -1251,8 +1250,7 @@ private:
         const char code[] = "template <bool foo = std::value &&>\n"
                             "static std::string foo(char *Bla) {\n"
                             "    while (Bla[1] && Bla[1] != ',') }\n";
-        (void)checkCode(code);
-        ignore_errout(); // we are not interested in the output
+        ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
     }
 
     void garbageCode153() {

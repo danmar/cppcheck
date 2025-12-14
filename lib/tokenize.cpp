@@ -8672,6 +8672,9 @@ void Tokenizer::findGarbageCode() const
                 }
                 if (!Token::Match(tok->next(), "( !!)"))
                     syntaxError(tok);
+                if (Token::simpleMatch(tok->linkAt(1), ") }")) {
+                    syntaxError(tok->linkAt(1)->next());
+                }
                 if (tok->str() != "for") {
                     if (isGarbageExpr(tok->next(), tok->linkAt(1), cpp && (mSettings.standards.cpp>=Standards::cppstd_t::CPP17)))
                         syntaxError(tok);
