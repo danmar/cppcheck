@@ -9,6 +9,7 @@ Major bug fixes & crashes:
 - Assert failure in getParentValueTypes()
 - Crash in simplecpp::Macro::expand()
 - crash in Tokenizer::simplifyCPPAttribute()
+- Reporting of unmatched and invalid suppressions has been improved greatly
 
 New checks:
 - Detect zero initialization of unions in which its largest member is not
