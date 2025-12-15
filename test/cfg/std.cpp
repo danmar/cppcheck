@@ -73,9 +73,9 @@
 #if __cplusplus <= 201402L
 void unreachableCode_std_unexpected(int &x)
 {
-    // cppcheck-suppress unexpectedCalled
+    // TODO: cppcheck-suppress unexpectedCalled
     std::unexpected();
-    // cppcheck-suppress unreachableCode
+    // TODO: cppcheck-suppress unreachableCode
     x=42;
 }
 #endif
