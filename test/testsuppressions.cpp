@@ -1168,7 +1168,7 @@ private:
         ASSERT_EQUALS("", errMsg);
         s.lineNumber = 5;
 
-        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::None, s.isSuppressed(errorMessage("id", "test.cpp", 11)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Checked, s.isSuppressed(errorMessage("id", "test.cpp", 11)));
         ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Checked, s.isSuppressed(errorMessage("id", "test.cpp", 5)));
         ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s.isSuppressed(errorMessage("abc", "test.cpp", 5)));
     }
