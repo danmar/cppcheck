@@ -319,6 +319,8 @@ private:
         TEST_CASE(getConfigs13); // #14222
         TEST_CASE(getConfigs14); // #1059
         TEST_CASE(getConfigs15); // #1059
+        TEST_CASE(getConfigs16); // #1059
+        TEST_CASE(getConfigs17); // #1059
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -653,7 +655,7 @@ private:
                                 "#else\n"
                                 "    B\n"
                                 "#endif\n";
-        TODO_ASSERT_EQUALS("\nLIBVER=101\n", "\n", getConfigsStr(filedata));
+        ASSERT_EQUALS("\nLIBVER=101\n", getConfigsStr(filedata));
     }
 
     void if_cond2() {
@@ -2302,6 +2304,20 @@ private:
                                 "1\n"
                                 "#endif\n";
         ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs16() { // #1059
+        const char filedata[] = "#if A > 1\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs17() { // #1059
+        const char filedata[] = "#if A < 1\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
     }
 
     void getConfigsError() {
