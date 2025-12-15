@@ -437,15 +437,38 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             configset.insert(cond->next->str() + "=0");
             continue;
         }
-        if (cond->str() != "defined")
+        if (cond->str() == "==" || cond->str() == "<=" || cond->str() == ">=") {
+            if (cond->next->number) {
+                const simplecpp::Token *dtok = cond->previous;
+                if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
+                    configset.insert(dtok->str() + '=' + cond->next->str());
+            }
             continue;
-        const simplecpp::Token *dtok = cond->next;
-        if (!dtok)
-            break;
-        if (dtok->op == '(')
-            dtok = dtok->next;
-        if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
-            configset.insert(dtok->str());
+        }
+        if (cond->op == '<' || cond->op == '>') {
+            if (cond->next->number) {
+                const simplecpp::Token *dtok = cond->previous;
+                if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end()) {
+                    int v = strToInt<int>(cond->next->str());
+                    if (cond->op == '<')
+                        v -= 1;
+                    else
+                        v += 1;
+                    configset.insert(dtok->str() + '=' + std::to_string(v));
+                }
+            }
+            continue;
+        }
+        if (cond->str() == "defined") {
+            const simplecpp::Token *dtok = cond->next;
+            if (!dtok)
+                break;
+            if (dtok->op == '(')
+                dtok = dtok->next;
+            if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
+                configset.insert(dtok->str());
+            continue;
+        }
     }
     std::string cfgStr;
     for (const std::string &s : configset) {
