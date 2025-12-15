@@ -410,7 +410,7 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             return next1->str();
     }
 
-    if (len == 3 && cond->name && next1->str() == "==" && next2->number) {
+    if (len == 3 && cond->name && (next1->str() == "==" || next1->str() == "<=" || next1->str() == ">=") && next2->number) {
         if (defined.find(cond->str()) == defined.end())
             return cond->str() + '=' + cond->next->next->str();
     }
