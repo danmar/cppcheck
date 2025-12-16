@@ -392,7 +392,7 @@ private:
      */
     NORETURN void syntaxErrorC(const Token *tok, const std::string &what) const;
 
-    /** Warn about unknown macro(s), configuration is recommended #
+    /** Warn about unknown macro(s), configuration is recommended
      * @throws InternalError thrown unconditionally
      */
     NORETURN void unknownMacroError(const Token *tok1) const;
