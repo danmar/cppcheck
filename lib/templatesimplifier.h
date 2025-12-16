@@ -460,7 +460,7 @@ private:
     static bool removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls = nullptr);
 
     /** Syntax error */
-    NORETURN static void syntaxError(const Token *tok);
+    NORETURN static void syntaxError(const Token *tok, const std::string &msg = "");
 
     static bool matchSpecialization(
         const Token *templateDeclarationNameToken,
