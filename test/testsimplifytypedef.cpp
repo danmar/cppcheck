@@ -246,7 +246,8 @@ private:
 
         TEST_CASE(simplifyTypedefMacro);
 
-        TEST_CASE(simplifyTypedefOriginalName);
+        TEST_CASE(simplifyTypedefOriginalName1);
+        TEST_CASE(simplifyTypedefOriginalName2);
 
         TEST_CASE(simplifyTypedefTokenColumn1);
         TEST_CASE(simplifyTypedefTokenColumn2);
@@ -1284,7 +1285,7 @@ private:
                             "LPCSTR ccp;";
 
         const char expected[] =
-            "; char c ; "
+            "char c ; "
             "char * cp ; "
             "const char * ccp ;";
 
@@ -3679,7 +3680,7 @@ private:
                             "Y y;\n"
                             "Yp yp;\n"
                             "Ya ya;\n";
-        exp = "long y ; long * yp ; long ya [ 3 ] ;";
+        exp = "; long y ; long * yp ; long ya [ 3 ] ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -4444,7 +4445,7 @@ private:
                       simplifyTypedefP(code));
     }
 
-    void simplifyTypedefOriginalName() {
+    void simplifyTypedefOriginalName1() {
         const char code[] = "typedef unsigned char uint8_t;"
                             "typedef float (*rFunctionPointer_fp)(uint8_t, uint8_t);"
                             "typedef enum eEnumDef {"
@@ -4498,6 +4499,26 @@ private:
         // Search for the simplified * token -> function pointer gets "(*" tokens infront of it
         token = Token::findsimplematch(endOfTypeDef, "*", tokenizer.list.back());
         ASSERT_EQUALS("rFunctionPointer_fp", token->originalName());
+    }
+
+    void simplifyTypedefOriginalName2() {
+        const char code[] = "typedef unsigned short uint16;\n"
+                            "typedef uint16 A;\n"
+                            "A a;";
+        TokenList tokenlist{ settings1, Standards::Language::C };
+        ASSERT(TokenListHelper::createTokensFromString(tokenlist, code, "file.c"));
+        TokenizerTest tokenizer(std::move(tokenlist), *this);
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        try {
+            tokenizer.validate();
+        }
+        catch (const InternalError&) {
+            ASSERT_EQUALS_MSG(false, true, "Validation of Tokenizer failed");
+        }
+        const Token* token = Token::findsimplematch(tokenizer.list.front(), "short");
+        ASSERT_EQUALS("A", token->originalName());
     }
 
     void simplifyTypedefTokenColumn1() {  // #13155
