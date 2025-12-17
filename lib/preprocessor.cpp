@@ -410,9 +410,20 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
             return next1->str();
     }
 
-    if (len == 3 && cond->name && next1->str() == "==" && next2->number) {
+    if (len == 3 && cond->name && (next1->str() == "==" || next1->str() == "<=" || next1->str() == ">=") && next2->number) {
         if (defined.find(cond->str()) == defined.end())
             return cond->str() + '=' + cond->next->next->str();
+    }
+
+    if (len == 3 && cond->name && (next1->op == '<' || next1->op == '>') && next2->number) {
+        if (defined.find(cond->str()) == defined.end()) {
+            int v = strToInt<int>(cond->next->next->str());
+            if (next1->op == '<')
+                v -= 1;
+            else
+                v += 1;
+            return cond->str() + '=' + std::to_string(v);
+        }
     }
 
     std::set<std::string> configset;
