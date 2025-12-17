@@ -23,7 +23,7 @@ Cppcheck is a hobby project with limited resources. You can help us by donating 
  2. Run (Linux/MacOS example):
     ```
     cd cppcheck/
-    python3 -m venv ~/.venv_cppcheck
+    python3 -m venv .venv
     source ~/.venv_cppcheck/bin/activate
 
     pip install -r tools/donate-cpu-requirements.txt
