@@ -4568,6 +4568,14 @@ private:
                       "[test.cpp:14:10]: (performance) Passing the result of c_str() to a stream is slow and redundant. [stlcstrStream]\n",
                       errout_str());
 
+        check("void f(const std::string& s) {\n"
+              "    std::cout << s.c_str();\n"
+              "    std::cerr << s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:15]: (performance) Passing the result of c_str() to a stream is slow and redundant. [stlcstrStream]\n"
+                      "[test.cpp:3:15]: (performance) Passing the result of c_str() to a stream is slow and redundant. [stlcstrStream]\n",
+                      errout_str());
+
         check("struct S { std::string str; };\n"
               "struct T { S s; };\n"
               "struct U { T t[1]; };\n"
