@@ -2082,7 +2082,7 @@ void CheckStl::string_c_str()
                     const Token* strm = tok;
                     while (Token::simpleMatch(strm, "<<"))
                         strm = strm->astOperand1();
-                    if (strm && strm->variable() && strm->variable()->isStlType())
+                    if (strm && ((strm->variable() && strm->variable()->isStlType()) || Token::Match(strm->tokAt(-1), "std :: cout|cerr")))
                         string_c_strStream(tok);
                 }
             }
