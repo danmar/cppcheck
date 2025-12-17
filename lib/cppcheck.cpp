@@ -874,7 +874,7 @@ std::size_t CppCheck::calculateHash(const Preprocessor& preprocessor, const std:
 unsigned int CppCheck::checkBuffer(const FileWithDetails &file, const std::string &cfgname, int fileIndex, const uint8_t* data, std::size_t size)
 {
     const auto f = [&file, data, size](std::vector<std::string>& files, simplecpp::OutputList* outputList) {
-        return simplecpp::TokenList{data, size, files, file.spath(), outputList};
+        return simplecpp::TokenList{static_cast<const unsigned char*>(data), size, files, file.spath(), outputList};
     };
     return checkInternal(file, cfgname, fileIndex, f);
 }
