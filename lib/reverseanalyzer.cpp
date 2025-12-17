@@ -195,6 +195,9 @@ namespace {
             return nullptr;
         }
 
+        /**
+         * @throws InternalError thrown on cyclic analysis
+         */
         void traverse(Token* start, const Token* end = nullptr) {
             if (start == end)
                 return;

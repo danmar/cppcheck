@@ -46,6 +46,9 @@ bool isZero(T x)
     return isEqual(x, T(0));
 }
 
+/**
+ * @throws InternalError thrown in case of unknown operator
+ */
 template<class R, class T>
 R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {

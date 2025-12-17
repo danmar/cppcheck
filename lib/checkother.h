@@ -195,6 +195,9 @@ private:
 
     void checkModuloOfOne();
 
+    /**
+     * @throws InternalError thrown if largest union member could not be found
+     */
     void checkUnionZeroInit();
 
     void checkOverlappingWrite();

@@ -575,6 +575,9 @@ namespace {
             return updateRange(endBlock->link(), endBlock, depth);
         }
 
+        /**
+         * @throws InternalError thrown on cyclic analysis
+         */
         Progress updateRange(Token* start, const Token* end, int depth = 20) {
             if (depth < 0)
                 return Break(Analyzer::Terminate::Bail);

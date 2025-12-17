@@ -777,6 +777,9 @@ public:
     nonneg int initializedArgCount() const {
         return initArgCount;
     }
+    /**
+     * @throws InternalError thrown on unrecognized lambda
+     */
     void addArguments(const Scope *scope);
 
     /** @brief check if this function is virtual in the base classes */
@@ -1438,6 +1441,9 @@ private:
     friend class Function;
 
     // Create symboldatabase...
+    /**
+     * @throws InternalError thrown on unhandled code
+     */
     void createSymbolDatabaseFindAllScopes();
     void createSymbolDatabaseClassInfo();
     void createSymbolDatabaseVariableInfo();
@@ -1461,6 +1467,9 @@ private:
     void addClassFunction(Scope *&scope, const Token *&tok, const Token *argStart);
     RET_NONNULL static Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
+    /**
+     * @throws InternalError thrown on unrecognized function
+     */
     void addNewFunction(Scope *&scope, const Token *&tok);
     bool isFunction(const Token *tok, const Scope* outerScope, const Token *&funcStart, const Token *&argStart, const Token*& declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
@@ -1485,6 +1494,7 @@ private:
     void validateExecutableScopes() const;
     /**
      * @brief Check variable list, e.g. variables w/o scope
+     * @throws InternalError thrown on variable without scope
      */
     void validateVariables() const;
 
