@@ -42,6 +42,145 @@
 
 #include "json.h"
 
+std::string ImportProject::collectArgs(const std::string &cmd, std::vector<std::string> &args)
+{
+    args.clear();
+
+    std::string::size_type pos = 0;
+    std::string::size_type end = cmd.size();
+    std::string arg;
+
+    bool inDoubleQuotes = false;
+    bool inSingleQuotes = false;
+
+    while (pos != end) {
+        char c = cmd[pos];
+
+        if (c == ' ') {
+            if (inDoubleQuotes || inSingleQuotes) {
+                arg.push_back(c);
+                pos++;
+                continue;
+            }
+
+            if (!arg.empty())
+                args.push_back(arg);
+            arg.clear();
+
+            while (c == ' ') {
+                pos++;
+                if (pos == end)
+                    break;
+                c = cmd[pos];
+            }
+
+            continue;
+        }
+
+        if (c == '\"' && !inSingleQuotes) {
+            inDoubleQuotes = !inDoubleQuotes;
+            pos++;
+            continue;
+        }
+
+        if (c == '\'') {
+            inSingleQuotes = !inSingleQuotes;
+            pos++;
+            continue;
+        }
+
+        if (c == '\\' && !inSingleQuotes) {
+            pos++;
+
+            if (pos == end) {
+                arg.push_back('\\');
+                break;
+            }
+
+            c = cmd[pos];
+
+            if (!std::strchr("\\\"\' ", c))
+                arg.push_back('\\');
+
+            arg.push_back(c);
+            pos++;
+            continue;
+        }
+
+        arg.push_back(c);
+        pos++;
+    }
+
+    if (inSingleQuotes || inDoubleQuotes)
+        return "Missing closing quote in command string";
+
+    if (!arg.empty())
+        args.push_back(arg);
+
+    return "";
+}
+
+void ImportProject::parseArgs(FileSettings &fs, const std::vector<std::string> &args)
+{
+    std::string defs;
+    std::string optArg;
+    auto argPtr = args.cbegin();
+
+    // Check for an option and extract its argument
+    const auto getOptArg = [&](const std::string &name) {
+        if (argPtr == args.cend())
+            return false;
+        if (!startsWith(*argPtr, name))
+            return false;
+        if (argPtr->size() == name.size()) {
+            // Flag and argument are separated
+            argPtr++;
+            if (argPtr == args.cend())
+                return false;
+            optArg = *argPtr;
+        } else {
+            // Flag and argument are concatenated
+            optArg = argPtr->substr(name.size());
+        }
+        return true;
+    };
+
+    for (; argPtr != args.cend(); argPtr++) {
+        // https://github.com/llvm/llvm-project/issues/172018
+        // NOLINTBEGIN(bugprone-use-after-move)
+        if (getOptArg("-I") || getOptArg("/I")) {
+            if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), optArg) == fs.includePaths.cend())
+                fs.includePaths.push_back(std::move(optArg));
+        } else if (getOptArg("-isystem")) {
+            fs.systemIncludePaths.push_back(std::move(optArg));
+        } else if (getOptArg("-D") || getOptArg("/D")) {
+            defs += optArg + ";";
+        } else if (getOptArg("-U") || getOptArg("/U")) {
+            fs.undefs.insert(std::move(optArg));
+        } else if (getOptArg("-std=") || getOptArg("/std:")) {
+            fs.standard = std::move(optArg);
+        } else if (getOptArg("-f")) {
+            if (optArg == "pic")
+                defs += "__pic__;";
+            else if (optArg == "PIC")
+                defs += "__PIC__;";
+            else if (optArg == "pie")
+                defs += "__pie__;";
+            else if (optArg == "PIE")
+                defs += "__PIE__;";
+        } else if (getOptArg("-m")) {
+            if (optArg == "unicode")
+                defs += "UNICODE;";
+        }
+
+        if (argPtr == args.cend())
+            break;
+        // NOLINTEND(bugprone-use-after-move)
+    }
+
+    fsSetDefines(fs, std::move(defs));
+}
+
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths, bool debug)
 {
     PathMatch matcher(ipaths, Path::getCurrentPath());
@@ -210,134 +349,6 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     return ImportProject::Type::FAILURE;
 }
 
-static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[], bool str = false)
-{
-    std::string ret;
-    bool escapedString = false;
-    bool escape = false;
-    for (; *pos < command.size() && (str || !std::strchr(until, command[*pos])); (*pos)++) {
-        if (escape)
-            escape = false;
-        else if (command[*pos] == '\\') {
-            if (str)
-                escape = true;
-            else if (command[*pos + 1] == '"') {
-                if (escapedString)
-                    return ret + "\\\"";
-                escapedString = true;
-                ret += "\\\"";
-                (*pos)++;
-                continue;
-            }
-        } else if (command[*pos] == '\"')
-            str = !str;
-        ret += command[*pos];
-    }
-    return ret;
-}
-
-static std::string unescape(const std::string &in)
-{
-    std::string out;
-    bool escape = false;
-    for (const char c: in) {
-        if (escape) {
-            escape = false;
-            if (!std::strchr("\\\"\'",c))
-                out += "\\";
-            out += c;
-        } else if (c == '\\')
-            escape = true;
-        else
-            out += c;
-    }
-    return out;
-}
-
-void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command, bool doUnescape)
-{
-    std::string defs;
-
-    // Parse command..
-    std::string::size_type pos = 0;
-    while (std::string::npos != (pos = command.find(' ',pos))) {
-        while (pos < command.size() && command[pos] == ' ')
-            pos++;
-        if (pos >= command.size())
-            break;
-        bool wholeArgQuoted = false;
-        if (command[pos] == '"') {
-            wholeArgQuoted = true;
-            pos++;
-            if (pos >= command.size())
-                break;
-        }
-        if (command[pos] != '/' && command[pos] != '-')
-            continue;
-        pos++;
-        if (pos >= command.size())
-            break;
-        const char F = command[pos++];
-        if (std::strchr("DUI", F)) {
-            while (pos < command.size() && command[pos] == ' ')
-                ++pos;
-        }
-        std::string fval = readUntil(command, &pos, " =", wholeArgQuoted);
-        if (wholeArgQuoted && fval.back() == '\"')
-            fval.resize(fval.size() - 1);
-        if (F=='D') {
-            std::string defval = readUntil(command, &pos, " ");
-            defs += fval;
-            if (doUnescape) {
-                if (defval.size() >= 3 && startsWith(defval,"=\"") && defval.back()=='\"')
-                    defval = "=" + unescape(defval.substr(2, defval.size() - 3));
-                else if (defval.size() >= 5 && startsWith(defval, "=\\\"") && endsWith(defval, "\\\""))
-                    defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
-            }
-            if (!defval.empty())
-                defs += defval;
-            defs += ';';
-        } else if (F=='U')
-            fs.undefs.insert(std::move(fval));
-        else if (F=='I') {
-            std::string i = std::move(fval);
-            if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
-                i = unescape(i.substr(1, i.size() - 2));
-            if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), i) == fs.includePaths.cend())
-                fs.includePaths.push_back(std::move(i));
-        } else if (F=='s' && startsWith(fval,"td")) {
-            ++pos;
-            fs.standard = readUntil(command, &pos, " ");
-        } else if (F == 'i' && fval == "system") {
-            ++pos;
-            std::string isystem = readUntil(command, &pos, " ");
-            fs.systemIncludePaths.push_back(std::move(isystem));
-        } else if (F=='m') {
-            if (fval == "unicode") {
-                defs += "UNICODE";
-                defs += ";";
-            }
-        } else if (F=='f') {
-            if (fval == "pic") {
-                defs += "__pic__";
-                defs += ";";
-            } else if (fval == "PIC") {
-                defs += "__PIC__";
-                defs += ";";
-            } else if (fval == "pie") {
-                defs += "__pie__";
-                defs += ";";
-            } else if (fval == "PIE") {
-                defs += "__PIE__";
-                defs += ";";
-            }
-            // TODO: support -fsigned-char and -funsigned-char?
-            // we can only set it globally but in this context it needs to be treated per file
-        }
-    }
-    fsSetDefines(fs, std::move(defs));
-}
-
 bool ImportProject::importCompileCommands(std::istream &istr)
 {
     picojson::value compileCommands;
@@ -371,29 +382,29 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         const std::string directory = std::move(dirpath);
 
-        bool doUnescape = false;
-        std::string command;
+        std::vector<std::string> arguments;
         if (obj.count("arguments")) {
-            doUnescape = false;
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
-                    if (arg.is<std::string>()) {
-                        std::string str = arg.get<std::string>();
-                        if (str.find(' ') != std::string::npos)
-                            str = "\"" + str + "\"";
-                        command += str + " ";
-                    }
+                    if (arg.is<std::string>())
+                        arguments.push_back(arg.get<std::string>());
                 }
             } else {
                 errors.emplace_back("'arguments' field in compilation database entry is not a JSON array");
                 return false;
             }
         } else if (obj.count("command")) {
-            doUnescape = true;
+            std::string command;
             if (obj["command"].is<std::string>()) {
                 command = obj["command"].get<std::string>();
             } else {
                 errors.emplace_back("'command' field in compilation database entry is not a string");
+                return false;
+            }
+
+            std::string error = collectArgs(command, arguments);
+            if (!error.empty()) {
+                errors.emplace_back(error);
                 return false;
             }
         } else {
@@ -425,7 +436,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         else
             path = Path::simplifyPath(directory + file);
         FileSettings fs{path, Standards::Language::None, 0}; // file will be identified later on
-        fsParseCommand(fs, command, doUnescape); // read settings; -D, -I, -U, -std, -m*, -f*
+        parseArgs(fs, arguments);
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         // Assign a unique index to each file path. If the file path already exists in the map,
