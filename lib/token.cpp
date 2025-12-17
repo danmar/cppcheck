@@ -403,6 +403,9 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     delete replaceThis;
 }
 
+/**
+ * @throws InternalError thrown on unexpected command or missing varid with %varid%
+ */
 static
 #if defined(__GNUC__)
 // GCC does not inline this by itself

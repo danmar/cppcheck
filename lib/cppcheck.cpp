@@ -424,6 +424,9 @@ static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
     return "";
 }
 
+/**
+ * @throws InternalError thrown when execution fails
+ */
 static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &defaultPythonExe,
                                                  const std::string &file,

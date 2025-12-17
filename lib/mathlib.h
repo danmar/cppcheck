@@ -58,6 +58,9 @@ public:
         void promote(const value &v);
 
     public:
+        /**
+         * @throws InternalError thrown on invalid value
+         */
         explicit value(const std::string &s);
         std::string str() const;
         bool isInt() const {
@@ -71,10 +74,19 @@ public:
             return isFloat() ? mDoubleValue : static_cast<double>(mIntValue);
         }
 
+        /**
+         * @throws InternalError thrown on invalid/unhandled calculation or divison by zero
+         */
         static value calc(char op, const value &v1, const value &v2);
         int compare(const value &v) const;
         value add(int v) const;
+        /**
+         * @throws InternalError thrown if operand is not an integer
+         */
         value shiftLeft(const value &v) const;
+        /**
+         * @throws InternalError thrown if operand is not an integer
+         */
         value shiftRight(const value &v) const;
     };
 
@@ -82,17 +94,23 @@ public:
 
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
     static bigint toBigNumber(const Token * tok);
-    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
+    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt()
+     * @throws InternalError thrown if conversion failed
+     */
     static bigint toBigNumber(const std::string & str, const Token *tok = nullptr);
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
     static biguint toBigUNumber(const Token * tok);
-    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
+    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt()
+     * @throws InternalError thrown if conversion failed
+     */
     static biguint toBigUNumber(const std::string & str, const Token *tok = nullptr);
 
     template<class T> static std::string toString(T value) = delete;
     /** @brief for conversion of numeric literals */
     static double toDoubleNumber(const Token * tok);
-    /** @brief for conversion of numeric literals */
+    /** @brief for conversion of numeric literals
+     * @throws InternalError thrown if conversion failed
+     */
     static double toDoubleNumber(const std::string & str, const Token * tok = nullptr);
 
     static bool isInt(const std::string & str);
@@ -119,8 +137,17 @@ public:
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);
     static std::string multiply(const std::string & first, const std::string & second);
+    /**
+     * @throws InternalError thrown on overflow or divison by zero
+     */
     static std::string divide(const std::string & first, const std::string & second);
+    /**
+     * @throws InternalError thrown on division by zero
+     */
     static std::string mod(const std::string & first, const std::string & second);
+    /**
+     * @throws InternalError thrown on unexpected action
+     */
     static std::string calculate(const std::string & first, const std::string & second, char action);
 
     static std::string sin(const std::string & tok);

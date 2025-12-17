@@ -150,10 +150,11 @@ public:
         TokenAndName(Token *token, std::string scope);
         /**
          * Constructor used for declarations.
-         * \param token template declaration token "template < ... >"
-         * \param scope full qualification of template(scope)
-         * \param nameToken template name token "template < ... > class name"
-         * \param paramEnd template parameter end token ">"
+         * @param token template declaration token "template < ... >"
+         * @param scope full qualification of template(scope)
+         * @param nameToken template name token "template < ... > class name"
+         * @param paramEnd template parameter end token ">"
+         * @throws InternalError thrown on template issues
          */
         TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
@@ -319,6 +320,7 @@ public:
      * @param tok start token
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
+     * @throws InternalError thrown on division by zero in template instantiation
      */
     static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
 
@@ -459,7 +461,9 @@ private:
      */
     static bool removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls = nullptr);
 
-    /** Syntax error */
+    /** Syntax error
+     * @throws InternalError thrown unconditionally
+     */
     NORETURN static void syntaxError(const Token *tok);
 
     static bool matchSpecialization(

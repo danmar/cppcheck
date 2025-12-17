@@ -69,7 +69,7 @@ std::string severityToString(Severity severity)
     case Severity::internal:
         return "internal";
     }
-    throw InternalError(nullptr, "Unknown severity");
+    cppcheck::unreachable();
 }
 
 // TODO: bail out on invalid severity

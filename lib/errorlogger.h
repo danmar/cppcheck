@@ -157,6 +157,9 @@ public:
                          const std::string &templateLocation) const;
 
     std::string serialize() const;
+    /**
+     * @throws InternalError thrown if deserialization failed
+     */
     void deserialize(const std::string &data);
 
     std::list<FileLocation> callStack;

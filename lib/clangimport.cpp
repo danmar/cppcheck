@@ -332,6 +332,9 @@ namespace clangimport {
         std::vector<AstNodePtr> children;
 
         bool isPrologueTypedefDecl() const;
+        /**
+         * @throws InternalError thrown if AST location is invalid
+         */
         void setLocations(TokenList &tokenList, int file, int line, int col);
 
         void dumpAst(int num = 0, int indent = 0) const;
@@ -350,6 +353,9 @@ namespace clangimport {
             mData->mNotScope.clear();
         }
 
+        /**
+         * @throws InternalError thrown if index is out of bounds
+         */
         AstNodePtr getChild(int c) {
             if (c >= children.size()) {
                 std::ostringstream err;
@@ -361,6 +367,9 @@ namespace clangimport {
             return children[c];
         }
     private:
+        /**
+         * @throws InternalError thrown if CXXForRangeStmt cannot be imported
+         */
         Token *createTokens(TokenList &tokenList);
         Token *addtoken(TokenList &tokenList, const std::string &str, bool valueType=true);
         const ::Type *addTypeTokens(TokenList &tokenList, const std::string &str, const Scope *scope = nullptr);

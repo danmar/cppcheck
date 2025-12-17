@@ -902,6 +902,9 @@ private:
         return tok;
     }
 
+    /**
+     * @throws InternalError thrown if index is out of range
+     */
     template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
     static T *linkAtImpl(T *thisTok, int index)
     {
@@ -1532,7 +1535,9 @@ private:
     }
 
     /** Updates internal property cache like _isName or _isBoolean.
-        Called after any mStr() modification. */
+        Called after any mStr() modification.
+        @throws InternalError thrown if a bool literal has a varid
+     */
     void update_property_info();
 
     /** Update internal property cache about isStandardType() */
@@ -1548,6 +1553,9 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
+    /**
+     * @throws InternalError thrown on cyclic dependency
+     */
     void astParent(Token* tok);
 
     Token * astOperand1() {
@@ -1602,6 +1610,9 @@ public:
         return ret;
     }
 
+    /**
+     * @throws InternalError thrown if start or end cannot be found
+     */
     std::pair<const Token *, const Token *> findExpressionStartEndTokens() const;
 
     /**
