@@ -3988,7 +3988,7 @@ private:
               "    static_cast<D&>(b).i = 0;\n"
               "}\n"
               "void g(B& b) {\n"
-              "    std::cin >> static_cast<B&>(b).i;\n"
+              "    std::cin >> static_cast<D&>(b).i;\n"
               "}\n"
               "int h(B& b) {\n"
               "    return static_cast<const D&>(b).i;\n"
