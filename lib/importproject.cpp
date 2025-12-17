@@ -307,7 +307,11 @@ void ImportProject::fsParseCommand(FileSettings& fs, const std::string& command,
                 fs.includePaths.push_back(std::move(i));
         } else if (F=='s' && startsWith(fval,"td")) {
             ++pos;
-            fs.standard = readUntil(command, &pos, " ");
+            if (startsWith(fval, "td:")) {
+                fs.standard = fval.substr(3);
+            } else {
+                fs.standard = readUntil(command, &pos, " ");
+            }
         } else if (F == 'i' && fval == "system") {
             ++pos;
             std::string isystem = readUntil(command, &pos, " ");
