@@ -8603,9 +8603,9 @@ private:
                                 "#define macro2 val\n"
                                 "#file \"inc2.h\"\n"
                                 "#define macro3 val\n"
-                                "#endfile\n"
+                                "#endfile\n" // TODO
                                 "#define macro4 val\n"
-                                "#endfile\n"
+                                "#endfile\n" // TODO
                                 "#define macro5 val\n";
         const char dumpdata[] = "  <directivelist>\n"
                                 "    <directive file=\"test.c\" linenr=\"1\" str=\"#define macro1 val\">\n"
