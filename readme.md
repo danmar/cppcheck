@@ -59,19 +59,17 @@ cmake -S . -B build
 cmake --build build
 ```
 
-If you want to compile the GUI you can use the flag.
--DBUILD_GUI=ON
+The default build type is `Debug` if you want a `Release` build you can use the flag (on the first `cmake` command above): `-DCMAKE_BUILD_TYPE=Release`
 
-For rules support (requires pcre) use the flag.
--DHAVE_RULES=ON
+For release builds it is recommended that you use: `-DUSE_MATCHCOMPILER=ON`
 
-For release builds it is recommended that you use:
--DUSE_MATCHCOMPILER=ON
+If you want to compile the GUI you can use the flag: `-DBUILD_GUI=ON`
 
-For building the tests use the flag.
--DBUILD_TESTS=ON
+For rules support (requires pcre) use the flag: `-DHAVE_RULES=ON`
 
-Using cmake you can generate project files for Visual Studio,XCode,etc.
+For building the tests use the flag: `-DBUILD_TESTS=ON`
+
+By using cmake you can generate project files for Visual Studio, XCode, etc.
 
 #### Building a specific configuration
 
@@ -87,6 +85,14 @@ For multi-configuration generators (like "Visual Studio 17 2022") the same is ac
 ```shell
 cmake -S . -B build
 cmake --build build --config RelWithDebInfo
+```
+
+#### Installation
+
+After you compiled your binary you can run the followning cmake command to install Cppcheck:
+
+```shell
+sudo cmake --install build
 ```
 
 ### Visual Studio
