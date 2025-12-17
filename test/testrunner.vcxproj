@@ -27,7 +27,6 @@
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\executor.cpp" />
-    <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
     <ClCompile Include="..\cli\sehwrapper.cpp" />
     <ClCompile Include="..\cli\signalhandler.cpp" />
@@ -122,7 +121,6 @@
     <ClInclude Include="..\cli\cmdlineparser.h" />
     <ClInclude Include="..\cli\cppcheckexecutor.h" />
     <ClInclude Include="..\cli\executor.h" />
-    <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\cli\processexecutor.h" />
     <ClInclude Include="..\cli\sehwrapper.h" />
     <ClInclude Include="..\cli\signalhandler.h" />
