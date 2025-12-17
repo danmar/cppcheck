@@ -16,7 +16,7 @@ if it has non-standard syntax, as is common in for example embedded projects.
 Supported code and platforms:
 
 - Cppcheck checks non-standard code that contains various compiler extensions, inline assembly code, etc.
-- Cppcheck should be compilable by any compiler that supports C++11 or later.
+- Cppcheck should be compilable by any compiler that supports C++17 or later.
 - Cppcheck is cross platform and is used in various posix/windows/etc environments.
 
 The checks in Cppcheck are not perfect. There are bugs that should be found, that Cppcheck fails to detect.

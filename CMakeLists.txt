@@ -3,8 +3,8 @@ project(Cppcheck VERSION 2.18.99 LANGUAGES CXX)
 
 include(cmake/options.cmake)
 
-include(cmake/cxx11.cmake)
-use_cxx11()
+include(cmake/cxx17.cmake)
+use_cxx17()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

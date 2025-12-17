@@ -51,10 +51,7 @@ This is not just a tool for mainstream gcc/msvc c/c++ developers. If you can com
 
 ## C++ language
 
-Our goal is to be highly portable. Users must be able to compile Cppcheck with GCC 4.8 or Visual Studio 2013.
-
-No C++14 is allowed. A subset of C++11 is allowed.
-
+Our goal is to be highly portable. Users must be able to compile Cppcheck with the default compiler of supported Debian/Ubuntu/Windows versions.
 
 ## Avoid dependencies
 

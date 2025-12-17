@@ -34,7 +34,7 @@ You can stop the script whenever you like with Ctrl C.
 
 ## Compiling
 
-Cppcheck requires a C++ compiler with (partial) C++11 support. Minimum required versions are GCC 5.1 / Clang 3.5 / Visual Studio 2015.
+Cppcheck requires a C++ compiler with C++17 support. Minimum required versions are GCC 7 / Clang 5 / Visual Studio 2017.
 
 To build the GUI application, you need to use the CMake build system.
 
@@ -197,7 +197,7 @@ make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck HAVE_RULES=yes CXXOPTS="-O2"
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib -Ifrontend frontend/*.cpp cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/tinyxml2.cpp
+g++ -o cppcheck -std=c++17 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib -Ifrontend frontend/*.cpp cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/tinyxml2.cpp
 ```
 
 #### Flags
