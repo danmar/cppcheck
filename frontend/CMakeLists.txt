@@ -1,6 +1,5 @@
 file(GLOB hdrs "*.h")
 file(GLOB srcs "*.cpp")
 
-add_library(frontend ${hdrs} ${srcs})
-target_include_directories(frontend PUBLIC .)
-target_link_libraries(frontend PRIVATE cppcheck-core)
+add_library(frontend_objs OBJECT ${hdrs} ${srcs})
+target_include_directories(frontend_objs PRIVATE ${PROJECT_SOURCE_DIR}/lib)
