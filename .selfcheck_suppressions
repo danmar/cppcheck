@@ -2,7 +2,7 @@ missingIncludeSystem
 # should not be reported - see #13387
 checkersReport
 # false positive - see #14308
-nullPointerRedundantCheck:externals/simplecpp/simplecpp.cpp:3247
+nullPointerRedundantCheck:externals/simplecpp/simplecpp.cpp:3246
 
 # warnings in Qt generated code we cannot fix
 funcArgNamesDifferent:*/moc_checkthread.cpp

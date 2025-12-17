@@ -68,7 +68,7 @@ struct CPPCHECKLIB Directive {
     std::vector<DirectiveToken> strTokens;
 
     /** record a directive (possibly filtering src) */
-    Directive(const simplecpp::Location & _loc, std::string _str);
+    Directive(const simplecpp::TokenList &tokens, const simplecpp::Location & _loc, std::string _str);
 };
 
 class CPPCHECKLIB RemarkComment {
