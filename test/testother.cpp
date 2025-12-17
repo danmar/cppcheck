@@ -3981,6 +3981,19 @@ private:
               "    t.s->i = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        check("struct B {};\n" // #13877
+              "struct D : B { int i; };\n"
+              "void f(B& b) {\n"
+              "    static_cast<D&>(b).i = 0;\n"
+              "}\n"
+              "void g(B& b) {\n"
+              "    std::cin >> static_cast<B&>(b).i;\n"
+              "}\n"
+              "int h(B& b) {\n"
+              "    return static_cast<const D&>(b).i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9:10]: (style) Parameter 'b' can be declared as reference to const [constParameterReference]\n", errout_str());
     }
 
     void constParameterCallback() {
