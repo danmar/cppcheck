@@ -5683,6 +5683,12 @@ static void valueFlowSubFunction(const TokenList& tokenlist,
                         continue;
                 }
 
+                if (argvar->isReference()) {
+                    argvalues.remove_if([](const ValueFlow::Value& v) {
+                        return v.isReverse();
+                    });
+                }
+
                 if (argvalues.empty())
                     continue;
 
