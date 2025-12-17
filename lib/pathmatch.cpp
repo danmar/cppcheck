@@ -33,7 +33,7 @@ PathMatch::PathMatch(std::vector<std::string> patterns, std::string basepath, Sy
 
 bool PathMatch::match(const std::string &path, Filemode mode) const
 {
-    return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [=] (const std::string &pattern) {
+    return std::any_of(mPatterns.cbegin(), mPatterns.cend(), [&] (const std::string &pattern) {
         return match(pattern, path, mBasepath, mode, mSyntax);
     });
 }
