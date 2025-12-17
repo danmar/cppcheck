@@ -134,6 +134,8 @@ void ImportProject::parseArgs(FileSettings &fs, const std::vector<std::string> &
     };
 
     for (; argPtr != args.cend(); argPtr++) {
+        // https://github.com/llvm/llvm-project/issues/172018
+        // NOLINTBEGIN(bugprone-use-after-move)
         if (getOptArg("-I") || getOptArg("/I")) {
             if (std::find(fs.includePaths.cbegin(), fs.includePaths.cend(), optArg) == fs.includePaths.cend())
                 fs.includePaths.push_back(std::move(optArg));
@@ -161,6 +163,7 @@ void ImportProject::parseArgs(FileSettings &fs, const std::vector<std::string> &
 
         if (argPtr == args.cend())
             break;
+        // NOLINTEND(bugprone-use-after-move)
     }
 
     fsSetDefines(fs, std::move(defs));
