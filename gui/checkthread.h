@@ -36,6 +36,7 @@
 #include <QString>
 #include <QStringList>
 #include <QThread>
+#include <QTime>
 
 class ThreadResult;
 
@@ -48,6 +49,14 @@ class ThreadResult;
  */
 class CheckThread : public QThread {
     Q_OBJECT
+
+public:
+    struct Details {
+        int index;
+        std::string file;
+        QTime startTime;
+    };
+
 public:
     explicit CheckThread(ThreadResult &result);
 
@@ -104,8 +113,8 @@ signals:
      */
     void done();
 
-    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
-    void fileChecked(const QString &file);
+    void startCheck(CheckThread::Details details);
+    void finishCheck(CheckThread::Details details);
 protected:
 
     /**

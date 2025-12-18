@@ -34,11 +34,13 @@ void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
     emit log(QString::fromStdString(outmsg));
 }
 
-void ThreadResult::fileChecked(const QString &file)
+// cppcheck-suppress passedByValue
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void ThreadResult::finishCheck(CheckThread::Details details)
 {
     std::lock_guard<std::mutex> locker(mutex);
 
-    mProgress += QFile(file).size();
+    mProgress += QFile(QString::fromStdString(details.file)).size();
     mFilesChecked++;
 
     if (mMaxProgress > 0) {

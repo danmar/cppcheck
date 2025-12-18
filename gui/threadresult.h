@@ -23,6 +23,7 @@
 #include "color.h"
 #include "errorlogger.h"
 #include "filesettings.h"
+#include "checkthread.h"
 
 #include <list>
 #include <mutex>
@@ -85,12 +86,12 @@ public:
     }
 
 public slots:
-
     /**
-     * @brief Slot threads use to signal this class that a specific file is checked
-     * @param file File that is checked
+     * @brief Slot threads use to signal this class that it finish checking a file
+     * @param details Details about what file finished being checked and by what thread
      */
-    void fileChecked(const QString &file);
+    void finishCheck(CheckThread::Details details);
+
 signals:
     /**
      * @brief Progress signal
