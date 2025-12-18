@@ -80,6 +80,8 @@ public:
 
     void stop();
 
+    void setThreadIndex(int index);
+
     /**
      * Determine command to run clang
      * \return Command to run clang, empty if it is not found
@@ -126,6 +128,7 @@ protected:
     std::atomic<State> mState{Ready};
 
     ThreadResult &mResult;
+    int mThreadIndex{};
 
     Settings mSettings;
     std::shared_ptr<Suppressions> mSuppressions;

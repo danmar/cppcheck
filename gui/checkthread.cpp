@@ -486,3 +486,8 @@ QString CheckThread::clangTidyCmd()
 
     return QString();
 }
+
+void CheckThread::setThreadIndex(int index)
+{
+    mThreadIndex = index;
+}
