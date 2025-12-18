@@ -17,7 +17,7 @@ A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 
 ## Donate CPU
 
-Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
+Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core, which is the default, or as many as you like. Use the `-j` flag to use more cores). It is simple:
 
  1. Download (and extract) Cppcheck source code.
  2. Run (Linux/MacOS example):
