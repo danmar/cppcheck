@@ -178,6 +178,11 @@ public:
      */
     void setCheckStartTime(QDateTime checkStartTime);
 
+    /**
+     * @brief Emit the threadDetailsUpdated signal
+     */
+    void emitThreadDetailsUpdated();
+
 signals:
     /**
      * @brief Signal that all threads are done
@@ -191,6 +196,11 @@ signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
 
+    /**
+     * @brief Emitted when thread details are updated.
+     */
+    void threadDetailsUpdated(QMap<int, CheckThread::Details> threadDetails);
+
 public slots:
 
     /**
@@ -198,6 +208,19 @@ public slots:
      *
      */
     void stop();
+
+    /**
+     * @brief Slot threads use to signal this class that it started checking a file
+     * @param details Details about what file is being checked and by what thread
+     */
+    void startCheck(CheckThread::Details details);
+
+    /**
+     * @brief Slot threads use to signal this class that it finish checking a file
+     * @param details Details about what file finished being checked and by what thread
+     */
+    void finishCheck(CheckThread::Details details);
+
 protected slots:
     /**
      * @brief Slot that a single thread is done
@@ -285,6 +308,12 @@ protected:
     Settings mCheckSettings;
     std::shared_ptr<Suppressions> mCheckSuppressions;
     /// @}
+
+    /**
+     * @bried Details about currently running threads
+     */
+    QMap<int, CheckThread::Details> mThreadDetails;
+
 private:
 
     /**

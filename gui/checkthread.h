@@ -36,6 +36,7 @@
 #include <QString>
 #include <QStringList>
 #include <QThread>
+#include <QTime>
 
 class ThreadResult;
 
@@ -48,8 +49,16 @@ class ThreadResult;
  */
 class CheckThread : public QThread {
     Q_OBJECT
+
 public:
-    explicit CheckThread(ThreadResult &result);
+    struct Details {
+        int threadIndex;
+        QString file;
+        QTime startTime;
+    };
+
+public:
+    CheckThread(ThreadResult &result, int threadIndex);
 
     /**
      * @brief Set settings for cppcheck
@@ -102,8 +111,8 @@ signals:
      */
     void done();
 
-    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
-    void fileChecked(const QString &file);
+    void startCheck(CheckThread::Details details);
+    void finishCheck(CheckThread::Details details);
 protected:
 
     /**
@@ -126,6 +135,7 @@ protected:
     std::atomic<State> mState{Ready};
 
     ThreadResult &mResult;
+    int mThreadIndex{};
 
     Settings mSettings;
     std::shared_ptr<Suppressions> mSuppressions;

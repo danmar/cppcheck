@@ -12,7 +12,7 @@ funcArgNamesDifferent:*/moc_resultsview.cpp
 funcArgNamesDifferent:*/moc_threadhandler.cpp
 funcArgNamesDifferent:*/moc_threadresult.cpp
 naming-varname:*/gui/ui_*.h
-functionStatic:*/ui_fileview.h
+functionStatic:*/gui/ui_*.h
 
 # --debug-warnings suppressions
 valueFlowBailout
