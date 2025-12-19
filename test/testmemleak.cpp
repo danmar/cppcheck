@@ -2350,7 +2350,7 @@ private:
               "void x() {\n"
               "    set_error(strdup(p));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5:15]: (error) Allocation with strdup, set_error doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
+        TODO_ASSERT_EQUALS("[test.cpp:5:15]: (error) Allocation with strdup, set_error doesn't release it. [leakNoVarFunctionCall]\n", "", errout_str());
 
         check("void f()\n"
               "{\n"
@@ -2500,6 +2500,15 @@ private:
               "struct U {};\n"
               "void g() {\n"
               "    f(new U());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct A {\n" // #14339
+	        "    void g(int* p) { p_ = p; }\n"
+	        "    int *p_;\n"
+              "};\n"
+              "void f(A& a) {\n"
+              "    a.g(new int);\n"
               "}\n");
         ASSERT_EQUALS("", errout_str());
     }

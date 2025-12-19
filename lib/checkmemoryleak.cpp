@@ -1071,7 +1071,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
                 const Variable* argvar = tok->function()->getArgumentVar(argnr);
                 if (!argvar || !argvar->valueType())
                     continue;
-                const size_t argSize = argvar->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
+                const size_t argSize = argvar->valueType()->getSizeOf(*mSettings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
                 if (argSize == 0 || argSize >= mSettings->platform.sizeof_pointer)
                     continue;
             }
