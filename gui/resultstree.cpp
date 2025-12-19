@@ -806,10 +806,6 @@ void ResultsTree::startApplication(const ResultItem *target, int application)
         }
 #endif // Q_OS_WIN
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-        const QString cmdLine = QString("%1 %2").arg(program).arg(params);
-#endif
-
         const bool success = QProcess::startDetached(program, QProcess::splitCommand(params));
         if (!success) {
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
