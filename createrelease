@@ -42,6 +42,9 @@
 # Update AUTHORS using output from:
 # git log --format='%aN' 2.7..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
+# Update GUI translations
+# lupdate gui.pro
+#
 # Create 2.18.x branch
 # git checkout -b 2.18.x ; git push -u origin 2.18.x
 #
