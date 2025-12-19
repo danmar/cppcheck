@@ -2504,8 +2504,8 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         check("struct A {\n" // #14339
-	        "    void g(int* p) { p_ = p; }\n"
-	        "    int *p_;\n"
+              "    void g(int* p) { p_ = p; }\n"
+              "    int *p_;\n"
               "};\n"
               "void f(A& a) {\n"
               "    a.g(new int);\n"
