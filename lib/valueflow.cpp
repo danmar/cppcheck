@@ -6892,11 +6892,11 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                         if (const Variable* var = func->getArgumentVar(nArg)) {
                             if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
                                 std::vector<ValueFlow::Value> values = getInitListSize(tok, var->valueType(), settings, true);
-                                ValueFlow::Value value;
-                                value.valueType = ValueFlow::Value::ValueType::TOK;
-                                value.tokvalue = tok;
-                                value.setKnown();
-                                values.push_back(std::move(value));
+                                ValueFlow::Value tokValue;
+                                tokValue.valueType = ValueFlow::Value::ValueType::TOK;
+                                tokValue.tokvalue = tok;
+                                tokValue.setKnown();
+                                values.push_back(std::move(tokValue));
 
                                 for (const ValueFlow::Value &value : values)
                                     setTokenValue(tok, value, settings);
