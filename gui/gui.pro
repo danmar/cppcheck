@@ -13,15 +13,10 @@ QT += help
 QT += network
 
 # Build online help
-onlinehelp.target = online-help.qhc
-equals(QT_MAJOR_VERSION, 5):lessThan(QT_MINOR_VERSION, 12) {
-    # qcollectiongenerator is used in case of QT version < 5.12
-    onlinehelp.commands = qcollectiongenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
-} else {
-    onlinehelp.commands = qhelpgenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
-}
-QMAKE_EXTRA_TARGETS += onlinehelp
-PRE_TARGETDEPS += online-help.qhc
+#onlinehelp.target = online-help.qhc
+#onlinehelp.commands = qhelpgenerator $$PWD/help/online-help.qhcp -o $$PWD/help/online-help.qhc
+#QMAKE_EXTRA_TARGETS += onlinehelp
+#PRE_TARGETDEPS += online-help.qhc
 
 contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
@@ -97,8 +92,25 @@ CONFIG += embed_manifest_exe
 
 contains(LINKCORE, [yY][eE][sS]) {
 } else {
-    BASEPATH = ../lib/
-    include($$PWD/../lib/lib.pri)
+    INCLUDEPATH += $$PWD/../lib
+    HEADERS += $$PWD/../lib/*.h
+    SOURCES += $$PWD/../lib/*.cpp
+
+    INCLUDEPATH += $$PWD/../frontend
+    HEADERS += $$PWD/../frontend/*.h
+    SOURCES += $$PWD/../frontend/*.cpp
+
+    INCLUDEPATH += $$PWD/../externals/picojson
+    HEADERS += $$PWD/../externals/picojson/picojson.h
+
+    INCLUDEPATH += $$PWD/../externals/simplecpp
+    HEADERS += $$PWD/../externals/simplecpp/simplecpp.h
+    SOURCES += $$PWD/../externals/simplecpp/simplecpp.cpp
+    DEFINES += SIMPLECPP_TOKENLIST_ALLOW_PTR
+
+    INCLUDEPATH += $$PWD/../externals/tinyxml2
+    HEADERS += $$PWD/../externals/tinyxml2/tinyxml2.h
+    SOURCES += $$PWD/../externals/tinyxml2/tinyxml2.cpp
 }
 
 win32-msvc* {
@@ -137,6 +149,7 @@ HEADERS += aboutdialog.h \
            projectfile.h \
            projectfiledialog.h \
            report.h \
+           resultitem.h \
            resultstree.h \
            resultsview.h \
            scratchpad.h \
@@ -179,6 +192,7 @@ SOURCES += aboutdialog.cpp \
            projectfile.cpp \
            projectfiledialog.cpp \
            report.cpp \
+           resultitem.cpp \
            resultstree.cpp \
            resultsview.cpp \
            scratchpad.cpp \
