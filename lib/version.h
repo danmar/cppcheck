@@ -20,8 +20,8 @@
 #ifndef versionH
 #define versionH
 
-#define CPPCHECK_VERSION_STRING "2.19 dev"
-#define CPPCHECK_VERSION 2,18,99,0
+#define CPPCHECK_VERSION_STRING "2.19.0"
+#define CPPCHECK_VERSION 2,19,0,0
 
 #define LEGALCOPYRIGHT L"Copyright (C) 2007-2025 Cppcheck team."
 

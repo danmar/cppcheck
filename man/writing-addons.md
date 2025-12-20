@@ -1,6 +1,6 @@
 ---
 title: Writing addons
-subtitle: Version 2.19 dev
+subtitle: Version 2.19.0
 author: Cppcheck team
 lang: en
 documentclass: report
