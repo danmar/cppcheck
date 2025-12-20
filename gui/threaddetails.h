@@ -15,6 +15,9 @@ public:
     explicit ThreadDetails(QWidget *parent = nullptr);
     ~ThreadDetails() override;
 
+public slots:
+    void threadDetailsUpdated(const QString &text);
+
 private:
     Ui::ThreadDetails *mUi;
 };

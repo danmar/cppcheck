@@ -332,14 +332,14 @@ void ThreadHandler::setCheckStartTime(QDateTime checkStartTime)
 void ThreadHandler::startCheck(CheckThread::Details details)
 {
     mThreadDetails[details.index] = details;
-    emit threadDetailsUpdated(buildThreadDetailsText());
+    emitThreadDetailsUpdated();
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void ThreadHandler::finishCheck(CheckThread::Details details)
 {
     mThreadDetails.erase(details.index);
-    emit threadDetailsUpdated(buildThreadDetailsText());
+    emitThreadDetailsUpdated();
 }
 
 QString ThreadHandler::buildThreadDetailsText() const
@@ -354,4 +354,9 @@ QString ThreadHandler::buildThreadDetailsText() const
     }
 
     return result;
+}
+
+void ThreadHandler::emitThreadDetailsUpdated()
+{
+    emit threadDetailsUpdated(buildThreadDetailsText());
 }

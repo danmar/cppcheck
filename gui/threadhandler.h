@@ -178,6 +178,11 @@ public:
      */
     void setCheckStartTime(QDateTime checkStartTime);
 
+    /**
+     * @brief Emit the threadDetailsUpdated signal
+     */
+    void emitThreadDetailsUpdated();
+
 signals:
     /**
      * @brief Signal that all threads are done
