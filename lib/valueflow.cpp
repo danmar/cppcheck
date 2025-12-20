@@ -6904,13 +6904,11 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                         }
                     }
                 }
-            }
-            else if (Token::Match(tok, ";|{|} %var% =") && Token::Match(tok->tokAt(2)->astOperand2(), "[({]") &&
+            } else if (Token::Match(tok, ";|{|} %var% =") && Token::Match(tok->tokAt(2)->astOperand2(), "[({]") &&
                      // init list
                      ((tok->tokAt(2) == tok->tokAt(2)->astOperand2()->astParent() && !tok->tokAt(2)->astOperand2()->astOperand2() && tok->tokAt(2)->astOperand2()->str() == "{") ||
                       // constructor
-                      (!Token::simpleMatch(tok->tokAt(2)->astOperand2()->astOperand1(), ".") && settings.library.detectContainer(tok->tokAt(3)))))
-            {
+                      (!Token::simpleMatch(tok->tokAt(2)->astOperand2()->astOperand1(), ".") && settings.library.detectContainer(tok->tokAt(3))))) {
                 Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
@@ -6921,10 +6919,8 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     for (const ValueFlow::Value& value : values)
                         valueFlowForward(containerTok->next(), containerTok, value, tokenlist, errorLogger, settings);
                 }
-            }
-            else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() &&
-                     tok->astOperand1()->valueType()->container)
-            {
+            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() &&
+                     tok->astOperand1()->valueType()->container) {
                 const Token* containerTok = tok->astOperand1();
                 if (containerTok->exprId() == 0)
                     continue;
@@ -6949,16 +6945,12 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     valueFlowForward(tok->linkAt(2), containerTok, std::move(value), tokenlist, errorLogger, settings);
                 }
                 // TODO: handle more actions?
-            }
-            else if (tok->str() == "+=" && astIsContainer(tok->astOperand1()))
-            {
+            } else if (tok->str() == "+=" && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();
                 const Token* valueTok = tok->astOperand2();
                 const MathLib::bigint size = ValueFlow::valueFlowGetStrLength(valueTok);
                 forwardMinimumContainerSize(size, tok, containerTok);
-            }
-            else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "+") && astIsContainerString(tok))
-            {
+            } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "+") && astIsContainerString(tok)) {
                 const Token* tok2 = tok->astOperand2();
                 MathLib::bigint size = 0;
                 while (Token::simpleMatch(tok2, "+") && tok2->astOperand2()) {
