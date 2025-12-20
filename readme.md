@@ -87,14 +87,6 @@ cmake -S . -B build
 cmake --build build --config RelWithDebInfo
 ```
 
-#### Installation
-
-After you compiled your binary you can run the followning cmake command to install Cppcheck:
-
-```shell
-sudo cmake --install build
-```
-
 ### Visual Studio
 
 Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
