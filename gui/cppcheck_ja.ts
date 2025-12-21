@@ -1093,7 +1093,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="1040"/>
         <source>EULA...</source>
-        <translation type="unfinished"></translation>
+        <translation>EULA...</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="458"/>
@@ -1773,7 +1773,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="464"/>
         <source>Reduced -- meant for usage where developer wants results directly. Limited and faster analysis with fewer results.</source>
-        <translation type="unfinished"></translation>
+        <translation>#R 限定的 -- 開発者が直接的に結果を得るための解析を意味します。解析は限定的で高速ですがより少ない結果になります。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="471"/>
@@ -1860,7 +1860,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="851"/>
         <source>2025</source>
-        <translation type="unfinished">2025</translation>
+        <translation>2025</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="901"/>
@@ -2052,7 +2052,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="414"/>
         <source>Note: Open source Cppcheck does not fully implement Misra C 2012</source>
-        <translation type="unfinished"></translation>
+        <translation>注意: オープンソースのCppcheckはMisra C 2012を完全にサポートしていません。</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="477"/>
@@ -2463,12 +2463,12 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="656"/>
         <source>Recheck %1 file(s)</source>
-        <translation type="unfinished"></translation>
+	<translation>再チェック %1 件のファイル</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="658"/>
         <source>Hide %1 result(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>非表示 %1 件の結果</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="701"/>
@@ -2883,7 +2883,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="79"/>
         <source>Max count:</source>
-        <translation type="unfinished"></translation>
+        <translation>#M 最大数:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="185"/>
