@@ -1513,6 +1513,8 @@ void CheckOther::commaSeparatedReturnError(const Token *tok)
 static bool isLargeContainer(const Variable* var, const Settings& settings)
 {
     const ValueType* vt = var->valueType();
+    if (vt->container->startPattern == "std :: initializer_list <")
+        return false;
     if (vt->container->size_templateArgNo < 0)
         return true;
     const std::size_t maxByValueSize = 2 * settings.platform.sizeof_pointer;
