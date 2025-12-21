@@ -5307,3 +5307,15 @@ void containerOutOfBounds_std_string(std::string &var) { // #11403
     // TODO cppcheck-suppress containerOutOfBounds
     var+= s5[3];
 }
+
+int containerOutOfBounds_std_initializer_list_access(const std::vector<int>& v) {
+    // cppcheck-suppress containerOutOfBounds
+    return v[2];
+}
+
+int containerOutOfBounds_std_initializer_list() { // #14340
+    std::initializer_list<int> x{ 1, 2 };
+    // cppcheck-suppress derefInvalidIterator
+    int i = *x.end();
+    return i + containerOutOfBounds_std_initializer_list_access(x);
+}
