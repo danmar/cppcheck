@@ -945,6 +945,28 @@ private:
                     "    (void)v[0];\n"
                     "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkNormal("int f(const std::vector<int>& v) {\n" // #8983
+                    "    return v[2];\n"
+                    "}\n"
+                    "int g() {\n"
+                    "    return f({});\n"
+                    "}\n"
+                    "int h() {\n"
+                    "    return f({ 1, 2 });\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:2:13]: error: Out of bounds access in 'v[2]', if 'v' size is 2 and '2' is 2 [containerOutOfBounds]\n"
+                      "[test.cpp:2:13]: error: Out of bounds access in expression 'v[2]' because 'v' is empty. [containerOutOfBounds]\n",
+                      errout_str());
+
+        checkNormal("int f(int x, const std::vector<int>& v) {\n"
+                    "    return x + v[0];\n"
+                    "}\n"
+                    "int g() {\n"
+                    "    return f(1, {});\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:2:17]: error: Out of bounds access in expression 'v[0]' because 'v' is empty. [containerOutOfBounds]\n",
+                      errout_str());
     }
 
     void outOfBoundsSymbolic()
