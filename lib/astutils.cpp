@@ -2943,6 +2943,9 @@ static bool isExpressionChangedAt(const F& getExprTok,
         auto expr = getExprTok();
         if (!expr && !(tok->valueType() && tok->valueType()->pointer == 0 && tok->valueType()->reference == Reference::None))
             aliased = true;
+        if (!aliased && expr && expr->varId() && tok->isCast() && tok->valueType() && tok->valueType()->reference != Reference::None &&
+            Token::Match(tok->astOperand2() ? tok->astOperand2() : tok->astOperand1(), "%varid%", expr->varId()))
+            aliased = true;
         if (!aliased)
             aliased = isAliasOf(tok, expr, &i);
         if (!aliased)
