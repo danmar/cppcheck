@@ -40,7 +40,7 @@ der GNU General Public License Version 3 lizenziert</translation>
         <location filename="about.ui" line="115"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PCRE&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PicoJSON&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;TinyXML2&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Boost&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Vielen Dank den Bibliotheken die wir nutzen:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PCRE&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;PicoJSON&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;TinyXML2&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Boost&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -63,7 +63,7 @@ The following texts in parameters are replaced with appropriate values when appl
 Example opening a file with Kate and make Kate scroll to the correct line:
 Executable: kate
 Parameters: -l(line) (file)</source>
-        <translation>Hier können Sie Anwendungen hinzufügen, die Codedateien öffnen können. Geben Sie den Namen der Anwendung, deren ausführbare Datei und Kommandozeilenparameter für die Ausführung an.
+        <translation>Hier können Sie Anwendungen hinzufügen, die Codedateien öffnen können. Geben Sie den Namen der Anwendung, deren ausführbare Datei und Kommandozeilenparameter für die Ausführung, an.
 
 Die folgenden Texte in Parametern werden durch die passenden Werte ersetzt, wenn die Anwendung ausgeführt wird:
 (file) - Name der Datei, die den Fehler enthält
@@ -122,63 +122,63 @@ Parameter: -l(line) (file)
     <message>
         <location filename="compliancereportdialog.ui" line="14"/>
         <source>Compliance Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Compliance-Report</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="29"/>
         <source>Project name</source>
-        <translation type="unfinished"></translation>
+        <translation>Projektname</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="22"/>
         <source>Project version</source>
-        <translation type="unfinished"></translation>
+        <translation>Projekt-Version</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="42"/>
         <source>Coding Standard</source>
-        <translation type="unfinished"></translation>
+        <translation>Programmierstandards</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="50"/>
         <source>Misra C</source>
-        <translation type="unfinished"></translation>
+        <translation>Misra C</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="55"/>
         <source>Cert C</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="60"/>
         <source>Cert C++</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C++</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="70"/>
         <source>List of files with md5 checksums</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei-Listen mit MD5-Prüfsummen</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="133"/>
         <source>Compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>Compliance-Report</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="135"/>
         <source>HTML files (*.html)</source>
-        <translation type="unfinished"></translation>
+        <translation>HTML-Dateien (*.html)</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="176"/>
         <location filename="compliancereportdialog.cpp" line="239"/>
         <source>Save compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>Compliance-Report speichern</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="177"/>
         <source>Failed to import &apos;%1&apos; (%2), can not show files in compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>Import von &apos;%1&apos; (%2) fehlgeschlagen, Compliance-Report kann nicht angezeigt werden</translation>
     </message>
 </context>
 <context>
@@ -205,27 +205,27 @@ Parameter: -l(line) (file)
     <message>
         <location filename="helpdialog.ui" line="14"/>
         <source>Cppcheck GUI help</source>
-        <translation type="unfinished"></translation>
+        <translation>Cppcheck GUI Hilfe</translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="34"/>
         <source>Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>Inhalt</translation>
     </message>
     <message>
         <location filename="helpdialog.ui" line="44"/>
         <source>Index</source>
-        <translation type="unfinished"></translation>
+        <translation>Index</translation>
     </message>
     <message>
         <location filename="helpdialog.cpp" line="84"/>
         <source>Helpfile &apos;%1&apos; was not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Hilfedatei &apos;%1&apos; nicht gefunden</translation>
     </message>
     <message>
         <location filename="helpdialog.cpp" line="86"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation>Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -1021,7 +1021,7 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="995"/>
         <source>Misra C</source>
-        <translation type="unfinished"></translation>
+        <translation>Misra C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1003"/>
@@ -1031,12 +1031,12 @@ Parameter: -l(line) (file)
     <message>
         <location filename="mainwindow.ui" line="1011"/>
         <source>Cert C</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1019"/>
         <source>Cert C++</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C++</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1027"/>
@@ -1671,7 +1671,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="113"/>
         <source>Selected VS Configurations</source>
-        <translation type="unfinished"></translation>
+        <translation>Ausgewählte VS-Konfiguration</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="147"/>
@@ -1774,7 +1774,7 @@ Options:
         <location filename="projectfile.ui" line="529"/>
         <source>Check code in unused templates (should be ON normally, however in theory you can safely ignore warnings in unused templates)</source>
         <oldsource>Check code in unused templates  (slower and less accurate analysis)</oldsource>
-        <translation type="unfinished">Prüfe Code in ungenutzten Templates (langsamere und weniger genaue Analyse)</translation>
+        <translation>Prüfe Code in ungenutzten Templates (normalerweise AN, theoretisch können Warnungen in ungenutzten Templates gefahrlos ignoriert werden)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="541"/>
@@ -1814,7 +1814,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="765"/>
         <source>Enable inline suppressions</source>
-        <translation type="unfinished">Inline-Fehlerunterdrückung aktivieren</translation>
+        <translation>Inline-Fehlerunterdrückung aktivieren</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="851"/>
@@ -1834,7 +1834,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="937"/>
         <source>Cert C</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="946"/>
@@ -1955,7 +1955,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="833"/>
         <source>Misra C</source>
-        <translation type="unfinished"></translation>
+        <translation>Misra C</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="841"/>
@@ -1971,7 +1971,7 @@ Options:
     <message>
         <location filename="projectfile.ui" line="958"/>
         <source>Cert C++</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C++</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="975"/>
@@ -2019,7 +2019,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="414"/>
         <source>Note: Open source Cppcheck does not fully implement Misra C 2012</source>
-        <translation type="unfinished"></translation>
+        <translation>Hinweis: Open-Source Cppcheck implementiert Misra C 2012 nicht vollständig</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="477"/>
@@ -2054,17 +2054,17 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="893"/>
         <source>Source files</source>
-        <translation type="unfinished"></translation>
+        <translation>Quelltext-Dateien</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="894"/>
         <source>All files</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle Dateien</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="895"/>
         <source>Exclude file</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei ausschließen</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="978"/>
@@ -2074,7 +2074,7 @@ Options:
     <message>
         <location filename="projectfiledialog.cpp" line="980"/>
         <source>MISRA rule texts file (%1)</source>
-        <translation>MISRA-Regeltext-Datei</translation>
+        <translation>MISRA-Regeltext-Datei (%1)</translation>
     </message>
 </context>
 <context>
@@ -2378,7 +2378,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="832"/>
         <source>Please select the directory where file is located.</source>
-        <translation>Bitte wählen Sie das Verzeichnis, wo sich die Datei befindet</translation>
+        <translation>Bitte wählen Sie das Verzeichnis, in dem sich die Datei befindet.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="367"/>
@@ -2389,14 +2389,6 @@ Options:
         <location filename="resultstree.cpp" line="298"/>
         <source>note</source>
         <translation>Anmerkung</translation>
-    </message>
-    <message>
-        <source>Recheck</source>
-        <translation type="vanished">Erneut prüfen</translation>
-    </message>
-    <message>
-        <source>Hide</source>
-        <translation type="vanished">Verstecken</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="659"/>
@@ -2416,17 +2408,17 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="370"/>
         <source>internal</source>
-        <translation type="unfinished"></translation>
+        <translation>Intern</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="656"/>
         <source>Recheck %1 file(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Erneut %1 Datei(en) prüfen</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="658"/>
         <source>Hide %1 result(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Verstecke %1 Ergebnis(se)</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="701"/>
@@ -2480,18 +2472,6 @@ Bitte überprüfen Sie ob der Pfad und die Parameter der Anwendung richtig einge
         <location filename="resultstree.cpp" line="833"/>
         <source>Select Directory</source>
         <translation>Wähle Verzeichnis</translation>
-    </message>
-    <message>
-        <source>Id</source>
-        <translation type="vanished">Id</translation>
-    </message>
-    <message>
-        <source>Inconclusive</source>
-        <translation type="vanished">Unklar</translation>
-    </message>
-    <message>
-        <source>Since date</source>
-        <translation type="vanished">Seit Datum</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="349"/>
@@ -2598,27 +2578,27 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="resultsview.cpp" line="549"/>
         <source>Analysis was stopped</source>
-        <translation type="unfinished"></translation>
+        <translation>Analyse wurde gestoppt</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="563"/>
         <source>There was a critical error with id &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Kritischer Fehler mit ID &apos;%1&apos; aufgetreten</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="565"/>
         <source>when checking %1</source>
-        <translation type="unfinished"></translation>
+        <translation>beim Prüfen von %1</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="567"/>
         <source>when checking a file</source>
-        <translation type="unfinished"></translation>
+        <translation>beim Prüfen einer Datei</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="568"/>
         <source>Analysis was aborted.</source>
-        <translation type="unfinished"></translation>
+        <translation>Analyse abgebrochen.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="237"/>
@@ -2634,7 +2614,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="resultsview.ui" line="60"/>
         <source>Critical errors</source>
-        <translation type="unfinished"></translation>
+        <translation>Kritische Fehler</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="92"/>
@@ -2739,7 +2719,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="157"/>
         <source>Check for updates</source>
-        <translation type="unfinished"></translation>
+        <translation>Auf Updates prüfen</translation>
     </message>
     <message>
         <location filename="settings.ui" line="177"/>
@@ -2836,7 +2816,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settings.ui" line="79"/>
         <source>Max count:</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximalzahl:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="185"/>
@@ -2884,7 +2864,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="settingsdialog.cpp" line="232"/>
         <source>The executable file &quot;%1&quot; is not available</source>
-        <translation type="unfinished"></translation>
+        <translation>Die ausführbare Datei &quot;%1&quot; ist nicht verfügbar</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="243"/>
@@ -3017,12 +2997,12 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="statsdialog.ui" line="356"/>
         <source>Active checkers:</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktive Checker:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="374"/>
         <source>Checkers</source>
-        <translation type="unfinished"></translation>
+        <translation>Checker</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="399"/>
