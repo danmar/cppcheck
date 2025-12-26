@@ -490,6 +490,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
 
 namespace {
     struct ProjectConfiguration {
+        ProjectConfiguration() = default;
         explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) {
             const char *a = cfg->Attribute("Include");
             if (a)
@@ -533,45 +534,183 @@ namespace {
             }
         }
 
+        static bool evalExpression(std::string expr /* should be a std::string_view */, const ProjectConfiguration& p)
+        {
+            const auto startsHere = [&](size_t& i, std::string string)
+            {
+                if (i + string.length() > expr.length())
+                {
+                    return false;
+                }
+                if (std::equal(string.begin(), string.end(), expr.begin() + i))
+                {
+                    i += string.length();
+                    return true;
+                }
+                return false;
+            };
+            const auto skipSpaces = [&](size_t& i)
+            {
+                while (i < expr.length() && expr[i] == ' ') ++i;
+            };
+            const auto parseString = [&](size_t& i)
+            {
+                skipSpaces(i);
+                if (i >= expr.length() || expr[i] != '\'')
+                {
+                    throw std::runtime_error("Expecting a start of a string!");
+                }
+                auto start = ++i;
+                while (i < expr.length() && expr[i] != '\'') ++i;
+                std::string string = expr.substr(start, i - start);
+                if (i >= expr.length() || expr[i] != '\'')
+                {
+                    throw std::runtime_error("Expecting an end of a string!");
+                }
+                ++i;
+                return string;
+            };
+            bool currentVal = false; // should be std::optional<bool>
+            bool initialized = false;
+            for (std::size_t i = 0; i < expr.length();)
+            {
+                if (expr[i] == ' ')
+                {
+                    ++i;
+                    continue;
+                }
+                if (expr[i] == '!')
+                {
+                    return !evalExpression(expr.substr(i + 1), p);
+                }
+                if (startsHere(i, "And"))
+                {
+                    if (!initialized)
+                    {
+                        throw std::runtime_error("'And' without previous expression!");
+                    }
+                    return currentVal && evalExpression(expr.substr(i), p);
+                }
+                if (startsHere(i, "Or"))
+                {
+                    if (!initialized)
+                    {
+                        throw std::runtime_error("'Or' without previous expression!");
+                    }
+                    return currentVal || evalExpression(expr.substr(i), p);
+                }
+                if (expr[i] == '(')
+                {
+                    // find closing )
+                    int count = 1;
+                    bool inString = false;
+                    auto end = std::string::npos;
+                    for (int j = i + 1; j < expr.length(); ++j)
+                    {
+                        if (inString)
+                        {
+                            if (expr[j] == '\'')
+                                inString = false;
+                        }
+                        else if (expr[j] == '\'')
+                        {
+                            inString = true;
+                        }
+                        else if (expr[j] == '(')
+                        {
+                            ++count;
+                        }
+                        else if (expr[j] == ')')
+                        {
+                            --count;
+                            if (count == 0)
+                            {
+                                end = j;
+                                break;
+                            }
+                        }
+                    }
+                    if (end == std::string::npos)
+                    {
+                        throw std::runtime_error("'(' without closing ')'!");
+                    }
+                    initialized = true;
+                    currentVal = evalExpression(expr.substr(i + 1, end - i - 1), p);
+                    i = end + 1;
+                    continue;
+                }
+                if (expr[i] == '\'')
+                {
+                    auto left = parseString(i);
+                    skipSpaces(i);
+                    if (i + 4 >= expr.length())
+                    {
+                        throw std::runtime_error("Within a string comparison. We expect at least a =='' or !='' !");
+                    }
+                    bool equal = expr[i] == '=';
+                    i += 2;
+                    // expect a string now
+                    auto right = parseString(i);
+                    replaceAll(left, "$(Configuration)", p.configuration);
+                    replaceAll(left, "$(Platform)", p.platformStr);
+                    replaceAll(right, "$(Configuration)", p.configuration);
+                    replaceAll(right, "$(Platform)", p.platformStr);
+                    initialized = true;
+                    currentVal = equal ? left == right : left != right;
+                    continue;
+                }
+                if (startsHere(i, "$(Configuration."))
+                {
+                    initialized = true;
+                    if (startsHere(i, "Contains("))
+                    {
+                        auto contains = parseString(i);
+                        currentVal = p.configuration.find(contains) != std::string::npos;
+                    }
+                    else if (startsHere(i, "StartsWith("))
+                    {
+                        auto startsWith = parseString(i);
+                        currentVal = p.configuration.find(startsWith) == 0;
+                    }
+                    else if (startsHere(i, "EndsWith("))
+                    {
+                        auto endsWith = parseString(i);
+                        currentVal = p.configuration.rfind(endsWith) == p.configuration.length() - endsWith.length();
+                    }
+                    else
+                    {
+                        throw std::runtime_error("Unexpected function call!");
+                    }
+                    skipSpaces(i);
+                    if (!startsHere(i, "))"))
+                    {
+                        throw std::runtime_error("Expecting end of expression!");
+                    }
+                    continue;
+                }
+                throw std::runtime_error("Unhandled expression!");
+            }
+            if (!initialized)
+            {
+                throw std::runtime_error("Expected expression here!");
+            }
+            return currentVal;
+        }
+
         // see https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-conditions
         // properties are .NET String objects and you can call any of its members on them
-        bool conditionIsTrue(const ProjectConfiguration &p) const {
+        bool conditionIsTrue(const ProjectConfiguration &p, std::vector<std::string> &errors, const std::string &filename) const {
             if (mCondition.empty())
                 return true;
-            std::string c = '(' + mCondition + ");";
-            replaceAll(c, "$(Configuration)", p.configuration);
-            replaceAll(c, "$(Platform)", p.platformStr);
-
-            // TODO: improve evaluation
-            const Settings s;
-            TokenList tokenlist(s, Standards::Language::C);
-            tokenlist.createTokensFromBuffer(c.data(), c.size()); // TODO: check result
-            // TODO: put in a helper
-            // generate links
+            try
             {
-                std::stack<Token*> lpar;
-                for (Token* tok2 = tokenlist.front(); tok2; tok2 = tok2->next()) {
-                    if (tok2->str() == "(")
-                        lpar.push(tok2);
-                    else if (tok2->str() == ")") {
-                        if (lpar.empty())
-                            break;
-                        Token::createMutualLinks(lpar.top(), tok2);
-                        lpar.pop();
-                    }
-                }
+                return evalExpression(mCondition, p);
             }
-            tokenlist.createAst();
-            for (const Token *tok = tokenlist.front(); tok; tok = tok->next()) {
-                if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
-                    // TODO: this is wrong - it is Contains() not Equals()
-                    if (tok->astOperand1()->expressionString() == "Configuration.Contains")
-                        return ('\'' + p.configuration + '\'') == tok->astOperand2()->str();
-                }
-                if (tok->str() == "==" && tok->astOperand1() && tok->astOperand2() && tok->astOperand1()->str() == tok->astOperand2()->str())
-                    return true;
+            catch (const std::runtime_error& r)
+            {
+                errors.emplace_back(filename + ": Can not evaluate condition '" + mCondition + "': " + r.what());
+                return false;
             }
-            return false;
         }
     private:
         std::string mCondition;
@@ -642,6 +781,16 @@ namespace {
         bool useOfMfc = false;
         bool useUnicode = false;
     };
+}
+
+// cppcheck-suppress unusedFunction
+bool cppcheck::testing::evaluateVcxprojCondition(const std::string& condition, const std::string& configuration,
+                                                 const std::string& platform)
+{
+    ProjectConfiguration p;
+    p.configuration = configuration;
+    p.platformStr = platform;
+    return ConditionalGroup::evalExpression(condition, p);
 }
 
 static std::list<std::string> toStringList(const std::string &s)
@@ -879,7 +1028,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
             }
             std::string additionalIncludePaths;
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
-                if (!i.conditionIsTrue(p))
+                if (!i.conditionIsTrue(p, errors, cfilename))
                     continue;
                 fs.standard = Standards::getCPP(i.cppstd);
                 fs.defines += ';' + i.preprocessorDefinitions;
@@ -897,7 +1046,7 @@ bool ImportProject::importVcxproj(const std::string &filename, const tinyxml2::X
             }
             bool useUnicode = false;
             for (const ConfigurationPropertyGroup &c : configurationPropertyGroups) {
-                if (!c.conditionIsTrue(p))
+                if (!c.conditionIsTrue(p, errors, cfilename))
                     continue;
                 // in msbuild the last definition wins
                 useUnicode = c.useUnicode;

@@ -75,6 +75,7 @@ private:
         TEST_CASE(importCppcheckGuiProjectPremiumMisra);
         TEST_CASE(ignorePaths);
         TEST_CASE(testVcxprojUnicode);
+        TEST_CASE(testVcxprojConditions);
     }
 
     void setDefines() const {
@@ -577,6 +578,25 @@ private:
         ASSERT(project.fileSettings.back().defines.find(";UNICODE=1;") == std::string::npos);
         ASSERT(project.fileSettings.back().defines.find(";_UNICODE=1") == std::string::npos);
         ASSERT_EQUALS(project.fileSettings.back().useMfc, true);
+    }
+
+
+    void testVcxprojConditions() const
+    {
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition("'$(Configuration)'=='Debug'", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition("'$(Platform)'=='Win32'", "Debug", "Win32"));
+        ASSERT(!cppcheck::testing::evaluateVcxprojCondition("'$(Configuration)'=='Release'", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' == 'Debug' ", "Debug", "Win32"));
+        ASSERT(!cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' != 'Debug' ", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition("'$(Configuration)|$(Platform)' == 'Debug|Win32' ", "Debug", "Win32"));
+        ASSERT(!cppcheck::testing::evaluateVcxprojCondition("!('$(Configuration)|$(Platform)' == 'Debug|Win32' )", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' == 'Debug' And '$(Platform)' == 'Win32'", "Debug", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" '$(Configuration)' == 'Debug' Or '$(Platform)' == 'Win32'", "Release", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.StartsWith('Debug'))", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.EndsWith('AddressSanitizer'))", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.Contains('Address'))", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" $(Configuration.Contains('Address')) And '$(Platform)' == 'Win32'", "Debug-AddressSanitizer", "Win32"));
+        ASSERT(cppcheck::testing::evaluateVcxprojCondition(" ($(Configuration.Contains('Address')) ) And ( '$(Platform)' == 'Win32')", "Debug-AddressSanitizer", "Win32"));
     }
 
     // TODO: test fsParseCommand()
