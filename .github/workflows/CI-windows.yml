@@ -19,8 +19,6 @@ defaults:
   run:
     shell: cmd
 
-# TODO: choose/add a step to bail out on compiler warnings (maybe even the release build)
-
 jobs:
 
   build_qt:
@@ -72,6 +70,33 @@ jobs:
       - name: Run CMake install
         run: |
           cmake --build build --target install
+
+  build_cmake_cxxstd:
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2025]
+        cxxstd: [14, 17]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Run CMake
+        run: |
+          cmake -S . -B build.cxxstd -G "Visual Studio 17 2022" -A x64 -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
+
+      - name: Build
+        run: |
+          cmake --build build.cxxstd --config Debug || exit /b !errorlevel!
 
   build:
     strategy:
@@ -141,8 +166,6 @@ jobs:
           python -m pip install pytest-timeout || exit /b !errorlevel!
           python -m pip install pytest-xdist || exit /b !errorlevel!
           python -m pip install psutil || exit /b !errorlevel!
-
-      # TODO: build with CMake
 
       - name: Build CLI debug configuration using MSBuild
         if: matrix.config == 'debug'
