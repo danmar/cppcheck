@@ -1782,15 +1782,39 @@ void CheckCondition::checkPointerAdditionResultNotNull()
             if (tok->isExpandedMacro())
                 continue;
 
-            const Token *calcToken, *exprToken;
+            const Token *calcToken = NULL, *exprToken = NULL;
             if (tok->astOperand1()->str() == "+") {
                 calcToken = tok->astOperand1();
                 exprToken = tok->astOperand2();
             } else if (tok->astOperand2()->str() == "+") {
                 calcToken = tok->astOperand2();
                 exprToken = tok->astOperand1();
-            } else
-                continue;
+            } else {
+                const Token *pointerToken = NULL;
+                if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer())
+                    pointerToken = tok->astOperand1();
+                else if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->isPointer())
+                    pointerToken = tok->astOperand2();
+
+                if (!pointerToken)
+                    continue;
+
+                const std::list<ValueFlow::Value> &tokenValues = pointerToken->values();
+                for (const ValueFlow::Value &val : tokenValues) {
+                    if (val.isSymbolicValue()) {
+                        if (val.tokvalue->str() == "+") {
+                            calcToken = val.tokvalue;
+                            if (pointerToken == tok->astOperand1())
+                                exprToken = tok->astOperand2();
+                            else
+                                exprToken = tok->astOperand1();
+                            break;
+                        }
+                    }
+                }
+                if (!calcToken || !exprToken)
+                    continue;
+            }
 
             // pointer comparison against NULL (ptr+12==0)
             if (calcToken->hasKnownIntValue())
