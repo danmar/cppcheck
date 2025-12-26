@@ -46,7 +46,7 @@ There are multiple compilation choices:
 * (Windows) Qt Creator + MinGW
 * GNU compilers - via make or directly
 
-The minimum required Python version is 3.6.
+The minimum required Python version is 3.7.
 
 ### CMake
 
