@@ -1782,7 +1782,7 @@ void CheckCondition::checkPointerAdditionResultNotNull()
             if (tok->isExpandedMacro())
                 continue;
 
-            const Token *calcToken = NULL, *exprToken = NULL;
+            const Token *calcToken = nullptr, *exprToken = nullptr;
             if (tok->astOperand1()->str() == "+") {
                 calcToken = tok->astOperand1();
                 exprToken = tok->astOperand2();
@@ -1790,7 +1790,7 @@ void CheckCondition::checkPointerAdditionResultNotNull()
                 calcToken = tok->astOperand2();
                 exprToken = tok->astOperand1();
             } else {
-                const Token *pointerToken = NULL;
+                const Token *pointerToken = nullptr;
                 if (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isPointer())
                     pointerToken = tok->astOperand1();
                 else if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->isPointer())
