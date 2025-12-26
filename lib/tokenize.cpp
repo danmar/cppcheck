@@ -9607,19 +9607,33 @@ void Tokenizer::simplifyCPPAttribute()
                 if (!head)
                     syntaxError(tok);
 
-                while (Token::Match(head->next(), "%name%|*|&|&&|const|static|inline|volatile"))
-                    head = head->next();
-                if (Token::Match(head, "%name%") && !Token::Match(head, "auto ["))
-                    head->isAttributeMaybeUnused(true);
-                else if (Token::Match(tok->previous(), "%name%") && Token::Match(tok->link(), "] [;={]")) {
-                    tok->previous()->isAttributeMaybeUnused(true);
+                if (Token::simpleMatch(head, ";")) {
+                    Token *backTok = tok;
+                    while (backTok && !Token::Match(backTok, "%name%")) {
+                        if (Token::Match(backTok, "]|)"))
+                            backTok = backTok->link();
+                        backTok = backTok->previous();
+                        if (Token::Match(backTok, "[;{}]"))
+                            backTok = nullptr;
+                    }
+                    if (backTok) {
+                        backTok->isAttributeMaybeUnused(true);
+                    }
                 } else {
-                    if (Token::simpleMatch(head->next(), "[")) {
+                    while (Token::Match(head->next(), "%name%|::|*|&|&&|const|static|inline|volatile"))
                         head = head->next();
-                        const Token *end = head->link();
-                        for (head = head->next(); end && head != end; head = head->next()) {
-                            if (Token::Match(head, "%name%")) {
-                                head->isAttributeMaybeUnused(true);
+                    if (Token::Match(head, "%name%") && !Token::Match(head, "auto ["))
+                        head->isAttributeMaybeUnused(true);
+                    else if (Token::Match(tok->previous(), "%name%") && Token::Match(tok->link(), "] [;={]")) {
+                        tok->previous()->isAttributeMaybeUnused(true);
+                    } else {
+                        if (Token::simpleMatch(head->next(), "[")) {
+                            head = head->next();
+                            const Token *end = head->link();
+                            for (head = head->next(); end && head != end; head = head->next()) {
+                                if (Token::Match(head, "%name%")) {
+                                    head->isAttributeMaybeUnused(true);
+                                }
                             }
                         }
                     }
