@@ -2948,7 +2948,9 @@ void CheckOther::checkDuplicateExpression()
                                     while (parent && parent->astParent()) {
                                         parent = parent->astParent();
                                     }
-                                    if (parent && parent->previous() && isStaticAssert(*mSettings, parent->previous())) {
+                                    if (parent && parent->previous() &&
+                                        (isStaticAssert(*mSettings, parent->previous()) ||
+                                         Token::simpleMatch(parent->previous(), "assert"))) {
                                         continue;
                                     }
                                 }
