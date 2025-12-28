@@ -573,8 +573,6 @@ static bool iscpp11init_impl(const Token * const tok)
         if (nameToken->isCpp11init() != Token::Cpp11init::UNKNOWN)
             return nameToken->isCpp11init() == Token::Cpp11init::CPP11INIT;
         nameToken = nameToken->previous();
-        if (nameToken && nameToken->str() == "," && Token::simpleMatch(nameToken->previous(), "} ,"))
-            nameToken = nameToken->linkAt(-1);
     }
     if (!nameToken)
         return false;
