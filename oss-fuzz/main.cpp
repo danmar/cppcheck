@@ -64,7 +64,7 @@ static void doCheck(const uint8_t *data, size_t dataSize)
 {
     Suppressions supprs;
     CppCheck cppcheck(s_settings, supprs, s_errorLogger, false, nullptr);
-    cppcheck.checkBuffer(s_file, data, dataSize);
+    cppcheck.checkBuffer(s_file, reinterpret_cast<const char*>(data), dataSize);
 }
 
 #ifndef NO_FUZZ

@@ -191,6 +191,60 @@ jobs:
         run: |
           cmake -S . -B cmake.output_nocli_nogui -G "Unix Makefiles" -DBUILD_GUI=Off
 
+  build_cmake_cxxstd:
+
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, macos-15]
+        cxxstd: [14, 17]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      # TODO: figure out why there are cache misses with PCH enabled
+      CCACHE_SLOPPINESS: pch_defines,time_macros
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.cxxstd }}
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          # qt6-tools-dev-tools for lprodump
+          # qt6-l10n-tools for lupdate
+          sudo apt-get install qt6-base-dev libqt6charts6-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libglx-dev libgl1-mesa-dev
+
+      # coreutils contains "nproc"
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          # pcre was removed from runner images in November 2022
+          brew install coreutils qt@6 pcre
+
+      - name: Run CMake on ubuntu (with GUI)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+      - name: Run CMake on macos (with GUI)
+        if: contains(matrix.os, 'macos')
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6
+
+      - name: Run CMake build
+        run: |
+          cmake --build cmake.output -- -j$(nproc)
+
   build_uchar:
 
     strategy:

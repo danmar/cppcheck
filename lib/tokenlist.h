@@ -99,14 +99,14 @@ public:
      * - UTF in the code are not handled.
      * - comments are not handled.
      */
-    bool createTokensFromBuffer(const uint8_t* data, size_t size);
-    bool createTokensFromBuffer(const char* data, size_t size) {
-        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size);
+    bool createTokensFromBuffer(const uint8_t* data, size_t size) {
+        return createTokensFromBuffer(reinterpret_cast<const char*>(data), size);
     }
+    bool createTokensFromBuffer(const char* data, size_t size);
     template<size_t size>
     // cppcheck-suppress unusedFunction - used in tests only
     bool createTokensFromString(const char (&data)[size]) {
-        return createTokensFromBuffer(reinterpret_cast<const uint8_t*>(data), size-1);
+        return createTokensFromBuffer(data, size-1);
     }
 
     void createTokens(simplecpp::TokenList&& tokenList);
@@ -216,7 +216,7 @@ public:
     }
 
 private:
-    bool createTokensFromBufferInternal(const uint8_t* data, std::size_t size, const std::string& file0);
+    bool createTokensFromBufferInternal(const char* data, std::size_t size, const std::string& file0);
 
     /** Token list */
     std::shared_ptr<TokensFrontBack> mTokensFrontBack;

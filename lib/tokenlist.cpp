@@ -321,17 +321,17 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensFromBuffer(const uint8_t* data, size_t size)
+bool TokenList::createTokensFromBuffer(const char* data, size_t size)
 {
     return createTokensFromBufferInternal(data, size, mFiles.empty() ? "" : *mFiles.cbegin());
 }
 
 //---------------------------------------------------------------------------
 
-bool TokenList::createTokensFromBufferInternal(const uint8_t* data, size_t size, const std::string& file0)
+bool TokenList::createTokensFromBufferInternal(const char* data, size_t size, const std::string& file0)
 {
     simplecpp::OutputList outputList;
-    simplecpp::TokenList tokens(data, size, mFiles, file0, &outputList);
+    simplecpp::TokenList tokens({data, size}, mFiles, file0, &outputList);
 
     createTokens(std::move(tokens));
 
@@ -1866,7 +1866,12 @@ namespace {
 
         ~OnException() {
 #ifndef _MSC_VER
-            if (std::uncaught_exception())
+#if defined(__cpp_lib_uncaught_exceptions)
+            const bool b = std::uncaught_exceptions() > 0;
+#else
+            const bool b = std::uncaught_exception();
+#endif
+            if (b)
                 f();
 #endif
         }
