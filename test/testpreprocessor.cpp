@@ -317,6 +317,8 @@ private:
         TEST_CASE(getConfigs11); // #9832 - include guards
         TEST_CASE(getConfigs12); // #14222
         TEST_CASE(getConfigs13); // #14222
+        TEST_CASE(getConfigs14); // #1059
+        TEST_CASE(getConfigs15); // #1059
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -2286,6 +2288,20 @@ private:
                                 "__builtin_bswap16(x);\n"
                                 "#endif\n";
         ASSERT_EQUALS("\n", getConfigsStr(filedata, nullptr, "gnu.cfg"));
+    }
+
+    void getConfigs14() { // #1059
+        const char filedata[] = "#if A >= 1\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    }
+
+    void getConfigs15() { // #1059
+        const char filedata[] = "#if A <= 1\n"
+                                "1\n"
+                                "#endif\n";
+        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
     }
 
     void getConfigsError() {
