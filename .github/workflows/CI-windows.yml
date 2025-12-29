@@ -75,7 +75,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022, windows-2025]
-        cxxstd: [14, 17]
+        cxxstd: [14, 17, 20]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
