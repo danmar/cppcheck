@@ -2575,7 +2575,7 @@ private:
         ScopedFile header("header.h", "", "system");
 
         const char code[] = "#include <header.h>";
-        (void)getcodeforcfg(settings0, *this, code, "", "test.c");
+        (void)getcodeforcfg(settings, *this, code, "", "test.c");
 
         ASSERT_EQUALS("", errout_str());
     }
