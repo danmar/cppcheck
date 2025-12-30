@@ -119,6 +119,7 @@ public:
         return mFileName;
     }
 
+    // NOLINTNEXTLINE(bugprone-derived-method-shadowing-base-method) - TODO: fix this
     void clear() {
         mFileName.clear();
         setPlainText(QString());
