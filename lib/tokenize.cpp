@@ -8940,6 +8940,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, ": [)]=]"))
             syntaxError(tok);
+        if (Token::simpleMatch(tok, ", :"))
+            syntaxError(tok);
         if (Token::Match(tok, "typedef [,;:]"))
             syntaxError(tok);
         if (Token::Match(tok, "!|~ %comp%") &&
