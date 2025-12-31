@@ -22,6 +22,7 @@
 #include "applicationlist.h"
 #include "checkers.h"
 #include "common.h"
+#include "config.h"
 #include "erroritem.h"
 #include "errorlogger.h"
 #include "errortypes.h"
@@ -702,7 +703,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 {
                     auto *action = new QAction(tr("No tag"), tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=]() {
+                    connect(action, &QAction::triggered, [EXPLICIT_THIS]() {
                         tagSelectedItems(QString());
                     });
                 }
@@ -710,7 +711,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 for (const QString& tagstr : currentProject->getTags()) {
                     auto *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=]() {
+                    connect(action, &QAction::triggered, [EXPLICIT_THIS]() {
                         tagSelectedItems(tagstr);
                     });
                 }
