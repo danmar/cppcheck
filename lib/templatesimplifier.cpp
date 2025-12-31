@@ -3152,7 +3152,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                                               "templateRecursion",
                                               "TemplateSimplifier: max template recursion ("
                                               + std::to_string(mSettings.maxTemplateRecursion)
-                                              + ") reached for template '"+typeForNewName+"'. You might want to limit Cppcheck recursion.",
+                                              + ") reached for template '"+typeForNewName+"'.",
                                               Certainty::normal);
                     mErrorLogger.reportErr(errmsg);
                 }
