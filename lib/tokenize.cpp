@@ -8936,6 +8936,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "& %comp%|&&|%oror%|&|%or%") && tok->strAt(1) != ">")
             syntaxError(tok);
+        if (Token::Match(tok, "%comp%|&&|%oror%|&|%or% }") && tok->str() != ">")
+            syntaxError(tok);
         if (Token::Match(tok, "^ %op%") && !Token::Match(tok->next(), "[>*+-!~]"))
             syntaxError(tok);
         if (Token::Match(tok, ": [)]=]"))
