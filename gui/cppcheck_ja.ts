@@ -106,9 +106,8 @@ Parameters: -l(line) (file)</translation>
         <translation>表示アプリケーションの選択</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="83"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="84"/>
@@ -192,10 +191,8 @@ Parameters: -l(line) (file)</translation>
         <translation>ファイル：%1 が見つかりません</translation>
     </message>
     <message>
-        <location filename="fileviewdialog.cpp" line="57"/>
-        <location filename="fileviewdialog.cpp" line="71"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="fileviewdialog.cpp" line="67"/>
@@ -226,9 +223,8 @@ Parameters: -l(line) (file)</translation>
         <translation>ヘルプファイル &apos;%1&apos; が見つかりません</translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="86"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -348,11 +344,8 @@ Parameters: -l(line) (file)</translation>
         <translation>ライブラリファイルを開く</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="110"/>
-        <location filename="librarydialog.cpp" line="122"/>
-        <location filename="librarydialog.cpp" line="159"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="111"/>
@@ -501,23 +494,8 @@ Parameters: -l(line) (file)</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainwindow.ui" line="26"/>
-        <location filename="mainwindow.ui" line="687"/>
-        <location filename="mainwindow.cpp" line="464"/>
-        <location filename="mainwindow.cpp" line="668"/>
-        <location filename="mainwindow.cpp" line="753"/>
-        <location filename="mainwindow.cpp" line="858"/>
-        <location filename="mainwindow.cpp" line="880"/>
-        <location filename="mainwindow.cpp" line="1464"/>
-        <location filename="mainwindow.cpp" line="1593"/>
-        <location filename="mainwindow.cpp" line="1934"/>
-        <location filename="mainwindow.cpp" line="1942"/>
-        <location filename="mainwindow.cpp" line="1996"/>
-        <location filename="mainwindow.cpp" line="2005"/>
-        <location filename="mainwindow.cpp" line="2077"/>
-        <location filename="mainwindow.cpp" line="2151"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="132"/>
@@ -692,8 +670,9 @@ Parameters: -l(line) (file)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="690"/>
-        <source>Show Cppcheck results</source>
-        <translation>Cppcheck結果を表示する</translation>
+        <source>Show results</source>
+        <oldsource>Show Cppcheck results</oldsource>
+        <translation type="unfinished">Cppcheck結果を表示する</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="702"/>
@@ -1061,29 +1040,24 @@ Parameters: -l(line) (file)</translation>
         <translation>ノーマル</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="995"/>
         <source>Misra C</source>
-        <translation>MISRA C</translation>
+        <translation type="vanished">MISRA C</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1003"/>
         <source>Misra C++ 2008</source>
-        <translation>MISRA C++ 2008</translation>
+        <translation type="vanished">MISRA C++ 2008</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1011"/>
         <source>Cert C</source>
-        <translation>CERT C</translation>
+        <translation type="vanished">CERT C</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1019"/>
         <source>Cert C++</source>
-        <translation>Cert C++</translation>
+        <translation type="vanished">Cert C++</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1027"/>
         <source>Misra C++ 2023</source>
-        <translation>MISRA C++ 2023</translation>
+        <translation type="vanished">MISRA C++ 2023</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1035"/>
@@ -1317,14 +1291,12 @@ Analysis is stopped.</source>
         <translation>コンパイルデータベース</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="770"/>
         <source>Visual Studio</source>
-        <translation>Visual Studio</translation>
+        <translation type="vanished">Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="771"/>
         <source>Borland C++ Builder 6</source>
-        <translation>Borland C++ Builder 6</translation>
+        <translation type="vanished">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="774"/>
@@ -1602,29 +1574,24 @@ Options:
         <translation>ネイティブ</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="39"/>
         <source>Unix 32-bit</source>
-        <translation>Unix 32-bit</translation>
+        <translation type="vanished">Unix 32-bit</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="40"/>
         <source>Unix 64-bit</source>
-        <translation>Unix 64-bit</translation>
+        <translation type="vanished">Unix 64-bit</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="41"/>
         <source>Windows 32-bit ANSI</source>
-        <translation>Windows 32-bit ANSIエンコード</translation>
+        <translation type="vanished">Windows 32-bit ANSIエンコード</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="42"/>
         <source>Windows 32-bit Unicode</source>
-        <translation>Windows 32-bit Unicode</translation>
+        <translation type="vanished">Windows 32-bit Unicode</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="43"/>
         <source>Windows 64-bit</source>
-        <translation>Windows 64-bit</translation>
+        <translation type="vanished">Windows 64-bit</translation>
     </message>
 </context>
 <context>
@@ -2016,14 +1983,12 @@ Options:
         <translation>バグハント</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="1011"/>
         <source>Clang analyzer</source>
-        <translation>Clang Analyzer</translation>
+        <translation type="vanished">Clang Analyzer</translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="1004"/>
         <source>Clang-tidy</source>
-        <translation>Clang-tidy</translation>
+        <translation type="vanished">Clang-tidy</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="221"/>
@@ -2037,6 +2002,11 @@ Options:
         <location filename="projectfiledialog.cpp" line="139"/>
         <source>Project file: %1</source>
         <translation>プロジェクトファイル:%1</translation>
+    </message>
+    <message>
+        <location filename="projectfiledialog.cpp" line="481"/>
+        <source>not found</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="610"/>
@@ -2059,14 +2029,12 @@ Options:
         <translation>注意: オープンソースのCppcheckはMisra C 2012を完全にサポートしていません。</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="481"/>
         <source>Clang-tidy (not found)</source>
-        <translation>Clang-tidy (みつかりません)</translation>
+        <translation type="vanished">Clang-tidy (みつかりません)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="649"/>
         <source>Visual Studio</source>
-        <translation>Visual Studio</translation>
+        <translation type="vanished">Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="650"/>
@@ -2074,9 +2042,8 @@ Options:
         <translation>コンパイルデータベース</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="651"/>
         <source>Borland C++ Builder 6</source>
-        <translation>Borland C++ Builder 6</translation>
+        <translation type="vanished">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="652"/>
@@ -2351,9 +2318,8 @@ Options:
         <translation>タグ</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="125"/>
         <source>CWE</source>
-        <translation>CWE</translation>
+        <translation type="vanished">CWE</translation>
     </message>
 </context>
 <context>
@@ -2485,10 +2451,8 @@ Options:
         <translation>タグなし</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="744"/>
-        <location filename="resultstree.cpp" line="758"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="745"/>
@@ -2615,10 +2579,8 @@ Please check the application path and parameters are correct.</source>
         <translation>%p% (%1 / %2 :ファイル数)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="350"/>
-        <location filename="resultsview.cpp" line="361"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="351"/>
@@ -3259,9 +3221,8 @@ The user interface language has been reset to English. Open the Preferences-dial
 そのため言語を 英語にリセットします。設定ダイアログから利用可能な言語を選択してください。</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="136"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
 </context>
 <context>
