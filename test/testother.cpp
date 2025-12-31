@@ -195,6 +195,7 @@ private:
         TEST_CASE(duplicateExpression16); // #10569
         TEST_CASE(duplicateExpression17); // #12036
         TEST_CASE(duplicateExpression18);
+        TEST_CASE(duplicateExpression19);
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateValueTernarySizeof); // #13773
@@ -7984,6 +7985,14 @@ private:
                "#define MACRO_ALL (MACRO1 | MACRO2)\n"
                "void f() {\n"
                "    if (MACRO_ALL == 0) {}\n"
+               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void duplicateExpression19() {
+        checkP("const int i = 0;\n"
+               "void f() {\n"
+               "    assert(i == 0);\n"
                "}\n");
         ASSERT_EQUALS("", errout_str());
     }
