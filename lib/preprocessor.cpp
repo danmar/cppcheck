@@ -432,8 +432,10 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
         if (cond->op == '!') {
             if (!sameline(iftok,cond->next) || !cond->next->name)
                 break;
-            if (cond->next->str() == "defined")
+            if (cond->next->str() == "defined") {
+                cond = cond->next;
                 continue;
+            }
             configset.insert(cond->next->str() + "=0");
             continue;
         }
