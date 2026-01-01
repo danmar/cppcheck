@@ -5813,8 +5813,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
-    list.front()->assignIndexes();
-
     // Split up variable declarations.
     simplifyVarDecl(false);
 
@@ -7582,8 +7580,6 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                     if (!varTok)
                         syntaxError(tok2); // invalid code
                     if (eq->str() == "=") {
-                        if (varTok->index() + 1 > list.back()->index())
-                            syntaxError(tok2);
                         TokenList::insertTokens(eq, varTok, 2);
                         eq->str(";");
                         eq->isSplittedVarDeclEq(true);

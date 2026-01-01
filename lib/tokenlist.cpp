@@ -295,6 +295,8 @@ void TokenList::insertTokens(Token *dest, const Token *src, nonneg int n)
     std::stack<Token *> link;
 
     while (n > 0) {
+        if (!src)
+            throw InternalError(dest, std::string(__func__) + ": invalid source range", InternalError::INTERNAL);            
         dest->insertToken(src->str(), src->originalName());
         dest = dest->next();
 
