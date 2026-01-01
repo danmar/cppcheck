@@ -691,7 +691,7 @@ bool TemplateSimplifier::getTemplateDeclarations()
                 const int namepos = getTemplateNamePosition(parmEnd);
                 if (namepos > 0) {
                     if (!tok->scopeInfo())
-                        mTokenizer.syntaxError(tok);
+                        syntaxError(tok);
                     TokenAndName decl(tok, tok->scopeInfo()->name, parmEnd->tokAt(namepos), parmEnd);
                     if (decl.isForwardDeclaration()) {
                         // Declaration => add to mTemplateForwardDeclarations
@@ -3986,7 +3986,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                     // delete the "template < >"
                     Token * tok = it->token();
                     if (!tok)
-                        mTokenizer.syntaxError(it->nameToken());
+                        syntaxError(it->nameToken());
                     tok->deleteNext(2);
                     tok->deleteThis();
                 } else {
