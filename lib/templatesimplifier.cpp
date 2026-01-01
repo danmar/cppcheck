@@ -3985,8 +3985,6 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
                 if (it->isSpecialization()) {
                     // delete the "template < >"
                     Token * tok = it->token();
-                    if (!tok)
-                        syntaxError(it->nameToken());
                     tok->deleteNext(2);
                     tok->deleteThis();
                 } else {
