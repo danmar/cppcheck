@@ -5813,6 +5813,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
+    list.front()->assignIndexes();
+
     // Split up variable declarations.
     simplifyVarDecl(false);
 
