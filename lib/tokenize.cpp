@@ -7580,6 +7580,8 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                     if (!varTok)
                         syntaxError(tok2); // invalid code
                     if (eq->str() == "=") {
+                        if (varTok->index() + 1 > list.back()->index())
+                            syntaxError(tok2);
                         TokenList::insertTokens(eq, varTok, 2);
                         eq->str(";");
                         eq->isSplittedVarDeclEq(true);
