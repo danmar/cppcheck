@@ -134,6 +134,19 @@ void TestResultsTree::test1() const
     QCOMPARE(tree.isRowHidden(0,QModelIndex()), false); // Show item
 }
 
+void TestResultsTree::duplicateResults() const
+{
+    // #14359 - filter out duplicate warnings
+    ResultsTree tree(nullptr);
+
+    ErrorItem errorItem;
+    errorItem.summary = errorItem.message = "test";
+    errorItem.severity = Severity::error;
+    errorItem.errorPath << QErrorPathItem();
+    QVERIFY(tree.addErrorItem(errorItem));
+    QVERIFY(!tree.addErrorItem(errorItem));
+}
+
 static QErrorPathItem createErrorPathItem(QString file, int line, int column, QString info) {
     QErrorPathItem ret;
     ret.file = std::move(file);

@@ -568,6 +568,9 @@ private:
 
     QStringList mHiddenMessageId;
 
+    // List of existing errors so we can avoid duplicates
+    QStringList mErrorList;
+
     QItemSelectionModel* mSelectionModel{};
     ThreadHandler *mThread{};
 
