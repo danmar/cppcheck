@@ -45,9 +45,9 @@ jobs:
       - name: Generate a license file
         run: |
           echo cppcheck > cppcheck.lic
-          echo 251231 >> cppcheck.lic
+          echo 261231 >> cppcheck.lic
           echo 80000 >> cppcheck.lic
-          echo 4f8dc8e7c8bb288f >> cppcheck.lic
+          echo 4b64673f03fb6230 >> cppcheck.lic
           echo path:lib >> cppcheck.lic
 
       - name: Check
