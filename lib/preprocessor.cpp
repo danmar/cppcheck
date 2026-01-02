@@ -1058,6 +1058,7 @@ void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList)
             continue;
 
         const simplecpp::Token *endasm = tok3;
+        bool foundEndasm = false;
         while ((endasm = endasm->next) != nullptr) {
             if (endasm->op != '#' || sameline(endasm,endasm->previousSkipComments()))
                 continue;
@@ -1069,8 +1070,12 @@ void Preprocessor::simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList)
                 continue;
             while (sameline(endasm,endasm3))
                 endasm = endasm->next;
+            foundEndasm = true;
             break;
         }
+
+        if (!foundEndasm)
+            throw InternalError(nullptr, "syntax error: missing #pragma endasm", InternalError::SYNTAX);
 
         const simplecpp::Token * const tok4 = tok3->next;
         tok->setstr("asm");
