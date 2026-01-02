@@ -98,8 +98,8 @@ private:
 
     void at() const {
         ProgramMemory pm;
-        ASSERT_THROW_EQUALS_2(pm.at(123), std::out_of_range, "ProgramMemory::at");
-        ASSERT_THROW_EQUALS_2(utils::as_const(pm).at(123), std::out_of_range, "ProgramMemory::at");
+        ASSERT_THROW_EQUALS(pm.at(123), std::out_of_range, "ProgramMemory::at");
+        ASSERT_THROW_EQUALS(utils::as_const(pm).at(123), std::out_of_range, "ProgramMemory::at");
     }
 };
 

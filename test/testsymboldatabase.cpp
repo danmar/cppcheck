@@ -1872,11 +1872,11 @@ private:
 
         // TODO: we should provide our own error message
 #ifdef _MSC_VER
-        ASSERT_THROW_EQUALS_2(db->getVariableFromVarId(3), std::out_of_range, "invalid vector subscript");
+        ASSERT_THROW_EQUALS(db->getVariableFromVarId(3), std::out_of_range, "invalid vector subscript");
 #elif !defined(_LIBCPP_VERSION)
-        ASSERT_THROW_EQUALS_2(db->getVariableFromVarId(3), std::out_of_range, "vector::_M_range_check: __n (which is 3) >= this->size() (which is 3)");
+        ASSERT_THROW_EQUALS(db->getVariableFromVarId(3), std::out_of_range, "vector::_M_range_check: __n (which is 3) >= this->size() (which is 3)");
 #else
-        ASSERT_THROW_EQUALS_2(db->getVariableFromVarId(3), std::out_of_range, "vector");
+        ASSERT_THROW_EQUALS(db->getVariableFromVarId(3), std::out_of_range, "vector");
 #endif
     }
 
