@@ -2594,7 +2594,7 @@ static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, Er
                 const Token* varTok = args[iArg - 1];
                 if (varTok->variable() && varTok->variable()->isLocal())
                     LifetimeStore{ varTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
-                        tok->next(), tokenlist, errorLogger, settings);
+                    tok->next(), tokenlist, errorLogger, settings);
             }
         }
     }
@@ -6713,9 +6713,9 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                     if (const Function* func = funcTok->function()) {
                         if (const Variable* var = func->getArgumentVar(nArg)) {
                             if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
-                                auto values = tok->tokType() == Token::Type::eString ?
-                                              std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(tok))} :
-                                              getInitListSize(tok, var->valueType(), settings, true);
+                                auto values = tok->tokType() == Token::Type::eString
+                                   ? std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(tok))}
+                                   : getInitListSize(tok, var->valueType(), settings, true);
                                 ValueFlow::Value tokValue;
                                 tokValue.valueType = ValueFlow::Value::ValueType::TOK;
                                 tokValue.tokvalue = tok;
