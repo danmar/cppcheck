@@ -36,13 +36,11 @@
 class ApplicationList;
 class Report;
 class ErrorItem;
-class ErrorLine;
 class QModelIndex;
 class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
 class QSettings;
-class QStandardItem;
 class QStandardItemModel;
 enum class Severity : std::uint8_t;
 

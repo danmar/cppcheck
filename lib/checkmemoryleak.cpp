@@ -23,7 +23,6 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
-#include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -31,6 +30,7 @@
 #include "tokenize.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <utility>
 #include <vector>
 

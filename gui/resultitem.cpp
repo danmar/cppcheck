@@ -18,6 +18,8 @@
 
 #include "resultitem.h"
 
+#include <utility>
+
 ResultItem::ResultItem(QSharedPointer<ErrorItem> errorItem, Type type, int errorPathIndex)
     : errorItem(std::move(errorItem)), mType(type), mErrorPathIndex(errorPathIndex)
 {}

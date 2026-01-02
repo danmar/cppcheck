@@ -17,13 +17,16 @@
  */
 
 #include "sarifreport.h"
+
+#include "cppcheck.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "cppcheck.h"
 
+#include <cstdint>
 #include <set>
 #include <sstream>
+#include <utility>
 
 static const char sarifVersion[] = "2.1.0";
 static const char sarifSchema[] = "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";

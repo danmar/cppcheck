@@ -23,10 +23,12 @@
 #include "importproject.h"
 #include "library.h"
 #include "newsuppressiondialog.h"
+#include "path.h"
 #include "platform.h"
 #include "platforms.h"
 #include "projectfile.h"
 #include "settings.h"
+#include "utils.h"
 
 #include "ui_projectfile.h"
 

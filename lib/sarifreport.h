@@ -21,7 +21,6 @@
 
 #include "config.h"
 #include "errorlogger.h"
-#include "errortypes.h"
 
 #include <string>
 #include <vector>

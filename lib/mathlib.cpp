@@ -26,7 +26,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <exception>
 #include <limits>
 #include <locale>
 #include <sstream>

@@ -20,6 +20,7 @@
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "filesettings.h"
 #include "fixture.h"
 #include "helpers.h"
@@ -31,6 +32,7 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <list>
 #include <string>

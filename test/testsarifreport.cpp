@@ -20,11 +20,13 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "fixture.h"
-#include "helpers.h"
 
 #include <cmath>
+#include <set>
 #include <string>
 #include <vector>
+
+#include "json.h"
 
 class TestSarifReport : public TestFixture
 {

@@ -18,9 +18,9 @@
 
 #include "vfvalue.h"
 
-#include "errortypes.h"
 #include "mathlib.h"
 #include "token.h"
+#include "utils.h"
 
 #include <sstream>
 #include <string>

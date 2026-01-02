@@ -18,7 +18,6 @@
 
 #include "testprojectfile.h"
 
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "projectfile.h"

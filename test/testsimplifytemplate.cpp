@@ -32,6 +32,8 @@
 #include <utility>
 #include <vector>
 
+class ErrorLogger;
+
 class TestSimplifyTemplate : public TestFixture {
 public:
     TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}

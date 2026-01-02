@@ -35,11 +35,11 @@ class ErrorItem;
 class Settings;
 class ApplicationList;
 class ThreadHandler;
-class QModelIndex;
 class QPrinter;
 class QSettings;
 class CheckStatistics;
 class QPoint;
+class ResultItem;
 enum class ReportType : std::uint8_t;
 namespace Ui {
     class ResultsView;

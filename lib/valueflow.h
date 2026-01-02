@@ -25,8 +25,6 @@
 #include "errortypes.h"
 #include "mathlib.h"
 
-#include <cstdint>
-#include <cstdlib>
 #include <functional>
 #include <list>
 #include <string>
@@ -39,7 +37,6 @@ class SymbolDatabase;
 class TimerResultsIntf;
 class Token;
 class TokenList;
-class ValueType;
 class Variable;
 class Scope;
 

@@ -35,6 +35,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <sstream>
 #include <utility>
 

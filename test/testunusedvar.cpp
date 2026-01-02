@@ -27,6 +27,8 @@
 #include <list>
 #include <string>
 
+#include <simplecpp.h>
+
 class TestUnusedVar : public TestFixture {
 public:
     TestUnusedVar() : TestFixture("TestUnusedVar") {}

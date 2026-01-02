@@ -23,6 +23,7 @@
 #include "check64bit.h"
 
 #include "errortypes.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
