@@ -4283,8 +4283,9 @@ private:
                                    "    <arg nr=\"3\"/>\n"
                                    "  </function>\n"
                                    "</def>";
-        /*const*/ Settings settings = settingsBuilder().libraryxml(xmldata).severity(Severity::warning).build();
-        settings.platform.sizeof_wchar_t = 4;
+        // use a platform which has wchar_t with a sizeof 4
+        const Settings settings = settingsBuilder().libraryxml(xmldata).severity(Severity::warning).platform(Platform::Unix32).build();
+        ASSERT_EQUALS(4, settings.platform.sizeof_wchar_t);
 
         check("void f() {\n"
               "    char c[10];\n"
