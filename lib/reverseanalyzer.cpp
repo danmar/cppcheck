@@ -280,7 +280,9 @@ namespace {
                         break;
                     if (!updateRecursive(assignTop->astOperand2()))
                         break;
-                    tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
+                    tok = assignTop;
+                    while (tok->astOperand1())
+                        tok = tok->astOperand1();
                     continue;
                 }
                 if (tok->str() == ")" && !isUnevaluated(tok)) {
