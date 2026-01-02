@@ -6534,6 +6534,12 @@ private:
                               "    [[maybe_unused]] char b[1][2];\n"
                               "}");
         ASSERT_EQUALS("", errout_str());
+
+        functionVariableUsage("int main() {\n"
+                              "    std::string a [[maybe_unused]];\n"
+                              "    f();\n"
+                              "}");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void localvarrvalue() { // ticket #13977
