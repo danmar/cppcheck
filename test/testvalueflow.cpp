@@ -8038,6 +8038,9 @@ private:
                "    auto b = a;\n"
                "}\n";
         (void)valueOfTok(code, "b");
+
+        code = "f(S=n){n*,n&&}"; // #14356
+        (void)valueOfTok(code, "=", nullptr, false);
     }
 
     void valueFlowHang() {
