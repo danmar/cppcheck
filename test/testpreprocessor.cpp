@@ -318,15 +318,15 @@ private:
         TEST_CASE(getConfigs11); // #9832 - include guards
         TEST_CASE(getConfigs12); // #14222
         TEST_CASE(getConfigs13); // #14222
-        TEST_CASE(getConfigs14); // #1059
-        TEST_CASE(getConfigs15); // #1059
-        TEST_CASE(getConfigs16); // #1059
-        TEST_CASE(getConfigs17); // #1059
-        TEST_CASE(getConfigs18); // #1059
-        TEST_CASE(getConfigs19); // #1059
-        TEST_CASE(getConfigs20); // #1059
-        TEST_CASE(getConfigs21); // #1059
-        TEST_CASE(getConfigs22); // #1059
+        TEST_CASE(getConfigs_gte); // #1059
+        TEST_CASE(getConfigs_lte); // #1059
+        TEST_CASE(getConfigs_gt); // #1059
+        TEST_CASE(getConfigs_lt); // #1059
+        TEST_CASE(getConfigs_eq_compound); // #1059
+        TEST_CASE(getConfigs_gte_compound); // #1059
+        TEST_CASE(getConfigs_lte_compound); // #1059
+        TEST_CASE(getConfigs_gt_compound); // #1059
+        TEST_CASE(getConfigs_lt_compound); // #1059
         TEST_CASE(getConfigsError);
 
         TEST_CASE(getConfigsD1);
@@ -2298,67 +2298,235 @@ private:
         ASSERT_EQUALS("\n", getConfigsStr(filedata, nullptr, "gnu.cfg"));
     }
 
-    void getConfigs14() { // #1059
-        const char filedata[] = "#if A >= 1\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    void getConfigs_gte() { // #1059
+        {
+            const char filedata[] = "#if A >= 1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A >= 201112L\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201112L\n", getConfigsStr(filedata));
+        }
     }
 
-    void getConfigs15() { // #1059
-        const char filedata[] = "#if A <= 1\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+    void getConfigs_lte() { // #1059
+        {
+            const char filedata[] = "#if A <= 1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=1\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A <= 201112L\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201112L\n", getConfigsStr(filedata));
+        }
     }
 
-    void getConfigs16() { // #1059
-        const char filedata[] = "#if A > 1\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+    void getConfigs_gt() { // #1059
+        {
+            const char filedata[] = "#if A > 1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 1L\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 1U\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 1UL\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 1Z\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 0x1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 01\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 0b1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 1t\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_THROW_INTERNAL_EQUALS(getConfigsStr(filedata), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1t");
+        }
+        {
+            const char filedata[] = "#if A > 1.0\n"
+                                    "1\n"
+                                    "#endif\n";
+            TODO_ASSERT_THROW(getConfigsStr(filedata), InternalError); // floating point literals are not allowed
+        }
     }
 
-    void getConfigs17() { // #1059
-        const char filedata[] = "#if A < 1\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+    void getConfigs_lt() { // #1059
+        {
+            const char filedata[] = "#if A < 1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 1L\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 1U\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 1UL\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 1Z\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 0x1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 01\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 0b1\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 1t\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_THROW_INTERNAL_EQUALS(getConfigsStr(filedata), INTERNAL, "Internal Error. MathLib::toBigNumber: input was not completely consumed: 1t");
+        }
+        {
+            const char filedata[] = "#if A < 1.0\n"
+                                    "1\n"
+                                    "#endif\n";
+            TODO_ASSERT_THROW(getConfigsStr(filedata), InternalError); // floating point literals are not allowed
+        }
     }
 
-    void getConfigs18() { // #1059
-        const char filedata[] = "#if A == 1 && defined(B)\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+    void getConfigs_eq_compound() { // #1059
+        {
+            const char filedata[] = "#if A == 1 && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A == 201112L && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201112L;B\n", getConfigsStr(filedata));
+        }
     }
 
-    void getConfigs19() { // #1059
-        const char filedata[] = "#if A >= 1 && defined(B)\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+    void getConfigs_gte_compound() { // #1059
+        {
+            const char filedata[] = "#if A >= 1 && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A >= 201112L && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201112L;B\n", getConfigsStr(filedata));
+        }
     }
 
-    void getConfigs20() { // #1059
-        const char filedata[] = "#if A <= 1 && defined(B)\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+    void getConfigs_lte_compound() { // #1059
+        {
+            const char filedata[] = "#if A <= 1 && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=1;B\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A <= 201112L && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201112L;B\n", getConfigsStr(filedata));
+        }
     }
 
-    void getConfigs21() { // #1059
-        const char filedata[] = "#if A > 1 && defined(B)\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=2;B\n", getConfigsStr(filedata));
+    void getConfigs_gt_compound() { // #1059
+        {
+            const char filedata[] = "#if A > 1 && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=2;B\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A > 201112L && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201113;B\n", getConfigsStr(filedata));
+        }
     }
 
-    void getConfigs22() { // #1059
-        const char filedata[] = "#if A < 1 && defined(B)\n"
-                                "1\n"
-                                "#endif\n";
-        ASSERT_EQUALS("\nA=0;B\n", getConfigsStr(filedata));
+    void getConfigs_lt_compound() { // #1059
+        {
+            const char filedata[] = "#if A < 1 && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=0;B\n", getConfigsStr(filedata));
+        }
+        {
+            const char filedata[] = "#if A < 201112L && defined(B)\n"
+                                    "1\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("\nA=201111;B\n", getConfigsStr(filedata));
+        }
     }
 
     void getConfigsError() {
