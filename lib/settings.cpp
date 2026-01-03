@@ -118,6 +118,15 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
         }
     }
     {
+        const auto it = utils::as_const(obj).find("manualUrl");
+        if (it != obj.cend()) {
+            const auto& v = it->second;
+            if (!v.is<std::string>())
+                return "'manualUrl' is not a string";
+            settings.manualUrl = v.get<std::string>();
+        }
+    }
+    {
         const auto it = utils::as_const(obj).find("about");
         if (it != obj.cend()) {
             const auto& v = it->second;

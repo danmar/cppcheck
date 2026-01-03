@@ -291,6 +291,8 @@ public:
     int loadAverage{};
 #endif
 
+    std::string manualUrl{"https://cppcheck.sourceforge.io/manual.pdf"};
+
     /** --max-configs value */
     int maxConfigsOption = 0; // "Not Assigned" value
 

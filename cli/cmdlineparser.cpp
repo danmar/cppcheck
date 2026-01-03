@@ -1702,11 +1702,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
 void CmdLineParser::printHelp(bool premium) const
 {
-    // TODO: fetch URL from config like product name?
-    const std::string manualUrl(premium ?
-                                "https://files.cppchecksolutions.com/manual.pdf" :
-                                "https://cppcheck.sourceforge.io/manual.pdf");
-
     std::ostringstream oss;
     // TODO: display product name
     oss << "Cppcheck - A tool for static C/C++ code analysis\n"
@@ -2077,7 +2072,7 @@ void CmdLineParser::printHelp(bool premium) const
         "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
         "\n"
         "For more information:\n"
-        "    " << manualUrl << "\n"
+        "    " << mSettings.manualUrl << "\n"
         "\n"
         "Many thanks to the 3rd party libraries we use:\n"
         " * tinyxml2 -- loading project/library/ctu files.\n"

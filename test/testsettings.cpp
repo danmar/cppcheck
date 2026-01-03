@@ -236,6 +236,21 @@ private:
                             R"({"suppressions": [1]}\n)");
             ASSERT_EQUALS("'suppressions' array entry is not a string", Settings::loadCppcheckCfg(s, supprs));
         }
+        {
+            Settings s;
+            Suppressions supprs;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"manualUrl": "https://docs.notcppcheck.com/manual.pdf"})");
+            ASSERT_EQUALS("", Settings::loadCppcheckCfg(s, supprs));
+            ASSERT_EQUALS("https://docs.notcppcheck.com/manual.pdf", s.manualUrl);
+        }
+        {
+            Settings s;
+            Suppressions supprs;
+            ScopedFile file("cppcheck.cfg",
+                            R"({"manualUrl": 0}\n)");
+            ASSERT_EQUALS("'manualUrl' is not a string", Settings::loadCppcheckCfg(s, supprs));
+        }
 
         // TODO: test with FILESDIR
     }

@@ -29,6 +29,7 @@ def __copy_cppcheck_premium(tmpdir):
                     "addons": [],
                     "productName": "NAME",
                     "about": "NAME",
+                    "manualUrl" : "https://files.cppchecksolutions.com/manual.pdf",
                     "safety": true
                 }
                 """.replace('NAME', __PRODUCT_NAME))

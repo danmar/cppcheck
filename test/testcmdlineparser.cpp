@@ -551,7 +551,8 @@ private:
         REDIRECT;
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n"
-                        "\"productName\": \"Cppcheck Premium\""
+                        "\"productName\": \"Cppcheck Premium\","
+                        "\"manualUrl\": \"https://docs.notcppcheck.com/manual.pdf\""
                         "}\n");
         const char * const argv[] = {"cppcheck"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
@@ -559,7 +560,7 @@ private:
         ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
         const std::string log_str = logger->str();
         ASSERT_MSG(startsWith(log_str, "Cppcheck - A tool for static C/C++ code analysis"), "header");
-        ASSERT_MSG(log_str.find("https://files.cppchecksolutions.com/manual.pdf") != std::string::npos, "help url");
+        ASSERT_MSG(log_str.find("https://docs.notcppcheck.com/manual.pdf") != std::string::npos, "help url");
     }
 
     void nooptionsWithInvalidCfg() {
@@ -589,7 +590,8 @@ private:
         REDIRECT;
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n"
-                        "\"productName\": \"Cppcheck Premium\""
+                        "\"productName\": \"Cppcheck Premium\","
+                        "\"manualUrl\": \"https://docs.notcppcheck.com/manual.pdf\""
                         "}\n");
         const char * const argv[] = {"cppcheck", "-h"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
@@ -597,7 +599,7 @@ private:
         ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
         const std::string log_str = logger->str();
         ASSERT_MSG(startsWith(log_str, "Cppcheck - A tool for static C/C++ code analysis"), "header");
-        ASSERT_MSG(log_str.find("https://files.cppchecksolutions.com/manual.pdf") != std::string::npos, "help url");
+        ASSERT_MSG(log_str.find("https://docs.notcppcheck.com/manual.pdf") != std::string::npos, "help url");
     }
 
     void helplong() {
@@ -618,7 +620,8 @@ private:
         REDIRECT;
         ScopedFile file(Path::join(Path::getPathFromFilename(Path::getCurrentExecutablePath("")), "cppcheck.cfg"),
                         "{\n"
-                        "\"productName\": \"Cppcheck Premium\""
+                        "\"productName\": \"Cppcheck Premium\","
+                        "\"manualUrl\": \"https://docs.notcppcheck.com/manual.pdf\""
                         "}\n");
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Exit, parseFromArgs(argv));
@@ -626,7 +629,7 @@ private:
         ASSERT_EQUALS(file.path(), *settings->settingsFiles.cbegin());
         const std::string log_str = logger->str();
         ASSERT_MSG(startsWith(log_str, "Cppcheck - A tool for static C/C++ code analysis"), "header");
-        ASSERT_MSG(log_str.find("https://files.cppchecksolutions.com/manual.pdf") != std::string::npos, "help url");
+        ASSERT_MSG(log_str.find("https://docs.notcppcheck.com/manual.pdf") != std::string::npos, "help url");
     }
 
     void version() {
