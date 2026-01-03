@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include "../cli/filelister.h"
+#include "../lib/filelister.h"
 #include "../lib/filesettings.h"
 #include "../lib/path.h"
 #include "../lib/pathmatch.h"
