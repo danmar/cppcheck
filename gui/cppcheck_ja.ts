@@ -2463,7 +2463,7 @@ Options:
     <message>
         <location filename="resultstree.cpp" line="656"/>
         <source>Recheck %1 file(s)</source>
-	<translation>再チェック %1 件のファイル</translation>
+        <translation>再チェック %1 件のファイル</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="658"/>
