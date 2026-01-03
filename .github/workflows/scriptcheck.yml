@@ -87,7 +87,7 @@ jobs:
           python -m pip install pip --upgrade
           python -m pip install natsort
           python -m pip install pexpect
-          python -m pip install 'pylint<4.0.0'
+          python -m pip install 'pylint<4.1.0'
           python -m pip install unittest2
           python -m pip install pytest
           python -m pip install pytest-xdist
