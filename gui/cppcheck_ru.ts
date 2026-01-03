@@ -106,9 +106,8 @@ Parameters: -l(line) (file)</source>
         <translation>Выберите приложение</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="83"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="applicationdialog.cpp" line="84"/>
@@ -190,10 +189,8 @@ Parameters: -l(line) (file)</source>
         <translation>Невозможно найти файл: %1</translation>
     </message>
     <message>
-        <location filename="fileviewdialog.cpp" line="57"/>
-        <location filename="fileviewdialog.cpp" line="71"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="fileviewdialog.cpp" line="67"/>
@@ -224,9 +221,8 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="86"/>
         <source>Cppcheck</source>
-        <translation type="unfinished">Cppcheck</translation>
+        <translation type="obsolete">Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -346,11 +342,8 @@ Parameters: -l(line) (file)</source>
         <translation>Открыть файл библиотеки</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="111"/>
-        <location filename="librarydialog.cpp" line="123"/>
-        <location filename="librarydialog.cpp" line="160"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="librarydialog.cpp" line="112"/>
@@ -488,23 +481,8 @@ Parameters: -l(line) (file)</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainwindow.ui" line="26"/>
-        <location filename="mainwindow.ui" line="687"/>
-        <location filename="mainwindow.cpp" line="463"/>
-        <location filename="mainwindow.cpp" line="667"/>
-        <location filename="mainwindow.cpp" line="752"/>
-        <location filename="mainwindow.cpp" line="857"/>
-        <location filename="mainwindow.cpp" line="879"/>
-        <location filename="mainwindow.cpp" line="1466"/>
-        <location filename="mainwindow.cpp" line="1595"/>
-        <location filename="mainwindow.cpp" line="1936"/>
-        <location filename="mainwindow.cpp" line="1944"/>
-        <location filename="mainwindow.cpp" line="1998"/>
-        <location filename="mainwindow.cpp" line="2007"/>
-        <location filename="mainwindow.cpp" line="2079"/>
-        <location filename="mainwindow.cpp" line="2153"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="209"/>
@@ -685,9 +663,8 @@ Parameters: -l(line) (file)</source>
         <translation>Показать предупреждения переносимости</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="690"/>
         <source>Show Cppcheck results</source>
-        <translation>Просмотр результатов Cppcheck</translation>
+        <translation type="vanished">Просмотр результатов Cppcheck</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="702"/>
@@ -927,6 +904,11 @@ Parameters: -l(line) (file)</source>
         <translation>Предупреждения переносимости</translation>
     </message>
     <message>
+        <location filename="mainwindow.ui" line="690"/>
+        <source>Show results</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="mainwindow.ui" line="772"/>
         <source>P&amp;latforms</source>
         <translation>Платформы</translation>
@@ -1014,31 +996,6 @@ Parameters: -l(line) (file)</source>
     <message>
         <location filename="mainwindow.ui" line="987"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="995"/>
-        <source>Misra C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1003"/>
-        <source>Misra C++ 2008</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1011"/>
-        <source>Cert C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1019"/>
-        <source>Cert C++</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="1027"/>
-        <source>Misra C++ 2023</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1294,14 +1251,12 @@ This is probably because the settings were changed between the Cppcheck versions
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="769"/>
         <source>Visual Studio</source>
-        <translation type="unfinished">Visual Studio</translation>
+        <translation type="obsolete">Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="770"/>
         <source>Borland C++ Builder 6</source>
-        <translation type="unfinished">Borland C++ Builder 6</translation>
+        <translation type="obsolete">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="773"/>
@@ -1589,29 +1544,24 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="39"/>
         <source>Unix 32-bit</source>
-        <translation>Unix 32-bit</translation>
+        <translation type="vanished">Unix 32-bit</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="40"/>
         <source>Unix 64-bit</source>
-        <translation>Unix 64-bit</translation>
+        <translation type="vanished">Unix 64-bit</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="41"/>
         <source>Windows 32-bit ANSI</source>
-        <translation>Windows 32-bit ANSI</translation>
+        <translation type="vanished">Windows 32-bit ANSI</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="42"/>
         <source>Windows 32-bit Unicode</source>
-        <translation>Windows 32-bit Unicode</translation>
+        <translation type="vanished">Windows 32-bit Unicode</translation>
     </message>
     <message>
-        <location filename="platforms.cpp" line="43"/>
         <source>Windows 64-bit</source>
-        <translation>Windows 64-bit</translation>
+        <translation type="vanished">Windows 64-bit</translation>
     </message>
 </context>
 <context>
@@ -1990,16 +1940,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfile.ui" line="1004"/>
-        <source>Clang analyzer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="projectfile.ui" line="997"/>
-        <source>Clang-tidy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="221"/>
         <source>Defines:</source>
         <translation>Объявленные макроопределения:</translation>
@@ -2034,13 +1974,13 @@ Options:
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="477"/>
-        <source>Clang-tidy (not found)</source>
-        <translation>Clang-tidy (не найден)</translation>
+        <source>not found</source>
+        <oldsource>(not found)</oldsource>
+        <translation type="unfinished">Clang-tidy (не найден)</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="643"/>
         <source>Visual Studio</source>
-        <translation>Visual Studio</translation>
+        <translation type="vanished">Visual Studio</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="644"/>
@@ -2048,9 +1988,8 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="645"/>
         <source>Borland C++ Builder 6</source>
-        <translation>Borland C++ Builder 6</translation>
+        <translation type="vanished">Borland C++ Builder 6</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="646"/>
@@ -2318,11 +2257,6 @@ Options:
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="resultstree.cpp" line="126"/>
-        <source>CWE</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>QPlatformTheme</name>
@@ -2453,10 +2387,8 @@ Options:
         <translation>Тег отсутствует</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="733"/>
-        <location filename="resultstree.cpp" line="747"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="734"/>
@@ -2554,10 +2486,8 @@ Please check the application path and parameters are correct.</source>
         <translation>%p% (%1 из %2 файлов проверено)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="350"/>
-        <location filename="resultsview.cpp" line="361"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="351"/>
@@ -3223,9 +3153,8 @@ The user interface language has been reset to English. Open the Preferences-dial
 Язык пользовательского интерфейса был сброшен на английский. Откройте Настройки-диалог для выбора любого из доступных языков.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="136"/>
         <source>Cppcheck</source>
-        <translation>Cppcheck</translation>
+        <translation type="vanished">Cppcheck</translation>
     </message>
 </context>
 <context>
