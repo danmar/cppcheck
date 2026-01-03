@@ -425,7 +425,7 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
     }
 
     const auto lessGreaterThanConfig = [](const simplecpp::Token* dtok, const simplecpp::Token* ctok) {
-        int v = MathLib::toBigNumber(ctok->next->str());
+        auto v = MathLib::toBigNumber(ctok->next->str());
         if (ctok->op == '<')
             v -= 1;
         else
