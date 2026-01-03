@@ -1508,7 +1508,10 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
                 continue;
             }
             if (tok->str() == "using") {
-                tok = Token::findsimplematch(tok, ";");
+                Token* usingEnd = Token::findsimplematch(tok, ";");
+                if (!usingEnd)
+                    mTokenizer.syntaxError(tok);
+                tok = usingEnd;
                 continue;
             }
         }
