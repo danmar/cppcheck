@@ -2594,7 +2594,7 @@ static void valueFlowLifetimeFunction(Token *tok, const TokenList &tokenlist, Er
                 const Token* varTok = args[iArg - 1];
                 if (varTok->variable() && varTok->variable()->isLocal())
                     LifetimeStore{ varTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
-                    tok->next(), tokenlist, errorLogger, settings);
+                        tok->next(), tokenlist, errorLogger, settings);
             }
         }
     }
