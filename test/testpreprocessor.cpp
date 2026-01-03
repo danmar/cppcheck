@@ -365,6 +365,8 @@ private:
         TEST_CASE(standard);
 
         TEST_CASE(writeLocations);
+
+        TEST_CASE(pragmaAsm);
     }
 
     template<size_t size>
@@ -2803,6 +2805,12 @@ private:
             "void f ( ) { }\n"
             "} ;",
             processed);
+    }
+
+    void pragmaAsm()
+    {
+        const char code[] = "#pragma asm";
+        ASSERT_THROW_INTERNAL(getcodeforcfg(settingsDefault, *this, code, "", "test.cpp"), InternalError::SYNTAX);
     }
 };
 
