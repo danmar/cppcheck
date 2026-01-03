@@ -1743,8 +1743,13 @@ static Token * createAstAtToken(Token *tok)
             semicolon1->astOperand2(state2.op.top());
         }
 
-        if (init != semicolon1)
-            semicolon1->astOperand1(init->astTop());
+        if (init != semicolon1) {
+            Token * top = init;
+            while (top->astParent()) {
+                top = top->astParent();
+            }
+            semicolon1->astOperand1(top);
+        }
         tok->next()->astOperand1(tok);
         tok->next()->astOperand2(semicolon1);
 
