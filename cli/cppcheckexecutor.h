@@ -29,6 +29,7 @@ class Settings;
 class ErrorLogger;
 class SuppressionList;
 struct Suppressions;
+class AnalyzerInformation;
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -70,7 +71,7 @@ private:
 
 protected:
 
-    static bool reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger);
+    static bool reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger, AnalyzerInformation* analyzerInfo);
 
     /**
      * Wrapper around check_internal

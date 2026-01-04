@@ -31,6 +31,11 @@
 
 #include "xml.h"
 
+AnalyzerInformation::AnalyzerInformation(bool close_xml)
+: mCloseXml(close_xml)
+{
+}
+
 AnalyzerInformation::~AnalyzerInformation()
 {
     close();
@@ -80,7 +85,8 @@ void AnalyzerInformation::close()
 {
     mAnalyzerInfoFile.clear();
     if (mOutputStream.is_open()) {
-        mOutputStream << "</analyzerinfo>\n";
+        if (mCloseXml)
+            mOutputStream << "</analyzerinfo>\n";
         mOutputStream.close();
     }
 }
@@ -150,7 +156,6 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
-    close();
 
     mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg,fileIndex);
 
