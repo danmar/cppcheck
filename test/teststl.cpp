@@ -967,6 +967,11 @@ private:
                     "}\n");
         ASSERT_EQUALS("[test.cpp:2:17]: error: Out of bounds access in expression 'v[0]' because 'v' is empty. [containerOutOfBounds]\n",
                       errout_str());
+
+        checkNormal("bool f(const std::string_view s) { return s[500] == 'x'; }\n" // #12046
+                    "bool g() { return f(\" \"); }\n");
+        ASSERT_EQUALS("[test.cpp:1:44]: error: Out of bounds access in 's[500]', if 's' size is 1 and '500' is 500 [containerOutOfBounds]\n",
+                      errout_str());
     }
 
     void outOfBoundsSymbolic()

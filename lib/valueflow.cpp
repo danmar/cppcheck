@@ -6706,13 +6706,15 @@ static void valueFlowContainerSize(const TokenList& tokenlist,
                 for (const ValueFlow::Value& value : values)
                     setTokenValue(tok, value, settings);
             }
-            else if (Token::Match(tok->previous(), ",|( {")) {
+            else if (Token::Match(tok->previous(), ",|( {|%str%")) {
                 int nArg{};
                 if (const Token* funcTok = getTokenArgumentFunction(tok, nArg)) {
                     if (const Function* func = funcTok->function()) {
                         if (const Variable* var = func->getArgumentVar(nArg)) {
                             if (var->valueType() && var->valueType()->container && var->valueType()->container->size_templateArgNo < 0) {
-                                std::vector<ValueFlow::Value> values = getInitListSize(tok, var->valueType(), settings, true);
+                                auto values = tok->tokType() == Token::Type::eString
+                                   ? std::vector<ValueFlow::Value>{makeContainerSizeValue(Token::getStrLength(tok))}
+                                   : getInitListSize(tok, var->valueType(), settings, true);
                                 ValueFlow::Value tokValue;
                                 tokValue.valueType = ValueFlow::Value::ValueType::TOK;
                                 tokValue.tokvalue = tok;
