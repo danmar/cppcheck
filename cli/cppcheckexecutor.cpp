@@ -299,7 +299,7 @@ int CppCheckExecutor::check_wrapper(const Settings& settings, Suppressions& supp
  * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
  * @return true is returned if errors are reported
  */
-static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger, const std::vector<std::string>& filters)
+static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger, AnalyzerInformation* analyzerInfo, const std::vector<std::string>& filters)
 {
     bool err = false;
     // Report unmatched suppressions
@@ -329,13 +329,16 @@ static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppres
         if (!s.fileName.empty()) {
             callStack.emplace_back(s.fileName, s.lineNumber, 0);
         }
-        errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
+        const auto errmsg = ::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal);
+        if (analyzerInfo)
+            analyzerInfo->reportErr(errmsg);
+        errorLogger.reportErr(errmsg);
         err = true;
     }
     return err;
 }
 
-bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
+bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger, AnalyzerInformation* analyzerInfo) {
     // the two inputs may only be used exclusively
     assert(!(!files.empty() && !fileSettings.empty()));
 
@@ -361,18 +364,18 @@ bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, con
     bool err = false;
 
     for (auto i = files.cbegin(); i != files.cend(); ++i) {
-        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(*i), errorLogger, settings.unmatchedSuppressionFilters);
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(*i), errorLogger, analyzerInfo, settings.unmatchedSuppressionFilters);
     }
 
     for (auto i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
-        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(i->file), errorLogger, settings.unmatchedSuppressionFilters);
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(i->file), errorLogger, analyzerInfo, settings.unmatchedSuppressionFilters);
     }
 
     if (settings.inlineSuppressions) {
-        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedInlineSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedInlineSuppressions(), errorLogger, analyzerInfo, settings.unmatchedSuppressionFilters);
     }
 
-    err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedGlobalSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
+    err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedGlobalSuppressions(), errorLogger, analyzerInfo, settings.unmatchedSuppressionFilters);
     return err;
 }
 
@@ -424,10 +427,13 @@ int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& sup
 #endif
     }
 
+    // TODO: is this run again instead of using previously cached results?
     returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings, stdLogger.getCtuInfo());
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportUnmatchedSuppressions(settings, supprs.nomsg, mFiles, mFileSettings, stdLogger);
+        AnalyzerInformation analyzerInfo(true);
+        const bool err = reportUnmatchedSuppressions(settings, supprs.nomsg, mFiles, mFileSettings, stdLogger, &analyzerInfo);
+        analyzerInfo.close();
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
