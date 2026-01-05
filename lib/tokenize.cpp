@@ -8936,6 +8936,8 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, "& %comp%|&&|%oror%|&|%or%") && tok->strAt(1) != ">")
             syntaxError(tok);
+        if (Token::Match(tok, "%comp%|&&|%oror%|&|%or% }") && tok->str() != ">")
+            syntaxError(tok);
         if (Token::Match(tok, "^ %op%") && !Token::Match(tok->next(), "[>*+-!~]"))
             syntaxError(tok);
         if (Token::Match(tok, ": [)]=]"))
@@ -8943,6 +8945,8 @@ void Tokenizer::findGarbageCode() const
         if (Token::simpleMatch(tok, ", :"))
             syntaxError(tok);
         if (Token::Match(tok, "typedef [,;:]"))
+            syntaxError(tok);
+        if (Token::Match(tok, "? %assign%"))
             syntaxError(tok);
         if (Token::Match(tok, "!|~ %comp%") &&
             !(cpp && tok->strAt(1) == ">" && Token::simpleMatch(tok->tokAt(-1), "operator")))
