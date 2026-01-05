@@ -6785,7 +6785,7 @@ private:
                    "    B::g(0);\n"
                    "}\n");
         ASSERT_EQUALS("", errout_str());
-        
+
         checkConst("struct S {\n" // #14366
                    "    void f();\n"
                    "};\n"
