@@ -3752,6 +3752,26 @@ private:
               "  memset(&i[1], 0, 1000);\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:3:10]: (error) Buffer is accessed out of bounds: &i[1] [bufferAccessOutOfBounds]\n", "", errout_str());
+
+        check("struct S { int x; };\n" // #8616
+              "void f() {\n"
+              "    S s;\n"
+              "    memset(&s, 0, sizeof(s) * 2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4:12]: (error) Buffer is accessed out of bounds: &s [bufferAccessOutOfBounds]\n", errout_str());
+
+        check("void f() {\n"
+              "    char x;\n"
+              "    memset(&x, 0, 16);\n"
+              "}\n"
+              "void g(char y) {\n"
+              "    char x;\n"
+              "    memcpy(&x, &y, 16);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:12]: (error) Buffer is accessed out of bounds: &x [bufferAccessOutOfBounds]\n"
+                      "[test.cpp:7:12]: (error) Buffer is accessed out of bounds: &x [bufferAccessOutOfBounds]\n"
+                      "[test.cpp:7:16]: (error) Buffer is accessed out of bounds: &y [bufferAccessOutOfBounds]\n",
+                      errout_str());
     }
 
     void valueflow_string() { // using ValueFlow string values in checking
