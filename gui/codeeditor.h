@@ -65,7 +65,7 @@ private:
         RuleRole ruleRole;
     };
 
-    void applyFormat(HighlightingRule &rule);
+    void applyFormat(HighlightingRule &rule) const;
 
     QList<HighlightingRule> mHighlightingRules;
     QList<HighlightingRule> mHighlightingRulesWithSymbols;
