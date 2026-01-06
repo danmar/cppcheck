@@ -126,6 +126,10 @@ static QStringList getLabels() {
         QObject::tr("CWE")};
 }
 
+static Severity getSeverity(ReportType reportType, const ErrorItem& errorItem) {
+    return reportType == ReportType::normal ? errorItem.severity : getSeverityFromClassification(errorItem.classification);
+}
+
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mModel(new QStandardItemModel)
@@ -160,6 +164,7 @@ void ResultsTree::setReportType(ReportType reportType) {
             QSharedPointer<ErrorItem>& errorItem = dynamic_cast<ResultItem*>(fileItem->child(j,0))->errorItem;
             errorItem->guideline = getGuideline(mReportType, mGuideline, errorItem->errorId, errorItem->severity);
             errorItem->classification = getClassification(mReportType, errorItem->guideline);
+            dynamic_cast<ResultItem*>(fileItem->child(j, COLUMN_FILE))->setIconFileName(severityToIcon(getSeverity(reportType, *errorItem)));
             fileItem->child(j, COLUMN_CERT_LEVEL)->setText(errorItem->classification);
             fileItem->child(j, COLUMN_CERT_RULE)->setText(errorItem->guideline);
             fileItem->child(j, COLUMN_MISRA_CLASSIFICATION)->setText(errorItem->classification);
@@ -264,7 +269,7 @@ bool ResultsTree::addErrorItem(const ErrorItem& errorItem)
     ResultItem* stditem = addBacktraceFiles(fileItem,
                                             errorItemPtr,
                                             !showItem,
-                                            severityToIcon(errorItemPtr->severity),
+                                            severityToIcon(getSeverity(mReportType, *errorItemPtr)),
                                             ResultItem::Type::message,
                                             errorItemPtr->getMainLocIndex());
 
@@ -317,6 +322,7 @@ ResultItem *ResultsTree::addBacktraceFiles(ResultItem *parent,
     const int numberOfColumns = getLabels().size();
     QList<ResultItem*> columns(numberOfColumns);
     columns[COLUMN_FILE] = createFilenameItem(errorItem, type, errorPathIndex);
+    columns[COLUMN_FILE]->setIconFileName(icon);
     columns[COLUMN_LINE] = createLineNumberItem(loc.line, errorItem, type, errorPathIndex);
     columns[COLUMN_SEVERITY] = createNormalItem(itemSeverity, errorItem, type, errorPathIndex);
     columns[COLUMN_SUMMARY] = createNormalItem(text, errorItem, type, errorPathIndex);
@@ -339,10 +345,6 @@ ResultItem *ResultsTree::addBacktraceFiles(ResultItem *parent,
     parent->appendRow(list);
 
     setRowHidden(parent->rowCount() - 1, parent->index(), hide);
-
-    if (!icon.isEmpty()) {
-        list[COLUMN_FILE]->setIcon(QIcon(icon));
-    }
 
     return columns[COLUMN_FILE];
 }

@@ -292,6 +292,25 @@ void TestResultsTree::testReportType() const
              "missingReturn,Mandatory,17.4");
 }
 
+void TestResultsTree::testReportTypeIcon() const {
+    ResultsTree tree(nullptr);
+    tree.setReportType(ReportType::misraC2012);
+    tree.addErrorItem(createErrorItem("file1.c", 10, Severity::style, "some rule text", "premium-misra-c-2012-1.1")); // Required
+    tree.addErrorItem(createErrorItem("file1.c", 20, Severity::style, "some rule text", "premium-misra-c-2012-1.2")); // Advisory
+    tree.addErrorItem(createErrorItem("file1.c", 30, Severity::style, "some rule text", "premium-misra-c-2012-9.1")); // Mandatory
+
+    const auto* model = dynamic_cast<QStandardItemModel*>(tree.model());
+    QVERIFY(model != nullptr);
+    const ResultItem* fileItem = dynamic_cast<ResultItem*>(model->item(0,0));
+
+    const ResultItem* err1 = dynamic_cast<ResultItem*>(fileItem->child(0,0));
+    const ResultItem* err2 = dynamic_cast<ResultItem*>(fileItem->child(1,0));
+    const ResultItem* err3 = dynamic_cast<ResultItem*>(fileItem->child(2,0));
+
+    QCOMPARE(err1->getIconFileName(), ":images/dialog-warning.png");
+    QCOMPARE(err2->getIconFileName(), "style");
+    QCOMPARE(err3->getIconFileName(), "error");
+}
 
 void TestResultsTree::testGetGuidelineError() const
 {
