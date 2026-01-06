@@ -17,15 +17,17 @@ A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 
 ## Donate CPU
 
-Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core or as many as you like). It is simple:
+Cppcheck is a hobby project with limited resources. You can help us by donating CPU (1 core, which is the default, or as many as you like. Use the `-j` flag to use more cores). It is simple:
 
  1. Download (and extract) Cppcheck source code.
- 2. Run:
+ 2. Run (Linux/MacOS example):
     ```
     cd cppcheck/
-    virtualenv .env
-    .env/bin/pip install -r tools/donate-cpu-requirements.txt
-    .env/bin/python tools/donate-cpu.py
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+    pip install -r tools/donate-cpu-requirements.txt
+    ./tools/donate-cpu.py
     ```
 
 The script will analyse debian source code and upload the results to a cppcheck server. We need these results both to improve Cppcheck and to detect regressions.
