@@ -209,3 +209,37 @@ bool AnalyzerInformation::Info::parse(const std::string& filesTxtLine) {
     return true;
 }
 
+// TODO: bail out on unexpected data
+void AnalyzerInformation::processFilesTxt(const std::string& buildDir, const std::function<void(const char* checkattr, const tinyxml2::XMLElement* e, const Info& filesTxtInfo)>& handler)
+{
+    const std::string filesTxt(buildDir + "/files.txt");
+    std::ifstream fin(filesTxt.c_str());
+    std::string filesTxtLine;
+    while (std::getline(fin, filesTxtLine)) {
+        AnalyzerInformation::Info filesTxtInfo;
+        if (!filesTxtInfo.parse(filesTxtLine)) {
+            return;
+        }
+
+        const std::string xmlfile = buildDir + '/' + filesTxtInfo.afile;
+
+        tinyxml2::XMLDocument doc;
+        const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
+        if (error != tinyxml2::XML_SUCCESS)
+            return;
+
+        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
+        if (rootNode == nullptr)
+            return;
+
+        for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
+            if (std::strcmp(e->Name(), "FileInfo") != 0)
+                continue;
+            const char *checkattr = e->Attribute("check");
+            if (checkattr == nullptr)
+                continue;
+            handler(checkattr, e, filesTxtInfo);
+        }
+    }
+}
+

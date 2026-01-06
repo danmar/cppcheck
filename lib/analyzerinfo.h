@@ -25,6 +25,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <functional>
 #include <list>
 #include <string>
 
@@ -33,6 +34,7 @@ struct FileSettings;
 
 namespace tinyxml2 {
     class XMLDocument;
+    class XMLElement;
 };
 
 /// @addtogroup Core
@@ -74,6 +76,8 @@ public:
         int fileIndex = 0;
         std::string sourceFile;
     };
+
+    static void processFilesTxt(const std::string& buildDir, const std::function<void(const char* checkattr, const tinyxml2::XMLElement* e, const Info& filesTxtInfo)>& handler);
 
 protected:
     static std::string getFilesTxt(const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<FileSettings> &fileSettings);

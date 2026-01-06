@@ -231,6 +231,7 @@ bool CTU::FileInfo::NestedCall::loadFromXml(const tinyxml2::XMLElement *xmlEleme
     return !error;
 }
 
+// TODO: bail out on unexpected data
 void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
 {
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {

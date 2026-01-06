@@ -35,7 +35,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstring>
-#include <fstream>
+#include <functional>
 #include <map>
 #include <sstream>
 #include <tuple>
@@ -458,53 +458,31 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
     std::map<std::string, Location> decls;
     std::set<std::string> calls;
 
-    const std::string filesTxt(buildDir + "/files.txt");
-    std::ifstream fin(filesTxt.c_str());
-    std::string filesTxtLine;
-    while (std::getline(fin, filesTxtLine)) {
-        AnalyzerInformation::Info filesTxtInfo;
-        if (!filesTxtInfo.parse(filesTxtLine)) {
-            continue;
-        }
-
-        const std::string xmlfile = buildDir + '/' + filesTxtInfo.afile;
-
-        tinyxml2::XMLDocument doc;
-        const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
-        if (error != tinyxml2::XML_SUCCESS)
-            continue;
-
-        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
-        if (rootNode == nullptr)
-            continue;
-
-        for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "FileInfo") != 0)
+    const auto handler = [&decls, &calls](const char* checkattr, const tinyxml2::XMLElement* e, const AnalyzerInformation::Info& filesTxtInfo) {
+        if (std::strcmp(checkattr,"CheckUnusedFunctions") != 0)
+            return;
+        for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
+            const char* functionName = e2->Attribute("functionName");
+            if (functionName == nullptr)
                 continue;
-            const char *checkattr = e->Attribute("check");
-            if (checkattr == nullptr || std::strcmp(checkattr,"CheckUnusedFunctions") != 0)
+            const char* name = e2->Name();
+            if (std::strcmp(name,"functioncall") == 0) {
+                calls.insert(functionName);
                 continue;
-            for (const tinyxml2::XMLElement *e2 = e->FirstChildElement(); e2; e2 = e2->NextSiblingElement()) {
-                const char* functionName = e2->Attribute("functionName");
-                if (functionName == nullptr)
-                    continue;
-                const char* name = e2->Name();
-                if (std::strcmp(name,"functioncall") == 0) {
-                    calls.insert(functionName);
-                    continue;
-                }
-                if (std::strcmp(name,"functiondecl") == 0) {
-                    const char* lineNumber = e2->Attribute("lineNumber");
-                    if (lineNumber) {
-                        const char* file = e2->Attribute("file");
-                        const char* column = default_if_null(e2->Attribute("column"), "0");
-                        // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
-                        decls[functionName] = Location(file ? file : filesTxtInfo.sourceFile, strToInt<int>(lineNumber), strToInt<int>(column));
-                    }
+            }
+            if (std::strcmp(name,"functiondecl") == 0) {
+                const char* lineNumber = e2->Attribute("lineNumber");
+                if (lineNumber) {
+                    const char* file = e2->Attribute("file");
+                    const char* column = default_if_null(e2->Attribute("column"), "0");
+                    // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
+                    decls[functionName] = Location(file ? file : filesTxtInfo.sourceFile, strToInt<int>(lineNumber), strToInt<int>(column));
                 }
             }
         }
-    }
+    };
+
+    AnalyzerInformation::processFilesTxt(buildDir, handler);
 
     for (auto decl = decls.cbegin(); decl != decls.cend(); ++decl) {
         const std::string &functionName = stripTemplateParameters(decl->first);
