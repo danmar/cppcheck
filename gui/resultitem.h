@@ -49,7 +49,7 @@ public:
     }
 
     // cppcheck-suppress unusedFunction; used in test-resultstree
-    QString getIconFileName() const {
+    const QString& getIconFileName() const {
         return mIconFileName;
     }
 private:
