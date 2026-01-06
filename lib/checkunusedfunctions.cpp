@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checkunusedfunctions.h"
 
+#include "analyzerinfo.h"
 #include "astutils.h"
 #include "errorlogger.h"
 #include "errortypes.h"
@@ -461,14 +462,12 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
     std::ifstream fin(filesTxt.c_str());
     std::string filesTxtLine;
     while (std::getline(fin, filesTxtLine)) {
-        const std::string::size_type firstColon = filesTxtLine.find(':');
-        if (firstColon == std::string::npos)
+        AnalyzerInformation::Info filesTxtInfo;
+        if (!filesTxtInfo.parse(filesTxtLine)) {
             continue;
-        const std::string::size_type secondColon = filesTxtLine.find(':', firstColon+1);
-        if (secondColon == std::string::npos)
-            continue;
-        const std::string xmlfile = buildDir + '/' + filesTxtLine.substr(0,firstColon);
-        const std::string sourcefile = filesTxtLine.substr(secondColon+1);
+        }
+
+        const std::string xmlfile = buildDir + '/' + filesTxtInfo.afile;
 
         tinyxml2::XMLDocument doc;
         const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
@@ -500,7 +499,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                         const char* file = e2->Attribute("file");
                         const char* column = default_if_null(e2->Attribute("column"), "0");
                         // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
-                        decls[functionName] = Location(file ? file : sourcefile, strToInt<int>(lineNumber), strToInt<int>(column));
+                        decls[functionName] = Location(file ? file : filesTxtInfo.sourceFile, strToInt<int>(lineNumber), strToInt<int>(column));
                     }
                 }
             }
