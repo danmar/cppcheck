@@ -48,6 +48,7 @@ public:
             setIcon(QIcon(iconFileName));
     }
 
+    // cppcheck-suppress unusedFunction; used in test-resultstree
     QString getIconFileName() const {
         return mIconFileName;
     }
