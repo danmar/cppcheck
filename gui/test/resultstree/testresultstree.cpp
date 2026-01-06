@@ -308,8 +308,18 @@ void TestResultsTree::testReportTypeIcon() const {
     const ResultItem* err3 = dynamic_cast<ResultItem*>(fileItem->child(2,0));
 
     QCOMPARE(err1->getIconFileName(), ":images/dialog-warning.png");
-    QCOMPARE(err2->getIconFileName(), "style");
-    QCOMPARE(err3->getIconFileName(), "error");
+    QCOMPARE(err2->getIconFileName(), ":images/applications-development.png");
+    QCOMPARE(err3->getIconFileName(), ":images/dialog-error.png");
+
+    tree.setReportType(ReportType::normal);
+    QCOMPARE(err1->getIconFileName(), ":images/applications-development.png");
+    QCOMPARE(err2->getIconFileName(), ":images/applications-development.png");
+    QCOMPARE(err3->getIconFileName(), ":images/applications-development.png");
+
+    tree.setReportType(ReportType::misraC2012);
+    QCOMPARE(err1->getIconFileName(), ":images/dialog-warning.png");
+    QCOMPARE(err2->getIconFileName(), ":images/applications-development.png");
+    QCOMPARE(err3->getIconFileName(), ":images/dialog-error.png");
 }
 
 void TestResultsTree::testGetGuidelineError() const
