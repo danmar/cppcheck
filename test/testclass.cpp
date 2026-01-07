@@ -6731,6 +6731,7 @@ private:
                    "struct S<0> {};\n"
                    "struct D : S<150> {};\n");
         // don't hang
+        ignore_errout();
     }
 
     void const93() { // #12162
@@ -6785,6 +6786,36 @@ private:
                    "    B::g(0);\n"
                    "}\n");
         ASSERT_EQUALS("", errout_str());
+
+        checkConst("struct S {\n" // #14366
+                   "    void f();\n"
+                   "};\n"
+                   "struct T : U {\n"
+                   "    void g(S* s) {\n"
+                   "        s->f();\n"
+                   "    }\n"
+                   "    void h() {\n"
+                   "        S s;\n"
+                   "        s.f();\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5:10]: (style) Either there is a missing 'override', or the member function 'T::g' can be static. [functionStatic]\n"
+                      "[test.cpp:8:10]: (style) Either there is a missing 'override', or the member function 'T::h' can be static. [functionStatic]\n",
+                      errout_str());
+
+        checkConst("enum E { E0 };\n"
+                   "int f();\n"
+                   "struct S : U {\n"
+                   "    E g() {\n"
+                   "        return E0;\n"
+                   "    }\n"
+                   "    int h() {\n"
+                   "        return f();\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4:7]: (style) Either there is a missing 'override', or the member function 'S::g' can be static. [functionStatic]\n"
+                      "[test.cpp:7:9]: (style) Either there is a missing 'override', or the member function 'S::h' can be static. [functionStatic]\n",
+                      errout_str());
     }
 
     void const97() { // #13301

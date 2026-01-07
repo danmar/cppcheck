@@ -2292,6 +2292,10 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
     if (tok->isKeyword() || tok->isStandardType())
         return false;
+    if (tok->variable() && (tok->variable()->isArgument() || tok->variable()->isLocal()))
+        return false;
+    if (tok->function() || tok->type() || tok->enumerator())
+        return false;
 
     for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {

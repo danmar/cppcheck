@@ -246,7 +246,7 @@ void Highlighter::highlightBlock(const QString &text)
     }
 }
 
-void Highlighter::applyFormat(HighlightingRule &rule)
+void Highlighter::applyFormat(HighlightingRule &rule) const
 {
     switch (rule.ruleRole) {
     case RuleRole::Keyword:
