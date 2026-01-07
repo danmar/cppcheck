@@ -23,7 +23,7 @@
 #include "path.h"
 #include "platform.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "vfvalue.h"

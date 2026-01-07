@@ -28,7 +28,7 @@
 #include "path.h"
 #include "platform.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "templatesimplifier.h"
 #include "token.h"
 #include "tokenize.h"

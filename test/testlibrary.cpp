@@ -21,7 +21,7 @@
 #include "helpers.h"
 #include "library.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "token.h"
 #include "tokenlist.h"
 

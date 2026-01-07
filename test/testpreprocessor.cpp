@@ -26,7 +26,7 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "tokenlist.h"
 #include "fixture.h"

@@ -26,7 +26,7 @@
 #include "errortypes.h"
 #include "filesettings.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "threadresult.h"
 #include "utils.h"
 

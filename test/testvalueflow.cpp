@@ -22,7 +22,7 @@
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "token.h"
 #include "vfvalue.h"
 

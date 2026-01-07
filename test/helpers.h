@@ -22,7 +22,7 @@
 #include "library.h"
 #include "path.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 

@@ -27,7 +27,7 @@
 
 #include "cmdlinelogger.h"
 #include "filesettings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "utils.h"
 
 class Settings;

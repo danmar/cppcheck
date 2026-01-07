@@ -427,7 +427,7 @@
     <ClInclude Include="smallvector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="standards.h">
+    <ClInclude Include="cppcheckstd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="valueptr.h">

@@ -21,7 +21,7 @@
 #include "fixture.h"
 #include "frontend.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 
 #include <list>
 #include <string>

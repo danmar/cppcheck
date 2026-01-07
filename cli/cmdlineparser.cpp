@@ -34,7 +34,7 @@
 #include "pathmatch.h"
 #include "platform.h"
 #include "settings.h"
-#include "standards.h"
+#include "cppcheckstd.h"
 #include "suppressions.h"
 #include "timer.h"
 #include "utils.h"
