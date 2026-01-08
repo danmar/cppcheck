@@ -482,7 +482,12 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
         }
     };
 
-    AnalyzerInformation::processFilesTxt(buildDir, handler);
+    const std::string err = AnalyzerInformation::processFilesTxt(buildDir, handler, settings.debugainfo);
+    if (!err.empty()) {
+        const ErrorMessage errmsg({}, "", Severity::error, err, "internalError", Certainty::normal);
+        errorLogger.reportErr(errmsg);
+        return;
+    }
 
     for (auto decl = decls.cbegin(); decl != decls.cend(); ++decl) {
         const std::string &functionName = stripTemplateParameters(decl->first);
