@@ -181,6 +181,7 @@ private:
         TEST_CASE(return10);
         TEST_CASE(return11); // #13098
         TEST_CASE(return12); // #12238
+        TEST_CASE(return13);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -2836,6 +2837,22 @@ private:
               "    x->g(v);\n"
               "}\n", options);
         ASSERT_EQUALS("", errout_str());
+    }
+
+    void return13() { // #4638
+        CheckOptions options;
+        options.cpp = true;
+        check("bool f() {\n"
+              "    int* p = new int;\n"
+              "    return p;\n"
+              "}\n"
+              "bool g() {\n"
+              "    void* p = malloc(4);\n"
+              "    return p;\n"
+              "}\n", options);
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Memory leak: p [memleak]\n"
+                      "[test.cpp:7:5]: (error) Memory leak: p [memleak]\n",
+                      errout_str());
     }
 
     void test1() {
