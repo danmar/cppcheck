@@ -396,6 +396,19 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                     return checkMissingReturnScope(tok->tokAt(-2), library);
                 return tok;
+            } else if (tok->scope()->type == ScopeType::eCatch) {
+                while (tok->str() == "}") {
+                    const Token *errorToken = checkMissingReturnScope(tok, library);
+                    if (errorToken || tok->scope()->type == ScopeType::eTry)
+                        return errorToken;
+                    tok = tok->link();
+                    if (Token::simpleMatch(tok->previous(), ") {") && Token::simpleMatch(tok->linkAt(-1)->tokAt(-2), "} catch ("))
+                        tok = tok->linkAt(-1)->tokAt(-2);
+                    else
+                        break;
+                }
+                // FIXME this should not be reached
+                return nullptr;
             }
             // FIXME
             return nullptr;
