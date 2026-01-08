@@ -1153,6 +1153,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                     instantiationArgs[index].push_back(tok1);
                     tok1 = tok1->next();
                 } while (tok1 && tok1 != endLink);
+                if (!tok1)
+                    syntaxError(end);
                 instantiationArgs[index].push_back(tok1);
             } else if (tok1->str() == "<" &&
                        (tok1->strAt(1) == ">" || (tok1->previous()->isName() &&
@@ -1162,6 +1164,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                     instantiationArgs[index].push_back(tok1);
                     tok1 = tok1->next();
                 } while (tok1 && tok1 != endLink);
+                if (!tok1)
+                    syntaxError(end);
                 instantiationArgs[index].push_back(tok1);
             } else if (tok1->str() == ",") {
                 ++index;
