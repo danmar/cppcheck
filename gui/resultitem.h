@@ -41,9 +41,21 @@ public:
     Type getType() const {
         return mType;
     }
+
+    void setIconFileName(const QString& iconFileName) {
+        mIconFileName = iconFileName;
+        if (!mIconFileName.isEmpty())
+            setIcon(QIcon(iconFileName));
+    }
+
+    // cppcheck-suppress unusedFunction; used in test-resultstree
+    const QString& getIconFileName() const {
+        return mIconFileName;
+    }
 private:
     const Type mType;
     const int mErrorPathIndex;
+    QString mIconFileName;
 };
 
 #endif // RESULTITEM_H
