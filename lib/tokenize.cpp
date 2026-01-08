@@ -9976,6 +9976,8 @@ void Tokenizer::simplifyAsm()
                 instruction = tok->stringifyList(endasm);
                 Token::eraseTokens(tok, endasm);
             } else if (!endasm) {
+                if (!tok->next())
+                    syntaxError(tok);
                 instruction = tok->next()->stringifyList(endasm);
                 Token::eraseTokens(tok, endasm);
                 tok->insertToken(";");
