@@ -4119,3 +4119,66 @@ def test_active_unusedfunction_only_misra_builddir(tmp_path):
         'CheckUnusedFunctions::check'
     ]
     __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)
+
+
+def test_builddir_(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.makedirs(build_dir)
+
+    test_a1_file = build_dir / 'test.a1'
+
+    args = [
+        '-q',
+        '--debug-analyzerinfo',
+        '--template=simple',
+        '--cppcheck-build-dir={}'.format(build_dir),
+        str(test_file)
+    ]
+
+    stderr_exp = [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        "no cached result '{}' found".format(test_a1_file)
+    ]
+    assert stderr.splitlines() == stderr_exp
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        "skipping analysis - loaded 1 cached finding(s) from '{}'".format(test_a1_file)
+    ]
+    assert stderr.splitlines() == stderr_exp
+
+    with open(test_file, 'a') as f:
+        f.write('\n#define DEF')
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        "discarding cached result - hash mismatch"
+    ]
+    assert stderr.splitlines() == stderr_exp
+
+    a_a1_file = build_dir / 'test.a1'
+    with open(a_a1_file, 'a') as f:
+        f.write('.')
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        "discarding cached result - failed to load '{}' (XML_ERROR_PARSING_TEXT)".format(test_a1_file)
+    ]
+    assert stderr.splitlines() == stderr_exp
