@@ -124,6 +124,11 @@ bool endsWith(const std::string& str, const char (&end)[N])
     return endsWith(str, end, N - 1);
 }
 
+inline bool endsWith(const std::string& str, const std::string& end)
+{
+    return endsWith(str, end.c_str(), end.length());
+}
+
 inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
 {
     // str must be at least the prefix plus the start and end quote

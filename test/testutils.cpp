@@ -44,6 +44,7 @@ private:
         TEST_CASE(splitString);
         TEST_CASE(as_const);
         TEST_CASE(memoize);
+        TEST_CASE(endsWith);
     }
 
     void isValidGlobPattern() const {
@@ -562,6 +563,17 @@ private:
         ASSERT_EQUALS(1, count);
         ASSERT_EQUALS(1, callF());
         ASSERT_EQUALS(1, count);
+    }
+
+    void endsWith() const
+    {
+        ASSERT(::endsWith("test", "test"));
+        ASSERT(::endsWith("test2", "2"));
+        ASSERT(::endsWith("test test", "test"));
+        ASSERT(::endsWith("test", "t"));
+        ASSERT(!::endsWith("", "test"));
+        ASSERT(!::endsWith("tes", "test"));
+        ASSERT(!::endsWith("2test", "2"));
     }
 };
 
