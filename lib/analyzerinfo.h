@@ -61,7 +61,10 @@ public:
 
     /** Close current TU.analyzerinfo file */
     void close();
-    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId, std::size_t hash, std::list<ErrorMessage> &errors);
+    /**
+     * @throws std::runtime_error thrown if the output file is already open or the output file cannot be opened
+     */
+    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId, std::size_t hash, std::list<ErrorMessage> &errors, bool debug = false);
     void reportErr(const ErrorMessage &msg);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
     static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId);
@@ -77,14 +80,14 @@ public:
         std::string sourceFile;
     };
 
-    static void processFilesTxt(const std::string& buildDir, const std::function<void(const char* checkattr, const tinyxml2::XMLElement* e, const Info& filesTxtInfo)>& handler);
+    static std::string processFilesTxt(const std::string& buildDir, const std::function<void(const char* checkattr, const tinyxml2::XMLElement* e, const Info& filesTxtInfo)>& handler, bool debug = false);
 
 protected:
     static std::string getFilesTxt(const std::list<std::string> &sourcefiles, const std::list<FileSettings> &fileSettings);
 
     static std::string getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg, int fsFileId);
 
-    static bool skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors);
+    static bool skipAnalysis(const tinyxml2::XMLDocument &analyzerInfoDoc, std::size_t hash, std::list<ErrorMessage> &errors, bool debug = false);
 
 private:
     std::ofstream mOutputStream;
