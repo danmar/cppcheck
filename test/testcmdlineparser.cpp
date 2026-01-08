@@ -493,6 +493,7 @@ private:
         TEST_CASE(safetyOverride);
         TEST_CASE(noSafety);
         TEST_CASE(noSafetyOverride);
+        TEST_CASE(debugAnalyzerinfo);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -3422,6 +3423,13 @@ private:
         const char * const argv[] = {"cppcheck", "--safety", "--no-safety", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(false, settings->safety);
+    }
+
+    void debugAnalyzerinfo() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--debug-analyzerinfo", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(true, settings->debugainfo);
     }
 
     void ignorepaths1() {
