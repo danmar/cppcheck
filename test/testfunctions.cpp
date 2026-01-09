@@ -85,6 +85,7 @@ private:
         TEST_CASE(checkMissingReturn4);
         TEST_CASE(checkMissingReturn5);
         TEST_CASE(checkMissingReturn6); // #13180
+        TEST_CASE(checkMissingReturn7); // #14370 - FN try/catch
 
         // std::move for locar variable
         TEST_CASE(returnLocalStdMove1);
@@ -1878,6 +1879,43 @@ private:
               "    i = readData();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3:5]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
+    }
+
+    void checkMissingReturn7() {// #14370 FN try/catch
+        check("int foo(void) {\n"
+              "    try { return readData(); }\n"
+              "    catch (...) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:18]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
+
+        check("int foo(void) {\n"
+              "    try { return readData(); }\n"
+              "    catch (const E& e) {}\n"
+              "    catch (...) { return 2; }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3:25]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
+
+        check("int foo(void) {\n"
+              "    try { x=1; }\n"
+              "    catch (...) { return 2; }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:11]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
+
+        check("int foo(void) {\n"
+              "    try { return readData(); }\n"
+              "    catch (...) { return 0; }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
+
+        check("int foo(void)\n"
+              "    try { x=1; }\n"
+              "    catch (...) { return 2; }\n");
+        ASSERT_EQUALS("[test.cpp:2:11]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
+
+        check("int foo(void)\n"
+              "    try { return readData(); }\n"
+              "    catch (...) { }\n");
+        ASSERT_EQUALS("[test.cpp:3:19]: (error) Found an exit path from function with non-void return type that has missing return statement [missingReturn]\n", errout_str());
     }
 
     // NRVO check
