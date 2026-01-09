@@ -1125,6 +1125,8 @@ void Tokenizer::simplifyTypedef()
             list.front()->deleteThis();
     }
 
+    validate();
+
     simplifyTypedefCpp();
 }
 
@@ -1696,8 +1698,6 @@ void Tokenizer::simplifyTypedefCpp()
                             while (tok2 && !Token::simpleMatch(tok2, "}")) {
                                 if (Token::Match(tok2, "(|{|["))
                                     tok2 = tok2->link();
-                                if (!tok2)
-                                    syntaxError(varDecl);
                                 tok2 = tok2->next();
                             }
                         }
