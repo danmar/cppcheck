@@ -26,6 +26,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "settings.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -646,4 +647,264 @@ std::string SuppressionList::Suppression::toString() const
         s += symbolName;
     }
     return s;
+}
+
+std::string polyspace::Parser::peekToken()
+{
+    if (!mHasPeeked) {
+        mPeeked = nextToken();
+        mHasPeeked = true;
+    }
+    return mPeeked;
+}
+
+std::string polyspace::Parser::nextToken()
+{
+    if (mHasPeeked) {
+        mHasPeeked = false;
+        return mPeeked;
+    }
+
+    if (mComment.compare(0, 2, "/*") == 0 || mComment.compare(0, 2, "//") == 0)
+        mComment = mComment.substr(2);
+
+    std::string::size_type pos = 0;
+    while (mComment[pos] == ' ') {
+        pos++;
+        if (pos == mComment.size()) {
+            mComment = "";
+            return "";
+        }
+    }
+
+    if (mComment.compare(0, 2, "*/") == 0) {
+        mComment = "";
+        return "";
+    }
+
+    if (mComment[pos] == ':') {
+        mComment = mComment.substr(pos + 1);
+        return ":";
+    }
+
+    if (mComment[pos] == ',') {
+        mComment = mComment.substr(pos + 1);
+        return ",";
+    }
+
+    const char *stopChars;
+    std::string::size_type skip;
+    switch (mComment[pos]) {
+    case '\"':
+        stopChars = "\"";
+        skip = 1;
+        break;
+    case '[':
+        stopChars = "]";
+        skip = 1;
+        break;
+    default:
+        stopChars = " :,";
+        skip = 0;
+        break;
+    }
+
+    const std::string::size_type start = pos;
+    pos += skip;
+
+    if (pos == mComment.size()) {
+        mComment = "";
+        return "";
+    }
+
+    while (std::strchr(stopChars, mComment[pos]) == nullptr) {
+        pos++;
+        if (pos == mComment.size())
+            break;
+    }
+
+    if (pos == mComment.size())
+        skip = 0;
+
+    const std::string token = mComment.substr(start, pos - start + skip);
+    mComment = mComment.substr(pos + skip);
+
+    return token;
+}
+
+void polyspace::Parser::finishSuppression()
+{
+    Suppression suppr = { mFamily, mResultName, mFilename, 0, 0 };
+
+    switch (mKind) {
+    case CommentKind::Regular:
+    {
+        suppr.lineBegin = mLine;
+        suppr.lineEnd = mLine + mRange;
+        mDone.push_back(suppr);
+        return;
+    }
+    case CommentKind::Begin:
+    {
+        suppr.lineBegin = mLine;
+        mStarted.push_back(suppr);
+        return;
+    }
+    case CommentKind::End:
+    {
+        auto it = std::find_if(
+            mStarted.begin(),
+            mStarted.end(),
+            [&] (const Suppression &other) {
+                return suppr.matches(other);
+            }
+            );
+
+        if (it == mStarted.end())
+            return;
+
+        suppr.lineBegin = it->lineBegin;
+        suppr.lineEnd = mLine;
+        mStarted.erase(it);
+        mDone.push_back(suppr);
+        return;
+    }
+    }
+}
+
+bool polyspace::Parser::parseEntry()
+{
+    mFamily = nextToken();
+    if (mFamily.empty())
+        return false;
+
+    if (nextToken() != ":")
+        return false;
+
+    // Parse result name, multiple names may be separated by commas
+    while (!mComment.empty()) {
+        mResultName = nextToken();
+        if (mResultName.empty())
+            return false;
+
+        finishSuppression();
+
+        if (peekToken() == ",") {
+            (void) nextToken();
+            continue;
+        }
+
+        break;
+    }
+
+    // Skip status and severity
+    if (!peekToken().empty() && mPeeked[0] == '[')
+        (void) nextToken();
+
+    return true;
+}
+
+void polyspace::Parser::collect(SuppressionList &suppressions) const
+{
+    for (const auto &polyspaceSuppr : mDone) {
+        SuppressionList::Suppression suppr;
+        if (polyspaceSuppr.convert(mSettings, suppr))
+            suppressions.addSuppression(std::move(suppr));
+    }
+}
+
+void polyspace::Parser::parse(const std::string &comment, int line, const std::string &filename)
+{
+    mComment = comment;
+    mLine = line;
+    mFilename = filename;
+    mHasPeeked = false;
+
+    while (true) {
+        const std::string kindStr = nextToken();
+        if (kindStr.empty())
+            return;
+
+        if (kindStr == "polyspace") mKind = CommentKind::Regular;
+        else if (kindStr == "polyspace-begin") mKind = CommentKind::Begin;
+        else if (kindStr == "polyspace-end") mKind = CommentKind::End;
+        else return;
+
+        mRange = 0;
+        if (peekToken()[0] == '+') {
+            try { mRange = std::stoi(mPeeked.substr(1)); } catch (...) { return; }
+            (void) nextToken();
+        }
+
+        while (parseEntry()) {
+            if (peekToken().empty() || mPeeked[0] == '\"')
+                break;
+        }
+
+        if (!peekToken().empty() && mPeeked[0] == '\"') {
+            (void) nextToken();
+            if (peekToken().empty())
+                return;
+            continue;
+        }
+
+        break;
+    }
+}
+
+bool polyspace::isPolyspaceComment(const std::string &comment)
+{
+    const std::string polyspace = "polyspace";
+    const std::string::size_type pos = comment.find_first_not_of("/* ");
+    if (pos == std::string::npos)
+        return false;
+    return comment.compare(pos, polyspace.size(), polyspace, 0, polyspace.size()) == 0;
+}
+
+bool polyspace::Suppression::matches(const polyspace::Suppression &other) const
+{
+    return family == other.family && resultName == other.resultName;
+}
+
+bool polyspace::Suppression::convert(const Settings &settings, SuppressionList::Suppression &suppr) const
+{
+    static const std::map<std::string, std::string> map = {
+        { "MISRA-C-2023", "premium-misra-c-2023-" },
+        { "MISRA-CPP", "premium-misra-cpp-2008-" },
+        { "MISRA-CPP-2023", "premium-misra-cpp-2023-" },
+        { "CERT-C", "premium-cert-c-" },
+        { "CERT-CPP", "premium-cert-cpp-" },
+        { "AUTOSAR-CPP14", "premium-autosar-" },
+    };
+
+    const auto it = map.find(family);
+    std::string prefix;
+    if (it == map.cend()) {
+        if (family == "MISRA-C3" || family == "MISRA2012") {
+            if (settings.premiumArgs.empty()) {
+                prefix = "misra-c2012-";
+            } else {
+                prefix = "premium-misra-c-2012-";
+            }
+        } else {
+            return false;
+        }
+    } else {
+        prefix = it->second;
+    }
+
+    suppr.errorId = prefix + resultName;
+    suppr.isInline = true;
+    suppr.fileName = filename;
+
+    suppr.lineNumber = lineBegin;
+    if (lineBegin == lineEnd) {
+        suppr.type = SuppressionList::Type::unique;
+    } else {
+        suppr.type = SuppressionList::Type::block;
+        suppr.lineBegin = lineBegin;
+        suppr.lineEnd = lineEnd;
+    }
+
+    return true;
 }

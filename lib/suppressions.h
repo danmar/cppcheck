@@ -36,6 +36,7 @@ class Tokenizer;
 class ErrorMessage;
 enum class Certainty : std::uint8_t;
 class FileWithDetails;
+class Settings;
 
 /// @addtogroup Core
 /// @{
@@ -293,6 +294,54 @@ struct Suppressions
     /** @brief suppress exitcode */
     SuppressionList nofail;
 };
+
+namespace polyspace {
+
+    struct CPPCHECKLIB Suppression {
+        std::string family;
+        std::string resultName;
+        std::string filename;
+        int lineBegin;
+        int lineEnd;
+
+        bool matches(const Suppression &other) const;
+        bool convert(const Settings &settings, SuppressionList::Suppression &suppr) const;
+    };
+
+    class CPPCHECKLIB Parser {
+    public:
+        Parser() = delete;
+        explicit Parser(const Settings &settings) : mSettings(settings) {}
+        void collect(SuppressionList &suppressions) const;
+        void parse(const std::string &comment, int line, const std::string &filename);
+
+    private:
+        std::string peekToken();
+        std::string nextToken();
+        void finishSuppression();
+        bool parseEntry();
+
+        enum class CommentKind : std::uint8_t {
+            Regular, Begin, End,
+        };
+
+        std::list<Suppression> mStarted;
+        std::list<Suppression> mDone;
+        std::string mComment;
+        std::string mFilename;
+        int mLine{};
+        int mRange{};
+        CommentKind mKind{};
+        std::string mFamily;
+        std::string mResultName;
+        std::string mPeeked;
+        bool mHasPeeked{};
+        const Settings &mSettings;
+    };
+
+    bool CPPCHECKLIB isPolyspaceComment(const std::string &comment);
+
+}
 
 /// @}
 //---------------------------------------------------------------------------

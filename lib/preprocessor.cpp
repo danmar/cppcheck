@@ -200,9 +200,16 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
 
     bool onlyComments = true;
 
+    polyspace::Parser polyspaceParser(settings);
+
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment) {
             onlyComments = false;
+            continue;
+        }
+
+        if (polyspace::isPolyspaceComment(tok->str())) {
+            polyspaceParser.parse(tok->str(), tok->location.line, tokens.file(tok->location));
             continue;
         }
 
@@ -310,6 +317,8 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
     for (const SuppressionList::Suppression & suppr: inlineSuppressionsBlockBegin)
         // cppcheck-suppress useStlAlgorithm
         bad.emplace_back(suppr.fileName, suppr.lineNumber, 0, "Suppress Begin: No matching end"); // TODO: set column
+
+    polyspaceParser.collect(suppressions);
 }
 
 void Preprocessor::inlineSuppressions(SuppressionList &suppressions)
