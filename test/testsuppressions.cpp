@@ -115,6 +115,21 @@ private:
         TEST_CASE(suppressionFromErrorMessage);
 
         TEST_CASE(suppressionWildcard);
+
+        TEST_CASE(polyspaceMisraC2012);
+        TEST_CASE(polyspacePremiumMisraC2012);
+        TEST_CASE(polyspaceMisraC2023);
+        TEST_CASE(polyspaceMisraCpp2008);
+        TEST_CASE(polyspaceMisraCpp2023);
+        TEST_CASE(polyspaceCertC);
+        TEST_CASE(polyspaceCertCpp);
+        TEST_CASE(polyspaceAutosar);
+        TEST_CASE(polyspaceIgnored);
+        TEST_CASE(polyspaceMultiple1);
+        TEST_CASE(polyspaceMultiple2);
+        TEST_CASE(polyspaceMultiple3);
+        TEST_CASE(polyspaceRange);
+        TEST_CASE(polyspaceBlock);
     }
 
     void suppressionsBadId1() const {
@@ -1894,6 +1909,198 @@ private:
             }
             ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
         }
+    }
+
+    void polyspaceMisraC2012() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace MISRA2012 : 2.7 */", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT(s->isInline);
+        ASSERT(s->isPolyspace);
+        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS(1, s->lineNumber);
+        ASSERT_EQUALS_ENUM(SuppressionList::Type::unique, s->type);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineBegin);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineEnd);
+    }
+
+    void polyspacePremiumMisraC2012() const {
+        SuppressionList list;
+        Settings settings;
+        settings.premiumArgs = "--misra-c-2012";
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace MISRA2012 : 2.7 */", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-misra-c-2012-2.7", s->errorId);
+    }
+
+    void polyspaceMisraC2023() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace MISRA-C-2023 : *", 2, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-misra-c-2023-*", s->errorId);
+        ASSERT_EQUALS(2, s->lineNumber);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineBegin);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, s->lineEnd);
+    }
+
+    void polyspaceMisraCpp2008() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace MISRA-CPP : 7-1-1", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
+    }
+
+    void polyspaceMisraCpp2023() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace MISRA-CPP-2023 : 4.6.1", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-misra-cpp-2023-4.6.1", s->errorId);
+    }
+
+    void polyspaceCertC() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace CERT-C : PRE30", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-cert-c-PRE30", s->errorId);
+    }
+
+    void polyspaceCertCpp() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace CERT-CPP : CTR51", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-cert-cpp-CTR51", s->errorId);
+    }
+
+    void polyspaceAutosar() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace AUTOSAR-CPP14 : a2-10-1", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT_EQUALS("premium-autosar-a2-10-1", s->errorId);
+    }
+
+    void polyspaceIgnored() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("// polyspace DEFECT : INT_OVFL", 1, "file.c");
+        parser.collect(list);
+        ASSERT(list.getSuppressions().empty());
+    }
+
+    void polyspaceMultiple1() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace MISRA2012 : 2.7, 9.1 */", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(2, supprs.size());
+        auto s = supprs.cbegin();
+        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        s++;
+        ASSERT_EQUALS("misra-c2012-9.1", s->errorId);
+    }
+
+    void polyspaceMultiple2() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace MISRA2012 : 2.7 MISRA-CPP : 7-1-1 */", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(2, supprs.size());
+        auto s = supprs.cbegin();
+        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        s++;
+        ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
+    }
+
+    void polyspaceMultiple3() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace MISRA2012 : 2.7 [Justified:Low] \"comment 1\" polyspace MISRA-CPP : 7-1-1 \"comment 2\"*/", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(2, supprs.size());
+        auto s = supprs.cbegin();
+        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        s++;
+        ASSERT_EQUALS("premium-misra-cpp-2008-7-1-1", s->errorId);
+    }
+
+    void polyspaceRange() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace +3 MISRA2012 : 2.7 */", 1, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT(s->isInline);
+        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS(1, s->lineNumber);
+        ASSERT_EQUALS_ENUM(SuppressionList::Type::block, s->type);
+        ASSERT_EQUALS(1, s->lineBegin);
+        ASSERT_EQUALS(4, s->lineEnd);
+    }
+
+    void polyspaceBlock() const {
+        SuppressionList list;
+        const Settings settings;
+        polyspace::Parser parser(settings);
+        parser.parse("/* polyspace-begin MISRA2012 : 2.7 */", 1, "file.c");
+        parser.parse("/* polyspace-end MISRA2012 : 2.7 */", 5, "file.c");
+        parser.collect(list);
+        const auto &supprs = list.getSuppressions();
+        ASSERT_EQUALS(1, supprs.size());
+        const auto s = supprs.cbegin();
+        ASSERT(s->isInline);
+        ASSERT_EQUALS("misra-c2012-2.7", s->errorId);
+        ASSERT_EQUALS(1, s->lineNumber);
+        ASSERT_EQUALS_ENUM(SuppressionList::Type::block, s->type);
+        ASSERT_EQUALS(1, s->lineBegin);
+        ASSERT_EQUALS(5, s->lineEnd);
     }
 };
 
