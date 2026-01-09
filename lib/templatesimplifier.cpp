@@ -219,9 +219,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope, 
     }
 
     // make sure at most only one family flag is set
-    assert(isClass() ? !(isFunction() || isVariable()) : true);
-    assert(isFunction() ? !(isClass() || isVariable()) : true);
-    assert(isVariable() ? !(isClass() || isFunction()) : true);
+    if (isClass() + isFunction() + isVariable() > 1)
+        syntaxError(token);
 
     if (mToken)
         mToken->templateSimplifierPointer(this);
