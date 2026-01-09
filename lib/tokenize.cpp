@@ -5707,6 +5707,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     if (isCPP())
         simplifyExternC();
 
+    validate();
+
     // simplify compound statements: "[;{}] ( { code; } ) ;"->"[;{}] code;"
     simplifyCompoundStatements();
 
