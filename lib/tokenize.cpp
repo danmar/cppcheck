@@ -1125,6 +1125,8 @@ void Tokenizer::simplifyTypedef()
             list.front()->deleteThis();
     }
 
+    validate();
+
     simplifyTypedefCpp();
 }
 
