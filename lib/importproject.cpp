@@ -361,7 +361,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         return false;
     }
 
-    std::map<std::string, int> fsFileIds;
+    std::map<std::string, std::size_t> fsFileIds;
 
     for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();

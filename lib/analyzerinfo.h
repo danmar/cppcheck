@@ -61,10 +61,10 @@ public:
 
     /** Close current TU.analyzerinfo file */
     void close();
-    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fsFileId, std::size_t hash, std::list<ErrorMessage> &errors);
+    bool analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId, std::size_t hash, std::list<ErrorMessage> &errors);
     void reportErr(const ErrorMessage &msg);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
-    static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, int fsFileId);
+    static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t fsFileId);
 
     static const char sep = ':';
 
@@ -73,7 +73,7 @@ public:
         bool parse(const std::string& filesTxtLine);
         std::string afile;
         std::string cfg;
-        int fsFileId = 0;
+        std::size_t fsFileId = 0;
         std::string sourceFile;
     };
 

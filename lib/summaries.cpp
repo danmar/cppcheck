@@ -35,7 +35,7 @@
 
 
 
-std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg, int fsFileId)
+std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg, std::size_t fsFileId)
 {
     const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
     const Settings &settings = tokenizer.getSettings();

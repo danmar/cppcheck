@@ -330,7 +330,7 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename, int fsFileId)
+static std::string getDumpFileName(const Settings& settings, const std::string& filename, std::size_t fsFileId)
 {
     std::string extension = ".dump";
     if (fsFileId > 0)

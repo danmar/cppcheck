@@ -74,12 +74,12 @@ public:
         return mLang;
     }
 
-    int fsFileId() const
+    std::size_t fsFileId() const
     {
         return mFsFileId;
     }
 
-    void setFsFileId(int fsFileId)
+    void setFsFileId(std::size_t fsFileId)
     {
         mFsFileId = fsFileId;
     }
@@ -88,7 +88,7 @@ private:
     std::string mPathSimplified;
     Standards::Language mLang = Standards::Language::None;
     std::size_t mSize;
-    int mFsFileId{0};
+    std::size_t mFsFileId{0};
 };
 
 /** File settings. Multiple configurations for a file is allowed. */
