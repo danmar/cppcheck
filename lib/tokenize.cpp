@@ -9003,8 +9003,8 @@ void Tokenizer::findGarbageCode() const
                 }
             }
         }
-        if (cpp && tok->str() == "namespace" && tok->tokAt(-1)) {
-            if (!Token::Match(tok->tokAt(-1), ";|{|}|using|inline")) {
+        if (cpp && tok->str() == "namespace") {
+            if (tok->tokAt(-1) && !Token::Match(tok->tokAt(-1), ";|{|}|using|inline")) {
                 if (tok->tokAt(-1)->isUpperCaseName())
                     unknownMacroError(tok->tokAt(-1));
                 else if (tok->linkAt(-1) && tok->linkAt(-1)->tokAt(-1) && tok->linkAt(-1)->tokAt(-1)->isUpperCaseName())
@@ -9012,6 +9012,8 @@ void Tokenizer::findGarbageCode() const
                 else
                     syntaxError(tok);
             }
+            if (!tok->next() || (Token::Match(tok->next(), "%name% =") && !Token::Match(tok->tokAt(3), "::|%name%")))
+                syntaxError(tok);
         }
         if (cpp && tok->str() == "using" && !Token::Match(tok->next(), "::|%name%"))
             syntaxError(tok);
