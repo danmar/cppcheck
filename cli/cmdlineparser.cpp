@@ -1184,7 +1184,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
             }
             if (projectType == ImportProject::Type::COMPILE_DB)
                 mSettings.maxConfigsProject = 1;
-            if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_VCXPROJ) {
+            if (projectType == ImportProject::Type::VS_SLN || projectType == ImportProject::Type::VS_SLNX || projectType == ImportProject::Type::VS_VCXPROJ) {
                 mSettings.libraries.emplace_back("windows");
             }
             for (const auto &error : project.errors)
@@ -1210,7 +1210,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 mLogger.printError("--project-configuration parameter is empty.");
                 return Result::Fail;
             }
-            if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
+            if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
                 mLogger.printError("--project-configuration has no effect - no Visual Studio project provided.");
                 return Result::Fail;
             }
@@ -1645,7 +1645,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         mSettings.platform.defaultSign = defaultSign;
 
     if (!mSettings.analyzeAllVsConfigs) {
-        if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_VCXPROJ) {
+        if (projectType != ImportProject::Type::VS_SLN && projectType != ImportProject::Type::VS_SLNX && projectType != ImportProject::Type::VS_VCXPROJ) {
             if (mAnalyzeAllVsConfigsSetOnCmdLine) {
                 mLogger.printError("--no-analyze-all-vs-configs has no effect - no Visual Studio project provided.");
                 return Result::Fail;

@@ -1969,6 +1969,7 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringLis
             switch (result) {
             case ImportProject::Type::COMPILE_DB:
             case ImportProject::Type::VS_SLN:
+            case ImportProject::Type::VS_SLNX:
             case ImportProject::Type::VS_VCXPROJ:
             case ImportProject::Type::BORLAND:
             case ImportProject::Type::CPPCHECK_GUI:
