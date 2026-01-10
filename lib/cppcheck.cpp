@@ -330,17 +330,17 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
-static std::string getDumpFileName(const Settings& settings, const std::string& filename, std::size_t fsFileId)
+static std::string getDumpFileName(const Settings& settings, const FileWithDetails& file)
 {
     std::string extension = ".dump";
-    if (fsFileId > 0)
-        extension = "." + std::to_string(fsFileId) + extension;
+    if (file.fsFileId() > 0)
+        extension = "." + std::to_string(file.fsFileId()) + extension;
     if (!settings.dump && settings.buildDir.empty())
         extension = "." + std::to_string(settings.pid) + extension;
 
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, Path::simplifyPath(filename), "", fsFileId) + extension;
-    return filename + extension;
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, file.spath(), "", file.fsFileId()) + extension;
+    return file.spath() + extension;
 }
 
 static std::string getCtuInfoFileName(const std::string &dumpFile)
@@ -355,7 +355,7 @@ static void createDumpFile(const Settings& settings,
 {
     if (!settings.dump && settings.addons.empty())
         return;
-    dumpFile = getDumpFileName(settings, file.spath(), file.fsFileId());
+    dumpFile = getDumpFileName(settings, file);
 
     fdump.open(dumpFile);
     if (!fdump.is_open())
@@ -1630,12 +1630,12 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.spath(), 0);
+        const std::string &dumpFileName = getDumpFileName(mSettings, f);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
     for (const auto &fs: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, fs.sfilename(), fs.file.fsFileId());
+        const std::string &dumpFileName = getDumpFileName(mSettings, fs.file);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
