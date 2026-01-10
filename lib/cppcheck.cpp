@@ -838,7 +838,7 @@ unsigned int CppCheck::check(const FileSettings &fs)
     }
     // need to pass the externally provided ErrorLogger instead of our internal wrapper
     CppCheck temp(tempSettings, mSuppressions, mErrorLoggerDirect, mTimerResults, mUseGlobalSuppressions, mExecuteCommand);
-    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg, fs.fsFileId);
+    const unsigned int returnValue = temp.checkFile(fs.file, fs.cfg, fs.file.fsFileId());
     if (mUnusedFunctionsCheck)
         mUnusedFunctionsCheck->updateFunctionData(*temp.mUnusedFunctionsCheck);
     while (!temp.mFileInfo.empty()) {
@@ -1635,8 +1635,8 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
-    for (const auto &f: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.filename(), f.fsFileId);
+    for (const auto &fs: fileSettings) {
+        const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename(), fs.file.fsFileId());
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
@@ -1748,7 +1748,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), "", fileSettings.fsFileId);
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), "", fileSettings.file.fsFileId());
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }
