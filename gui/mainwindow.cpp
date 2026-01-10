@@ -767,7 +767,7 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
         QMap<QString,QString> filters;
         filters[tr("C/C++ Source")] = FileList::getDefaultFilters().join(" ");
         filters[tr("Compile database")] = compile_commands_json;
-        filters[tr("Visual Studio")] = "*.sln *.vcxproj";
+        filters[tr("Visual Studio")] = "*.sln *.slnx *.vcxproj";
         filters[tr("Borland C++ Builder 6")] = "*.bpr";
         QString lastFilter = mSettings->value(SETTINGS_LAST_ANALYZE_FILES_FILTER).toString();
         selected = QFileDialog::getOpenFileNames(this,
@@ -810,6 +810,7 @@ void MainWindow::analyzeFiles()
 
     const QString file0 = (!selected.empty() ? selected[0].toLower() : QString());
     if (file0.endsWith(".sln")
+        || file0.endsWith(".slnx")
         || file0.endsWith(".vcxproj")
         || file0.endsWith(compile_commands_json)
         || file0.endsWith(".bpr")) {
