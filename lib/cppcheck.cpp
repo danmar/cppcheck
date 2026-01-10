@@ -70,9 +70,10 @@
 #include <vector>
 
 #include "json.h"
-#include "xml.h"
 
 #include <simplecpp.h>
+
+namespace tinyxml2 { class XMLElement; }
 
 static constexpr char Version[] = CPPCHECK_VERSION_STRING;
 static constexpr char ExtraVersion[] = "";
@@ -1851,50 +1852,26 @@ unsigned int CppCheck::analyseWholeProgram(const std::string &buildDir, const st
         return mLogger->exitcode();
 
     executeAddonsWholeProgram(files, fileSettings, ctuInfo);
+
     std::list<Check::FileInfo*> fileInfoList;
     CTU::FileInfo ctuFileInfo;
 
-    // Load all analyzer info data..
-    const std::string filesTxt(buildDir + "/files.txt");
-    std::ifstream fin(filesTxt);
-    std::string filesTxtLine;
-    while (std::getline(fin, filesTxtLine)) {
-        AnalyzerInformation::Info filesTxtInfo;
-        if (!filesTxtInfo.parse(filesTxtLine))
-            continue;
-
-        const std::string xmlfile = buildDir + '/' + filesTxtInfo.afile;
-
-        tinyxml2::XMLDocument doc;
-        const tinyxml2::XMLError error = doc.LoadFile(xmlfile.c_str());
-        if (error != tinyxml2::XML_SUCCESS)
-            continue;
-
-        const tinyxml2::XMLElement * const rootNode = doc.FirstChildElement();
-        if (rootNode == nullptr)
-            continue;
-
-        for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
-            if (std::strcmp(e->Name(), "FileInfo") != 0)
-                continue;
-            const char *checkClassAttr = e->Attribute("check");
-            if (!checkClassAttr)
-                continue;
-            if (std::strcmp(checkClassAttr, "ctu") == 0) {
-                ctuFileInfo.loadFromXml(e);
-                continue;
-            }
-            // cppcheck-suppress shadowFunction - TODO: fix this
-            for (const Check *check : Check::instances()) {
-                if (checkClassAttr == check->name()) {
-                    if (Check::FileInfo* fi = check->loadFileInfoFromXml(e)) {
-                        fi->file0 = filesTxtInfo.sourceFile;
-                        fileInfoList.push_back(fi);
-                    }
+    const auto handler = [&fileInfoList, &ctuFileInfo](const char* checkattr, const tinyxml2::XMLElement* e, const AnalyzerInformation::Info& filesTxtInfo) {
+        if (std::strcmp(checkattr, "ctu") == 0) {
+            ctuFileInfo.loadFromXml(e);
+            return;
+        }
+        for (const Check *check : Check::instances()) {
+            if (checkattr == check->name()) {
+                if (Check::FileInfo* fi = check->loadFileInfoFromXml(e)) {
+                    fi->file0 = filesTxtInfo.sourceFile;
+                    fileInfoList.push_back(fi);
                 }
             }
         }
-    }
+    };
+
+    AnalyzerInformation::processFilesTxt(buildDir, handler);
 
     // Analyse the tokens
     // cppcheck-suppress shadowFunction - TODO: fix this
