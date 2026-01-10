@@ -81,7 +81,7 @@ struct CPPCHECKLIB FileSettings {
         : file(std::move(path), lang, size)
     {}
 
-    int fileIndex = 0;
+    int fsFileId = 0;
     std::string cfg;
     FileWithDetails file;
     const std::string& filename() const

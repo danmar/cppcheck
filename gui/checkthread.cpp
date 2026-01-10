@@ -238,7 +238,7 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
 
             const std::string &buildDir = settings.buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg, fileSettings->fileIndex));
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg, fileSettings->fsFileId));
 
                 QStringList args2(args);
                 args2.insert(0,"-E");

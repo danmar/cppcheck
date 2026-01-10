@@ -34,7 +34,7 @@
 
 
 
-std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg, int fileIndex)
+std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg, int fsFileId)
 {
     const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
     const Settings &settings = tokenizer.getSettings();
@@ -82,7 +82,7 @@ std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg
     }
 
     if (!settings.buildDir.empty()) {
-        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer.list.getSourceFilePath(), cfg, fileIndex);
+        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer.list.getSourceFilePath(), cfg, fsFileId);
         const std::string::size_type pos = filename.rfind(".a");
         if (pos != std::string::npos) {
             filename[pos+1] = 's';

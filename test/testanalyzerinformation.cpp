@@ -59,9 +59,9 @@ private:
     void filesTextDuplicateFile() const {
         std::list<FileSettings> fileSettings;
         fileSettings.emplace_back("a.c", Standards::Language::C, 10);
-        fileSettings.back().fileIndex = 0;
+        fileSettings.back().fsFileId = 0;
         fileSettings.emplace_back("a.c", Standards::Language::C, 10);
-        fileSettings.back().fileIndex = 1;
+        fileSettings.back().fsFileId = 1;
 
         const char expected[] = "a.a1:::a.c\n"
                                 "a.a2::1:a.c\n";
@@ -90,19 +90,19 @@ private:
         ASSERT_EQUALS(true, info.parse("a:b::d"));
         ASSERT_EQUALS("a", info.afile);
         ASSERT_EQUALS("b", info.cfg);
-        ASSERT_EQUALS(0, info.fileIndex);
+        ASSERT_EQUALS(0, info.fsFileId);
         ASSERT_EQUALS("d", info.sourceFile);
 
         ASSERT_EQUALS(true, info.parse("e:f:12:g"));
         ASSERT_EQUALS("e", info.afile);
         ASSERT_EQUALS("f", info.cfg);
-        ASSERT_EQUALS(12, info.fileIndex);
+        ASSERT_EQUALS(12, info.fsFileId);
         ASSERT_EQUALS("g", info.sourceFile);
 
         ASSERT_EQUALS(true, info.parse("odr1.a1:::C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp"));
         ASSERT_EQUALS("odr1.a1", info.afile);
         ASSERT_EQUALS("", info.cfg);
-        ASSERT_EQUALS(0, info.fileIndex);
+        ASSERT_EQUALS(0, info.fsFileId);
         ASSERT_EQUALS("C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp", info.sourceFile);
     }
 

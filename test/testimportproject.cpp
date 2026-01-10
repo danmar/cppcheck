@@ -371,8 +371,8 @@ private:
         ASSERT_EQUALS(2, importer.fileSettings.size());
         const FileSettings &fs1 = importer.fileSettings.front();
         const FileSettings &fs2 = importer.fileSettings.back();
-        ASSERT_EQUALS(0, fs1.fileIndex);
-        ASSERT_EQUALS(1, fs2.fileIndex);
+        ASSERT_EQUALS(0, fs1.fsFileId);
+        ASSERT_EQUALS(1, fs2.fsFileId);
     }
 
     void importCompileCommands14() const { // #14156

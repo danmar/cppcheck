@@ -29,7 +29,7 @@
 class Tokenizer;
 
 namespace Summaries {
-    CPPCHECKLIB std::string create(const Tokenizer &tokenizer, const std::string &cfg, int fileIndex);
+    CPPCHECKLIB std::string create(const Tokenizer &tokenizer, const std::string &cfg, int fsFileId);
     CPPCHECKLIB void loadReturn(const std::string &buildDir, std::set<std::string> &summaryReturn);
 }
 

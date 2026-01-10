@@ -361,7 +361,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         return false;
     }
 
-    std::map<std::string, int> fileIndex;
+    std::map<std::string, int> fsFileIds;
 
     for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
@@ -444,7 +444,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         fsSetIncludePaths(fs, directory, fs.includePaths, variables);
         // Assign a unique index to each file path. If the file path already exists in the map,
         // increment the index to handle duplicate file entries.
-        fs.fileIndex = fileIndex[path]++;
+        fs.fsFileId = fsFileIds[path]++;
         fileSettings.push_back(std::move(fs));
     }
 
