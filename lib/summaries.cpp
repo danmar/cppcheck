@@ -19,6 +19,7 @@
 #include "summaries.h"
 
 #include "analyzerinfo.h"
+#include "path.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -82,7 +83,7 @@ std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg
     }
 
     if (!settings.buildDir.empty()) {
-        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer.list.getSourceFilePath(), cfg, fsFileId);
+        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, Path::simplifyPath(tokenizer.list.getSourceFilePath()), cfg, fsFileId);
         const std::string::size_type pos = filename.rfind(".a");
         if (pos != std::string::npos) {
             filename[pos+1] = 's';

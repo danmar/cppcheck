@@ -339,7 +339,7 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
         extension = "." + std::to_string(settings.pid) + extension;
 
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "", fsFileId) + extension;
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, Path::simplifyPath(filename), "", fsFileId) + extension;
     return filename + extension;
 }
 
@@ -1630,12 +1630,12 @@ void CppCheck::executeAddonsWholeProgram(const std::list<FileWithDetails> &files
 
     std::vector<std::string> ctuInfoFiles;
     for (const auto &f: files) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, f.path(), 0);
+        const std::string &dumpFileName = getDumpFileName(mSettings, f.spath(), 0);
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
     for (const auto &fs: fileSettings) {
-        const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename(), fs.file.fsFileId());
+        const std::string &dumpFileName = getDumpFileName(mSettings, fs.sfilename(), fs.file.fsFileId());
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
@@ -1747,7 +1747,7 @@ void CppCheck::analyseClangTidy(const FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename(), "", fileSettings.file.fsFileId());
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.sfilename(), "", fileSettings.file.fsFileId());
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }

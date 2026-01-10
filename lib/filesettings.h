@@ -103,7 +103,6 @@ struct CPPCHECKLIB FileSettings {
     {
         return file.path();
     }
-    // cppcheck-suppress unusedFunction
     const std::string& sfilename() const
     {
         return file.spath();
