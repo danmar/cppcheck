@@ -895,6 +895,7 @@ bool polyspace::Suppression::convert(const Settings &settings, SuppressionList::
 
     suppr.errorId = prefix + resultName;
     suppr.isInline = true;
+    suppr.isPolyspace = true;
     suppr.fileName = filename;
 
     suppr.lineNumber = lineBegin;
