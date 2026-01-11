@@ -817,7 +817,7 @@ void MainWindow::analyzeFiles()
         ImportProject p;
         p.import(selected[0].toStdString());
 
-        if (file0.endsWith(".sln")) {
+        if (file0.endsWith(".sln") || file0.endsWith(".slnx")) {
             QStringList configs;
             for (auto it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
                 const QString cfg(QString::fromStdString(it->cfg));
