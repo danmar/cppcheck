@@ -1860,6 +1860,16 @@ void TokenList::createAst() const
             throw InternalError(tok, "Syntax Error: Infinite loop when creating AST.", InternalError::AST);
         tok = nextTok;
     }
+    for (Token *tok = mTokensFrontBack->front; tok; tok = tok ? tok->next() : nullptr) {
+        if (tok->astParent())
+            continue;
+        if (!tok->astOperand1() && !tok->astOperand2())
+            continue;
+        visitAstNodes(tok, [&](Token* child) {
+            child->astTop(tok);
+            return ChildrenToVisit::op1_and_op2;
+        });
+    }
 }
 
 namespace {
