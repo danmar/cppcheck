@@ -159,6 +159,10 @@ These apply to codebases which use later standards then C++11 (C++17 is used whe
 
 We are not interested in this.
 
+`readability-redundant-parentheses`<br/>
+
+Reports false positives - see https://github.com/llvm/llvm-project/issues/164125.
+
 ### Disabled for performance reasons
 
 `portability-std-allocator-const`<br/>

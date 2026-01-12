@@ -70,6 +70,7 @@ Checks: >
         -readability-implicit-bool-conversion,
         -readability-isolate-declaration,
         -readability-magic-numbers,
+        -readability-redundant-parentheses,
         -readability-suspicious-call-argument,
         -readability-uppercase-literal-suffix,
         -readability-use-concise-preprocessor-directives,
