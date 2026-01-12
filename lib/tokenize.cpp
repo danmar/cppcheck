@@ -798,7 +798,7 @@ namespace {
             Token *after = tok3;
             while (Token::Match(after, "%name%|*|&|&&|::"))
                 after = after->next();
-            if (Token::Match(mNameToken, "%name% (") && Token::simpleMatch(tok3->next(), "*")) {
+            if (Token::Match(mNameToken, "%name% (") && Token::Match(tok3->next(), "*|const")) {
                 while (Token::Match(after, "(|["))
                     after = after->link()->next();
                 if (after) {
@@ -841,6 +841,8 @@ namespace {
                     useAfterVarRange = false;
                     if (Token::simpleMatch(tok3->previous(), "( *"))
                         tok3->deletePrevious();
+                    else if (Token::simpleMatch(tok3->tokAt(-2), "( * const"))
+                        tok3->tokAt(-1)->deletePrevious();
                 }
                 else if (after->str() == "[") {
                     while (after && after->str() == "[")
