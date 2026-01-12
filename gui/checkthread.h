@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,16 @@
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
-#include "cppcheck.h"
-#include "importproject.h"
+#include "filesettings.h"
+#include "settings.h"
 #include "suppressions.h"
 
 #include <atomic>
+#include <cstdint>
+#include <list>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <QList>
 #include <QObject>
@@ -32,7 +37,6 @@
 #include <QStringList>
 #include <QThread>
 
-class Settings;
 class ThreadResult;
 
 /// @addtogroup GUI
@@ -51,14 +55,16 @@ public:
      * @brief Set settings for cppcheck
      *
      * @param settings settings for cppcheck
+     * @param supprs suppressions for cppcheck
      */
-    void check(const Settings &settings);
+    void setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs);
 
     /**
      * @brief Run whole program analysis
      * @param files    All files
+     * @param ctuInfo  Ctu info for addons
      */
-    void analyseWholeProgram(const QStringList &files);
+    void analyseWholeProgram(const std::list<FileWithDetails> &files, const std::string& ctuInfo);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
@@ -68,8 +74,8 @@ public:
         mClangIncludePaths = s;
     }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
-        mSuppressions = s;
+    void setSuppressions(const QList<SuppressionList::Suppression> &s) {
+        mSuppressionsUi = s;
     }
 
     /**
@@ -92,6 +98,8 @@ public:
      */
     static QString clangTidyCmd();
 
+    static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output);
+
 signals:
 
     /**
@@ -111,7 +119,7 @@ protected:
      * has been completed. Thread must be stopped cleanly, just terminating thread
      * likely causes unpredictable side-effects.
      */
-    enum State {
+    enum State : std::uint8_t {
         Running, /**< The thread is checking. */
         Stopping, /**< The thread will stop after current work. */
         Stopped, /**< The thread has been stopped. */
@@ -124,23 +132,23 @@ protected:
     std::atomic<State> mState{Ready};
 
     ThreadResult &mResult;
-    /**
-     * @brief Cppcheck itself
-     */
-    CppCheck mCppcheck;
+
+    Settings mSettings;
+    std::shared_ptr<Suppressions> mSuppressions;
 
 private:
-    void runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName);
+    void runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName);
 
     void parseClangErrors(const QString &tool, const QString &file0, QString err);
 
-    bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
+    bool isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const;
 
-    QStringList mFiles;
+    std::list<FileWithDetails> mFiles;
     bool mAnalyseWholeProgram{};
+    std::string mCtuInfo;
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressionsUi;
 };
 /// @}
 #endif // CHECKTHREAD_H

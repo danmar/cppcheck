@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 
 #include "mathlib.h"
 #include "errortypes.h"
+#include "token.h"
 #include "utils.h"
 
 #include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <exception>
 #include <limits>
 #include <locale>
 #include <sstream>
@@ -49,7 +49,7 @@ MathLib::value::value(const std::string &s)
         throw InternalError(nullptr, "Invalid value: " + s);
 
     mType = MathLib::value::Type::INT;
-    mIntValue = MathLib::toLongNumber(s);
+    mIntValue = MathLib::toBigNumber(s);
 
     if (isIntHex(s) && mIntValue < 0)
         mIsUnsigned = true;
@@ -116,7 +116,7 @@ void MathLib::value::promote(const MathLib::value &v)
         }
     } else if (!isFloat()) {
         mIsUnsigned = false;
-        mDoubleValue = mIntValue;
+        mDoubleValue = static_cast<double>(mIntValue);
         mType = MathLib::value::Type::FLOAT;
     }
 }
@@ -151,34 +151,34 @@ MathLib::value MathLib::value::calc(char op, const MathLib::value &v1, const Mat
     } else if (temp.mIsUnsigned) {
         switch (op) {
         case '+':
-            temp.mIntValue += (unsigned long long)v2.mIntValue;
+            temp.mIntValue += static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '-':
-            temp.mIntValue -= (unsigned long long)v2.mIntValue;
+            temp.mIntValue -= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '*':
-            temp.mIntValue *= (unsigned long long)v2.mIntValue;
+            temp.mIntValue *= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '/':
             if (v2.mIntValue == 0)
                 throw InternalError(nullptr, "Internal Error: Division by zero");
             if (v1.mIntValue == std::numeric_limits<bigint>::min() && std::abs(v2.mIntValue)<=1)
                 throw InternalError(nullptr, "Internal Error: Division overflow");
-            temp.mIntValue /= (unsigned long long)v2.mIntValue;
+            temp.mIntValue /= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '%':
             if (v2.mIntValue == 0)
                 throw InternalError(nullptr, "Internal Error: Division by zero");
-            temp.mIntValue %= (unsigned long long)v2.mIntValue;
+            temp.mIntValue %= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '&':
-            temp.mIntValue &= (unsigned long long)v2.mIntValue;
+            temp.mIntValue &= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '|':
-            temp.mIntValue |= (unsigned long long)v2.mIntValue;
+            temp.mIntValue |= static_cast<unsigned long long>(v2.mIntValue);
             break;
         case '^':
-            temp.mIntValue ^= (unsigned long long)v2.mIntValue;
+            temp.mIntValue ^= static_cast<unsigned long long>(v2.mIntValue);
             break;
         default:
             throw InternalError(nullptr, "Unhandled calculation");
@@ -237,9 +237,9 @@ int MathLib::value::compare(const MathLib::value &v) const
     }
 
     if (temp.mIsUnsigned) {
-        if ((unsigned long long)mIntValue < (unsigned long long)v.mIntValue)
+        if (static_cast<unsigned long long>(mIntValue) < static_cast<unsigned long long>(v.mIntValue))
             return -1;
-        if ((unsigned long long)mIntValue > (unsigned long long)v.mIntValue)
+        if (static_cast<unsigned long long>(mIntValue) > static_cast<unsigned long long>(v.mIntValue))
             return 1;
         return 0;
     }
@@ -285,8 +285,13 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
     return ret;
 }
 
+MathLib::biguint MathLib::toBigUNumber(const Token * tok)
+{
+    return toBigUNumber(tok->str(), tok);
+}
+
 // TODO: remove handling of non-literal stuff
-MathLib::biguint MathLib::toULongNumber(const std::string & str)
+MathLib::biguint MathLib::toBigUNumber(const std::string & str, const Token * const tok)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -294,9 +299,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 16);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
         }
     }
 
@@ -306,9 +311,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
         }
     }
 
@@ -331,15 +336,20 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         // Things are going to be less precise now: the value can't be represented in the biguint type.
         // Use min/max values as an approximation. See #5843
         // TODO: bail out when we are out of range?
-        const double doubleval = toDoubleNumber(str);
-        if (doubleval > (double)std::numeric_limits<biguint>::max())
+        const double doubleval = toDoubleNumber(str, tok);
+        if (doubleval > static_cast<double>(std::numeric_limits<biguint>::max()))
             return std::numeric_limits<biguint>::max();
         // cast to bigint to avoid UBSAN warning about negative double being out-of-range
         return static_cast<biguint>(static_cast<bigint>(doubleval));
     }
 
-    if (isCharLiteral(str))
-        return simplecpp::characterLiteralToLL(str);
+    if (isCharLiteral(str)) {
+        try {
+            return simplecpp::characterLiteralToLL(str);
+        } catch (const std::runtime_error& e) {
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        }
+    }
 
     try {
         std::size_t idx = 0;
@@ -347,13 +357,13 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
             if (!isValidIntegerSuffix(s, true))
-                throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: input was not completely consumed: " + str);
+                throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: " + str);
         }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
     } catch (const std::invalid_argument& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
     }
 }
 
@@ -364,18 +374,23 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     });
 }
 
+MathLib::bigint MathLib::toBigNumber(const Token * tok)
+{
+    return toBigNumber(tok->str(), tok);
+}
+
 // TODO: remove handling of non-literal stuff
-MathLib::bigint MathLib::toLongNumber(const std::string & str)
+MathLib::bigint MathLib::toBigNumber(const std::string & str, const Token * const tok)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
         try {
             const biguint ret = std::stoull(str, nullptr, 16);
-            return (bigint)ret;
+            return static_cast<bigint>(ret);
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
         }
     }
 
@@ -385,9 +400,9 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
         }
     }
 
@@ -410,16 +425,21 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         // Things are going to be less precise now: the value can't be represented in the bigint type.
         // Use min/max values as an approximation. See #5843
         // TODO: bail out when we are out of range?
-        const double doubleval = toDoubleNumber(str);
-        if (doubleval > (double)std::numeric_limits<bigint>::max())
+        const double doubleval = toDoubleNumber(str, tok);
+        if (doubleval > static_cast<double>(std::numeric_limits<bigint>::max()))
             return std::numeric_limits<bigint>::max();
-        if (doubleval < (double)std::numeric_limits<bigint>::min())
+        if (doubleval < static_cast<double>(std::numeric_limits<bigint>::min()))
             return std::numeric_limits<bigint>::min();
         return static_cast<bigint>(doubleval);
     }
 
-    if (isCharLiteral(str))
-        return simplecpp::characterLiteralToLL(str);
+    if (isCharLiteral(str)) {
+        try {
+            return simplecpp::characterLiteralToLL(str);
+        } catch (const std::runtime_error& e) {
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        }
+    }
 
     try {
         std::size_t idx = 0;
@@ -427,13 +447,13 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
             if (!isValidIntegerSuffix(s, true))
-                throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: input was not completely consumed: " + str);
+                throw InternalError(tok, "Internal Error. MathLib::toBigNumber: input was not completely consumed: " + str);
         }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
     } catch (const std::invalid_argument& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
     }
 }
 
@@ -484,17 +504,22 @@ static double floatHexToDoubleNumber(const std::string& str)
     return factor1 * factor2;
 }
 
-double MathLib::toDoubleNumber(const std::string &str)
+double MathLib::toDoubleNumber(const Token * tok)
+{
+    return toDoubleNumber(tok->str(), tok);
+}
+
+double MathLib::toDoubleNumber(const std::string &str, const Token * const tok)
 {
     if (isCharLiteral(str)) {
         try {
             return simplecpp::characterLiteralToLL(str);
-        } catch (const std::exception& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        } catch (const std::runtime_error& e) {
+            throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
         }
     }
     if (isIntHex(str))
-        return static_cast<double>(toLongNumber(str));
+        return static_cast<double>(toBigNumber(str, tok));
 #ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at https://github.com/llvm/llvm-project/issues/18156
         // TODO: handle locale
@@ -508,15 +533,37 @@ double MathLib::toDoubleNumber(const std::string &str)
     istr.imbue(std::locale::classic());
     double ret;
     if (!(istr >> ret))
-        throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
     std::string s;
     if (istr >> s) {
         if (isDecimalFloat(str))
             return ret;
         if (!isValidIntegerSuffix(s, true))
-            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
     }
     return ret;
+}
+
+template<> std::string MathLib::toString<MathLib::bigint>(MathLib::bigint value)
+{
+#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+    std::ostringstream result;
+    result << value;
+    return result.str();
+#else
+    return std::to_string(value);
+#endif
+}
+
+template<> std::string MathLib::toString<MathLib::biguint>(MathLib::biguint value)
+{
+#if defined(HAVE_BOOST) && defined(HAVE_BOOST_INT128)
+    std::ostringstream result;
+    result << value;
+    return result.str();
+#else
+    return std::to_string(value);
+#endif
 }
 
 template<> std::string MathLib::toString<double>(double value)
@@ -541,10 +588,10 @@ bool MathLib::isDecimalFloat(const std::string &str)
 {
     if (str.empty())
         return false;
-    enum class State {
+    enum class State : std::uint8_t {
         START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL
     } state = State::START;
-    std::string::const_iterator it = str.cbegin();
+    auto it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.cend(); ++it) {
@@ -649,7 +696,7 @@ bool MathLib::isPositive(const std::string &str)
 
 static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
 {
-    enum class Status { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_UZ, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64, SUFFIX_Z, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL } state = Status::START;
+    enum class Status : std::uint8_t { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_UZ, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64, SUFFIX_Z, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL } state = Status::START;
     for (; it != end; ++it) {
         switch (state) {
         case Status::START:
@@ -751,7 +798,6 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
             (state == Status::SUFFIX_LITERAL));
 }
 
-// cppcheck-suppress unusedFunction
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
     return isValidIntegerSuffixIt(str.cbegin(), str.cend(), supportMicrosoftExtensions);
@@ -770,12 +816,12 @@ bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoft
  **/
 bool MathLib::isOct(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, OCTAL_PREFIX, DIGITS
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.cbegin();
+    auto it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.cend(); ++it) {
@@ -805,12 +851,12 @@ bool MathLib::isOct(const std::string& str)
 
 bool MathLib::isIntHex(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, HEX_0, HEX_X, DIGIT
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.cbegin();
+    auto it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.cend(); ++it) {
@@ -846,12 +892,12 @@ bool MathLib::isIntHex(const std::string& str)
 
 bool MathLib::isFloatHex(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, HEX_0, HEX_X, WHOLE_NUMBER_DIGIT, POINT, FRACTION, EXPONENT_P, EXPONENT_SIGN, EXPONENT_DIGITS, EXPONENT_SUFFIX
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.cbegin();
+    auto it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.cend(); ++it) {
@@ -936,12 +982,12 @@ bool MathLib::isFloatHex(const std::string& str)
  **/
 bool MathLib::isBin(const std::string& str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, GNU_BIN_PREFIX_0, GNU_BIN_PREFIX_B, DIGIT
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.cbegin();
+    auto it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.cend(); ++it) {
@@ -977,12 +1023,12 @@ bool MathLib::isBin(const std::string& str)
 
 bool MathLib::isDec(const std::string & str)
 {
-    enum class Status {
+    enum class Status : std::uint8_t {
         START, DIGIT
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.cbegin();
+    auto it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
     for (; it != str.cend(); ++it) {
@@ -1059,7 +1105,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
     return (value(first) + value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toLongNumber(first) + toLongNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) + toBigNumber(second)) + intsuffix(first, second);
     }
 
     double d1 = toDoubleNumber(first);
@@ -1081,7 +1127,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     return (value(first) - value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toLongNumber(first) - toLongNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) - toBigNumber(second)) + intsuffix(first, second);
     }
 
     if (first == second)
@@ -1106,13 +1152,13 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     return (value(first) / value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        const bigint a = toLongNumber(first);
-        const bigint b = toLongNumber(second);
+        const bigint a = toBigNumber(first);
+        const bigint b = toBigNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
         if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
             throw InternalError(nullptr, "Internal Error: Division overflow");
-        return std::to_string(toLongNumber(first) / b) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) / b) + intsuffix(first, second);
     }
     if (isNullValue(second)) {
         if (isNullValue(first))
@@ -1129,7 +1175,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return (value(first) * value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return std::to_string(toLongNumber(first) * toLongNumber(second)) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) * toBigNumber(second)) + intsuffix(first, second);
     }
     return toString(toDoubleNumber(first) * toDoubleNumber(second));
 #endif
@@ -1141,10 +1187,10 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
     return (value(first) % value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        const bigint b = toLongNumber(second);
+        const bigint b = toBigNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
-        return std::to_string(toLongNumber(first) % b) + intsuffix(first, second);
+        return MathLib::toString(toBigNumber(first) % b) + intsuffix(first, second);
     }
     return toString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
 #endif
@@ -1169,13 +1215,13 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::mod(first, second);
 
     case '&':
-        return std::to_string(MathLib::toLongNumber(first) & MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return MathLib::toString(MathLib::toBigNumber(first) & MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     case '|':
-        return std::to_string(MathLib::toLongNumber(first) | MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return MathLib::toString(MathLib::toBigNumber(first) | MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     case '^':
-        return std::to_string(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return MathLib::toString(MathLib::toBigNumber(first) ^ MathLib::toBigNumber(second)) + intsuffix(first, second);
 
     default:
         throw InternalError(nullptr, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");
@@ -1272,44 +1318,6 @@ bool MathLib::isNullValue(const std::string &str)
 bool MathLib::isOctalDigit(char c)
 {
     return (c >= '0' && c <= '7');
-}
-
-bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type iPos)
-{
-    if (iPos == 0 || iPos >= iCode.size() || iCode[iPos] != '\'')
-        return false;
-    std::string::size_type i = iPos - 1;
-    while (std::isxdigit(iCode[i])) {
-        if (i == 0)
-            return true; // Only xdigits before '
-        --i;
-    }
-    if (i == iPos - 1) // No xdigit before '
-        return false;
-
-    switch (iCode[i]) {
-    case ' ':
-    case '.':
-    case ',':
-    case 'x':
-    case '(':
-    case '{':
-    case '+':
-    case '-':
-    case '*':
-    case '%':
-    case '/':
-    case '&':
-    case '|':
-    case '^':
-    case '~':
-    case '=':
-        return true;
-    case '\'':
-        return isDigitSeparator(iCode, i);
-    default:
-        return false;
-    }
 }
 
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2)

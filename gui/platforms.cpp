@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@ Platforms::Platforms(QObject *parent)
     init();
 }
 
-void Platforms::add(const QString &title, cppcheck::Platform::Type platform)
+void Platforms::add(const QString &title, Platform::Type platform)
 {
-    Platform plat;
+    PlatformData plat;
     plat.mTitle = title;
     plat.mType = platform;
     plat.mActMainWindow = nullptr;
@@ -35,12 +35,12 @@ void Platforms::add(const QString &title, cppcheck::Platform::Type platform)
 
 void Platforms::init()
 {
-    add(tr("Native"), cppcheck::Platform::Type::Native);
-    add(tr("Unix 32-bit"), cppcheck::Platform::Type::Unix32);
-    add(tr("Unix 64-bit"), cppcheck::Platform::Type::Unix64);
-    add(tr("Windows 32-bit ANSI"), cppcheck::Platform::Type::Win32A);
-    add(tr("Windows 32-bit Unicode"), cppcheck::Platform::Type::Win32W);
-    add(tr("Windows 64-bit"), cppcheck::Platform::Type::Win64);
+    add(tr("Native"), Platform::Type::Native);
+    add(tr("Unix 32-bit"), Platform::Type::Unix32);
+    add(tr("Unix 64-bit"), Platform::Type::Unix64);
+    add(tr("Windows 32-bit ANSI"), Platform::Type::Win32A);
+    add(tr("Windows 32-bit Unicode"), Platform::Type::Win32W);
+    add(tr("Windows 64-bit"), Platform::Type::Win64);
 }
 
 int Platforms::getCount() const
@@ -48,11 +48,11 @@ int Platforms::getCount() const
     return mPlatforms.count();
 }
 
-Platform& Platforms::get(cppcheck::Platform::Type platform)
+PlatformData& Platforms::get(Platform::Type platform)
 {
-    QList<Platform>::iterator iter = mPlatforms.begin();
+    auto iter = mPlatforms.begin();
     while (iter != mPlatforms.end()) {
-        if ((*iter).mType == platform) {
+        if (iter->mType == platform) {
             return *iter;
         }
         ++iter;

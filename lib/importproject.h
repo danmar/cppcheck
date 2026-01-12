@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +22,23 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "filesettings.h"
 #include "platform.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <iosfwd>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+class Settings;
+struct Suppressions;
+namespace tinyxml2 {
+    class XMLDocument;
+}
 
 /// @addtogroup Core
 /// @{
@@ -43,14 +51,14 @@ namespace cppcheck {
     };
 }
 
-class Settings;
-
 /**
  * @brief Importing project settings.
  */
-class CPPCHECKLIB ImportProject {
+class CPPCHECKLIB WARN_UNUSED ImportProject {
+    friend class TestImporter;
 public:
-    enum class Type {
+    enum class Type : std::uint8_t {
+        NONE,
         UNKNOWN,
         MISSING,
         FAILURE,
@@ -61,42 +69,25 @@ public:
         CPPCHECK_GUI
     };
 
-    /** File settings. Multiple configurations for a file is allowed. */
-    struct CPPCHECKLIB FileSettings {
-        std::string cfg;
-        std::string filename;
-        std::string defines;
-        std::string cppcheckDefines() const {
-            return defines + (msc ? ";_MSC_VER=1900" : "") + (useMfc ? ";__AFXWIN_H__=1" : "");
-        }
-        std::set<std::string> undefs;
-        std::list<std::string> includePaths;
-        std::list<std::string> systemIncludePaths;
-        std::string standard;
-        cppcheck::Platform::Type platformType = cppcheck::Platform::Type::Unspecified;
-        bool msc{};
-        bool useMfc{};
+    static void fsParseCommand(FileSettings& fs, const std::string& command, bool doUnescape);
+    static void fsSetDefines(FileSettings& fs, std::string defs);
+    static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
-        void parseCommand(const std::string& command);
-        void setDefines(std::string defs);
-        void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
-    };
     std::list<FileSettings> fileSettings;
-    Type projectType;
+    std::vector<std::string> errors;
 
-    ImportProject();
+    ImportProject() = default;
     virtual ~ImportProject() = default;
     ImportProject(const ImportProject&) = default;
-    ImportProject& operator=(const ImportProject&) = default;
+    ImportProject& operator=(const ImportProject&) & = default;
 
-    void selectOneVsConfig(cppcheck::Platform::Type platform);
-    void selectVsConfigurations(cppcheck::Platform::Type platform, const std::vector<std::string> &configurations);
+    void selectOneVsConfig(Platform::Type platform);
+    void selectVsConfigurations(Platform::Type platform, const std::vector<std::string> &configurations);
 
     std::list<std::string> getVSConfigs();
 
     // Cppcheck GUI output
     struct {
-        std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
         std::list<std::string> excludedPaths;
@@ -105,20 +96,27 @@ public:
         std::string platform;
     } guiProject;
 
-    void ignorePaths(const std::vector<std::string> &ipaths);
+    void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    Type import(const std::string &filename, Settings *settings=nullptr);
+    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
 protected:
     bool importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
-    virtual bool sourceFileExists(const std::string &file);
-private:
-    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
-    bool importBcb6Prj(const std::string &projectFilename);
+    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
 
-    static void printError(const std::string &message);
+private:
+    struct SharedItemsProject {
+        bool successful = false;
+        std::string pathToProjectFile;
+        std::vector<std::string> includePaths;
+        std::vector<std::string> sourceFiles;
+    };
+
+    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importBcb6Prj(const std::string &projectFilename);
 
     void setRelativePaths(const std::string &filename);
 
@@ -128,65 +126,69 @@ private:
 
 
 namespace CppcheckXml {
-    const char ProjectElementName[] = "project";
-    const char ProjectVersionAttrib[] = "version";
-    const char ProjectFileVersion[] = "1";
-    const char BuildDirElementName[] = "builddir";
-    const char ImportProjectElementName[] = "importproject";
-    const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
-    const char Parser[] = "parser";
-    const char IncludeDirElementName[] = "includedir";
-    const char DirElementName[] = "dir";
-    const char DirNameAttrib[] = "name";
-    const char DefinesElementName[] = "defines";
-    const char DefineName[] = "define";
-    const char DefineNameAttrib[] = "name";
-    const char UndefinesElementName[] = "undefines";
-    const char UndefineName[] = "undefine";
-    const char PathsElementName[] = "paths";
-    const char PathName[] = "dir";
-    const char PathNameAttrib[] = "name";
-    const char RootPathName[] = "root";
-    const char RootPathNameAttrib[] = "name";
-    const char IgnoreElementName[] = "ignore";
-    const char IgnorePathName[] = "path";
-    const char IgnorePathNameAttrib[] = "name";
-    const char ExcludeElementName[] = "exclude";
-    const char ExcludePathName[] = "path";
-    const char ExcludePathNameAttrib[] = "name";
-    const char FunctionContracts[] = "function-contracts";
-    const char VariableContractsElementName[] = "variable-contracts";
-    const char LibrariesElementName[] = "libraries";
-    const char LibraryElementName[] = "library";
-    const char PlatformElementName[] = "platform";
-    const char SuppressionsElementName[] = "suppressions";
-    const char SuppressionElementName[] = "suppression";
-    const char AddonElementName[] = "addon";
-    const char AddonsElementName[] = "addons";
-    const char ToolElementName[] = "tool";
-    const char ToolsElementName[] = "tools";
-    const char TagsElementName[] = "tags";
-    const char TagElementName[] = "tag";
-    const char TagWarningsElementName[] = "tag-warnings";
-    const char TagAttributeName[] = "tag";
-    const char WarningElementName[] = "warning";
-    const char HashAttributeName[] = "hash";
-    const char CheckLevelExhaustiveElementName[] = "check-level-exhaustive";
-    const char CheckHeadersElementName[] = "check-headers";
-    const char CheckUnusedTemplatesElementName[] = "check-unused-templates";
-    const char MaxCtuDepthElementName[] = "max-ctu-depth";
-    const char MaxTemplateRecursionElementName[] = "max-template-recursion";
-    const char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
-    const char ClangTidy[] = "clang-tidy";
-    const char Name[] = "name";
-    const char VSConfigurationElementName[] = "vs-configurations";
-    const char VSConfigurationName[] = "config";
+    static constexpr char ProjectElementName[] = "project";
+    static constexpr char ProjectVersionAttrib[] = "version";
+    static constexpr char ProjectFileVersion[] = "1";
+    static constexpr char BuildDirElementName[] = "builddir";
+    static constexpr char ImportProjectElementName[] = "importproject";
+    static constexpr char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
+    static constexpr char Parser[] = "parser";
+    static constexpr char IncludeDirElementName[] = "includedir";
+    static constexpr char DirElementName[] = "dir";
+    static constexpr char DirNameAttrib[] = "name";
+    static constexpr char DefinesElementName[] = "defines";
+    static constexpr char DefineName[] = "define";
+    static constexpr char DefineNameAttrib[] = "name";
+    static constexpr char UndefinesElementName[] = "undefines";
+    static constexpr char UndefineName[] = "undefine";
+    static constexpr char PathsElementName[] = "paths";
+    static constexpr char PathName[] = "dir";
+    static constexpr char PathNameAttrib[] = "name";
+    static constexpr char RootPathName[] = "root";
+    static constexpr char RootPathNameAttrib[] = "name";
+    static constexpr char IgnoreElementName[] = "ignore";
+    static constexpr char IgnorePathName[] = "path";
+    static constexpr char IgnorePathNameAttrib[] = "name";
+    static constexpr char ExcludeElementName[] = "exclude";
+    static constexpr char ExcludePathName[] = "path";
+    static constexpr char ExcludePathNameAttrib[] = "name";
+    static constexpr char FunctionContracts[] = "function-contracts";
+    static constexpr char VariableContractsElementName[] = "variable-contracts";
+    static constexpr char LibrariesElementName[] = "libraries";
+    static constexpr char LibraryElementName[] = "library";
+    static constexpr char PlatformElementName[] = "platform";
+    static constexpr char SuppressionsElementName[] = "suppressions";
+    static constexpr char SuppressionElementName[] = "suppression";
+    static constexpr char AddonElementName[] = "addon";
+    static constexpr char AddonsElementName[] = "addons";
+    static constexpr char ToolElementName[] = "tool";
+    static constexpr char ToolsElementName[] = "tools";
+    static constexpr char TagsElementName[] = "tags";
+    static constexpr char TagElementName[] = "tag";
+    static constexpr char TagWarningsElementName[] = "tag-warnings";
+    static constexpr char TagAttributeName[] = "tag";
+    static constexpr char WarningElementName[] = "warning";
+    static constexpr char HashAttributeName[] = "hash";
+    static constexpr char CheckLevelExhaustiveElementName[] = "check-level-exhaustive";
+    static constexpr char CheckLevelNormalElementName[] = "check-level-normal";
+    static constexpr char CheckLevelReducedElementName[] = "check-level-reduced";
+    static constexpr char CheckHeadersElementName[] = "check-headers";
+    static constexpr char CheckUnusedTemplatesElementName[] = "check-unused-templates";
+    static constexpr char MaxCtuDepthElementName[] = "max-ctu-depth";
+    static constexpr char MaxTemplateRecursionElementName[] = "max-template-recursion";
+    static constexpr char CheckUnknownFunctionReturn[] = "check-unknown-function-return-values";
+    static constexpr char InlineSuppression[] = "inline-suppression";
+    static constexpr char ClangTidy[] = "clang-tidy";
+    static constexpr char Name[] = "name";
+    static constexpr char VSConfigurationElementName[] = "vs-configurations";
+    static constexpr char VSConfigurationName[] = "config";
     // Cppcheck Premium
-    const char BughuntingElementName[] = "bug-hunting";
-    const char CodingStandardsElementName[] = "coding-standards";
-    const char CodingStandardElementName[] = "coding-standard";
-    const char CertIntPrecisionElementName[] = "cert-c-int-precision";
-    const char ProjectNameElementName[] = "project-name";
+    static constexpr char BughuntingElementName[] = "bug-hunting";
+    static constexpr char CodingStandardsElementName[] = "coding-standards";
+    static constexpr char CodingStandardElementName[] = "coding-standard";
+    static constexpr char CertIntPrecisionElementName[] = "cert-c-int-precision";
+    static constexpr char LicenseFileElementName[] = "license-file";
+    static constexpr char ProjectNameElementName[] = "project-name";
 }
 
 /// @}

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,9 +40,8 @@ namespace {
 }
 
 // CWE IDs used:
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE467(467U);   // Use of sizeof() on a Pointer Type
-static const struct CWE CWE682(682U);   // Incorrect Calculation
+static const CWE CWE467(467U);   // Use of sizeof() on a Pointer Type
+static const CWE CWE682(682U);   // Incorrect Calculation
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void CheckSizeof::checkSizeofForNumericParameter()
@@ -237,7 +236,8 @@ void CheckSizeof::checkSizeofForPointerSize()
                 continue;
 
             // Now check for the sizeof usage: Does the level of pointer indirection match?
-            if (tokSize->linkAt(1)->strAt(-1) == "*") {
+            const Token * const tokLink = tokSize->linkAt(1);
+            if (tokLink && tokLink->strAt(-1) == "*") {
                 if (variable && variable->valueType() && variable->valueType()->pointer == 1 && variable->valueType()->type != ValueType::VOID)
                     sizeofForPointerError(variable, variable->str());
                 else if (variable2 && variable2->valueType() && variable2->valueType()->pointer == 1 && variable2->valueType()->type != ValueType::VOID)
@@ -326,7 +326,7 @@ void CheckSizeof::sizeofCalculation()
         // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
         // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
         if (tok->isExpandedMacro() && tok->previous()) {
-            const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
+            const Token *cast_end = (tok->strAt(-1) == "(") ? tok->previous() : tok;
             if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
                 Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                 continue;
@@ -358,7 +358,7 @@ void CheckSizeof::sizeofCalculationError(const Token *tok, bool inconclusive)
 
 void CheckSizeof::sizeofFunction()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->isPremiumEnabled("sizeofFunctionCall"))
         return;
 
     logChecker("CheckSizeof::sizeofFunction"); // warning
@@ -369,7 +369,7 @@ void CheckSizeof::sizeofFunction()
             // ignore if the `sizeof` result is cast to void inside a macro, i.e. the calculation is
             // expected to be parsed but skipped, such as in a disabled custom ASSERT() macro
             if (tok->isExpandedMacro() && tok->previous()) {
-                const Token *cast_end = (tok->previous()->str() == "(") ? tok->previous() : tok;
+                const Token *cast_end = (tok->strAt(-1) == "(") ? tok->previous() : tok;
                 if (Token::simpleMatch(cast_end->tokAt(-3), "( void )") ||
                     Token::simpleMatch(cast_end->tokAt(-4), "static_cast < void >")) {
                     continue;
@@ -379,7 +379,7 @@ void CheckSizeof::sizeofFunction()
             if (const Token *argument = tok->next()->astOperand2()) {
                 const Token *checkToken = argument->previous();
                 if (checkToken->tokType() == Token::eName)
-                    break;
+                    continue;
                 const Function * fun = checkToken->function();
                 // Don't report error if the function is overloaded
                 if (fun && fun->nestedIn->functionMap.count(checkToken->str()) == 1) {
@@ -500,4 +500,36 @@ void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std:
     const std::string message = "'$symbol' is of type '" + vartype + "'. When using void pointers in calculations, the behaviour is undefined.";
     const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
     reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", "$symbol:" + varname + '\n' + message + '\n' + verbose, CWE467, Certainty::normal);
+}
+
+void CheckSizeof::runChecks(const Tokenizer& tokenizer, ErrorLogger* errorLogger)
+{
+    CheckSizeof checkSizeof(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    // Checks
+    checkSizeof.sizeofsizeof();
+    checkSizeof.sizeofCalculation();
+    checkSizeof.sizeofFunction();
+    checkSizeof.suspiciousSizeofCalculation();
+    checkSizeof.checkSizeofForArrayParameter();
+    checkSizeof.checkSizeofForPointerSize();
+    checkSizeof.checkSizeofForNumericParameter();
+    checkSizeof.sizeofVoid();
+}
+
+void CheckSizeof::getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const
+{
+    CheckSizeof c(nullptr, settings, errorLogger);
+    c.sizeofForArrayParameterError(nullptr);
+    c.sizeofForPointerError(nullptr, "varname");
+    c.divideBySizeofError(nullptr, "memset");
+    c.sizeofForNumericParameterError(nullptr);
+    c.sizeofsizeofError(nullptr);
+    c.sizeofCalculationError(nullptr, false);
+    c.sizeofFunctionError(nullptr);
+    c.multiplySizeofError(nullptr);
+    c.divideSizeofError(nullptr);
+    c.sizeofVoidError(nullptr);
+    c.sizeofDereferencedVoidPointerError(nullptr, "varname");
+    c.arithOperationsOnVoidPointerError(nullptr, "varname", "vartype");
 }

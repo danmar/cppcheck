@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,47 +18,35 @@
 
 #include "codeeditorstyle.h"
 
-#include <utility>
-
 #include <QSettings>
-#include <QStringList>
 #include <QVariant>
 
 CodeEditorStyle::CodeEditorStyle(
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor CtrlFGColor, QColor CtrlBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor HiLiBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor LnNumFGColor, QColor LnNumBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor KeyWdFGColor, QFont::Weight KeyWdWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor ClsFGColor, QFont::Weight ClsWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor QteFGColor, QFont::Weight QteWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor CmtFGColor, QFont::Weight CmtWeight,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QColor SymbFGColor, QColor SymbBGColor,
-    // cppcheck-suppress naming-varname - TODO: fix this
-    QFont::Weight SymbWeight) :
-    widgetFGColor(std::move(CtrlFGColor)),
-    widgetBGColor(std::move(CtrlBGColor)),
-    highlightBGColor(std::move(HiLiBGColor)),
-    lineNumFGColor(std::move(LnNumFGColor)),
-    lineNumBGColor(std::move(LnNumBGColor)),
-    keywordColor(std::move(KeyWdFGColor)),
-    keywordWeight(KeyWdWeight),
-    classColor(std::move(ClsFGColor)),
-    classWeight(ClsWeight),
-    quoteColor(std::move(QteFGColor)),
-    quoteWeight(QteWeight),
-    commentColor(std::move(CmtFGColor)),
-    commentWeight(CmtWeight),
-    symbolFGColor(std::move(SymbFGColor)),
-    symbolBGColor(std::move(SymbBGColor)),
-    symbolWeight(SymbWeight)
+    QColor ctrlFGColor, QColor ctrlBGColor,
+    QColor hiLiBGColor,
+    QColor lnNumFGColor, QColor lnNumBGColor,
+    QColor keyWdFGColor, QFont::Weight keyWdWeight,
+    QColor clsFGColor, QFont::Weight clsWeight,
+    QColor qteFGColor, QFont::Weight qteWeight,
+    QColor cmtFGColor, QFont::Weight cmtWeight,
+    QColor symbFGColor, QColor symbBGColor,
+    QFont::Weight symbWeight) :
+    widgetFGColor(ctrlFGColor),
+    widgetBGColor(ctrlBGColor),
+    highlightBGColor(hiLiBGColor),
+    lineNumFGColor(lnNumFGColor),
+    lineNumBGColor(lnNumBGColor),
+    keywordColor(keyWdFGColor),
+    keywordWeight(keyWdWeight),
+    classColor(clsFGColor),
+    classWeight(clsWeight),
+    quoteColor(qteFGColor),
+    quoteWeight(qteWeight),
+    commentColor(cmtFGColor),
+    commentWeight(cmtWeight),
+    symbolFGColor(symbFGColor),
+    symbolBGColor(symbBGColor),
+    symbolWeight(symbWeight)
 {}
 
 bool CodeEditorStyle::operator==(const CodeEditorStyle& rhs) const

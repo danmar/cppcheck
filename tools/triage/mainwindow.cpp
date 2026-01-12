@@ -58,13 +58,16 @@
 #include <QTextStream>
 #include <QTreeView>
 #include <QtCore>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 class QWidget;
 
-const QString WORK_FOLDER(QDir::homePath() + "/triage");
-const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
+static const QString WORK_FOLDER(QDir::homePath() + "/triage");
+static const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
 
-const int MAX_ERRORS = 100;
+static constexpr int MAX_ERRORS = 100;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -109,7 +112,7 @@ void MainWindow::loadFile()
     if (fileName.isEmpty())
         return;
     QFile file(fileName);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    (void)file.open(QIODevice::ReadOnly | QIODevice::Text); // TODO: check result
     QTextStream textStream(&file);
     load(textStream);
 }
@@ -359,6 +362,7 @@ void MainWindow::findInFilesClicked()
     ui->inFilesResult->clear();
     const QString text = ui->filterEdit->text();
 
+    // cppcheck-suppress shadowFunction - TODO: fix this
     QStringList filter;
     if (ui->hFilesFilter->isChecked())
         filter.append(hFiles);

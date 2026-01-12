@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,17 +25,13 @@
 #include <QDialog>
 #include <QFont>
 #include <QObject>
-#include <QString>
 
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
 class QPushButton;
 class QWidget;
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-class QStringList;
-#endif
+class QString;
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT
@@ -43,7 +39,7 @@ public:
     explicit StyleEditDialog(const CodeEditorStyle& newStyle,
                              QWidget *parent = nullptr);
 
-    CodeEditorStyle getStyle();
+    CodeEditorStyle getStyle() const;
 
 private:
     void updateControls();

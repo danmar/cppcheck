@@ -124,7 +124,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -159,7 +159,21 @@
      <addaction name="mActionToolBarView"/>
      <addaction name="mActionToolBarFilter"/>
     </widget>
+    <widget class="QMenu" name="menuReport">
+     <property name="title">
+      <string>Report</string>
+     </property>
+     <addaction name="mActionReportNormal"/>
+     <addaction name="mActionReportAutosar"/>
+     <addaction name="mActionReportCertC"/>
+     <addaction name="mActionReportCertCpp"/>
+     <addaction name="mActionReportMisraC"/>
+     <addaction name="mActionReportMisraCpp2008"/>
+     <addaction name="mActionReportMisraCpp2023"/>
+    </widget>
     <addaction name="mMenuToolbars"/>
+    <addaction name="separator"/>
+    <addaction name="menuReport"/>
     <addaction name="separator"/>
     <addaction name="mActionShowErrors"/>
     <addaction name="mActionShowWarnings"/>
@@ -186,6 +200,7 @@
     <addaction name="mActionHelpContents"/>
     <addaction name="mActionLicense"/>
     <addaction name="mActionAuthors"/>
+    <addaction name="mActionEULA"/>
     <addaction name="separator"/>
     <addaction name="mActionAbout"/>
    </widget>
@@ -203,6 +218,7 @@
      <addaction name="mActionCpp17"/>
      <addaction name="mActionCpp20"/>
      <!--addaction name="mActionCpp23"/-->
+     <!--addaction name="mActionCpp26"/-->
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -211,6 +227,9 @@
      <addaction name="mActionC89"/>
      <addaction name="mActionC99"/>
      <addaction name="mActionC11"/>
+     <!--addaction name="mActionC17"/-->
+     <!--addaction name="mActionC23"/-->
+     <!--addaction name="mActionC2Y"/-->
     </widget>
     <addaction name="mActionAnalyzeFiles"/>
     <addaction name="mActionAnalyzeDirectory"/>
@@ -794,6 +813,30 @@
     <string>C&amp;11</string>
    </property>
   </action>
+  <!--action name="mActionC17">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C&amp;17</string>
+   </property>
+  </action-->
+  <!--action name="mActionC23">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C&amp;23</string>
+   </property>
+  </action-->
+  <!--action name="mActionC2Y">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C&amp;2y</string>
+   </property>
+  </action-->
   <action name="mActionC89">
    <property name="checkable">
     <bool>true</bool>
@@ -915,9 +958,86 @@
     <string>C++23</string>
    </property>
   </action-->
+  <!--action name="mActionCpp26">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++26</string>
+   </property>
+  </action-->
   <action name="mActionComplianceReport">
    <property name="text">
     <string>Compliance report...</string>
+   </property>
+  </action>
+  <action name="actionReport">
+   <property name="text">
+    <string>Report</string>
+   </property>
+  </action>
+  <action name="mActionReportNormal">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Normal</string>
+   </property>
+  </action>
+  <action name="mActionReportMisraC">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Misra C</string>
+   </property>
+  </action>
+  <action name="mActionReportMisraCpp2008">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Misra C++ 2008</string>
+   </property>
+  </action>
+  <action name="mActionReportCertC">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cert C</string>
+   </property>
+  </action>
+  <action name="mActionReportCertCpp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cert C++</string>
+   </property>
+  </action>
+  <action name="mActionReportMisraCpp2023">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Misra C++ 2023</string>
+   </property>
+  </action>
+  <action name="mActionReportAutosar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Autosar</string>
+   </property>
+  </action>
+  <action name="mActionEULA">
+   <property name="text">
+    <string>EULA...</string>
    </property>
   </action>
  </widget>

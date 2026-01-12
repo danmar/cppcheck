@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,12 @@
 
 #include "color.h"
 
+#include <cstdlib>
+#include <sstream>
+#include <iostream>
+
 #ifndef _WIN32
 #include <unistd.h>
-#include <cstddef>
-#include <sstream> // IWYU pragma: keep
-#include <iostream>
 #endif
 
 bool gDisableColors = false;
@@ -40,26 +41,39 @@ static bool isStreamATty(const std::ostream & os)
 }
 #endif
 
+static bool isColorEnabled(const std::ostream & os)
+{
+    // See https://bixense.com/clicolors/
+    static const bool color_forced_off = (nullptr != std::getenv("NO_COLOR"));
+    if (color_forced_off)
+    {
+        return false;
+    }
+    static const bool color_forced_on = (nullptr != std::getenv("CLICOLOR_FORCE"));
+    if (color_forced_on)
+    {
+        return true;
+    }
+#ifdef _WIN32
+    (void)os;
+    return false;
+#else
+    return isStreamATty(os);
+#endif
+}
+
 std::ostream& operator<<(std::ostream & os, Color c)
 {
-#ifndef _WIN32
-    if (!gDisableColors && isStreamATty(os))
+    if (!gDisableColors && isColorEnabled(os))
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
-#else
-    (void)c;
-#endif
+
     return os;
 }
 
 std::string toString(Color c)
 {
-#ifndef _WIN32
-    std::stringstream ss;
+    std::ostringstream ss;
     ss << c;
     return ss.str();
-#else
-    (void)c;
-    return "";
-#endif
 }
 

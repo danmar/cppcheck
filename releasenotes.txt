@@ -1,9 +1,13 @@
-Release Notes for Cppcheck 2.13
+
+Release Notes for Cppcheck 2.20
+
+Major bug fixes & crashes:
+-
 
 New checks:
 -
 
-Improved checking:
+C/C++ support:
 -
 
 GUI:
@@ -12,6 +16,5 @@ GUI:
 Changed interface:
 -
 
-Other:
-- Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depedent on it.
-- The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.
+Infrastructure & dependencies:
+-

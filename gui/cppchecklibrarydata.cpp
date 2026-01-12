@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,27 +22,23 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <QObject>
 #include <QVariant>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QtGlobal>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QStringRef>
-#endif
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
 
-static std::string unhandledElement(const QXmlStreamReader &xmlReader)
+NORETURN static void unhandledElement(const QXmlStreamReader &xmlReader)
 {
     throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
 }
 
-static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
+NORETURN static void mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())
@@ -82,7 +78,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                     break;
                 if (type != QXmlStreamReader::StartElement)
                     continue;
-                struct CppcheckLibraryData::Container::Function function;
+                CppcheckLibraryData::Container::Function function;
                 function.name   = xmlReader.attributes().value("name").toString();
                 function.action = xmlReader.attributes().value("action").toString();
                 function.yields = xmlReader.attributes().value("yields").toString();
@@ -91,7 +87,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                 else if (elementName == "access")
                     container.accessFunctions.append(function);
                 else if (elementName == "rangeItemRecordType") {
-                    struct CppcheckLibraryData::Container::RangeItemRecordType rangeItemRecordType;
+                    CppcheckLibraryData::Container::RangeItemRecordType rangeItemRecordType;
                     rangeItemRecordType.name = xmlReader.attributes().value("name").toString();
                     rangeItemRecordType.templateParameter = xmlReader.attributes().value("templateParameter").toString();
                     container.rangeItemRecordTypeList.append(rangeItemRecordType);
@@ -147,7 +143,7 @@ static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReade
             continue;
         const QString elementName = xmlReader.name().toString();
         if (elementName == "suppress" || elementName == "check") {
-            QPair<QString, QString> entry(elementName, xmlReader.readElementText());
+            std::pair<QString, QString> entry(elementName, xmlReader.readElementText());
             typeChecks.append(entry);
         }
     }
@@ -271,6 +267,7 @@ static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &
         if (elementName == "alloc" || elementName == "realloc") {
             CppcheckLibraryData::MemoryResource::Alloc alloc;
             alloc.isRealloc = (elementName == "realloc");
+            alloc.noFail = (xmlReader.attributes().value("no-fail").toString() == "true");
             alloc.init = (xmlReader.attributes().value("init").toString() == "true");
             if (xmlReader.attributes().hasAttribute("arg")) {
                 alloc.arg = xmlReader.attributes().value("arg").toInt();
@@ -453,7 +450,7 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     return markup;
 }
 
-static CppcheckLibraryData::Entrypoint loadEntrypoint(QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::Entrypoint loadEntrypoint(const QXmlStreamReader &xmlReader)
 {
     CppcheckLibraryData::Entrypoint entrypoint;
     entrypoint.name = xmlReader.attributes().value("name").toString();
@@ -518,7 +515,7 @@ QString CppcheckLibraryData::open(QIODevice &file)
     return QString();
 }
 
-static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)
+static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<CppcheckLibraryData::Container::Function> &functions)
 {
     if (functions.isEmpty() && extra < 0)
         return;
@@ -541,7 +538,7 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &
     xmlWriter.writeEndElement();
 }
 
-static void writeContainerRangeItemRecords(QXmlStreamWriter &xmlWriter, const QList<struct CppcheckLibraryData::Container::RangeItemRecordType> &rangeItemRecords)
+static void writeContainerRangeItemRecords(QXmlStreamWriter &xmlWriter, const QList<CppcheckLibraryData::Container::RangeItemRecordType> &rangeItemRecords)
 {
     if (rangeItemRecords.isEmpty())
         return;
@@ -697,14 +694,14 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
     }
     if (!function.notOverlappingDataArgs.isEmpty()) {
         xmlWriter.writeStartElement("not-overlapping-data");
-        foreach (const QString value, function.notOverlappingDataArgs) {
+        for (const QString& value : function.notOverlappingDataArgs) {
             xmlWriter.writeAttribute(function.notOverlappingDataArgs.key(value), value);
         }
         xmlWriter.writeEndElement();
     }
     if (!function.containerAttributes.isEmpty()) {
         xmlWriter.writeStartElement("container");
-        foreach (const QString value, function.containerAttributes) {
+        for (const QString& value : function.containerAttributes) {
             xmlWriter.writeAttribute(function.containerAttributes.key(value), value);
         }
         xmlWriter.writeEndElement();
@@ -722,6 +719,8 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
             xmlWriter.writeStartElement("alloc");
         }
         xmlWriter.writeAttribute("init", bool_to_string(alloc.init));
+        if (alloc.noFail)
+            xmlWriter.writeAttribute("no-fail", bool_to_string(alloc.noFail));
         if (alloc.arg != -1) {
             xmlWriter.writeAttribute("arg", QString("%1").arg(alloc.arg));
         }
@@ -756,7 +755,7 @@ static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     if (!typeChecks.isEmpty()) {
         xmlWriter.writeStartElement("unusedvar");
     }
-    for (const QPair<QString, QString> &check : typeChecks) {
+    for (const std::pair<QString, QString> &check : typeChecks) {
         xmlWriter.writeStartElement(check.first);
         xmlWriter.writeCharacters(check.second);
         xmlWriter.writeEndElement();

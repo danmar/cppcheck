@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 
 #include <QDialog>
 #include <QObject>
-#include <QString>
 
 class QWidget;
 namespace Ui {
@@ -43,14 +42,14 @@ public:
      * @brief Translate the user input in the GUI into a suppression
      * @return Cppcheck suppression
      */
-    Suppressions::Suppression getSuppression() const;
+    SuppressionList::Suppression getSuppression() const;
 
     /**
      * @brief Update the GUI so it corresponds with the given
      * Cppcheck suppression
      * @param suppression Cppcheck suppression
      */
-    void setSuppression(const Suppressions::Suppression &suppression);
+    void setSuppression(const SuppressionList::Suppression &suppression);
 
 private:
     Ui::NewSuppressionDialog *mUI;

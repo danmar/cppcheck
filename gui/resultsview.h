@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,10 @@
 #define RESULTSVIEW_H
 
 #include "report.h"
+#include "resultstree.h"
 #include "showtypes.h"
+
+#include <cstdint>
 
 #include <QObject>
 #include <QString>
@@ -32,11 +35,12 @@ class ErrorItem;
 class Settings;
 class ApplicationList;
 class ThreadHandler;
-class QModelIndex;
 class QPrinter;
 class QSettings;
 class CheckStatistics;
 class QPoint;
+class ResultItem;
+enum class ReportType : std::uint8_t;
 namespace Ui {
     class ResultsView;
 }
@@ -86,8 +90,9 @@ public:
      *
      * @param filename Filename to save results to
      * @param type Type of the report.
+     * @param productName Custom product name
      */
-    void save(const QString &filename, Report::Type type) const;
+    void save(const QString &filename, Report::Type type, const QString& productName) const;
 
     /**
      * @brief Update results from old report (tag, sinceDate)
@@ -135,7 +140,7 @@ public:
      * @return Directory containing source files
      */
 
-    QString getCheckDirectory();
+    QString getCheckDirectory() const;
 
     /**
      * Set settings used in checking
@@ -193,8 +198,6 @@ public:
      */
     bool isSuccess() const;
 
-    void disableProgressbar();
-
     /**
      * @brief Read errors from report XML file.
      * @param filename Report file to read.
@@ -215,6 +218,15 @@ public:
      * @return Pointer to Showtypes.
      */
     const ShowTypes & getShowTypes() const;
+
+    void setReportType(ReportType reportType);
+
+    /**
+     * @brief Set the results source type for the results tree.
+     *
+     * @param source The results source type.
+     */
+    void setResultsSource(ResultsTree::ResultsSource source);
 
 signals:
 
@@ -312,9 +324,9 @@ public slots:
     /**
      * @brief Update detailed message when selected item is changed.
      *
-     * @param index Position of new selected item.
+     * @param item selected item
      */
-    void updateDetails(const QModelIndex &index);
+    void updateDetails(const ResultItem* item);
 
     /**
      * @brief Slot opening a print dialog to print the current report
@@ -325,7 +337,7 @@ public slots:
      * @brief Slot printing the current report to the printer.
      * @param printer The printer used for printing the report.
      */
-    void print(QPrinter* printer);
+    void print(QPrinter* printer) const;
 
     /**
      * @brief Slot opening a print preview dialog

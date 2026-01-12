@@ -2,10 +2,12 @@
 // Test library configuration for libcurl.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=libcurl --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/libcurl.c
+// $ cppcheck --check-library --library=libcurl --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/libcurl.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
+
+// cppcheck-suppress-file valueFlowBailout
 
 #include <curl/curl.h>
 #include <stdio.h>
@@ -15,6 +17,7 @@ void validCode()
     CURL *curl = curl_easy_init();
     if (curl) {
         CURLcode res;
+        // cppcheck-suppress valueFlowBailoutIncompleteVar
         curl_easy_setopt(curl, CURLOPT_URL, "http://example.com");
         res = curl_easy_perform(curl);
         if (res != CURLE_OK) {
@@ -33,6 +36,7 @@ void validCode()
     }
 }
 
+// cppcheck-suppress constParameterPointer
 void ignoredReturnValue(CURL * handle)
 {
     // cppcheck-suppress ignoredReturnValue

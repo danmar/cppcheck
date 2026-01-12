@@ -7,6 +7,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '2.*'
     tags:
       - '2.*'
   pull_request:
@@ -20,7 +21,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -38,12 +41,12 @@ jobs:
       - name: Build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXFLAGS="-O1 -g -DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-Werror -O1 -g" CPPOPTS="-DHAVE_BOOST" HAVE_RULES=yes MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG=
 
       - name: Build test
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          CXXFLAGS="-O1 -g -DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
+          make -j$(nproc) CXXOPTS="-Werror -O1 -g" CPPOPTS="-DHAVE_BOOST" HAVE_RULES=yes MATCHCOMPILER=yes CPPCHK_GLIBCXX_DEBUG= testrunner
 
       - name: Run valgrind
         run: |
@@ -51,10 +54,11 @@ jobs:
           valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log || ec=1
           cat memcheck.log
           exit $ec
-        env:
-          DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
+        # TODO: debuginfod.ubuntu.com is currently not responding to any requests causing it to run into a 40(!) minute timeout
+        #env:
+        #  DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Logs

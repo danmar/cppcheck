@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #include "tokenize.h"
 
 #include <cstddef>
+#include <iterator>
+#include <list>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -41,9 +43,9 @@ namespace {
 //---------------------------------------------------------------------------
 
 // CWE ids used:
-static const struct CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
-static const struct CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
-static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
+static const CWE CWE664(664U);   // Improper Control of a Resource Through its Lifetime
+static const CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
+static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
 void CheckVaarg::va_start_argument()
 {
@@ -148,7 +150,7 @@ void CheckVaarg::va_list_usage()
                 tok = findNextTokenFromBreak(tok);
                 if (!tok)
                     return;
-            } else if (tok->str() == "goto" || (mTokenizer->isCPP() && tok->str() == "try")) {
+            } else if (tok->str() == "goto" || (tok->isCpp() && tok->str() == "try")) {
                 open = false;
                 break;
             } else if (!open && tok->varId() == var->declarationId())
@@ -177,4 +179,21 @@ void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::stri
 {
     reportError(tok, Severity::error,
                 "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, Certainty::normal);
+}
+
+void CheckVaarg::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckVaarg check(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    check.va_start_argument();
+    check.va_list_usage();
+}
+
+void CheckVaarg::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckVaarg c(nullptr, settings, errorLogger);
+    c.wrongParameterTo_va_start_error(nullptr, "arg1", "arg2");
+    c.referenceAs_va_start_error(nullptr, "arg1");
+    c.va_end_missingError(nullptr, "vl");
+    c.va_list_usedBeforeStartedError(nullptr, "vl");
+    c.va_start_subsequentCallsError(nullptr, "vl");
 }

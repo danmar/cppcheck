@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,16 +102,15 @@ public:
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
     public:
-        FileInfo() = default;
+        explicit FileInfo(std::string f0 = {}) : file0(std::move(f0)) {}
         virtual ~FileInfo() = default;
         virtual std::string toString() const {
             return std::string();
         }
+        std::string file0;
     };
 
-    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {
-        (void)tokenizer;
-        (void)settings;
+    virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/, const std::string& /*currentConfig*/) const {
         return nullptr;
     }
 
@@ -121,11 +120,7 @@ public:
     }
 
     // Return true if an error is reported.
-    virtual bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<FileInfo*> &fileInfo, const Settings& /*settings*/, ErrorLogger & /*errorLogger*/) {
-        (void)ctu;
-        (void)fileInfo;
-        //(void)settings;
-        //(void)errorLogger;
+    virtual bool analyseWholeProgram(const CTU::FileInfo& /*ctu*/, const std::list<FileInfo*>& /*fileInfo*/, const Settings& /*settings*/, ErrorLogger & /*errorLogger*/) {
         return false;
     }
 
@@ -137,25 +132,20 @@ protected:
     ErrorLogger* const mErrorLogger{};
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {
+    void reportError(const Token *tok, const Severity severity, const std::string &id, const std::string &msg) {
         reportError(tok, severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty) {
+    void reportError(const Token *tok, const Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty) {
         const std::list<const Token *> callstack(1, tok);
         reportError(callstack, severity, id, msg, cwe, certainty);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
-        reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
-    }
+    void reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
 
-    /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
-
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
+    void reportError(ErrorPath errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
 
     /** log checker */
     void logChecker(const char id[]);

@@ -7,19 +7,24 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '2.*'
     tags:
       - '2.*'
   pull_request:
 
 permissions:
   contents: read
-
+  
 jobs:
   build_cmake:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
+        image: ["ubuntu:24.04"]
+        include:
+          - build_gui: false
+          - image: "ubuntu:24.04"
+            build_gui: true
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
@@ -33,14 +38,9 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install missing software on CentOS 7
-        if: matrix.image == 'centos:7'
-        run: |
-          yum install -y cmake gcc-c++ make pcre-devel
-          yum --enablerepo=extras install -y epel-release
-          yum install -y ccache
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install missing software on ubuntu
         if: contains(matrix.image, 'ubuntu')
@@ -48,49 +48,33 @@ jobs:
           apt-get update
           apt-get install -y cmake g++ make libxml2-utils libpcre3-dev
 
-      # required so a default Qt installation is configured
-      - name: Install missing software on ubuntu 18.04
-        if: false # matrix.os == 'ubuntu-18.04'
+      - name: Install missing software (gui) on latest ubuntu
+        if: matrix.build_gui
         run: |
-          sudo apt-get install qt5-default
+          apt-get install -y qt6-base-dev qt6-charts-dev qt6-tools-dev
 
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
-      # - it doesn't support centos
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        if: matrix.image != 'ubuntu:14.04' # no support for --set-config
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
-      # tests require CMake 3.9 - no ccache available
-      - name: CMake build (no tests / no ccache)
-        if: matrix.image == 'ubuntu:14.04'
-        run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On ..
-          cmake --build . -- -j$(nproc)
-
-      # tests require CMake 3.9 - ccache available
-      - name: CMake build (no tests)
-        if: matrix.image == 'centos:7' || matrix.image == 'ubuntu:16.04'
-        run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
-          cmake --build . -- -j$(nproc)
-
       - name: CMake build
-        if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
+        if: ${{ !matrix.build_gui }}
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
+
+      - name: CMake build (with GUI)
+        if: matrix.build_gui
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
-        if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
         run: |
           cmake --build cmake.output --target check -- -j$(nproc)
 
@@ -98,7 +82,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
+        image: ["ubuntu:24.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
@@ -107,14 +91,9 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install missing software on CentOS 7
-        if: matrix.image == 'centos:7'
-        run: |
-          yum install -y gcc-c++ make which python3 pcre-devel
-          yum --enablerepo=extras install -y epel-release
-          yum install -y ccache
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install missing software on ubuntu
         if: contains(matrix.image, 'ubuntu')
@@ -124,33 +103,29 @@ jobs:
 
       # needs to be called after the package installation since
       # - it doesn't call "apt-get update"
-      # - it doesn't support centos
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        if: matrix.image != 'ubuntu:14.04' # no support for --set-config
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
       - name: Build cppcheck
         run: |
-          # "/usr/lib64" for centos / "/usr/lib" for ubuntu
-          export PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) HAVE_RULES=yes
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-Werror"
 
       - name: Build test
         run: |
-          # "/usr/lib64" for centos / "/usr/lib" for ubuntu
-          export PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          make -j$(nproc) HAVE_RULES=yes CXXOPTS="-Werror" testrunner
 
       - name: Run test
         run: |
-          make -j$(nproc) check HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes test
 
       # requires python3
       - name: Run extra tests
         run: |
-          tools/generate_and_run_more_tests.sh
+          test/scripts/generate_and_run_more_tests.sh
 
       # requires which
       - name: Validate
@@ -161,10 +136,3 @@ jobs:
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
-
-      - name: Generate Qt help file on ubuntu 18.04
-        if: false # matrix.os == 'ubuntu-18.04'
-        run: |
-          pushd gui/help
-          qcollectiongenerator online-help.qhcp -o online-help.qhc
-

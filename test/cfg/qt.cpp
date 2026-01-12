@@ -2,10 +2,12 @@
 // Test library configuration for qt.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/qt.cpp
+// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/qt.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
+
+// cppcheck-suppress-file valueFlowBailout
 
 #include <QObject>
 #include <QString>
@@ -13,14 +15,156 @@
 #include <QStack>
 #include <QByteArray>
 #include <QList>
-#include <QLinkedList>
+#include <QMap>
+#include <QMultiMap>
+#include <QQueue>
+#include <QSet>
 #include <QtPlugin>
 #include <QFile>
-#include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QTest>
+#include <QRect>
+#include <QRectF>
+#include <QSize>
+#include <QSizeF>
+#include <QPoint>
+#include <QPointF>
+#include <QRegion>
+#include <QTransform>
 
+// TODO: this is actually avilable via Core5Compat but I could not get it to work with pkg-config
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QLinkedList>
+#endif
+
+#include <cstdio>
+
+int ignoredReturnValue_QSize_height(const QSize &s)
+{
+    // cppcheck-suppress ignoredReturnValue
+    s.height();
+    return s.height();
+}
+
+int ignoredReturnValue_QSize_width(const QSize &s)
+{
+    // cppcheck-suppress ignoredReturnValue
+    s.width();
+    return s.width();
+}
+
+void unusedVariable_QTransform()
+{
+    // cppcheck-suppress unusedVariable
+    QTransform a;
+}
+
+void unreadVariable_QRegion(const int x, const QRegion::RegionType type, const QPolygon &polygon, const QBitmap &bm, const QRegion &region, const Qt::FillRule fillRule)
+{
+    // cppcheck-suppress unusedVariable
+    QRegion a;
+    // cppcheck-suppress unreadVariable
+    QRegion b{};
+    // cppcheck-suppress unreadVariable
+    QRegion c{x,x,x,x};
+    // cppcheck-suppress unreadVariable
+    QRegion d{x,x,x,x, type};
+    // cppcheck-suppress unreadVariable
+    QRegion e{polygon, fillRule};
+    // cppcheck-suppress unreadVariable
+    QRegion f{bm};
+    // cppcheck-suppress unreadVariable
+    QRegion g{region};
+}
+
+void unreadVariable_QPoint(const QPoint &s)
+{
+    // cppcheck-suppress unusedVariable
+    QPoint a;
+    // cppcheck-suppress unreadVariable
+    QPoint b{};
+    // cppcheck-suppress unreadVariable
+    QPoint c{4, 2};
+    // cppcheck-suppress unreadVariable
+    QPoint d(4, 2);
+    // cppcheck-suppress unreadVariable
+    QPoint e(s);
+}
+
+void unreadVariable_QPointF(const QPointF &s)
+{
+    // cppcheck-suppress unusedVariable
+    QPointF a;
+    // cppcheck-suppress unreadVariable
+    QPointF b{};
+    // cppcheck-suppress unreadVariable
+    QPointF c{4.2, 4.2};
+    // cppcheck-suppress unreadVariable
+    QPointF d(4.2, 4.2);
+    // cppcheck-suppress unreadVariable
+    QPointF e(s);
+}
+
+void unreadVariable_QSizeF(const QSize &s)
+{
+    // cppcheck-suppress unusedVariable
+    QSizeF a;
+    // cppcheck-suppress unreadVariable
+    QSizeF b{};
+    // cppcheck-suppress unreadVariable
+    QSizeF c{4.2, 4.2};
+    // cppcheck-suppress unreadVariable
+    QSizeF d(4.2, 4.2);
+    // cppcheck-suppress unreadVariable
+    QSizeF e(s);
+}
+
+void unreadVariable_QSize(const QSize &s)
+{
+    // cppcheck-suppress unusedVariable
+    QSize a;
+    // cppcheck-suppress unreadVariable
+    QSize b{};
+    // cppcheck-suppress unreadVariable
+    QSize c{4, 2};
+    // cppcheck-suppress unreadVariable
+    QSize d(4, 2);
+    // cppcheck-suppress unreadVariable
+    QSize e(s);
+}
+
+void unreadVariable_QRect(const QPoint &topLeft, const QSize &size, const QPoint &bottomRight, const int x) {
+    // cppcheck-suppress unusedVariable
+    QRect a;
+    // cppcheck-suppress unreadVariable
+    QRect b{};
+    // cppcheck-suppress unreadVariable
+    QRect c(0, 0, 100, 50);
+    // cppcheck-suppress unreadVariable
+    QRect d(x, x, x, x);
+    // cppcheck-suppress unreadVariable
+    QRect e(topLeft, size);
+    // cppcheck-suppress unreadVariable
+    QRect f(topLeft, bottomRight);
+}
+
+void unreadVariable_QRectF(const QPointF &topLeft, const QSizeF &size, const QPointF &bottomRight, const QRectF &rect, const qreal x) {
+    // cppcheck-suppress unusedVariable
+    QRectF a;
+    // cppcheck-suppress unreadVariable
+    QRectF b{};
+    // cppcheck-suppress unreadVariable
+    QRectF c(0.0, 0.0, 100.0, 50.0);
+    // cppcheck-suppress unreadVariable
+    QRectF d(x, x, x, x);
+    // cppcheck-suppress unreadVariable
+    QRectF e(topLeft, size);
+    // cppcheck-suppress unreadVariable
+    QRectF f(topLeft, bottomRight);
+    // cppcheck-suppress unreadVariable
+    QRectF g(rect);
+}
 
 void QString1(QString s)
 {
@@ -69,6 +213,22 @@ QStringList QString6(QString s) {
 // cppcheck-suppress passedByValue
 bool QString7(QString s, const QString& l) {
     return l.startsWith(s);
+}
+
+void QString_split(const char* name) { // #12998
+    // cppcheck-suppress valueFlowBailoutIncompleteVar // FIXME
+    QStringList qsl = QString(name).split(';', Qt::SkipEmptyParts);
+    if (qsl.isEmpty()) {}
+}
+
+namespace NTestStd // #12355
+{
+    using namespace std;
+    QString QString_std(QString s)
+    {
+        s.replace("abc", "def");
+        return s;
+    }
 }
 
 void QByteArray1(QByteArray byteArrayArg)
@@ -167,6 +327,7 @@ QList<int>::iterator QList3()
     return it;
 }
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 void QLinkedList1()
 {
     // cppcheck-suppress unreadVariable
@@ -203,6 +364,7 @@ QLinkedList<int>::iterator QLinkedList3()
     // cppcheck-suppress returnDanglingLifetime
     return it;
 }
+#endif
 
 void QStringList1(QStringList stringlistArg)
 {
@@ -316,9 +478,16 @@ QVector<int>::iterator QVector2()
 // cppcheck-suppress passedByValue
 void duplicateExpression_QString_Compare(QString style) //#8723
 {
-    // cppcheck-suppress duplicateExpression
+    // cppcheck-suppress [duplicateExpression,valueFlowBailoutIncompleteVar]
     if (style.compare( "x", Qt::CaseInsensitive ) == 0 || style.compare( "x", Qt::CaseInsensitive ) == 0)
     {}
+}
+
+void QVector_uninit()
+{
+    int i;
+    // cppcheck-suppress [uninitvar, unreadVariable]
+    QVector<int> v(i);
 }
 
 void QStack1(QStack<int> intStackArg)
@@ -406,10 +575,12 @@ void MacroTest2_test()
     QByteArray ba = str.toLatin1();
     printf(ba.data());
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #ifndef QT_NO_DEPRECATED
     str = MacroTest2::trUtf8("test2");
     ba = str.toLatin1();
     printf(ba.data());
+#endif
 #endif
 }
 
@@ -420,6 +591,7 @@ void MacroTest3()
     QVERIFY2(2 >= 0, message.constData());
 }
 
+// cppcheck-suppress constParameterReference
 void validCode(int * pIntPtr, QString & qstrArg, double d)
 {
     Q_UNUSED(d)
@@ -441,7 +613,7 @@ void validCode(int * pIntPtr, QString & qstrArg, double d)
 
     printf(QT_TR_NOOP("Hi"));
 
-    // cppcheck-suppress checkLibraryFunction
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     Q_DECLARE_LOGGING_CATEGORY(logging_category_test);
     QT_FORWARD_DECLARE_CLASS(forwardDeclaredClass);
     QT_FORWARD_DECLARE_STRUCT(forwardDeclaredStruct);
@@ -453,7 +625,7 @@ void validCode(int * pIntPtr, QString & qstrArg, double d)
         if (qstr1.length() == 1) {}
     }
     if (qstr1.length() == 1) {} else {
-        qstr1.remove(1);
+        qstr1.remove(1, 0);
         if (qstr1.length() == 1) {}
     }
 }
@@ -503,6 +675,7 @@ namespace {
     private slots:
         void foo();
     };
+    // cppcheck-suppress functionStatic
     void Fred::foo() {}
 
     // bitfields14
@@ -562,6 +735,7 @@ namespace {
         ~MyObject1() {}
     public slots:
     signals:
+        // cppcheck-suppress functionStatic
         void test() {}
     };
 
@@ -579,4 +753,112 @@ namespace {
     public:
         Q_PROPERTY(QHash<QString, int> hash READ hash WRITE setHash)
     };
+}
+
+struct SEstimateSize {
+    inline const QString& get() const {
+        return m;
+    }
+    QString m;
+};
+
+class QString;
+
+void dontCrashEstimateSize(const SEstimateSize& s) {
+    // cppcheck-suppress redundantCopyLocalConst
+    QString q = s.get();
+    if (!q.isNull()) {}
+}
+
+bool knownConditionTrueFalse_QString_count(const QString& s) // #11036
+{
+    if (!s.isEmpty() && s.count("abc") == 0)
+        return false;
+    return true;
+}
+
+void unusedVariable_qtContainers() // #10689
+{
+    // cppcheck-suppress unusedVariable
+    QMap<int, int> qm;
+    // cppcheck-suppress unusedVariable
+    QSet<int> qs;
+    // cppcheck-suppress unusedVariable
+    QMultiMap<int, int> qmm;
+    // cppcheck-suppress unusedVariable
+    QQueue<int> qq;
+    // cppcheck-suppress unusedVariable
+    QLatin1String ql1s;
+}
+
+void unreadVariable_QMapIterator(QMap<QString, QObject*>& m)
+{
+    auto it = m.find("abc"); // #12662
+    if (it != m.end()) {
+        // cppcheck-suppress checkLibraryFunction // TODO
+        delete it.value();
+        // cppcheck-suppress checkLibraryFunction
+        it.value() = new QObject();
+    }
+}
+
+void constVariablePointer_QVector(QVector<int*>& qv, int* p)
+{
+    qv.push_back(p); // #12661
+}
+
+void constParameterPointer_QHash_insert(QHash<int*, int*>& qh, int* k, int* v)
+{
+    qh.insert(k, v); // #13902
+}
+
+bool constParameterPointer_QHash_find(const QHash<int*, int*>& qh, int* k)
+{
+    auto it = qh.find(k);
+    return it != qh.end();
+}
+
+bool constParameterPointer_QHash_contains(const QHash<int*, int*>& qh, int* k)
+{
+    return qh.contains(k);
+}
+
+int constParameterPointer_QHash_count(const QHash<int*, int*>& qh, int* k)
+{
+    return qh.count(k);
+}
+
+const QString& unassignedVariable_static_QString() // #12935
+{
+    static QString qs;
+    return qs;
+}
+
+struct BQObject_missingOverride { // #13406
+    Q_OBJECT
+};
+
+struct DQObject_missingOverride : BQObject_missingOverride {
+    Q_OBJECT
+};
+
+namespace {
+    class TestUnusedFunction : public QObject { // #13236
+        TestUnusedFunction();
+        void doStuff();
+    };
+
+    TestUnusedFunction::TestUnusedFunction() {
+        QObject::connect(this, SIGNAL(doStuff()), SLOT(doStuff()));
+    }
+
+    // cppcheck-suppress functionStatic
+    void TestUnusedFunction::doStuff() {} // Should not warn here with unusedFunction
+}
+
+int qdateIsValid()
+{
+    QDate qd(1,1,2025);
+    Q_ASSERT(qd.isValid()); // Should not warn here with assertWithSideEffect
+    return qd.month(); 
 }

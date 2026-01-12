@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,11 @@
 
 #include "checkassert.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "fixture.h"
-#include "tokenize.h"
+#include "helpers.h"
+#include "settings.h"
 
-#include <sstream> // IWYU pragma: keep
-
+#include <cstddef>
 
 class TestAssert : public TestFixture {
 public:
@@ -34,20 +33,18 @@ private:
     const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
-        // Clear the error buffer..
-        errout.str("");
-
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         runChecks<CheckAssert>(tokenizer, this);
     }
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);
         TEST_CASE(memberFunctionCallInAssert);
@@ -65,7 +62,7 @@ private:
             "   return a;\n"
             "}\n"
             "assert(foo() == 3);");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check(
             "int foo(int a) {\n"
@@ -73,7 +70,7 @@ private:
             "    return b;\n"
             "}\n"
             "assert(foo(1) == 2);");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void functionCallInAssert() {
@@ -84,7 +81,7 @@ private:
             "    return a;\n"
             "}\n"
             "assert(foo() == 3);");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Assert statement calls a function which may have desired side effects: 'foo'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:8]: (warning) Assert statement calls a function which may have desired side effects: 'foo'. [assertWithSideEffect]\n", errout_str());
 
         //  Ticket #4937 "false positive: Assert calls a function which may have desired side effects"
         check("struct SquarePack {\n"
@@ -96,7 +93,7 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct SquarePack {\n"
               "   static bool isRank1Or8( Square &sq ) {\n"
@@ -107,7 +104,7 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8:25]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'. [assertWithSideEffect]\n", errout_str());
 
         check("struct SquarePack {\n"
               "   static bool isRank1Or8( Square *sq ) {\n"
@@ -118,7 +115,7 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8:25]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'. [assertWithSideEffect]\n", errout_str());
 
         check("struct SquarePack {\n"
               "   static bool isRank1Or8( Square *sq ) {\n"
@@ -129,7 +126,7 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Geometry {\n"
               "    int nbv;\n"
@@ -140,7 +137,16 @@ private:
               "void Geometry::ReadGeometry() {\n"
               "    assert(empty());\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct S {\n" // #4811
+              "    void f() const;\n"
+              "    bool g(std::ostream& os = std::cerr) const;\n"
+              "};\n"
+              "void S::f() const {\n"
+              "    assert(g());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void memberFunctionCallInAssert() {
@@ -150,7 +156,7 @@ private:
               "void foo(SquarePack s) {\n"
               "   assert( s.Foo() );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (warning) Assert statement calls a function which may have desired side effects: 'Foo'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:14]: (warning) Assert statement calls a function which may have desired side effects: 'Foo'. [assertWithSideEffect]\n", errout_str());
 
         check("struct SquarePack {\n"
               "   int Foo() const;\n"
@@ -158,7 +164,7 @@ private:
               "void foo(SquarePack* s) {\n"
               "   assert( s->Foo() );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct SquarePack {\n"
               "   static int Foo();\n"
@@ -166,14 +172,14 @@ private:
               "void foo(SquarePack* s) {\n"
               "   assert( s->Foo() );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct SquarePack {\n"
               "};\n"
               "void foo(SquarePack* s) {\n"
               "   assert( s->Foo() );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void assignmentInAssert() {
@@ -182,54 +188,54 @@ private:
               "    assert(a = 2);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:14]: (warning) Assert statement modifies 'a'. [assignmentInAssert]\n", errout_str());
 
         check("void f(int a) {\n"
               "    assert(a == 2);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(int a, int b) {\n"
               "    assert(a == 2 && (b = 1));\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Assert statement modifies 'b'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:25]: (warning) Assert statement modifies 'b'. [assignmentInAssert]\n", errout_str());
 
         check("void f() {\n"
               "    int a; a = 0;\n"
               "    assert(a += 2);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:14]: (warning) Assert statement modifies 'a'. [assignmentInAssert]\n", errout_str());
 
         check("void f() {\n"
               "    int a; a = 0;\n"
               "    assert(a *= 2);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:14]: (warning) Assert statement modifies 'a'. [assignmentInAssert]\n", errout_str());
 
         check("void f() {\n"
               "    int a; a = 0;\n"
               "    assert(a -= 2);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:14]: (warning) Assert statement modifies 'a'. [assignmentInAssert]\n", errout_str());
 
         check("void f() {\n"
               "    int a = 0;\n"
               "    assert(a--);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:13]: (warning) Assert statement modifies 'a'. [assignmentInAssert]\n", errout_str());
 
         check("void f() {\n"
               "    int a = 0;\n"
               "    assert(--a);\n"
               "    return a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:12]: (warning) Assert statement modifies 'a'. [assignmentInAssert]\n", errout_str());
 
         check("void f() {\n"
               "  assert(std::all_of(first, last, []() {\n"
@@ -238,19 +244,19 @@ private:
               "                  return tmp == expected;\n"
               "                }));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void crash() {
         check("void foo() {\n"
               "  assert(sizeof(struct { int a[x++]; })==sizeof(int));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n" // #9790
               "  assert(kad_bucket_hash(&(kad_guid) { .bytes = { 0 } }, & (kad_guid){.bytes = { 0 }}) == -1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 };
 

@@ -1,5 +1,6 @@
 The cppcheck team, in alphabetical order:
 
+0x41head
 Abhijit Sawant
 Abhishek Bharadwaj
 Abigail Buccaneer
@@ -21,12 +22,14 @@ Alexey Eryomenko
 Alexey Zhikhartsev
 Alfi Maulana
 Ali Can Demiralp
+Allen Winter
 Alon Alexander
 Alon Liberman
 Ameen Ali
 Andreas Bacher
 Andreas Bießmann
 Andreas Grob
+Andreas Lutsch
 Andreas Pokorny
 Andreas Rönnquist
 Andreas Vollenweider
@@ -36,13 +39,16 @@ Andrew C. Martin
 Andrew D. Bancroft
 Andy Holmes
 Andy Maloney
+Andy Mac Gregor
 Aneesh Azhakesan S
 Ankita Gupta
+anoymouserver
 Anton Lindqvist
 Antti Tuppurainen
 Anurag Garg
 Armin Müller
 Arpit Chaudhary
+Artemis Meursault Gerrard
 August Sodora
 Ayaz Salikhov
 Balázs Tóth
@@ -60,6 +66,7 @@ Ben T
 Bernd Buschinski
 Bill Egert
 Björge Dijkstra
+Björn Blissing
 booga
 Boris Barbulovski
 Boris Egorov
@@ -71,11 +78,15 @@ Carl Morgan
 Carlo Marcelo Arenas Belón
 Carlos Gomes Martinho
 Carl-Oskar Larsson
+Cary Converse
 Cary R
+Caspar Kielwein
 Changkyoon Kim
 Chris Lalancette
 Christian Ehrlicher
 Christian Franke
+Christian Göttsche
+Christoph Grüninger
 Christoph Schmidt
 Christoph Strehle
 Chuck Larson
@@ -92,12 +103,15 @@ David Korth
 Dávid Slivka
 Debrard Sebastien
 Deepak Gupta
+Degen's Regens
 dencat
 Diego de las Heras
 Dirk Jagdmann
+Dirk Mueller
 Dmitriy
 Dmitry Marakasov
 Dmitry-Me
+dsamo
 Duraffort
 Edoardo Prezioso
 Eivind Tagseth
@@ -111,12 +125,17 @@ Erik Lax
 Ettl Martin
 Even Rouault
 Evgeny Mandrikov
+feelamee
 Felipe Pena
+Felix Faber
 Felix Geyer
 Felix Passenberg
 Felix Wolff
 Florin Iucha
+flovent
 Francesc Elies
+François Berder
+Frank Winklmeier
 Frank Zingsheim
 Frederik Schwarzer
 fu7mu4
@@ -133,6 +152,7 @@ Gerik Rhoden
 Gianfranco Costamagna
 Gianluca Scacco
 Gleydson Soares
+Goncalo Mao-Cheia
 Goran Džaferi
 Graham Whitted
 Greg Hewgill
@@ -151,6 +171,7 @@ He Yuqi
 Hoang Tuan Su
 Igor Rondarev
 Igor Zhukov
+Ilya Shipitsin
 Ivan Maidanski
 Iván Matellanes
 Ivan Ryabov
@@ -169,6 +190,8 @@ Jesse Boswell
 Jim Kuhn
 Jim Zhou
 jlguardi
+Joel Johnson
+Johan Bertrand
 Johan Samuelson
 John Marshall
 John-Paul Ore
@@ -189,12 +212,14 @@ Jussi Lehtola
 Jørgen Kvalsvik
 Kamil Dudka
 Kartik Bajaj
+Kefu Chai
 keinflue
 Ken-Patrick Lehrmann
 Ketil Skjerve
 Kevin Christian
 Kevin Kendzia
 Kimmo Varis
+Kitsios Konstantinos
 Kleber Tarcísio
 Konrad Grochowski
 Konrad Windszus
@@ -205,6 +230,7 @@ Lars Even Almaas
 larudwer
 Lau bakman
 Lauri Nurmi
+Leander Schulten
 Leandro Lisboa Penz
 Leila F. Rahman
 Lena Herscheid
@@ -213,11 +239,15 @@ Lieven de Cock
 lioncash
 Lionel Gimbert
 Lucas Manuel Rodriguez
+Ludvig Gunne Lindström
 Luis Díaz Más
+Luís Pereira
 Lukas Grützmacher
+Lukas Hiesmayr
 Lukasz Czajczyk
 Łukasz Jankowski
 Luxon Jean-Pierre
+Maarten van der Schrieck
 Maksim Derbasov
 Malcolm Parsons
 Marc-Antoine Perennou
@@ -237,6 +267,7 @@ Márton Csordás
 Masafumi Koba
 Massimo Paladin
 Mateusz Michalak
+Mateusz Patyk
 Mateusz Pusz
 Mathias De Maré
 Mathias Schmid
@@ -246,6 +277,7 @@ Matthias Schmieder
 Matt Johnson
 Maurice Gilden
 Mavik
+Melroy van den Berg
 Michael Drake
 Michael Løiten
 Miika-Petteri Matikainen
@@ -268,6 +300,8 @@ Nicolás Alvarez
 Nicolas Le Cam
 Nilesh Kumar
 Ogawa KenIchi
+Ola Söder
+Oleksandr Labetskyi
 Oleksandr Redko
 Oliver Schode
 Oliver Stöneberg
@@ -285,8 +319,10 @@ Pavol Misik
 Pete Johns
 Peter Pentchev
 Peter Schops
+Philip Chimento
 Philipp Kloke
 Pierre Schweitzer
+Pieter Duchi
 Pino Toscano
 Pranav Khanna
 Radek Jarecki
@@ -295,6 +331,7 @@ Ramzan Bekbulatov
 Raphael Geissert
 Razvan Ioan Alexe
 Reijo Tomperi
+Reshma V Kumar
 Rainer Wiesenfarth
 Riccardo Ghetta
 Richard A. Smith
@@ -306,6 +343,7 @@ Robert Habrich
 Robert Morin
 Roberto Martelloni
 Robert Reif
+Robin Getz
 rofl0r
 Roman Zaytsev Borisovich
 Ronald Hiemstra
@@ -321,7 +359,9 @@ Samuel Degrande
 Samuel Poláček
 Sandeep Dutta
 Savvas Etairidis
+Scott Ehlert
 Scott Furry
+Seafarix Ltd.
 Sebastian Held
 Sebastian Matuschka
 Sébastien Debrard
@@ -329,6 +369,7 @@ Sergei Chernykh
 Sergei Trofimovich
 Sergey Burgsdorf
 Shane Tapp
+Shohei YOSHIDA
 Simon Cornell
 Simon Kagstrom
 Simon Large
@@ -347,12 +388,16 @@ Steve Duan
 Steve Mokris
 Steven Cook
 Steven Myint
+Sune Stolborg Vuorela
 Susi Lehtola
+Sven Wienand
 Swasti Shrivastava
 Sylvain Joubert
 Tam Do Thanh
 Teddy Didé
+Temuri Doghonadze
 Thomas Arnhold
+Tomasz Edward Posluszny
 Thomas Jarosch
 Thomas Niederberger
 Thomas Otto
@@ -362,22 +407,28 @@ Thorsten Sick
 Tim Blume
 Tim Gerundt
 tititiou36
+Tobias Weber
 Tobias Weibel
 Tomasz Kłoczko
 Tom Pollok
 Tomo Dote
+Tommy Bergman
 Toralf Förster
 Troshin V.S.
 Tyson Nottingham
+Usman Majid
 Valentin Batz
 Valerii Lashmanov
 Vasily Maslyukov
 Veli-Matti Visuri
-WenChung Chiu
 Vesa Pikki
 Ville-Pekka Vahteala
 Ville Skyttä
 Vincent Le Garrec
+Vladimir Petrigo
+Wang Haoyu
+Wang Yang
+WenChung Chiu
 Wolfgang Stöggl
 x29a
 XhmikosR

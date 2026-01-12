@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,8 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
-#include "tokenize.h"
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
@@ -34,6 +33,8 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
+class Tokenizer;
+enum class Severity : std::uint8_t;
 
 /// @addtogroup Checks
 /// @{
@@ -52,14 +53,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckIO checkIO(&tokenizer, tokenizer.getSettings(), errorLogger);
-
-        checkIO.checkWrongPrintfScanfArguments();
-        checkIO.checkCoutCerrMisusage();
-        checkIO.checkFileUsage();
-        checkIO.invalidScanf();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check for missusage of std::cout */
     void checkCoutCerrMisusage();
@@ -75,7 +69,7 @@ private:
 
     class ArgumentInfo {
     public:
-        ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
+        ArgumentInfo(const Token *arg, const Settings &settings, bool _isCPP);
         ~ArgumentInfo();
 
         ArgumentInfo(const ArgumentInfo &) = delete;
@@ -86,7 +80,7 @@ private:
         bool isKnownType() const;
         bool isStdVectorOrString();
         bool isStdContainer(const Token *tok);
-        bool isLibraryType(const Settings *settings) const;
+        bool isLibraryType(const Settings &settings) const;
 
         const Variable* variableInfo{};
         const Token* typeToken{};
@@ -98,11 +92,11 @@ private:
         bool isCPP{};
     };
 
-    void checkFormatString(const Token * const tok,
-                           const Token * const formatStringTok,
-                           const Token *       argListTok,
-                           const bool scan,
-                           const bool scanf_s);
+    void checkFormatString(const Token * tok,
+                           const Token * formatStringTok,
+                           const Token * argListTok,
+                           bool scan,
+                           bool scanf_s);
 
     // Reporting errors..
     void coutCerrMisusageError(const Token* tok, const std::string& streamName);
@@ -132,34 +126,9 @@ private:
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
     void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier);
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
-    static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
+    static Severity getSeverity(const ArgumentInfo *argInfo);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckIO c(nullptr, settings, errorLogger);
-        c.coutCerrMisusageError(nullptr,  "cout");
-        c.fflushOnInputStreamError(nullptr,  "stdin");
-        c.ioWithoutPositioningError(nullptr);
-        c.readWriteOnlyFileError(nullptr);
-        c.writeReadOnlyFileError(nullptr);
-        c.useClosedFileError(nullptr);
-        c.seekOnAppendedFileError(nullptr);
-        c.incompatibleFileOpenError(nullptr, "tmp");
-        c.invalidScanfError(nullptr);
-        c.wrongPrintfScanfArgumentsError(nullptr, "printf",3,2);
-        c.invalidScanfArgTypeError_s(nullptr,  1, "s", nullptr);
-        c.invalidScanfArgTypeError_int(nullptr,  1, "d", nullptr, false);
-        c.invalidScanfArgTypeError_float(nullptr,  1, "f", nullptr);
-        c.invalidPrintfArgTypeError_s(nullptr,  1, nullptr);
-        c.invalidPrintfArgTypeError_n(nullptr,  1, nullptr);
-        c.invalidPrintfArgTypeError_p(nullptr,  1, nullptr);
-        c.invalidPrintfArgTypeError_uint(nullptr,  1, "u", nullptr);
-        c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
-        c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
-        c.invalidLengthModifierError(nullptr,  1, "I");
-        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, "s");
-        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, "s");
-        c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "IO using format string";

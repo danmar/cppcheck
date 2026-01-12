@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "standards.h"
 
 #include <set>
 #include <string>
@@ -136,35 +137,23 @@ public:
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check. path info is optional
+     * @param lang the detected language
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename) {
+    static bool acceptFile(const std::string &filename, Standards::Language* lang = nullptr) {
         const std::set<std::string> extra;
-        return acceptFile(filename, extra);
+        return acceptFile(filename, extra, lang);
     }
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param path filename to check. path info is optional
-     * @param extra    extra file extensions
+     * @param extra extra file extensions
+     * @param lang the detected language
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &path, const std::set<std::string> &extra);
-
-    /**
-     * @brief Identify language based on file extension.
-     * @param path filename to check. path info is optional
-     * @return true if extension is meant for C files
-     */
-    static bool isC(const std::string &path);
-
-    /**
-     * @brief Identify language based on file extension.
-     * @param path filename to check. path info is optional
-     * @return true if extension is meant for C++ files
-     */
-    static bool isCPP(const std::string &path);
+    static bool acceptFile(const std::string &path, const std::set<std::string> &extra, Standards::Language* lang = nullptr);
 
     /**
      * @brief Is filename a header based on file extension
@@ -172,6 +161,15 @@ public:
      * @return true if filename extension is meant for headers
      */
     static bool isHeader(const std::string &path);
+
+    /**
+     * @brief Identify the language based on the file extension
+     * @param path filename to check. path info is optional
+     * @param cppHeaderProbe check optional Emacs marker to identify extension-less and *.h files as C++
+     * @param header if provided indicates if the file is a header
+     * @return the language type
+     */
+    static Standards::Language identify(const std::string &path, bool cppHeaderProbe, bool *header = nullptr);
 
     /**
      * @brief Get filename without a directory path part.
@@ -195,7 +193,17 @@ public:
     static bool isDirectory(const std::string &path);
 
     /**
-     * join 2 paths with '/' separators
+     * @brief Checks if a given path exists (i.e. is a file or directory)
+     * @param path Path to be checked
+     * @param isdir Optional parameter which indicates if the existing path is a directory
+     * @return true if given path exists
+     */
+    static bool exists(const std::string &path, bool* isdir = nullptr);
+
+    /**
+     * @brief join 2 paths with '/' separators
+     * if path2 is an absolute path path1 will be dismissed.
+     * @return the joined path with normalized slashes
      */
     static std::string join(std::string path1, std::string path2);
 };

@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,16 @@
 
 #include <cstddef>
 #include <list>
-#include <map>
 #include <mutex>
 #include <string>
+#include <unordered_set>
 
 class Settings;
 class ErrorLogger;
 class ErrorMessage;
-class Suppressions;
+struct Suppressions;
+struct FileSettings;
+class FileWithDetails;
 
 /// @addtogroup CLI
 /// @{
@@ -39,11 +41,11 @@ class Suppressions;
  */
 class Executor {
 public:
-    Executor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
-    void operator=(const Executor &) = delete;
+    Executor& operator=(const Executor &) = delete;
 
     virtual unsigned int check() = 0;
 
@@ -65,14 +67,16 @@ protected:
      */
     bool hasToLog(const ErrorMessage &msg);
 
-    const std::map<std::string, std::size_t> &mFiles;
+    const std::list<FileWithDetails> &mFiles;
+    const std::list<FileSettings>& mFileSettings;
     const Settings &mSettings;
     Suppressions &mSuppressions;
     ErrorLogger &mErrorLogger;
 
 private:
     std::mutex mErrorListSync;
-    std::list<std::string> mErrorList;
+    // TODO: store hashes instead of the full messages
+    std::unordered_set<std::string> mErrorList;
 };
 
 /// @}

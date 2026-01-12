@@ -166,7 +166,7 @@ class ValueType:
     Attributes:
         type             nonstd/pod/record/smart-pointer/container/iterator/void/bool/char/short/wchar_t/int/long/long long/unknown int/float/double/long double
         sign             signed/unsigned
-        bits
+        bits             bit count for bit-fields, otherwise None
         pointer
         constness
         reference
@@ -178,7 +178,7 @@ class ValueType:
 
     type = None
     sign = None
-    bits = 0
+    bits = None
     constness = 0
     pointer = 0
     typeScopeId = None
@@ -188,7 +188,8 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
-        self.bits = int(element.get('valueType-bits', 0))
+        self.bits = element.get('valueType-bits', None)
+        self.bits = int(self.bits) if self.bits else None
         self.pointer = int(element.get('valueType-pointer', 0))
         self.constness = int(element.get('valueType-constness', 0))
         self.reference = element.get('valueType-reference')
@@ -254,6 +255,7 @@ class Token:
         isCast
         externLang
         isExpandedMacro    Is this token a expanded macro token
+        macroName          Macro name that this token is expanded from
         isRemovedVoidParameter  Has void parameter been removed?
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a split variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a split variable declaration ('int a=5;' => 'int a; a=5;')
@@ -261,6 +263,7 @@ class Token:
         isComplex
         isRestrict
         isAttributeExport
+        isAnonymous
         varId              varId for token, each variable has a unique non-zero id
         exprId             exprId for token, each expression has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
@@ -313,6 +316,7 @@ class Token:
     isCast = False
     isUnsigned = False
     isSigned = False
+    macroName = None
     isExpandedMacro = False
     isRemovedVoidParameter = False
     isSplittedVarDeclComma = False
@@ -321,6 +325,7 @@ class Token:
     isComplex = False
     isRestrict = False
     isAttributeExport = False
+    isAnonymous = False
     exprId = None
     varId = None
     variableId = None
@@ -334,6 +339,7 @@ class Token:
 
     typeScopeId = None
     typeScope = None
+    type = None
 
     astParentId = None
     astParent = None
@@ -353,27 +359,27 @@ class Token:
         self.previous = None
         self.scopeId = element.get('scope')
         self.scope = None
-        type = element.get('type')
-        if type == 'name':
+        self.type = element.get('type')
+        if self.type == 'name':
             self.isName = True
             if element.get('isUnsigned'):
                 self.isUnsigned = True
             if element.get('isSigned'):
                 self.isSigned = True
-        elif type == 'number':
+        elif self.type == 'number':
             self.isNumber = True
             if element.get('isInt'):
                 self.isInt = True
             elif element.get('isFloat'):
                 self.isFloat = True
-        elif type == 'string':
+        elif self.type == 'string':
             self.isString = True
             self.strlen = int(element.get('strlen'))
-        elif type == 'char':
+        elif self.type == 'char':
             self.isChar = True
-        elif type == 'boolean':
+        elif self.type == 'boolean':
             self.isBoolean = True
-        elif type == 'op':
+        elif self.type == 'op':
             self.isOp = True
             if element.get('isArithmeticalOp'):
                 self.isArithmeticalOp = True
@@ -386,7 +392,8 @@ class Token:
         if element.get('isCast'):
             self.isCast = True
         self.externLang = element.get('externLang')
-        if element.get('isExpandedMacro'):
+        self.macroName = element.get('macroName')
+        if self.macroName or element.get('isExpandedMacro'):
             self.isExpandedMacro = True
         if element.get('isRemovedVoidParameter'):
             self.isRemovedVoidParameter = True
@@ -402,6 +409,8 @@ class Token:
             self.isRestrict = True
         if element.get('isAttributeExport'):
             self.isAttributeExport = True
+        if element.get('isAnonymous'):
+            self.isAnonymous = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
@@ -435,7 +444,7 @@ class Token:
                 "isChar", "isBoolean", "isOp", "isArithmeticalOp", "isAssignmentOp", 
                 "isComparisonOp", "isLogicalOp", "isCast", "externLang", "isExpandedMacro", 
                 "isRemovedVoidParameter", "isSplittedVarDeclComma", "isSplittedVarDeclEq", 
-                "isImplicitInt", "isComplex", "isRestrict", "isAttributeExport", "linkId", 
+                "isImplicitInt", "isComplex", "isRestrict", "isAttributeExport", "isAnonymous", "linkId",
                 "varId", "variableId", "functionId", "valuesId", "valueType",
                 "typeScopeId", "astParentId", "astOperand1Id", "file",
                 "linenr", "column"]
@@ -528,6 +537,7 @@ class Token:
         for i, t in enumerate(tl):
             if i == n:
                 return t
+        return None
 
     def linkAt(self, n):
         token = self.tokAt(n)
@@ -566,6 +576,7 @@ class Scope:
     function = None
     nestedInId = None
     nestedIn = None
+    nestedList = None
     type = None
     isExecutable = None
     varlistId = None
@@ -583,13 +594,14 @@ class Scope:
         self.bodyEnd = None
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
+        self.nestedList = []
         self.type = element.get('type')
         self.definedType = element.get('definedType')
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
                                            'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
 
-        self.varlistId = list()
-        self.varlist = list()
+        self.varlistId = []
+        self.varlist = []
 
     def __repr__(self):
         attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
@@ -603,6 +615,8 @@ class Scope:
         self.bodyStart = IdMap[self.bodyStartId]
         self.bodyEnd = IdMap[self.bodyEndId]
         self.nestedIn = IdMap[self.nestedInId]
+        if self.nestedIn:
+            self.nestedIn.nestedList.append(self)
         self.function = IdMap[self.functionId]
         for v in self.varlistId:
             value = IdMap.get(v)
@@ -669,7 +683,7 @@ class Function:
         self.argumentId = {}
 
     def __repr__(self):
-        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "hasVirtualSpecifier", 
+        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "hasVirtualSpecifier",
                  "isImplicitlyVirtual", "access", "isInlineKeyword", "isStatic", 
                  "isAttributeNoreturn", "overriddenFunction", "nestedIn", "argumentId"]
         return "{}({})".format(
@@ -823,7 +837,7 @@ class Value:
         intvalue         integer value
         tokvalue         token value
         floatvalue       float value
-        movedValue
+        movedvalue
         uninit
         containerSize    container size
         bufferSize       buffer size
@@ -893,7 +907,7 @@ class Value:
         self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
-        attrs = ["intvalue", "tokvalue", "floatvalue", "movedValue", "uninit", 
+        attrs = ["intvalue", "tokvalue", "floatvalue", "movedvalue", "uninit",
                  "bufferSize", "containerSize", "condition", "valueKind"]
         return "{}({})".format(
             "Value",
@@ -938,29 +952,60 @@ class Suppression:
       fileName    The name of the file to suppress warnings for, can include wildcards
       lineNumber  The number of the line to suppress warnings from, can be 0 to represent any line
       symbolName  The name of the symbol to match warnings for, can include wildcards
+      lineBegin   The first line to suppress warnings from
+      lineEnd     The last line to suppress warnings from
+      suppressionType   The type of suppression which is applied (unique = None (default), file, block, blockBegin, blockEnd, macro)
     """
 
     errorId = None
     fileName = None
     lineNumber = None
     symbolName = None
+    lineBegin = None
+    lineEnd = None
+    suppressionType = None
 
     def __init__(self, element):
         self.errorId = element.get('errorId')
         self.fileName = element.get('fileName')
         self.lineNumber = element.get('lineNumber')
         self.symbolName = element.get('symbolName')
+        self.lineBegin = element.get('lineBegin')
+        self.lineEnd = element.get('lineEnd')
+        self.suppressionType = element.get('type')
 
     def __repr__(self):
-        attrs = ['errorId' , "fileName", "lineNumber", "symbolName"]
+        attrs = ["errorId", "fileName", "lineNumber", "symbolName", "lineBegin", "lineEnd","suppressionType"]
         return "{}({})".format(
             "Suppression",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
     def isMatch(self, file, line, message, errorId):
+        # Line Suppression
         if ((self.fileName is None or fnmatch(file, self.fileName))
-                and (self.lineNumber is None or int(line) == int(self.lineNumber))
+                and (self.suppressionType is None) # Verify use of default suppression type (None = unique)
+                and (self.lineNumber is not None and int(line) == int(self.lineNumber))
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
+            return True
+        # File Suppression
+        if ((self.fileName is None or fnmatch(file, self.fileName))
+                and (self.suppressionType is not None and self.suppressionType == "file") # Verify use of file (global) suppression type
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
+            return True
+        # Block Suppression Mode
+        if ((self.fileName is None or fnmatch(file, self.fileName))
+                and (self.suppressionType is not None and self.suppressionType == "block") # Type for Block suppression
+                and (self.lineBegin is not None and int(line) > int(self.lineBegin)) # Code Match is between the Block suppression
+                and (self.lineEnd is not None and int(line) < int(self.lineEnd)) # Code Match is between the Block suppression
+                and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
+                and fnmatch(errorId, self.errorId)):
+            return True
+        # Other Suppression (Globaly set via suppression file or cli command)
+        if ((self.fileName is None or fnmatch(file, self.fileName))
+                and (self.suppressionType is None)
                 and (self.symbolName is None or fnmatch(message, '*'+self.symbolName+'*'))
                 and fnmatch(errorId, self.errorId)):
             return True
@@ -1178,6 +1223,7 @@ class CppcheckData:
         """
         :param filename: Path to Cppcheck dump file
         """
+        self.language = None
         self.filename = filename
         self.rawTokens = []
         self.platform = None
@@ -1194,6 +1240,8 @@ class CppcheckData:
         for event, node in ElementTree.iterparse(self.filename, events=('start', 'end')):
             if platform_done and rawtokens_done and suppressions_done:
                 break
+            if node.tag == 'dumps':
+                self.language = node.get('language')
             if node.tag == 'platform' and event == 'start':
                 self.platform = Platform(node)
                 platform_done = True
@@ -1242,6 +1290,9 @@ class CppcheckData:
         # Iterating <typedef-info>
         iter_typedef_info = False
 
+        # Iterating <directive>
+        iter_directive = False
+
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
         # Calling .clear() is necessary to let the element be garbage collected.
@@ -1251,7 +1302,7 @@ class CppcheckData:
                 if event == 'start':
                     cfg = Configuration(node.get('cfg'))
                     continue
-                elif event == 'end':
+                if event == 'end':
                     cfg.setIdMap(cfg_arguments)
                     yield cfg
                     cfg = None
@@ -1273,8 +1324,12 @@ class CppcheckData:
                 cfg.standards.set_posix(node)
 
             # Parse directives list
-            elif node.tag == 'directive' and event == 'start':
-                cfg.directives.append(Directive(node))
+            elif node.tag == 'directive':
+                if event == 'start':
+                    cfg.directives.append(Directive(node))
+                    iter_directive = True
+                elif event == 'end':
+                    iter_directive = False
             # Parse macro usage
             elif node.tag == 'macro' and event == 'start':
                 cfg.macro_usage.append(MacroUsage(node))
@@ -1286,7 +1341,7 @@ class CppcheckData:
             # Parse tokens
             elif node.tag == 'tokenlist' and event == 'start':
                 continue
-            elif node.tag == 'token' and event == 'start':
+            elif node.tag == 'token' and event == 'start' and not iter_directive and not iter_typedef_info:
                 cfg.tokenlist.append(Token(node))
 
             # Parse scopes
@@ -1307,7 +1362,7 @@ class CppcheckData:
                 if event == 'start':
                     cfg_function = Function(node, cfg.scopes[-1])
                     continue
-                elif event == 'end':
+                if event == 'end':
                     cfg.functions.append(cfg_function)
                     cfg_function = None
 
@@ -1351,7 +1406,7 @@ class CppcheckData:
                 if event == 'start':
                     cfg_valueflow = ValueFlow(node)
                     continue
-                elif event == 'end':
+                if event == 'end':
                     cfg.valueflow.append(cfg_valueflow)
                     cfg_valueflow = None
 
@@ -1547,8 +1602,7 @@ class MatchResult:
     def __getattr__(self, k):
         if k in self._keys:
             return None
-        else:
-            raise AttributeError
+        raise AttributeError
 
 def bind_split(s):
     if '@' in s:
@@ -1612,11 +1666,19 @@ def is_suppressed(location, message, errorId):
             return True
     return False
 
-def reportError(location, severity, message, addon, errorId, extra=''):
+def log_checker(message, addon):
+    if '--cli' in sys.argv:
+        msg = { 'addon': addon,
+                'severity': 'none',
+                'message': message,
+                'errorId': 'logChecker'}
+        sys.stdout.write(json.dumps(msg) + '\n')
+
+def reportError(location, severity, message, addon, errorId, extra='', columnOverride=None):
     if '--cli' in sys.argv:
         msg = { 'file': location.file,
                 'linenr': location.linenr,
-                'column': location.column,
+                'column': location.column if columnOverride is None else columnOverride,
                 'severity': severity,
                 'message': message,
                 'addon': addon,
@@ -1634,11 +1696,14 @@ def reportError(location, severity, message, addon, errorId, extra=''):
         EXIT_CODE = 1
 
 def reportSummary(dumpfile, summary_type, summary_data):
-    # dumpfile ends with ".dump"
-    ctu_info_file = dumpfile[:-4] + "ctu-info"
-    with open(ctu_info_file, 'at') as f:
-        msg = {'summary': summary_type, 'data': summary_data}
-        f.write(json.dumps(msg) + '\n')
+    msg = {'summary': summary_type, 'data': summary_data}
+    if '--cli' in sys.argv:
+        sys.stdout.write(json.dumps(msg) + '\n')
+    else:
+        # dumpfile ends with ".dump"
+        ctu_info_file = dumpfile[:-4] + "ctu-info"
+        with open(ctu_info_file, 'at') as f:
+            f.write(json.dumps(msg) + '\n')
 
 
 def get_path_premium_addon():
@@ -1654,8 +1719,9 @@ def get_path_premium_addon():
 
 def cmd_output(cmd):
     with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
-        comm = p.communicate()
-        out = comm[0]
-        if p.returncode == 1 and len(comm[1]) > 2:
-            out = comm[1]
-        return out.decode(encoding='utf-8', errors='ignore')
+        stdout, stderr = p.communicate()
+        rc = p.returncode
+    out = stdout
+    if rc == 1 and len(stderr) > 2:
+        out = stderr
+    return out.decode(encoding='utf-8', errors='ignore')

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,7 @@
 #include "fixture.h"
 #include "timer.h"
 
-#include <cmath>
-#include <ctime>
+#include <chrono>
 
 class TestTimer : public TestFixture {
 public:
@@ -34,11 +33,10 @@ private:
 
     void result() const {
         TimerResultsData t1;
-        t1.mClocks = ~(std::clock_t)0;
-        ASSERT(t1.seconds() > 100.0);
+        t1.mDuration = std::chrono::milliseconds{1234};
+        ASSERT(t1.getSeconds().count() > 1.233 && t1.getSeconds().count() < 1.235);
 
-        t1.mClocks = CLOCKS_PER_SEC * 5 / 2;
-        ASSERT(std::fabs(t1.seconds()-2.5) < 0.01);
+        // TODO : more tests
     }
 };
 

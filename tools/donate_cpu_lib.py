@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.48"
+CLIENT_VERSION = "1.3.69"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -37,10 +37,8 @@ def detect_make():
 
     for m in make_cmds:
         try:
-            #print('{} --version'.format(m))
             subprocess.check_call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except OSError as e:
-            #print("'{}' not found ({})".format(m, e))
+        except OSError:
             continue
 
         print("using '{}'".format(m))
@@ -72,6 +70,7 @@ def check_requirements():
             result = False
 
     try:
+        # pylint: disable-next=unused-import - intentional
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
@@ -81,6 +80,7 @@ def check_requirements():
 
 
 # Try and retry with exponential backoff if an exception is raised
+# pylint: disable-next=inconsistent-return-statements
 def try_retry(fun, fargs=(), max_tries=5, sleep_duration=5.0, sleep_factor=2.0):
     for i in range(max_tries):
         try:
@@ -94,6 +94,7 @@ def try_retry(fun, fargs=(), max_tries=5, sleep_duration=5.0, sleep_factor=2.0):
                 print("Trying {} again in {} seconds".format(fun.__name__, sleep_duration))
                 time.sleep(sleep_duration)
                 sleep_duration *= sleep_factor
+                # do not return - re-try
             else:
                 print("Maximum number of tries reached for {}".format(fun.__name__))
                 raise e
@@ -132,7 +133,10 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
         hash_old = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cppcheck_path).strip()
 
         print('Pulling {}'.format(version))
-        subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
+        # --rebase is a workaround for a dropped commit - see https://github.com/danmar/cppcheck/pull/6904
+        # TODO: drop the commit in question
+        # TOD: remove --rebase
+        subprocess.check_call(['git', 'pull', '--rebase'], cwd=cppcheck_path)
 
         hash_new = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cppcheck_path).strip()
 
@@ -140,15 +144,15 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
         if not has_changes:
             print('No changes detected')
         return has_changes
-    else:
-        if version != 'main':
-            print('Fetching {}'.format(version))
-            # Since this is a shallow clone, explicitly fetch the remote version tag
-            refspec = 'refs/tags/' + version + ':ref/tags/' + version
-            subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
-        print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
-        subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
-        return True
+
+    if version != 'main':
+        print('Fetching {}'.format(version))
+        # Since this is a shallow clone, explicitly fetch the remote version tag
+        refspec = 'refs/tags/' + version + ':ref/tags/' + version
+        subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
+    print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
+    subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
+    return True
 
 
 def get_cppcheck_info(cppcheck_path):
@@ -213,6 +217,7 @@ def compile_cppcheck(cppcheck_path):
             # TODO: processes still exhaust all threads of the system
             subprocess.check_call([__make_cmd, '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path, env=build_env)
         else:
+            # TODO: use CXXOPTS instead
             build_cmd = [__make_cmd, __jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w']
             build_env = os.environ
             if __make_cmd == 'mingw32-make':
@@ -300,6 +305,7 @@ def __remove_tree(folder_name):
         return
 
     def rmtree_func():
+        # pylint: disable=deprecated-argument - FIXME: onerror was deprecated in Python 3.12
         shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
 
     print('Removing existing temporary data...')
@@ -398,13 +404,12 @@ def __run_command(cmd, print_cmd=True):
     if print_cmd:
         print(cmd)
     time_start = time.time()
-    comm = None
     if sys.platform == 'win32':
         p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape')
     else:
         p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape', preexec_fn=os.setsid)
     try:
-        comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
+        stdout, stderr = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
         p = None
     except subprocess.TimeoutExpired:
@@ -417,21 +422,21 @@ def __run_command(cmd, print_cmd=True):
                 child.terminate()
             try:
                 # call with timeout since it might get stuck e.g. gcc-arm-none-eabi
-                comm = p.communicate(timeout=5)
+                stdout, stderr = p.communicate(timeout=5)
                 p = None
             except subprocess.TimeoutExpired:
                 pass
     finally:
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
-            comm = p.communicate()
+            stdout, stderr = p.communicate()
+            p = None
     time_stop = time.time()
-    stdout, stderr = comm
     elapsed_time = time_stop - time_start
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True, enable='style,information', debug_warnings=True, check_level=None, extra_args=None):
     print('Analyze..')
     libs = ''
     for library in libraries:
@@ -440,10 +445,19 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
 
     dir_to_scan = source_path
 
-    # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
+    # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
-    options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
+    options = '{} --inconclusive --enable={} --inline-suppr --template=daca2'.format(libs, enable)
+    if 'information' in enable:
+        # TODO: remove missingInclude disabling after 2.16 has been released
+        options += ' --disable=missingInclude --suppress=unmatchedSuppression'
+    if check_level:
+        options += ' --check-level=' + check_level
+    if extra_args:
+        options += ' ' + extra_args
+    if debug_warnings:
+        options += ' --check-library --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout' \
+                   ' --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning --suppress=normalCheckLevelConditionExpressions'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
@@ -505,7 +519,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
                 sig_num = int(ie_line[sig_start_pos:ie_line.find(' ', sig_start_pos)])
             # break on the first signalled file for now
             break
-    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
+    print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')') + ' in {:.1f}s'.format(elapsed_time))
 
     options_j = options + ' ' + __jobs
 
@@ -531,7 +545,7 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
                 cmd += dir_to_scan
             _, st_stdout, _, _ = __run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
-            if not gdb_pos == -1:
+            if gdb_pos != -1:
                 last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
                 if last_check_pos == -1:
                     stacktrace = st_stdout[gdb_pos:]
@@ -607,25 +621,6 @@ def diff_results(ver1, results1, ver2, results2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
 
-    # if there are syntaxError/unknownMacro/etc then analysis stops.
-    # diffing normal checker warnings will not make much sense
-    bailout_ids = ('[syntaxError]', '[unknownMacro]')
-    has_bailout_id = False
-    for id in bailout_ids:
-        if (id in results1) or (id in results1):
-            has_bailout_id = True
-    if has_bailout_id:
-        def check_bailout(line):
-            for id in bailout_ids:
-                if line.endswith(id):
-                    return True
-            return False
-        out = ''
-        for line in ret.split('\n'):
-            if check_bailout(line):
-                out += line + '\n'
-        ret = out
-
     return ret
 
 
@@ -654,7 +649,7 @@ def upload_results(package, results):
 
     print('Uploading results.. ' + str(len(results)) + ' bytes')
     try:
-        try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=4, sleep_duration=30, sleep_factor=1)
+        try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=20, sleep_duration=15, sleep_factor=1)
     except Exception as e:
         print('Result upload failed ({})!'.format(e))
         return False
@@ -669,7 +664,7 @@ def upload_info(package, info_output):
 
     print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
     try:
-        try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=3, sleep_duration=30, sleep_factor=1)
+        try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=20, sleep_duration=15, sleep_factor=1)
     except Exception as e:
         print('Information upload failed ({})!'.format(e))
         return False
@@ -693,11 +688,12 @@ class LibraryIncludes:
                             'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>','<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
                             'cairo': ['<cairo.h>'],
                             'cppunit': ['<cppunit/'],
+                            'emscripten': ['<emscripten.h>'],
                             'icu': ['<unicode/', '"unicode/'],
                             'ginac': ['<ginac/', '"ginac/'],
                             'googletest': ['<gtest/gtest.h>'],
-                            'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
-                            'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
+                            'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gdk/', '<gnome'],
+                            'kde': ['<KGlobal>', '<KApplication>', '<KLocalizedString>', '<KDE/', '<klocalizedstring.h>'],
                             'libcerror': ['<libcerror.h>'],
                             'libcurl': ['<curl/curl.h>'],
                             'libsigc++': ['<sigc++/'],
@@ -717,6 +713,7 @@ class LibraryIncludes:
                             'qt': ['<QAbstractSeries>', '<QAction>', '<QActionGroup>', '<QApplication>', '<QByteArray>', '<QChartView>', '<QClipboard>', '<QCloseEvent>', '<QColor>', '<QColorDialog>', '<QComboBox>', '<QCoreApplication>', '<QCryptographicHash>', '<QDate>', '<QDateTime>', '<QDateTimeAxis>', '<QDebug>', '<QDesktopServices>', '<QDialog>', '<QDialogButtonBox>', '<QDir>', '<QElapsedTimer>', '<QFile>', '<QFileDialog>', '<QFileInfo>', '<QFileInfoList>', '<QFlags>', '<QFont>', '<QFormLayout>', '<QHelpContentWidget>', '<QHelpEngine>', '<QHelpIndexWidget>', '<QImageReader>', '<QInputDialog>', '<QKeyEvent>', '<QLabel>', '<QLineSeries>', '<QList>', '<qlist.h>', '<QLocale>', '<QMainWindow>', '<QMap>', '<QMenu>', '<QMessageBox>', '<QMetaType>', '<QMimeData>', '<QMimeDatabase>', '<QMimeType>', '<QMutex>', '<QObject>', '<qobjectdefs.h>', '<QPainter>', '<QPlainTextEdit>', '<QPrintDialog>', '<QPrinter>', '<QPrintPreviewDialog>', '<QProcess>', '<QPushButton>', '<QQueue>', '<QReadWriteLock>', '<QRegularExpression>', '<QRegularExpressionValidator>', '<QSet>', '<QSettings>', '<QShortcut>', '<QSignalMapper>', '<QStandardItemModel>', '<QString>', '<qstring.h>', '<QStringList>', '<QSyntaxHighlighter>', '<QTest>', '<QTextBrowser>', '<QTextDocument>', '<QTextEdit>', '<QTextStream>', '<QThread>', '<QTimer>', '<QTranslator>', '<QTreeView>', '<QtWidgets>', '<QUrl>', '<QValueAxis>', '<QVariant>', '<QWaitCondition>', '<QWidget>', '<QXmlStreamReader>', '<QXmlStreamWriter>', '<QtGui'],
                             'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
                             'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
+                            #'selinux': ['<selinux/'],
                             'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
                             'tinyxml2': ['<tinyxml2', '"tinyxml2'],
                             'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
@@ -745,7 +742,7 @@ class LibraryIncludes:
 
     def get_libraries(self, folder):
         print('Detecting library usage...')
-        libraries = ['posix', 'gnu']
+        libraries = ['posix', 'gnu', 'bsd']
 
         # explicitly copy as assignments in python are references
         library_includes_re = copy.copy(self.__library_includes_re)
@@ -768,10 +765,10 @@ class LibraryIncludes:
 def get_compiler_version():
     if __make_cmd == 'msbuild.exe':
         _, _, stderr, _ = __run_command('cl.exe', False)
-        return stderr.split('\n')[0]
+        return stderr.split('\n', maxsplit=1)[0]
 
     _, stdout, _, _ = __run_command('g++ --version', False)
-    return stdout.split('\n')[0]
+    return stdout.split('\n', maxsplit=1)[0]
 
 
 def get_client_version():

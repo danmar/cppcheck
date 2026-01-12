@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,24 +25,25 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
-#include "errortypes.h"
-#include "mathlib.h"
-#include "symboldatabase.h"
-#include "tokenize.h"
-#include "vfvalue.h"
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
 #include <vector>
 
-namespace tinyxml2 {
-    class XMLElement;
-}
-
 class ErrorLogger;
 class Settings;
 class Token;
+class Tokenizer;
+class Variable;
+struct Dimension;
+enum class Certainty : std::uint8_t;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 /// @addtogroup Checks
 /// @{
@@ -66,36 +67,15 @@ private:
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, tokenizer.getSettings(), errorLogger);
-        checkBufferOverrun.arrayIndex();
-        checkBufferOverrun.pointerArithmetic();
-        checkBufferOverrun.bufferOverflow();
-        checkBufferOverrun.arrayIndexThenCheck();
-        checkBufferOverrun.stringNotZeroTerminated();
-        checkBufferOverrun.objectIndex();
-        checkBufferOverrun.argumentSize();
-        checkBufferOverrun.negativeArraySize();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
-        c.pointerArithmeticError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
-        c.arrayIndexThenCheckError(nullptr, "i");
-        c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
-        c.objectIndexError(nullptr, nullptr, true);
-        c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
-        c.negativeMemoryAllocationSizeError(nullptr, nullptr);
-        c.negativeArraySizeError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
+    bool analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     void arrayIndex();
     void arrayIndexError(const Token* tok,
@@ -130,26 +110,13 @@ private:
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     // CTU
-
-    /** data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        /** unsafe array index usage */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
-
-        /** unsafe pointer arithmetic */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
-
-    static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
-    static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
-    static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafeBufferUsage(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset);
+    static bool isCtuUnsafePointerArith(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *offset);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
-    static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
+    static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage,
+                                     int type, ErrorLogger &errorLogger, int maxCtuDepth, const std::string& file0);
 
 
     static std::string myName() {

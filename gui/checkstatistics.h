@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,12 @@
 
 #include <QMap>
 #include <QObject>
-#include <QSet>
 #include <QString>
 #include <QStringList>
 
 #include <set>
 #include <string>
+#include <utility>
 
 /// @addtogroup GUI
 /// @{
@@ -68,7 +68,7 @@ public:
      */
     unsigned getCount(const QString &tool, ShowTypes::ShowType type) const;
 
-    std::set<std::string> getActiveCheckers() const {
+    const std::set<std::string>& getActiveCheckers() const {
         return mActiveCheckers;
     }
 
@@ -82,7 +82,7 @@ public:
     void setCheckersReport(QString report) {
         mCheckersReport = std::move(report);
     }
-    QString getCheckersReport() const {
+    const QString& getCheckersReport() const {
         return mCheckersReport;
     }
 

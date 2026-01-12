@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,14 @@
 #ifndef THREADHANDLER_H
 #define THREADHANDLER_H
 
+#include "settings.h"
 #include "suppressions.h"
 #include "threadresult.h"
 
+#include <list>
+#include <memory>
 #include <set>
+#include <string>
 
 #include <QDateTime>
 #include <QElapsedTimer>
@@ -35,9 +39,9 @@
 class ResultsView;
 class CheckThread;
 class QSettings;
-class Settings;
 class ImportProject;
 class ErrorItem;
+class FileWithDetails;
 
 /// @addtogroup GUI
 /// @{
@@ -54,17 +58,11 @@ public:
     ~ThreadHandler() override;
 
     /**
-     * @brief Set the number of threads to use
-     * @param count The number of threads to use
-     */
-    void setThreadCount(const int count);
-
-    /**
      * @brief Initialize the threads (connect all signals to resultsview's slots)
      *
      * @param view View to show error results
      */
-    void initialize(ResultsView *view);
+    void initialize(const ResultsView *view);
 
     /**
      * @brief Load settings
@@ -82,8 +80,8 @@ public:
         mAddonsAndTools = addonsAndTools;
     }
 
-    void setSuppressions(const QList<Suppressions::Suppression> &s) {
-        mSuppressions = s;
+    void setSuppressions(const QList<SuppressionList::Suppression> &s) {
+        mSuppressionsUI = s;
     }
 
     void setClangIncludePaths(const QStringList &s) {
@@ -101,7 +99,7 @@ public:
      *
      * @param files files to check
      */
-    void setFiles(const QStringList &files);
+    void setFiles(std::list<FileWithDetails> files);
 
     /**
      * @brief Set project to check
@@ -114,8 +112,9 @@ public:
      * @brief Start the threads to check the files
      *
      * @param settings Settings for checking
+     * @param supprs Suppressions for checking
      */
-    void check(const Settings &settings);
+    void check(const Settings &settings, const std::shared_ptr<Suppressions>& supprs);
 
     /**
      * @brief Set files to check
@@ -129,7 +128,7 @@ public:
      *
      * @param files list of files to be checked
      */
-    void setCheckFiles(const QStringList& files);
+    void setCheckFiles(std::list<FileWithDetails> files);
 
     /**
      * @brief Is checking running?
@@ -163,7 +162,7 @@ public:
      * @brief Get files that should be rechecked because they have been
      * changed.
      */
-    QStringList getReCheckFiles(bool all) const;
+    std::list<FileWithDetails> getReCheckFiles(bool all) const;
 
     /**
      * @brief Get start time of last check
@@ -210,7 +209,7 @@ protected:
      * @brief List of files checked last time (used when rechecking)
      *
      */
-    QStringList mLastFiles;
+    std::list<FileWithDetails> mLastFiles;
 
     /** @brief date and time when current checking started */
     QDateTime mCheckStartTime;
@@ -233,10 +232,22 @@ protected:
     int mScanDuration{};
 
     /**
+     * @brief Create checker threads
+     * @param count The number of threads to spawn
+     */
+    void createThreads(int count);
+
+    /**
      * @brief Function to delete all threads
      *
      */
     void removeThreads();
+
+    /*
+     * @brief Apply check settings to a checker thread
+     * @param thread The thread to setup
+     */
+    void setupCheckThread(CheckThread &thread) const;
 
     /**
      * @brief Thread results are stored here
@@ -256,11 +267,24 @@ protected:
      */
     int mRunningThreadCount{};
 
+    /**
+     * @brief A whole program check is queued by check()
+     */
     bool mAnalyseWholeProgram{};
+    std::string mCtuInfo;
 
     QStringList mAddonsAndTools;
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressionsUI;
     QStringList mClangIncludePaths;
+
+    /// @{
+    /**
+     * @brief Settings specific to the current analysis
+     */
+    QStringList mCheckAddonsAndTools;
+    Settings mCheckSettings;
+    std::shared_ptr<Suppressions> mCheckSuppressions;
+    /// @}
 private:
 
     /**

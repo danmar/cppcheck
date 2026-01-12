@@ -33,17 +33,14 @@ def checknonnull(cfg, functionName, nonnull):
 
 
 def parseheader(cppcheckpath, filename):
-    f = open(filename, 'rt')
-    data = f.read()
-    f.close()
+    with open(filename, 'rt') as f:
+        data = f.read()
 
-    f = open(cppcheckpath + '/cfg/std.cfg', 'rt')
-    stdcfg = f.read()
-    f.close()
+    with open(cppcheckpath + '/cfg/std.cfg', 'rt') as f:
+        stdcfg = f.read()
 
-    f = open(cppcheckpath + '/cfg/posix.cfg', 'rt')
-    posixcfg = f.read()
-    f.close()
+    with open(cppcheckpath + '/cfg/posix.cfg', 'rt') as f:
+        posixcfg = f.read()
 
     while '/*' in data:
         pos1 = data.find('/*')

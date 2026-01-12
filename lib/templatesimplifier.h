@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <ctime>
 #include <list>
 #include <map>
@@ -44,13 +45,15 @@ struct newInstantiation;
 
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
-    friend class TestSimplifyTemplate;
-
 public:
     explicit TemplateSimplifier(Tokenizer &tokenizer);
 
-    std::string dump() const {
+    const std::string& dump() const {
         return mDump;
+    }
+
+    const std::map<std::string, std::set<std::string>>& getUsedVariables() const {
+        return mUsedVariables;
     }
 
     /**
@@ -77,7 +80,7 @@ public:
         const Token *mParamEnd;
         unsigned int mFlags;
 
-        enum {
+        enum : std::uint16_t {
             fIsClass                 = (1 << 0), // class template
             fIsFunction              = (1 << 1), // function template
             fIsVariable              = (1 << 2), // variable template
@@ -145,14 +148,14 @@ public:
         TokenAndName(Token *token, std::string scope);
         /**
          * Constructor used for declarations.
-         * \param token template declaration token "template < ... >"
-         * \param scope full qualification of template(scope)
-         * \param nameToken template name token "template < ... > class name"
-         * \param paramEnd template parameter end token ">"
+         * @param token template declaration token "template < ... >"
+         * @param scope full qualification of template(scope)
+         * @param nameToken template name token "template < ... > class name"
+         * @param paramEnd template parameter end token ">"
+         * @throws InternalError thrown on template issues
          */
         TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
-        TokenAndName(TokenAndName&& other) NOEXCEPT;
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
@@ -262,6 +265,7 @@ public:
     static Token *findTemplateDeclarationEnd(Token *tok);
     static const Token *findTemplateDeclarationEnd(const Token *tok);
 
+protected:
     /**
      * Match template declaration/instantiation
      * @param instance template instantiation
@@ -270,8 +274,9 @@ public:
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
+public: // TODO: only needs to be public for tests
     /**
      * Match template declaration/instantiation
      * @param tok The ">" token e.g. before "class"
@@ -280,6 +285,7 @@ public:
      */
     int getTemplateNamePosition(const Token *tok);
 
+private:
     /**
      * Get class template name position
      * @param tok The ">" token e.g. before "class"
@@ -304,23 +310,23 @@ public:
      * */
     static bool getTemplateNamePositionTemplateVariable(const Token *tok, int &namepos);
 
+public:
     /**
      * Simplify templates
      * @param maxtime time when the simplification should be stopped
-     * @param codeWithTemplates output parameter that is set if code contains templates
      */
-    void simplifyTemplates(
-        const std::time_t maxtime,
-        bool &codeWithTemplates);
+    void simplifyTemplates(std::time_t maxtime);
 
     /**
      * Simplify constant calculations such as "1+2" => "3"
      * @param tok start token
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
+     * @throws InternalError thrown on division by zero in template instantiation
      */
     static bool simplifyNumericCalculations(Token *tok, bool isTemplate = true);
 
+private:
     /**
      * Simplify constant calculations such as "1+2" => "3".
      * This also performs simple cleanup of parentheses etc.
@@ -335,7 +341,6 @@ public:
      */
     void simplifyTemplateArgs(Token *start, const Token *end, std::vector<newInstantiation>* newInst = nullptr);
 
-private:
     /**
      * Get template declarations
      * @return true if code has templates.
@@ -399,7 +404,7 @@ private:
     bool simplifyTemplateInstantiations(
         const TokenAndName &templateDeclaration,
         const std::list<const Token *> &specializations,
-        const std::time_t maxtime,
+        std::time_t maxtime,
         std::set<std::string> &expandedtemplates);
 
     /**
@@ -442,6 +447,7 @@ private:
                               const std::list<std::string> &typeStringsUsedInTemplateInstantiation,
                               const std::string &newName);
 
+protected:
     /**
      * @brief TemplateParametersInDeclaration
      * @param tok  template < typename T, typename S >
@@ -453,12 +459,15 @@ private:
         const Token * tok,
         std::vector<const Token *> & typeParametersInDeclaration);
 
+private:
     /**
      * Remove a specific "template < ..." template class/function
      */
     static bool removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls = nullptr);
 
-    /** Syntax error */
+    /** Syntax error
+     * @throws InternalError thrown unconditionally
+     */
     NORETURN static void syntaxError(const Token *tok);
 
     static bool matchSpecialization(
@@ -493,12 +502,12 @@ private:
     void printOut(
         const TokenAndName &tokenAndName,
         const std::string &indent = "    ") const;
-    void printOut(const std::string &text = emptyString) const;
+    void printOut(const std::string &text = "") const;
 
     Tokenizer &mTokenizer;
     TokenList &mTokenList;
     const Settings &mSettings;
-    ErrorLogger *mErrorLogger;
+    ErrorLogger &mErrorLogger;
     bool mChanged{};
 
     std::list<TokenAndName> mTemplateDeclarations;
@@ -513,6 +522,8 @@ private:
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
     std::unordered_map<const Token*, int> mTemplateNamePos;
     std::string mDump;
+
+    std::map<std::string, std::set<std::string>> mUsedVariables;
 };
 
 /// @}

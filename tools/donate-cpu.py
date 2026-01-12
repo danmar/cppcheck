@@ -125,10 +125,10 @@ for arg in sys.argv[1:]:
         print('Unhandled argument: ' + arg)
         sys.exit(1)
 
-if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 4):
+if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 7):
     print("#" * 80)
     print("IMPORTANT")
-    print("Please run the client with at least Python 3.4, thanks!")
+    print("Please run the client with at least Python 3.7, thanks!")
     print("#" * 80)
     time.sleep(2)
     sys.exit(1)
@@ -182,14 +182,17 @@ while True:
         if ver == 'head':
             ver = 'main'
         current_cppcheck_dir = os.path.join(work_path, 'tree-'+ver)
-        print('Fetching Cppcheck-{}..'.format(ver))
+        if ver != 'main' and lib.has_binary(current_cppcheck_dir):
+            print('No need to check Cppcheck-{} for changes - binary already exists'.format(ver))
+            continue
+        print('Checking Cppcheck-{} for changes..'.format(ver))
         try:
             has_changes = lib.try_retry(lib.checkout_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir), max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
         except KeyboardInterrupt as e:
             # Passthrough for user abort
             raise e
         except Exception as e:
-            print('Failed to update Cppcheck ({}), retry later'.format(e))
+            print('Failed to update Cppcheck-{} ({}), retry later'.format(ver, e))
             sys.exit(1)
         if ver == 'main':
             if (has_changes or not lib.has_binary(current_cppcheck_dir)) and not lib.compile_cppcheck(current_cppcheck_dir):
@@ -244,16 +247,17 @@ while True:
             cppcheck_head_info = lib.get_cppcheck_info(tree_path)
             capture_callstack = True
 
-            def get_client_version_head():
-                cmd = 'python3' + ' ' + os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
-                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
-                try:
-                    comm = p.communicate()
-                    return comm[0].strip()
-                except:
-                    return None
+            def get_client_version_head(path):
+                cmd = 'python3' + ' ' + os.path.join(path, 'tools', 'donate-cpu.py') + ' ' + '--version'
+                with subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True) as p:
+                    try:
+                        # TODO: handle p.returncode?
+                        stdout, _ = p.communicate()
+                    except:
+                        return None
+                return stdout.strip()
 
-            client_version_head = get_client_version_head()
+            client_version_head = get_client_version_head(tree_path)
         c, errout, info, t, cppcheck_options, timing_info = lib.scan_package(tree_path, source_path, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
@@ -269,6 +273,7 @@ while True:
         else:
             count += ' ' + str(c)
         elapsed_time += " {:.1f}".format(t)
+        errout = errout.replace(work_path, '[...]')
         results_to_diff.append(errout)
         if ver == 'head':
             head_info_msg = info

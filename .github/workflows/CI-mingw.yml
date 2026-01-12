@@ -1,7 +1,5 @@
-# Some convenient links:
-# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
-#
-
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: CI-mingw
 
 on:
@@ -9,6 +7,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '2.*'
     tags:
       - '2.*'
   pull_request:
@@ -21,26 +20,33 @@ defaults:
     shell: msys2 {0}
 
 jobs:
+  # TODO: add CMake build
   build_mingw:
     strategy:
       matrix:
-        # the MinGW installation in windows-2019 is supposed to be 8.1 but it is 12.2
-        # the MinGW installation in windows-2022 is not including all necessary packages by default, so just use the older image instead - package versions are he same
-        os: [windows-2019]
+        # only use the latest windows-* as the installed toolchain is identical
+        os: [windows-2025]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
+    timeout-minutes: 19 # max + 3*std of the last 7K runs
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up MSYS2
         uses: msys2/setup-msys2@v2
         with:
           release: false # use pre-installed
+          # TODO: install mingw-w64-x86_64-make and use mingw32.make instead - currently fails with "Windows Subsystem for Linux has no installed distributions."
           install: >-
             mingw-w64-x86_64-lld
             mingw-w64-x86_64-ccache
+            make
+            mingw-w64-x86_64-gcc
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -51,22 +57,19 @@ jobs:
         run: |
           export PATH="/mingw64/lib/ccache/bin:$PATH"
           # set RDYNAMIC to work around broken MinGW detection
-          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 cppcheck
-        env:
-          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+          # use lld for faster linking
+          make VERBOSE=1 RDYNAMIC=-lshlwapi LDOPTS=-fuse-ld=lld -j$(nproc) CXXOPTS="-Werror" cppcheck
 
       - name: Build test
         run: |
           export PATH="/mingw64/lib/ccache/bin:$PATH"
           # set RDYNAMIC to work around broken MinGW detection
-          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 testrunner
-        env:
-          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+          # use lld for faster linking
+          make VERBOSE=1 RDYNAMIC=-lshlwapi LDOPTS=-fuse-ld=lld -j$(nproc) CXXOPTS="-Werror" testrunner
 
       - name: Run test
         run: |
           export PATH="/mingw64/lib/ccache/bin:$PATH"
           # set RDYNAMIC to work around broken MinGW detection
-          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 check
-        env:
-          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+          # use lld for faster linking
+          make VERBOSE=1 RDYNAMIC=-lshlwapi LDOPTS=-fuse-ld=lld -j$(nproc) CXXOPTS="-Werror" test

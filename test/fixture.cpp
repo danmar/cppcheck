@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,14 @@
 
 #include "fixture.h"
 
+#include "cppcheck.h"
 #include "errortypes.h"
+#include "helpers.h"
+#include "library.h"
 #include "options.h"
 #include "redirect.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cctype>
 #include <exception>
@@ -30,41 +34,44 @@
 #include <sstream>
 #include <string>
 
-#include <tinyxml2.h>
-
-std::ostringstream errout;
-std::ostringstream output;
+#include "xml.h"
 
 /**
  * TestRegistry
  **/
 namespace {
     struct CompareFixtures {
-        bool operator()(const TestFixture* lhs, const TestFixture* rhs) const {
+        bool operator()(const TestInstance* lhs, const TestInstance* rhs) const {
             return lhs->classname < rhs->classname;
         }
     };
 }
-using TestSet = std::set<TestFixture*, CompareFixtures>;
-class TestRegistry {
-    TestSet _tests;
-public:
+using TestSet = std::set<TestInstance*, CompareFixtures>;
+namespace {
+    class TestRegistry {
+        TestSet _tests;
+    public:
 
-    static TestRegistry &theInstance() {
-        static TestRegistry testreg;
-        return testreg;
-    }
+        static TestRegistry &theInstance() {
+            static TestRegistry testreg;
+            return testreg;
+        }
 
-    void addTest(TestFixture *t) {
-        _tests.insert(t);
-    }
+        void addTest(TestInstance *t) {
+            _tests.insert(t);
+        }
 
-    const TestSet &tests() const {
-        return _tests;
-    }
-};
+        const TestSet &tests() const {
+            return _tests;
+        }
+    };
+}
 
-
+TestInstance::TestInstance(const char * _name)
+    : classname(_name)
+{
+    TestRegistry::theInstance().addTest(this);
+}
 
 
 /**
@@ -80,16 +87,14 @@ std::size_t TestFixture::succeeded_todos_counter = 0;
 
 TestFixture::TestFixture(const char * const _name)
     : classname(_name)
-{
-    TestRegistry::theInstance().addTest(this);
-}
+{}
 
 
 bool TestFixture::prepareTest(const char testname[])
 {
-    mVerbose = false;
     mTemplateFormat.clear();
     mTemplateLocation.clear();
+    CppCheck::resetTimerResults();
 
     prepareTestInternal();
 
@@ -104,9 +109,25 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << mTestname << std::endl;
         }
-        return true;
+        return !dry_run;
     }
     return false;
+}
+
+void TestFixture::teardownTest()
+{
+    teardownTestInternal();
+
+    {
+        const std::string s = errout_str();
+        if (!s.empty())
+            throw std::runtime_error("unconsumed ErrorLogger err: " + s);
+    }
+    {
+        const std::string s = output_str();
+        if (!s.empty())
+            throw std::runtime_error("unconsumed ErrorLogger out: " + s);
+    }
 }
 
 std::string TestFixture::getLocationStr(const char * const filename, const unsigned int linenr) const
@@ -119,7 +140,7 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     std::ostringstream ostr;
     if (gccStyle)
         ostr << '\"';
-    for (std::string::const_iterator i = str.cbegin(); i != str.cend(); ++i) {
+    for (auto i = str.cbegin(); i != str.cend(); ++i) {
         if (*i == '\n') {
             ostr << "\\n";
             if ((i+1) != str.end() && !gccStyle)
@@ -140,16 +161,18 @@ static std::string writestr(const std::string &str, bool gccStyle = false)
     return ostr.str();
 }
 
-bool TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition) const
+void TestFixture::assert_(const char * const filename, const unsigned int linenr, const bool condition, const std::string& msg) const
 {
     if (!condition) {
         ++fails_counter;
         errmsg << getLocationStr(filename, linenr) << ": Assertion failed." << std::endl << "_____" << std::endl;
+        if (!msg.empty())
+            errmsg << "Hint:" << std::endl << msg << std::endl;
+        throw AssertFailedError();
     }
-    return condition;
 }
 
-void TestFixture::assertEqualsFailed(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const
+void TestFixture::assertFailure(const char* const filename, const unsigned int linenr, const std::string& expected, const std::string& actual, const std::string& msg) const
 {
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. " << std::endl
@@ -160,14 +183,14 @@ void TestFixture::assertEqualsFailed(const char* const filename, const unsigned 
     if (!msg.empty())
         errmsg << "Hint:" << std::endl << msg << std::endl;
     errmsg << "_____" << std::endl;
+    throw AssertFailedError();
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string &expected, const std::string &actual, const std::string &msg) const
 {
     if (expected != actual) {
-        assertEqualsFailed(filename, linenr, expected, actual, msg);
+        assertFailure(filename, linenr, expected, actual, msg);
     }
-    return expected == actual;
 }
 
 std::string TestFixture::deleteLineNumber(const std::string &message)
@@ -199,25 +222,26 @@ void TestFixture::assertEqualsWithoutLineNumbers(const char * const filename, co
     assertEquals(filename, linenr, deleteLineNumber(expected), deleteLineNumber(actual), msg);
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const std::string& actual, const std::string &msg) const
 {
-    return assertEquals(filename, linenr, std::string(expected), actual, msg);
-}
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
-{
-    return assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
-}
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
-{
-    return assertEquals(filename, linenr, expected, std::string(actual), msg);
+    assertEquals(filename, linenr, std::string(expected), actual, msg);
 }
 
-bool TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const char expected[], const char actual[], const std::string &msg) const
+{
+    assertEquals(filename, linenr, std::string(expected), std::string(actual), msg);
+}
+
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const std::string& expected, const char actual[], const std::string &msg) const
+{
+    assertEquals(filename, linenr, expected, std::string(actual), msg);
+}
+
+void TestFixture::assertEquals(const char * const filename, const unsigned int linenr, const long long expected, const long long actual, const std::string &msg) const
 {
     if (expected != actual) {
         assertEquals(filename, linenr, std::to_string(expected), std::to_string(actual), msg);
     }
-    return expected == actual;
 }
 
 void TestFixture::assertEqualsDouble(const char * const filename, const unsigned int linenr, const double expected, const double actual, const double tolerance, const std::string &msg) const
@@ -266,7 +290,7 @@ void TestFixture::assertThrow(const char * const filename, const unsigned int li
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion succeeded. "
            << "The expected exception was thrown" << std::endl << "_____" << std::endl;
-
+    throw AssertFailedError();
 }
 
 void TestFixture::assertThrowFail(const char * const filename, const unsigned int linenr) const
@@ -274,15 +298,35 @@ void TestFixture::assertThrowFail(const char * const filename, const unsigned in
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
            << "The expected exception was not thrown"  << std::endl << "_____" << std::endl;
-
+    throw AssertFailedError();
 }
 
-void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr) const
+void TestFixture::assertNoThrowFail(const char * const filename, const unsigned int linenr, bool bailout) const
 {
+    std::string ex_msg;
+
+    try {
+        // cppcheck-suppress rethrowNoCurrentException
+        throw;
+    }
+    catch (const AssertFailedError&) {
+        return;
+    }
+    catch (const InternalError& e) {
+        ex_msg = e.errorMessage;
+    }
+    catch (const std::exception& e) {
+        ex_msg = e.what();
+    }
+    catch (...) {
+        ex_msg = "unknown exception";
+    }
+
     ++fails_counter;
     errmsg << getLocationStr(filename, linenr) << ": Assertion failed. "
-           << "Unexpected exception was thrown"  << std::endl << "_____" << std::endl;
-
+           << "Unexpected exception was thrown: " << ex_msg << std::endl << "_____" << std::endl;
+    if (bailout)
+        throw AssertFailedError();
 }
 
 void TestFixture::printHelp()
@@ -302,7 +346,9 @@ void TestFixture::printHelp()
         "\n"
         "Options:\n"
         "    -q                   Do not print the test cases that have run.\n"
-        "    -h, --help           Print this help.\n";
+        "    -h, --help           Print this help.\n"
+        "    -n                   Print no summaries.\n"
+        "    -d                   Do not execute the tests.\n";
 }
 
 void TestFixture::run(const std::string &str)
@@ -334,6 +380,7 @@ void TestFixture::run(const std::string &str)
 void TestFixture::processOptions(const options& args)
 {
     quiet_tests = args.quiet();
+    dry_run = args.dry_run();
     exename = args.exe();
 }
 
@@ -342,6 +389,7 @@ std::size_t TestFixture::runTests(const options& args)
     countTests = 0;
     errmsg.str("");
 
+    // TODO: bail out when given class/test is not found?
     for (std::string classname : args.which_test()) {
         std::string testname;
         if (classname.find("::") != std::string::npos) {
@@ -349,23 +397,28 @@ std::size_t TestFixture::runTests(const options& args)
             classname.erase(classname.find("::"));
         }
 
-        for (TestFixture * test : TestRegistry::theInstance().tests()) {
+        for (TestInstance * test : TestRegistry::theInstance().tests()) {
             if (classname.empty() || test->classname == classname) {
-                test->processOptions(args);
-                test->run(testname);
+                TestFixture* fixture = test->create();
+                fixture->processOptions(args);
+                fixture->run(testname);
             }
         }
     }
 
-    std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
-    std::cout << "Number of todos: " << todos_counter;
-    if (succeeded_todos_counter > 0)
-        std::cout << " (" << succeeded_todos_counter << " succeeded)";
-    std::cout << std::endl;
+    if (args.summary() && !args.dry_run()) {
+        std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << std::endl;
+        std::cout << "Number of todos: " << todos_counter;
+        if (succeeded_todos_counter > 0)
+            std::cout << " (" << succeeded_todos_counter << " succeeded)";
+        std::cout << std::endl;
+    }
     // calling flush here, to do all output before the error messages (in case the output is buffered)
     std::cout.flush();
 
-    std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
+    if (args.summary() && !args.dry_run()) {
+        std::cerr << "Tests failed: " << fails_counter << std::endl << std::endl;
+    }
     std::cerr << errmsg.str();
 
     std::cerr.flush();
@@ -374,25 +427,48 @@ std::size_t TestFixture::runTests(const options& args)
 
 void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 {
-    output << outmsg << std::endl;
+    mOutput << outmsg << std::endl;
 }
 
 void TestFixture::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && msg.id == "logChecker")
+    if (msg.severity == Severity::internal)
         return;
-    const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
-    if (errout.str().find(errormessage) == std::string::npos)
-        errout << errormessage << std::endl;
+    if (msg.severity == Severity::information && msg.id == "normalCheckLevelMaxBranches")
+        return;
+    std::string errormessage;
+    if (!mTemplateFormat.empty()) {
+        errormessage = msg.toString(false, mTemplateFormat, mTemplateLocation);
+    }
+    else {
+        if (!msg.callStack.empty()) {
+            errormessage += ErrorLogger::callStackToString(msg.callStack, mNewTemplate);
+            errormessage += ": ";
+        }
+        if (msg.severity != Severity::none) {
+            errormessage += '(';
+            errormessage += severityToString(msg.severity);
+            if (msg.certainty == Certainty::inconclusive)
+                errormessage += ", inconclusive";
+            errormessage += ") ";
+        }
+        errormessage += msg.shortMessage();
+        if (mNewTemplate) {
+            errormessage += " [";
+            errormessage += msg.id;
+            errormessage += "]";
+        }
+    }
+    mErrout << errormessage << std::endl;
 }
 
 void TestFixture::setTemplateFormat(const std::string &templateFormat)
 {
     if (templateFormat == "multiline") {
-        mTemplateFormat = "{file}:{line}:{severity}:{message}";
-        mTemplateLocation = "{file}:{line}:note:{info}";
+        mTemplateFormat = "[{file}:{line}:{column}]: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        mTemplateLocation = "[{file}:{line}:{column}]: note: {info}";
     }
-    else if (templateFormat == "simple") {
+    else if (templateFormat == "simple") { // TODO: use the existing one in CmdLineParser
         mTemplateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
         mTemplateLocation = "";
     }
@@ -402,11 +478,18 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
     }
 }
 
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::checkLevel(Settings::CheckLevel level) {
+    settings.setCheckLevel(level);
+    return *this;
+}
+
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char lib[]) {
     if (REDUNDANT_CHECK && std::find(settings.libraries.cbegin(), settings.libraries.cend(), lib) != settings.libraries.cend())
         throw std::runtime_error("redundant setting: libraries (" + std::string(lib) + ")");
     // TODO: exename is not yet set
-    LOAD_LIB_2_EXE(settings.library, lib, fixture.exename.c_str());
+    const Library::ErrorCode lib_error = settings.library.load(fixture.exename.c_str(), lib).errorcode;
+    if (lib_error != Library::ErrorCode::OK)
+        throw std::runtime_error("loading library '" + std::string(lib) + "' failed - " + std::to_string(static_cast<int>(lib_error)));
     // strip extension
     std::string lib_s(lib);
     const std::string ext(".cfg");
@@ -417,9 +500,9 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char l
     return *this;
 }
 
-TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::Platform::Type type)
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(Platform::Type type)
 {
-    const std::string platformStr = cppcheck::Platform::toString(type);
+    const std::string platformStr = Platform::toString(type);
 
     if (REDUNDANT_CHECK && settings.platform.type == type)
         throw std::runtime_error("redundant setting: platform (" + platformStr + ")");
@@ -434,9 +517,11 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::P
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::libraryxml(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
-    if (tinyxml2::XML_SUCCESS != doc.Parse(xmldata, len))
-        throw std::runtime_error("loading XML data failed");
-    if (settings.library.load(doc).errorcode != Library::ErrorCode::OK)
-        throw std::runtime_error("loading library XML failed");
+    const tinyxml2::XMLError xml_error = doc.Parse(xmldata, len);
+    if (tinyxml2::XML_SUCCESS != xml_error)
+        throw std::runtime_error(std::string("loading library XML data failed - ") + tinyxml2::XMLDocument::ErrorIDToName(xml_error));
+    const Library::ErrorCode lib_error = LibraryHelper::loadxmldoc(settings.library, doc).errorcode;
+    if (lib_error != Library::ErrorCode::OK)
+        throw std::runtime_error("loading library XML failed - " + std::to_string(static_cast<int>(lib_error)));
     return *this;
 }

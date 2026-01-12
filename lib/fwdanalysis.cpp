@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@
 #include "astutils.h"
 #include "config.h"
 #include "library.h"
+#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "vfvalue.h"
 
 #include <list>
-#include <map>
 #include <string>
 #include <utility>
 
@@ -76,7 +76,7 @@ static bool hasGccCompoundStatement(const Token *tok)
 
 static bool nonLocal(const Variable* var, bool deref)
 {
-    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isReference() || var->isExtern();
+    return !var || (!var->isLocal() && !var->isArgument()) || (deref && var->isArgument() && var->isPointer()) || var->isStatic() || var->isExtern();
 }
 
 static bool hasVolatileCastOrVar(const Token *expr)
@@ -93,7 +93,7 @@ static bool hasVolatileCastOrVar(const Token *expr)
     return ret;
 }
 
-struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
+FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth)
 {
     // Parse the given tokens
     if (++depth > 1000)
@@ -182,7 +182,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
 
                 // check loop body again..
-                const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass, depth);
+                const FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass, depth);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
                     return result;
             }
@@ -223,8 +223,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token *bodyStart = tok->linkAt(1)->next();
             const Token *conditionStart = tok->next();
             const Token *condTok = conditionStart->astOperand2();
-            if (condTok->hasKnownIntValue()) {
-                const bool cond = condTok->values().front().intvalue;
+            if (const ValueFlow::Value* v = condTok->getKnownValue(ValueFlow::Value::ValueType::INT)) {
+                const bool cond = !!v->intvalue;
                 if (cond) {
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)
@@ -237,7 +237,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 }
             }
             tok = bodyStart->link();
-            if (isReturnScope(tok, &mLibrary))
+            if (isReturnScope(tok, mSettings.library))
                 return Result(Result::Type::BAILOUT);
             if (Token::simpleMatch(tok, "} else {"))
                 tok = tok->linkAt(2);
@@ -273,12 +273,12 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
             const Token *parent = tok;
             bool other = false;
-            bool same = tok->astParent() && isSameExpression(mCpp, false, expr, tok, mLibrary, true, false, nullptr);
+            bool same = tok->astParent() && isSameExpression(false, expr, tok, mSettings, true, false, nullptr);
             while (!same && Token::Match(parent->astParent(), "*|.|::|[|(|%cop%")) {
                 parent = parent->astParent();
                 if (parent->str() == "(" && !parent->isCast())
                     break;
-                if (isSameExpression(mCpp, false, expr, parent, mLibrary, true, false, nullptr)) {
+                if (isSameExpression(false, expr, parent, mSettings, true, false, nullptr)) {
                     same = true;
                     if (mWhat == What::ValueFlow) {
                         KnownAndToken v;
@@ -288,7 +288,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     }
                 }
                 if (Token::Match(parent, ". %var%") && parent->next()->varId() && exprVarIds.find(parent->next()->varId()) == exprVarIds.end() &&
-                    isSameExpression(mCpp, false, expr->astOperand1(), parent->astOperand1(), mLibrary, true, false, nullptr)) {
+                    isSameExpression(false, expr->astOperand1(), parent->astOperand1(), mSettings, true, false, nullptr)) {
                     other = true;
                     break;
                 }
@@ -317,13 +317,31 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 // ({ .. })
                 if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
                     return Result(Result::Type::BAILOUT);
-                const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
+                // cppcheck-suppress shadowFunction - TODO: fix this
+                const bool reassign = isSameExpression(false, expr, parent, mSettings, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
             }
-            if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1())
-                return Result(Result::Type::READ);
+            if (mWhat == What::Reassign) {
+                if (parent->variable() && parent->variable()->type() && parent->variable()->type()->isUnionType() && parent->varId() == expr->varId()) {
+                    while (parent && Token::simpleMatch(parent->astParent(), "."))
+                        parent = parent->astParent();
+                    if (parent && parent->valueType() && Token::simpleMatch(parent->astParent(), "=") && !Token::Match(parent->astParent()->astParent(), "%assign%") && parent->astParent()->astOperand1() == parent) {
+                        const Token * assignment = parent->astParent()->astOperand2();
+                        while (Token::simpleMatch(assignment, ".") && assignment->varId() != expr->varId())
+                            assignment = assignment->astOperand1();
+                        if (assignment && assignment->varId() != expr->varId()) {
+                            if (assignment->valueType() && assignment->valueType()->pointer) // Bailout
+                                return Result(Result::Type::BAILOUT);
+                            return Result(Result::Type::WRITE, parent->astParent());
+                        }
+                    }
+                    return Result(Result::Type::READ);
+                }
+                if (parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%"))
+                    return Result(Result::Type::READ);
+            }
 
             if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
@@ -343,12 +361,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     while (argnr < args.size() && args[argnr] != parent)
                         argnr++;
                     if (argnr < args.size()) {
-                        const Library::Function* functionInfo = mLibrary.getFunction(ftok->astOperand1());
-                        if (functionInfo) {
-                            const auto it = functionInfo->argumentChecks.find(argnr + 1);
-                            if (it != functionInfo->argumentChecks.end() && it->second.direction == Library::ArgumentChecks::Direction::DIR_OUT)
-                                continue;
-                        }
+                        if (mSettings.library.getArgDirection(ftok->astOperand1(), argnr + 1) == Library::ArgumentChecks::Direction::DIR_OUT)
+                            continue;
                     }
                 }
                 return Result(Result::Type::BAILOUT, parent->astParent());
@@ -395,11 +409,6 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
     return Result(Result::Type::NONE);
 }
 
-bool FwdAnalysis::isGlobalData(const Token *expr) const
-{
-    return ::isGlobalData(expr, mCpp);
-}
-
 std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOut, bool* unknownVarIdOut) const
 {
     // all variable ids in expr.
@@ -410,7 +419,7 @@ std::set<nonneg int> FwdAnalysis::getExprVarIds(const Token* expr, bool* localOu
                   [&](const Token *tok) {
         if (tok->str() == "[" && mWhat == What::UnusedValue)
             return ChildrenToVisit::op1;
-        if (tok->varId() == 0 && tok->isName() && tok->previous()->str() != ".") {
+        if (tok->varId() == 0 && tok->isName() && tok->strAt(-1) != ".") {
             // unknown variable
             unknownVarId = true;
             return ChildrenToVisit::none;
@@ -469,7 +478,7 @@ bool FwdAnalysis::hasOperand(const Token *tok, const Token *lhs) const
 {
     if (!tok)
         return false;
-    if (isSameExpression(mCpp, false, tok, lhs, mLibrary, false, false, nullptr))
+    if (isSameExpression(false, tok, lhs, mSettings, false, false, nullptr))
         return true;
     return hasOperand(tok->astOperand1(), lhs) || hasOperand(tok->astOperand2(), lhs);
 }
@@ -500,6 +509,10 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
 {
     if (expr->isUnaryOp("*") && !expr->astOperand1()->isUnaryOp("&"))
         return true;
+    if (Token::simpleMatch(expr, ". *"))
+        return true;
+    if (expr->str() == "(" && Token::simpleMatch(expr->astOperand1(), "."))
+        return true;
 
     const bool macro = false;
     const bool pure = false;
@@ -515,7 +528,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
                 if (tok->function() && tok->function()->getArgumentVar(argnr) && !tok->function()->getArgumentVar(argnr)->isReference() && !tok->function()->isConst())
                     continue;
                 for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-                    if (isSameExpression(mCpp, macro, subexpr, args[argnr], mLibrary, pure, followVar)) {
+                    if (isSameExpression(macro, subexpr, args[argnr], mSettings, pure, followVar)) {
                         const Scope* scope = expr->scope(); // if there is no other variable, assume no aliasing
                         if (scope->varlist.size() > 1)
                             return true;
@@ -540,7 +553,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             continue;
 
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-            if (subexpr != addrOf && isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
+            if (subexpr != addrOf && isSameExpression(macro, subexpr, addrOf, mSettings, pure, followVar))
                 return true;
         }
     }

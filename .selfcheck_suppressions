@@ -1,26 +1,44 @@
 missingIncludeSystem
-shadowFunction
-bitwiseOnBoolean
-
-# temporary suppressions - fix the warnings!
-simplifyUsing:lib/valueptr.h
-varid0:gui/projectfile.cpp
-templateInstantiation
+# should not be reported - see #13387
+checkersReport
+# false positive - see #14308
+nullPointerRedundantCheck:externals/simplecpp/simplecpp.cpp:3246
 
 # warnings in Qt generated code we cannot fix
-symbolDatabaseWarning:gui/temp/moc_*.cpp
-simplifyUsing:gui/temp/moc_*.cpp
-funcArgNamesDifferent:gui/temp/moc_*.cpp
-symbolDatabaseWarning:tools/triage/temp/moc_*.cpp
-naming-varname:gui/temp/ui_*.h
-naming-varname:cmake.output/gui/ui_*.h
-functionStatic:gui/temp/ui_fileview.h
-functionStatic:cmake.output/gui/ui_fileview.h
+funcArgNamesDifferent:*/moc_checkthread.cpp
+funcArgNamesDifferent:*/moc_codeeditstylecontrols.cpp
+funcArgNamesDifferent:*/moc_resultstree.cpp
+funcArgNamesDifferent:*/moc_resultsview.cpp
+funcArgNamesDifferent:*/moc_threadhandler.cpp
+funcArgNamesDifferent:*/moc_threadresult.cpp
+naming-varname:*/gui/ui_*.h
+functionStatic:*/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-autoNoType
-bailoutUninitVar
+valueFlowMaxIterations:gui/resultstree.cpp
+autoNoType:externals/simplecpp/simplecpp.cpp
+autoNoType:cli/*.cpp
+autoNoType:lib/*.cpp
+autoNoType:lib/library.h
+autoNoType:gui/*.cpp
+autoNoType:test/*.cpp
+autoNoType:tools/triage/mainwindow.cpp
+# ticket 11631
+templateInstantiation:test/testutils.cpp
 
-*:externals/*/*
+naming-varname:externals/simplecpp/simplecpp.h
+naming-privateMemberVariable:externals/simplecpp/simplecpp.h
+
+# TODO: these warnings need to be addressed upstream
+uninitMemberVar:externals/tinyxml2/tinyxml2.h
+noExplicitConstructor:externals/tinyxml2/tinyxml2.h
+missingOverride:externals/tinyxml2/tinyxml2.h
+invalidPrintfArgType_sint:externals/tinyxml2/tinyxml2.h
+naming-privateMemberVariable:externals/tinyxml2/tinyxml2.h
+functionStatic:externals/tinyxml2/tinyxml2.cpp
+funcArgNamesDifferent:externals/tinyxml2/tinyxml2.cpp
+nullPointerRedundantCheck:externals/tinyxml2/tinyxml2.cpp
+useStlAlgorithm:externals/simplecpp/simplecpp.cpp
+missingMemberCopy:externals/simplecpp/simplecpp.h

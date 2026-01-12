@@ -18,19 +18,17 @@
 
 #include "testprojectfile.h"
 
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "settings.h"
+#include "suppressions.h"
 
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
-
+#include <QFile>
+#include <QIODevice>
 #include <QList>
 #include <QStringList>
+#include <QTemporaryDir>
 #include <QtTest>
 
 // Mock...
@@ -40,11 +38,10 @@ const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
 const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 Settings::Settings() : maxCtuDepth(10) {}
-cppcheck::Platform::Platform() = default;
-ImportProject::ImportProject() = default;
-bool ImportProject::sourceFileExists(const std::string & /*file*/) {
-    return true;
-}
+Platform::Platform() = default;
+Library::Library() = default;
+Library::~Library() = default;
+struct Library::LibraryData {};
 
 void TestProjectFile::loadInexisting() const
 {
@@ -120,4 +117,69 @@ void TestProjectFile::loadSimpleNoroot() const
     QCOMPARE(defines[0], QString("FOO"));
 }
 
+void TestProjectFile::getAddonFilePath() const
+{
+    QTemporaryDir tempdir;
+    QVERIFY(tempdir.isValid());
+    const QString filepath(tempdir.path() + "/addon.py");
+
+    QFile file(filepath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    file.close();
+
+    // Relative path to addon
+    QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), "addon"), filepath);
+    QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), "not exist"), QString());
+
+    // Absolute path to addon
+    QCOMPARE(ProjectFile::getAddonFilePath("/not/exist", filepath), filepath);
+    QCOMPARE(ProjectFile::getAddonFilePath(tempdir.path(), filepath), filepath);
+}
+
+void TestProjectFile::getInlineSuppressionDefaultValue() const
+{
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    QCOMPARE(projectFile.getInlineSuppression(), true);
+}
+
+void TestProjectFile::getInlineSuppression() const
+{
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setInlineSuppression(false);
+    QCOMPARE(projectFile.getInlineSuppression(), false);
+}
+
+void TestProjectFile::getCheckingSuppressionsRelative() const
+{
+    const SuppressionList::Suppression suppression("*", "externals/*");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/externals/*");
+}
+
+void TestProjectFile::getCheckingSuppressionsAbsolute() const
+{
+    const SuppressionList::Suppression suppression("*", "/some/path/1.h");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/other/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "/some/path/1.h");
+}
+
+void TestProjectFile::getCheckingSuppressionsStar() const
+{
+    const SuppressionList::Suppression suppression("*", "*.cpp");
+    const QList<SuppressionList::Suppression> suppressions{suppression};
+    ProjectFile projectFile;
+    projectFile.setFilename("/some/path/123.cppcheck");
+    projectFile.setSuppressions(suppressions);
+    QCOMPARE(projectFile.getCheckingSuppressions()[0].fileName, "*.cpp");
+}
+
 QTEST_MAIN(TestProjectFile)
+

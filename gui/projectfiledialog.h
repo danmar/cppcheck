@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,15 @@ class QWidget;
 namespace Ui {
     class ProjectFile;
 }
+
+extern const char ADDON_MISRA[];
+extern const char CODING_STANDARD_MISRA_C_2023[];
+extern const char CODING_STANDARD_MISRA_C_2025[];
+extern const char CODING_STANDARD_MISRA_CPP_2008[];
+extern const char CODING_STANDARD_MISRA_CPP_2023[];
+extern const char CODING_STANDARD_CERT_C[];
+extern const char CODING_STANDARD_CERT_CPP[];
+extern const char CODING_STANDARD_AUTOSAR[];
 
 /// @addtogroup GUI
 /// @{
@@ -109,7 +118,7 @@ private:
      * @brief Return suppressions from the dialog control.
      * @return List of suppressions.
      */
-    QList<Suppressions::Suppression> getSuppressions() const {
+    const QList<SuppressionList::Suppression>& getSuppressions() const {
         return mSuppressions;
     }
 
@@ -164,15 +173,15 @@ private:
      * @brief Add a single suppression to dialog control.
      * @param suppression A suppressions to add to dialog control.
      */
-    void addSingleSuppression(const Suppressions::Suppression &suppression);
+    void addSingleSuppression(const SuppressionList::Suppression &suppression);
 
     /**
      * @brief Set suppressions to dialog control.
      * @param suppressions List of suppressions to set to dialog control.
      */
-    void setSuppressions(const QList<Suppressions::Suppression> &suppressions);
+    void setSuppressions(const QList<SuppressionList::Suppression> &suppressions);
 
-protected slots:
+private slots:
 
     /** ok button pressed, save changes and accept */
     void ok();
@@ -319,19 +328,19 @@ protected:
 private:
     static QStringList getProjectConfigs(const QString &fileName);
 
-    Ui::ProjectFile *mUI;
+    Ui::ProjectFile * const mUI;
 
     /**
      * @brief Projectfile path.
      */
-    ProjectFile *mProjectFile;
+    ProjectFile * const mProjectFile;
 
     /** Is this Cppcheck Premium? */
-    bool mPremium;
+    const bool mPremium;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 
-    QList<Suppressions::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressions;
 };
 
 /// @}

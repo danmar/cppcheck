@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,14 +30,12 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QRect>
-#include <QRectF>
 #include <QRegularExpressionMatchIterator>
 #include <QShortcut>
 #include <QTextBlock>
 #include <QTextCursor>
 #include <QTextEdit>
 #include <QTextFormat>
-#include <QtCore>
 
 class QTextDocument;
 
@@ -152,7 +150,7 @@ Highlighter::Highlighter(QTextDocument *parent,
     mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
     mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
     // We use lazy `*?` instead greed `*` quantifier to find the real end of the c-string.
-    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequience in the c-string.
+    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequence in the c-string.
     rule.pattern = QRegularExpression("\".*?(?<!\\\\)\"");
     rule.format = mQuotationFormat;
     rule.ruleRole = RuleRole::Quote;
@@ -248,7 +246,7 @@ void Highlighter::highlightBlock(const QString &text)
     }
 }
 
-void Highlighter::applyFormat(HighlightingRule &rule)
+void Highlighter::applyFormat(HighlightingRule &rule) const
 {
     switch (rule.ruleRole) {
     case RuleRole::Keyword:
@@ -286,13 +284,8 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
-    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
-#else
-    const QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
-    const QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
-#endif
+    auto *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
+    auto *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -369,11 +362,7 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-    const int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
-#else
-    const int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
-#endif
+    const int space = 3 + (fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits);
     return space;
 }
 
@@ -420,15 +409,15 @@ void CodeEditor::highlightErrorLine()
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
+void CodeEditor::lineNumberAreaPaintEvent(const QPaintEvent *event)
 {
     QPainter painter(mLineNumberArea);
     painter.fillRect(event->rect(), mWidgetStyle->lineNumBGColor);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
-    int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
-    int bottom = top + (int) blockBoundingRect(block).height();
+    int top = static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int bottom = top + static_cast<int>(blockBoundingRect(block).height());
 
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
@@ -440,7 +429,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
         block = block.next();
         top = bottom;
-        bottom = top + (int) blockBoundingRect(block).height();
+        bottom = top + static_cast<int>(blockBoundingRect(block).height());
         ++blockNumber;
     }
 }

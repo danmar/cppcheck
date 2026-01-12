@@ -2,10 +2,12 @@
 // Test library configuration for opencv2.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=opencv2 --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/opencv2.cpp
+// $ cppcheck --check-library --library=opencv2 --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/opencv2.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
+
+// cppcheck-suppress-file valueFlowBailout
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -14,6 +16,7 @@
 void validCode(const char* argStr)
 {
     cv::Mat image;
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     image = cv::imread(argStr, cv::IMREAD_COLOR);
     if (!image.data) {
         printf("No image data \n");
@@ -27,7 +30,8 @@ void validCode(const char* argStr)
     cvStr += " World";
     std::cout << cvStr;
 
-    char * pBuf = (char *)cv::fastMalloc(20); // cppcheck-suppress cstyleCast
+    // cppcheck-suppress [cstyleCast, unusedAllocatedMemory]
+    char * pBuf = (char *)cv::fastMalloc(20);
     cv::fastFree(pBuf);
 }
 
@@ -39,7 +43,9 @@ void ignoredReturnValue()
 
 void memleak()
 {
-    char * pBuf = (char *)cv::fastMalloc(1000); // cppcheck-suppress cstyleCast
+    // cppcheck-suppress cstyleCast
+    const char * pBuf = (char *)cv::fastMalloc(1000);
+    // cppcheck-suppress [uninitdata, valueFlowBailoutIncompleteVar, nullPointerOutOfMemory]
     std::cout << pBuf;
     // cppcheck-suppress memleak
 }

@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,8 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "tokenize.h"
-#include "vfvalue.h"
 
+#include <cstdint>
 #include <string>
 
 class Scope;
@@ -35,7 +34,11 @@ class Settings;
 class Token;
 class Variable;
 class ErrorLogger;
-
+class Tokenizer;
+namespace ValueFlow
+{
+    class Value;
+}
 
 /// @addtogroup Checks
 /// @{
@@ -53,40 +56,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (!tokenizer.isCPP()) {
-            return;
-        }
-
-        CheckStl checkStl(&tokenizer, tokenizer.getSettings(), errorLogger);
-        checkStl.erase();
-        checkStl.if_find();
-        checkStl.checkFindInsert();
-        checkStl.iterators();
-        checkStl.missingComparison();
-        checkStl.outOfBounds();
-        checkStl.outOfBoundsIndexExpression();
-        checkStl.redundantCondition();
-        checkStl.string_c_str();
-        checkStl.uselessCalls();
-        checkStl.useStlAlgorithm();
-
-        checkStl.stlOutOfBounds();
-        checkStl.negativeIndex();
-
-        checkStl.invalidContainer();
-        checkStl.mismatchingContainers();
-        checkStl.mismatchingContainerIterator();
-        checkStl.knownEmptyContainer();
-
-        checkStl.stlBoundaries();
-        checkStl.checkDereferenceInvalidIterator();
-        checkStl.checkDereferenceInvalidIterator2();
-        checkStl.checkMutexes();
-
-        // Style check
-        checkStl.size();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** Accessing container out of bounds using ValueFlow */
     void outOfBounds();
@@ -183,6 +153,8 @@ private:
 
     void knownEmptyContainer();
 
+    void eraseIteratorOutOfBounds();
+
     void checkMutexes();
 
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
@@ -204,9 +176,8 @@ private:
     void negativeIndexError(const Token* tok, const ValueFlow::Value& index);
     void invalidIteratorError(const Token* tok, const std::string& iteratorName);
     void iteratorsError(const Token* tok, const std::string& containerName1, const std::string& containerName2);
-    void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2);
     void iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName);
-    void mismatchingContainerIteratorError(const Token* tok, const Token* iterTok);
+    void mismatchingContainerIteratorError(const Token* containerTok, const Token* iterTok, const Token* containerTok2);
     void mismatchingContainersError(const Token* tok1, const Token* tok2);
     void mismatchingContainerExpressionError(const Token *tok1, const Token *tok2);
     void sameIteratorExpressionError(const Token *tok);
@@ -221,7 +192,7 @@ private:
 
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
     void uselessCallsSwapError(const Token* tok, const std::string& varname);
-    enum class SubstrErrorType { EMPTY, COPY, PREFIX, PREFIX_CONCAT };
+    enum class SubstrErrorType : std::uint8_t { EMPTY, COPY, PREFIX, PREFIX_CONCAT };
     void uselessCallsSubstrError(const Token* tok, SubstrErrorType type);
     void uselessCallsEmptyError(const Token* tok);
     void uselessCallsRemoveError(const Token* tok, const std::string& function);
@@ -234,48 +205,12 @@ private:
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
 
+    void eraseIteratorOutOfBoundsError(const Token* ftok, const Token* itertok, const ValueFlow::Value* val = nullptr);
+
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
-        ErrorPath errorPath;
-        CheckStl c(nullptr, settings, errorLogger);
-        c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
-        c.invalidIteratorError(nullptr, "iterator");
-        c.iteratorsError(nullptr, "container1", "container2");
-        c.iteratorsError(nullptr, nullptr, "container0", "container1");
-        c.iteratorsError(nullptr, nullptr, "container");
-        c.invalidContainerLoopError(nullptr, nullptr, errorPath);
-        c.invalidContainerError(nullptr, nullptr, nullptr, errorPath);
-        c.mismatchingContainerIteratorError(nullptr, nullptr);
-        c.mismatchingContainersError(nullptr, nullptr);
-        c.mismatchingContainerExpressionError(nullptr, nullptr);
-        c.sameIteratorExpressionError(nullptr);
-        c.dereferenceErasedError(nullptr, nullptr, "iter", false);
-        c.stlOutOfBoundsError(nullptr, "i", "foo", false);
-        c.negativeIndexError(nullptr, ValueFlow::Value(-1));
-        c.stlBoundariesError(nullptr);
-        c.if_findError(nullptr, false);
-        c.if_findError(nullptr, true);
-        c.checkFindInsertError(nullptr);
-        c.string_c_strError(nullptr);
-        c.string_c_strReturn(nullptr);
-        c.string_c_strParam(nullptr, 0);
-        c.string_c_strThrowError(nullptr);
-        c.sizeError(nullptr);
-        c.missingComparisonError(nullptr, nullptr);
-        c.redundantIfRemoveError(nullptr);
-        c.uselessCallsReturnValueError(nullptr, "str", "find");
-        c.uselessCallsSwapError(nullptr, "str");
-        c.uselessCallsSubstrError(nullptr, SubstrErrorType::COPY);
-        c.uselessCallsEmptyError(nullptr);
-        c.uselessCallsRemoveError(nullptr, "remove");
-        c.dereferenceInvalidIteratorError(nullptr, "i");
-        c.useStlAlgorithmError(nullptr, emptyString);
-        c.knownEmptyContainerError(nullptr, emptyString);
-        c.globalLockGuardError(nullptr);
-        c.localMutexError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override;
 
     static std::string myName() {
         return "STL usage";
@@ -296,6 +231,7 @@ private:
                "- common mistakes when using string::c_str()\n"
                "- useless calls of string and STL functions\n"
                "- dereferencing an invalid iterator\n"
+               "- erasing an iterator that is out of bounds\n"
                "- reading from empty STL container\n"
                "- iterating over an empty STL container\n"
                "- consider using an STL algorithm instead of raw loop\n"

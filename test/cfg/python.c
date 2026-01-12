@@ -2,7 +2,7 @@
 // Test library configuration for python.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=python --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/python.c
+// $ cppcheck --check-library --library=python --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/python.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -10,6 +10,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h> // should be the first include
 #include <stdio.h>
+#include <stdlib.h>
 
 void validCode(PyObject * pPyObjArg)
 {

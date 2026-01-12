@@ -19,8 +19,9 @@ Checks: >
         -openmp-*,
         -zircon-*,
         cert-err34-c,
-        google-explicit-constructor,
+        cppcoreguidelines-pro-type-static-cast-downcast,
         cppcoreguidelines-rvalue-reference-param-not-moved,
+        google-explicit-constructor,
         -bugprone-assignment-in-if-condition,
         -bugprone-branch-clone,
         -bugprone-easily-swappable-parameters,
@@ -40,23 +41,27 @@ Checks: >
         -modernize-avoid-c-arrays,
         -modernize-deprecated-ios-base-aliases,
         -misc-include-cleaner,
+        -misc-unused-using-decls,
         -modernize-loop-convert,
+        -modernize-macro-to-enum,
         -modernize-raw-string-literal,
         -modernize-replace-auto-ptr,
         -modernize-return-braced-init-list,
-        -modernize-use-auto,
+        -modernize-type-traits,
+        -modernize-use-designated-initializers,
+        -modernize-use-nodiscard,
+        -modernize-use-scoped-lock,
         -modernize-use-trailing-return-type,
         -performance-avoid-endl,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,
-        -performance-noexcept-swap,
+        -portability-avoid-pragma-once,
         -portability-simd-intrinsics,
         -portability-std-allocator-const,
-        -readability-avoid-const-params-in-decls,
+        -readability-avoid-nested-conditional-operator,
         -readability-braces-around-statements,
-        -readability-const-return-type,
         -readability-container-data-pointer,
-        -readability-convert-member-functions-to-static,
+        -readability-enum-initial-value,
         -readability-function-cognitive-complexity,
         -readability-function-size,
         -readability-identifier-length,
@@ -64,13 +69,16 @@ Checks: >
         -readability-implicit-bool-conversion,
         -readability-isolate-declaration,
         -readability-magic-numbers,
-        -readability-redundant-access-specifiers,
         -readability-suspicious-call-argument,
-        -readability-uppercase-literal-suffix
+        -readability-uppercase-literal-suffix,
+        -readability-use-concise-preprocessor-directives
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(cli|gui|lib|oss-fuzz|test|triage)\/[a-z]+\.h'
+HeaderFilterRegex: '(cli|gui|frontend|lib|oss-fuzz|test|triage)\/[a-z_]+\.h'
+ExcludeHeaderFilterRegex: 'ui_.*.h'
 CheckOptions:
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
   - key:             readability-simplify-boolean-expr.SimplifyDeMorgan
     value:           '0'
+  - key:             modernize-use-trailing-return-type.TransformFunctions
+    value:           false

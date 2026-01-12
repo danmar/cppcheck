@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,43 +18,33 @@
 
 #include "checkmemoryleak.h"
 #include "errortypes.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "settings.h"
 #include "symboldatabase.h"
-#include "fixture.h"
 #include "token.h"
-#include "tokenize.h"
 
+#include <cstddef>
 #include <list>
-#include <sstream> // IWYU pragma: keep
 
-class TestMemleakInClass;
-class TestMemleakNoVar;
-class TestMemleakStructMember;
-
-
-class TestMemleak : private TestFixture {
+class TestMemleak : public TestFixture {
 public:
     TestMemleak() : TestFixture("TestMemleak") {}
 
 private:
-    const Settings settings;
-
     void run() override {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
     }
 
-#define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
-    CheckMemoryLeak::AllocType functionReturnType_(const char code[], const char* file, int line) {
-        // Clear the error buffer..
-        errout.str("");
-
+#define functionReturnType(...) functionReturnType_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    CheckMemoryLeak::AllocType functionReturnType_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        const CheckMemoryLeak c(&tokenizer, this, &settings);
+        const CheckMemoryLeak c(&tokenizer, this, &settingsDefault);
 
         return (c.functionReturnType)(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
@@ -99,16 +89,12 @@ private:
                             "  }\n"
                             "};\n";
 
-        // Clear the error buffer..
-        errout.str("");
-
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        SimpleTokenizer tokenizer(settingsDefault, *this);
+        ASSERT(tokenizer.tokenize(code));
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
-        const CheckMemoryLeak check(&tokenizer, nullptr, &settings);
+        const CheckMemoryLeak check(&tokenizer, nullptr, &settingsDefault);
         ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };
@@ -127,14 +113,11 @@ private:
     const Settings settings = settingsBuilder().library("std.cfg").library("posix.cfg").build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
@@ -143,6 +126,7 @@ private:
 
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
         TEST_CASE(realloc3);
@@ -166,7 +150,6 @@ private:
         TEST_CASE(realloc22);
         TEST_CASE(realloc23);
         TEST_CASE(realloc24); // #9228
-        TEST_CASE(reallocarray1);
     }
 
     void realloc1() {
@@ -175,7 +158,7 @@ private:
               "    char *a = (char *)malloc(10);\n"
               "    a = realloc(a, 100);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc2() {
@@ -186,7 +169,7 @@ private:
               "    free(a);\n"
               "}");
 
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc3() {
@@ -198,7 +181,7 @@ private:
               "    free(a);\n"
               "}");
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc4() {
@@ -211,8 +194,8 @@ private:
               "}");
 
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n",
-                           "[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n",
-                           errout.str());
+                           "[test.cpp:4:10]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n",
+                           errout_str());
     }
 
     void realloc5() {
@@ -227,7 +210,7 @@ private:
               "    else\n"
               "        free(new_buf);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc7() {
@@ -241,7 +224,7 @@ private:
               "    free(pData);\n"
               "    return true;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc8() {
@@ -253,7 +236,7 @@ private:
               "        m_buf = origBuf;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc9() {
@@ -261,7 +244,7 @@ private:
               "{\n"
               "    x = realloc(x,100);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc10() {
@@ -271,7 +254,7 @@ private:
               "    pa = realloc(pa, 20);"
               "    exit();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc11() {
@@ -282,7 +265,7 @@ private:
               "        error();\n"
               "    usep(p);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc12() {
@@ -293,7 +276,7 @@ private:
               "        return;\n"
               "    free(a);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc13() {
@@ -303,7 +286,7 @@ private:
               "    *str = realloc(*str,100);\n"
               "    free (*str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'str\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:6]: (error) Common realloc mistake: \'str\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc14() {
@@ -314,7 +297,7 @@ private:
               "        error();\n"
               "    usep(p);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc15() {
@@ -325,7 +308,7 @@ private:
               "        return false;\n"
               "    return true;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Common realloc mistake: \'m_options\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc16() {
@@ -335,7 +318,7 @@ private:
               "    free(zLine);\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc17() {
@@ -344,7 +327,7 @@ private:
               "    void ***a = malloc(sizeof(a));\n"
               "    ***a = realloc(***(a), sizeof(a) * 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:8]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc18() {
@@ -353,7 +336,7 @@ private:
               "    void *a = malloc(sizeof(a));\n"
               "    a = realloc((void*)a, sizeof(a) * 2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc19() {
@@ -362,7 +345,7 @@ private:
               "    void *a = malloc(sizeof(a));\n"
               "    a = (realloc((void*)((a)), sizeof(a) * 2));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
     }
 
     void realloc20() {
@@ -371,7 +354,7 @@ private:
               "    void *a = malloc(sizeof(a));\n"
               "    a = realloc((a) + 1, sizeof(a) * 2);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc21() {
@@ -382,7 +365,7 @@ private:
               "    if (bs == NULL) return bs0;\n"
               "    return bs;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc22() {
@@ -393,7 +376,7 @@ private:
               "    if (bs == NULL) return;\n"
               "    *bsp = bs;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc23() {
@@ -404,7 +387,7 @@ private:
               "        return;\n"
               "    s->cigar = cigar;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void realloc24() { // #9228
@@ -412,37 +395,28 @@ private:
               "void *a = NULL;\n"
               "a = realloc(a, 20);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "void *a = NULL;\n"
               "a = malloc(10);\n"
               "a = realloc(a, 20);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:1]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
 
         check("void f() {\n"
-              "void *a = std::nullptr;\n"
+              "void *a = nullptr;\n"
               "a = malloc(10);\n"
               "a = realloc(a, 20);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:1]: (error) Common realloc mistake: \'a\' nulled but not freed upon failure [memleakOnRealloc]\n", errout_str());
 
         check("void f(char *b) {\n"
               "void *a = NULL;\n"
               "a = b;\n"
               "a = realloc(a, 20);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void reallocarray1() {
-        check("void foo()\n"
-              "{\n"
-              "    char *a = (char *)malloc(10);\n"
-              "    a = reallocarray(a, 100, 2);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Common reallocarray mistake: \'a\' nulled but not freed upon failure\n", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
@@ -466,14 +440,11 @@ private:
      * Tokenize and execute leak check for given code
      * @param code Source code
      */
-    void check_(const char* file, int line, const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
@@ -481,6 +452,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(class1);
         TEST_CASE(class2);
         TEST_CASE(class3);
@@ -542,7 +514,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class Fred\n"
               "{\n"
@@ -560,7 +532,7 @@ private:
               "        delete [] str2;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class2() {
@@ -582,7 +554,7 @@ private:
               "{\n"
               "    free(str1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17:5]: (error) Mismatching allocation and deallocation: Fred::str1 [mismatchAllocDealloc]\n", errout_str());
 
         check("class Fred\n"
               "{\n"
@@ -598,7 +570,7 @@ private:
               "        free(str1);\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12:9]: (error) Mismatching allocation and deallocation: Fred::str1 [mismatchAllocDealloc]\n", errout_str());
     }
 
     void class3() {
@@ -635,7 +607,7 @@ private:
               "    }\n"
               "}");
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class Token;\n"
               "\n"
@@ -664,7 +636,7 @@ private:
               "    }\n"
               "};");
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class4() {
@@ -687,7 +659,7 @@ private:
               "    ABC *p = new ABC;\n"
               "    addAbc( p );\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct ABC;\n"
               "class Fred\n"
@@ -704,7 +676,7 @@ private:
               "        addAbc( p );\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class6() {
@@ -720,7 +692,7 @@ private:
               "    delete [] str;\n"
               "    hello();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
               "{\n"
@@ -732,7 +704,7 @@ private:
               "        hello();\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class7() {
@@ -752,7 +724,7 @@ private:
               "{\n"
               "    delete this->i;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class Fred\n"
               "{\n"
@@ -767,7 +739,7 @@ private:
               "        delete this->i;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class8() {
@@ -784,7 +756,7 @@ private:
               "    delete c;\n"
               "    doNothing(c);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
               "{\n"
@@ -797,7 +769,7 @@ private:
               "    }\n"
               "    void doNothing() { }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class9() {
@@ -814,7 +786,7 @@ private:
               "\n"
               "A::~A()\n"
               "{ delete (p); }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
               "{\n"
@@ -825,7 +797,7 @@ private:
               "    ~A()\n"
               "    { delete (p); }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class10() {
@@ -837,7 +809,7 @@ private:
               "};\n"
               "A::A()\n"
               "{ p = new int; }");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -845,7 +817,7 @@ private:
               "    int * p;\n"
               "    A() { p = new int; }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class11() {
@@ -856,7 +828,7 @@ private:
               "    A() : p(new int[10])\n"
               "    { }"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -866,7 +838,7 @@ private:
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class12() {
@@ -888,7 +860,7 @@ private:
               "\n"
               "void A::cleanup()\n"
               "{ delete [] p; }");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -902,7 +874,7 @@ private:
               "    void cleanup()\n"
               "    { delete [] p; }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class13() {
@@ -924,7 +896,7 @@ private:
               "\n"
               "void A::foo()\n"
               "{ p = new int[10]; delete [] p; }");
-        ASSERT_EQUALS("[test.cpp:17]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17:3]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -938,7 +910,7 @@ private:
               "    void foo()\n"
               "    { p = new int[10]; delete [] p; }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:11]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11:7]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
     }
 
     void class14() {
@@ -951,8 +923,8 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int[10]; }");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9:3]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:3:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -961,8 +933,8 @@ private:
               "    void init()\n"
               "    { p = new int[10]; }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:7]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:3:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
 
         check("class A\n"
@@ -974,8 +946,8 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int; }");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9:3]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:3:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -984,8 +956,8 @@ private:
               "    void init()\n"
               "    { p = new int; }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:7]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:3:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
 
         check("class A\n"
@@ -997,8 +969,8 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = malloc(sizeof(int)*10); }");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9:3]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:3:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class A\n"
               "{\n"
@@ -1007,8 +979,8 @@ private:
               "    void init()\n"
               "    { p = malloc(sizeof(int)*10); }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated.\n"
-                      "[test.cpp:3]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:7]: (warning) Possible leak in public function. The pointer 'p' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:3:10]: (style) Class 'A' is unsafe, 'A::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class15() {
@@ -1021,7 +993,7 @@ private:
               "};\n"
               "A::A()\n"
               "{ p = new int[10]; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
               "{\n"
@@ -1031,7 +1003,7 @@ private:
               "    { p = new int[10]; }\n"
               "    ~A() { delete [] p; }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
 
         check("class A\n"
@@ -1043,7 +1015,7 @@ private:
               "};\n"
               "A::A()\n"
               "{ p = new int; }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
               "{\n"
@@ -1053,7 +1025,7 @@ private:
               "    { p = new int; }\n"
               "    ~A() { delete p; }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
 
         check("class A\n"
@@ -1065,7 +1037,7 @@ private:
               "};\n"
               "A::A()\n"
               "{ p = malloc(sizeof(int)*10); }");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class A\n"
               "{\n"
@@ -1075,7 +1047,7 @@ private:
               "    { p = malloc(sizeof(int)*10); }\n"
               "    ~A() { free(p); }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class16() {
@@ -1088,7 +1060,7 @@ private:
               "    A() { a = b = new int[10]; }\n"
               "    ~A() { delete [] a; }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class17() {
@@ -1105,7 +1077,7 @@ private:
               "    A::pd = new char[12];\n"
               "    delete [] A::pd;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10:5]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
 
         check("class A {\n"
               "private:\n"
@@ -1117,7 +1089,7 @@ private:
               "        delete [] pd;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7:9]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
 
         check("class A {\n"
               "private:\n"
@@ -1131,7 +1103,7 @@ private:
               "    pd = new char[12];\n"
               "    delete [] pd;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10:5]: (warning) Possible leak in public function. The pointer 'pd' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
     }
 
     void class18() {
@@ -1147,7 +1119,7 @@ private:
               "private:\n"
               "  char *a;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class  A : public x\n"
               "{\n"
@@ -1161,7 +1133,7 @@ private:
               "  a = new char[10];\n"
               "  foo(a);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class19() {
@@ -1179,7 +1151,7 @@ private:
               "    rp1 = new TRadioButton(this);\n"
               "    rp2 = new TRadioButton(this);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("class TRadioButton { };\n"
               "class Foo\n"
@@ -1195,8 +1167,8 @@ private:
               "    rp1 = new TRadioButton;\n"
               "    rp2 = new TRadioButton;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Foo' is unsafe, 'Foo::rp1' can leak by wrong usage.\n"
-                      "[test.cpp:6]: (style) Class 'Foo' is unsafe, 'Foo::rp2' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:19]: (style) Class 'Foo' is unsafe, 'Foo::rp1' can leak by wrong usage. [unsafeClassCanLeak]\n"
+                      "[test.cpp:6:19]: (style) Class 'Foo' is unsafe, 'Foo::rp2' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("class TRadioButton { };\n"
               "class Foo\n"
@@ -1218,7 +1190,7 @@ private:
               "    delete rp1;\n"
               "    delete rp2;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class20() {
@@ -1240,7 +1212,7 @@ private:
               "        }\n"
               "    };\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:15]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("namespace ns1 {\n"
               "    class Fred\n"
@@ -1264,7 +1236,7 @@ private:
               "        delete [] str2;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:15]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("namespace ns1 {\n"
               "    class Fred\n"
@@ -1287,7 +1259,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:15]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("namespace ns1 {\n"
               "    namespace ns2 {\n"
@@ -1312,7 +1284,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:19]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
 
         check("namespace ns1 {\n"
               "    namespace ns2 {\n"
@@ -1339,7 +1311,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7:23]: (style) Class 'Fred' is unsafe, 'Fred::str1' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class21() { // ticket #2517
@@ -1356,10 +1328,10 @@ private:
               "public:\n"
               "    A() : b(new B()), c(new C(b)) { }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+        TODO_ASSERT_EQUALS("[test.cpp:9:8]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage. [unsafeClassCanLeak]\n"
                            "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
-                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
-                           errout.str());
+                           "[test.cpp:9:8]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage. [unsafeClassCanLeak]\n",
+                           errout_str());
 
         check("struct B { };\n"
               "struct C\n"
@@ -1378,10 +1350,10 @@ private:
               "       c = new C(b);\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+        TODO_ASSERT_EQUALS("[test.cpp:9:8]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage. [unsafeClassCanLeak]\n"
                            "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
-                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
-                           errout.str());
+                           "[test.cpp:9:8]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage. [unsafeClassCanLeak]\n",
+                           errout_str());
     }
 
     void class22() { // ticket #3012 - false positive
@@ -1392,7 +1364,7 @@ private:
               "    Fred() { a = new int; }\n"
               "    ~Fred() { (delete(a), (a)=NULL); }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class23() { // ticket #3303 - false positive
@@ -1411,7 +1383,7 @@ private:
               "private:\n"
               "    CDataImpl *m_impl;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class24() { // ticket #3806 - false positive in copy constructor
@@ -1422,7 +1394,7 @@ private:
               "    Fred(const Fred &fred) { a = new int; }\n"
               "    ~Fred() { delete a; }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class25() { // ticket #4367 - false positive when implementation for destructor is not seen
@@ -1433,7 +1405,7 @@ private:
               "    Fred() { a = new int; }\n"
               "    ~Fred();\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void class26() { // ticket #10789 - crash
@@ -1444,7 +1416,7 @@ private:
               "    C* p;\n"
               "};\n"
               "S::~S() = default;\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:8]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void class27() { // ticket #8126 - array of pointers
@@ -1455,7 +1427,7 @@ private:
               "    }\n"
               "    char* a[5];\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Class 'S' is unsafe, 'S::a' can leak by wrong usage.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:11]: (style) Class 'S' is unsafe, 'S::a' can leak by wrong usage. [unsafeClassCanLeak]\n", errout_str());
     }
 
     void staticvar() {
@@ -1470,7 +1442,7 @@ private:
               "            p = new int[100];\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
 
@@ -1502,7 +1474,7 @@ private:
               "{\n"
               "    delete tok;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Global function
         check("void deleteTokens(int *tok)\n"
@@ -1529,7 +1501,7 @@ private:
               "    deleteTokens(_tokens);\n"
               "    _tokens = 0;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void mismatch1() {
@@ -1554,7 +1526,7 @@ private:
               "A::~A() {\n"
               "    delete [] pkt_buffer;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:14:9]: (error) Mismatching allocation and deallocation: A::pkt_buffer [mismatchAllocDealloc]\n", errout_str());
 
         check("struct S {\n" // 5678
               "    ~S();\n"
@@ -1566,7 +1538,7 @@ private:
               "    delete p;\n"
               "    p = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Mismatching allocation and deallocation: S::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (error) Mismatching allocation and deallocation: S::p [mismatchAllocDealloc]\n", errout_str());
     }
 
     void mismatch2() { // #5659
@@ -1590,8 +1562,8 @@ private:
               "  delete data_;\n"
               "  data_ = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:17]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
-                      "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17:3]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:18:3]: (error) Mismatching allocation and deallocation: Foo::data_ [mismatchAllocDealloc]\n", errout_str());
 
         check("namespace NS\n"
               "{\n"
@@ -1613,8 +1585,8 @@ private:
               "  delete data_;\n"
               "  data_ = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:17]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated.\n"
-                      "[test.cpp:18]: (error) Mismatching allocation and deallocation: Foo::data_\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17:3]: (warning) Possible leak in public function. The pointer 'data_' is not deallocated before it is allocated. [publicAllocationError]\n"
+                      "[test.cpp:18:3]: (error) Mismatching allocation and deallocation: Foo::data_ [mismatchAllocDealloc]\n", errout_str());
     }
 
     void func1() {
@@ -1628,7 +1600,7 @@ private:
               "    void xy()\n"
               "    { s = malloc(100); }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9:7]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
 
         check("class Fred\n"
               "{\n"
@@ -1640,7 +1612,7 @@ private:
               "private:\n"
               "    char *s;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7:7]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
     }
 
     void func2() {
@@ -1654,7 +1626,7 @@ private:
               "    const Fred & operator = (const Fred &f)\n"
               "    { s = malloc(100); }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:9]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9:7]: (warning) Possible leak in public function. The pointer 's' is not deallocated before it is allocated. [publicAllocationError]\n", errout_str());
     }
 };
 
@@ -1673,14 +1645,11 @@ public:
 private:
     const Settings settings = settingsBuilder().library("std.cfg").library("posix.cfg").build();
 
-    void check_(const char* file, int line, const char code[], bool isCPP = true) {
-        // Clear the error buffer..
-        errout.str("");
-
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size], bool cpp = true) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c"), file, line);
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
@@ -1688,6 +1657,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         // testing that errors are detected
         TEST_CASE(err);
 
@@ -1703,6 +1673,7 @@ private:
         TEST_CASE(assign2);
         TEST_CASE(assign3);
         TEST_CASE(assign4); // #11019
+        TEST_CASE(assign5);
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -1746,14 +1717,14 @@ private:
               "    abc->a = malloc(10);\n"
               "    free(abc);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Memory leak: abc.a [memleak]\n", errout_str());
 
         check("static void foo()\n"
               "{\n"
               "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
               "    abc->a = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5:1]: (error) Memory leak: abc.a [memleak]\n", errout_str());
 
         check("static ABC * foo()\n"
               "{\n"
@@ -1766,7 +1737,7 @@ private:
               "    }\n"
               "    return abc;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8:9]: (error) Memory leak: abc.a [memleak]\n", errout_str());
 
         check("static void foo(int a)\n"
               "{\n"
@@ -1778,7 +1749,7 @@ private:
               "        return;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10:1]: (error) Memory leak: abc.a [memleak]\n", errout_str());
     }
 
     void goto_() {
@@ -1794,7 +1765,7 @@ private:
               "    free(abc->a);\n"
               "    free(abc);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void ret1() {
@@ -1804,13 +1775,13 @@ private:
               "    abc->a = malloc(10);\n"
               "    return abc;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("static void foo(struct ABC *abc)\n"
               "{\n"
               "    abc->a = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // #7302
         check("void* foo() {\n"
@@ -1818,14 +1789,14 @@ private:
               "    abc.a = malloc(10);\n"
               "    return abc.a;\n"
               "}", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void* foo() {\n"
               "    struct ABC abc;\n"
               "    abc.a = malloc(10);\n"
               "    return abc.b;\n"
               "}", false);
-        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.c:4:5]: (error) Memory leak: abc.a [memleak]\n", errout_str());
     }
 
     void ret2() {
@@ -1835,7 +1806,7 @@ private:
               "    abc->a = malloc(10);\n"
               "    return &abc->self;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void assign1() {
@@ -1844,7 +1815,7 @@ private:
               "    struct ABC *abc = abc1;\n"
               "    abc->a = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("static void foo()\n"
               "{\n"
@@ -1852,7 +1823,7 @@ private:
               "    abc1 = abc = malloc(sizeof(ABC));\n"
               "    abc->a = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("static void foo()\n"
               "{\n"
@@ -1861,7 +1832,7 @@ private:
               " ptr->msn = malloc(100);\n"
               " back = ptr;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
     }
 
@@ -1870,7 +1841,7 @@ private:
               "    struct ABC *abc = malloc(123);\n"
               "    abc->a = abc->b = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void assign3() {
@@ -1879,7 +1850,7 @@ private:
               "    f2.a = malloc(100);\n"
               "    *f1 = f2;\n"
               "}", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void assign4() {
@@ -1890,19 +1861,19 @@ private:
               "    ((s).b) = open(\"xx.log\", O_RDONLY);\n"
               "    (&s)->c = open(\"xx.log\", O_RDONLY);\n"
               "}\n", false);
-        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: s.a\n"
-                      "[test.c:7]: (error) Memory leak: s.b\n"
-                      "[test.c:7]: (error) Memory leak: s.c\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.c:7:1]: (error) Resource leak: s.a [resourceLeak]\n"
+                      "[test.c:7:1]: (error) Resource leak: s.b [resourceLeak]\n"
+                      "[test.c:7:1]: (error) Resource leak: s.c [resourceLeak]\n",
+                      errout_str());
 
         check("struct S { int *p, *q; };\n" // #7705
               "void f(S s) {\n"
               "    s.p = new int[10];\n"
               "    s.q = malloc(40);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
-                      "[test.cpp:5]: (error) Memory leak: s.q\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:5:1]: (error) Memory leak: s.p [memleak]\n"
+                      "[test.cpp:5:1]: (error) Memory leak: s.q [memleak]\n",
+                      errout_str());
 
         check("struct S** f(struct S** s) {\n" // don't throw
               "    struct S** ret = malloc(sizeof(*ret));\n"
@@ -1910,12 +1881,12 @@ private:
               "    ret[0]->g = strdup(s[0]->g);\n"
               "    return ret;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void run_rcmd(enum rcommand rcmd, rsh_session *sess, char *cmd) {\n"
               "    sess->fp = popen(cmd, rcmd == RSH_PIPE_READ ? \"r\" : \"w\");\n"
               "}\n", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S { char* a[2]; };\n"
               "enum E { E0, E1 };\n"
@@ -1923,13 +1894,13 @@ private:
               "    free(s->a[e]);\n"
               "    s->a[e] = strdup(n);\n"
               "}\n", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(struct S** s, const char* c) {\n"
               "    *s = malloc(sizeof(struct S));\n"
               "    (*s)->value = strdup(c);\n"
               "}\n", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
               "    size_t mpsz;\n"
@@ -1939,14 +1910,49 @@ private:
               "    s->mpsz = size;\n"
               "    s->hdr = mmap(NULL, s->mpsz, PROT_READ, MAP_SHARED, fd, 0);\n"
               "}\n", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(type_t t) {\n"
               "    t->p = malloc(10);\n"
               "    t->x.p = malloc(10);\n"
               "    t->y[2].p = malloc(10);\n"
               "}\n", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void assign5() {
+        check("struct S { int fd; };\n"
+              "void f() {\n"
+              "    struct S* s = (struct S*)malloc(sizeof(struct S));\n"
+              "    s->fd = open(\"abc\", O_RDWR | O_NOCTTY);\n"
+              "    free(s);\n"
+              "}\n"
+              "void g() {\n"
+              "    struct S* s = static_cast<struct S*>(malloc(sizeof(struct S)));\n"
+              "    s->fd = open(\"abc\", O_RDWR | O_NOCTTY);\n"
+              "    free(s);\n"
+              "}\n"
+              "void h() {\n"
+              "    S* s = new S;\n"
+              "    s->fd = open(\"abc\", O_RDWR | O_NOCTTY);\n"
+              "    delete s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Resource leak: s.fd [resourceLeak]\n"
+                      "[test.cpp:10:5]: (error) Resource leak: s.fd [resourceLeak]\n"
+                      "[test.cpp:16:1]: (error) Resource leak: s.fd [resourceLeak]\n",
+                      errout_str());
+
+        check("struct S { int fd; };\n" // #13031
+              "void f() {\n"
+              "    struct S* s = malloc(sizeof(struct S));\n"
+              "    s->fd = open(\"abc\", O_RDWR | O_NOCTTY);\n"
+              "    if (s->fd < 0) {\n"
+              "        free(s);\n"
+              "        return NULL;\n"
+              "    }\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void failedAllocation() {
@@ -1961,7 +1967,7 @@ private:
               "    }\n"
               "    return abc;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void function1() {
@@ -1972,7 +1978,7 @@ private:
               "    abc->a = malloc(10);\n"
               "    func(abc);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("static void foo()\n"
               "{\n"
@@ -1980,7 +1986,7 @@ private:
               "    abclist.push_back(abc);\n"
               "    abc->a = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     // #2848: Taking address in function 'assign'
@@ -1990,7 +1996,7 @@ private:
               "  a.foo = (char *) malloc(10);\n"
               "  assign(&a);\n"
               "}", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     // #3024: kernel list
@@ -2000,7 +2006,7 @@ private:
               "  abc.a = (char *) malloc(10);\n"
               "  list_add_tail(&abc->list, head);\n"
               "}", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     // #3038: deallocating in function
@@ -2011,7 +2017,7 @@ private:
               "  abc.a = (char *) malloc(10);\n"
               "  a(abc.a);\n"
               "}", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void function5() {
@@ -2020,21 +2026,21 @@ private:
               "    s1->x = malloc(1);\n"
               "    return (s1);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct nc_rpc nc_rpc_getconfig() {\n" // #10382
               "    struct nc_rpc rpc;\n"
               "    rpc->filter = malloc(1);\n"
               "    return (nc_rpc)rpc;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("T* f(const char *str) {\n" // #10158
               "    S* s = malloc(sizeof(S));\n"
               "    s->str = strdup(str);\n"
               "    return NewT(s);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("typedef struct s { char* str; } attr_t;\n" // #10152
               "attr_t* f(int type) {\n"
@@ -2048,7 +2054,7 @@ private:
               "    }\n"
               "    return g(&a);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (error) Memory leak: a.str\n", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:9:9]: (error) Memory leak: a.str [memleak]\n", errout_str());
     }
 
     void ifelse() {
@@ -2067,7 +2073,7 @@ private:
               "    free(abc->a);\n"
               "    free(abc);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void linkedlist() {
@@ -2083,7 +2089,7 @@ private:
               "        abc = next;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void globalvar() {
@@ -2095,7 +2101,7 @@ private:
               "    abc->a = malloc(10);\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     // Ticket #933 Leaks with struct members not detected
@@ -2115,12 +2121,12 @@ private:
                              "}";
 
         check(code1, true);
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: a.f\n"
-                      "[test.cpp:12]: (error) Memory leak: a.c\n"
-                      "[test.cpp:12]: (error) Memory leak: a.m\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12:1]: (error) Resource leak: a.f [resourceLeak]\n"
+                      "[test.cpp:12:1]: (error) Memory leak: a.c [memleak]\n"
+                      "[test.cpp:12:1]: (error) Memory leak: a.m [memleak]\n", errout_str());
         check(code1, false);
-        ASSERT_EQUALS("[test.c:12]: (error) Memory leak: a.f\n"
-                      "[test.c:12]: (error) Memory leak: a.m\n", errout.str());
+        ASSERT_EQUALS("[test.c:12:1]: (error) Resource leak: a.f [resourceLeak]\n"
+                      "[test.c:12:1]: (error) Memory leak: a.m [memleak]\n", errout_str());
 
         // Test OK case
         const char code2[] = "struct A {\n"
@@ -2140,9 +2146,7 @@ private:
                              "}";
 
         check(code2, true);
-        ASSERT_EQUALS("", errout.str());
-        check(code2, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Test unknown struct. In C++, it might have a destructor
         const char code3[] = "void func() {\n"
@@ -2151,9 +2155,9 @@ private:
                              "}";
 
         check(code3, true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
         check(code3, false);
-        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: a.f\n", errout.str());
+        ASSERT_EQUALS("[test.c:4:1]: (error) Resource leak: a.f [resourceLeak]\n", errout_str());
 
         // Test struct with destructor
         const char code4[] = "struct A {\n"
@@ -2166,7 +2170,7 @@ private:
                              "}";
 
         check(code4, true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void refvar() { // #8116
@@ -2180,7 +2184,7 @@ private:
               "  Test& y = *x;\n"
               "  y.data = malloc(10);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     // don't crash
@@ -2190,7 +2194,7 @@ private:
               "char *const oldbuffer = otherbuffer.get();\n"
               "int const oldbufsize = otherbufsize;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void varid() { // #5201
@@ -2203,7 +2207,7 @@ private:
               "  if (s.state_check_buff == 0)\n"
               "    return;\n"
               "}", false);
-        ASSERT_EQUALS("[test.c:9]: (error) Memory leak: s.state_check_buff\n", errout.str());
+        ASSERT_EQUALS("[test.c:9:1]: (error) Memory leak: s.state_check_buff [memleak]\n", errout_str());
     }
 
     void varid_2() { // #5315
@@ -2213,7 +2217,7 @@ private:
               "  ((f)->realm) = strdup(realm);\n"
               "  if(f->realm == NULL) {}\n"
               "}", false);
-        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", errout.str());
+        ASSERT_EQUALS("[test.c:6:1]: (error) Memory leak: f.realm [memleak]\n", errout_str());
     }
 
     void customAllocation() { // #4770
@@ -2224,7 +2228,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.a = myalloc();\n"
               "}", false);
-        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.c:7:1]: (error) Memory leak: abc.a [memleak]\n", errout_str());
     }
 
     void lambdaInScope() {
@@ -2240,7 +2244,7 @@ private:
             "    delete[] s.p;\n"
             "    return 0;\n"
             "}", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check(
             "struct S { int* p; };\n"
@@ -2250,7 +2254,7 @@ private:
             "      s.p = new int;\n"
             "    };\n"
             "}\n", true);
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s.p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (error) Memory leak: s.p [memleak]\n", errout_str());
 
         check(
             "struct S { int* p; };\n"
@@ -2269,7 +2273,7 @@ private:
             "        delete s.p;\n"
             "    }();\n"
             "}\n", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 };
 
@@ -2286,14 +2290,11 @@ public:
 private:
     const Settings settings = settingsBuilder().certainty(Certainty::inconclusive).severity(Severity::warning).library("std.cfg").library("posix.cfg").build();
 
-    void check_(const char* file, int line, const char code[]) {
-        // Clear the error buffer..
-        errout.str("");
-
+    template<size_t size>
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        SimpleTokenizer tokenizer(settings, *this);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
@@ -2301,6 +2302,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         // pass allocated memory to function..
         TEST_CASE(functionParameter);
 
@@ -2323,23 +2325,23 @@ private:
         check("void x() {\n"
               "    strcpy(a, strdup(p));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:15]: (error) Allocation with strdup, strcpy doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("char *x() {\n"
               "    char *ret = strcpy(malloc(10), \"abc\");\n"
               "    return ret;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("char *x() {\n"
               "    return strcpy(malloc(10), \"abc\");\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void x() {\n"
               "    free(malloc(10));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // user function..
         check("void set_error(const char *msg) {\n"
@@ -2348,7 +2350,7 @@ private:
               "void x() {\n"
               "    set_error(strdup(p));\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Allocation with strdup, set_error doesn't release it.\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5:15]: (error) Allocation with strdup, set_error doesn't release it. [leakNoVarFunctionCall]\n", "", errout_str());
 
         check("void f()\n"
               "{\n"
@@ -2356,74 +2358,74 @@ private:
               "    fd = mkstemp(strdup(\"/tmp/file.XXXXXXXX\"));\n"
               "    close(fd);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with strdup, mkstemp doesn't release it.\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with strdup, mkstemp doesn't release it.\n", "", errout_str());
 
         check("void f()\n"
               "{\n"
               "    if(TRUE || strcmp(strdup(a), b));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:23]: (error) Allocation with strdup, strcmp doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void f()\n"
               "{\n"
               "    if(!strcmp(strdup(a), b) == 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:16]: (error) Allocation with strdup, strcmp doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void f()\n"
               "{\n"
               "    42, strcmp(strdup(a), b);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcmp doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:16]: (error) Allocation with strdup, strcmp doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void f() {\n"
               "   assert(freopen(\"/dev/null\", \"r\", stdin));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void x() {\n"
               "    strcpy(a, (void*)strdup(p));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:22]: (error) Allocation with strdup, strcpy doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void* malloc1() {\n"
               "    return (malloc(1));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("char *x() {\n"
               "    char *ret = (char*)strcpy(malloc(10), \"abc\");\n"
               "    return ret;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    free(malloc(1));\n"
               "    strcpy(a, strdup(p));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with strdup, strcpy doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:15]: (error) Allocation with strdup, strcpy doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void f() {\n"
               "    memcmp(calloc(10, 10), strdup(q), 100);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with calloc, memcmp doesn't release it.\n"
-                      "[test.cpp:2]: (error) Allocation with strdup, memcmp doesn't release it.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:12]: (error) Allocation with calloc, memcmp doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:2:28]: (error) Allocation with strdup, memcmp doesn't release it. [leakNoVarFunctionCall]\n", errout_str());
 
         check("void* f(int size) {\n"
               "    return (void*) malloc(size);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("int* f(int size) {\n"
               "    return static_cast<int*>(malloc(size));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() { if (new int[42]) {} }\n" // #10857
               "void g() { if (malloc(42)) {} }\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Allocation with new, if doesn't release it.\n"
-                      "[test.cpp:2]: (error) Allocation with malloc, if doesn't release it.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:1:16]: (error) Allocation with new, if doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:2:16]: (error) Allocation with malloc, if doesn't release it. [leakNoVarFunctionCall]\n",
+                      errout_str());
 
         check("const char* string(const char* s) {\n"
               "    StringSet::iterator it = strings_.find(s);\n"
@@ -2431,7 +2433,7 @@ private:
               "        return *it;\n"
               "    return *strings_.insert(it, std::strcpy(new char[std::strlen(s) + 1], s));\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S {\n"
               "    static void load(const QString& projPath) {\n"
@@ -2443,19 +2445,19 @@ private:
               "private:\n"
               "    static Core::ProjectBase* proj_;\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(const std::string& s, int n) {\n"
               "    std::unique_ptr<char[]> u;\n"
               "    u.reset(strcpy(new char[n], s.c_str()));\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S { char* p; };\n"
               "void f(S* s, int N) {\n"
               "    s->p = s->p ? strcpy(new char[N], s->p) : nullptr;\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct S {};\n" // #11866
               "void f(bool b);\n"
@@ -2466,25 +2468,25 @@ private:
               "    f(new tm());\n"
               "    f(malloc(sizeof(S)));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with new, f doesn't release it.\n"
-                      "[test.cpp:5]: (error) Allocation with new, f doesn't release it.\n"
-                      "[test.cpp:6]: (error) Allocation with new, f doesn't release it.\n"
-                      "[test.cpp:7]: (error) Allocation with new, f doesn't release it.\n"
-                      "[test.cpp:8]: (error) Allocation with malloc, f doesn't release it.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:4:7]: (error) Allocation with new, f doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:5:7]: (error) Allocation with new, f doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:6:7]: (error) Allocation with new, f doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:7:7]: (error) Allocation with new, f doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:8:7]: (error) Allocation with malloc, f doesn't release it. [leakNoVarFunctionCall]\n",
+                      errout_str());
 
         check("void f(uintptr_t u);\n"
               "void g() {\n"
               "    f((uintptr_t)new int());\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(uint8_t u);\n"
               "void g() {\n"
               "    f((uint8_t)new int());\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with new, f doesn't release it.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:3:16]: (error) Allocation with new, f doesn't release it. [leakNoVarFunctionCall]\n",
+                      errout_str());
 
         check("void f(int i, T t);\n"
               "void g(int i, U* u);\n"
@@ -2492,14 +2494,23 @@ private:
               "    f(1, new int());\n"
               "    g(1, new int());\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(T t);\n"
               "struct U {};\n"
               "void g() {\n"
               "    f(new U());\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
+
+        check("struct A {\n" // #14339
+              "    void g(int* p) { p_ = p; }\n"
+              "    int *p_;\n"
+              "};\n"
+              "void f(A& a) {\n"
+              "    a.g(new int);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void missingAssignment() {
@@ -2507,31 +2518,25 @@ private:
               "{\n"
               "    malloc(10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void x()\n"
               "{\n"
               "    calloc(10, 1);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'calloc' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Return value of allocation function 'calloc' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void x()\n"
               "{\n"
               "    strdup(\"Test\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'strdup' is not stored.\n", errout.str());
-
-        check("void x()\n"
-              "{\n"
-              "    reallocarray(NULL, 10, 10);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'reallocarray' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Return value of allocation function 'strdup' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void x()\n"
               "{\n"
               "    (char*) malloc(10);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:13]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void x()\n"
               "{\n"
@@ -2539,19 +2544,28 @@ private:
               "    foo(ptr);\n"
               "    free(ptr);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
+
+        check("int f( void ) {\n" // FP: #11246
+              "  void* address = malloc( 1 );\n"
+              "  int ok = address != 0;\n"
+              "  if ( ok )\n"
+              "    free( address ), address = 0;\n"
+              "  return 0;\n"
+              "} ");
+        ASSERT_EQUALS("", errout_str());
 
         check("char** x(const char* str) {\n"
               "    char* ptr[] = { malloc(10), malloc(5), strdup(str) };\n"
               "    return ptr;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void x()\n"
               "{\n"
               "    42,malloc(42);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:8]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void *f()\n"
               "{\n"
@@ -2561,7 +2575,7 @@ private:
               "{\n"
               "    f();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Return value of allocation function 'f' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (error) Return value of allocation function 'f' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void f()\n" // #8100
               "{\n"
@@ -2571,7 +2585,7 @@ private:
               "{\n"
               "    f();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void *f() {\n" // #8848
               "    struct S { void *alloc() { return malloc(10); } };\n"
@@ -2580,26 +2594,26 @@ private:
               "{\n"
               "    f();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void x()\n"
               "{\n"
               "    if(!malloc(5)) fail();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:9]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("FOO* factory() {\n"
               "    FOO* foo = new (std::nothrow) FOO;\n"
               "    return foo;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Ticket #6536
         check("struct S { S(int) {} };\n"
               "void foo(int i) {\n"
               "  S socket(i);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // Ticket #6693
         check("struct CTest {\n"
@@ -2609,12 +2623,12 @@ private:
               "void CTest::Initialise() {\n"
               "    malloc();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n" // #7348 - cast
               "    p = (::X*)malloc(42);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // #7182 "crash: CheckMemoryLeak::functionReturnType()"
         check("template<typename... Ts> auto unary_right_comma (Ts... ts) { return (ts , ...); }\n"
@@ -2622,7 +2636,7 @@ private:
               "int main() {\n"
               "  unary_right_comma (a);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n"
               "    new int[10];\n"
@@ -2638,28 +2652,28 @@ private:
               "    new int{ 1 };\n"
               "    new uint8_t[4];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:4]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:5]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:6]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:7]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:8]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:9]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:10]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:11]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:12]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:13]: (error) Return value of allocation function 'new' is not stored.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:3:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:4:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:5:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:6:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:7:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:8:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:9:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:10:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:11:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:12:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:13:5]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n",
+                      errout_str());
 
         check("void f(int* p) {\n"
               "    new auto('c');\n"
               "    new(p) int;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+        TODO_ASSERT_EQUALS("[test.cpp:1:29]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
                            "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n",
                            "",
-                           errout.str());
+                           errout_str());
 
         check("void g(int* p) {\n"
               "    new QWidget;\n"
@@ -2693,116 +2707,132 @@ private:
               "    C{ new(p) int, 1 };\n"
               "    C{ new QWidget, 1 };\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f(bool b) { if (b && malloc(42)) {} }\n" //  // #10858
               "void g(bool b) { if (b || malloc(42)) {} }\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'malloc' is not stored.\n"
-                      "[test.cpp:2]: (error) Return value of allocation function 'malloc' is not stored.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:1:27]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:2:27]: (error) Return value of allocation function 'malloc' is not stored. [leakReturnValNotUsed]\n",
+                      errout_str());
 
         check("void f0(const bool b) { b ? new int : nullptr; }\n" // #11155
               "void f1(const bool b) { b ? nullptr : new int; }\n"
               "int* g0(const bool b) { return b ? new int : nullptr; }\n"
               "void g1(const bool b) { h(b, b ? nullptr : new int); }\n");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'new' is not stored.\n"
-                      "[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:1:29]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n"
+                      "[test.cpp:2:39]: (error) Return value of allocation function 'new' is not stored. [leakReturnValNotUsed]\n",
+                      errout_str());
 
         check("void f() {\n" // #11157
               "    switch (*new int) { case 42: break; }\n"
               "    switch (*malloc(42)) { case 42: break; }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with new, switch doesn't release it.\n"
-                      "[test.cpp:3]: (error) Allocation with malloc, switch doesn't release it.\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:2:14]: (error) Allocation with new, switch doesn't release it. [leakNoVarFunctionCall]\n"
+                      "[test.cpp:3:14]: (error) Allocation with malloc, switch doesn't release it. [leakNoVarFunctionCall]\n",
+                      errout_str());
 
         check("void f() {\n"
               "    Ref<StringBuffer> remove(new StringBuffer());\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #11039
               "    delete new int;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void f() {\n" // #11327
               "    int* p = (new int[3]) + 1;\n"
               "    delete[] &p[-1];\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
+
+        check("void f(FILE* fp1, FILE* fp2) {\n" // #14171
+              "    if (freopen(NULL, \"w+b\", fp1) == NULL) {}\n"
+              "    if (std::freopen(NULL, \"w+b\", fp2) == NULL) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void smartPointerFunctionParam() {
         check("void x() {\n"
               "    f(shared_ptr<int>(new int(42)), g());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    h(12, f(shared_ptr<int>(new int(42)), g()));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:11]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    f(unique_ptr<int>(new int(42)), g());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_unique<int>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_unique<int>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    f(g(), shared_ptr<int>(new int(42)));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_shared<int>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    f(g(), unique_ptr<int>(new int(42)));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_unique<int>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If g() throws, memory could be leaked. Use make_unique<int>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    f(shared_ptr<char>(new char), make_unique<int>(32));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If make_unique<int>() throws, memory could be leaked. Use make_shared<char>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If make_unique<int>() throws, memory could be leaked. Use make_shared<char>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    f(g(124), h(\"test\", 234), shared_ptr<char>(new char));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If h() throws, memory could be leaked. Use make_shared<char>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If h() throws, memory could be leaked. Use make_shared<char>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void x() {\n"
               "    f(shared_ptr<std::string>(new std::string(\"\")), g<std::string>());\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Unsafe allocation. If g<std::string>() throws, memory could be leaked. Use make_shared<std::string>() instead.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning, inconclusive) Unsafe allocation. If g<std::string>() throws, memory could be leaked. Use make_shared<std::string>() instead. [leakUnsafeArgAlloc]\n", errout_str());
 
         check("void g(int x) throw() { }\n"
               "void x() {\n"
               "    f(g(124), shared_ptr<char>(new char));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void __declspec(nothrow) g(int x) { }\n"
               "void x() {\n"
               "    f(g(124), shared_ptr<char>(new char));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
     void resourceLeak() {
+        check("bool f(const char* name)\n" // FP: #12253
+              "{\n"
+              "    FILE* fp = fopen(name, \"r\");\n"
+              "    bool result = (fp == nullptr);\n"
+              "    if (result) return !result;\n"
+              "    fclose(fp);\n"
+              "    return result;\n"
+              "}");
+        ASSERT_EQUALS("", errout_str());
+
         check("void foo() {\n"
               "  fopen(\"file.txt\", \"r\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'fopen' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (error) Return value of allocation function 'fopen' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void foo() {\n"
-              "  FILE f* = fopen(\"file.txt\", \"r\");\n"
+              "  FILE *f = fopen(\"file.txt\", \"r\");\n"
               "  freopen(\"file.txt\", \"r\", f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'freopen' is not stored.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3:3]: (error) Return value of allocation function 'freopen' is not stored. [leakReturnValNotUsed]\n", errout_str());
 
         check("void foo() {\n"
               "  freopen(\"file.txt\", \"r\", stdin);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
@@ -2812,7 +2842,7 @@ private:
               "void foo() {\n"
               "  Holder h ( fopen(\"file.txt\", \"r\"));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
@@ -2822,7 +2852,7 @@ private:
               "void foo() {\n"
               "  Holder ( fopen(\"file.txt\", \"r\"));\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
@@ -2832,7 +2862,7 @@ private:
               "void foo() {\n"
               "  Holder h { fopen(\"file.txt\", \"r\")};\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
@@ -2842,7 +2872,7 @@ private:
               "void foo() {\n"
               "  Holder h = fopen(\"file.txt\", \"r\");\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Holder {\n"
               "  Holder(FILE* f) : file(f) {}\n"
@@ -2852,7 +2882,7 @@ private:
               "void foo() {\n"
               "  Holder { fopen(\"file.txt\", \"r\")};\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("struct Holder {\n"
               "  Holder(int i, FILE* f) : file(f) {}\n"
@@ -2862,7 +2892,7 @@ private:
               "void foo() {\n"
               "  Holder { 0, fopen(\"file.txt\", \"r\")};\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void getAllocationType() {
@@ -2873,7 +2903,7 @@ private:
               "void f() {\n"
               "  makeThing();\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         // #10631
         check("struct Thing {\n"
@@ -2893,19 +2923,19 @@ private:
               "        delete t;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void crash1() { // #10729
         check("void foo() {\n"
               "    extern void *realloc (void *ptr, size_t size);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
 
         check("void foo() {\n"
               "    extern void *malloc (size_t size);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 
     void openDevNull() {
@@ -2913,7 +2943,7 @@ private:
               "    (void)open(\"/dev/null\", O_RDONLY);\n"
               "    open(\"/dev/null\", O_WRONLY);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout_str());
     }
 };
 REGISTER_TEST(TestMemleakNoVar)

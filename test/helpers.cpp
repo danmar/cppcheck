@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "helpers.h"
 
 #include "filelister.h"
+#include "filesettings.h"
+#include "library.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "preprocessor.h"
@@ -26,9 +28,8 @@
 #include <cerrno>
 #include <cstdio>
 #include <iostream>
-#include <fstream> // IWYU pragma: keep
+#include <fstream>
 #include <list>
-#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -42,7 +43,9 @@
 
 #include <simplecpp.h>
 
-class Suppressions;
+#include "xml.h"
+
+const Settings SimpleTokenizer::s_settings;
 
 // TODO: better path-only usage
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)
@@ -51,6 +54,8 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
     , mFullPath(Path::join(mPath, mName))
 {
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
+        if (Path::isDirectory(mPath))
+            throw std::runtime_error("ScopedFile(" + mFullPath + ") - directory already exists");
 #ifdef _WIN32
         if (!CreateDirectoryA(mPath.c_str(), nullptr))
             throw std::runtime_error("ScopedFile(" + mFullPath + ") - could not create directory");
@@ -59,6 +64,9 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
             throw std::runtime_error("ScopedFile(" + mFullPath + ") - could not create directory");
 #endif
     }
+
+    if (Path::isFile(mFullPath))
+        throw std::runtime_error("ScopedFile(" + mFullPath + ") - file already exists");
 
     std::ofstream of(mFullPath);
     if (!of.is_open())
@@ -75,14 +83,14 @@ ScopedFile::~ScopedFile() {
         // TODO: remove all files
         // TODO: simplify the function call
         // hack to be able to delete *.plist output files
-        std::map<std::string, std::size_t> files;
-        const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch({}));
+        std::list<FileWithDetails> files;
+        const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch());
         if (!res.empty()) {
             std::cout << "ScopedFile(" << mPath + ") - generating file list failed (" << res << ")" << std::endl;
         }
         for (const auto &f : files)
         {
-            const std::string &file = f.first;
+            const std::string &file = f.path();
             const int rm_f_res = std::remove(file.c_str());
             if (rm_f_res != 0) {
                 std::cout << "ScopedFile(" << mPath + ") - could not delete '" << file << "' (" << rm_f_res << ")" << std::endl;
@@ -103,36 +111,39 @@ ScopedFile::~ScopedFile() {
     }
 }
 
-// TODO: we should be using the actual Preprocessor implementation
-std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression)
+void SimpleTokenizer2::preprocess(const char* code, std::size_t size, std::vector<std::string> &files, const std::string& file0, Tokenizer& tokenizer, ErrorLogger& errorlogger)
 {
     simplecpp::OutputList outputList;
-    std::vector<std::string> files;
+    simplecpp::TokenList tokens1({code, size}, files, file0, &outputList);
 
-    std::istringstream istr(filedata);
-    simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
-    if (inlineSuppression)
-        preprocessor.inlineSuppressions(tokens1, *inlineSuppression);
-    tokens1.removeComments();
-    preprocessor.simplifyPragmaAsm(&tokens1);
-    preprocessor.removeComments();
-    preprocessor.setDirectives(tokens1);
+    Preprocessor preprocessor(tokens1, tokenizer.getSettings(), errorlogger, Path::identify(tokens1.getFiles()[0], false));
+    (void)preprocessor.loadFiles(files); // TODO: check result
+    simplecpp::TokenList tokens2 = preprocessor.preprocess("", files, outputList);
+    (void)preprocessor.reportOutput(outputList, true);
 
-    preprocessor.reportOutput(outputList, true);
+    // Tokenizer..
+    tokenizer.list.createTokens(std::move(tokens2));
 
-    if (Preprocessor::hasErrors(outputList))
-        return "";
+    std::list<Directive> directives = preprocessor.createDirectives();
+    tokenizer.setDirectives(std::move(directives));
+}
 
-    std::string ret;
-    try {
-        ret = preprocessor.getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
-    } catch (const simplecpp::Output &) {
-        ret.clear();
-    }
+bool LibraryHelper::loadxmldata(Library &lib, const char xmldata[], std::size_t len)
+{
+    tinyxml2::XMLDocument doc;
+    return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (lib.load(doc).errorcode == Library::ErrorCode::OK);
+}
 
-    // Since "files" is a local variable the tracking info must be cleared..
-    preprocessor.mMacroUsage.clear();
-    preprocessor.mIfCond.clear();
+bool LibraryHelper::loadxmldata(Library &lib, Library::Error& liberr, const char xmldata[], std::size_t len)
+{
+    tinyxml2::XMLDocument doc;
+    if (tinyxml2::XML_SUCCESS != doc.Parse(xmldata, len))
+        return false;
+    liberr = lib.load(doc);
+    return true;
+}
 
-    return ret;
+Library::Error LibraryHelper::loadxmldoc(Library &lib, const tinyxml2::XMLDocument& doc)
+{
+    return lib.load(doc);
 }

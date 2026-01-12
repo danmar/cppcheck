@@ -459,6 +459,13 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_18">
           <item>
+           <widget class="QRadioButton" name="mCheckLevelReduced">
+            <property name="text">
+             <string>Reduced -- meant for usage where developer wants results directly. Limited and faster analysis with fewer results.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QRadioButton" name="mCheckLevelNormal">
             <property name="text">
              <string>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</string>
@@ -595,17 +602,23 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer_7">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QGroupBox" name="premiumLicense">
+         <property name="title">
+          <string>Premium License</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>73</height>
-          </size>
-         </property>
-        </spacer>
+         <layout class="QHBoxLayout" name="horizontalLayout_12">
+          <item>
+           <widget class="QLineEdit" name="mEditLicenseFile"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="mBtnBrowseLicense">
+            <property name="text">
+             <string>Browse...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -747,6 +760,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mInlineSuppressions">
+         <property name="text">
+          <string>Enable inline suppressions</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_9">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -826,6 +846,11 @@
                 <string>2023</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>2025</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item>
@@ -869,11 +894,42 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="mMisraCpp2008">
-            <property name="text">
-             <string>Misra C++ 2008</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_11">
+            <item>
+             <widget class="QCheckBox" name="mMisraCpp">
+              <property name="text">
+               <string>Misra C++</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="mMisraCppVersion">
+              <item>
+               <property name="text">
+                <string>2008</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2023</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item>
            <widget class="QCheckBox" name="mCertC2016">

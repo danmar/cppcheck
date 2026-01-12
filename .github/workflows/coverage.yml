@@ -7,6 +7,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '2.*'
     tags:
       - '2.*'
   pull_request:
@@ -20,7 +21,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -40,7 +43,7 @@ jobs:
       - name: Compile instrumented
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) all CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
+          make -j$(nproc) CXXOPTS="-Werror -g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes CPPCHK_GLIBCXX_DEBUG= all
 
       - name: Run instrumented tests
         run: |
@@ -54,14 +57,14 @@ jobs:
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
           genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
           
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
          name: Coverage results
          path: coverage_report
          
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
-          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          token: ${{ secrets.CODECOV_TOKEN }}
           # file: ./coverage.xml # optional
           flags: unittests # optional
           name: ${{ github.repository }} # optional

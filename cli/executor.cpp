@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,26 +20,41 @@
 
 #include "color.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "suppressions.h"
 
-#include <algorithm>
-#include <sstream> // IWYU pragma: keep
+#include <cassert>
+#include <sstream>
 #include <utility>
 
-Executor::Executor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-    : mFiles(files), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
-{}
+struct FileSettings;
 
+Executor::Executor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
+{
+    // the two inputs may only be used exclusively
+    assert(!(!files.empty() && !fileSettings.empty()));
+}
+
+// TODO: this logic is duplicated in CppCheck::reportErr()
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
-    if (!mSuppressions.isSuppressed(msg))
+    if (msg.severity == Severity::internal)
+        return true;
+
+    if (!mSuppressions.nomsg.isSuppressed(msg, {}))
     {
-        std::string errmsg = msg.toString(mSettings.verbose);
+        // TODO: there should be no need for verbose and default messages here
+        std::string errmsg = msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+        if (errmsg.empty())
+            return false;
+
+        if (mSettings.emitDuplicates)
+            return true;
 
         std::lock_guard<std::mutex> lg(mErrorListSync);
-        if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
-            mErrorList.emplace_back(std::move(errmsg));
+        if (mErrorList.emplace(std::move(errmsg)).second) {
             return true;
         }
     }
@@ -50,7 +65,7 @@ void Executor::reportStatus(std::size_t fileindex, std::size_t filecount, std::s
 {
     if (filecount > 1) {
         std::ostringstream oss;
-        const unsigned long percentDone = (sizetotal > 0) ? (100 * sizedone) / sizetotal : 0;
+        const unsigned long percentDone = (sizetotal > 0) ? (100 * sizedone) / sizetotal : (100 * fileindex / filecount);
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";

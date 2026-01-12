@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,13 @@
 #ifndef CPPCHECKLIBRARYDATA_H
 #define CPPCHECKLIBRARYDATA_H
 
+#include "config.h"
+
+#include <cstdint>
+#include <utility>
+
 #include <QList>
 #include <QMap>
-#include <QPair>
-#include <QSet>
 #include <QString>
 #include <QStringList>
 
@@ -58,10 +61,10 @@ public:
             QString yields;
             QString action;
         };
-        QList<struct Function> accessFunctions;
-        QList<struct Function> otherFunctions;
-        QList<struct Function> sizeFunctions;
-        QList<struct RangeItemRecordType> rangeItemRecordTypeList;
+        QList<Function> accessFunctions;
+        QList<Function> otherFunctions;
+        QList<Function> sizeFunctions;
+        QList<RangeItemRecordType> rangeItemRecordTypeList;
     };
 
     struct Define {
@@ -72,7 +75,7 @@ public:
     struct Function {
         QString comments;
         QString name;
-        enum TrueFalseUnknown { False, True, Unknown } noreturn = Unknown;
+        enum TrueFalseUnknown : std::uint8_t { False, True, Unknown } noreturn = Unknown;
         bool gccPure{};
         bool gccConst{};
         bool leakignore{};
@@ -106,13 +109,13 @@ public:
                 QString arg;
                 QString arg2;
             };
-            QList<struct MinSize> minsizes;
+            QList<MinSize> minsizes;
             struct Iterator {
                 int container = -1;
                 QString type;
             } iterator;
         };
-        QList<struct Arg> args;
+        QList<Arg> args;
 
         struct {
             QString severity;
@@ -139,6 +142,7 @@ public:
         struct Alloc {
             bool isRealloc{};
             bool init{};
+            bool noFail{};
             int arg = -1; // -1: Has no optional "realloc-arg" attribute
             int reallocArg = -1; // -1: Has no optional "arg" attribute
             QString bufferSize;
@@ -149,8 +153,8 @@ public:
             QString name;
         };
 
-        QList<struct Alloc> alloc;
-        QList<struct Dealloc> dealloc;
+        QList<Alloc> alloc;
+        QList<Dealloc> dealloc;
         QStringList use;
     };
 
@@ -168,7 +172,7 @@ public:
         QStringList platforms;  // Keeps "type" attribute of each "platform" element
     };
 
-    using TypeChecks = QList<QPair<QString, QString>>;
+    using TypeChecks = QList<std::pair<QString, QString>>;
 
     struct Reflection {
         struct Call {
@@ -176,7 +180,7 @@ public:
             QString name;
         };
 
-        QList<struct Call> calls;
+        QList<Call> calls;
     };
 
     struct Markup {
@@ -226,7 +230,7 @@ public:
         entrypoints.clear();
     }
 
-    void swap(CppcheckLibraryData &other) {
+    void swap(CppcheckLibraryData &other) NOEXCEPT {
         containers.swap(other.containers);
         defines.swap(other.defines);
         undefines.swap(other.undefines);
@@ -244,18 +248,18 @@ public:
     QString open(QIODevice &file);
     QString toString() const;
 
-    QList<struct Container> containers;
-    QList<struct Define> defines;
-    QList<struct Function> functions;
-    QList<struct MemoryResource> memoryresource;
-    QList<struct PodType> podtypes;
+    QList<Container> containers;
+    QList<Define> defines;
+    QList<Function> functions;
+    QList<MemoryResource> memoryresource;
+    QList<PodType> podtypes;
     QList<TypeChecks> typeChecks;
-    QList<struct PlatformType> platformTypes;
+    QList<PlatformType> platformTypes;
     QStringList undefines;
-    QList<struct SmartPointer> smartPointers;
-    QList<struct Reflection> reflections;
-    QList<struct Markup> markups;
-    QList<struct Entrypoint> entrypoints;
+    QList<SmartPointer> smartPointers;
+    QList<Reflection> reflections;
+    QList<Markup> markups;
+    QList<Entrypoint> entrypoints;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H

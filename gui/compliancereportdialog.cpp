@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "importproject.h"
 #include "projectfile.h"
 
@@ -36,6 +37,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
@@ -43,6 +45,7 @@
 #include <QFileInfo>
 #include <QIODevice>
 #include <QLineEdit>
+#include <QList>
 #include <QMessageBox>
 #include <QProcess>
 #include <QRegularExpression>
@@ -50,7 +53,6 @@
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QtCore>
 
 static void addHeaders(const QString& file1, QSet<QString> &allFiles) {
     if (allFiles.contains(file1))
@@ -84,15 +86,24 @@ static std::vector<std::string> toStdStringList(const QStringList& from) {
     return ret;
 }
 
-ComplianceReportDialog::ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile) :
-    QDialog(nullptr),
+ComplianceReportDialog::ComplianceReportDialog(ProjectFile* projectFile, QString resultsFile, QString checkersReport)
+    : QDialog(nullptr),
     mUI(new Ui::ComplianceReportDialog),
     mProjectFile(projectFile),
-    mResultsFile(std::move(resultsFile))
+    mResultsFile(std::move(resultsFile)),
+    mCheckersReport(std::move(checkersReport))
 {
     mUI->setupUi(this);
     mUI->mEditProjectName->setText(projectFile->getProjectName());
     connect(mUI->buttonBox, &QDialogButtonBox::clicked, this, &ComplianceReportDialog::buttonClicked);
+    mUI->mCodingStandard->clear();
+    if (!projectFile->getCodingStandards().contains("misra-c-2023") && projectFile->getAddons().contains("misra"))
+        mUI->mCodingStandard->addItem("Misra C 2012");
+    for (QString std: projectFile->getCodingStandards()) {
+        std[0] = std[0].toUpper();
+        std = std.replace("-", " ").replace(" c ", " C ").replace(" cpp ", " C++ ").replace(" c++ ", " C++ ");
+        mUI->mCodingStandard->addItem(std);
+    }
 }
 
 ComplianceReportDialog::~ComplianceReportDialog()
@@ -111,7 +122,7 @@ void ComplianceReportDialog::buttonClicked(QAbstractButton* button)
         break;
     default:
         break;
-    };
+    }
 }
 
 void ComplianceReportDialog::save()
@@ -136,6 +147,13 @@ void ComplianceReportDialog::save()
         mProjectFile->write();
     }
 
+    QTemporaryFile tempCheckersReport;
+    if (tempCheckersReport.open()) {
+        QTextStream out(&tempCheckersReport);
+        out << mCheckersReport << "\n";
+        tempCheckersReport.close();
+    }
+
     QTemporaryFile tempFiles;
     if (files && tempFiles.open()) {
         QTextStream out(&tempFiles);
@@ -156,7 +174,7 @@ void ComplianceReportDialog::save()
             } catch (InternalError &e) {
                 QMessageBox msg(QMessageBox::Critical,
                                 tr("Save compliance report"),
-                                tr("Failed to import '%1', can not show files in compliance report").arg(prjfile),
+                                tr("Failed to import '%1' (%2), can not show files in compliance report").arg(prjfile).arg(QString::fromStdString(e.errorMessage)),
                                 QMessageBox::Ok,
                                 this);
                 msg.exec();
@@ -166,8 +184,8 @@ void ComplianceReportDialog::save()
             p.ignorePaths(toStdStringList(mProjectFile->getExcludedPaths()));
 
             QDir dir(inf.absoluteDir());
-            for (const ImportProject::FileSettings& fs: p.fileSettings)
-                fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename)));
+            for (const FileSettings& fs: p.fileSettings)
+                fileList.addFile(dir.relativeFilePath(QString::fromStdString(fs.filename())));
         }
 
         QSet<QString> allFiles;
@@ -179,7 +197,7 @@ void ComplianceReportDialog::save()
                 QCryptographicHash hash(QCryptographicHash::Algorithm::Md5);
                 if (hash.addData(&f)) {
                     for (auto b: hash.result())
-                        out << QString::number((unsigned char)b,16);
+                        out << QString::number(static_cast<unsigned char>(b),16);
                     out << " " << fileName << "\n";
                 }
             }
@@ -196,7 +214,9 @@ void ComplianceReportDialog::save()
     QStringList args{"--project-name=" + projectName,
                      "--project-version=" + projectVersion,
                      "--output-file=" + outFile,
-                     "--suppressions=" + suppressions.join(",")};
+                     "--checkers-report=" + tempCheckersReport.fileName()};
+    if (!suppressions.isEmpty())
+        args << "--suppressions=" + suppressions.join(",");
 
     args << ("--" + std);
 
@@ -213,4 +233,13 @@ void ComplianceReportDialog::save()
     process.start(appPath + "/compliance-report", args);
 #endif
     process.waitForFinished();
+    const QString output = process.readAll();
+    if (!output.isEmpty()) {
+        QMessageBox msg(QMessageBox::Critical,
+                        tr("Save compliance report"),
+                        output,
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+    }
 }

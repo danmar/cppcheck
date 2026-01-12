@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,17 +22,22 @@
 
 #include "checkassert.h"
 
+#include "astutils.h"
 #include "errortypes.h"
+#include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <algorithm>
+#include <utility>
+
 //---------------------------------------------------------------------------
 
 // CWE ids used
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const CWE CWE398(398U);   // Indicator of Poor Code Quality
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -50,15 +55,33 @@ void CheckAssert::assertWithSideEffects()
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
-        const Token *endTok = tok->next()->link();
+        const Token *endTok = tok->linkAt(1);
         for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
 
             checkVariableAssignment(tmp, tok->scope());
 
-            if (tmp->tokType() != Token::eFunction)
+            if (tmp->tokType() != Token::eFunction) {
+                if (const Library::Function* f = mSettings->library.getFunction(tmp)) {
+                    if (f->isconst || f->ispure)
+                        continue;
+                    if (Library::getContainerYield(tmp->next()) != Library::Container::Yield::NO_YIELD) // bailout, assume read access
+                        continue;
+                    if (std::any_of(f->argumentChecks.begin(), f->argumentChecks.end(), [](const std::pair<int, Library::ArgumentChecks>& ac) {
+                        return ac.second.iteratorInfo.container > 0; // bailout, takes iterators -> assume read access
+                    }))
+                        continue;
+                    if (tmp->str() == "get" && Token::simpleMatch(tmp->astParent(), ".") && astIsSmartPointer(tmp->astParent()->astOperand1()))
+                        continue;
+                    if (f->containerYield == Library::Container::Yield::START_ITERATOR || // bailout for std::begin/end/prev/next
+                        f->containerYield == Library::Container::Yield::END_ITERATOR ||
+                        f->containerYield == Library::Container::Yield::ITERATOR)
+                        continue;
+                    sideEffectInAssertError(tmp, mSettings->library.getFunctionName(tmp));
+                }
                 continue;
+            }
 
             const Function* f = tmp->function();
             const Scope* scope = f->functionScope;
@@ -129,6 +152,8 @@ void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *a
     if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
         return;
 
+    if (!assignTok->astOperand1())
+        return;
     const Variable* var = assignTok->astOperand1()->variable();
     if (!var)
         return;
@@ -156,4 +181,17 @@ bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)
 {
     // TODO: even if a return is in the same scope, the assignment might not affect it.
     return returnTok->scope() == assignTok->scope();
+}
+
+void CheckAssert::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckAssert checkAssert(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkAssert.assertWithSideEffects();
+}
+
+void CheckAssert::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckAssert c(nullptr, settings, errorLogger);
+    c.sideEffectInAssertError(nullptr, "function");
+    c.assignmentInAssertError(nullptr, "var");
 }

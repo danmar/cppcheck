@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,19 @@
 #include "singleexecutor.h"
 
 #include "cppcheck.h"
-#include "importproject.h"
-#include "library.h"
+#include "filesettings.h"
 #include "settings.h"
+#include "timer.h"
 
 #include <cassert>
+#include <cstddef>
 #include <list>
 #include <numeric>
-#include <utility>
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-    : Executor(files, settings, suppressions, errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
     assert(mSettings.jobs == 1);
@@ -42,73 +42,37 @@ unsigned int SingleExecutor::check()
 {
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
-        return v + f.second;
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const FileWithDetails& f) {
+        return v + f.size();
     });
 
     std::size_t processedsize = 0;
     unsigned int c = 0;
-    // TODO: processes either mSettings.project.fileSettings or mFiles - process/thread implementations process both
-    // TODO: thread/process implementations process fileSettings first
-    if (mSettings.project.fileSettings.empty()) {
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (!mSettings.library.markupFile(i->first)
-                || !mSettings.library.processMarkupAfterCode(i->first)) {
-                result += mCppcheck.check(i->first);
-                processedsize += i->second;
-                if (!mSettings.quiet)
-                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()?
-                c++;
-            }
-        }
-    } else {
-        // filesettings
-        // check all files of the project
-        for (const ImportProject::FileSettings &fs : mSettings.project.fileSettings) {
-            if (!mSettings.library.markupFile(fs.filename)
-                || !mSettings.library.processMarkupAfterCode(fs.filename)) {
-                result += mCppcheck.check(fs);
-                ++c;
-                if (!mSettings.quiet)
-                    reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
-                if (mSettings.clangTidy)
-                    mCppcheck.analyseClangTidy(fs);
-            }
-        }
+
+    for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+        result += mCppcheck.check(*i);
+        processedsize += i->size();
+        ++c;
+        if (!mSettings.quiet)
+            reportStatus(c, mFiles.size(), processedsize, totalfilesize);
+        // TODO: call analyseClangTidy()?
     }
 
-    // second loop to parse all markup files which may not work until all
-    // c/cpp files have been parsed and checked
-    // TODO: get rid of duplicated code
-    if (mSettings.project.fileSettings.empty()) {
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (mSettings.library.markupFile(i->first)
-                && mSettings.library.processMarkupAfterCode(i->first)) {
-                result += mCppcheck.check(i->first);
-                processedsize += i->second;
-                if (!mSettings.quiet)
-                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()?
-                c++;
-            }
-        }
+    // filesettings
+    // check all files of the project
+    for (const FileSettings &fs : mFileSettings) {
+        result += mCppcheck.check(fs);
+        ++c;
+        if (!mSettings.quiet)
+            reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
     }
-    else {
-        for (const ImportProject::FileSettings &fs : mSettings.project.fileSettings) {
-            if (mSettings.library.markupFile(fs.filename)
-                && mSettings.library.processMarkupAfterCode(fs.filename)) {
-                result += mCppcheck.check(fs);
-                ++c;
-                if (!mSettings.quiet)
-                    reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
-                if (mSettings.clangTidy)
-                    mCppcheck.analyseClangTidy(fs);
-            }
-        }
-    }
+
+    // TODO: CppCheckExecutor::check_internal() is also invoking the whole program analysis - is it run twice?
     if (mCppcheck.analyseWholeProgram())
         result++;
+
+    if (mSettings.showtime == ShowTime::SUMMARY || mSettings.showtime == ShowTime::TOP5_SUMMARY)
+        CppCheck::printTimerResults(mSettings.showtime);
 
     return result;
 }

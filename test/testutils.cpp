@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -40,6 +38,12 @@ private:
         TEST_CASE(strToInt);
         TEST_CASE(id_string);
         TEST_CASE(startsWith);
+        TEST_CASE(trim);
+        TEST_CASE(findAndReplace);
+        TEST_CASE(replaceEscapeSequences);
+        TEST_CASE(splitString);
+        TEST_CASE(as_const);
+        TEST_CASE(memoize);
     }
 
     void isValidGlobPattern() const {
@@ -48,18 +52,32 @@ private:
         ASSERT_EQUALS(true, ::isValidGlobPattern("x*"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("*/x/*"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x/*/z"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("**"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("**x"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("x**"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("**"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("**x"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x**"));
 
         ASSERT_EQUALS(true, ::isValidGlobPattern("?"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("?x"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x?"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("?/x/?"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x/?/z"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("??"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("??x"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("x??"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("??"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("????"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("??x"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x??"));
+
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?**"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("?***"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("???*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("???**"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("???***"));
+
+        ASSERT_EQUALS(false, ::isValidGlobPattern("*?"));
+        ASSERT_EQUALS(true,  ::isValidGlobPattern("*x?"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("**?"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("***"));
+        ASSERT_EQUALS(true,  ::isValidGlobPattern("**x*"));
     }
 
     void matchglob() const {
@@ -72,11 +90,26 @@ private:
         ASSERT_EQUALS(true, ::matchglob("*", "x/y/z"));
         ASSERT_EQUALS(true, ::matchglob("*/y/z", "x/y/z"));
 
+        ASSERT_EQUALS(true, ::matchglob("**", ""));
+        ASSERT_EQUALS(true, ::matchglob("**", "abcdefg"));
+        ASSERT_EQUALS(true, ::matchglob("**", "abcde/foo/bar"));
+        ASSERT_EQUALS(false, ::matchglob("*/**", "abcde"));
+        ASSERT_EQUALS(true, ::matchglob("*/**", "abcde/foo"));
+        ASSERT_EQUALS(true, ::matchglob("*/**", "abcde/foo/bar"));
+
         ASSERT_EQUALS(false, ::matchglob("?", "xyz"));
         ASSERT_EQUALS(false, ::matchglob("x?", "xyz"));
         ASSERT_EQUALS(false, ::matchglob("?z", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("?y?", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("?/?/?", "x/y/z"));
+
+        ASSERT_EQUALS(true, ::matchglob("??", "xy"));
+        ASSERT_EQUALS(false, ::matchglob("??", "x"));
+        ASSERT_EQUALS(false, ::matchglob("??", "xyz"));
+
+        ASSERT_EQUALS(true, ::matchglob("????", "wxyz"));
+        ASSERT_EQUALS(false, ::matchglob("????", "xyz"));
+        ASSERT_EQUALS(false, ::matchglob("????", "vwxyz"));
     }
 
     void isStringLiteral() const {
@@ -358,6 +391,177 @@ private:
         ASSERT(!::startsWith("tes", "test"));
         ASSERT(!::startsWith("2test", "t"));
         ASSERT(!::startsWith("t", "test"));
+    }
+
+    void trim() const
+    {
+        ASSERT_EQUALS("test", ::trim("test"));
+        ASSERT_EQUALS("test", ::trim(" test"));
+        ASSERT_EQUALS("test", ::trim("test "));
+        ASSERT_EQUALS("test", ::trim(" test "));
+        ASSERT_EQUALS("test", ::trim("  test"));
+        ASSERT_EQUALS("test", ::trim("test  "));
+        ASSERT_EQUALS("test", ::trim("  test  "));
+        ASSERT_EQUALS("test", ::trim("\ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t"));
+        ASSERT_EQUALS("test", ::trim("\ttest\t"));
+        ASSERT_EQUALS("test", ::trim("\t\ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t\t"));
+        ASSERT_EQUALS("test", ::trim("\t\ttest\t\t"));
+        ASSERT_EQUALS("test", ::trim(" \ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t "));
+        ASSERT_EQUALS("test", ::trim(" \ttest\t"));
+        ASSERT_EQUALS("test", ::trim("\t \ttest"));
+        ASSERT_EQUALS("test", ::trim("test\t \t"));
+        ASSERT_EQUALS("test", ::trim("\t \ttest\t \t"));
+
+        ASSERT_EQUALS("test test", ::trim("test test"));
+        ASSERT_EQUALS("test test", ::trim(" test test"));
+        ASSERT_EQUALS("test test", ::trim("test test "));
+        ASSERT_EQUALS("test test", ::trim(" test test "));
+        ASSERT_EQUALS("test\ttest", ::trim(" test\ttest"));
+        ASSERT_EQUALS("test\ttest", ::trim("test\ttest "));
+        ASSERT_EQUALS("test\ttest", ::trim(" test\ttest "));
+
+        ASSERT_EQUALS("test", ::trim("\ntest", "\n"));
+        ASSERT_EQUALS("test", ::trim("test\n", "\n"));
+        ASSERT_EQUALS("test", ::trim("\ntest\n", "\n"));
+    }
+
+    void findAndReplace() const {
+        {
+            std::string s{"test"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("tset", s);
+        }
+        {
+            std::string s{"testtest"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("tsettset", s);
+        }
+        {
+            std::string s{"1test1test1"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("1tset1tset1", s);
+        }
+        {
+            std::string s{"1test1test1"};
+            ::findAndReplace(s, "test", "");
+            ASSERT_EQUALS("111", s);
+        }
+        {
+            std::string s{"111"};
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("111", s);
+        }
+        {
+            std::string s;
+            ::findAndReplace(s, "test", "tset");
+            ASSERT_EQUALS("", s);
+        }
+    }
+
+    void replaceEscapeSequences() const {
+        ASSERT_EQUALS("\x30", ::replaceEscapeSequences("\\x30"));
+        ASSERT_EQUALS("\030", ::replaceEscapeSequences("\\030"));
+        ASSERT_EQUALS("\r", ::replaceEscapeSequences("\\r"));
+        ASSERT_EQUALS("\n", ::replaceEscapeSequences("\\n"));
+        ASSERT_EQUALS("\t", ::replaceEscapeSequences("\\t"));
+        ASSERT_EQUALS("\\", ::replaceEscapeSequences("\\\\"));
+        ASSERT_EQUALS("\"", ::replaceEscapeSequences("\\\""));
+    }
+
+    void splitString() const {
+        {
+            const auto l = ::splitString("test", ',');
+            ASSERT_EQUALS(1, l.size());
+            ASSERT_EQUALS("test", *l.cbegin());
+        }
+        {
+            const auto l = ::splitString("test,test", ';');
+            ASSERT_EQUALS(1, l.size());
+            ASSERT_EQUALS("test,test", *l.cbegin());
+        }
+        {
+            const auto l = ::splitString("test,test", ',');
+            ASSERT_EQUALS(2, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("test", *it);
+        }
+        {
+            const auto l = ::splitString("test,test,", ',');
+            ASSERT_EQUALS(3, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("", *it);
+        }
+        {
+            const auto l = ::splitString("test,,test", ',');
+            ASSERT_EQUALS(3, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("", *it++);
+            ASSERT_EQUALS("test", *it);
+        }
+        {
+            const auto l = ::splitString(",test,test", ',');
+            ASSERT_EQUALS(3, l.size());
+            auto it = l.cbegin();
+            ASSERT_EQUALS("", *it++);
+            ASSERT_EQUALS("test", *it++);
+            ASSERT_EQUALS("test", *it);
+        }
+    }
+
+    void as_const() const {
+        struct C {
+            bool written = false;
+            void f() {
+                written = true;
+            }
+            void f() const {}
+        };
+
+        {
+            C c;
+            c.f();
+            ASSERT(c.written);
+        }
+        {
+            C c;
+            utils::as_const(c).f();
+            ASSERT(!c.written);
+        }
+        {
+            C c;
+            C* cp = &c;
+            cp->f();
+            ASSERT(c.written);
+        }
+        {
+            C c;
+            C* cp = &c;
+            utils::as_const(cp)->f(); // (correctly) calls non-const version
+            ASSERT(c.written);
+        }
+    }
+
+    void memoize() const {
+        int count = 0;
+        auto f = [&count]() {
+            ++count;
+            return count;
+        };
+        const auto callF = utils::memoize([&]() {
+            return f();
+        });
+        ASSERT_EQUALS(0, count);
+        ASSERT_EQUALS(1, callF());
+        ASSERT_EQUALS(1, count);
+        ASSERT_EQUALS(1, callF());
+        ASSERT_EQUALS(1, count);
     }
 };
 

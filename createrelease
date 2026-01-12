@@ -5,18 +5,34 @@
 # Create release candidate
 # ========================
 #
+# Review trac roadmap, are tickets closed properly?
+# Only tickets that should be retargeted should be open.
+#
+# update cppcheck used in premium addon CI
+# create jira issue "CI: update cppcheck binary"
+# cd ~/cppchecksolutions/addon/tools && python3 ci-update-cppcheck.py
+#
+# check every isPremiumEnabled call: TODO write helper script
+# - every id should be in --errorlist
+#   git grep 'isPremiumEnabled[(]"' | sed 's/.*isPremiumEnabled[(]"//' | sed 's/".*//' | sort | uniq > ids1.txt
+#   ./cppcheck --errorlist | grep ' id="' | sed 's/.* id="//' | sed 's/".*//' | sort | uniq > ids2.txt
+#   diff -y ids1.txt ids2.txt
+# - premiumaddon: check coverage.py
+#   python3 coverage.py --id ; sort ids-*.txt | uniq > ~/cppcheck/ids3.txt
+#   diff -y ids2.txt ids3.txt
+#
 # Windows installer:
 # - ensure latest build was successful
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
 # self check, fix critical issues:
-# make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
-# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
+# make clean && make CXXOPTS=-O2 MATCHCOMPILER=yes -j4
+# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --suppress=normalCheckLevelMaxBranches --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
-# Update translations
-#   lupdate gui.pro
+# Generate lib/checkers.cpp (TODO the premium checkers should not be statically coded)
+# cd ~/cppchecksolutions/cppcheck && python3 tools/get_checkers.py > lib/checkers.cpp
 #
-# Update copyright year
+# Update copyright year TODO release script
 # git diff 2.8 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-20[12]./Copyright (C) 2007-2022/'
 # git diff | grep '^diff --git a/'
 #
@@ -26,18 +42,18 @@
 # Update AUTHORS using output from:
 # git log --format='%aN' 2.7..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
-# Create 2.8.x branch
-# git checkout -b 2.8.x ; git push -u origin 2.8.x
+# Update GUI translations
+# lupdate gui.pro
 #
-# Empty the releasenotes.txt in main branch
+# Create 2.18.x branch
+# git checkout -b 2.18.x ; git push -u origin 2.18.x
+#
+# Release notes:
+# - ensure safety critical issues are listed properly
+# - empty the releasenotes.txt in main branch
 #
 # Update version numbers in:
-# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
-# sed -i -r "s|2[.][0-9]+([.]99)*|2.9.0|" cmake/versions.cmake # version must have 3 parts.
-# sed -i -r "s/MINOR [0-9]+/MINOR 9/" lib/version.h
-# sed -i -r "s/2[.][0-9]+([.]99)*/2.9/" win_installer/productInfo.wxi
-# sed -i -r "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.9/" man/*.md
-# Ensure that "-rc1" is added in productInfo.wxi and lib/version.h
+# python3 tools/release-set-version.py 2.19.0
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # egrep "2\.[0-9]+" */*.h */*.cpp man/*.md | grep -v "test/test" | less
@@ -47,7 +63,6 @@
 #
 # Update the Makefile:
 # make dmake && ./dmake --release
-# Uppdatera CI så att dmake körs med --release
 # git commit -a -m "2.8: Updated Makefile"
 #
 # Ensure that CI is happy
@@ -67,17 +82,14 @@
 # git tag 2.8 ; git push --tags
 # ./createrelease 2.8
 #
-# copy msi from release-windows
+# copy msi from release-windows, install and test cppcheck
 # copy manual from build-manual
 #
 # Update download link on index.php main page
 #
-# Write Changelog
-# git log 2.11..2.12 > Changelog
-# <edit>
-#
 # Trac:
-# 1. Create ticket "2.12 safety cosmetic changes"
+# 1. Create ticket "2.18 safety cosmetic changes"
+#    git log --format=oneline 2.17.0..HEAD | egrep -v "^[0-9a-f]*[ ][ ]*([Ff]ix|fixed|Fixup|Fixes|refs)?[ ]*#*[0-9]+"
 # 2. Check priorities for all tickets in milestone. Should be: safety-*
 # 3. Create new milestone
 # 4. Close old milestone
@@ -91,13 +103,15 @@
 # ./build-cppcheck.sh
 #
 # run daca with new release
-# 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
-# 2. scp -i ../.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
+# 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and SERVER_VERSION
+# 2. scp -i ~/.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 #
 # Backup:
-# * trac: cd /var && nice tar -zcf /home/danielmarjamaki/trac.tar.gz trac-cppcheck
-# * git: git checkout -f && git checkout main && git pull && tar -zcf ~/cppchecksolutions/backups/2.12.0-git.tar.gz .git
-# * Changelog
+# * trac: cd /var && nice tar -cJf ~/trac.tar.xz trac-cppcheck/db/trac.db
+# * daca: cd /var && nice tar -cJf ~/daca.tar.xz daca@home
+# * git: git checkout -f && git checkout main && git pull && tar -cJf git.tar.xz .git
+# * git log 2.16.0..2.17.0 > Changelog
+# * mkdir out && python3 ~/cppchecksolutions/release/getWorkflowAndIssueLogs.py -r danmar/cppcheck -t 2.15.0 -p out
 
 # Folder/tag to use
 folder=$1
@@ -127,8 +141,8 @@ rm $releasename.*
 cd ..
 
 # Generate version.txt
-make -j4
-rm cppcheck.cfg
+make -j12
+rm -f cppcheck.cfg
 ./cppcheck --version > upload/version.txt
 
 cd ~/cppcheck/upload
@@ -144,7 +158,7 @@ cp -R ~/cppcheck/cfg .
 cp -R ~/cppcheck/addons .
 cp -R ~/cppcheck/platforms .
 cd ~/cppcheck
-make clean ; make -j4 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes
+make clean ; make -j12 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes CXXOPTS=-O2
 mv cppcheck ~/.cppcheck/cppcheck-$tag
 
 git checkout main

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QList>
+#include <QMap>
 #include <QSettings>
 #include <QStringList>
 #include <QVariant>
@@ -55,7 +56,7 @@ QString toFilterString(const QMap<QString,QString>& filters, bool addAllSupporte
 
     if (addAllSupported) {
         entries << QCoreApplication::translate("toFilterString", "All supported files (%1)")
-            .arg(QStringList(filters.values()).join(" "));
+            .arg(filters.values().join(" "));
     }
 
     if (addAll) {

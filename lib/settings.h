@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,16 @@
 #define settingsH
 //---------------------------------------------------------------------------
 
+#include "addoninfo.h"
 #include "config.h"
 #include "errortypes.h"
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
-#include "suppressions.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <atomic>
-#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <set>
@@ -39,8 +38,20 @@
 #include <tuple>
 #include <vector>
 #include <unordered_set>
+#include <utility>
 
-enum class SHOWTIME_MODES;
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
+#include <cstdio>
+#endif
+
+#ifdef HAVE_RULES
+#include <memory>
+
+class Regex;
+#endif
+
+struct Suppressions;
+enum class ShowTime : std::uint8_t;
 namespace ValueFlow {
     class Value;
 }
@@ -62,16 +73,16 @@ public:
         mFlags = 0xFFFFFFFF;
     }
     bool isEnabled(T flag) const {
-        return (mFlags & (1U << (uint32_t)flag)) != 0;
+        return (mFlags & (1U << static_cast<uint32_t>(flag))) != 0;
     }
     void enable(T flag) {
-        mFlags |= (1U << (uint32_t)flag);
+        mFlags |= (1U << static_cast<uint32_t>(flag));
     }
     void enable(SimpleEnableGroup<T> group) {
         mFlags |= group.intValue();
     }
     void disable(T flag) {
-        mFlags &= ~(1U << (uint32_t)flag);
+        mFlags &= ~(1U << static_cast<uint32_t>(flag));
     }
     void disable(SimpleEnableGroup<T> group) {
         mFlags &= ~(group.intValue());
@@ -90,6 +101,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
+// NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)
 class CPPCHECKLIB WARN_UNUSED Settings {
 private:
 
@@ -99,22 +111,30 @@ private:
 public:
     Settings();
 
-    void loadCppcheckCfg();
+    static std::string loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug = false);
+
+    static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
+
+    /** @brief Report type */
+    ReportType reportType = ReportType::normal;
 
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
 
+    /** @brief the loaded addons infos */
+    std::vector<AddonInfo> addonInfos;
+
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;
+
+    /** @brief Analyze all configuration in Visual Studio project. */
+    bool analyzeAllVsConfigs{true};
 
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 
     /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
-
-    /** @brief check all configurations (false if -D or --max-configs is used */
-    bool checkAllConfigurations = true;
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration{};
@@ -134,7 +154,7 @@ public:
     std::string checkersReportFilename;
 
     /** @brief check unknown function return values */
-    std::set<std::string> checkUnknownFunctionReturn;
+    std::set<std::string> checkUnknownFunctionReturn; // TODO: move to Library?
 
     /** Check unused/uninstantiated templates */
     bool checkUnusedTemplates = true;
@@ -148,8 +168,11 @@ public:
     /** Use clang-tidy */
     bool clangTidy{};
 
+    /** Custom clang-tidy executable */
+    std::string clangTidyExecutable = "clang-tidy";
+
     /** Internal: Clear the simplecpp non-existing include cache */
-    bool clearIncludeCache{};
+    bool clearIncludeCache{}; // internal
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -160,8 +183,35 @@ public:
     /** cppcheck.cfg: About text */
     std::string cppcheckCfgAbout;
 
+    /** @brief check Emacs marker to detect extension-less and *.h files as C++ */
+    bool cppHeaderProbe{};
+
     /** @brief Are we running from DACA script? */
     bool daca{};
+
+    /** @brief Is --debug-ast given? */
+    bool debugast{};
+
+    /** @brief Is --debug-clang-output given? */
+    bool debugClangOutput{};
+
+    /** @brief Is --debug-ignore given? */
+    bool debugignore{};
+
+    /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
+    bool debuglookup{};
+
+    /** @brief Internal: Is --debug-lookup=addon given? */
+    bool debuglookupAddon{};
+
+    /** @brief Internal: Is --debug-lookup=config given? */
+    bool debuglookupConfig{};
+
+    /** @brief Internal: Is --debug-lookup=library given? */
+    bool debuglookupLibrary{};
+
+    /** @brief Internal: Is --debug-lookup=platform given? */
+    bool debuglookupPlatform{};
 
     /** @brief Is --debug-normal given? */
     bool debugnormal{};
@@ -169,25 +219,42 @@ public:
     /** @brief Is --debug-simplified given? */
     bool debugSimplified{};
 
+    /** @brief Is --debug-symdb given? */
+    bool debugsymdb{};
+
     /** @brief Is --debug-template given? */
     bool debugtemplate{};
+
+    /** @brief Is --debug-valueflow given? */
+    bool debugvalueflow{};
 
     /** @brief Is --debug-warnings given? */
     bool debugwarnings{};
 
     /** @brief Is --dump given? */
     bool dump{};
-    std::string dumpFile;
 
-    enum Language {
-        None, C, CPP
-    };
+    /** @brief Do not filter duplicated errors. */
+    bool emitDuplicates{};
 
-    /** @brief Name of the language that is enforced. Empty per default. */
-    Language enforcedLang{};
-
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
     bool exceptionHandling{};
+
+    FILE* exceptionOutput = stdout;
+#endif
+
+    enum class ExecutorType : std::uint8_t
+    {
+#ifdef HAS_THREADING_MODEL_THREAD
+        Thread,
+#endif
+#ifdef HAS_THREADING_MODEL_FORK
+        Process
+#endif
+    };
+
+    ExecutorType executor;
 
     // argv[0]
     std::string exename;
@@ -219,12 +286,38 @@ public:
     /** Library */
     Library library;
 
+#ifdef HAS_THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage{};
+#endif
 
-    /** @brief Maximum number of configurations to check before bailing.
-        Default is 12. (--max-configs=N) */
-    int maxConfigs = 12;
+    std::string manualUrl{"https://cppcheck.sourceforge.io/manual.pdf"};
+
+    /** --max-configs value */
+    int maxConfigsOption = 0; // "Not Assigned" value
+
+    /** max configs from --project option */
+    int maxConfigsProject = 0; // "Not Assigned" value
+
+    static const int maxConfigsNotAssigned;
+    static const int maxConfigsDefault;
+
+    bool isMaxConfigsAssigned() const {
+        return maxConfigsOption != maxConfigsNotAssigned || maxConfigsProject != maxConfigsNotAssigned;
+    }
+
+    /** @brief Maximum number of configurations to check before bailing. */
+    int getMaxConfigs() const {
+        if (force)
+            return 0x7fffffff;
+        if (maxConfigsOption != maxConfigsNotAssigned)
+            return maxConfigsOption;
+        if (maxConfigsProject != maxConfigsNotAssigned)
+            return maxConfigsProject;
+        if (!userDefines.empty())
+            return 1;
+        return maxConfigsDefault;
+    }
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth = 2;
@@ -232,36 +325,31 @@ public:
     /** @brief max template recursion */
     int maxTemplateRecursion = 100;
 
-    /** @brief suppress exitcode */
-    Suppressions nofail;
-
-    /** @brief suppress message (--suppressions) */
-    Suppressions nomsg;
-
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
-    cppcheck::Platform platform;
+    enum class OutputFormat : std::uint8_t {text, plist, sarif, xml};
+    OutputFormat outputFormat = OutputFormat::text;
 
-    /** @brief Experimental: --performance-valueflow-max-time=T */
-    int performanceValueFlowMaxTime = -1;
+    Platform platform;
 
-    /** @brief --performance-valueflow-max-if-count=C */
-    int performanceValueFlowMaxIfCount;
-
-    /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
-    int performanceValueFlowMaxSubFunctionArgs;
+    /** @brief pid of cppcheck. Intention is that this is set in the main process. */
+    int pid; // internal
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
 
+    /** @brief Are we Cppcheck Premium */
+    bool premium{};
+
     /** @brief Extra arguments for Cppcheck Premium addon */
     std::string premiumArgs;
 
+    /** Is checker id enabled by premiumArgs */
+    bool isPremiumEnabled(const char id[]) const;
+
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly{};
-
-    ImportProject project;
 
     /** @brief Is --quiet given? */
     bool quiet{};
@@ -272,21 +360,31 @@ public:
     /** @brief --report-progress */
     int reportProgress{-1};
 
+#ifdef HAVE_RULES
     /** Rule */
     struct CPPCHECKLIB Rule {
         std::string tokenlist = "normal"; // use normal tokenlist
         std::string pattern;
         std::string id = "rule"; // default id
         std::string summary;
-        Severity::SeverityType severity = Severity::style; // default severity
+        Severity severity = Severity::style; // default severity
+        std::shared_ptr<Regex> regex;
     };
 
-#ifdef HAVE_RULES
     /**
      * @brief Extra rules
      */
     std::list<Rule> rules;
 #endif
+
+    /**
+     * @brief Safety certified behavior
+     * Show checkers report when Cppcheck finishes
+     * Make cppcheck checking more strict about critical errors
+     * - returns nonzero if there is critical errors
+     * - a critical error id is not suppressed (by mistake?) with glob pattern
+     */
+    bool safety = false;
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     struct CPPCHECKLIB SafeChecks {
@@ -331,12 +429,15 @@ public:
 
     SafeChecks safeChecks;
 
-    SimpleEnableGroup<Severity::SeverityType> severity;
+    /** @brief the files we successfully loaded settings from */
+    std::vector<std::string> settingsFiles;
+
+    SimpleEnableGroup<Severity> severity;
     SimpleEnableGroup<Certainty> certainty;
     SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
-    SHOWTIME_MODES showtime{};
+    ShowTime showtime{};
 
     /** Struct contains standards settings */
     Standards standards;
@@ -355,6 +456,9 @@ public:
     /** @brief The maximum time in seconds for the typedef simplification */
     std::size_t typedefMaxTime{};
 
+    /** @brief Error IDs which should not be reported as unmatchedSuppression */
+    std::vector<std::string> unmatchedSuppressionFilters;
+
     /** @brief defines given by the user */
     std::string userDefines;
 
@@ -364,17 +468,48 @@ public:
     /** @brief forced includes given by the user */
     std::list<std::string> userIncludes;
 
-    /** @brief the maximum iterations of valueflow (--valueflow-max-iterations=T) */
-    std::size_t valueFlowMaxIterations = 4;
+    // TODO: adjust all options so 0 means "disabled" and -1 "means "unlimited"
+    struct ValueFlowOptions
+    {
+        /** @brief the maximum iterations to execute */
+        std::size_t maxIterations = 4;
+
+        /** @brief maximum numer if-branches */
+        int maxIfCount = -1;
+
+        /** @brief maximum number of sets of arguments to pass to subfuncions */
+        int maxSubFunctionArgs = 256;
+
+        /** @brief Experimental: maximum execution time */
+        int maxTime = -1;
+
+        /** @brief Control if condition expression analysis is performed */
+        bool doConditionExpressionAnalysis = true;
+
+        /** @brief Maximum performed for-loop count */
+        int maxForLoopCount = 10000;
+
+        /** @brief Maximum performed forward branches */
+        int maxForwardBranches = -1;
+
+        /** @brief Maximum performed alignof recursion */
+        int maxAlignOfRecursion = 100;
+
+        /** @brief Maximum performed sizeof recursion */
+        int maxSizeOfRecursion = 100;
+
+        /** @brief Maximum expression varid depth */
+        int maxExprVarIdDepth = 4;
+    };
+
+    /** @brief The ValueFlow options */
+    ValueFlowOptions vfOptions;
 
     /** @brief Is --verbose given? */
     bool verbose{};
 
-    /** @brief write XML results (--xml) */
-    bool xml{};
-
     /** @brief XML version (--xml-version=..) */
-    int xml_version = 2;
+    int xml_version = 2; // TODO: integrate into outputFormat enum?
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
@@ -431,11 +566,21 @@ public:
         return jobs == 1;
     }
 
-    void setCheckLevelExhaustive();
-    void setCheckLevelNormal();
+    enum class CheckLevel : std::uint8_t {
+        reduced,
+        normal,
+        exhaustive
+    };
+    CheckLevel checkLevel = CheckLevel::exhaustive;
+
+    void setCheckLevel(CheckLevel level);
+
+    static ExecutorType defaultExecutor();
+
+    static bool unusedFunctionOnly();
 
 private:
-    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);
+    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
 };
 

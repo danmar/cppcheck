@@ -136,9 +136,6 @@
     <ClCompile Include="testio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testboost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testinternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -220,10 +217,7 @@
     <ClCompile Include="testclangimport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\cli\cppcheckexecutorseh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cli\cppcheckexecutorsig.cpp">
+    <ClCompile Include="..\cli\signalhandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\cli\executor.cpp">
@@ -259,6 +253,33 @@
     <ClCompile Include="testcheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testfilesettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testprogrammemory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="teststandards.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cli\sehwrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testexecutor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testvfvalue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\frontend\frontend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testfrontend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testregex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="options.h">
@@ -282,10 +303,7 @@
     <ClInclude Include="..\cli\cppcheckexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\cli\cppcheckexecutorseh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\cli\cppcheckexecutorsig.h">
+    <ClInclude Include="..\cli\signalhandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cli\executor.h">
@@ -304,6 +322,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cli\sehwrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\frontend\frontend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

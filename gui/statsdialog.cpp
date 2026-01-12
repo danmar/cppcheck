@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "projectfile.h"
 #include "showtypes.h"
 
+#include <algorithm>
+
 #include "ui_statsdialog.h"
 
 #include <QApplication>
@@ -29,10 +31,12 @@
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFont>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMimeData>
 #include <QPageSize>
+#include <QPlainTextEdit>
 #include <QPrinter>
 #include <QPushButton>
 #include <QStringList>
@@ -58,10 +62,6 @@
 #include <QRegularExpression>
 #include <QTextStream>
 #include <QValueAxis>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-QT_CHARTS_USE_NAMESPACE
-#endif
 
 static QLineSeries *numberOfReports(const QString &fileName, const QString &severity);
 static QChartView *createChart(const QString &statsFile, const QString &tool);
@@ -111,8 +111,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         }
         mUI->mLblHistoryFile->setText(tr("File: ") + (statsFile.isEmpty() ? tr("No cppcheck build dir") : statsFile));
         if (!statsFile.isEmpty()) {
-            QChartView *chartView;
-            chartView = createChart(statsFile, "cppcheck");
+            QChartView *chartView = createChart(statsFile, "cppcheck");
             mUI->mTabHistory->layout()->addWidget(chartView);
             if (projectFile->getClangAnalyzer()) {
                 chartView = createChart(statsFile, CLANG_ANALYZER);
@@ -146,7 +145,7 @@ void StatsDialog::setNumberOfFilesScanned(int num)
 void StatsDialog::setScanDuration(double seconds)
 {
     // Factor the duration into units (days/hours/minutes/seconds)
-    int secs = seconds;
+    int secs = static_cast<int>(seconds);
     const int days = secs / (24 * 60 * 60);
     secs -= days * (24 * 60 * 60);
     const int hours = secs / (60 * 60);
@@ -196,7 +195,7 @@ void StatsDialog::pdfExport()
                          .arg(tr("Information messages"))
                          .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
-    QString fileName = QFileDialog::getSaveFileName((QWidget*)nullptr, tr("Export PDF"), QString(), "*.pdf");
+    QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Export PDF"), QString(), "*.pdf");
     if (QFileInfo(fileName).suffix().isEmpty()) {
         fileName.append(".pdf");
     }
@@ -361,7 +360,7 @@ void StatsDialog::copyToClipboard()
 
     const QString htmlSummary = htmlSettings + htmlPrevious + htmlStatistics;
 
-    QMimeData *mimeData = new QMimeData();
+    auto *mimeData = new QMimeData();
     mimeData->setText(textSummary);
     mimeData->setHtml(htmlSummary);
     clipboard->setMimeData(mimeData);
@@ -383,14 +382,14 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
 #ifdef QT_CHARTS_LIB
 QChartView *createChart(const QString &statsFile, const QString &tool)
 {
-    QChart *chart = new QChart;
+    auto *chart = new QChart;
     chart->addSeries(numberOfReports(statsFile, tool + "-error"));
     chart->addSeries(numberOfReports(statsFile, tool + "-warning"));
     chart->addSeries(numberOfReports(statsFile, tool + "-style"));
     chart->addSeries(numberOfReports(statsFile, tool + "-performance"));
     chart->addSeries(numberOfReports(statsFile, tool + "-portability"));
 
-    QDateTimeAxis *axisX = new QDateTimeAxis;
+    auto *axisX = new QDateTimeAxis;
     axisX->setTitleText("Date");
     chart->addAxis(axisX, Qt::AlignBottom);
 
@@ -398,7 +397,7 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
         s->attachAxis(axisX);
     }
 
-    QValueAxis *axisY = new QValueAxis;
+    auto *axisY = new QValueAxis;
     axisY->setLabelFormat("%i");
     axisY->setTitleText("Count");
     chart->addAxis(axisY, Qt::AlignLeft);
@@ -406,10 +405,10 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
     qreal maxY = 0;
     for (QAbstractSeries *s : chart->series()) {
         s->attachAxis(axisY);
-        if (const QLineSeries *ls = dynamic_cast<const QLineSeries*>(s)) {
+        if (const auto *ls = dynamic_cast<const QLineSeries*>(s)) {
             for (QPointF p : ls->points()) {
-                if (p.y() > maxY)
-                    maxY = p.y();
+                // cppcheck-suppress useStlAlgorithm - this would reduce the readability of the code
+                maxY = std::max(p.y(), maxY);
             }
         }
     }
@@ -418,14 +417,14 @@ QChartView *createChart(const QString &statsFile, const QString &tool)
     //chart->createDefaultAxes();
     chart->setTitle(tool);
 
-    QChartView *chartView = new QChartView(chart);
+    auto *chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
     return chartView;
 }
 
 QLineSeries *numberOfReports(const QString &fileName, const QString &severity)
 {
-    QLineSeries *series = new QLineSeries();
+    auto *series = new QLineSeries();
     series->setName(severity);
     QFile f(fileName);
     if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {

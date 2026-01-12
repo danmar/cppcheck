@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include <QFont>
 #include <QObject>
 #include <QPushButton>
-#include <QString>
 
 class QWidget;
 
@@ -37,7 +36,7 @@ public:
     explicit SelectColorButton(QWidget* parent);
 
     void setColor(const QColor& color);
-    const QColor& getColor();
+    const QColor& getColor() const;
 
 signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
@@ -58,7 +57,7 @@ public:
     explicit SelectFontWeightCombo(QWidget* parent);
 
     void setWeight(QFont::Weight weight);
-    const QFont::Weight& getWeight();
+    const QFont::Weight& getWeight() const;
 
 signals:
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code

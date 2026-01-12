@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,13 +30,10 @@
 #include <QDir>
 #include <QIODevice>
 #include <QLatin1String>
+#include <QRegularExpression>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QStringRef>
-#endif
 
 ProjectFile *ProjectFile::mActiveProject;
 
@@ -73,9 +70,10 @@ void ProjectFile::clear()
     mSuppressions.clear();
     mAddons.clear();
     mClangAnalyzer = mClangTidy = false;
-    mAnalyzeAllVsConfigs = false;
+    mAnalyzeAllVsConfigs = false; // TODO: defaults to true if loading a GUI project via CLI
     mCheckHeaders = true;
     mCheckUnusedTemplates = true;
+    mInlineSuppression = true;
     mMaxCtuDepth = settings.maxCtuDepth;
     mMaxTemplateRecursion = settings.maxTemplateRecursion;
     mCheckUnknownFunctionReturn.clear();
@@ -88,6 +86,7 @@ void ProjectFile::clear()
     mBughunting = false;
     mCertIntPrecision = 0;
     mCodingStandards.clear();
+    mPremiumLicenseFile.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -142,8 +141,17 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == QString(CppcheckXml::CheckUnusedTemplatesElementName))
                 mCheckUnusedTemplates = readBool(xmlReader);
 
+            if (xmlReader.name() == QString(CppcheckXml::InlineSuppression))
+                mInlineSuppression = readBool(xmlReader);
+
             if (xmlReader.name() == QString(CppcheckXml::CheckLevelExhaustiveElementName))
                 mCheckLevel = CheckLevel::exhaustive;
+
+            if (xmlReader.name() == QString(CppcheckXml::CheckLevelNormalElementName))
+                mCheckLevel = CheckLevel::normal;
+
+            if (xmlReader.name() == QString(CppcheckXml::CheckLevelReducedElementName))
+                mCheckLevel = CheckLevel::reduced;
 
             // Find include directory from inside project element
             if (xmlReader.name() == QString(CppcheckXml::IncludeDirElementName))
@@ -220,6 +228,8 @@ bool ProjectFile::read(const QString &filename)
                 readStringList(mCodingStandards, xmlReader, CppcheckXml::CodingStandardElementName);
             if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
                 mCertIntPrecision = readInt(xmlReader, 0);
+            if (xmlReader.name() == QString(CppcheckXml::LicenseFileElementName))
+                mPremiumLicenseFile = readString(xmlReader);
             if (xmlReader.name() == QString(CppcheckXml::ProjectNameElementName))
                 mProjectName = readString(xmlReader);
 
@@ -248,7 +258,7 @@ bool ProjectFile::read(const QString &filename)
     return projectTagFound;
 }
 
-void ProjectFile::readRootPath(QXmlStreamReader &reader)
+void ProjectFile::readRootPath(const QXmlStreamReader &reader)
 {
     QXmlStreamAttributes attribs = reader.attributes();
     QString name = attribs.value(QString(), CppcheckXml::RootPathNameAttrib).toString();
@@ -388,10 +398,9 @@ QString ProjectFile::readString(QXmlStreamReader &reader)
 
 void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
 
@@ -426,10 +435,9 @@ void ProjectFile::readIncludeDirs(QXmlStreamReader &reader)
 
 void ProjectFile::readDefines(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read define-elements
@@ -463,10 +471,9 @@ void ProjectFile::readDefines(QXmlStreamReader &reader)
 
 void ProjectFile::readCheckPaths(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
 
@@ -501,10 +508,9 @@ void ProjectFile::readCheckPaths(QXmlStreamReader &reader)
 
 void ProjectFile::readExcludes(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read exclude-elements
@@ -547,9 +553,8 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
 
 void ProjectFile::readVsConfigurations(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
@@ -611,14 +616,13 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
 
 void ProjectFile::readSuppressions(QXmlStreamReader &reader)
 {
-    QXmlStreamReader::TokenType type;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
             if (reader.name().toString() == CppcheckXml::SuppressionElementName) {
-                Suppressions::Suppression suppression;
+                SuppressionList::Suppression suppression;
                 if (reader.attributes().hasAttribute(QString(),"fileName"))
                     suppression.fileName = reader.attributes().value(QString(),"fileName").toString().toStdString();
                 if (reader.attributes().hasAttribute(QString(),"lineNumber"))
@@ -658,9 +662,8 @@ void ProjectFile::readSuppressions(QXmlStreamReader &reader)
 
 void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
 {
-    QXmlStreamReader::TokenType type;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
@@ -693,10 +696,9 @@ void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
 
 void ProjectFile::readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[])
 {
-    QXmlStreamReader::TokenType type;
     bool allRead = false;
     do {
-        type = reader.readNext();
+        QXmlStreamReader::TokenType type = reader.readNext();
         switch (type) {
         case QXmlStreamReader::StartElement:
             // Read library-elements
@@ -764,12 +766,27 @@ void ProjectFile::setPlatform(const QString &platform)
     mPlatform = platform;
 }
 
-void ProjectFile::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+QList<SuppressionList::Suppression> ProjectFile::getCheckingSuppressions() const
+{
+    const QRegularExpression re1("^[a-zA-Z0-9_\\-]+/.*");
+    const QRegularExpression re2("^[^/]+$");
+    QList<SuppressionList::Suppression> result;
+    for (SuppressionList::Suppression suppression : mSuppressions) {
+        if (re1.match(suppression.fileName.c_str()).hasMatch() || re2.match(suppression.fileName.c_str()).hasMatch()) {
+            if (suppression.fileName[0] != '*')
+                suppression.fileName = QFileInfo(mFilename).absolutePath().toStdString() + "/" + suppression.fileName;
+        }
+        result << suppression;
+    }
+    return result;
+}
+
+void ProjectFile::setSuppressions(const QList<SuppressionList::Suppression> &suppressions)
 {
     mSuppressions = suppressions;
 }
 
-void ProjectFile::addSuppression(const Suppressions::Suppression &suppression)
+void ProjectFile::addSuppression(const SuppressionList::Suppression &suppression)
 {
     mSuppressions.append(suppression);
 }
@@ -787,11 +804,6 @@ void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
 void ProjectFile::setCheckLevel(ProjectFile::CheckLevel checkLevel)
 {
     mCheckLevel = checkLevel;
-}
-
-bool ProjectFile::isCheckLevelExhaustive() const
-{
-    return mCheckLevel == CheckLevel::exhaustive;
 }
 
 void ProjectFile::setWarningTags(std::size_t hash, const QString& tags)
@@ -865,6 +877,10 @@ bool ProjectFile::write(const QString &filename)
     xmlWriter.writeCharacters(bool_to_string(mCheckUnusedTemplates));
     xmlWriter.writeEndElement();
 
+    xmlWriter.writeStartElement(CppcheckXml::InlineSuppression);
+    xmlWriter.writeCharacters(bool_to_string(mInlineSuppression));
+    xmlWriter.writeEndElement();
+
     xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);
     xmlWriter.writeCharacters(QString::number(mMaxCtuDepth));
     xmlWriter.writeEndElement();
@@ -932,7 +948,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mSuppressions.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::SuppressionsElementName);
-        for (const Suppressions::Suppression &suppression : mSuppressions) {
+        for (const SuppressionList::Suppression &suppression : mSuppressions) {
             xmlWriter.writeStartElement(CppcheckXml::SuppressionElementName);
             if (!suppression.fileName.empty())
                 xmlWriter.writeAttribute("fileName", QString::fromStdString(suppression.fileName));
@@ -992,9 +1008,19 @@ bool ProjectFile::write(const QString &filename)
         }
     }
 
-    if (mCheckLevel == CheckLevel::exhaustive) {
+    switch (mCheckLevel) {
+    case CheckLevel::reduced:
+        xmlWriter.writeStartElement(CppcheckXml::CheckLevelReducedElementName);
+        xmlWriter.writeEndElement();
+        break;
+    case CheckLevel::normal:
+        xmlWriter.writeStartElement(CppcheckXml::CheckLevelNormalElementName);
+        xmlWriter.writeEndElement();
+        break;
+    case CheckLevel::exhaustive:
         xmlWriter.writeStartElement(CppcheckXml::CheckLevelExhaustiveElementName);
         xmlWriter.writeEndElement();
+        break;
     }
 
     // Cppcheck Premium
@@ -1017,6 +1043,12 @@ bool ProjectFile::write(const QString &filename)
     if (!mProjectName.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::ProjectNameElementName);
         xmlWriter.writeCharacters(mProjectName);
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mPremiumLicenseFile.isEmpty()) {
+        xmlWriter.writeStartElement(CppcheckXml::LicenseFileElementName);
+        xmlWriter.writeCharacters(mPremiumLicenseFile);
         xmlWriter.writeEndElement();
     }
 
@@ -1123,6 +1155,9 @@ void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const
 
 QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
 {
+    if (QFile(addon).exists())
+        return addon;
+
     if (!filesDir.endsWith("/"))
         filesDir += "/";
 

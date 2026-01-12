@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,21 +21,21 @@
 
 #include "executor.h"
 
-#include <cstddef>
-#include <map>
-#include <string>
+#include <list>
 
 class ErrorLogger;
 class Settings;
 class CppCheck;
-class Suppressions;
+struct Suppressions;
+struct FileSettings;
+class FileWithDetails;
 
 class SingleExecutor : public Executor
 {
 public:
-    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     SingleExecutor(const SingleExecutor &) = delete;
-    void operator=(const SingleExecutor &) = delete;
+    SingleExecutor& operator=(const SingleExecutor &) = delete;
 
     unsigned int check() override;
 

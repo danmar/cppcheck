@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QString>
 #include <QStringList>
 #include <QVBoxLayout>
 #include <QtGlobal>
@@ -72,10 +73,10 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     mStyleIncoming(newStyle),
     mStyleOutgoing(newStyle)
 {
-    QVBoxLayout *vboxMain = new QVBoxLayout(this);
-    QHBoxLayout *hboxEdit = new QHBoxLayout();
+    auto *vboxMain = new QVBoxLayout(this);
+    auto *hboxEdit = new QHBoxLayout();
     // Color/Weight controls
-    QFormLayout *flEditControls = new QFormLayout();
+    auto *flEditControls = new QFormLayout();
     mBtnWidgetColorFG = new SelectColorButton(this);
     flEditControls->addRow(QObject::tr("Editor Foreground Color"),
                            mBtnWidgetColorFG);
@@ -129,11 +130,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     mSampleEditor = new CodeEditor(this);
     QFont sampleFont("Monospace");
     QFontMetrics fm(sampleFont);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     mSampleEditor->setMinimumWidth(fm.horizontalAdvance(QString(40, 'W')));
-#else
-    mSampleEditor->setMinimumWidth(fm.width(QString(40, 'W')));
-#endif
     // designate highlight, errors, and symbols
     mSampleEditor->setError(mSampleDocument, mErrLineNum, mErrSymbolsList);
     // End Controls
@@ -141,7 +138,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     vboxMain->addLayout(hboxEdit);
 
     // Default Controls
-    QHBoxLayout *hboxDefaultControls = new QHBoxLayout();
+    auto *hboxDefaultControls = new QHBoxLayout();
     mBtnDefaultLight = new QPushButton(QObject::tr("Set to Default Light"),
                                        this);
     mBtnDefaultDark  = new QPushButton(QObject::tr("Set to Default Dark"),
@@ -153,7 +150,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     vboxMain->addLayout(hboxDefaultControls);
     vboxMain->addStretch(2);
     // dialog controls
-    QDialogButtonBox *dBtnBox = new QDialogButtonBox(
+    auto *dBtnBox = new QDialogButtonBox(
         QDialogButtonBox::Cancel |
         QDialogButtonBox::Ok |
         QDialogButtonBox::Reset);
@@ -234,7 +231,7 @@ void StyleEditDialog::updateStyle()
     mSampleEditor->setStyle(mStyleOutgoing);
 }
 
-CodeEditorStyle StyleEditDialog::getStyle()
+CodeEditorStyle StyleEditDialog::getStyle() const
 {
     return mStyleOutgoing;
 }

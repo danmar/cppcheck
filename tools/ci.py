@@ -39,10 +39,12 @@ def gitpush():
 
 
 def iconv(filename):
-    p = subprocess.Popen(['file', '-i', filename],
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    comm = p.communicate()
-    if 'charset=iso-8859-1' in comm[0]:
+    with subprocess.Popen(['file', '-i', filename],
+                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
+        # TODO: handle p.returncode?
+        stdout, _ = p.communicate()
+    if 'charset=iso-8859-1' in stdout:
+        # TODO: handle exitcode?
         subprocess.call(
             ["iconv", filename, "--from=ISO-8859-1", "--to=UTF-8", "-o", filename])
 
@@ -51,14 +53,19 @@ def iconv(filename):
 def generate_webreport():
     for filename in glob.glob('*/*.cpp'):
         iconv(filename)
+    # TODO: handle exitcode?
     subprocess.call(
         ["git", "commit", "-a", "-m", '"automatic conversion from iso-8859-1 formatting to utf-8"'])
     gitpush()
 
+    # TODO: handle exitcode?
     subprocess.call(["rm", "-rf", "devinfo"])
+    # TODO: handle exitcode?
     subprocess.call(['nice', "./webreport.sh"])
     upload('-r devinfo', 'htdocs/')
+    # TODO: handle exitcode?
     subprocess.call(["make", "clean"])
+    # TODO: handle exitcode?
     subprocess.call(["rm", "-rf", "devinfo"])
 
 

@@ -2,10 +2,12 @@
 // Test library configuration for std.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/std.c
+// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --inline-suppr test/cfg/std.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
+
+// cppcheck-suppress-file valueFlowBailout
 
 #include <string.h>
 #include <stdio.h>
@@ -22,14 +24,19 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <time.h>
 #include <stdbool.h>
-#include <stdint.h>
 #ifndef __STDC_NO_THREADS__
 #include <threads.h>
 #endif
 #include <inttypes.h>
 #include <float.h>
 #include <stdarg.h>
-#include <sys/types.h>
+#include <assert.h>
+#include <alloca.h>
+#include <locale.h>
+#include <signal.h>
+#include <complex.h>
+#include <math.h>
+#include <stddef.h>
 
 size_t invalidFunctionArgStr_wcslen(void)
 {
@@ -185,6 +192,7 @@ size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size
 void bufferAccessOutOfBounds(void)
 {
     char a[5];
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fgets(a,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
     fgets(a,6,stdin);
@@ -202,8 +210,10 @@ void bufferAccessOutOfBounds(void)
     // cppcheck-suppress bufferAccessOutOfBounds
     // TODO cppcheck-suppress redundantCopy
     strcpy(a, "abcde");
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress bufferAccessOutOfBounds
     strcpy_s(a, 10, "abcdefghij");
+#endif
     // TODO cppcheck-suppress redundantCopy
     // cppcheck-suppress terminateStrncpy
     strncpy(a,"abcde",5);
@@ -215,6 +225,7 @@ void bufferAccessOutOfBounds(void)
     strncpy(a,"a",6);
     // TODO cppcheck-suppress redundantCopy
     strncpy(a,"abcdefgh",4);
+#ifdef __STDC_LIB_EXT1__
     // valid call
     strncpy_s(a,5,"abcd",5);
     // string will be truncated, error is returned, but no buffer overflow
@@ -228,6 +239,7 @@ void bufferAccessOutOfBounds(void)
     strncat_s(a,10,"1",2);
     // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,5,"1",5);
+#endif
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
     fread(a,1,6,stdin);
@@ -236,8 +248,10 @@ void bufferAccessOutOfBounds(void)
     fread(a,1,6,stdout);
 
     char * pAlloc1 = aligned_alloc(8, 16);
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 16);
     // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 17);
     free(pAlloc1);
 }
@@ -317,17 +331,30 @@ void bufferAccessOutOfBounds_libraryDirectionConfiguration(void)
     arr[c] = 'x';
 }
 
+void internalError_libraryDirectionConfiguration(char* str) { // #12824
+    const char* s = str;
+    char* end = str;
+    if (1) {
+        // cppcheck-suppress unreadVariable
+        unsigned long val = strtoul(&s[1], &end, 10);
+    }
+}
+
 void arrayIndexOutOfBounds()
 {
     char * pAlloc1 = aligned_alloc(8, 16);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc1[15] = '\0';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc1[16] = '1';
     free(pAlloc1);
 
     char * pAlloc2 = malloc(9);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc2[8] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc2[9] = 'a';
 
     // #1379
@@ -344,14 +371,11 @@ void arrayIndexOutOfBounds()
     free(pAlloc2);
 
     char * pAlloc3 = calloc(2,3);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc3[5] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc3[6] = 1;
-    // cppcheck-suppress memleakOnRealloc
-    pAlloc3 = reallocarray(pAlloc3, 3,3);
-    pAlloc3[8] = 'a';
-    // cppcheck-suppress arrayIndexOutOfBounds
-    pAlloc3[9] = 1;
     free(pAlloc3);
 }
 
@@ -401,10 +425,12 @@ void nullpointer(int value)
     puts(0);
     // cppcheck-suppress nullPointer
     fp=fopen(0,0);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
     fp = 0;
     // No FP
     fflush(0); // If stream is a null pointer, all streams are flushed.
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fp = freopen(0,"abc",stdin);
     fclose(fp);
     fp = NULL;
@@ -418,8 +444,10 @@ void nullpointer(int value)
     frexp(1.0,0);
     // cppcheck-suppress nullPointer
     fsetpos(0,0);
+#ifdef _WIN32 // not available on non-Windows compilers
     // cppcheck-suppress nullPointer
     itoa(123,0,10);
+#endif
     putchar(0);
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
@@ -465,24 +493,30 @@ void nullpointer(int value)
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress nullPointer
     wcscmp(0,0);
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress nullPointer
     strcpy_s(0,1,1);
     // cppcheck-suppress nullPointer
     strcpy_s(1,1,0);
+#endif
     // cppcheck-suppress nullPointer
     strncpy(0,0,1);
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress nullPointer
     strncpy_s(0,1,1,1);
     // cppcheck-suppress nullPointer
     strncpy_s(1,1,0,1);
+#endif
     // cppcheck-suppress nullPointer
     wcsncpy(0,0,1);
     // cppcheck-suppress nullPointer
     strncat(0,0,1);
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress nullPointer
     strncat_s(0,1,1,1);
     // cppcheck-suppress nullPointer
     strncat_s(1,1,0,1);
+#endif
     // cppcheck-suppress nullPointer
     wcsncat(0,0,1);
     // cppcheck-suppress ignoredReturnValue
@@ -659,9 +693,11 @@ void uninitvar_fopen(void)
     FILE *fp;
     // cppcheck-suppress uninitvar
     fp = fopen(filename, "rt");
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
     // cppcheck-suppress uninitvar
     fp = fopen("filename.txt", mode);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -711,7 +747,9 @@ void uninitvar_fgetpos(void)
 
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress nullPointerOutOfResources
     fgetpos(fp,ppos);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -725,7 +763,9 @@ void uninitvar_fsetpos(void)
 
     fp = fopen("filename","rt");
     // cppcheck-suppress uninitvar
+    // cppcheck-suppress nullPointerOutOfResources
     fsetpos(fp,ppos);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -736,6 +776,7 @@ void uninitvar_fgets(void)
     char *str;
     int n;
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fgets(buf,10,stdin);
 
     // cppcheck-suppress uninitvar
@@ -753,6 +794,7 @@ void uninitvar_fputc(void)
     int i;
     FILE *fp;
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fputc('a', stdout);
 
     // cppcheck-suppress uninitvar
@@ -767,6 +809,7 @@ void uninitvar_fputs(void)
     const char *s;
     FILE *fp;
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     fputs("a", stdout);
 
     // cppcheck-suppress uninitvar
@@ -922,6 +965,7 @@ void uninitvar_asctime(void)
     (void)asctime(tm);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void uninitvar_asctime_s(void)
 {
     const struct tm *tm;
@@ -930,6 +974,7 @@ void uninitvar_asctime_s(void)
     // cppcheck-suppress asctime_sCalled
     asctime_s(buf, sizeof(buf), tm);
 }
+#endif
 
 void uninitvar_assert(void)
 {
@@ -2086,6 +2131,8 @@ void uninitvar_getenv(void)
     (void)getenv(name);
 }
 
+#if defined(_WIN32) || (__STDC_VERSION__ < 201112L)
+// since glibc 2.16 gets() is no longer available starting when >= C11
 void uninitvar_gets(void)
 {
     char *buffer;
@@ -2093,6 +2140,7 @@ void uninitvar_gets(void)
     // cppcheck-suppress uninitvar
     (void)gets(buffer);
 }
+#endif
 
 void uninitvar_gmtime(void)
 {
@@ -2957,10 +3005,6 @@ void uninitvar_mktime(void)
     struct tm *tp;
     // cppcheck-suppress uninitvar
     (void)mktime(tp);
-
-    struct tmx *tpx;
-    // cppcheck-suppress uninitvar
-    (void)mkxtime(tpx);
 }
 
 void uninitvar_modf(void)
@@ -3086,13 +3130,17 @@ void uninitvar_vprintf(const char *Format, va_list Arg)
     (void)vprintf(Format,arg2);
 }
 
+#if defined(_WIN32) || (__STDC_VERSION__ < 199901L)
+// strdup() is POSIX since glibc 2.10 - it is also not available on Linux compiler starting with C99
 void memleak_strdup (const char *s) // #9328
 {
     const char *s1 = strdup(s);
+    // cppcheck-suppress nullPointerOutOfMemory
     printf("%s",s1);
     free(s);     // s1 is not freed
     // cppcheck-suppress memleak
 }
+#endif
 
 void uninitvar_vwprintf(const wchar_t *Format, va_list Arg)
 {
@@ -3399,7 +3447,7 @@ void bufferAccessOutOfBounds_strcat(char *dest, const char * const source)
     char buf4[4] = {0};
     const char * const srcstr3 = "123";
     const char * const srcstr4 = "1234";
-    // @todo #8599 cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strcat(buf4,srcstr4); // off by one issue: strcat is appends \0' at the end
 
     // no warning shall be shown for
@@ -3460,6 +3508,7 @@ void invalidFunctionArg_log10(float f, double d, const long double ld)
     (void)log10f(0.0f);
     (void)log10f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
     (void)log10f(f);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)log10f(FLT_MAX);
 
     // cppcheck-suppress invalidFunctionArg
@@ -3484,6 +3533,7 @@ void invalidFunctionArg_log(float f, double d, const long double ld)
     (void)logf(0.0f);
     (void)logf(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
     (void)logf(f);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)logf(FLT_MAX);
 
     // cppcheck-suppress invalidFunctionArg
@@ -3508,6 +3558,7 @@ void invalidFunctionArg_log2(float f, double d, const long double ld)
     (void)log2f(0.0f);
     (void)log2f(1.4013e-45f); // note: calculated by nextafterf(0.0f, 1.0f);
     (void)log2f(f);
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     (void)log2f(FLT_MAX);
 
     // cppcheck-suppress invalidFunctionArg
@@ -3594,6 +3645,7 @@ void uninitvar_strcpy(char *d, const char *s)
     (void)strcpy(d,s);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void uninitvar_strcpy_s(char * strDest, ssize_t s, const char *source)
 {
     char *strUninit1;
@@ -3610,6 +3662,7 @@ void uninitvar_strcpy_s(char * strDest, ssize_t s, const char *source)
     // No warning is expected
     (void)strcpy_s(strDest, s, source);
 }
+#endif
 
 void uninitvar_wcscpy(wchar_t *d, const wchar_t*s)
 {
@@ -3655,10 +3708,6 @@ void uninitvar_strftime(void)
     const struct tm *p;
     // cppcheck-suppress uninitvar
     (void)strftime(s,max,fmt,p);
-
-    const struct tmx *px;
-    // cppcheck-suppress uninitvar
-    (void)strfxtime(s,max,fmt,px);
 }
 
 void uninitvar_strlen(const char *str)
@@ -3701,6 +3750,7 @@ void uninitvar_strncpy(char * dest, const char * src, size_t num)
     (void)strncpy(dest,src,num);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void uninitvar_strncpy_s(char *Ct, size_t N1, const char *S, size_t N2)
 {
     char dest[42];
@@ -3723,6 +3773,7 @@ void uninitvar_strncpy_s(char *Ct, size_t N1, const char *S, size_t N2)
     (void)strncpy_s(Ct,N1,S,N2);
     (void)strncpy_s(dest,N1,S,N2);
 }
+#endif
 
 void uninitvar_strpbrk(void)
 {
@@ -3770,6 +3821,7 @@ void nullPointer_strncpy(char *d, const char *s, size_t n)
     (void)strncpy(d,s,n);
 }
 
+#ifdef __STDC_LIB_EXT1__
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
 void uninitvar_strcat_s(char *Ct, size_t N, const char *S)
 {
@@ -3831,6 +3883,7 @@ void uninitvar_strncat_s(char *Ct, size_t N1, const char *S, size_t N2)
     // no warning is expected for
     (void)strncat_s(Ct,N1,S,N2);
 }
+#endif
 
 void uninitvar_wcsncat(wchar_t *Ct, const wchar_t *S, size_t N)
 {
@@ -4495,14 +4548,8 @@ int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *res
 }
 #endif
 
-void uninitvar_zonetime(void)
-{
-    const time_t *tp;
-    int zone;
-    // cppcheck-suppress uninitvar
-    (void)zonetime(tp,zone);
-}
-
+#ifdef _WIN32
+/* itoa() is not ANSI-C and not implemented by all compilers */
 void uninitvar_itoa(void)
 {
     int value;
@@ -4511,6 +4558,7 @@ void uninitvar_itoa(void)
     // cppcheck-suppress uninitvar
     (void)itoa(value,str,base);
 }
+#endif
 
 #ifdef __STD_UTF_16__
 void uninitvar_c16rtomb(void)
@@ -4686,9 +4734,11 @@ bool invalidFunctionArgBool_isxdigit(bool b, int c)
 
 void invalidFunctionArg(char c)
 {
+#ifdef __STDC_LIB_EXT1__
     // cppcheck-suppress asctime_sCalled
     // cppcheck-suppress invalidFunctionArg
     asctime_s(1, 24, 1);
+#endif
 
     /* cppcheck-suppress invalidFunctionArg */
     (void)isalnum(256);
@@ -4816,8 +4866,10 @@ void invalidFunctionArg(char c)
     (void)toupper(0);
     (void)toupper(255);
 
+#ifdef __STDC_LIB_EXT1__
     /* cppcheck-suppress invalidFunctionArg */
     (void)strcpy_s(1,0,"a");
+#endif
 }
 
 void invalidFunctionArgString(char c)
@@ -4846,6 +4898,11 @@ void ignoredReturnValue_abs(int i)
     abs(-100);
 }
 
+int clamp(int, int, int, int); // #13599
+void ignoredReturnValue_clamp(int a, int b, int c, int d) {
+    clamp(a, b, c, d); // not a library function
+}
+
 void nullPointer_asctime(void)
 {
     const struct tm *tm = 0;
@@ -4857,6 +4914,7 @@ void nullPointer_asctime(void)
     (void)asctime(0);
 }
 
+#ifdef __STDC_LIB_EXT1__
 void nullPointer_asctime_s(void)
 {
     const struct tm *tm = 0;
@@ -4868,6 +4926,7 @@ void nullPointer_asctime_s(void)
     // cppcheck-suppress nullPointer
     asctime_s(1, 26, tm);
 }
+#endif
 
 void nullPointer_fegetenv(void)
 {

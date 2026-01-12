@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,32 @@
 
 #include "mainwindow.h"
 
+#include "addoninfo.h"
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "analyzerinfo.h"
+#include "checkers.h"
+#include "checkstatistics.h"
+#include "checkthread.h"
 #include "common.h"
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "filesettings.h"
 #include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
 #include "importproject.h"
 #include "librarydialog.h"
+#include "path.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
+#include "resultstree.h"
 #include "resultsview.h"
 #include "scratchpad.h"
+#include "settings.h"
 #include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
@@ -44,16 +52,22 @@
 #include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
+#include "utils.h"
 
 #include "ui_mainwindow.h"
 
+#include "frontend.h"
+
 #include <algorithm>
-#include <functional>
+#include <cstddef>
+#include <fstream>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <QApplication>
@@ -64,6 +78,7 @@
 #include <QCloseEvent>
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QDebug>
 #include <QDialog>
 #include <QDir>
@@ -92,6 +107,8 @@
 #include <QVariant>
 #include <Qt>
 
+#include "json.h"
+
 static const QString compile_commands_json("compile_commands.json");
 
 static QString fromNativePath(const QString& p) {
@@ -112,12 +129,14 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mPlatformActions(new QActionGroup(this)),
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
-    mSelectLanguageActions(new QActionGroup(this))
+    mSelectLanguageActions(new QActionGroup(this)),
+    mSelectReportActions(new QActionGroup(this))
 {
     {
         Settings tempSettings;
         tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
-        tempSettings.loadCppcheckCfg();
+        Suppressions tempSupprs;
+        Settings::loadCppcheckCfg(tempSettings, tempSupprs); // TODO: how to handle error?
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
     }
@@ -177,6 +196,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // About menu
     connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
     connect(mUI->mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
+    mUI->mActionEULA->setVisible(isCppcheckPremium());
+    connect(mUI->mActionEULA, &QAction::triggered, this, &MainWindow::showEULA);
 
     // View > Toolbar menu
     connect(mUI->mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
@@ -193,6 +214,15 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
     connect(mUI->mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
+    // Change report type
+    connect(mUI->mActionReportNormal, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportAutosar, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportCertC, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportCertCpp, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportMisraC, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportMisraCpp2008, &QAction::triggered, this, &MainWindow::changeReportType);
+    connect(mUI->mActionReportMisraCpp2023, &QAction::triggered, this, &MainWindow::changeReportType);
+
     // File menu
     connect(mUI->mActionNewProjectFile, &QAction::triggered, this, &MainWindow::newProjectFile);
     connect(mUI->mActionOpenProjectFile, &QAction::triggered, this, &MainWindow::openProjectFile);
@@ -205,10 +235,13 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     loadSettings();
 
     mThread->initialize(mUI->mResults);
-    if (mProjectFile)
+    if (mProjectFile) {
+        enableProjectActions(true);
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
-    else
+    } else {
+        enableProjectActions(false);
         formatAndSetTitle();
+    }
 
     mUI->mActionComplianceReport->setVisible(isCppcheckPremium());
 
@@ -217,7 +250,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionPrint->setShortcut(QKeySequence::Print);
     enableResultsButtons();
     enableProjectOpenActions(true);
-    enableProjectActions(false);
 
     // Must setup MRU menu before CLI param handling as it can load a
     // project file and update MRU menu.
@@ -238,12 +270,9 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         handleCLIParams(args);
     }
 
-    mUI->mActionCloseProjectFile->setEnabled(mProjectFile != nullptr);
-    mUI->mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
-
     for (int i = 0; i < mPlatforms.getCount(); i++) {
-        Platform platform = mPlatforms.mPlatforms[i];
-        QAction *action = new QAction(this);
+        PlatformData platform = mPlatforms.mPlatforms[i];
+        auto *action = new QAction(this);
         platform.mActMainWindow = action;
         mPlatforms.mPlatforms[i] = platform;
         action->setText(platform.mTitle);
@@ -254,9 +283,20 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         connect(action, SIGNAL(triggered()), this, SLOT(selectPlatform()));
     }
 
+    mUI->mActionReportNormal->setActionGroup(mSelectReportActions);
+    mUI->mActionReportAutosar->setActionGroup(mSelectReportActions);
+    mUI->mActionReportCertC->setActionGroup(mSelectReportActions);
+    mUI->mActionReportCertCpp->setActionGroup(mSelectReportActions);
+    mUI->mActionReportMisraC->setActionGroup(mSelectReportActions);
+    mUI->mActionReportMisraCpp2008->setActionGroup(mSelectReportActions);
+    mUI->mActionReportMisraCpp2023->setActionGroup(mSelectReportActions);
+
     mUI->mActionC89->setActionGroup(mCStandardActions);
     mUI->mActionC99->setActionGroup(mCStandardActions);
     mUI->mActionC11->setActionGroup(mCStandardActions);
+    //mUI->mActionC17->setActionGroup(mCStandardActions);
+    //mUI->mActionC23->setActionGroup(mCStandardActions);
+    //mUI->mActionC2Y->setActionGroup(mCStandardActions);
 
     mUI->mActionCpp03->setActionGroup(mCppStandardActions);
     mUI->mActionCpp11->setActionGroup(mCppStandardActions);
@@ -264,20 +304,22 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionCpp17->setActionGroup(mCppStandardActions);
     mUI->mActionCpp20->setActionGroup(mCppStandardActions);
     //mUI->mActionCpp23->setActionGroup(mCppStandardActions);
+    //mUI->mActionCpp26->setActionGroup(mCppStandardActions);
 
     mUI->mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
     mUI->mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
+    // TODO: we no longer default to a Windows platform in CLI - so we should probably also get rid of this in the GUI
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Win32W;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Win32W;
 #else
-    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Unspecified;
+    constexpr Platform::Type defaultPlatform = Platform::Type::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((cppcheck::Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    PlatformData &platform = mPlatforms.get(static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt()));
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -301,6 +343,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     } else {
         delete mUI->mLayoutInformation;
     }
+
+    changeReportType();
 }
 
 MainWindow::~MainWindow()
@@ -351,6 +395,17 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
+    const ReportType reportType = static_cast<ReportType>(mSettings->value(SETTINGS_REPORT_TYPE, static_cast<int>(ReportType::normal)).toInt());
+    mUI->mActionReportNormal->setChecked(reportType <= ReportType::normal);
+    mUI->mActionReportAutosar->setChecked(reportType == ReportType::autosar);
+    mUI->mActionReportCertC->setChecked(reportType == ReportType::certC);
+    mUI->mActionReportCertCpp->setChecked(reportType == ReportType::certCpp);
+    mUI->mActionReportMisraC->setChecked(reportType == ReportType::misraC2012 ||
+                                         reportType == ReportType::misraC2023 ||
+                                         reportType == ReportType::misraC2025);
+    mUI->mActionReportMisraCpp2008->setChecked(reportType == ReportType::misraCpp2008);
+    mUI->mActionReportMisraCpp2023->setChecked(reportType == ReportType::misraCpp2023);
+
     const ShowTypes &types = mUI->mResults->getShowTypes();
     mUI->mActionShowStyle->setChecked(types.isShown(ShowTypes::ShowStyle));
     mUI->mActionShowErrors->setChecked(types.isShown(ShowTypes::ShowErrors));
@@ -366,6 +421,9 @@ void MainWindow::loadSettings()
     mUI->mActionC89->setChecked(standards.c == Standards::C89);
     mUI->mActionC99->setChecked(standards.c == Standards::C99);
     mUI->mActionC11->setChecked(standards.c == Standards::C11);
+    //mUI->mActionC17->setChecked(standards.c == Standards::C17);
+    //mUI->mActionC23->setChecked(standards.c == Standards::C23);
+    //mUI->mActionC2Y->setChecked(standards.c == Standards::C2Y);
     standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     mUI->mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
     mUI->mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
@@ -373,6 +431,7 @@ void MainWindow::loadSettings()
     mUI->mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
     mUI->mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
     //mUI->mActionCpp23->setChecked(standards.cpp == Standards::CPP23);
+    //mUI->mActionCpp26->setChecked(standards.cpp == Standards::CPP26);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -387,10 +446,10 @@ void MainWindow::loadSettings()
     mUI->mActionToolBarFilter->setChecked(showFilterToolbar);
     mUI->mToolBarFilter->setVisible(showFilterToolbar);
 
-    const Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
-    if (enforcedLanguage == Settings::CPP)
+    const Standards::Language enforcedLanguage = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    if (enforcedLanguage == Standards::Language::CPP)
         mUI->mActionEnforceCpp->setChecked(true);
-    else if (enforcedLanguage == Settings::C)
+    else if (enforcedLanguage == Standards::Language::C)
         mUI->mActionEnforceC->setChecked(true);
     else
         mUI->mActionAutoDetectLanguage->setChecked(true);
@@ -423,12 +482,30 @@ void MainWindow::loadSettings()
     }
 }
 
+static ReportType getMisraCReportType(const QStringList &standards)
+{
+    if (standards.contains(CODING_STANDARD_MISRA_C_2023))
+        return ReportType::misraC2023;
+    if (standards.contains(CODING_STANDARD_MISRA_C_2025))
+        return ReportType::misraC2025;
+    return ReportType::misraC2012;
+}
+
 void MainWindow::saveSettings() const
 {
     // Window/dialog sizes
     mSettings->setValue(SETTINGS_WINDOW_WIDTH, size().width());
     mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());
     mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
+
+    const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
+                                  mUI->mActionReportCertC->isChecked() ? ReportType::certC :
+                                  mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
+                                  mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
+                                  mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
+                                  ReportType::normal;
+    mSettings->setValue(SETTINGS_REPORT_TYPE, static_cast<int>(reportType));
 
     // Show * states
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI->mActionShowStyle->isChecked());
@@ -444,6 +521,12 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_C, "C99");
     if (mUI->mActionC11->isChecked())
         mSettings->setValue(SETTINGS_STD_C, "C11");
+    //if (mUI->mActionC17->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_C, "C17");
+    //if (mUI->mActionC23->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_C, "C23");
+    //if (mUI->mActionC2Y->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_C, "C2Y");
 
     if (mUI->mActionCpp03->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++03");
@@ -457,6 +540,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_CPP, "C++20");
     //if (mUI.mActionCpp23->isChecked())
     //    mSettings->setValue(SETTINGS_STD_CPP, "C++23");
+    //if (mUI.mActionCpp26->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_CPP, "C++26");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI->mToolBarMain->isVisible());
@@ -464,11 +549,11 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI->mToolBarFilter->isVisible());
 
     if (mUI->mActionEnforceCpp->isChecked())
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::CPP);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Standards::Language::CPP);
     else if (mUI->mActionEnforceC->isChecked())
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::C);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Standards::Language::C);
     else
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::None);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Standards::Language::None);
 
     mApplications->saveSettings();
 
@@ -481,6 +566,11 @@ void MainWindow::saveSettings() const
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
 {
+    Settings checkSettings;
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
+        return;
+
     clearResults();
 
     mIsLogfileLoaded = false;
@@ -493,7 +583,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const Platform::Type platform = static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
             std::vector<std::string> configurations;
             const QStringList configs = mProjectFile->getVsConfigurations();
             std::transform(configs.cbegin(), configs.cend(), std::back_inserter(configurations), [](const QString& e) {
@@ -506,6 +596,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     }
 
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
     mUI->mResults->checkingStarted(p.fileSettings.size());
@@ -517,7 +608,6 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     checkLockDownUI(); // lock UI while checking
 
     mUI->mResults->setCheckDirectory(checkPath);
-    Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
@@ -538,16 +628,25 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         mThread->setClangIncludePaths(clangHeaders.split(";"));
         mThread->setSuppressions(mProjectFile->getSuppressions());
     }
+
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(p.fileSettings, checkSettings, enforcedLang);
+
     mThread->setProject(p);
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
 {
-    if (files.isEmpty()) {
+    if (files.isEmpty())
         return;
-    }
+
+    Settings checkSettings;
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
+        return;
+
     clearResults();
 
     mIsLogfileLoaded = false;
@@ -561,6 +660,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     QStringList fileNames = pathList.getFileList();
 
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
     mThread->clearFiles();
 
     if (fileNames.isEmpty()) {
@@ -573,12 +673,14 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         return;
     }
 
-    mUI->mResults->checkingStarted(fileNames.count());
+    std::list<FileWithDetails> fdetails = enrichFilesForAnalysis(fileNames, checkSettings);
 
-    mThread->setFiles(fileNames);
+    // TODO: lock UI here?
+    mUI->mResults->checkingStarted(fdetails.size());
+    mThread->setFiles(std::move(fdetails));
     if (mProjectFile && !checkConfiguration)
         mThread->setAddonsAndTools(mProjectFile->getAddonsAndTools());
-    mThread->setSuppressions(mProjectFile ? mProjectFile->getSuppressions() : QList<Suppressions::Suppression>());
+    mThread->setSuppressions(mProjectFile ? mProjectFile->getCheckingSuppressions() : QList<SuppressionList::Suppression>());
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
     setPath(SETTINGS_LAST_CHECK_PATH, checkPath);
@@ -586,7 +688,6 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     checkLockDownUI(); // lock UI while checking
 
     mUI->mResults->setCheckDirectory(checkPath);
-    Settings checkSettings = getCppcheckSettings();
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
 
@@ -599,19 +700,24 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
             return s.toStdString();
         });
-        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
+        AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, {});
     }
 
     mThread->setCheckFiles(true);
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::analyzeCode(const QString& code, const QString& filename)
 {
+    Settings checkSettings;
+    Suppressions supprs;
+    if (!getCppcheckSettings(checkSettings, supprs))
+        return;
+
+    // TODO: split ErrorLogger from ThreadResult
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
-    result.setFiles(QStringList(filename));
     connect(&result, SIGNAL(progress(int,QString)),
             mUI->mResults, SLOT(progress(int,QString)));
     connect(&result, SIGNAL(error(ErrorItem)),
@@ -622,14 +728,17 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
             mUI->mResults, SLOT(debugError(ErrorItem)));
 
     // Create CppCheck instance
-    CppCheck cppcheck(result, true, nullptr);
-    cppcheck.settings() = getCppcheckSettings();
+    CppCheck cppcheck(checkSettings, supprs, result, true, nullptr);
 
     // Check
     checkLockDownUI();
     clearResults();
     mUI->mResults->checkingStarted(1);
-    cppcheck.check(filename.toStdString(), code.toStdString());
+    {
+        const std::string code_s = code.toStdString();
+        // TODO: apply enforcedLanguage?
+        cppcheck.checkBuffer(FileWithDetails(filename.toStdString(), Path::identify(filename.toStdString(), false), 0), code_s.data(), code_s.size());
+    }
     analysisDone();
 
     // Expand results
@@ -709,7 +818,7 @@ void MainWindow::analyzeFiles()
 
         if (file0.endsWith(".sln")) {
             QStringList configs;
-            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
+            for (auto it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
                 const QString cfg(QString::fromStdString(it->cfg));
                 if (!configs.contains(cfg))
                     configs.push_back(cfg);
@@ -723,7 +832,7 @@ void MainWindow::analyzeFiles()
             p.ignoreOtherConfigs(cfg.toStdString());
         }
 
-        doAnalyzeProject(p);
+        doAnalyzeProject(p); // TODO: avoid copy
         return;
     }
 
@@ -803,24 +912,30 @@ void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result
     }
 }
 
-Library::Error MainWindow::loadLibrary(Library *library, const QString &filename)
+Library::Error MainWindow::loadLibrary(Library &library, const QString &filename)
 {
     Library::Error ret;
 
     // Try to load the library from the project folder..
     if (mProjectFile) {
         QString path = QFileInfo(mProjectFile->getFilename()).canonicalPath();
-        ret = library->load(nullptr, (path+"/"+filename).toLatin1());
+        QString libpath = path+"/"+filename;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
+        ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
 
     // Try to load the library from the application folder..
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    ret = library->load(nullptr, (appPath+"/"+filename).toLatin1());
+    QString libpath = appPath+"/"+filename;
+    qDebug().noquote() << "looking for library '" + libpath + "'";
+    ret = library.load(nullptr, libpath.toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
-    ret = library->load(nullptr, (appPath+"/cfg/"+filename).toLatin1());
+    libpath = appPath+"/cfg/"+filename;
+    qDebug().noquote() << "looking for library '" + libpath + "'";
+    ret = library.load(nullptr, libpath.toLatin1());
     if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
         return ret;
 
@@ -828,10 +943,14 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     // Try to load the library from FILESDIR/cfg..
     const QString filesdir = FILESDIR;
     if (!filesdir.isEmpty()) {
-        ret = library->load(nullptr, (filesdir+"/cfg/"+filename).toLatin1());
+        libpath = filesdir+"/cfg/"+filename;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
+        ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (filesdir+filename).toLatin1());
+        libpath = filesdir+"/"+filename;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
+        ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
@@ -840,18 +959,24 @@ Library::Error MainWindow::loadLibrary(Library *library, const QString &filename
     // Try to load the library from the cfg subfolder..
     const QString datadir = getDataDir();
     if (!datadir.isEmpty()) {
-        ret = library->load(nullptr, (datadir+"/"+filename).toLatin1());
+        libpath = datadir+"/"+filename;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
+        ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
-        ret = library->load(nullptr, (datadir+"/cfg/"+filename).toLatin1());
+        libpath = datadir+"/cfg/"+filename;
+        qDebug().noquote() << "looking for library '" + libpath + "'";
+        ret = library.load(nullptr, libpath.toLatin1());
         if (ret.errorcode != Library::ErrorCode::FILE_NOT_FOUND)
             return ret;
     }
 
+    qDebug().noquote() << "library not found: '" + filename + "'";
+
     return ret;
 }
 
-bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
+bool MainWindow::tryLoadLibrary(Library &library, const QString& filename)
 {
     const Library::Error error = loadLibrary(library, filename);
     if (error.errorcode != Library::ErrorCode::OK) {
@@ -885,6 +1010,9 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
         case Library::ErrorCode::PLATFORM_TYPE_REDEFINED:
             errmsg = tr("Platform type redefined");
             break;
+        case Library::ErrorCode::DUPLICATE_DEFINE:
+            errmsg = tr("Duplicate define");
+            break;
         case Library::ErrorCode::UNKNOWN_ELEMENT:
             errmsg = tr("Unknown element");
             break;
@@ -900,120 +1028,176 @@ bool MainWindow::tryLoadLibrary(Library *library, const QString& filename)
     return true;
 }
 
-Settings MainWindow::getCppcheckSettings()
+QString MainWindow::loadAddon(Settings &settings, const QString &filesDir, const QString &pythonCmd, const QString& addon)
+{
+    const QString addonFilePath = fromNativePath(ProjectFile::getAddonFilePath(filesDir, addon));
+
+    if (addonFilePath.isEmpty())
+        return tr("File not found: '%1'").arg(addon);
+
+    picojson::object obj;
+    obj["script"] = picojson::value(addonFilePath.toStdString());
+    if (!pythonCmd.isEmpty())
+        obj["python"] = picojson::value(pythonCmd.toStdString());
+
+    if (!isCppcheckPremium() && addon == "misra") {
+        const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+        if (!misraFile.isEmpty()) {
+            QString arg;
+            picojson::array arr;
+            arg = "--rule-texts=" + misraFile;
+            arr.emplace_back(arg.toStdString());
+            obj["args"] = picojson::value(arr);
+        }
+    }
+
+    const std::string& json_str = picojson::value(obj).serialize();
+
+    AddonInfo addonInfo;
+    const std::string errmsg = addonInfo.getAddonInfo(json_str, settings.exename);
+    if (!errmsg.empty())
+        return tr("Failed to load/setup addon %1: %2").arg(addon, QString::fromStdString(errmsg));
+    settings.addonInfos.emplace_back(std::move(addonInfo));
+
+    settings.addons.emplace(json_str);
+
+    return "";
+}
+
+bool MainWindow::getCppcheckSettings(Settings& settings, Suppressions& supprs)
 {
     saveSettings(); // Save settings
 
-    Settings result;
+    Settings::terminate(true);
 
-    result.exename = QCoreApplication::applicationFilePath().toStdString();
+    settings.exename = QCoreApplication::applicationFilePath().toStdString();
+    settings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
 
-    const bool std = tryLoadLibrary(&result.library, "std.cfg");
-    if (!std)
-        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
+    // default to --check-level=normal for GUI for now
+    settings.setCheckLevel(Settings::CheckLevel::normal);
 
-    result.loadCppcheckCfg();
+    const bool std = tryLoadLibrary(settings.library, "std.cfg");
+    if (!std) {
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.\n\nAnalysis is aborted.").arg("std.cfg"));
+        return false;
+    }
+
+    const QString filesDir(getDataDir());
+    const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
+
+    {
+        const QString cfgErr = QString::fromStdString(Settings::loadCppcheckCfg(settings, supprs));
+        if (!cfgErr.isEmpty()) {
+            QMessageBox::critical(this, tr("Error"), tr("Failed to load %1 - %2\n\nAnalysis is aborted.").arg("cppcheck.cfg").arg(cfgErr));
+            return false;
+        }
+
+        settings.premium = startsWith(settings.cppcheckCfgProductName, "Cppcheck Premium");
+
+        const auto cfgAddons = settings.addons;
+        settings.addons.clear();
+        for (const std::string& addon : cfgAddons) {
+            // TODO: support addons which are a script and not a file
+            const QString addonError = loadAddon(settings, filesDir, pythonCmd, QString::fromStdString(addon));
+            if (!addonError.isEmpty()) {
+                QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
+                return false;
+            }
+        }
+    }
 
     // If project file loaded, read settings from it
     if (mProjectFile) {
         QStringList dirs = mProjectFile->getIncludeDirs();
-        addIncludeDirs(dirs, result);
+        addIncludeDirs(dirs, settings);
+
+        settings.inlineSuppressions = mProjectFile->getInlineSuppression();
 
         const QStringList defines = mProjectFile->getDefines();
         for (const QString& define : defines) {
-            if (!result.userDefines.empty())
-                result.userDefines += ";";
-            result.userDefines += define.toStdString();
+            if (!settings.userDefines.empty())
+                settings.userDefines += ";";
+            settings.userDefines += define.toStdString();
         }
 
-        result.clang = mProjectFile->clangParser;
+        settings.clang = mProjectFile->clangParser;
 
         const QStringList undefines = mProjectFile->getUndefines();
         for (const QString& undefine : undefines)
-            result.userUndefs.insert(undefine.toStdString());
+            settings.userUndefs.insert(undefine.toStdString());
 
         const QStringList libraries = mProjectFile->getLibraries();
         for (const QString& library : libraries) {
-            result.libraries.emplace_back(library.toStdString());
+            settings.libraries.emplace_back(library.toStdString());
             const QString filename = library + ".cfg";
-            tryLoadLibrary(&result.library, filename);
+            tryLoadLibrary(settings.library, filename);
         }
 
-        for (const Suppressions::Suppression &suppression : mProjectFile->getSuppressions()) {
-            result.nomsg.addSuppression(suppression);
+        for (const SuppressionList::Suppression &suppression : mProjectFile->getCheckingSuppressions()) {
+            supprs.nomsg.addSuppression(suppression); // TODO: check result
         }
-
-        // Only check the given -D configuration
-        if (!defines.isEmpty())
-            result.maxConfigs = 1;
 
         // If importing a project, only check the given configuration
-        if (!mProjectFile->getImportProject().isEmpty())
-            result.checkAllConfigurations = false;
+        if (mProjectFile->getImportProject().endsWith("json", Qt::CaseInsensitive))
+            settings.maxConfigsProject = 1;
 
         const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {
-                result.buildDir = buildDir.toStdString();
+                settings.buildDir = buildDir.toStdString();
             } else {
                 QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
-                result.buildDir = (prjpath + '/' + buildDir).toStdString();
+                settings.buildDir = (prjpath + '/' + buildDir).toStdString();
             }
         }
 
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
-            const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            result.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
+            const std::vector<std::string> paths = {
+                Path::getCurrentPath(), // TODO: do we want to look in CWD?
+                QCoreApplication::applicationFilePath().toStdString(),
+            };
+            settings.platform.loadFromFile(paths, platform.toStdString());
         } else {
-            for (int i = cppcheck::Platform::Type::Native; i <= cppcheck::Platform::Type::Unix64; i++) {
-                const cppcheck::Platform::Type p = (cppcheck::Platform::Type)i;
-                if (platform == cppcheck::Platform::toString(p)) {
-                    result.platform.set(p);
+            for (int i = Platform::Type::Native; i <= Platform::Type::Unix64; i++) {
+                const auto p = static_cast<Platform::Type>(i);
+                if (platform == Platform::toString(p)) {
+                    settings.platform.set(p);
                     break;
                 }
             }
         }
 
-        result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
-        result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
-        if (mProjectFile->isCheckLevelExhaustive())
-            result.setCheckLevelExhaustive();
-        else
-            result.setCheckLevelNormal();
-        result.checkHeaders = mProjectFile->getCheckHeaders();
-        result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
-        result.safeChecks.classes = mProjectFile->safeChecks.classes;
-        result.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
-        result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
-        result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
+        settings.maxCtuDepth = mProjectFile->getMaxCtuDepth();
+        settings.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
+        switch (mProjectFile->getCheckLevel()) {
+        case ProjectFile::CheckLevel::reduced:
+            settings.setCheckLevel(Settings::CheckLevel::reduced);
+            break;
+        case ProjectFile::CheckLevel::normal:
+            settings.setCheckLevel(Settings::CheckLevel::normal);
+            break;
+        case ProjectFile::CheckLevel::exhaustive:
+            settings.setCheckLevel(Settings::CheckLevel::exhaustive);
+            break;
+        }
+        settings.checkHeaders = mProjectFile->getCheckHeaders();
+        settings.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
+        settings.safeChecks.classes = mProjectFile->safeChecks.classes;
+        settings.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
+        settings.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
+        settings.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
         for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
-            result.checkUnknownFunctionReturn.insert(s.toStdString());
+            settings.checkUnknownFunctionReturn.insert(s.toStdString());
 
-        QString filesDir(getDataDir());
-        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
-            QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
-            if (addonFilePath.isEmpty())
+            if (isCppcheckPremium() && addon == "misra")
                 continue;
-
-            addonFilePath.replace(QChar('\\'), QChar('/'));
-
-            QString json;
-            json += "{ \"script\":\"" + addonFilePath + "\"";
-            if (!pythonCmd.isEmpty())
-                json += ", \"python\":\"" + pythonCmd + "\"";
-            const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
-            if (!isCppcheckPremium() && addon == "misra" && !misraFile.isEmpty()) {
-                QString arg;
-                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    arg = "--misra-pdf=" + misraFile;
-                else
-                    arg = "--rule-texts=" + misraFile;
-                json += ", \"args\":[\"" + arg + "\"]";
+            const QString addonError = loadAddon(settings, filesDir, pythonCmd, addon);
+            if (!addonError.isEmpty()) {
+                QMessageBox::critical(this, tr("Error"), tr("%1\n\nAnalysis is aborted.").arg(addonError));
+                return false;
             }
-            json += " }";
-            result.addons.emplace(json.toStdString());
         }
 
         if (isCppcheckPremium()) {
@@ -1024,11 +1208,13 @@ Settings MainWindow::getCppcheckSettings()
                 premiumArgs += " --cert-c-int-precision=" + QString::number(mProjectFile->getCertIntPrecision());
             for (const QString& c: mProjectFile->getCodingStandards())
                 premiumArgs += " --" + c;
-            if (!premiumArgs.contains("misra") && mProjectFile->getAddons().contains("misra"))
+            if (!premiumArgs.contains("--misra-c-") && mProjectFile->getAddons().contains("misra"))
                 premiumArgs += " --misra-c-2012";
-            result.premiumArgs = premiumArgs.mid(1).toStdString();
+            settings.premiumArgs = premiumArgs.mid(1).toStdString();
         }
     }
+    else
+        settings.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
 
     // Include directories (and files) are searched in listed order.
     // Global include directories must be added AFTER the per project include
@@ -1036,38 +1222,34 @@ Settings MainWindow::getCppcheckSettings()
     const QString globalIncludes = mSettings->value(SETTINGS_GLOBAL_INCLUDE_PATHS).toString();
     if (!globalIncludes.isEmpty()) {
         QStringList includes = globalIncludes.split(";");
-        addIncludeDirs(includes, result);
+        addIncludeDirs(includes, settings);
     }
 
-    result.severity.enable(Severity::warning);
-    result.severity.enable(Severity::style);
-    result.severity.enable(Severity::performance);
-    result.severity.enable(Severity::portability);
-    result.severity.enable(Severity::information);
-    result.checks.enable(Checks::missingInclude);
-    if (!result.buildDir.empty())
-        result.checks.enable(Checks::unusedFunction);
-    result.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
-    result.quiet = false;
-    result.verbose = true;
-    result.force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
-    result.xml = false;
-    result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
-    result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
-    result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platform.type == cppcheck::Platform::Type::Unspecified)
-        result.platform.set((cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
-    result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
-    result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    settings.severity.enable(Severity::warning);
+    settings.severity.enable(Severity::style);
+    settings.severity.enable(Severity::performance);
+    settings.severity.enable(Severity::portability);
+    settings.severity.enable(Severity::information);
+    settings.checks.enable(Checks::missingInclude);
+    if (!settings.buildDir.empty())
+        settings.checks.enable(Checks::unusedFunction);
+    settings.debugwarnings = mSettings->value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool();
+    settings.quiet = false;
+    settings.verbose = true;
+    settings.force = mSettings->value(SETTINGS_CHECK_FORCE, 0).toBool();
+    settings.outputFormat = Settings::OutputFormat::text;
+    settings.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
+    settings.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
+    if (!mProjectFile || settings.platform.type == Platform::Type::Unspecified)
+        settings.platform.set(static_cast<Platform::Type>(mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt()));
+    settings.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
+    settings.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
 
-    if (result.jobs <= 1) {
-        result.jobs = 1;
-    }
+    settings.jobs = std::max(settings.jobs, 1u);
 
     Settings::terminate(false);
 
-    return result;
+    return true;
 }
 
 void MainWindow::analysisDone()
@@ -1103,7 +1285,7 @@ void MainWindow::analysisDone()
         if (QDir(buildDir).exists()) {
             mUI->mResults->saveStatistics(buildDir + "/statistics.txt");
             mUI->mResults->updateFromOldReport(buildDir + "/lastResults.xml");
-            mUI->mResults->save(buildDir + "/lastResults.xml", Report::XMLV2);
+            mUI->mResults->save(buildDir + "/lastResults.xml", Report::XMLV2, mCppcheckCfgProductName);
         }
     }
 
@@ -1167,7 +1349,7 @@ void MainWindow::reAnalyzeModified()
 void MainWindow::reAnalyzeAll()
 {
     if (mProjectFile)
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
     else
         reAnalyze(true);
 }
@@ -1175,13 +1357,13 @@ void MainWindow::reAnalyzeAll()
 void MainWindow::checkLibrary()
 {
     if (mProjectFile)
-        analyzeProject(mProjectFile, true);
+        analyzeProject(mProjectFile, QStringList(), true);
 }
 
 void MainWindow::checkConfiguration()
 {
     if (mProjectFile)
-        analyzeProject(mProjectFile, false, true);
+        analyzeProject(mProjectFile, QStringList(), false, true);
 }
 
 void MainWindow::reAnalyzeSelected(const QStringList& files)
@@ -1189,6 +1371,21 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     if (files.empty())
         return;
     if (mThread->isChecking())
+        return;
+
+    if (mProjectFile) {
+        // Clear details, statistics and progress
+        mUI->mResults->clear(false);
+        for (int i = 0; i < files.size(); ++i)
+            mUI->mResults->clearRecheckFile(files[i]);
+
+        analyzeProject(mProjectFile, files);
+        return;
+    }
+
+    Settings checkSettings;
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
         return;
 
     // Clear details, statistics and progress
@@ -1201,33 +1398,39 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     pathList.addPathList(files);
     if (mProjectFile)
         pathList.addExcludeList(mProjectFile->getExcludedPaths());
-    QStringList fileNames = pathList.getFileList();
+
+    std::list<FileWithDetails> fdetails = enrichFilesForAnalysis(pathList.getFileList(), checkSettings);
+
     checkLockDownUI(); // lock UI while checking
-    mUI->mResults->checkingStarted(fileNames.size());
-    mThread->setCheckFiles(fileNames);
+    mUI->mResults->checkingStarted(fdetails.size());
+    mThread->setCheckFiles(std::move(fdetails));
 
     // Saving last check start time, otherwise unchecked modified files will not be
     // considered in "Modified Files Check"  performed after "Selected Files Check"
     // TODO: Should we store per file CheckStartTime?
     QDateTime saveCheckStartTime = mThread->getCheckStartTime();
-    const Settings& checkSettings = getCppcheckSettings();
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
-    mThread->setCheckStartTime(saveCheckStartTime);
+    mThread->setCheckStartTime(std::move(saveCheckStartTime));
 }
 
 void MainWindow::reAnalyze(bool all)
 {
-    const QStringList files = mThread->getReCheckFiles(all);
+    const std::list<FileWithDetails> files = mThread->getReCheckFiles(all);
     if (files.empty())
+        return;
+
+    Settings checkSettings;
+    auto supprs = std::make_shared<Suppressions>();
+    if (!getCppcheckSettings(checkSettings, *supprs))
         return;
 
     // Clear details, statistics and progress
     mUI->mResults->clear(all);
 
     // Clear results for changed files
-    for (int i = 0; i < files.size(); ++i)
-        mUI->mResults->clear(files[i]);
+    for (const auto& f : files)
+        mUI->mResults->clear(QString::fromStdString(f.path()));
 
     checkLockDownUI(); // lock UI while checking
     mUI->mResults->checkingStarted(files.size());
@@ -1236,8 +1439,7 @@ void MainWindow::reAnalyze(bool all)
         qDebug() << "Rechecking project file" << mProjectFile->getFilename();
 
     mThread->setCheckFiles(all);
-    const Settings& checkSettings = getCppcheckSettings();
-    mThread->check(checkSettings);
+    mThread->check(checkSettings, supprs);
     mUI->mResults->setCheckSettings(checkSettings);
 }
 
@@ -1298,6 +1500,7 @@ void MainWindow::loadResults(const QString &selectedFile)
         closeProjectFile();
     mIsLogfileLoaded = true;
     mUI->mResults->clear(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Log);
     mUI->mActionReanalyzeModified->setEnabled(false);
     mUI->mActionReanalyzeAll->setEnabled(false);
     mUI->mResults->readErrorsXml(selectedFile);
@@ -1317,7 +1520,7 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI->mActionAnalyzeFiles->setEnabled(enable);
 
     if (mProjectFile) {
-        mUI->mActionReanalyzeModified->setEnabled(false);
+        mUI->mActionReanalyzeModified->setEnabled(enable);
         mUI->mActionReanalyzeAll->setEnabled(enable);
     } else if (!enable || mThread->hasPreviousFiles()) {
         mUI->mActionReanalyzeModified->setEnabled(enable);
@@ -1327,17 +1530,16 @@ void MainWindow::enableCheckButtons(bool enable)
     mUI->mActionAnalyzeDirectory->setEnabled(enable);
 
     if (isCppcheckPremium()) {
-        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && mProjectFile->getAddons().contains("misra"));
+        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && (mProjectFile->getAddons().contains("misra") || !mProjectFile->getCodingStandards().empty()));
     }
 }
 
 void MainWindow::enableResultsButtons()
 {
-    const bool enabled = mUI->mResults->hasResults();
-    mUI->mActionClearResults->setEnabled(enabled);
-    mUI->mActionSave->setEnabled(enabled);
-    mUI->mActionPrint->setEnabled(enabled);
-    mUI->mActionPrintPreview->setEnabled(enabled);
+    mUI->mActionClearResults->setEnabled(mUI->mResults->hasResults());
+    mUI->mActionSave->setEnabled(true);
+    mUI->mActionPrint->setEnabled(true);
+    mUI->mActionPrintPreview->setEnabled(true);
 }
 
 void MainWindow::showStyle(bool checked)
@@ -1436,23 +1638,28 @@ void MainWindow::about()
         msg.exec();
     }
     else {
-        AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
+        auto *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
         dlg->exec();
     }
 }
 
 void MainWindow::showLicense()
 {
-    FileViewDialog *dlg = new FileViewDialog(":COPYING", tr("License"), this);
+    auto *dlg = new FileViewDialog(":COPYING", tr("License"), this);
     dlg->resize(570, 400);
     dlg->exec();
 }
 
 void MainWindow::showAuthors()
 {
-    FileViewDialog *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
+    auto *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
+}
+
+void MainWindow::showEULA()
+{
+    QDesktopServices::openUrl(QUrl("https://www.cppcheck.com/EULA"));
 }
 
 void MainWindow::performSelectedFilesCheck(const QStringList &selectedFilesList)
@@ -1493,7 +1700,7 @@ void MainWindow::save()
                 type = Report::CSV;
         }
 
-        mUI->mResults->save(selectedFile, type);
+        mUI->mResults->save(selectedFile, type, mCppcheckCfgProductName);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
@@ -1511,17 +1718,19 @@ void MainWindow::complianceReport()
     }
 
     QTemporaryFile tempResults;
-    tempResults.open();
+    (void)tempResults.open(); // TODO: check result
     tempResults.close();
 
-    mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+    mUI->mResults->save(tempResults.fileName(), Report::XMLV2, mCppcheckCfgProductName);
 
-    ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+    ComplianceReportDialog dlg(mProjectFile, tempResults.fileName(), mUI->mResults->getStatistics()->getCheckersReport());
     dlg.exec();
 }
 
 void MainWindow::resultsAdded()
-{}
+{
+    enableResultsButtons();
+}
 
 void MainWindow::toggleMainToolBar()
 {
@@ -1548,6 +1757,7 @@ void MainWindow::formatAndSetTitle(const QString &text)
         nameWithVersion += " (" + extraVersion + ")";
     }
 
+    // TODO: should not contain the version
     if (!mCppcheckCfgProductName.isEmpty())
         nameWithVersion = mCppcheckCfgProductName;
 
@@ -1588,7 +1798,6 @@ void MainWindow::stopAnalysis()
 {
     mThread->stop();
     mUI->mResults->stopAnalysis();
-    mUI->mResults->disableProgressbar();
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty()) {
         mUI->mResults->updateFromOldReport(lastResults);
@@ -1602,7 +1811,7 @@ void MainWindow::openHelpContents()
 
 void MainWindow::openOnlineHelp()
 {
-    HelpDialog *helpDialog = new HelpDialog;
+    auto *helpDialog = new HelpDialog;
     helpDialog->showMaximized();
 }
 
@@ -1642,13 +1851,15 @@ void MainWindow::loadProjectFile(const QString &filePath)
     addProjectMRU(filePath);
 
     mIsLogfileLoaded = false;
-    mUI->mActionCloseProjectFile->setEnabled(true);
-    mUI->mActionEditProjectFile->setEnabled(true);
+    mUI->mResults->setResultsSource(ResultsTree::ResultsSource::Analysis);
+    mUI->mActionReanalyzeModified->setEnabled(true);
+    mUI->mActionReanalyzeAll->setEnabled(true);
+    enableProjectActions(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
     mProjectFile->setActiveProject();
     if (!loadLastResults())
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
 }
 
 QString MainWindow::getLastResults() const
@@ -1665,6 +1876,7 @@ bool MainWindow::loadLastResults()
         return false;
     if (!QFileInfo::exists(lastResults))
         return false;
+    mUI->mResults->clear(true);
     mUI->mResults->readErrorsXml(lastResults);
     mUI->mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
     mUI->mActionViewStats->setEnabled(true);
@@ -1672,12 +1884,36 @@ bool MainWindow::loadLastResults()
     return true;
 }
 
-void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool checkLibrary, const bool checkConfiguration)
+void MainWindow::analyzeProject(const ProjectFile *projectFile, const QStringList& recheckFiles, const bool checkLibrary, const bool checkConfiguration)
 {
     Settings::terminate(false);
 
     QFileInfo inf(projectFile->getFilename());
-    const QString rootpath = projectFile->getRootPath();
+    const QString& rootpath = projectFile->getRootPath();
+
+    if (isCppcheckPremium() && !projectFile->getLicenseFile().isEmpty()) {
+        if (rootpath.isEmpty() || rootpath == ".")
+            QDir::setCurrent(inf.absolutePath());
+        else if (QDir(rootpath).isAbsolute())
+            QDir::setCurrent(rootpath);
+        else
+            QDir::setCurrent(inf.absolutePath() + "/" + rootpath);
+
+        QString licenseFile = projectFile->getLicenseFile();
+        if (!QFileInfo(licenseFile).isAbsolute() && !rootpath.isEmpty())
+            licenseFile = inf.absolutePath() + "/" + licenseFile;
+
+#ifdef Q_OS_WIN
+        const QString premiumaddon = QCoreApplication::applicationDirPath() + "/premiumaddon.exe";
+#else
+        const QString premiumaddon = QCoreApplication::applicationDirPath() + "/premiumaddon";
+#endif
+        const std::vector<std::string> args{"--check-loc-license", licenseFile.toStdString()};
+        std::string output;
+        CheckThread::executeCommand(premiumaddon.toStdString(), args, "", output);
+        std::ofstream fout(inf.absolutePath().toStdString() + "/cppcheck-premium-loc");
+        fout << output;
+    }
 
     QDir::setCurrent(inf.absolutePath());
 
@@ -1747,7 +1983,16 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
             case ImportProject::Type::FAILURE:
                 errorMessage = tr("Failed to import project file");
                 break;
+            case ImportProject::Type::NONE:
+                // can never happen
+                break;
             }
+
+            if (!p.errors.empty())
+                errorMessage += ": \n";
+
+            for (const auto &error : p.errors)
+                errorMessage += "\n - " + QString::fromStdString(error);
 
             if (!errorMessage.isEmpty()) {
                 QMessageBox msg(QMessageBox::Critical,
@@ -1761,17 +2006,17 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
         } catch (InternalError &e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),
-                            tr("Failed to import '%1', analysis is stopped").arg(prjfile),
+                            tr("Failed to import '%1' (%2), analysis is stopped").arg(prjfile).arg(QString::fromStdString(e.errorMessage)),
                             QMessageBox::Ok,
                             this);
             msg.exec();
             return;
         }
-        doAnalyzeProject(p, checkLibrary, checkConfiguration);
+        doAnalyzeProject(p, checkLibrary, checkConfiguration);  // TODO: avoid copy
         return;
     }
 
-    QStringList paths = projectFile->getCheckPaths();
+    QStringList paths = recheckFiles.isEmpty() ? projectFile->getCheckPaths() : recheckFiles;
 
     // If paths not given then check the root path (which may be the project
     // file's location, see above). This is to keep the compatibility with
@@ -1812,7 +2057,7 @@ void MainWindow::newProjectFile()
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         addProjectMRU(filepath);
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
     } else {
         closeProjectFile();
     }
@@ -1833,7 +2078,7 @@ void MainWindow::editProjectFile()
     if (!mProjectFile) {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        QString(tr("No project file loaded")),
+                        tr("No project file loaded"),
                         QMessageBox::Ok,
                         this);
         msg.exec();
@@ -1843,7 +2088,7 @@ void MainWindow::editProjectFile()
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         mProjectFile->write();
-        analyzeProject(mProjectFile);
+        analyzeProject(mProjectFile, QStringList());
     }
 }
 
@@ -1888,7 +2133,7 @@ void MainWindow::enableProjectOpenActions(bool enable)
 
 void MainWindow::openRecentProject()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
+    auto *action = qobject_cast<QAction *>(sender());
     if (!action)
         return;
     const QString project = action->data().toString();
@@ -1940,7 +2185,7 @@ void MainWindow::updateMRUMenuItems()
     if (removed)
         mSettings->setValue(SETTINGS_MRU_PROJECTS, projects);
 
-    const int numRecentProjects = qMin(projects.size(), (int)MaxRecentProjects);
+    const int numRecentProjects = qMin(projects.size(), static_cast<int>(MaxRecentProjects));
     for (int i = 0; i < numRecentProjects; i++) {
         const QString filename = QFileInfo(projects[i]).fileName();
         const QString text = QString("&%1 %2").arg(i + 1).arg(filename);
@@ -1977,9 +2222,9 @@ void MainWindow::removeProjectMRU(const QString &project)
 
 void MainWindow::selectPlatform()
 {
-    QAction *action = qobject_cast<QAction *>(sender());
+    auto *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) action->data().toInt();
+        const Platform::Type platform = static_cast<Platform::Type>(action->data().toInt());
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }
@@ -1990,7 +2235,7 @@ void MainWindow::suppressIds(QStringList ids)
         return;
     ids.removeDuplicates();
 
-    QList<Suppressions::Suppression> suppressions = mProjectFile->getSuppressions();
+    QList<SuppressionList::Suppression> suppressions = mProjectFile->getSuppressions();
     for (const QString& id : ids) {
         // Remove all matching suppressions
         std::string id2 = id.toStdString();
@@ -2001,7 +2246,7 @@ void MainWindow::suppressIds(QStringList ids)
                 ++i;
         }
 
-        Suppressions::Suppression newSuppression;
+        SuppressionList::Suppression newSuppression;
         newSuppression.errorId = id2;
         suppressions << newSuppression;
     }
@@ -2019,17 +2264,17 @@ static int getVersion(const QString& nameWithVersion) {
             break;
         if (c == ' ') {
             if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
-                return ret * 1000000 + v * 1000 + 500;
+                return (ret * 1000000) + (v * 1000) + 500;
             dot = ret = v = 0;
         }
         else if (c == '.') {
             ++dot;
-            ret = ret * 1000 + v;
+            ret = (ret * 1000) + v;
             v = 0;
         } else if (c >= '0' && c <= '9')
-            v = v * 10 + (c.toLatin1() - '0');
+            v = (v * 10) + (c.toLatin1() - '0');
     }
-    ret = ret * 1000 + v;
+    ret = (ret * 1000) + v;
     while (dot < 2) {
         ++dot;
         ret *= 1000;
@@ -2047,7 +2292,9 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
     const QString str = reply->readAll();
     qDebug() << "Response: " << str;
     if (reply->url().fileName() == "version.txt") {
+        // TODO: lacks extra version
         QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+        // TODO: this should not contain the version
         if (!mCppcheckCfgProductName.isEmpty())
             nameWithVersion = mCppcheckCfgProductName;
         const int appVersion = getVersion(nameWithVersion);
@@ -2086,3 +2333,65 @@ bool MainWindow::isCppcheckPremium() const {
     return mCppcheckCfgProductName.startsWith("Cppcheck Premium ");
 }
 
+void MainWindow::changeReportType() {
+    const ReportType reportType = mUI->mActionReportAutosar->isChecked() ? ReportType::autosar :
+                                  mUI->mActionReportCertC->isChecked() ? ReportType::certC :
+                                  mUI->mActionReportCertCpp->isChecked() ? ReportType::certCpp :
+                                  mUI->mActionReportMisraC->isChecked() ? (mProjectFile ? getMisraCReportType(mProjectFile->getCodingStandards()) : ReportType::misraC2012) :
+                                  mUI->mActionReportMisraCpp2008->isChecked() ? ReportType::misraCpp2008 :
+                                  mUI->mActionReportMisraCpp2023->isChecked() ? ReportType::misraCpp2023 :
+                                  ReportType::normal;
+
+    mUI->mResults->setReportType(reportType);
+
+    auto setTextAndHint = [](QAction* a, const QString& s) {
+        a->setVisible(!s.isEmpty());
+        a->setText(s);
+        a->setToolTip(s);
+    };
+
+    const QString showMandatory = tr("Show Mandatory");
+    const QString showRequired = tr("Show Required");
+    const QString showAdvisory = tr("Show Advisory");
+    const QString showDocument = tr("Show Document");
+
+    if (mUI->mActionReportAutosar->isChecked()) {
+        setTextAndHint(mUI->mActionShowErrors, "");
+        setTextAndHint(mUI->mActionShowWarnings, showRequired);
+        setTextAndHint(mUI->mActionShowStyle, showAdvisory);
+        setTextAndHint(mUI->mActionShowPortability, "");
+        setTextAndHint(mUI->mActionShowPerformance, "");
+        setTextAndHint(mUI->mActionShowInformation, "");
+    } else if (mUI->mActionReportMisraC->isChecked() || mUI->mActionReportMisraCpp2008->isChecked() || mUI->mActionReportMisraCpp2023->isChecked()) {
+        setTextAndHint(mUI->mActionShowErrors, mUI->mActionReportMisraCpp2008->isChecked() ? "" : showMandatory);
+        setTextAndHint(mUI->mActionShowWarnings, showRequired);
+        setTextAndHint(mUI->mActionShowStyle, showAdvisory);
+        setTextAndHint(mUI->mActionShowPortability, "");
+        setTextAndHint(mUI->mActionShowPerformance, "");
+        setTextAndHint(mUI->mActionShowInformation, mUI->mActionReportMisraCpp2008->isChecked() ? showDocument : QString());
+    } else if (mUI->mActionReportCertC->isChecked() || mUI->mActionReportCertCpp->isChecked()) {
+        setTextAndHint(mUI->mActionShowErrors, tr("Show L1"));
+        setTextAndHint(mUI->mActionShowWarnings, tr("Show L2"));
+        setTextAndHint(mUI->mActionShowStyle, tr("Show L3"));
+        setTextAndHint(mUI->mActionShowPortability, "");
+        setTextAndHint(mUI->mActionShowPerformance, "");
+        setTextAndHint(mUI->mActionShowInformation, "");
+    } else {
+        setTextAndHint(mUI->mActionShowErrors, tr("Show errors"));
+        setTextAndHint(mUI->mActionShowWarnings, tr("Show warnings"));
+        setTextAndHint(mUI->mActionShowStyle, tr("Show style"));
+        setTextAndHint(mUI->mActionShowPortability, tr("Show portability"));
+        setTextAndHint(mUI->mActionShowPerformance, tr("Show performance"));
+        setTextAndHint(mUI->mActionShowInformation, tr("Show information"));
+    }
+}
+
+std::list<FileWithDetails> MainWindow::enrichFilesForAnalysis(const QStringList& fileNames, const Settings& settings) const {
+    std::list<FileWithDetails> fdetails;
+    std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(fdetails), [](const QString& f) {
+        return FileWithDetails{f.toStdString(), Standards::Language::None, static_cast<std::size_t>(QFile(f).size())};
+    });
+    const Standards::Language enforcedLang = static_cast<Standards::Language>(mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt());
+    frontend::applyLang(fdetails, settings, enforcedLang);
+    return fdetails;
+}

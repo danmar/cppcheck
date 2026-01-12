@@ -33,10 +33,7 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 
 `readability-braces-around-statements`<br/>
 `readability-isolate-declaration`<br/>
-`modernize-use-trailing-return-type`<br/>
-`modernize-use-auto`<br/>
 `readability-uppercase-literal-suffix`<br/>
-`readability-else-after-return`<br/>
 `readability-identifier-length`<br/>
 
 These do not reflect the style we are (currently) enforcing.
@@ -71,13 +68,9 @@ These might change the behavior of code which might not be intended (need to fil
 
 This leads to a mismatch of raw string literals and regular ones and does reduce the readability.
 
-`readability-convert-member-functions-to-static`<br/>
-
-Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
-
 `-clang-analyzer-*`<br/>
 
-Disabled because of false positives (needs to file an upstream bug report).
+Disabled because of false positives (need to file upstream bug reports). The checks are also quite time consuming.
 
 `misc-non-private-member-variables-in-classes`<br/>
 
@@ -86,7 +79,6 @@ We intentionally use this.
 `misc-no-recursion`<br/>
 
 Leads to lots of "false positives". This seem to enforce a coding guidelines of certain codebases.
-
 
 `bugprone-easily-swappable-parameters`<br/>
 
@@ -112,10 +104,6 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 Produces warnings which might be considered false positives starting with C++11 - see https://github.com/llvm/llvm-project/issues/54526.
 
-`readability-redundant-access-specifiers`<br/>
-
-Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
-
 `modernize-avoid-c-arrays`<br/>
 
 Produces warnings when `const char[]` is being used which is quite common in our code. Does not make sense to enable before C++17 when `std::string_view` becomes available.
@@ -123,21 +111,25 @@ Also reports a false positive about templates which deduce the array length: htt
 
 `misc-include-cleaner`<br/>
 
-We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them. 
+We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them.
+
+`readability-use-concise-preprocessor-directives`<br/>
+
+Does not improve the readability.
 
 `bugprone-branch-clone`<br/>
-`readability-const-return-type`<br/>
 `modernize-return-braced-init-list`<br/>
 `misc-throw-by-value-catch-by-reference`<br/>
-`readability-avoid-const-params-in-decls`<br/>
 `bugprone-signed-char-misuse`<br/>
-`readability-redundant-access-specifiers`<br/>
 `concurrency-mt-unsafe`<br/>
 `misc-use-anonymous-namespace`<br/>
 `performance-avoid-endl`<br/>
-`performance-noexcept-swap`<br/>
 `bugprone-switch-missing-default-case`<br/>
 `bugprone-empty-catch`<br/>
+`readability-avoid-nested-conditional-operator`<br/>
+`modernize-use-designated-initializers`<br/>
+`readability-enum-initial-value`<br/>
+`modernize-use-trailing-return-type`<br/>
 
 To be evaluated (need to remove exclusion).
 
@@ -145,7 +137,6 @@ To be evaluated (need to remove exclusion).
 `cppcoreguidelines-avoid-const-or-ref-data-members`<br/>
 `cppcoreguidelines-macro-usage`<br/>
 `cppcoreguidelines-pro-type-member-init`<br/>
-`cppcoreguidelines-pro-type-static-cast-downcast`<br/>
 `cppcoreguidelines-prefer-member-initializer`<br/>
 `cppcoreguidelines-misleading-capture-default-by-value`<br/>
 `bugprone-argument-comment.CommentBoolLiterals`<br/>
@@ -154,6 +145,18 @@ To be evaluated (need to remove exclusion).
 `cppcoreguidelines-special-member-functions`<br/>
 
 To be evaluated (need to enable explicitly).
+
+`modernize-type-traits`<br/>
+`modernize-use-nodiscard`<br/>
+`modernize-use-scoped-lock`<br/>
+
+These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
+
+`portability-avoid-pragma-once`<br/>
+
+We are not interested in this.
+
+### Disabled for performance reasons
 
 `portability-std-allocator-const`<br/>
 
@@ -178,3 +181,21 @@ We are currently using our own `naming.json` to enforce naming schemes. Also dis
 `portability-simd-intrinsics`<br/>
 
 We are not using SIMD instructions and it suggests to use `std::experiemental::` features which might not be commonly available. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`modernize-macro-to-enum`<br/>
+
+It does not seem to produce any warnings for us (needs to be investigated) and it is one of the more expensive checks.
+
+`misc-unused-using-decls`<br/>
+
+This is the most expensive check for several files and it is providing much in terms of code quality. Reported upstream as https://github.com/llvm/llvm-project/issues/72300.
+
+### Disabled for GUI only
+
+`readability-convert-member-functions-to-static`<br/>
+
+Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
+
+`readability-redundant-access-specifiers`<br/>
+
+Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.

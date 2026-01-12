@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,13 +22,15 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "token.h"
+#include "standards.h"
 
 #include <cstddef>
-#include <iosfwd>
+#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
+class Token;
 class Settings;
 
 namespace simplecpp {
@@ -38,30 +40,32 @@ namespace simplecpp {
 /// @addtogroup Core
 /// @{
 
+/**
+ * @brief This struct stores pointers to the front and back tokens of the list this token is in.
+ */
+struct TokensFrontBack {
+    Token *front{};
+    Token* back{};
+};
+
 class CPPCHECKLIB TokenList {
 public:
-    explicit TokenList(const Settings* settings);
+    explicit TokenList(const Settings& settings, Standards::Language lang);
     ~TokenList();
 
     TokenList(const TokenList &) = delete;
     TokenList &operator=(const TokenList &) = delete;
 
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-    }
+    TokenList(TokenList&& other) NOEXCEPT = default;
 
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
-    /** Is the code C. Used for bailouts */
-    bool isC() const {
-        return mIsC;
-    }
+    /** @return true if the code is C */
+    bool isC() const;
 
-    /** Is the code CPP. Used for bailouts */
-    bool isCPP() const {
-        return mIsCpp;
-    }
+    /** @return true if the code is C++ */
+    bool isCPP() const;
 
     /**
      * Delete all tokens in given token list
@@ -69,10 +73,10 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(const std::string& str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
+    void addtoken(const std::string& str, nonneg int lineno, nonneg int column, nonneg int fileno, bool split = false);
     void addtoken(const std::string& str, const Token *locationTok);
 
-    void addtoken(const Token *tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
+    void addtoken(const Token *tok, nonneg int lineno, nonneg int column, nonneg int fileno);
     void addtoken(const Token *tok, const Token *locationTok);
     void addtoken(const Token *tok);
 
@@ -86,7 +90,7 @@ public:
      * @param one_line true=>copy all tokens to the same line as dest. false=>copy all tokens to dest while keeping the 'line breaks'
      * @return new location of last token copied
      */
-    static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
+    RET_NONNULL static Token *copyTokens(Token *dest, const Token *first, const Token *last, bool one_line = true);
 
     /**
      * Create tokens from code.
@@ -94,10 +98,16 @@ public:
      * - multiline strings are not handled.
      * - UTF in the code are not handled.
      * - comments are not handled.
-     * @param code input stream for code
-     * @param file0 source file name
      */
-    bool createTokens(std::istream &code, const std::string& file0 = emptyString);
+    bool createTokensFromBuffer(const uint8_t* data, size_t size) {
+        return createTokensFromBuffer(reinterpret_cast<const char*>(data), size);
+    }
+    bool createTokensFromBuffer(const char* data, size_t size);
+    template<size_t size>
+    // cppcheck-suppress unusedFunction - used in tests only
+    bool createTokensFromString(const char (&data)[size]) {
+        return createTokensFromBuffer(data, size-1);
+    }
 
     void createTokens(simplecpp::TokenList&& tokenList);
 
@@ -109,20 +119,20 @@ public:
 
     /** get first token of list */
     const Token *front() const {
-        return mTokensFrontBack.front;
+        return mTokensFrontBack->front;
     }
     // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *front() {
-        return mTokensFrontBack.front;
+        return mTokensFrontBack->front;
     }
 
     /** get last token of list */
     const Token *back() const {
-        return mTokensFrontBack.back;
+        return mTokensFrontBack->back;
     }
     // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *back() {
-        return mTokensFrontBack.back;
+        return mTokensFrontBack->back;
     }
 
     /**
@@ -158,14 +168,15 @@ public:
 
     /**
      * Create abstract syntax tree.
+     * @throws InternalError thrown if encountering an infinite loop in AST creation
      */
     void createAst() const;
 
     /**
      * Check abstract syntax tree.
-     * Throws InternalError on failure
+     * @throws InternalError thrown if validation fails
      */
-    void validateAst() const;
+    void validateAst(bool print) const;
 
     /**
      * Verify that the given token is an element of the tokenlist.
@@ -192,11 +203,23 @@ public:
 
     bool isKeyword(const std::string &str) const;
 
+    /**
+     * is token pointing at function head?
+     * @param tok         A '(' or ')' token in a possible function head
+     * @param endsWith    string after function head
+     * @return token matching with endsWith if syntax seems to be a function head else nullptr
+     */
+    static const Token * isFunctionHead(const Token *tok, const std::string &endsWith);
+
+    const Settings& getSettings() const {
+        return mSettings;
+    }
+
 private:
-    void determineCppC();
+    bool createTokensFromBufferInternal(const char* data, std::size_t size, const std::string& file0);
 
     /** Token list */
-    TokensFrontBack mTokensFrontBack;
+    std::shared_ptr<TokensFrontBack> mTokensFrontBack;
 
     /** filenames for the tokenized source code (source + included) */
     std::vector<std::string> mFiles;
@@ -205,11 +228,10 @@ private:
     std::vector<std::string> mOrigFiles;
 
     /** settings */
-    const Settings* mSettings{};
+    const Settings& mSettings;
 
     /** File is known to be C/C++ code */
-    bool mIsC{};
-    bool mIsCpp{};
+    Standards::Language mLang{Standards::Language::None};
 };
 
 /// @}

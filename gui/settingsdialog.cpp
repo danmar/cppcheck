@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,10 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     QSettings settings;
     mTempApplications->copy(list);
 
+    int maxjobs = QThread::idealThreadCount();
+
     mUI->mJobs->setText(settings.value(SETTINGS_CHECK_THREADS, 1).toString());
+    mUI->mJobs->setValidator(new QIntValidator(1, maxjobs, this));
     mUI->mForce->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FORCE, false).toBool()));
     mUI->mShowFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
     mUI->mShowNoErrorsMessage->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
@@ -73,7 +76,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mInlineSuppressions->setCheckState(boolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
     mUI->mEnableInconclusive->setCheckState(boolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
     mUI->mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
-    mUI->mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
+    mUI->mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, true).toBool()));
     mUI->mCheckForUpdates->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()));
     mUI->mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
     validateEditPythonPath();
@@ -119,11 +122,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mListWidget->setSortingEnabled(false);
     populateApplicationList();
 
-    const int count = QThread::idealThreadCount();
-    if (count != -1)
-        mUI->mLblIdealThreads->setText(QString::number(count));
-    else
-        mUI->mLblIdealThreads->setText(tr("N/A"));
+    mUI->mLblMaxThreads->setText(QString::number(maxjobs));
 
     loadSettings();
     initTranslationsList();
@@ -140,7 +139,7 @@ void SettingsDialog::initTranslationsList()
 {
     const QString current = mTranslator->getCurrentLanguage();
     for (const TranslationInfo& translation : mTranslator->getTranslations()) {
-        QListWidgetItem *item = new QListWidgetItem;
+        auto *item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(mLangCodeRole, QVariant(translation.mCode));
         mUI->mListLanguages->addItem(item);
@@ -179,13 +178,9 @@ void SettingsDialog::saveSettings() const
 
 void SettingsDialog::saveSettingValues() const
 {
-    int jobs = mUI->mJobs->text().toInt();
-    if (jobs <= 0) {
-        jobs = 1;
-    }
-
     QSettings settings;
-    settings.setValue(SETTINGS_CHECK_THREADS, jobs);
+    if (mUI->mJobs->hasAcceptableInput())
+        settings.setValue(SETTINGS_CHECK_THREADS, mUI->mJobs->text().toInt());
     saveCheckboxValue(&settings, mUI->mForce, SETTINGS_CHECK_FORCE);
     saveCheckboxValue(&settings, mUI->mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
     saveCheckboxValue(&settings, mUI->mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
@@ -214,7 +209,7 @@ void SettingsDialog::saveSettingValues() const
     CodeEditorStyle::saveSettings(&settings, *mCurrentStyle);
 }
 
-void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
+void SettingsDialog::saveCheckboxValue(QSettings *settings, const QCheckBox *box,
                                        const QString &name)
 {
     settings->setValue(name, checkStateToBool(box->checkState()));

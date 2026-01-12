@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#ifndef checkersReportH
+#define checkersReportH
 
-#include "settings.h"
+#include "config.h"
+
 #include <set>
 #include <string>
+
+class Settings;
 
 class CPPCHECKLIB CheckersReport {
 public:
@@ -30,6 +34,7 @@ public:
     int getAllCheckersCount();
 
     std::string getReport(const std::string& criticalErrors) const;
+    std::string getXmlReport(const std::string& criticalErrors) const;
 
 private:
     const Settings& mSettings;
@@ -41,4 +46,4 @@ private:
     int mAllCheckersCount = 0;
 };
 
-
+#endif

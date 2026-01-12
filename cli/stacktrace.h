@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,14 @@
  * That is very sensitive to the operating system, hardware, compiler and runtime.
  * The code is not meant for production environment!
  * One reason is named first: it's using functions not whitelisted for usage in a signal handler function.
+ *
+ * @param output the descriptor to write the trace to
+ * @param start_idx the frame index to start with
+ * @param demangling controls demangling of symbols
+ * @param maxdepth the maximum number of frames to list (32 at most or if -1)
+ * @param omit_above_own omit top frames which are above our own code (i.e. libc symbols)
  */
-void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem);
+void print_stacktrace(FILE* output, int start_idx, bool demangling, int maxdepth, bool omit_above_own);
 
 #endif
 

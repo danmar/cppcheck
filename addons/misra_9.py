@@ -1,5 +1,3 @@
-import cppcheckdata
-
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
     def __init__(self, elementType, name, valueType, dimensions = None):
@@ -140,8 +138,7 @@ class ElementDef:
     def getEffectiveLevel(self):
         if self.parent and self.parent.elementType == "array":
             return self.parent.getEffectiveLevel() + 1
-        else:
-            return 0
+        return 0
 
     def setInitialized(self, designated=False, positional=False):
         if designated:
@@ -203,11 +200,10 @@ class ElementDef:
                   self.isOnlyDesignated()) and
                  all([not (child.isDesignated or child.isPositional) or child.isMisra93Compliant() for child in self.children]))
             return result
-        elif self.elementType == 'record':
+        if self.elementType == 'record':
             result = all([child.isMisra93Compliant() for child in self.children])
             return result
-        else:
-            return True
+        return True
 
     def isMisra94Compliant(self):
         return self.numInits <= 1 and all([child.isMisra94Compliant() for child in self.children])
@@ -311,7 +307,6 @@ class InitializerParser:
                 if self.ed and self.ed.isValue:
                     if not isDesignated and len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
                         self.rootStack[-1][0].markStuctureViolation(self.token)
-
                     if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
@@ -373,61 +368,32 @@ class InitializerParser:
         while self.token:
             if self.token.astParent.astOperand1 == self.token and self.token.astParent.astOperand2:
                 if self.ed:
-                    self.ed.markAsCurrent()
-                    self.ed = self.ed.getNextValueElement(self.root)
+                    if self.token.astParent.astOperand2.str == "{" and self.ed.isDesignated:
+                        self.popFromStackIfExitElement()
+                    else:
+                        self.ed.markAsCurrent()
+                        self.ed = self.ed.getNextValueElement(self.root)
 
                 self.token = self.token.astParent.astOperand2
                 break
-            else:
-                self.token = self.token.astParent
-                if self.token.str == '{':
-                    if self.root:
-                        self.ed = self.root.getLastValueElement()
-                        self.ed.markAsCurrent()
 
-                        # Cleanup if root is dummy node representing excess levels in initializer
-                        if self.root.name == '<-':
-                            self.root.children[0].parent = self.root.parent
+            self.token = self.token.astParent
+            if self.token.str == '{':
+                if self.root:
+                    self.ed = self.root.getLastValueElement()
+                    self.ed.markAsCurrent()
 
-                        self.root = self.root.parent
+                    # Cleanup if root is dummy node representing excess levels in initializer
+                    if self.root.name == '<-':
+                        self.root.children[0].parent = self.root.parent
 
-                if self.token.astParent is None:
-                    self.token = None
-                    break
+                    self.root = self.root.parent
+
+            if self.token.astParent is None:
+                self.token = None
+                break
 
 def misra_9_x(self, data, rule, rawTokens = None):
-    # If there are arrays with unknown size constants then we need to warn about missing configuration
-    # and bailout
-    has_config_errors = False
-    for var in data.variables:
-        if not var.isArray or var.nameToken is None or not cppcheckdata.simpleMatch(var.nameToken.next,'['):
-            continue
-        tok = var.nameToken.next
-        while tok.str == '[':
-            sz = tok.astOperand2
-            if sz and sz.getKnownIntValue() is None:
-                has_var = False
-                unknown_constant = False
-                tokens = [sz]
-                while len(tokens) > 0:
-                    t = tokens[-1]
-                    tokens = tokens[:-1]
-                    if t:
-                        if t.isName and t.getKnownIntValue() is None:
-                            if t.varId or t.variable:
-                                has_var = True
-                                continue
-                            unknown_constant = True
-                            cppcheckdata.reportError(sz, 'error', 'Unknown constant {}, please review configuration'.format(t.str), 'misra', 'config')
-                            has_config_errors = True
-                        if t.isArithmeticalOp:
-                            tokens += [t.astOperand1, t.astOperand2]
-                if not unknown_constant and not has_var:
-                    cppcheckdata.reportError(sz, 'error', 'Unknown array size, please review configuration', 'misra', 'config')
-                    has_config_errors = True
-            tok = tok.link.next
-    if has_config_errors:
-        return
 
     parser = InitializerParser()
 
@@ -532,11 +498,29 @@ def createRecordChildrenDefs(ed, var):
         child = ElementDef("pointer", var.nameToken, var.nameToken.valueType)
         ed.addChild(child)
         return
+    child_dict = {}
     for variable in valueType.typeScope.varlist:
         if variable is var:
             continue
         child = getElementDef(variable.nameToken)
-        ed.addChild(child)
+        child_dict[variable.nameToken] = child
+    for scopes in valueType.typeScope.nestedList:
+        varscope = False
+        if scopes.nestedIn == valueType.typeScope:
+            for variable in valueType.typeScope.varlist:
+                if variable.nameToken and variable.nameToken.valueType and variable.nameToken.valueType.typeScope == scopes:
+                    varscope = True
+                    break
+            if not varscope:
+                ed1 = ElementDef("record", scopes.Id, valueType)
+                for variable in scopes.varlist:
+                    child = getElementDef(variable.nameToken)
+                    ed1.addChild(child)
+                child_dict[scopes.bodyStart] = ed1
+    sorted_keys = sorted(list(child_dict.keys()), key=lambda k: (k.file, k.linenr, k.column))
+    for _key in sorted_keys:
+        ed.addChild(child_dict[_key])
+
 
 def getElementByDesignator(ed, token):
     if not token.str in [ '.', '[' ]:

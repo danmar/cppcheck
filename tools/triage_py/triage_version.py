@@ -4,6 +4,7 @@ import subprocess
 import sys
 import argparse
 import time
+import difflib
 
 from packaging.version import Version
 
@@ -21,6 +22,7 @@ parser.add_argument('--compact', action='store_true', help='only print versions 
 parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
 parser.add_argument('--perf', action='store_true', default=False, help='output duration of execution in seconds (CSV format)')
 parser.add_argument('--start', default=None, help='specify the start version/commit')
+parser.add_argument('--diff', action='store_true', help='show differences as unified diff')
 package_group = parser.add_mutually_exclusive_group()
 package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
 package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
@@ -28,9 +30,10 @@ args = parser.parse_args()
 
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
-    p = subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True)
-    stdout, stderr = p.communicate()
-    if p.returncode != 0:
+    with subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True) as p:
+        stdout, stderr = p.communicate()
+        rc = p.returncode
+    if rc != 0:
         print('error: sorting commit hashes failed')
         print(stderr)
         sys.exit(1)
@@ -89,6 +92,17 @@ except:
     # this is the commit hash for the 2.9 release tag. it does not exist in the main branch so the version for it cannot be determined
     if versions.count('aca3f6fef'):
         versions.remove('aca3f6fef')
+    # 2.8 tags
+    if versions.count('61f846073'):
+        versions.remove('61f846073')
+    if versions.count('f998703a5'):
+        versions.remove('f998703a5')
+    # ???
+    if versions.count('d4505827b'):
+        versions.remove('d4505827b')
+    # 2.6 tag
+    if versions.count('d873b8e77'):
+        versions.remove('d873b8e77')
     len_in = len(versions)
     versions = sort_commit_hashes(versions)
     if len(versions) != len_in:
@@ -98,8 +112,10 @@ except:
 if verbose:
     print("analyzing '{}'".format(input_file))
 
+last_udiff_version = ''
 last_ec = None
 last_out = None
+last_udiff = None
 
 if args.perf:
     print('version,time')
@@ -120,9 +136,14 @@ for entry in versions:
     else:
         # get version string
         version_cmd = exe + ' ' + '--version'
-        version = subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True).stdout.read().strip()
+        with subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True) as p:
+            # TODO: handle p.returncode?
+            version = p.stdout.read().strip()
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
+
+    if version == 'CPPCHECK_MAJOR.CPPCHECK_DEVMINOR':
+        continue
 
     cmd = [exe]
     if do_compare and not args.no_quiet:
@@ -154,6 +175,8 @@ for entry in versions:
         else:
             # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
             cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
+    if Version(version) >= Version('2.13'):
+        cmd.append('--suppress=checkersReport')
     # TODO: how to pass additional options?
     if args.perf:
         cmd.append('--error-exitcode=0')
@@ -164,22 +187,23 @@ for entry in versions:
         start = time.time_ns()
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
-        comm = p.communicate(timeout=args.timeout)
+        stdout, stderr = p.communicate(timeout=args.timeout)
         if args.perf:
             end = time.time_ns()
         out = ''
         if not args.no_stdout:
-            out += comm[0]
+            out += stdout
         if not args.no_stdout and not args.no_stderr:
             out += '\n'
         if not args.no_stderr:
-            out += comm[1]
+            out += stderr
     except subprocess.TimeoutExpired:
         out = "timeout"
         p.kill()
-        comm = p.communicate()
+        p.communicate()
 
     ec = p.returncode
+    p = None
 
     if not do_compare:
         if not use_hashes:
@@ -189,7 +213,7 @@ for entry in versions:
         if args.perf:
             if out == "timeout":
                 data_str = "0.0" # TODO: how to handle these properly?
-            elif not ec == 0:
+            elif ec != 0:
                 continue # skip errors
             else:
                 data_str = '{}'.format((end - start) / 1000.0 / 1000.0 / 1000.0)
@@ -227,6 +251,7 @@ for entry in versions:
         continue
 
     do_print = False
+    udiff = None
 
     if last_ec != ec:
         if verbose:
@@ -237,10 +262,16 @@ for entry in versions:
         if verbose:
             print("{}: output changed".format(version))
         do_print = True
+        if args.diff:
+            udiff = difflib.unified_diff(last_out.splitlines(True), out.splitlines(True), fromfile=last_udiff_version, tofile=version)
+            last_udiff_version = version
 
     if do_print:
         print(last_ec)
         print(last_out)
+        if last_udiff:
+            sys.stdout.writelines(last_udiff)
+            sys.stdout.write('\n')
 
     # do not print intermediate versions with --compact
     if not args.compact or do_print:
@@ -251,10 +282,15 @@ for entry in versions:
 
     last_ec = ec
     last_out = out
+    if udiff:
+        last_udiff = udiff
 
 if do_compare:
     print(last_ec)
     print(last_out)
+    if last_udiff:
+        sys.stdout.writelines(last_udiff)
+        sys.stdout.write('\n')
 
 if verbose:
     print('done')

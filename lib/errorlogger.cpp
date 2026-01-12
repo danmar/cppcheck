@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,52 +20,57 @@
 
 #include "color.h"
 #include "cppcheck.h"
-#include "mathlib.h"
 #include "path.h"
+#include "settings.h"
+#include "suppressions.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <cctype>
 #include <cstring>
+#include <fstream>
 #include <iomanip>
-#include <sstream> // IWYU pragma: keep
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
 
-#include <tinyxml2.h>
+#include "xml.h"
 
 const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "cppcheckError",
     "cppcheckLimit",
+    "includeNestedTooDeeply",
     "internalAstError",
     "instantiationError",
     "internalError",
+    "missingFile",
     "premium-internalError",
     "premium-invalidArgument",
     "premium-invalidLicense",
     "preprocessorErrorDirective",
     "syntaxError",
+    "unhandledChar",
     "unknownMacro"
 };
 
 ErrorMessage::ErrorMessage()
-    : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
+    : severity(Severity::none), cwe(0U), certainty(Certainty::normal)
 {}
 
 // TODO: id and msg are swapped compared to other calls
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity severity, const std::string &msg, std::string id, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(0U),
-    certainty(certainty),
-    hash(0)
+    certainty(certainty)
 {
     // set the summary and verbose messages
     setmsg(msg);
@@ -73,24 +78,23 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
 
 
 // TODO: id and msg are swapped compared to other calls
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity severity, const std::string &msg, std::string id, const CWE &cwe, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
-    certainty(certainty),
-    hash(0)
+    certainty(certainty)
 {
     // set the summary and verbose messages
     setmsg(msg);
 }
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty certainty)
-    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity severity, std::string id, const std::string& msg, Certainty certainty)
+    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty)
 {
     // Format callstack
-    for (std::list<const Token *>::const_iterator it = callstack.cbegin(); it != callstack.cend(); ++it) {
+    for (auto it = callstack.cbegin(); it != callstack.cend(); ++it) {
         // --errorlist can provide null values here
         if (!(*it))
             continue;
@@ -105,7 +109,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity severity, std::string id, const std::string& msg, const CWE &cwe, Certainty certainty)
     : id(std::move(id)), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
@@ -122,28 +126,32 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 
     setmsg(msg);
 
-    hash = 0; // calculateWarningHash(list, hashWarning.str());
+    // hash = calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
+ErrorMessage::ErrorMessage(ErrorPath errorPath, const TokenList *tokenList, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
     : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
-    for (const ErrorPathItem& e: errorPath) {
+    for (ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
         // --errorlist can provide null values here
         if (!tok)
             continue;
 
-        std::string info = e.second;
+        std::string& path_info = e.second;
 
-        if (startsWith(info,"$symbol:") && info.find('\n') < info.size()) {
-            const std::string::size_type pos = info.find('\n');
-            const std::string &symbolName = info.substr(8, pos - 8);
-            info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
+        std::string info;
+        if (startsWith(path_info,"$symbol:") && path_info.find('\n') < path_info.size()) {
+            const std::string::size_type pos = path_info.find('\n');
+            const std::string symbolName = path_info.substr(8, pos - 8);
+            info = replaceStr(path_info.substr(pos+1), "$symbol", symbolName);
+        }
+        else {
+            info = std::move(path_info);
         }
 
-        callStack.emplace_back(tok, info, tokenList);
+        callStack.emplace_back(tok, std::move(info), tokenList);
     }
 
     if (tokenList && !tokenList->getFiles().empty())
@@ -151,7 +159,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
     setmsg(msg);
 
-    hash = 0; // calculateWarningHash(tokenList, hashWarning.str());
+    // hash = calculateWarningHash(tokenList, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
@@ -164,10 +172,14 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     const char *attr = errmsg->Attribute("id");
     id = attr ? attr : unknown;
 
+    attr = errmsg->Attribute("file0");
+    file0 = attr ? attr : "";
+
     attr = errmsg->Attribute("severity");
-    severity = attr ? Severity::fromString(attr) : Severity::none;
+    severity = attr ? severityFromString(attr) : Severity::none;
 
     attr = errmsg->Attribute("cwe");
+    // cppcheck-suppress templateInstantiation - TODO: fix this - see #11631
     cwe.id = attr ? strToInt<unsigned short>(attr) : 0;
 
     attr = errmsg->Attribute("inconclusive");
@@ -183,18 +195,23 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     hash = attr ? strToInt<std::size_t>(attr) : 0;
 
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
-        if (std::strcmp(e->Name(),"location")==0) {
+        const char* name = e->Name();
+        if (std::strcmp(name,"location")==0) {
+            const char *strorigfile = e->Attribute("origfile");
             const char *strfile = e->Attribute("file");
             const char *strinfo = e->Attribute("info");
             const char *strline = e->Attribute("line");
             const char *strcolumn = e->Attribute("column");
 
             const char *file = strfile ? strfile : unknown;
+            const char *origfile = strorigfile ? strorigfile : file;
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? strToInt<int>(strline) : 0;
             const int column = strcolumn ? strToInt<int>(strcolumn) : 0;
-            callStack.emplace_front(file, info, line, column);
-        } else if (std::strcmp(e->Name(),"symbol")==0) {
+            callStack.emplace_front(origfile, info, line, column);
+            if (strorigfile)
+                callStack.front().setfile(file);
+        } else if (std::strcmp(name,"symbol")==0) {
             mSymbolNames += e->GetText();
         }
     }
@@ -233,29 +250,29 @@ static void serializeString(std::string &oss, const std::string & str)
     oss += str;
 }
 
-ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename)
+ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg)
 {
     if (internalError.token)
         assert(tokenList != nullptr); // we need to make sure we can look up the provided token
 
     std::list<ErrorMessage::FileLocation> locationList;
     if (tokenList && internalError.token) {
-        ErrorMessage::FileLocation loc(internalError.token, tokenList);
-        locationList.push_back(std::move(loc));
+        locationList.emplace_back(internalError.token, tokenList);
     } else {
-        ErrorMessage::FileLocation loc2(filename, 0, 0);
-        locationList.push_back(std::move(loc2));
+        locationList.emplace_back(filename, 0, 0);
         if (tokenList && (filename != tokenList->getSourceFilePath())) {
-            ErrorMessage::FileLocation loc(tokenList->getSourceFilePath(), 0, 0);
-            locationList.push_back(std::move(loc));
+            locationList.emplace_back(tokenList->getSourceFilePath(), 0, 0);
         }
     }
     ErrorMessage errmsg(std::move(locationList),
                         tokenList ? tokenList->getSourceFilePath() : filename,
                         Severity::error,
-                        internalError.errorMessage,
+                        (msg.empty() ? "" : (msg + ": ")) + internalError.errorMessage,
                         internalError.id,
                         Certainty::normal);
+    // TODO: find a better way
+    if (!internalError.details.empty())
+        errmsg.mVerboseMessage = errmsg.mVerboseMessage + ": " + internalError.details;
     return errmsg;
 }
 
@@ -264,30 +281,29 @@ std::string ErrorMessage::serialize() const
     // Serialize this message into a simple string
     std::string oss;
     serializeString(oss, id);
-    serializeString(oss, Severity::toString(severity));
+    serializeString(oss, severityToString(severity));
     serializeString(oss, std::to_string(cwe.id));
     serializeString(oss, std::to_string(hash));
+    serializeString(oss, fixInvalidChars(remark));
     serializeString(oss, file0);
-    if (certainty == Certainty::inconclusive) {
-        const std::string text("inconclusive");
-        serializeString(oss, text);
-    }
+    serializeString(oss, (certainty == Certainty::inconclusive) ? "1" : "0");
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);
     const std::string saneVerboseMessage = fixInvalidChars(mVerboseMessage);
 
     serializeString(oss, saneShortMessage);
     serializeString(oss, saneVerboseMessage);
+    serializeString(oss, mSymbolNames);
     oss += std::to_string(callStack.size());
     oss += " ";
 
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
+    for (auto loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
         std::string frame;
-        frame += std::to_string((*loc).line);
+        frame += std::to_string(loc->line);
         frame += '\t';
-        frame += std::to_string((*loc).column);
+        frame += std::to_string(loc->column);
         frame += '\t';
-        frame += (*loc).getfile(false);
+        frame += loc->getfile(false);
         frame += '\t';
         frame += loc->getOrigFile(false);
         frame += '\t';
@@ -305,9 +321,9 @@ void ErrorMessage::deserialize(const std::string &data)
     callStack.clear();
 
     std::istringstream iss(data);
-    std::array<std::string, 7> results;
+    std::array<std::string, 10> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 7) {
+    while (iss.good() && elem < 10) {
         unsigned int len = 0;
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length");
@@ -325,24 +341,19 @@ void ErrorMessage::deserialize(const std::string &data)
 
             if (!iss.good())
                 throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
-
-            if (temp == "inconclusive") {
-                certainty = Certainty::inconclusive;
-                continue;
-            }
         }
 
-        results[elem++] = temp;
+        results[elem++] = std::move(temp);
     }
 
     if (!iss.good())
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-    if (elem != 7)
+    if (elem != 10)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = std::move(results[0]);
-    severity = Severity::fromString(results[1]);
+    severity = severityFromString(results[1]);
     cwe.id = 0;
     if (!results[2].empty()) {
         std::string err;
@@ -355,9 +366,13 @@ void ErrorMessage::deserialize(const std::string &data)
         if (!strToInt(results[3], hash, &err))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash - " + err);
     }
-    file0 = std::move(results[4]);
-    mShortMessage = std::move(results[5]);
-    mVerboseMessage = std::move(results[6]);
+    remark = std::move(results[4]);
+    file0 = std::move(results[5]);
+    if (results[6] == "1")
+        certainty = Certainty::inconclusive;
+    mShortMessage = std::move(results[7]);
+    mVerboseMessage = std::move(results[8]);
+    mSymbolNames = std::move(results[9]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -406,10 +421,11 @@ void ErrorMessage::deserialize(const std::string &data)
 
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
-        ErrorMessage::FileLocation loc(substrings[3], strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
-        loc.setfile(std::move(substrings[2]));
+        std::string info;
         if (substrings.size() == 5)
-            loc.setinfo(substrings[4]);
+            info = std::move(substrings[4]);
+        ErrorMessage::FileLocation loc(substrings[3], std::move(info), strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
+        loc.setfile(std::move(substrings[2]));
 
         callStack.push_back(std::move(loc));
 
@@ -418,16 +434,12 @@ void ErrorMessage::deserialize(const std::string &data)
     }
 }
 
-std::string ErrorMessage::getXMLHeader(std::string productName)
+std::string ErrorMessage::getXMLHeader(std::string productName, int xmlVersion)
 {
-    std::string version = CppCheck::version();
-    if (!productName.empty() && std::isdigit(productName.back())) {
-        const std::string::size_type pos = productName.find_last_not_of(".0123456789");
-        if (pos > 1 && pos != std::string::npos && productName[pos] == ' ') {
-            version = productName.substr(pos+1);
-            productName.erase(pos);
-        }
-    }
+    const auto nameAndVersion = Settings::getNameAndVersion(productName);
+    productName = nameAndVersion.first;
+    // TODO: lacks extra version
+    const std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
 
     tinyxml2::XMLPrinter printer;
 
@@ -437,7 +449,7 @@ std::string ErrorMessage::getXMLHeader(std::string productName)
     // header
     printer.OpenElement("results", false);
 
-    printer.PushAttribute("version", 2);
+    printer.PushAttribute("version", xmlVersion);
     printer.OpenElement("cppcheck", false);
     if (!productName.empty())
         printer.PushAttribute("product-name", productName.c_str());
@@ -448,9 +460,9 @@ std::string ErrorMessage::getXMLHeader(std::string productName)
     return std::string(printer.CStr()) + '>';
 }
 
-std::string ErrorMessage::getXMLFooter()
+std::string ErrorMessage::getXMLFooter(int xmlVersion)
 {
-    return "    </errors>\n</results>";
+    return xmlVersion == 3 ? "</results>" : "    </errors>\n</results>";
 }
 
 // There is no utf-8 support around but the strings should at least be safe for to tinyxml2.
@@ -459,14 +471,14 @@ std::string ErrorMessage::fixInvalidChars(const std::string& raw)
 {
     std::string result;
     result.reserve(raw.length());
-    std::string::const_iterator from=raw.cbegin();
+    auto from=raw.cbegin();
     while (from!=raw.cend()) {
         if (std::isprint(static_cast<unsigned char>(*from))) {
             result.push_back(*from);
         } else {
             std::ostringstream es;
             // straight cast to (unsigned) doesn't work out.
-            const unsigned uFrom = (unsigned char)*from;
+            const unsigned uFrom = static_cast<unsigned char>(*from);
             es << '\\' << std::setbase(8) << std::setw(3) << std::setfill('0') << uFrom;
             result += es.str();
         }
@@ -480,7 +492,11 @@ std::string ErrorMessage::toXML() const
     tinyxml2::XMLPrinter printer(nullptr, false, 2);
     printer.OpenElement("error", false);
     printer.PushAttribute("id", id.c_str());
-    printer.PushAttribute("severity", Severity::toString(severity).c_str());
+    if (!guideline.empty())
+        printer.PushAttribute("guideline", guideline.c_str());
+    printer.PushAttribute("severity", severityToString(severity).c_str());
+    if (!classification.empty())
+        printer.PushAttribute("classification", classification.c_str());
     printer.PushAttribute("msg", fixInvalidChars(mShortMessage).c_str());
     printer.PushAttribute("verbose", fixInvalidChars(mVerboseMessage).c_str());
     if (cwe.id)
@@ -493,11 +509,18 @@ std::string ErrorMessage::toXML() const
     if (!file0.empty())
         printer.PushAttribute("file0", file0.c_str());
 
-    for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
+    if (!remark.empty())
+        printer.PushAttribute("remark", fixInvalidChars(remark).c_str());
+
+    for (auto it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
-        printer.PushAttribute("file", (*it).getfile().c_str());
-        printer.PushAttribute("line", std::max((*it).line,0));
-        printer.PushAttribute("column", (*it).column);
+        const std::string origfile = it->getOrigFile(false);
+        const std::string file = it->getfile(false);
+        if (origfile != file)
+            printer.PushAttribute("origfile", origfile.c_str());
+        printer.PushAttribute("file", file.c_str());
+        printer.PushAttribute("line", std::max(it->line,0));
+        printer.PushAttribute("column", it->column);
         if (!it->getinfo().empty())
             printer.PushAttribute("info", fixInvalidChars(it->getinfo()).c_str());
         printer.CloseElement(false);
@@ -518,22 +541,6 @@ std::string ErrorMessage::toXML() const
     }
     printer.CloseElement(false);
     return printer.CStr();
-}
-
-/**
- * Replace all occurrences of searchFor with replaceWith in the
- * given source.
- * @param source The string to modify
- * @param searchFor What should be searched for
- * @param replaceWith What will replace the found item
- */
-static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
-{
-    std::string::size_type index = 0;
-    while ((index = source.find(searchFor, index)) != std::string::npos) {
-        source.replace(index, searchFor.length(), replaceWith);
-        index += replaceWith.length();
-    }
 }
 
 // TODO: read info from some shared resource instead?
@@ -597,9 +604,9 @@ static void replace(std::string& source, const std::unordered_map<std::string, s
     }
 }
 
-static void replaceColors(std::string& source) {
+static void replaceColors(std::string& source, bool erase) {
     // TODO: colors are not applied when either stdout or stderr is not a TTY because we resolve them before the stream usage
-    static const std::unordered_map<std::string, std::string> substitutionMap =
+    static const std::unordered_map<std::string, std::string> substitutionMapReplace =
     {
         {"{reset}",   ::toString(Color::Reset)},
         {"{bold}",    ::toString(Color::Bold)},
@@ -610,35 +617,36 @@ static void replaceColors(std::string& source) {
         {"{magenta}", ::toString(Color::FgMagenta)},
         {"{default}", ::toString(Color::FgDefault)},
     };
-    replace(source, substitutionMap);
+    static const std::unordered_map<std::string, std::string> substitutionMapErase =
+    {
+        {"{reset}",   ""},
+        {"{bold}",    ""},
+        {"{dim}",     ""},
+        {"{red}",     ""},
+        {"{green}",   ""},
+        {"{blue}",    ""},
+        {"{magenta}", ""},
+        {"{default}", ""},
+    };
+    if (!erase)
+        replace(source, substitutionMapReplace);
+    else
+        replace(source, substitutionMapErase);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
-    // Save this ErrorMessage in plain text.
-
-    // No template is given
-    if (templateFormat.empty()) {
-        std::string text;
-        if (!callStack.empty()) {
-            text += ErrorLogger::callStackToString(callStack);
-            text += ": ";
-        }
-        if (severity != Severity::none) {
-            text += '(';
-            text += Severity::toString(severity);
-            if (certainty == Certainty::inconclusive)
-                text += ", inconclusive";
-            text += ") ";
-        }
-        text += (verbose ? mVerboseMessage : mShortMessage);
-        return text;
-    }
+    assert(!templateFormat.empty());
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
 
-    findAndReplace(result, "{id}", id);
+    // replace id with guideline if present
+    // replace severity with classification if present
+    const std::string idStr = guideline.empty() ? id : guideline;
+    const std::string severityStr = classification.empty() ? severityToString(severity) : classification;
+
+    findAndReplace(result, "{id}", idStr);
 
     std::string::size_type pos1 = result.find("{inconclusive:");
     while (pos1 != std::string::npos) {
@@ -648,9 +656,10 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         findAndReplace(result, replaceFrom, replaceWith);
         pos1 = result.find("{inconclusive:", pos1);
     }
-    findAndReplace(result, "{severity}", Severity::toString(severity));
+    findAndReplace(result, "{severity}", severityStr);
     findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
+    findAndReplace(result, "{remark}", remark);
     if (!callStack.empty()) {
         if (result.find("{callstack}") != std::string::npos)
             findAndReplace(result, "{callstack}", ErrorLogger::callStackToString(callStack));
@@ -706,23 +715,30 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     return result;
 }
 
-std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
+std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack, bool addcolumn)
 {
     std::string str;
-    for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
+    for (auto tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
         str += (tok == callStack.cbegin() ? "" : " -> ");
-        str += tok->stringify();
+        str += tok->stringify(addcolumn);
     }
     return str;
 }
 
+ErrorMessage::FileLocation::FileLocation(const std::string &file, int line, unsigned int column)
+    : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(Path::simplifyPath(file))
+{}
+
+ErrorMessage::FileLocation::FileLocation(const std::string &file, std::string info, int line, unsigned int column)
+    : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(Path::simplifyPath(file)), mInfo(std::move(info))
+{}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok)))
 {}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, std::string info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(std::move(info))
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(Path::simplifyPath(tokenList->file(tok))), mInfo(std::move(info))
 {}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
@@ -741,18 +757,21 @@ std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
 
 void ErrorMessage::FileLocation::setfile(std::string file)
 {
-    mFileName = Path::fromNativeSeparators(std::move(file));
-    mFileName = Path::simplifyPath(std::move(mFileName));
+    mFileName = Path::simplifyPath(std::move(file));
 }
 
-std::string ErrorMessage::FileLocation::stringify() const
+std::string ErrorMessage::FileLocation::stringify(bool addcolumn) const
 {
     std::string str;
     str += '[';
     str += Path::toNativeSeparators(mFileName);
-    if (line != Suppressions::Suppression::NO_LINE) {
+    if (line != SuppressionList::Suppression::NO_LINE) { // TODO: should not depend on Suppression
         str += ':';
         str += std::to_string(line);
+        if (addcolumn) {
+            str += ':';
+            str += std::to_string(column);
+        }
     }
     str += ']';
     return str;
@@ -780,6 +799,15 @@ std::string ErrorLogger::toxml(const std::string &str)
             break;
         case '\0':
             xml += "\\0";
+            break;
+        case '\n':
+            xml += "&#10;";
+            break;
+        case '\t':
+            xml += "&#09;";
+            break;
+        case '\r':
+            xml += "&#13;";
             break;
         default:
             if (c >= ' ' && c <= 0x7f)
@@ -829,9 +857,9 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
           << "   <key>path</key>\r\n"
           << "   <array>\r\n";
 
-    std::list<ErrorMessage::FileLocation>::const_iterator prev = msg.callStack.cbegin();
+    auto prev = msg.callStack.cbegin();
 
-    for (std::list<ErrorMessage::FileLocation>::const_iterator it = msg.callStack.cbegin(); it != msg.callStack.cend(); ++it) {
+    for (auto it = msg.callStack.cbegin(); it != msg.callStack.cend(); ++it) {
         if (prev != it) {
             plist << "    <dict>\r\n"
                   << "     <key>kind</key><string>control</string>\r\n"
@@ -854,7 +882,7 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
             prev = it;
         }
 
-        std::list<ErrorMessage::FileLocation>::const_iterator next = it;
+        auto next = it;
         ++next;
         const std::string message = (it->getinfo().empty() && next == msg.callStack.cend() ? msg.shortMessage() : it->getinfo());
 
@@ -879,7 +907,7 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
 
     plist << "   </array>\r\n"
           << "   <key>description</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
-          << "   <key>category</key><string>" << Severity::toString(msg.severity) << "</string>\r\n"
+          << "   <key>category</key><string>" << severityToString(msg.severity) << "</string>\r\n"
           << "   <key>type</key><string>" << ErrorLogger::toxml(msg.shortMessage()) << "</string>\r\n"
           << "   <key>check_name</key><string>" << msg.id << "</string>\r\n"
           << "   <!-- This hash is experimental and going to change! -->\r\n"
@@ -918,14 +946,219 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
     return s;
 }
 
-void substituteTemplateFormatStatic(std::string& templateFormat)
+void substituteTemplateFormatStatic(std::string& templateFormat, bool eraseColors)
 {
     replaceSpecialChars(templateFormat);
-    replaceColors(templateFormat);
+    replaceColors(templateFormat, eraseColors);
 }
 
-void substituteTemplateLocationStatic(std::string& templateLocation)
+void substituteTemplateLocationStatic(std::string& templateLocation, bool eraseColors)
 {
     replaceSpecialChars(templateLocation);
-    replaceColors(templateLocation);
+    replaceColors(templateLocation, eraseColors);
+}
+
+std::string getClassification(const std::string &guideline, ReportType reportType) {
+    if (guideline.empty())
+        return "";
+
+    const auto getClassification = [](const std::vector<checkers::Info> &info, const std::string &guideline) -> std::string {
+        const auto it = std::find_if(info.cbegin(), info.cend(), [&](const checkers::Info &i) {
+            return caseInsensitiveStringCompare(i.guideline, guideline) == 0;
+        });
+        if (it == info.cend())
+            return "";
+        return it->classification;
+    };
+
+    switch (reportType) {
+    case ReportType::autosar:
+        return getClassification(checkers::autosarInfo, guideline);
+    case ReportType::certC:
+        return getClassification(checkers::certCInfo, guideline);
+    case ReportType::certCpp:
+        return getClassification(checkers::certCppInfo, guideline);
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
+    {
+        const bool isDirective = guideline.rfind("Dir ", 0) == 0;
+
+        const std::size_t offset = isDirective ? 4 : 0;
+        auto components = splitString(guideline.substr(offset), '.');
+        if (components.size() != 2)
+            return "";
+
+        const int a = std::stoi(components[0]);
+        const int b = std::stoi(components[1]);
+
+        const std::vector<checkers::MisraInfo> *info = nullptr;
+        switch (reportType) {
+        case ReportType::misraC2012:
+            info = isDirective ? &checkers::misraC2012Directives : &checkers::misraC2012Rules;
+            break;
+        case ReportType::misraC2023:
+            info = isDirective ? &checkers::misraC2023Directives : &checkers::misraC2023Rules;
+            break;
+        case ReportType::misraC2025:
+            info = isDirective ? &checkers::misraC2025Directives : &checkers::misraC2025Rules;
+            break;
+        default:
+            cppcheck::unreachable();
+        }
+
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraInfo &i) {
+                return i.a == a && i.b == b;
+            });
+
+        return it == info->cend() ? "" : it->str;
+    }
+    case ReportType::misraCpp2008:
+    case ReportType::misraCpp2023:
+    {
+        const std::vector<checkers::MisraCppInfo> *info;
+        std::vector<std::string> components;
+
+        if (reportType == ReportType::misraCpp2008) {
+            info = &checkers::misraCpp2008Rules;
+            components = splitString(guideline, '-');
+        } else {
+            if (guideline.rfind("Dir ", 0) == 0) {
+                components = splitString(guideline.substr(4), '.');
+                info = &checkers::misraCpp2023Directives;
+            } else {
+                components = splitString(guideline, '.');
+                info = &checkers::misraCpp2023Rules;
+            }
+        }
+
+        if (components.size() != 3)
+            return "";
+
+        const int a = std::stoi(components[0]);
+        const int b = std::stoi(components[1]);
+        const int c = std::stoi(components[2]);
+
+        const auto it = std::find_if(info->cbegin(), info->cend(), [&](const checkers::MisraCppInfo &i) {
+                return i.a == a && i.b == b && i.c == c;
+            });
+
+        if (it == info->cend())
+            return "";
+
+        return it->classification;
+    }
+    default:
+        return "";
+    }
+}
+
+std::string getGuideline(const std::string &errId, ReportType reportType,
+                         const std::map<std::string, std::string> &guidelineMapping,
+                         Severity severity)
+{
+    std::string guideline;
+
+    switch (reportType) {
+    case ReportType::autosar:
+        if (errId.rfind("premium-autosar-", 0) == 0) {
+            guideline = errId.substr(16);
+            break;
+        }
+        if (errId.rfind("premium-misra-cpp-2008-", 0) == 0)
+            guideline = "M" + errId.substr(23);
+        break;
+    case ReportType::certC:
+    case ReportType::certCpp:
+        if (errId.rfind("premium-cert-", 0) == 0) {
+            guideline = errId.substr(13);
+            std::transform(guideline.begin(), guideline.end(),
+                           guideline.begin(), static_cast<int (*)(int)>(std::toupper));
+        }
+        break;
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
+        if (errId.rfind("misra-c20", 0) == 0 || errId.rfind("premium-misra-c-20", 0) == 0)
+            guideline = errId.substr(errId.rfind('-') + 1);
+        break;
+    case ReportType::misraCpp2008:
+        if (errId.rfind("premium-misra-cpp-2008", 0) == 0)
+            guideline = errId.substr(23);
+        break;
+    case ReportType::misraCpp2023:
+        if (errId.rfind("premium-misra-cpp-2023", 0) == 0)
+            guideline = errId.substr(errId.rfind('-') + 1);
+        break;
+    default:
+        break;
+    }
+
+    if (!guideline.empty()) {
+        if (errId.find("-dir-") != std::string::npos)
+            guideline = "Dir " + guideline;
+        return guideline;
+    }
+
+    auto it = guidelineMapping.find(errId);
+
+    if (it != guidelineMapping.cend())
+        return it->second;
+
+    if (severity == Severity::error || severity == Severity::warning) {
+        it = guidelineMapping.find("error");
+
+        if (it != guidelineMapping.cend())
+            return it->second;
+    }
+
+    return "";
+}
+
+std::map<std::string, std::string> createGuidelineMapping(ReportType reportType) {
+    std::map<std::string, std::string> guidelineMapping;
+    const std::vector<checkers::IdMapping> *idMapping1 = nullptr;
+    const std::vector<checkers::IdMapping> *idMapping2 = nullptr;
+    std::string ext1, ext2;
+
+    switch (reportType) {
+    case ReportType::autosar:
+        idMapping1 = &checkers::idMappingAutosar;
+        break;
+    case ReportType::certCpp:
+        idMapping2 = &checkers::idMappingCertCpp;
+        ext2 = "-CPP";
+        FALLTHROUGH;
+    case ReportType::certC:
+        idMapping1 = &checkers::idMappingCertC;
+        ext1 = "-C";
+        break;
+    case ReportType::misraC2012:
+    case ReportType::misraC2023:
+    case ReportType::misraC2025:
+        idMapping1 = &checkers::idMappingMisraC;
+        break;
+    case ReportType::misraCpp2008:
+        idMapping1 = &checkers::idMappingMisraCpp2008;
+        break;
+    case ReportType::misraCpp2023:
+        idMapping1 = &checkers::idMappingMisraCpp2023;
+        break;
+    default:
+        break;
+    }
+
+    if (idMapping1) {
+        for (const auto &i : *idMapping1)
+            for (const std::string &cppcheckId : splitString(i.cppcheckId, ','))
+                guidelineMapping[cppcheckId] = i.guideline + ext1;
+    }
+
+    if (idMapping2) {
+        for (const auto &i : *idMapping2)
+            for (const std::string &cppcheckId : splitString(i.cppcheckId, ','))
+                guidelineMapping[cppcheckId] = i.guideline + ext2;
+    }
+
+    return guidelineMapping;
 }

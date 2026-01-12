@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,9 +33,9 @@ class QAction;
 /**
  * @brief Checked platform GUI-data.
  */
-struct Platform {
+struct PlatformData {
     QString mTitle;  /**< Text visible in the GUI. */
-    cppcheck::Platform::Type mType; /**< Type in the core. */
+    Platform::Type mType; /**< Type in the core. */
     QAction *mActMainWindow; /**< Pointer to main window action item. */
 };
 
@@ -47,12 +47,12 @@ class Platforms : public QObject {
 
 public:
     explicit Platforms(QObject *parent = nullptr);
-    void add(const QString &title, cppcheck::Platform::Type platform);
+    void add(const QString &title, Platform::Type platform);
     int getCount() const;
     void init();
-    Platform& get(cppcheck::Platform::Type platform);
+    PlatformData& get(Platform::Type platform);
 
-    QList<Platform> mPlatforms;
+    QList<PlatformData> mPlatforms;
 };
 
 /// @}

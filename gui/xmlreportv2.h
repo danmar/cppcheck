@@ -1,6 +1,6 @@
-/*
+/* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2024 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class QXmlStreamWriter;
  */
 class XmlReportV2 : public XmlReport {
 public:
-    explicit XmlReportV2(const QString &filename);
+    explicit XmlReportV2(const QString &filename, QString productName);
     ~XmlReportV2() override;
 
     /**
@@ -79,9 +79,12 @@ protected:
      * @brief Read and parse error item from XML stream.
      * @param reader XML stream reader to use.
      */
-    ErrorItem readError(QXmlStreamReader *reader);
+    ErrorItem readError(const QXmlStreamReader *reader);
 
 private:
+    /** Product name read from cppcheck.cfg */
+    const QString mProductName;
+
     /**
      * @brief XML stream reader for reading the report in XML format.
      */

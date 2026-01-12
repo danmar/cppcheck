@@ -12,18 +12,18 @@ def run(cppcheck_path, options, elapsed_time=None):
     cmd = options.split()
     cmd.insert(0, cppcheck_path)
     print('running {}'.format(cppcheck_path))
-    p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    try:
-        p.communicate(timeout=timeout)
-        if p.returncode != 0:
-            print('error')
-            return None
-        print('done')
-    except subprocess.TimeoutExpired:
-        print('timeout')
-        p.kill()
-        p.communicate()
-        return False
+    with subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) as p:
+        try:
+            p.communicate(timeout=timeout)
+            if p.returncode != 0:
+                print('error')
+                return None
+            print('done')
+        except subprocess.TimeoutExpired:
+            print('timeout')
+            p.kill()
+            p.communicate()
+            return False
 
     return True
 
