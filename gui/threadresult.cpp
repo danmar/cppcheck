@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "importproject.h"
 
 #include <numeric>
+#include <utility>
 
 #include <QFile>
 
@@ -58,14 +59,15 @@ void ThreadResult::reportErr(const ErrorMessage &msg)
         emit debugError(item);
 }
 
-QString ThreadResult::getNextFile()
+void ThreadResult::getNextFile(const FileWithDetails*& file)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    if (mFiles.isEmpty()) {
-        return QString();
+    file = nullptr;
+    if (mItNextFile == mFiles.cend()) {
+        return;
     }
-
-    return mFiles.takeFirst();
+    file = &(*mItNextFile);
+    ++mItNextFile;
 }
 
 void ThreadResult::getNextFileSettings(const FileSettings*& fs)
@@ -79,18 +81,19 @@ void ThreadResult::getNextFileSettings(const FileSettings*& fs)
     ++mItNextFileSettings;
 }
 
-void ThreadResult::setFiles(const QStringList &files)
+void ThreadResult::setFiles(std::list<FileWithDetails> files)
 {
     std::lock_guard<std::mutex> locker(mutex);
-    mFiles = files;
+    mTotalFiles = files.size();
+    mFiles = std::move(files);
+    mItNextFile = mFiles.cbegin();
     mProgress = 0;
     mFilesChecked = 0;
-    mTotalFiles = files.size();
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
-    quint64 sizeOfFiles = std::accumulate(files.begin(), files.end(), 0, [](quint64 total, const QString& file) {
-        return total + QFile(file).size();
+    quint64 sizeOfFiles = std::accumulate(mFiles.cbegin(), mFiles.cend(), 0, [](quint64 total, const FileWithDetails& file) {
+        return total + file.size();
     });
     mMaxProgress = sizeOfFiles;
 }
@@ -99,6 +102,7 @@ void ThreadResult::setProject(const ImportProject &prj)
 {
     std::lock_guard<std::mutex> locker(mutex);
     mFiles.clear();
+    mItNextFile = mFiles.cbegin();
     mFileSettings = prj.fileSettings;
     mItNextFileSettings = mFileSettings.cbegin();
     mProgress = 0;

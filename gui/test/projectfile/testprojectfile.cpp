@@ -18,14 +18,11 @@
 
 #include "testprojectfile.h"
 
-#include "importproject.h"
 #include "library.h"
 #include "platform.h"
 #include "projectfile.h"
 #include "settings.h"
 #include "suppressions.h"
-
-#include <string>
 
 #include <QFile>
 #include <QIODevice>
@@ -45,9 +42,6 @@ Platform::Platform() = default;
 Library::Library() = default;
 Library::~Library() = default;
 struct Library::LibraryData {};
-bool ImportProject::sourceFileExists(const std::string & /*file*/) {
-    return true;
-}
 
 void TestProjectFile::loadInexisting() const
 {

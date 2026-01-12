@@ -72,7 +72,7 @@ ssize_t nullPointer_pwritev(int fd, const struct iovec *iov, int iovcnt, off_t o
     return pwritev(fd,iov,iovcnt,offset);
 }
 
-// #9346
+// False negative: #9346
 void uninitvar_timercmp(struct timeval t)
 {
     struct timeval uninit;
@@ -155,8 +155,10 @@ void uninitvar(void)
 void arrayIndexOutOfBounds(void)
 {
     char * pAlloc = calloc(2, 3);
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc[5] = 'a';
     // cppcheck-suppress arrayIndexOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     pAlloc[6] = 1;
     // cppcheck-suppress memleakOnRealloc
     pAlloc = reallocarray(pAlloc, 3, 3);

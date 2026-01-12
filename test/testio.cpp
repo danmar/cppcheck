@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "checkio.h"
-#include "config.h"
 #include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
@@ -36,6 +35,7 @@ private:
     /*const*/ Settings settings1 = settingsBuilder().library("std.cfg").library("windows.cfg").library("qt.cfg").severity(Severity::warning).severity(Severity::style).build();
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(coutCerrMisusage);
 
         TEST_CASE(wrongMode_simple);
@@ -52,9 +52,11 @@ private:
         TEST_CASE(testScanf4); // #ticket 2553
         TEST_CASE(testScanf5); // #10632
 
+        mNewTemplate = false;
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
         TEST_CASE(testPrintfArgumentVariables);
+        mNewTemplate = true;
         TEST_CASE(testPosixPrintfScanfParameterPosition);  // #4900
 
         TEST_CASE(testMicrosoftPrintfArgument); // ticket #4902
@@ -77,14 +79,17 @@ private:
         TEST_CASE(testPrintfParenthesis); // #8489
         TEST_CASE(testStdDistance); // #10304
         TEST_CASE(testParameterPack); // #11289
+
+        TEST_CASE(testDefaultSignInt); // #13363
+        TEST_CASE(testPrintfWithGeneric); // #13592
     }
 
     struct CheckOptions
     {
-        CheckOptions() = default;
         bool inconclusive = false;
         bool portability = false;
         Platform::Type platform = Platform::Type::Unspecified;
+        char defaultSign = '\0';
         bool onlyFormatStr = false;
         bool cpp = true;
     };
@@ -96,10 +101,11 @@ private:
         settings1.severity.setEnabled(Severity::portability, options.portability);
         settings1.certainty.setEnabled(Certainty::inconclusive, options.inconclusive);
         PLATFORM(settings1.platform, options.platform);
+        settings1.platform.defaultSign = options.defaultSign;
 
         // Tokenize..
-        SimpleTokenizer tokenizer(settings1, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, options.cpp), file, line);
+        SimpleTokenizer tokenizer(settings1, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // Check..
         if (options.onlyFormatStr) {
@@ -115,25 +121,25 @@ private:
             "void foo() {\n"
             "  std::cout << std::cout;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (error) Invalid usage of output stream: '<< std::cout'. [coutCerrMisusage]\n", errout_str());
 
         check(
             "void foo() {\n"
             "  std::cout << (std::cout);\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (error) Invalid usage of output stream: '<< std::cout'. [coutCerrMisusage]\n", errout_str());
 
         check(
             "void foo() {\n"
             "  std::cout << \"xyz\" << std::cout;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cout'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (error) Invalid usage of output stream: '<< std::cout'. [coutCerrMisusage]\n", errout_str());
 
         check(
             "void foo(int i) {\n"
             "  std::cout << i << std::cerr;\n"
             "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Invalid usage of output stream: '<< std::cerr'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:3]: (error) Invalid usage of output stream: '<< std::cerr'. [coutCerrMisusage]\n", errout_str());
 
         check(
             "void foo() {\n"
@@ -171,7 +177,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _wfopen(name, L\"r\");\n"
@@ -179,7 +185,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _tfopen(name, _T(\"r\"));\n"
@@ -187,7 +193,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _tfopen(name, _T(\"r\"));\n"
@@ -195,7 +201,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    _wfopen_s(&f, name, L\"r\");\n"
@@ -203,7 +209,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    _tfopen_s(&f, name, _T(\"r\"));\n"
@@ -211,7 +217,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    _tfopen_s(&f, name, _T(\"r\"));\n"
@@ -219,7 +225,7 @@ private:
               "    rewind(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"r+\");\n"
@@ -276,7 +282,7 @@ private:
               "    rewind(f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Read operation on a file that was opened only for writing.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (error) Read operation on a file that was opened only for writing. [readWriteOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"w+\");\n"
@@ -297,8 +303,8 @@ private:
               "    rewind(f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Repositioning operation performed on a file opened in append mode has no effect.\n"
-                      "[test.cpp:5]: (error) Read operation on a file that was opened only for writing.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) Repositioning operation performed on a file opened in append mode has no effect. [seekOnAppendedFile]\n"
+                      "[test.cpp:5:5]: (error) Read operation on a file that was opened only for writing. [readWriteOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = fopen(name, \"a+\");\n"
@@ -312,7 +318,7 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "    fclose(f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         // Call unknown function
         check("void foo(FILE*& f) {\n"
@@ -328,43 +334,43 @@ private:
               "    f = freopen(name, \"r\", f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _wfreopen(name, L\"r\", f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _tfreopen(name, _T(\"r\"), f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _tfreopen(name, _T(\"r\"), f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _wfreopen_s(&f, name, L\"r\", f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _tfreopen_s(&f, name, _T(\"r\"), f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = _tfreopen_s(&f, name, _T(\"r\"), f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Write operation on a file that was opened only for reading.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Write operation on a file that was opened only for reading. [writeReadOnlyFile]\n", errout_str());
 
         // Crash tests
         check("void foo(FILE*& f) {\n"
@@ -399,7 +405,7 @@ private:
               "    if(a) fwrite(buffer, 5, 6, f);\n"
               "    else  fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Read operation on a file that was opened only for writing.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:11]: (error) Read operation on a file that was opened only for writing. [readWriteOnlyFile]\n", errout_str());
     }
 
     void useClosedFile() {
@@ -412,12 +418,12 @@ private:
               "    ungetwc(L'a', f);\n"
               "    rewind(f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n"
-                      "[test.cpp:4]: (error) Used file that is not opened.\n"
-                      "[test.cpp:5]: (error) Used file that is not opened.\n"
-                      "[test.cpp:6]: (error) Used file that is not opened.\n"
-                      "[test.cpp:7]: (error) Used file that is not opened.\n"
-                      "[test.cpp:8]: (error) Used file that is not opened.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Used file that is not opened. [useClosedFile]\n"
+                      "[test.cpp:4:5]: (error) Used file that is not opened. [useClosedFile]\n"
+                      "[test.cpp:5:5]: (error) Used file that is not opened. [useClosedFile]\n"
+                      "[test.cpp:6:5]: (error) Used file that is not opened. [useClosedFile]\n"
+                      "[test.cpp:7:5]: (error) Used file that is not opened. [useClosedFile]\n"
+                      "[test.cpp:8:5]: (error) Used file that is not opened. [useClosedFile]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    if(!ferror(f)) {\n"
@@ -446,7 +452,7 @@ private:
               "    FILE* f;\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Used file that is not opened. [useClosedFile]\n", errout_str());
 
         check("void foo() {\n"
               "    FILE* f(stdout);\n"
@@ -496,7 +502,7 @@ private:
               "  fclose(fp);\n"
               "  fprintf(fp, \"Here's the output.\\n\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Used file that is not opened.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:11:3]: (error) Used file that is not opened. [useClosedFile]\n", errout_str());
 
         // #4466
         check("void chdcd_parse_nero(FILE *infile) {\n"
@@ -538,7 +544,7 @@ private:
               "    FILE *a = fopen(\"aa\", \"r\");\n"
               "    while (fclose(a)) {}\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Used file that is not opened.\n", "", errout_str());
+        TODO_ASSERT_EQUALS("[test.cpp:3:5]: (error) Used file that is not opened. [useClosedFile]\n", "", errout_str());
 
         // #6823
         check("void foo() {\n"
@@ -564,13 +570,13 @@ private:
               "    fwrite(buffer, 5, 6, f);\n"
               "    fread(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour. [IOWithoutPositioning]\n", errout_str());
 
         check("void foo(FILE* f) {\n"
               "    fread(buffer, 5, 6, f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour. [IOWithoutPositioning]\n", errout_str());
 
         check("void foo(FILE* f, bool read) {\n"
               "    if(read)\n"
@@ -613,7 +619,7 @@ private:
               "    long pos = ftell(f);\n"
               "    fwrite(buffer, 5, 6, f);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour. [IOWithoutPositioning]\n", errout_str());
 
         // #6452 - member functions
         check("class FileStream {\n"
@@ -649,7 +655,7 @@ private:
               "    known(writePosition);\n"
               "    fwrite(buffer.data(), sizeof(char), buffer.size(), d->file);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:9:5]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour. [IOWithoutPositioning]\n", errout_str());
 
         check("class FileStream {\n"
               "    void insert(const ByteVector &data, ulong start);\n"
@@ -661,7 +667,7 @@ private:
               "    known(writePosition);\n"
               "    fwrite(X::data(), sizeof(char), buffer.size(), d->file);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:9:5]: (error) Read and write operations without a call to a positioning function (fseek, fsetpos or rewind) or fflush in between result in undefined behaviour. [IOWithoutPositioning]\n", errout_str());
     }
 
     void seekOnAppendedFile() {
@@ -681,7 +687,7 @@ private:
               "    FILE* f = fopen(\"\", \"a\");\n"
               "    fseek(f, 0, SEEK_SET);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Repositioning operation performed on a file opened in append mode has no effect.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (warning) Repositioning operation performed on a file opened in append mode has no effect. [seekOnAppendedFile]\n", errout_str());
 
         check("void foo() {\n"
               "    FILE* f = fopen(\"\", \"a\");\n"
@@ -703,7 +709,7 @@ private:
               "{\n"
               "    fflush(stdin);\n"
               "}", dinit(CheckOptions, $.portability = true));
-        ASSERT_EQUALS("[test.cpp:3]: (portability) fflush() called on input stream 'stdin' may result in undefined behaviour on non-linux systems.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (portability) fflush() called on input stream 'stdin' may result in undefined behaviour on non-linux systems. [fflushOnInputStream]\n", errout_str());
 
         check("void foo()\n"
               "{\n"
@@ -715,7 +721,7 @@ private:
               "    f = fopen(path, \"r\");\n"
               "    fflush(f);\n"
               "}", dinit(CheckOptions, $.portability = true));
-        ASSERT_EQUALS("[test.cpp:3]: (portability) fflush() called on input stream 'f' may result in undefined behaviour on non-linux systems.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (portability) fflush() called on input stream 'f' may result in undefined behaviour on non-linux systems. [fflushOnInputStream]\n", errout_str());
 
         check("void foo(FILE*& f) {\n"
               "    f = fopen(path, \"w\");\n"
@@ -734,7 +740,7 @@ private:
               "    FILE *f1 = fopen(\"tmp\", \"wt\");\n"
               "    FILE *f2 = fopen(\"tmp\", \"rt\");\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) The file '\"tmp\"' is opened for read and write access at the same time on different streams\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:16]: (warning) The file '\"tmp\"' is opened for read and write access at the same time on different streams [incompatibleFileOpen]\n", errout_str());
     }
 
 
@@ -749,11 +755,11 @@ private:
               "    scanf(\"%dx%s\", &b, bar);\n"
               "    fclose(file);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) fscanf() without field width limits can crash with huge input data.\n"
-                      "[test.cpp:5]: (warning) scanf() without field width limits can crash with huge input data.\n"
-                      "[test.cpp:6]: (warning) scanf() without field width limits can crash with huge input data.\n"
-                      "[test.cpp:7]: (warning) sscanf() without field width limits can crash with huge input data.\n"
-                      "[test.cpp:8]: (warning) scanf() without field width limits can crash with huge input data.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:9]: (warning) fscanf() without field width limits can crash with huge input data. [invalidscanf]\n"
+                      "[test.cpp:5:9]: (warning) scanf() without field width limits can crash with huge input data. [invalidscanf]\n"
+                      "[test.cpp:6:9]: (warning) scanf() without field width limits can crash with huge input data. [invalidscanf]\n"
+                      "[test.cpp:7:5]: (warning) sscanf() without field width limits can crash with huge input data. [invalidscanf]\n"
+                      "[test.cpp:8:5]: (warning) scanf() without field width limits can crash with huge input data. [invalidscanf]\n", errout_str());
     }
 
     void testScanf2() {
@@ -765,7 +771,7 @@ private:
               "    scanf(\"aa%ld\", &a);\n" // No %s
               "    scanf(\"%*[^~]\");\n" // Ignore input
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) scanf format string requires 0 parameters but 1 is given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) scanf format string requires 0 parameters but 1 is given. [wrongPrintfScanfArgNum]\n", errout_str());
     }
 
     void testScanf3() { // ticket #3494
@@ -775,7 +781,7 @@ private:
               "  scanf(\"%8c\", str);\n"
               "  scanf(\"%9c\", str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:3]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it. [invalidScanfFormatWidth]\n", errout_str());
     }
 
     void testScanf4() { // ticket #2553
@@ -784,7 +790,7 @@ private:
               "  char str [8];\n"
               "  scanf (\"%70s\",str);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:3]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it. [invalidScanfFormatWidth]\n", errout_str());
     }
 
     void testScanf5() { // #10632
@@ -792,8 +798,8 @@ private:
               "void test() {\n"
               "    scanf(\"%42s%42[a-z]\", s1, s2);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Width 42 given in format string (no. 1) is larger than destination buffer 's1[42]', use %41s to prevent overflowing it.\n"
-                      "[test.cpp:3]: (error) Width 42 given in format string (no. 2) is larger than destination buffer 's2[42]', use %41[a-z] to prevent overflowing it.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Width 42 given in format string (no. 1) is larger than destination buffer 's1[42]', use %41s to prevent overflowing it. [invalidScanfFormatWidth]\n"
+                      "[test.cpp:3:5]: (error) Width 42 given in format string (no. 2) is larger than destination buffer 's2[42]', use %41[a-z] to prevent overflowing it. [invalidScanfFormatWidth]\n", errout_str());
     }
 
 
@@ -831,15 +837,15 @@ private:
     void testFormatStrNoWarn(const char *filename, unsigned int linenr, const char (&code)[size],
                              bool cpp = false) {
         check(code, dinit(CheckOptions, $.inconclusive = true, $.platform = Platform::Type::Unix32, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.platform = Platform::Type::Unix64, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.platform = Platform::Type::Win32A, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.platform = Platform::Type::Win32W, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.platform = Platform::Type::Win64, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
     }
 
     template<size_t size>
@@ -879,13 +885,13 @@ private:
                                    const char (&code)[size], const char* testScanfErrAkaWin64String,
                                    bool cpp = false) {
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Unix32, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Unix64, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Win32A, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Win32W, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Win64, $.onlyFormatStr = true, $.cpp = cpp));
         assertEquals(filename, linenr, testScanfErrAkaWin64String, errout_str());
     }
@@ -903,7 +909,7 @@ private:
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Win32W, $.onlyFormatStr = true, $.cpp = cpp));
         assertEquals(filename, linenr, testScanfErrAkaString, errout_str());
         check(code, dinit(CheckOptions, $.inconclusive = true, $.portability = true, $.platform = Platform::Type::Win64, $.onlyFormatStr = true, $.cpp = cpp));
-        assertEquals(filename, linenr, emptyString, errout_str());
+        assertEquals(filename, linenr, "", errout_str());
     }
 
 #define TEST_SCANF_NOWARN(FORMAT, FORMATSTR, TYPE) \
@@ -2180,6 +2186,12 @@ private:
               "    scanf(\"%i\", \"abc\" + 1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout_str());
+
+        check("struct S { unsigned char a[1]; };" // #14302
+              "void f(S s) {\n"
+              "    scanf(\"%hhu\", s.a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout_str());
     }
 
     void testPrintfArgument() {
@@ -4127,10 +4139,10 @@ private:
               "  scanf(\"%2$d\", &bar);\n"
               "  printf(\"%0$f\", 0.0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) printf format string requires 1 parameter but only 0 are given.\n"
-                      "[test.cpp:4]: (warning) printf: referencing parameter 4 while 3 arguments given\n"
-                      "[test.cpp:5]: (warning) scanf: referencing parameter 2 while 1 arguments given\n"
-                      "[test.cpp:6]: (warning) printf: parameter positions start at 1, not 0\n"
+        ASSERT_EQUALS("[test.cpp:3:3]: (error) printf format string requires 1 parameter but only 0 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:4:3]: (warning) printf: referencing parameter 4 while 3 arguments given [wrongPrintfScanfParameterPositionError]\n"
+                      "[test.cpp:5:3]: (warning) scanf: referencing parameter 2 while 1 arguments given [wrongPrintfScanfParameterPositionError]\n"
+                      "[test.cpp:6:3]: (warning) printf: parameter positions start at 1, not 0 [wrongPrintfScanfParameterPositionError]\n"
                       "", errout_str());
     }
 
@@ -4150,13 +4162,13 @@ private:
               "    printf(\"%I64d %I64u %I64x\", i64, i64, i64);\n"
               "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long}'.\n"
-                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
-                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'.\n"
-                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'.\n"
-                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'.\n"
-                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:9:5]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:9:5]: (portability) %Ix in format string (no. 3) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:10:5]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:11:5]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:12:5]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:13:5]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'. [invalidPrintfArgType_sint]\n", errout_str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -4172,13 +4184,13 @@ private:
               "    printf(\"%I64d %I64u %I64x\", i64, i64, i64);\n"
               "    printf(\"%I64d %I64u %I64x\", u64, u64, u64);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));
-        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long long}'.\n"
-                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'.\n"
-                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'.\n"
-                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'.\n"
-                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'.\n"
-                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t' but the argument type is 'size_t {aka unsigned long long}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:9:5]: (portability) %Iu in format string (no. 2) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:9:5]: (portability) %Ix in format string (no. 3) requires 'size_t' but the argument type is 'ptrdiff_t {aka signed long long}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:10:5]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32' but the argument type is '__int32 {aka signed int}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:11:5]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:12:5]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64' but the argument type is '__int64 {aka signed long long}'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:13:5]: (portability) %I64d in format string (no. 1) requires '__int64' but the argument type is 'unsigned __int64 {aka unsigned long long}'. [invalidPrintfArgType_sint]\n", errout_str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -4198,20 +4210,20 @@ private:
               "    printf(\"%I32%i\", s, i);\n"
               "    printf(\"%I64%i\", s, i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:6]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:7]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:8]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:9]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:10]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:11]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:12]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:13]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:14]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:5:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:6:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:7:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:8:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:9:5]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:10:5]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:11:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:12:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:13:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:14:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:15:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:16:5]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:17:5]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n", errout_str());
 
         // ticket #5264
         check("void foo(LPARAM lp, WPARAM wp, LRESULT lr) {\n"
@@ -4227,14 +4239,14 @@ private:
         check("void foo(UINT32 a, ::UINT32 b, Fred::UINT32 c) {\n"
               "    printf(\"%d %d %d\", a, b, c);\n"
               "};\n", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:2]: (portability) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n"
-                      "[test.cpp:2]: (portability) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (portability) %d in format string (no. 1) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:2:5]: (portability) %d in format string (no. 2) requires 'int' but the argument type is 'UINT32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n", errout_str());
 
         check("void foo(LPCVOID a, ::LPCVOID b, Fred::LPCVOID c) {\n"
               "    printf(\"%d %d %d\", a, b, c);\n"
               "};\n", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'.\n"
-                      "[test.cpp:2]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'const void *'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:2:5]: (warning) %d in format string (no. 2) requires 'int' but the argument type is 'const void *'. [invalidPrintfArgType_sint]\n", errout_str());
 
         check("void foo() {\n"
               "    SSIZE_T s = -2;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
@@ -4243,7 +4255,7 @@ private:
               "    printf(\"%zd%i\", s, i);\n"
               "    printf(\"%zu\", s);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long}'. [invalidPrintfArgType_uint]\n", errout_str());
 
         check("void foo() {\n"
               "    SSIZE_T s = -2;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
@@ -4252,7 +4264,7 @@ private:
               "    printf(\"%zd%i\", s, i);\n"
               "    printf(\"%zu\", s);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));
-        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long long}'. [invalidPrintfArgType_uint]\n", errout_str());
 
         check("void foo() {\n"
               "    SSIZE_T s = -2;\n" // Under Unix, ssize_t has to be written in small letters. Not Cppcheck, but the compiler will report this.
@@ -4271,7 +4283,7 @@ private:
               "    printf(\"%zd%i\", s, i);\n"
               "    printf(\"%zu\", s);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));
-        ASSERT_EQUALS("[test.cpp:7]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (portability) %zu in format string (no. 1) requires 'size_t' but the argument type is 'SSIZE_T {aka signed long long}'. [invalidPrintfArgType_uint]\n", errout_str());
 
     }
 
@@ -4290,15 +4302,15 @@ private:
               "    scanf(\"%I64d %I64u %I64x\", &i64, &i64, &i64);\n"
               "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'.\n"
-                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n"
-                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'.\n"
-                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
-                      "[test.cpp:10]: (portability) %I32x in format string (no. 3) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
-                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
-                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
-                      "[test.cpp:12]: (portability) %I64x in format string (no. 3) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
-                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:9:5]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:9:5]: (portability) %Ix in format string (no. 3) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:10:5]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:10:5]: (portability) %I32x in format string (no. 3) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:11:5]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:12:5]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:12:5]: (portability) %I64x in format string (no. 3) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:13:5]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'. [invalidScanfArgType_int]\n", errout_str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -4314,15 +4326,15 @@ private:
               "    scanf(\"%I64d %I64u %I64x\", &i64, &i64, &i64);\n"
               "    scanf(\"%I64d %I64u %I64x\", &u64, &u64, &u64);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));
-        ASSERT_EQUALS("[test.cpp:8]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'.\n"
-                      "[test.cpp:9]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n"
-                      "[test.cpp:9]: (portability) %Ix in format string (no. 3) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'.\n"
-                      "[test.cpp:10]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
-                      "[test.cpp:10]: (portability) %I32x in format string (no. 3) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'.\n"
-                      "[test.cpp:11]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'.\n"
-                      "[test.cpp:12]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
-                      "[test.cpp:12]: (portability) %I64x in format string (no. 3) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'.\n"
-                      "[test.cpp:13]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (portability) %Id in format string (no. 1) requires 'ptrdiff_t *' but the argument type is 'size_t * {aka unsigned long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:9:5]: (portability) %Iu in format string (no. 2) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:9:5]: (portability) %Ix in format string (no. 3) requires 'size_t *' but the argument type is 'ptrdiff_t * {aka signed long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:10:5]: (portability) %I32u in format string (no. 2) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:10:5]: (portability) %I32x in format string (no. 3) requires 'unsigned __int32 *' but the argument type is '__int32 * {aka signed int *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:11:5]: (portability) %I32d in format string (no. 1) requires '__int32 *' but the argument type is 'unsigned __int32 * {aka unsigned int *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:12:5]: (portability) %I64u in format string (no. 2) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:12:5]: (portability) %I64x in format string (no. 3) requires 'unsigned __int64 *' but the argument type is '__int64 * {aka signed long long *}'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:13:5]: (portability) %I64d in format string (no. 1) requires '__int64 *' but the argument type is 'unsigned __int64 * {aka unsigned long long *}'. [invalidScanfArgType_int]\n", errout_str());
 
         check("void foo() {\n"
               "    size_t s;\n"
@@ -4342,20 +4354,20 @@ private:
               "    scanf(\"%I32%i\", &s, &i);\n"
               "    scanf(\"%I64%i\", &s, &i);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:6]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:7]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:8]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:9]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:10]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:11]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:12]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:13]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:14]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:15]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:16]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n"
-                      "[test.cpp:17]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:5:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:6:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:7:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:8:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:9:5]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:10:5]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:11:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:12:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:13:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:14:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:15:5]: (warning) 'I' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:16:5]: (warning) 'I32' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n"
+                      "[test.cpp:17:5]: (warning) 'I64' in format string (no. 1) is a length modifier and cannot be used without a conversion specifier. [invalidLengthModifierError]\n", errout_str());
 
         check("void foo() {\n"
               "    SSIZE_T s;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
@@ -4364,7 +4376,7 @@ private:
               "    scanf(\"%zd%i\", &s, &i);\n"
               "    scanf(\"%zu\", &s);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long *}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long *}'. [invalidScanfArgType_int]\n", errout_str());
 
         check("void foo() {\n"
               "    SSIZE_T s;\n" // In MSVC, SSIZE_T is available in capital letters using #include <BaseTsd.h>
@@ -4373,7 +4385,7 @@ private:
               "    scanf(\"%zd%i\", &s, &i);\n"
               "    scanf(\"%zu\", &s);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));
-        ASSERT_EQUALS("[test.cpp:6]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long long *}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long long *}'. [invalidScanfArgType_int]\n", errout_str());
 
         check("void foo() {\n"
               "    SSIZE_T s;\n" // Under Unix, ssize_t has to be written in small letters. Not Cppcheck, but the compiler will report this.
@@ -4392,7 +4404,7 @@ private:
               "    scanf(\"%zd%i\", &s, &i);\n"
               "    scanf(\"%zu\", &s);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win64));
-        ASSERT_EQUALS("[test.cpp:7]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long long *}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (portability) %zu in format string (no. 1) requires 'size_t *' but the argument type is 'SSIZE_T * {aka signed long long *}'. [invalidScanfArgType_int]\n", errout_str());
 
     }
 
@@ -4420,9 +4432,9 @@ private:
               "    string.AppendFormat(\"%I32d\", u32);\n"
               "    CString::Format(\"%I32d\", u32);\n"
               "}", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:4]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:5]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n"
-                      "[test.cpp:6]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:12]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:12]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:6:14]: (portability) %I32d in format string (no. 1) requires '__int32' but the argument type is 'unsigned __int32 {aka unsigned int}'. [invalidPrintfArgType_sint]\n", errout_str());
     }
 
     void testMicrosoftSecurePrintfArgument() {
@@ -4431,36 +4443,36 @@ private:
               "    unsigned int u;\n"
               "    _tprintf_s(_T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) _tprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) _tprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    _tprintf_s(_T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) _tprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) _tprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    printf_s(\"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) printf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) printf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    wprintf_s(L\"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) wprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) wprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    TCHAR str[10];\n"
@@ -4468,9 +4480,9 @@ private:
               "    unsigned int u;\n"
               "    _stprintf_s(str, sizeof(str) / sizeof(TCHAR), _T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    TCHAR str[10];\n"
@@ -4478,9 +4490,9 @@ private:
               "    unsigned int u;\n"
               "    _stprintf_s(str, sizeof(str) / sizeof(TCHAR), _T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) _stprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    char str[10];\n"
@@ -4488,9 +4500,9 @@ private:
               "    unsigned int u;\n"
               "    sprintf_s(str, sizeof(str), \"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    char str[10];\n"
@@ -4498,9 +4510,9 @@ private:
               "    unsigned int u;\n"
               "    sprintf_s(str, \"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) sprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    wchar_t str[10];\n"
@@ -4508,9 +4520,9 @@ private:
               "    unsigned int u;\n"
               "    swprintf_s(str, sizeof(str) / sizeof(wchar_t), L\"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) swprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) swprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    wchar_t str[10];\n"
@@ -4518,9 +4530,9 @@ private:
               "    unsigned int u;\n"
               "    swprintf_s(str, L\"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) swprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) swprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    TCHAR str[10];\n"
@@ -4528,9 +4540,9 @@ private:
               "    unsigned int u;\n"
               "    _sntprintf_s(str, sizeof(str) / sizeof(TCHAR), _TRUNCATE, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    TCHAR str[10];\n"
@@ -4538,9 +4550,9 @@ private:
               "    unsigned int u;\n"
               "    _sntprintf_s(str, sizeof(str) / sizeof(TCHAR), _TRUNCATE, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) _sntprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    char str[10];\n"
@@ -4548,9 +4560,9 @@ private:
               "    unsigned int u;\n"
               "    _snprintf_s(str, sizeof(str), _TRUNCATE, \"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) _snprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) _snprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    wchar_t str[10];\n"
@@ -4558,45 +4570,45 @@ private:
               "    unsigned int u;\n"
               "    _snwprintf_s(str, sizeof(str) / sizeof(wchar_t), _TRUNCATE, L\"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:5]: (warning) _snwprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:5:5]: (warning) _snwprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    _ftprintf_s(fp, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    _ftprintf_s(fp, _T(\"%d %u\"), u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) _ftprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    fprintf_s(fp, \"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) fprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) fprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
               "    unsigned int u;\n"
               "    fwprintf_s(fp, L\"%d %u\", u, i, 0);\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:4]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'.\n"
-                      "[test.cpp:4]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'.\n"
-                      "[test.cpp:4]: (warning) fwprintf_s format string requires 2 parameters but 3 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'unsigned int'. [invalidPrintfArgType_sint]\n"
+                      "[test.cpp:4:5]: (warning) %u in format string (no. 2) requires 'unsigned int' but the argument type is 'signed int'. [invalidPrintfArgType_uint]\n"
+                      "[test.cpp:4:5]: (warning) fwprintf_s format string requires 2 parameters but 3 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    char lineBuffer [600];\n"
@@ -4624,30 +4636,30 @@ private:
               "    sprintf_s(lineBuffer, 100, format2, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "    sprintf_s(lineBuffer, 100, format3, \"type\", \"sum\", \"avg\", \"min\", i, 0);\n"
               "}\n", dinit(CheckOptions, $.inconclusive = true, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:6]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:7]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:7]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:8]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:8]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:9]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:9]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:10]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:10]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:11]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:11]: (warning) sprintf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:12]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:12]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:13]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:13]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:14]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:14]: (warning) printf format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:15]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:15]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:16]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:16]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n"
-                      "[test.cpp:17]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'.\n"
-                      "[test.cpp:17]: (warning) sprintf_s format string requires 5 parameters but 6 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:6:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:7:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:7:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:8:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:8:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:9:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:9:5]: (warning) sprintf format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:10:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:10:5]: (warning) sprintf format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:11:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:11:5]: (warning) sprintf format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:12:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:12:5]: (warning) printf format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:13:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:13:5]: (warning) printf format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:14:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:14:5]: (warning) printf format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:15:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:15:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:16:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:16:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n"
+                      "[test.cpp:17:5]: (warning) %s in format string (no. 5) requires 'char *' but the argument type is 'signed int'. [invalidPrintfArgType_s]\n"
+                      "[test.cpp:17:5]: (warning) sprintf_s format string requires 5 parameters but 6 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
     }
 
@@ -4658,9 +4670,9 @@ private:
               "    TCHAR str[10];\n"
               "    _tscanf_s(_T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    int i;\n"
@@ -4668,9 +4680,9 @@ private:
               "    TCHAR str[10];\n"
               "    _tscanf_s(_T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) _tscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    int i;\n"
@@ -4678,9 +4690,9 @@ private:
               "    char str[10];\n"
               "    scanf_s(\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) scanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) scanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    int i;\n"
@@ -4688,16 +4700,16 @@ private:
               "    wchar_t str[10];\n"
               "    wscanf_s(L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) wscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) wscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void f() {\n"
               "  char str[8];\n"
               "  scanf_s(\"%8c\", str, sizeof(str));\n"
               "  scanf_s(\"%9c\", str, sizeof(str));\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:4]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:3]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it. [invalidScanfFormatWidth]\n", errout_str());
 
         check("void foo() {\n"
               "    TCHAR txt[100];\n"
@@ -4706,9 +4718,9 @@ private:
               "    TCHAR str[10];\n"
               "    _stscanf_s(txt, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:6]: (warning) _stscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) _stscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    TCHAR txt[100];\n"
@@ -4717,9 +4729,9 @@ private:
               "    TCHAR str[10];\n"
               "    _stscanf_s(txt, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:6]: (warning) _stscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) _stscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    char txt[100];\n"
@@ -4728,9 +4740,9 @@ private:
               "    char str[10];\n"
               "    sscanf_s(txt, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:6]: (warning) sscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) sscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    wchar_t txt[100];\n"
@@ -4739,9 +4751,9 @@ private:
               "    wchar_t str[10];\n"
               "    swscanf_s(txt, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:6]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:6]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:6]: (warning) swscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:6:5]: (warning) swscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
@@ -4749,9 +4761,9 @@ private:
               "    TCHAR str[10];\n"
               "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
@@ -4759,9 +4771,9 @@ private:
               "    TCHAR str[10];\n"
               "    _ftscanf_s(fp, _T(\"%s %d %u %[a-z]\"), str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) _ftscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
@@ -4769,9 +4781,9 @@ private:
               "    char str[10];\n"
               "    fscanf_s(fp, \"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) fscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) fscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo(FILE * fp) {\n"
               "    int i;\n"
@@ -4779,9 +4791,9 @@ private:
               "    wchar_t str[10];\n"
               "    fwscanf_s(fp, L\"%s %d %u %[a-z]\", str, 10, &u, &i, str, 10, 0)\n"
               "}\n", dinit(CheckOptions, $.platform = Platform::Type::Win32W));
-        ASSERT_EQUALS("[test.cpp:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'.\n"
-                      "[test.cpp:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:5]: (warning) fwscanf_s format string requires 6 parameters but 7 are given.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (warning) %d in format string (no. 2) requires 'int *' but the argument type is 'unsigned int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) %u in format string (no. 3) requires 'unsigned int *' but the argument type is 'signed int *'. [invalidScanfArgType_int]\n"
+                      "[test.cpp:5:5]: (warning) fwscanf_s format string requires 6 parameters but 7 are given. [wrongPrintfScanfArgNum]\n", errout_str());
 
         check("void foo() {\n"
               "    WCHAR msStr1[5] = {0};\n"
@@ -4795,13 +4807,13 @@ private:
               "    QString string;\n"
               "    string.sprintf(\"%d\", f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:12]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'. [invalidPrintfArgType_sint]\n", errout_str());
 
         check("void foo(float f) {\n"
               "    QString string;\n"
               "    string = QString::asprintf(\"%d\", f);\n"
               "}", dinit(CheckOptions, $.platform = Platform::Type::Win32A));
-        ASSERT_EQUALS("[test.cpp:3]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:23]: (warning) %d in format string (no. 1) requires 'int' but the argument type is 'float'. [invalidPrintfArgType_sint]\n", errout_str());
     }
 
     void testTernary() {  // ticket #6182
@@ -4833,7 +4845,7 @@ private:
         check("void test() {\n"
               "    printf(\"%i\", (short *)x);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'signed short *'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning) %i in format string (no. 1) requires 'int' but the argument type is 'signed short *'. [invalidPrintfArgType_sint]\n", errout_str());
 
         check("int (*fp)();\n" // #7178 - function pointer call
               "void test() {\n"
@@ -4861,7 +4873,7 @@ private:
         check("void f(int i) {\n"
               "   printf(\"%f\", imaxabs(i));\n"
               "}\n", dinit(CheckOptions, $.portability = true, $.platform = Platform::Type::Unix64));
-        ASSERT_EQUALS("[test.cpp:2]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'intmax_t {aka signed long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:4]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'intmax_t {aka signed long}'. [invalidPrintfArgType_float]\n", errout_str());
     }
 
     void testPrintfTypeAlias1() {
@@ -4885,9 +4897,9 @@ private:
               "void foo() {\n"
               "    printf(\"%f %f %f\", i, pi, pci);\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n"
-                      "[test.cpp:8]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'signed int *'.\n"
-                      "[test.cpp:8]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'const signed int *'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'. [invalidPrintfArgType_float]\n"
+                      "[test.cpp:8:5]: (warning) %f in format string (no. 2) requires 'double' but the argument type is 'signed int *'. [invalidPrintfArgType_float]\n"
+                      "[test.cpp:8:5]: (warning) %f in format string (no. 3) requires 'double' but the argument type is 'const signed int *'. [invalidPrintfArgType_float]\n", errout_str());
     }
 
     void testPrintfAuto() { // #8992
@@ -4896,24 +4908,24 @@ private:
               "    printf(\"%zu\", s);\n"
               "    printf(\"%f\", s);\n"
               "}\n", dinit(CheckOptions, $.portability = true));
-        ASSERT_EQUALS("[test.cpp:4]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'size_t {aka unsigned long}'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (portability) %f in format string (no. 1) requires 'double' but the argument type is 'size_t {aka unsigned long}'. [invalidPrintfArgType_float]\n", errout_str());
     }
 
     void testPrintfParenthesis() { // #8489
         check("void f(int a) {\n"
               "    printf(\"%f\", (a >> 24) & 0xff);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'. [invalidPrintfArgType_float]\n", errout_str());
 
         check("void f(int a) {\n"
               "    printf(\"%f\", 0xff & (a >> 24));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'. [invalidPrintfArgType_float]\n", errout_str());
 
         check("void f(int a) {\n"
               "    printf(\"%f\", ((a >> 24) + 1) & 0xff);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:5]: (warning) %f in format string (no. 1) requires 'double' but the argument type is 'signed int'. [invalidPrintfArgType_float]\n", errout_str());
     }
 
     void testStdDistance() { // #10304
@@ -4931,6 +4943,32 @@ private:
               "void g() {\n"
               "    f(\"%d%d\", 1, 2);\n"
               "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    // TODO: we need to run big tests with a platform that has unsigned chars
+    void testDefaultSignInt() { // #13363
+        // Platform::defaultSign should only affect char
+        const char code[] =
+            "void f() {\n"
+            "    double d = 1\n;"
+            "    printf(\"%i\", int(d));\n"
+            "}\n";
+        check(code);
+        ASSERT_EQUALS("", errout_str());
+        check(code, dinit(CheckOptions, $.defaultSign = 's'));
+        ASSERT_EQUALS("", errout_str());
+        check(code, dinit(CheckOptions, $.defaultSign = 'u'));
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void testPrintfWithGeneric() { // #13592
+        const char code[] =
+            "void f(void) {\n"
+            "    float x = 27.0f;\n"
+            "    printf(\"%s\\n\", _Generic(x, double: cbrt, float: cbrtf)(x));\n"
+            "}\n";
+        check(code);
         ASSERT_EQUALS("", errout_str());
     }
 };

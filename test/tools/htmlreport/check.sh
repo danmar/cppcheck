@@ -1,15 +1,7 @@
 #!/bin/bash -ex
 
 # Command for checking HTML syntax with HTML Tidy, see http://www.html-tidy.org/
-tidy_version=$(tidy --version)
-
-if [[ "$tidy_version" == *"5.6.0"* ]] ;then
-    # newer tidy (5.6.0) command, if using this it is not necessary to ignore warnings:
-    tidy_cmd='tidy -o /dev/null -eq --drop-empty-elements no'
-else
-    # older tidy from 2009 (Ubuntu 16.04 Xenial comes with this old version):
-    tidy_cmd='tidy -o /dev/null -eq'
-fi
+tidy_cmd='tidy -o /dev/null -eq --drop-empty-elements no'
 
 function validate_html {
     if [ ! -f "$1" ]; then
@@ -23,7 +15,7 @@ function validate_html {
 }
 
 if [ -z "$PYTHON" ]; then
-    PYTHON=python
+    PYTHON=python3
 fi
 
 SCRIPT_DIR="$(dirname ${BASH_SOURCE[0]})"
@@ -74,8 +66,6 @@ xmllint --noout "$UNMATCHEDSUPPR_XML"
 $PYTHON ${PROJECT_ROOT_DIR}/htmlreport/cppcheck-htmlreport --file "$UNMATCHEDSUPPR_XML" --title "unmatched Suppressions" --report-dir="$REPORT_DIR"
 grep "unmatchedSuppression<.*>information<.*>Unmatched suppression: variableScope*<" "$INDEX_HTML"
 grep ">unmatchedSuppression</.*>information<.*>Unmatched suppression: uninitstring<" "$INDEX_HTML"
-grep "notexisting" "$INDEX_HTML"
-grep ">unmatchedSuppression<.*>information<.*>Unmatched suppression: \*<" "$INDEX_HTML"
 # Check HTML syntax
 validate_html "$INDEX_HTML"
 validate_html "$STATS_HTML"

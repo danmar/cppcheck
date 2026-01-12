@@ -20,11 +20,13 @@ defaults:
     shell: cmd
 
 jobs:
+  # TODO: add CMake build
   build_cygwin:
     strategy:
       matrix:
-        os: [windows-2022]
-        arch: [x64]
+        # only use the latest windows-* as the installed toolchain is identical
+        os: [windows-2025]
+        platform: [x86_64]
         include:
           - platform: 'x86_64'
             packages: |
@@ -42,13 +44,13 @@ jobs:
       - name: Set up Cygwin
         uses: cygwin/cygwin-install-action@master
         with:
-          platform: ${{ matrix.arch }}
+          platform: ${{ matrix.platform }}
           packages: ${{ matrix.packages }}
 
       # Cygwin will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
       - name: Build all and run test
         run: |
-          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j2 check
+          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j%NUMBER_OF_PROCESSORS% CXXOPTS="-Werror" test
 
       - name: Extra test for misra
         run: |

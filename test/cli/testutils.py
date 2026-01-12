@@ -152,7 +152,10 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
     exe = cppcheck_exe if cppcheck_exe else __lookup_cppcheck_exe()
     assert exe is not None, 'no cppcheck binary found'
 
-    if 'TEST_CPPCHECK_INJECT_J' in os.environ:
+    # do not inject arguments for calls with exclusive options
+    has_exclusive = bool({'--doc', '--errorlist', '-h', '--help', '--version'} & set(args))
+
+    if not has_exclusive and ('TEST_CPPCHECK_INJECT_J' in os.environ):
         found_j = False
         for arg in args:
             if arg.startswith('-j'):
@@ -162,7 +165,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
             arg_j = '-j' + str(os.environ['TEST_CPPCHECK_INJECT_J'])
             args.append(arg_j)
 
-    if 'TEST_CPPCHECK_INJECT_CLANG' in os.environ:
+    if not has_exclusive and ('TEST_CPPCHECK_INJECT_CLANG' in os.environ):
         found_clang = False
         for arg in args:
             if arg.startswith('--clang'):
@@ -172,7 +175,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
             arg_clang = '--clang=' + str(os.environ['TEST_CPPCHECK_INJECT_CLANG'])
             args.append(arg_clang)
 
-    if 'TEST_CPPCHECK_INJECT_EXECUTOR' in os.environ:
+    if not has_exclusive and ('TEST_CPPCHECK_INJECT_EXECUTOR' in os.environ):
         found_jn = False
         found_executor = False
         for arg in args:
@@ -189,7 +192,7 @@ def cppcheck_ex(args, env=None, remove_checkers_report=True, cwd=None, cppcheck_
 
     builddir_tmp = None
 
-    if 'TEST_CPPCHECK_INJECT_BUILDDIR' in os.environ:
+    if not has_exclusive and ('TEST_CPPCHECK_INJECT_BUILDDIR' in os.environ):
         found_builddir = False
         for arg in args:
             if arg.startswith('--cppcheck-build-dir=') or arg == '--no-cppcheck-build-dir':
@@ -233,8 +236,8 @@ def cppcheck(*args, **kwargs):
     return return_code, stdout, stderr
 
 
-def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None):
-    exitcode, stdout, stderr = cppcheck(args, env)
+def assert_cppcheck(args, ec_exp=None, out_exp=None, err_exp=None, env=None, cwd=None):
+    exitcode, stdout, stderr = cppcheck(args, env=env, cwd=cwd)
     if ec_exp is not None:
         assert exitcode == ec_exp, stdout
     if out_exp is not None:

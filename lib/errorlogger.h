@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,17 +23,19 @@
 
 #include "config.h"
 #include "errortypes.h"
-#include "color.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <list>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
+#include <map>
 
 class Token;
 class TokenList;
+enum class ReportType : std::uint8_t;
+enum class Color : std::uint8_t;
 
 namespace tinyxml2 {
     class XMLElement;
@@ -54,12 +56,8 @@ public:
      */
     class CPPCHECKLIB WARN_UNUSED FileLocation {
     public:
-        FileLocation(const std::string &file, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
-
-        FileLocation(const std::string &file, std::string info, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(std::move(info)) {}
-
+        FileLocation(const std::string &file, int line, unsigned int column);
+        FileLocation(const std::string &file, std::string info, int line, unsigned int column);
         FileLocation(const Token* tok, const TokenList* tokenList);
         FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
 
@@ -86,7 +84,7 @@ public:
         /**
          * @return the location as a string. Format: [file:line]
          */
-        std::string stringify() const;
+        std::string stringify(bool addcolumn = false) const;
 
         unsigned int fileIndex;
         int line; // negative value means "no line"
@@ -127,7 +125,7 @@ public:
                  const std::string& msg,
                  const CWE &cwe,
                  Certainty certainty);
-    ErrorMessage(const ErrorPath &errorPath,
+    ErrorMessage(ErrorPath errorPath,
                  const TokenList *tokenList,
                  Severity severity,
                  const char id[],
@@ -155,10 +153,13 @@ public:
      * @return formatted string
      */
     std::string toString(bool verbose,
-                         const std::string &templateFormat = emptyString,
-                         const std::string &templateLocation = emptyString) const;
+                         const std::string &templateFormat,
+                         const std::string &templateLocation) const;
 
     std::string serialize() const;
+    /**
+     * @throws InternalError thrown if deserialization failed
+     */
     void deserialize(const std::string &data);
 
     std::list<FileLocation> callStack;
@@ -174,8 +175,14 @@ public:
     /** remark from REMARK comment */
     std::string remark;
 
+    /** misra/autosar/certc classification/level */
+    std::string classification;
+
+    /** misra/autosar/certc guideline */
+    std::string guideline;
+
     /** Warning hash */
-    std::size_t hash;
+    std::size_t hash{};
 
     /** set short and verbose messages */
     void setmsg(const std::string &msg);
@@ -186,7 +193,6 @@ public:
     }
 
     /** Verbose message (may be the same as the short message) */
-    // cppcheck-suppress unusedFunction - used by GUI only
     const std::string &verboseMessage() const {
         return mVerboseMessage;
     }
@@ -196,7 +202,7 @@ public:
         return mSymbolNames;
     }
 
-    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = emptyString);
+    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = "");
 
 private:
     static std::string fixInvalidChars(const std::string& raw);
@@ -226,7 +232,7 @@ public:
      *
      * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg, Color c = Color::Reset) = 0;
+    virtual void reportOut(const std::string &outmsg, Color c) = 0;
 
     /**
      * Information about found errors and warnings is directed
@@ -235,6 +241,13 @@ public:
      * @param msg Location and other information about the found error.
      */
     virtual void reportErr(const ErrorMessage &msg) = 0;
+
+    /**
+     * Information about file metrics reported by addons.
+     *
+     * @param metric The file metric to report, as an XML object.
+     */
+    virtual void reportMetric(const std::string &metric) = 0;
 
     /**
      * Report progress to client
@@ -248,7 +261,7 @@ public:
         (void)value;
     }
 
-    static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack);
+    static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack, bool addcolumn = false);
 
     /**
      * Convert XML-sensitive characters into XML entities
@@ -277,10 +290,21 @@ private:
 std::string replaceStr(std::string s, const std::string &from, const std::string &to);
 
 /** replaces the static parts of the location template **/
-CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
+CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat, bool eraseColors = false);
 
 /** replaces the static parts of the location template **/
-CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
+CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation, bool eraseColors = false);
+
+/** Get a classification string from the given guideline and reporttype */
+CPPCHECKLIB std::string getClassification(const std::string &guideline, ReportType reportType);
+
+/** Get a guidline string froM the given error id, reporttype, mapping and severity */
+CPPCHECKLIB std::string getGuideline(const std::string &errId, ReportType reportType,
+                                     const std::map<std::string, std::string> &guidelineMapping,
+                                     Severity severity);
+
+/** Get a map from cppcheck error ids to guidlines matching the given report type */
+CPPCHECKLIB std::map<std::string, std::string> createGuidelineMapping(ReportType reportType);
 
 /// @}
 //---------------------------------------------------------------------------

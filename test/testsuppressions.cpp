@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,16 +19,19 @@
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
-#include "processexecutor.h"
-#include "settings.h"
-#include "suppressions.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "threadexecutor.h"
+#include "processexecutor.h"
+#include "settings.h"
 #include "singleexecutor.h"
+#include "standards.h"
+#include "suppressions.h"
+#include "threadexecutor.h"
 
+#include <cstdint>
 #include <cstring>
 #include <list>
 #include <map>
@@ -44,7 +47,10 @@ public:
 
 private:
 
+    const std::string templateFormat{"{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"};
+
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(suppressionsBadId1);
         TEST_CASE(suppressionsDosFormat);     // Ticket #1836
         TEST_CASE(suppressionsFileNameWithColon);    // Ticket #1919 - filename includes colon
@@ -53,12 +59,14 @@ private:
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettingsFiles);
         TEST_CASE(suppressionsSettingsFS);
+#ifdef HAS_THREADING_MODEL_THREAD
         TEST_CASE(suppressionsSettingsThreadsFiles);
         TEST_CASE(suppressionsSettingsThreadsFS);
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#endif // HAS_THREADING_MODEL_THREAD
+#ifdef HAS_THREADING_MODEL_FORK
         TEST_CASE(suppressionsSettingsProcessesFiles);
         TEST_CASE(suppressionsSettingsProcessesFS);
-#endif
+#endif // HAS_THREADING_MODEL_FORK
         TEST_CASE(suppressionsMultiFileFiles);
         TEST_CASE(suppressionsMultiFileFS);
         TEST_CASE(suppressionsPathSeparator);
@@ -69,6 +77,7 @@ private:
         TEST_CASE(inlinesuppress_symbolname_Files);
         TEST_CASE(inlinesuppress_symbolname_FS);
         TEST_CASE(inlinesuppress_comment);
+        TEST_CASE(inlinesuppress_unchecked);
 
         TEST_CASE(multi_inlinesuppress);
         TEST_CASE(multi_inlinesuppress_comment);
@@ -82,8 +91,8 @@ private:
         TEST_CASE(suppressingSyntaxErrorsFS); // #7076
         TEST_CASE(suppressingSyntaxErrorsInlineFiles); // #5917
         TEST_CASE(suppressingSyntaxErrorsInlineFS); // #5917
-        TEST_CASE(suppressingSyntaxErrorsWhileFileReadFiles); // PR #1333
-        TEST_CASE(suppressingSyntaxErrorsWhileFileReadFS); // PR #1333
+        TEST_CASE(suppressingSimplecppErrorsWhileFileReadFiles); // PR #1333
+        TEST_CASE(suppressingSimplecppErrorsWhileFileReadFS); // PR #1333
         TEST_CASE(symbol);
 
         TEST_CASE(unusedFunctionFiles);
@@ -96,8 +105,17 @@ private:
         TEST_CASE(suppressLocal);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+        TEST_CASE(addSuppressionDuplicate);
+        TEST_CASE(updateSuppressionState);
+        TEST_CASE(addSuppressionLineMultiple);
 
         TEST_CASE(suppressionsParseXmlFile);
+
+        TEST_CASE(toString);
+
+        TEST_CASE(suppressionFromErrorMessage);
+
+        TEST_CASE(suppressionWildcard);
     }
 
     void suppressionsBadId1() const {
@@ -149,8 +167,8 @@ private:
         // Check for syntax errors in glob
         {
             SuppressionList suppressions;
-            std::istringstream s("errorid:**.cpp\n");
-            ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '**.cpp'.", suppressions.parseFile(s));
+            std::istringstream s("errorid:*?.cpp\n");
+            ASSERT_EQUALS("Failed to add suppression. Invalid glob pattern '*?.cpp'.", suppressions.parseFile(s));
         }
 
         // Check that globbing works
@@ -158,7 +176,9 @@ private:
             SuppressionList suppressions;
             std::istringstream s("errorid:x*.cpp\n"
                                  "errorid:y?.cpp\n"
-                                 "errorid:test.c*");
+                                 "errorid:test.c*\n"
+                                 "errorid:dir/**\n"
+                                 "errorid:**/abc**/xyz-??*.?pp\n");
             ASSERT_EQUALS("", suppressions.parseFile(s));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp.cpp", 1)));
@@ -167,6 +187,13 @@ private:
             ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "y.cpp", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.c", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.cpp", 1)));
+
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "dir/test.cpp", 1)));
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "dir/deep/nested/test.cpp", 1)));
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "yellow.cpp", 1)));
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "foo/sub/abc/sub/xyz-22aaa.cpp", 1)));
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "foo/sub/abc-xyz-22.cpp", 1)));
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "x/abcxyz-11.cpp", 1)));
         }
 
         // Check that both a filename match and a glob match apply
@@ -200,130 +227,142 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "x/../a.c", 123)));
     }
 
-    unsigned int checkSuppressionFiles(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppression(code, false, suppression);
     }
 
-    unsigned int checkSuppressionFS(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFS(const char code[], const std::string &suppression = "") {
         return _checkSuppression(code, true, suppression);
     }
 
     // Check the suppression
-    unsigned int _checkSuppression(const char code[], bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppression(const char code[], bool useFS, const std::string &suppression = "") {
         std::map<std::string, std::string> files;
         files["test.cpp"] = code;
 
         return _checkSuppression(files, useFS, suppression);
     }
 
-    unsigned int checkSuppressionFiles(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFiles(std::map<std::string, std::string> &f, const std::string &suppression = "") {
         return _checkSuppression(f, false, suppression);
     }
 
-    unsigned int checkSuppressionFS(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionFS(std::map<std::string, std::string> &f, const std::string &suppression = "") {
         return _checkSuppression(f, true, suppression);
     }
 
     // Check the suppression for multiple files
-    unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppression(std::map<std::string, std::string> &f, bool useFS, const std::string &suppression = "") {
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
-            filelist.emplace_back(i->first, i->second.size());
+        for (auto i = f.cbegin(); i != f.cend(); ++i) {
+            filelist.emplace_back(i->first, Standards::Language::CPP, i->second.size());
             if (useFS) {
-                fileSettings.emplace_back(i->first, i->second.size());
+                fileSettings.emplace_back(i->first, Standards::Language::CPP, i->second.size());
             }
         }
 
-        CppCheck cppCheck(*this, true, nullptr);
-        Settings& settings = cppCheck.settings();
+        Suppressions supprs;
+        if (!suppression.empty()) {
+            ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine(suppression));
+        }
+
+        Settings settings;
         settings.jobs = 1;
         settings.quiet = true;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (suppression == "unusedFunction")
             settings.checks.setEnabled(Checks::unusedFunction, true);
-        if (!suppression.empty()) {
-            ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
-        }
+        settings.templateFormat = templateFormat;
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
+        for (auto i = f.cbegin(); i != f.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, i->second));
 
         // clear files list so only fileSettings are used
         if (useFS)
             filelist.clear();
 
-        SingleExecutor executor(cppCheck, filelist, fileSettings, settings, settings.supprs.nomsg, *this);
-        const unsigned int exitCode = executor.check();
+        CppCheck cppCheck(settings, supprs, *this, true, nullptr);
+        SingleExecutor executor(cppCheck, filelist, fileSettings, settings, supprs, *this);
+        unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, settings.supprs.nomsg, false, filelist, fileSettings, *this); // TODO: check result
+        const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
+        if (err && exitCode == 0)
+            exitCode = 1;
 
         return exitCode;
     }
 
-    unsigned int checkSuppressionThreadsFiles(const char code[], const std::string &suppression = emptyString) {
+#ifdef HAS_THREADING_MODEL_THREAD
+    unsigned int checkSuppressionThreadsFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionThreads(code, false, suppression);
     }
 
-    unsigned int checkSuppressionThreadsFS(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionThreadsFS(const char code[], const std::string &suppression = "") {
         return _checkSuppressionThreads(code, true, suppression);
     }
 
-    unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppressionThreads(const char code[], bool useFS, const std::string &suppression = "") {
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        filelist.emplace_back("test.cpp", strlen(code));
+        filelist.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         if (useFS) {
-            fileSettings.emplace_back("test.cpp", strlen(code));
+            fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
-        /*const*/ auto settings = dinit(Settings,
-                                        $.jobs = 2,
-                                            $.quiet = true,
-                                            $.inlineSuppressions = true);
-        settings.severity.enable(Severity::information);
+        const auto settings = dinit(Settings,
+                                    $.jobs = 2,
+                                        $.quiet = true,
+                                        $.inlineSuppressions = true,
+                                        $.severity.enable (Severity::information),
+                                        $.templateFormat = templateFormat);
+
+        Suppressions supprs;
         if (!suppression.empty()) {
-            ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
+            ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine(suppression));
         }
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (auto i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
         if (useFS)
             filelist.clear();
 
-        ThreadExecutor executor(filelist, fileSettings, settings, settings.supprs.nomsg, *this, CppCheckExecutor::executeCommand);
-        const unsigned int exitCode = executor.check();
+        ThreadExecutor executor(filelist, fileSettings, settings, supprs, *this, CppCheckExecutor::executeCommand);
+        unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, settings.supprs.nomsg, false, filelist, fileSettings, *this); // TODO: check result
+        const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
+        if (err && exitCode == 0)
+            exitCode = 1;
 
         return exitCode;
     }
+#endif // HAS_THREADING_MODEL_THREAD
 
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
-    unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = emptyString) {
+#ifdef HAS_THREADING_MODEL_FORK
+    unsigned int checkSuppressionProcessesFiles(const char code[], const std::string &suppression = "") {
         return _checkSuppressionProcesses(code, false, suppression);
     }
 
-    unsigned int checkSuppressionProcessesFS(const char code[], const std::string &suppression = emptyString) {
+    unsigned int checkSuppressionProcessesFS(const char code[], const std::string &suppression = "") {
         return _checkSuppressionProcesses(code, true, suppression);
     }
 
-    unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = emptyString) {
+    unsigned int _checkSuppressionProcesses(const char code[], bool useFS, const std::string &suppression = "") {
         std::list<FileSettings> fileSettings;
 
         std::list<FileWithDetails> filelist;
-        filelist.emplace_back("test.cpp", strlen(code));
+        filelist.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         if (useFS) {
-            fileSettings.emplace_back("test.cpp", strlen(code));
+            fileSettings.emplace_back("test.cpp", Standards::Language::CPP, strlen(code));
         }
 
         /*const*/ auto settings = dinit(Settings,
@@ -331,27 +370,32 @@ private:
                                             $.quiet = true,
                                             $.inlineSuppressions = true);
         settings.severity.enable(Severity::information);
+        settings.templateFormat = templateFormat;
+
+        Suppressions supprs;
         if (!suppression.empty()) {
-            ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine(suppression));
+            ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine(suppression));
         }
 
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filelist.size());
-        for (std::list<FileWithDetails>::const_iterator i = filelist.cbegin(); i != filelist.cend(); ++i)
+        for (auto i = filelist.cbegin(); i != filelist.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->path(), code));
 
         // clear files list so only fileSettings are used
         if (useFS)
             filelist.clear();
 
-        ProcessExecutor executor(filelist, fileSettings, settings, settings.supprs.nomsg, *this, CppCheckExecutor::executeCommand);
-        const unsigned int exitCode = executor.check();
+        ProcessExecutor executor(filelist, fileSettings, settings, supprs, *this, CppCheckExecutor::executeCommand);
+        unsigned int exitCode = executor.check();
 
-        CppCheckExecutor::reportSuppressions(settings, settings.supprs.nomsg, false, filelist, fileSettings, *this); // TODO: check result
+        const bool err = CppCheckExecutor::reportUnmatchedSuppressions(settings, supprs.nomsg, filelist, fileSettings, *this);
+        if (err && exitCode == 0)
+            exitCode = 1;
 
         return exitCode;
     }
-#endif
+#endif // HAS_THREADING_MODEL_FORK
 
     void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate errors are present
@@ -360,7 +404,7 @@ private:
                                         "    a++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
@@ -369,8 +413,8 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
-                      "[test.cpp:5]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n"
+                      "[test.cpp:5:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
         // suppress uninitvar globally
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -380,23 +424,23 @@ private:
                                         "uninitvar"));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    // cppcheck-suppress-file uninitvar\n"
-                       "    int a;\n"
-                       "    a++;\n"
-                       "}\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:2]: (error) File suppression should be at the top of the file\n"
-                      "[test.cpp:4]: (error) Uninitialized variable: a\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-file uninitvar\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:2:0]: (error) File suppression should be at the top of the file [invalidSuppression]\n"
+                      "[test.cpp:4:5]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    a++;\n"
-                       "}\n"
-                       "// cppcheck-suppress-file uninitvar\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:5]: (error) File suppression should be at the top of the file\n"
-                      "[test.cpp:3]: (error) Uninitialized variable: a\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "}\n"
+                                        "// cppcheck-suppress-file uninitvar\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:5:0]: (error) File suppression should be at the top of the file [invalidSuppression]\n"
+                      "[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
                                         "void f() {\n"
@@ -423,31 +467,31 @@ private:
                                         ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("// cppcheck-suppress-file uninitvar\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    a++;\n"
-                       "    int b;\n"
-                       "    b++;\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
         // suppress uninitvar globally, without error present
-        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    b++;\n"
                                         "}\n",
                                         "uninitvar"));
-        ASSERT_EQUALS("(information) Unmatched suppression: uninitvar\n", errout_str());
+        ASSERT_EQUALS("(information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
-        (this->*check)("// cppcheck-suppress-file uninitvar\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    b++;\n"
-                       "}\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:1]: (information) Unmatched suppression: uninitvar\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // suppress uninitvar for this file only
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -458,12 +502,12 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // suppress uninitvar for this file only, without error present
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    b++;\n"
-                       "}\n",
-                       "uninitvar:test.cpp");
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: uninitvar\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        "uninitvar:test.cpp"));
+        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // suppress all for this file only
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -474,12 +518,12 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // suppress all for this file only, without error present
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    b++;\n"
-                       "}\n",
-                       "*:test.cpp");
-        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: *\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        "*:test.cpp"));
+        ASSERT_EQUALS("[test.cpp]: (information) Unmatched suppression: * [unmatchedSuppression]\n", errout_str());
 
         // suppress uninitvar for this file and line
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -490,12 +534,12 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // suppress uninitvar for this file and line, without error present
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    b++;\n"
-                       "}\n",
-                       "uninitvar:test.cpp:3");
-        ASSERT_EQUALS("[test.cpp:3]: (information) Unmatched suppression: uninitvar\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        "uninitvar:test.cpp:3"));
+        ASSERT_EQUALS("[test.cpp:3:0]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // suppress uninitvar inline
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -619,13 +663,13 @@ private:
         ASSERT_EQUALS("", errout_str());
 
         // suppress uninitvar inline, without error present
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress uninitvar\n"
-                       "    b++;\n"
-                       "}\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress uninitvar\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:4:0]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // suppress block inline checks
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -647,9 +691,9 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:2]: (error) Suppress Begin: No matching end\n"
-                      "[test.cpp:4]: (error) Uninitialized variable: a\n"
-                      "[test.cpp:6]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n"
+                      "[test.cpp:4:5]: (error) Uninitialized variable: a [uninitvar]\n"
+                      "[test.cpp:6:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
@@ -659,9 +703,56 @@ private:
                                         "    // cppcheck-suppress-end uninitvar\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:6]: (error) Suppress End: No matching begin\n"
-                      "[test.cpp:3]: (error) Uninitialized variable: a\n"
-                      "[test.cpp:5]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:0]: (error) Suppress End: No matching begin [invalidSuppression]\n"
+                      "[test.cpp:3:5]: (error) Uninitialized variable: a [uninitvar]\n"
+                      "[test.cpp:5:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
+
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress: id\n"
+                                        "// cppcheck-suppress-unknown id\n"
+                                        "// cppcheck-suppress-begin-unknown id\n"
+                                        "// cppcheck-suppress-begin id4\n"
+                                        "void f() {}\n"
+                                        "// cppcheck-suppress-end-unknown id4\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) unknown suppression type 'cppcheck-suppress:' [invalidSuppression]\n"
+                      "[test.cpp:2:0]: (error) unknown suppression type 'cppcheck-suppress-unknown' [invalidSuppression]\n"
+                      "[test.cpp:3:0]: (error) unknown suppression type 'cppcheck-suppress-begin-unknown' [invalidSuppression]\n"
+                      "[test.cpp:6:0]: (error) unknown suppression type 'cppcheck-suppress-end-unknown' [invalidSuppression]\n"
+                      "[test.cpp:4:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
+
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-file\n"
+                                        "// cppcheck-suppress\n"
+                                        "// cppcheck-suppress \n"
+                                        "// cppcheck-suppress\t\n"
+                                        "// cppcheck-suppress []\n" // TODO
+                                        "// cppcheck-suppress-macro\n"
+                                        "// cppcheck-suppress-begin\n"
+                                        "// cppcheck-suppress-begin id0\n"
+                                        "void f() {}\n"
+                                        "// cppcheck-suppress-end\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:2:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:3:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:4:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:6:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:7:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:10:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:8:0]: (error) Suppress Begin: No matching end [invalidSuppression]\n", errout_str());
+
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress:\n"
+                                        "// cppcheck-suppress-unknown\n"
+                                        "// cppcheck-suppress-begin-unknown\n"
+                                        "// cppcheck-suppress-begin\n"
+                                        "void f() {}\n"
+                                        "// cppcheck-suppress-end-unknown\n",
+                                        ""));
+        // TODO: actually these are all invalid types
+        ASSERT_EQUALS("[test.cpp:1:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:2:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:3:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:4:0]: (error) suppression without error ID [invalidSuppression]\n"
+                      "[test.cpp:6:0]: (error) suppression without error ID [invalidSuppression]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
@@ -672,7 +763,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
@@ -683,7 +774,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
@@ -694,7 +785,7 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(1, (this->*check)("void f() {\n"
                                         "    int a;\n"
@@ -705,143 +796,143 @@ private:
                                         "    b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: b\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:7:5]: (error) Uninitialized variable: b [uninitvar]\n", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    int b;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    b++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    int b;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    b++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    int b;\n"
-                       "    b++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    // cppcheck-suppress-begin [uninitvar]\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    int b;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    b++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    // cppcheck-suppress-end [uninitvar]\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-begin [uninitvar]\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    int b;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    b++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    // cppcheck-suppress-end [uninitvar]\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    // cppcheck-suppress-begin [uninitvar, syntaxError]\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    int b;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    b++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    // cppcheck-suppress-end [uninitvar, syntaxError]\n"
-                       "}\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:2]: (information) Unmatched suppression: syntaxError\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-begin [uninitvar, syntaxError]\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    int b;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    b++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    // cppcheck-suppress-end [uninitvar, syntaxError]\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:2:0]: (information) Unmatched suppression: syntaxError [unmatchedSuppression]\n", errout_str());
 
-        (this->*check)("// cppcheck-suppress-begin [uninitvar, syntaxError]\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    int b;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    b++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n"
-                       "// cppcheck-suppress-end [uninitvar, syntaxError]\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:1]: (information) Unmatched suppression: syntaxError\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-begin [uninitvar, syntaxError]\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    int b;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    b++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n"
+                                        "// cppcheck-suppress-end [uninitvar, syntaxError]\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (information) Unmatched suppression: syntaxError [unmatchedSuppression]\n", errout_str());
 
-        (this->*check)("// cppcheck-suppress-begin [uninitvar, syntaxError]\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "    int b;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    b++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n"
-                       "// cppcheck-suppress-end [uninitvar, syntaxError]",
-                       "");
-        ASSERT_EQUALS("[test.cpp:1]: (information) Unmatched suppression: syntaxError\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-begin [uninitvar, syntaxError]\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "    int b;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    b++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n"
+                                        "// cppcheck-suppress-end [uninitvar, syntaxError]",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:1:0]: (information) Unmatched suppression: syntaxError [unmatchedSuppression]\n", errout_str());
 
         // test of multiple suppression types
-        (this->*check)("// cppcheck-suppress-file uninitvar\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    // cppcheck-suppress uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    // cppcheck-suppress uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    // cppcheck-suppress uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    // cppcheck-suppress uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("// cppcheck-suppress-file uninitvar\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress uninitvar\n"
-                       "    a++;\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress uninitvar\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("// cppcheck-suppress-file uninitvar\n"
-                       "void f() {\n"
-                       "    int a;\n"
-                       "    // cppcheck-suppress-begin uninitvar\n"
-                       "    a++;\n"
-                       "    // cppcheck-suppress-end uninitvar\n"
-                       "}\n",
-                       "");
+        ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-begin uninitvar\n"
+                                        "    a++;\n"
+                                        "    // cppcheck-suppress-end uninitvar\n"
+                                        "}\n",
+                                        ""));
         ASSERT_EQUALS("", errout_str());
 
-        (this->*check)("// cppcheck-suppress-file uninitvar\n"
-                       "void f() {\n"
-                       "    // cppcheck-suppress uninitvar\n"
-                       "    int a;\n"
-                       "    a++;\n"
-                       "}\n",
-                       "");
-        ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout_str());
+        ASSERT_EQUALS(1, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
+                                        "    // cppcheck-suppress uninitvar\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:4:0]: (information) Unmatched suppression: uninitvar [unmatchedSuppression]\n", errout_str());
 
         // #5746 - exitcode
         ASSERT_EQUALS(1U,
@@ -849,7 +940,7 @@ private:
                                      "  int a; return a;\n"
                                      "}\n",
                                      ""));
-        ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: a\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:17]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
 
         ASSERT_EQUALS(0U,
                       (this->*check)("int f() {\n"
@@ -858,29 +949,30 @@ private:
                                      "uninitvar"));
         ASSERT_EQUALS("", errout_str());
 
-        // cppcheck-suppress-macro
+        // TODO: check result
         (this->*check)("// cppcheck-suppress-macro zerodiv\n"
                        "#define DIV(A,B) A/B\n"
                        "a = DIV(10,0);\n",
                        "");
         ASSERT_EQUALS("", errout_str());
 
+        // TODO: check result
         (this->*check)("// cppcheck-suppress-macro abc\n"
                        "#define DIV(A,B) A/B\n"
                        "a = DIV(10,1);\n",
                        "");
-        ASSERT_EQUALS("", errout_str()); // <- no unmatched suppression reported for macro suppression
+        ASSERT_EQUALS("[test.cpp:2:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
     }
 
     void suppressionsSettingsFiles() {
         runChecks(&TestSuppressions::checkSuppressionFiles);
     }
 
-    static void suppressionsSettingsFS() {
-        // TODO
-        // runChecks(&TestSuppressions::checkSuppressionFS);
+    void suppressionsSettingsFS() {
+        runChecks(&TestSuppressions::checkSuppressionFS);
     }
 
+#ifdef HAS_THREADING_MODEL_THREAD
     void suppressionsSettingsThreadsFiles() {
         runChecks(&TestSuppressions::checkSuppressionThreadsFiles);
     }
@@ -888,8 +980,9 @@ private:
     void suppressionsSettingsThreadsFS() {
         runChecks(&TestSuppressions::checkSuppressionThreadsFS);
     }
+#endif // HAS_THREADING_MODEL_THREAD
 
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#ifdef HAS_THREADING_MODEL_FORK
     void suppressionsSettingsProcessesFiles() {
         runChecks(&TestSuppressions::checkSuppressionProcessesFiles);
     }
@@ -897,7 +990,7 @@ private:
     void suppressionsSettingsProcessesFS() {
         runChecks(&TestSuppressions::checkSuppressionProcessesFS);
     }
-#endif
+#endif // HAS_THREADING_MODEL_FORK
 
     void suppressionsMultiFileInternal(unsigned int (TestSuppressions::*check)(std::map<std::string, std::string> &f, const std::string &)) {
         std::map<std::string, std::string> files;
@@ -921,12 +1014,13 @@ private:
         suppressionsMultiFileInternal(&TestSuppressions::checkSuppressionFS);
     }
 
+    // TODO: this tests an internal function - should it be private?
     void suppressionsPathSeparator() const {
         const SuppressionList::Suppression s1("*", "test/foo/*");
-        ASSERT_EQUALS(true, s1.isSuppressed(errorMessage("someid", "test/foo/bar.cpp", 142)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s1.isSuppressed(errorMessage("someid", "test/foo/bar.cpp", 142)));
 
         const SuppressionList::Suppression s2("abc", "include/1.h");
-        ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
     }
 
     void suppressionsLine0() const {
@@ -990,6 +1084,17 @@ private:
         msg.clear();
         ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id */", &msg));
         ASSERT_EQUALS("", msg);
+        ASSERT_EQUALS("", s.extraComment);
+
+        msg.clear();
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id ; extra */", &msg));
+        ASSERT_EQUALS("", msg);
+        ASSERT_EQUALS("extra", s.extraComment);
+
+        msg.clear();
+        ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress id // extra */", &msg));
+        ASSERT_EQUALS("", msg);
+        ASSERT_EQUALS("extra", s.extraComment);
 
         msg.clear();
         ASSERT_EQUALS(true, s.parseComment("/* cppcheck-suppress-file id */", &msg));
@@ -1034,7 +1139,7 @@ private:
                                         "    a++; b++;\n"
                                         "}\n",
                                         ""));
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (error) Uninitialized variable: a [uninitvar]\n", errout_str());
     }
 
     void inlinesuppress_symbolname_Files() {
@@ -1054,6 +1159,19 @@ private:
         ASSERT_EQUALS("", errMsg);
         ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc -- some comment", &errMsg));
         ASSERT_EQUALS("", errMsg);
+    }
+
+    // TODO: tests internal function - should it be private?
+    void inlinesuppress_unchecked() const {
+        SuppressionList::Suppression s;
+        std::string errMsg;
+        ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc", &errMsg));
+        ASSERT_EQUALS("", errMsg);
+        s.lineNumber = 5;
+
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::None, s.isSuppressed(errorMessage("id", "test.cpp", 11)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Checked, s.isSuppressed(errorMessage("id", "test.cpp", 5)));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s.isSuppressed(errorMessage("abc", "test.cpp", 5)));
     }
 
     void multi_inlinesuppress() const {
@@ -1184,15 +1302,19 @@ private:
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
-        CppCheck cppCheck(*this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
-        Settings& settings = cppCheck.settings();
-        settings.quiet = true;
-        ASSERT_EQUALS("", settings.supprs.nomsg.addSuppressionLine("uninitvar"));
-        settings.exitCode = 1;
+        const auto settings = dinit(Settings,
+                                    $.quiet = true,
+                                        $.exitCode = 1,
+                                        $.templateFormat = templateFormat);
+
+        Suppressions supprs;
+        ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine("uninitvar"));
+
+        CppCheck cppCheck(settings, supprs, *this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
 
         const char code[] = "int f() { int a; return a; }";
-        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("test.c"), code)); // <- no unsuppressed error is seen
-        ASSERT_EQUALS("[test.c:1]: (error) Uninitialized variable: a\n", errout_str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
+        ASSERT_EQUALS(0, cppCheck.checkBuffer(FileWithDetails("test.c", Standards::Language::C, 0),code, sizeof(code))); // <- no unsuppressed error is seen
+        ASSERT_EQUALS("[test.c:1:25]: (error) Uninitialized variable: a [uninitvar]\n", errout_str()); // <- report error so ThreadExecutor can suppress it and make sure the global suppression is matched.
     }
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
@@ -1200,29 +1322,28 @@ private:
         SuppressionList::Suppression suppression("unusedFunction", "test.c", 3);
         suppression.checked = true; // have to do this because fixes for #5704
         ASSERT_EQUALS("", suppressions.addSuppression(std::move(suppression)));
-        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), false).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0)).empty());
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions().empty());
     }
 
     void globalsuppress_unusedFunction() const { // #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         SuppressionList suppressions;
         ASSERT_EQUALS("", suppressions.addSuppressionLine("unusedFunction:*"));
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), true).empty());
-        ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c"), false).empty());
-        ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(false).empty());
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid")));
+        ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions(FileWithDetails("test.c", Standards::Language::C, 0)).empty());
+        ASSERT_EQUALS(true, !suppressions.getUnmatchedGlobalSuppressions().empty());
     }
 
     void suppressionWithRelativePaths() {
-        CppCheck cppCheck(*this, true, nullptr);
-        Settings& settings = cppCheck.settings();
+        Suppressions supprs;
+
+        Settings settings;
         settings.quiet = true;
         settings.severity.enable(Severity::style);
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");
+        settings.templateFormat = templateFormat;
         const char code[] =
             "struct Point\n"
             "{\n"
@@ -1231,7 +1352,8 @@ private:
             "    // cppcheck-suppress unusedStructMember\n"
             "    int y;\n"
             "};";
-        ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("/somewhere/test.cpp"), code));
+        CppCheck cppCheck(settings, supprs, *this, true, nullptr);
+        ASSERT_EQUALS(0, cppCheck.checkBuffer(FileWithDetails("/somewhere/test.cpp", Standards::Language::CPP, 0), code, sizeof(code)));
         ASSERT_EQUALS("",errout_str());
     }
 
@@ -1273,7 +1395,7 @@ private:
         suppressingSyntaxErrorsInlineInternal(&TestSuppressions::checkSuppressionFS);
     }
 
-    void suppressingSyntaxErrorsWhileFileReadInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxError while file read should be suppressible (PR #1333)
+    void suppressingSimplecppErrorsWhileFileReadInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) { // syntaxError while file read should be suppressible (PR #1333)
         const char code[] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
                             "{\n"
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
@@ -1291,35 +1413,38 @@ private:
         ASSERT_EQUALS("", errout_str());
     }
 
-    void suppressingSyntaxErrorsWhileFileReadFiles() {
-        suppressingSyntaxErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
+    void suppressingSimplecppErrorsWhileFileReadFiles() {
+        suppressingSimplecppErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
-    void suppressingSyntaxErrorsWhileFileReadFS() {
-        suppressingSyntaxErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
+    void suppressingSimplecppErrorsWhileFileReadFS() {
+        suppressingSimplecppErrorsWhileFileReadInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
+    // TODO: this tests an internal function - should it be private?
     void symbol() const {
         SuppressionList::Suppression s;
+        s.fileName = "test.cpp";
         s.errorId = "foo";
         s.symbolName = "array*";
 
         SuppressionList::ErrorMessage errorMsg;
         errorMsg.errorId = "foo";
+        errorMsg.symbolNames = "";
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::None, s.isSuppressed(errorMsg));
         errorMsg.setFileName("test.cpp");
         errorMsg.lineNumber = 123;
-        errorMsg.symbolNames = "";
-        ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Checked, s.isSuppressed(errorMsg));
         errorMsg.symbolNames = "x\n";
-        ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Checked, s.isSuppressed(errorMsg));
         errorMsg.symbolNames = "array1\n";
-        ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s.isSuppressed(errorMsg));
         errorMsg.symbolNames = "x\n"
                                "array2\n";
-        ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s.isSuppressed(errorMsg));
         errorMsg.symbolNames = "array3\n"
                                "x\n";
-        ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
+        ASSERT_EQUALS_ENUM(SuppressionList::Suppression::Result::Matched, s.isSuppressed(errorMsg));
     }
 
     void unusedFunctionInternal(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
@@ -1340,11 +1465,12 @@ private:
         ASSERT_EQUALS(0, (this->*check)(code, "*:test.cpp"));
         ASSERT_EQUALS("", errout_str());
 
+        // TODO: this test never worked
         // multi error in file, but only suppression one error
-        const char code2[] = "fi fi\n"
-                             "if if;";
-        ASSERT_EQUALS(1, (this->*check)(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
-        ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout_str());
+        //const char code2[] = "fi fi\n"
+        //                     "if if;";
+        //ASSERT_EQUALS(1, (this->*check)(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        //ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout_str());
 
         // multi error in file, but only suppression one error (2)
         const char code3[] = "void f(int x, int y){\n"
@@ -1353,16 +1479,15 @@ private:
                              "}\n"
                              "f(0, 1);\n";
         ASSERT_EQUALS(1, (this->*check)(code3, "zerodiv:test.cpp:3"));  // suppress 'zerodiv' at line 3 of test.cpp
-        ASSERT_EQUALS("[test.cpp:2]: (error) Division by zero.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:2:14]: (error) Division by zero. [zerodiv]\n", errout_str());
     }
 
     void suppressingSyntaxErrorAndExitCodeFiles() {
         suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
-    static void suppressingSyntaxErrorAndExitCodeFS() {
-        // TODO
-        // suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFS);
+    void suppressingSyntaxErrorAndExitCodeFS() {
+        suppressingSyntaxErrorAndExitCodeInternal(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressingSyntaxErrorAndExitCodeMultiFileInternal(unsigned int (TestSuppressions::*check)(std::map<std::string, std::string> &f, const std::string &)) {
@@ -1371,16 +1496,15 @@ private:
         mfiles["test.cpp"] = "fi if;";
         mfiles["test2.cpp"] = "fi if";
         ASSERT_EQUALS(1, (this->*check)(mfiles, "*:test.cpp"));
-        ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout_str());
+        ASSERT_EQUALS("[test2.cpp:1:4]: (error) syntax error [syntaxError]\n", errout_str());
     }
 
     void suppressingSyntaxErrorAndExitCodeMultiFileFiles() {
         suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFiles);
     }
 
-    static void suppressingSyntaxErrorAndExitCodeMultiFileFS() {
-        // TODO
-        // suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFS);
+    void suppressingSyntaxErrorAndExitCodeMultiFileFS() {
+        suppressingSyntaxErrorAndExitCodeMultiFileInternal(&TestSuppressions::checkSuppressionFS);
     }
 
     void suppressLocal() const {
@@ -1398,55 +1522,76 @@ private:
         ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid2", "test2.cpp", 1), false));
     }
 
+    static void addCheckedSuppression(SuppressionList& supprs, SuppressionList::Suppression suppr)
+    {
+        suppr.checked = true;
+        supprs.addSuppression(std::move(suppr));
+    }
+
     void suppressUnmatchedSuppressions() {
-        std::list<SuppressionList::Suppression> suppressions;
+        const std::list<FileWithDetails> files = { {"a.c", Standards::Language::C, 0}};
+        const std::list<FileSettings> fs;
 
         // No unmatched suppression
-        suppressions.clear();
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress all unmatchedSuppression
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "*", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "*", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress all unmatchedSuppression (corresponds to "--suppress=unmatchedSuppression")
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress all unmatchedSuppression in a.c
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "a.c", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // suppress unmatchedSuppression in a.c at line 10
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", 10U);
-        ASSERT_EQUALS(false, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "a.c", 10U});
+            ASSERT_EQUALS(false, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("", errout_str());
+        }
 
         // don't suppress unmatchedSuppression when file is mismatching
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "b.c", SuppressionList::Suppression::NO_LINE);
-        ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "b.c", SuppressionList::Suppression::NO_LINE});
+            ASSERT_EQUALS(true, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("[a.c:10:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
+        }
 
         // don't suppress unmatchedSuppression when line is mismatching
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
-        ASSERT_EQUALS(true, SuppressionList::reportUnmatchedSuppressions(suppressions, *this));
-        ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout_str());
+        {
+            SuppressionList suppressions;
+            addCheckedSuppression(suppressions, {"abc", "a.c", 10U});
+            addCheckedSuppression(suppressions, {"unmatchedSuppression", "a.c", 1U});
+            ASSERT_EQUALS(true, CppCheckExecutor::reportUnmatchedSuppressions(settingsDefault, suppressions, files, fs, *this));
+            ASSERT_EQUALS("[a.c:10:0]: (information) Unmatched suppression: abc [unmatchedSuppression]\n", errout_str());
+        }
     }
 
     void suppressionsParseXmlFile() const {
@@ -1522,6 +1667,233 @@ private:
 
             SuppressionList supprList;
             ASSERT_EQUALS("unknown element 'eid' in suppressions XML 'suppressparsexml.xml', expected id/fileName/lineNumber/symbolName/hash.", supprList.parseXmlFile(file.path().c_str()));
+        }
+    }
+
+    void addSuppressionDuplicate() const {
+        SuppressionList supprs;
+
+        SuppressionList::Suppression s;
+        s.errorId = "uninitvar";
+
+        ASSERT_EQUALS("", supprs.addSuppression(s));
+        ASSERT_EQUALS("suppression 'uninitvar' already exists", supprs.addSuppression(s));
+    }
+
+    void updateSuppressionState() const {
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+            ASSERT_EQUALS(false, supprs.updateSuppressionState(s));
+        }
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+
+            ASSERT_EQUALS("", supprs.addSuppression(s));
+
+            ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
+
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions();
+            ASSERT_EQUALS(1, l.size());
+        }
+        {
+            SuppressionList supprs;
+
+            SuppressionList::Suppression s;
+            s.errorId = "uninitVar";
+            s.matched = false;
+
+            ASSERT_EQUALS("", supprs.addSuppression(s));
+
+            s.matched = true;
+            ASSERT_EQUALS(true, supprs.updateSuppressionState(s));
+
+            const std::list<SuppressionList::Suppression> l = supprs.getUnmatchedGlobalSuppressions();
+            ASSERT_EQUALS(0, l.size());
+        }
+    }
+
+    void addSuppressionLineMultiple() const {
+        SuppressionList supprlist;
+
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("syntaxError"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("uninitvar:1.c"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("memleak:1.c"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("uninitvar:2.c"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("memleak:3.c:12 # first"));
+        ASSERT_EQUALS("", supprlist.addSuppressionLine("memleak:3.c:22 // second"));
+
+        const auto& supprs = supprlist.getSuppressions();
+        ASSERT_EQUALS(6, supprs.size());
+
+        auto it = supprs.cbegin();
+
+        ASSERT_EQUALS("syntaxError", it->errorId);
+        ASSERT_EQUALS("", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("uninitvar", it->errorId);
+        ASSERT_EQUALS("1.c", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("memleak", it->errorId);
+        ASSERT_EQUALS("1.c", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("uninitvar", it->errorId);
+        ASSERT_EQUALS("2.c", it->fileName);
+        ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("memleak", it->errorId);
+        ASSERT_EQUALS("3.c", it->fileName);
+        ASSERT_EQUALS(12, it->lineNumber);
+        ++it;
+
+        ASSERT_EQUALS("memleak", it->errorId);
+        ASSERT_EQUALS("3.c", it->fileName);
+        ASSERT_EQUALS(22, it->lineNumber);
+    }
+
+    void toString() const
+    {
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            ASSERT_EQUALS("unitvar", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.fileName = "test.cpp";
+            ASSERT_EQUALS("unitvar:test.cpp", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.fileName = "test.cpp";
+            s.lineNumber = 12;
+            ASSERT_EQUALS("unitvar:test.cpp:12", s.toString());
+        }
+        {
+            SuppressionList::Suppression s;
+            s.errorId = "unitvar";
+            s.symbolName = "sym";
+            ASSERT_EQUALS("unitvar:sym", s.toString());
+        }
+    }
+
+    void suppressionFromErrorMessage() const {
+        {
+            const ErrorMessage msg({}, "test1.cpp", Severity::information, "msg", "id", Certainty::inconclusive);
+            const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {"m1", "m2"});
+            ASSERT_EQUALS("test1.cpp", msg_s.getFileName());
+            ASSERT_EQUALS(SuppressionList::Suppression::NO_LINE, msg_s.lineNumber);
+            ASSERT_EQUALS("id", msg_s.errorId);
+            ASSERT_EQUALS_ENUM(Certainty::inconclusive, msg_s.certainty);
+            ASSERT_EQUALS("", msg_s.symbolNames);
+            ASSERT_EQUALS(2, msg_s.macroNames.size());
+            auto it = msg_s.macroNames.cbegin();
+            ASSERT_EQUALS("m1", *it);
+            ++it;
+            ASSERT_EQUALS("m2", *it);
+        }
+        {
+            std::list<ErrorMessage::FileLocation> loc;
+            loc.emplace_back("test1.cpp", 1, 1);
+            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "msg", "id", Certainty::normal);
+            const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {});
+            ASSERT_EQUALS("test1.cpp", msg_s.getFileName());
+            ASSERT_EQUALS(1, msg_s.lineNumber);
+        }
+        {
+            std::list<ErrorMessage::FileLocation> loc;
+            loc.emplace_back("test1.cpp", 1, 1);
+            loc.emplace_back("test2.cpp", 2, 2);
+            loc.emplace_back("test3.cpp", 3, 3);
+            const ErrorMessage msg(std::move(loc), "test1.cpp", Severity::information, "msg", "id", Certainty::normal);
+            const auto msg_s = SuppressionList::ErrorMessage::fromErrorMessage(msg, {});
+            ASSERT_EQUALS("test3.cpp", msg_s.getFileName());
+            ASSERT_EQUALS(3, msg_s.lineNumber);
+        }
+    }
+
+    void suppressionWildcard() const {
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
+
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("abc", "xyz.cpp", 1)));
+            {
+                const auto supprs = suppressions.getSuppressions();
+                const auto suppr = supprs.cbegin();
+                ASSERT(!suppr->checked);
+                ASSERT(!suppr->matched);
+            }
+            ASSERT(suppressions.getUnmatchedGlobalSuppressions().empty());
+        }
+
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
+
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("abc", "test.cpp", 1)));
+            {
+                const auto supprs = suppressions.getSuppressions();
+                const auto suppr = supprs.cbegin();
+                ASSERT(suppr->checked);
+                ASSERT(!suppr->matched);
+            }
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
+        }
+
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
+
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("id2", "test.cpp", 1)));
+            {
+                const auto supprs = suppressions.getSuppressions();
+                const auto suppr = supprs.cbegin();
+                ASSERT(suppr->checked);
+                ASSERT(!suppr->matched);
+            }
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
+        }
+
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("id:test*.cpp"));
+            ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("id", "test.cpp", 1)));
+            {
+                const auto supprs = suppressions.getSuppressions();
+                const auto suppr = supprs.cbegin();
+                ASSERT(suppr->checked);
+                ASSERT(suppr->matched);
+            }
+            ASSERT(suppressions.getUnmatchedGlobalSuppressions().empty());
+        }
+
+        {
+            SuppressionList suppressions;
+            ASSERT_EQUALS("", suppressions.addSuppressionLine("*:test*.cpp"));
+            // the empty ID should be disallowed but it is use as a hack to mark wildcards on error IDs as checked
+            ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("", "test.cpp", 1)));
+            {
+                const auto supprs = suppressions.getSuppressions();
+                const auto suppr = supprs.cbegin();
+                ASSERT(suppr->checked);
+                ASSERT(!suppr->matched);
+            }
+            ASSERT(!suppressions.getUnmatchedGlobalSuppressions().empty());
         }
     }
 };

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have DT_DIR and DT_UNKNOWN
+#endif
+
 #include "filelister.h"
 
 #include "filesettings.h"
 #include "path.h"
 #include "pathmatch.h"
+#include "standards.h"
 #include "utils.h"
 
 #include <cstring>
+#include <iostream>
 #include <iterator>
 #include <memory>
 
@@ -40,7 +46,7 @@
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
 // of called functions. Thus, we explicitly call *A versions of the functions.
 
-static std::string addFiles2(std::list<FileWithDetails>&files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+static std::string addFiles2(std::list<FileWithDetails>&files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored, bool debug = false)
 {
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
@@ -80,8 +86,9 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
     HANDLE hFind = FindFirstFileA(searchPattern.c_str(), &ffd);
     if (INVALID_HANDLE_VALUE == hFind) {
         const DWORD err = GetLastError();
-        if (err == ERROR_FILE_NOT_FOUND) {
-            // no files matched
+        if (err == ERROR_FILE_NOT_FOUND || // the pattern did not match anything
+            err == ERROR_PATH_NOT_FOUND)   // the given search path does not exist
+        {
             return "";
         }
         return "finding files failed. Search pattern: '" + searchPattern + "'. (error: " + std::to_string(err) + ")";
@@ -100,22 +107,29 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
 
             if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
                 // File
-                if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.match(fname)) {
-                    std::string nativename = Path::fromNativeSeparators(fname);
+                Standards::Language lang = Standards::Language::None;
+                if ((!checkAllFilesInDir || Path::acceptFile(fname, extra, &lang))) {
+                    if (!ignored.match(fname)) {
+                        std::string nativename = Path::fromNativeSeparators(fname);
 
-                    // Limitation: file sizes are assumed to fit in a 'size_t'
+                        // Limitation: file sizes are assumed to fit in a 'size_t'
 #ifdef _WIN64
-                    const std::size_t filesize = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
+                        const std::size_t filesize = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
 #else
-                    const std::size_t filesize = ffd.nFileSizeLow;
+                        const std::size_t filesize = ffd.nFileSizeLow;
 
 #endif
-                    files.emplace_back(std::move(nativename), filesize);
+                        files.emplace_back(std::move(nativename), lang, filesize);
+                    }
+                    else if (debug)
+                    {
+                        std::cout << "ignored path: " << fname << std::endl;
+                    }
                 }
             } else {
                 // Directory
                 if (recursive) {
-                    if (!ignored.match(fname)) {
+                    if (!ignored.match(fname, PathMatch::Filemode::directory)) {
                         std::list<FileWithDetails> filesSorted;
 
                         std::string err = addFiles2(filesSorted, fname, extra, recursive, ignored);
@@ -128,6 +142,10 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
                         });
 
                         files.insert(files.end(), std::make_move_iterator(filesSorted.begin()), std::make_move_iterator(filesSorted.end()));
+                    }
+                    else if (debug)
+                    {
+                        std::cout << "ignored path: " << fname << std::endl;
                     }
                 }
             }
@@ -145,14 +163,14 @@ static std::string addFiles2(std::list<FileWithDetails>&files, const std::string
     return "";
 }
 
-std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored, bool debug)
 {
     if (path.empty())
         return "no path specified";
 
     std::list<FileWithDetails> filesSorted;
 
-    std::string err = addFiles2(filesSorted, path, extra, recursive, ignored);
+    std::string err = addFiles2(filesSorted, path, extra, recursive, ignored, debug);
 
     // files need to be sorted as the filesystems dosn't provide a stable order
     filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
@@ -169,30 +187,36 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__CYGWIN__)
-#undef __STRICT_ANSI__
-#endif
-
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cerrno>
+
+struct closedir_deleter {
+    void operator()(DIR* d) const {
+        closedir(d);
+    }
+};
 
 static std::string addFiles2(std::list<FileWithDetails> &files,
                              const std::string &path,
                              const std::set<std::string> &extra,
                              bool recursive,
-                             const PathMatch& ignored
-                             )
+                             const PathMatch& ignored,
+                             bool debug)
 {
     if (ignored.match(path))
+    {
+        if (debug)
+            std::cout << "ignored path: " << path << std::endl;
         return "";
+    }
 
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) == -1)
         return ""; // TODO: return error?
     if ((file_stat.st_mode & S_IFMT) != S_IFDIR)
     {
-        files.emplace_back(path, file_stat.st_size);
+        files.emplace_back(path, Standards::Language::None, file_stat.st_size);
         return "";
     }
 
@@ -203,7 +227,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         const int err = errno;
         return "could not open directory '" + path + "' (errno: " + std::to_string(err) + ")";
     }
-    std::unique_ptr<DIR, decltype(&closedir)> dir_deleter(dir, closedir);
+    std::unique_ptr<DIR, closedir_deleter> dir_deleter(dir);
 
     std::string new_path = path;
     new_path += '/';
@@ -216,25 +240,39 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
         new_path.erase(path.length() + 1);
         new_path += dir_result->d_name;
 
-#if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
+#if defined(_DIRENT_HAVE_D_TYPE)
         const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && Path::isDirectory(new_path)));
 #else
         const bool path_is_directory = Path::isDirectory(new_path);
 #endif
         if (path_is_directory) {
-            if (recursive && !ignored.match(new_path)) {
-                std::string err = addFiles2(files, new_path, extra, recursive, ignored);
-                if (!err.empty()) {
-                    return err;
+            if (recursive) {
+                if (!ignored.match(new_path, PathMatch::Filemode::directory)) {
+                    std::string err = addFiles2(files, new_path, extra, recursive, ignored, debug);
+                    if (!err.empty()) {
+                        return err;
+                    }
+                }
+                else if (debug)
+                {
+                    std::cout << "ignored path: " << new_path << std::endl;
                 }
             }
         } else {
-            if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
-                if (stat(new_path.c_str(), &file_stat) == -1) {
-                    const int err = errno;
-                    return "could not stat file '" + new_path + "' (errno: " + std::to_string(err) + ")";
+            Standards::Language lang = Standards::Language::None;
+            if (Path::acceptFile(new_path, extra, &lang)) {
+                if (!ignored.match(new_path))
+                {
+                    if (stat(new_path.c_str(), &file_stat) == -1) {
+                        const int err = errno;
+                        return "could not stat file '" + new_path + "' (errno: " + std::to_string(err) + ")";
+                    }
+                    files.emplace_back(new_path, lang, file_stat.st_size);
                 }
-                files.emplace_back(new_path, file_stat.st_size);
+                else if (debug)
+                {
+                    std::cout << "ignored path: " << new_path << std::endl;
+                }
             }
         }
     }
@@ -242,7 +280,7 @@ static std::string addFiles2(std::list<FileWithDetails> &files,
     return "";
 }
 
-std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored, bool debug)
 {
     if (path.empty())
         return "no path specified";
@@ -253,7 +291,7 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 
     std::list<FileWithDetails> filesSorted;
 
-    std::string err = addFiles2(filesSorted, corrected_path, extra, recursive, ignored);
+    std::string err = addFiles2(filesSorted, corrected_path, extra, recursive, ignored, debug);
 
     // files need to be sorted as the filesystems dosn't provide a stable order
     filesSorted.sort([](const FileWithDetails& a, const FileWithDetails& b) {
@@ -266,7 +304,7 @@ std::string FileLister::addFiles(std::list<FileWithDetails> &files, const std::s
 
 #endif
 
-std::string FileLister::recursiveAddFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::list<FileWithDetails> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored, bool debug)
 {
-    return addFiles(files, path, extra, true, ignored);
+    return addFiles(files, path, extra, true, ignored, debug);
 }

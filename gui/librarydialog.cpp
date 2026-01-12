@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -313,7 +313,7 @@ void LibraryDialog::changeFunction()
         return;
 
     function->comments   = mUi->comments->toPlainText();
-    function->noreturn   = (CppcheckLibraryData::Function::TrueFalseUnknown)mUi->noreturn->currentIndex();
+    function->noreturn   = static_cast<CppcheckLibraryData::Function::TrueFalseUnknown>(mUi->noreturn->currentIndex());
     function->useretval  = mUi->useretval->isChecked();
     function->leakignore = mUi->leakignore->isChecked();
 

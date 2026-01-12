@@ -1,14 +1,12 @@
-cmake_minimum_required(VERSION 3.5)
-if(MSVC)
-    cmake_minimum_required(VERSION 3.13)
-endif()
-project(Cppcheck VERSION 2.16.99 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.13)
+project(Cppcheck VERSION 2.18.99 LANGUAGES CXX)
 
 include(cmake/options.cmake)
 
 include(cmake/cxx11.cmake)
 use_cxx11()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -26,7 +24,8 @@ endif()
 include(cmake/printInfo.cmake)
 
 
-file(GLOB addons "addons/*.py")
+file(GLOB addons_py "addons/*.py")
+file(GLOB addons_json "addons/*.json")
 file(GLOB cfgs "cfg/*.cfg")
 file(GLOB platforms "platforms/*.xml")
 
@@ -48,11 +47,13 @@ if(LIBXML2_XMLLINT_EXECUTABLE)
         add_dependencies(validatePlatforms validatePlatforms-${platformname})
     endforeach()
 
-    add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
-            DEPENDS cppcheck)
+    if(TARGET cppcheck)
+        add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
+                DEPENDS cppcheck)
 
-    add_custom_target(example-xml $<TARGET_FILE:cppcheck> --xml --enable=all --inconclusive --max-configs=1 ${CMAKE_SOURCE_DIR}/samples 2> ${CMAKE_BINARY_DIR}/example.xml
-            DEPENDS cppcheck)
+        add_custom_target(example-xml $<TARGET_FILE:cppcheck> --xml --enable=all --inconclusive --max-configs=1 ${CMAKE_SOURCE_DIR}/samples 2> ${CMAKE_BINARY_DIR}/example.xml
+                DEPENDS cppcheck)
+    endif()
 
     add_custom_target(createXMLExamples DEPENDS errorlist-xml example-xml)
 
@@ -85,14 +86,22 @@ add_custom_target(copy_cfg ALL
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/cfg"
     COMMENT "Copying cfg files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
+# TODO: copy *.py and *.json only
 add_custom_target(copy_addons ALL
     ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/addons"
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/addons"
     COMMENT "Copying addons files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
+add_custom_target(remove_unsigned_platforms ALL
+        ${CMAKE_COMMAND} -E remove -f
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms/unix32-unsigned.xml"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms/unix64-unsigned.xml"
+        COMMENT "Removing unsigned platforms files from ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
 add_custom_target(copy_platforms ALL
     ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/platforms"
     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms"
+    DEPENDS remove_unsigned_platforms
     COMMENT "Copying platforms files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
 if(USE_BUNDLED_TINYXML2)
@@ -100,11 +109,12 @@ if(USE_BUNDLED_TINYXML2)
     add_subdirectory(externals/tinyxml2)
 endif()
 add_subdirectory(externals/simplecpp)
+add_subdirectory(externals/picojson)
 add_subdirectory(lib)   # CppCheck Library
+add_subdirectory(frontend)
 add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 add_subdirectory(gui)   # Graphical application
-add_subdirectory(tools/triage)   # Triage tool
 add_subdirectory(tools)
 add_subdirectory(man)
 

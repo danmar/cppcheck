@@ -2,6 +2,24 @@ import datetime
 import glob
 import os
 import re
+import requests
+
+
+def print_checkers(glob_pattern:str):
+    checkers = {}
+    for filename in glob.glob(glob_pattern):
+        for line in open(filename,'rt'):
+            res = re.match(r'[ \t]*logChecker\(\s*"([^"]+)"\s*\);.*', line)
+            if res is None:
+                continue
+            if line.find('//') > 0:
+                req = line[line.find('//')+2:].strip()
+            else:
+                req = ''
+            checkers[res.group(1)] = req
+    for c,req in dict(sorted(checkers.items())).items():
+        print('        {"%s","%s"},' % (c, req))
+
 
 print("""/*
  * Cppcheck - A tool for static C/C++ code analysis
@@ -28,31 +46,11 @@ print("""/*
 
 namespace checkers {
     const std::map<std::string, std::string> allCheckers{""" % (datetime.date.today().year,))
-
-for filename in glob.glob(os.path.expanduser('~/cppchecksolutions/cppcheck/lib/*.cpp')):
-    for line in open(filename,'rt'):
-        res = re.match(r'[ \t]*logChecker\(\s*"([:_a-zA-Z0-9]+)"\s*\);.*', line)
-        if res is None:
-            continue
-        req = ''
-        if line.find('//')>0:
-            req = line[line.find('//')+2:].strip()
-        print('        {"%s","%s"},' % (res.group(1), req))
+print_checkers(os.path.expanduser('~/cppchecksolutions/cppcheck/lib/*.cpp'))
 print("    };\n")
 
 print('    const std::map<std::string, std::string> premiumCheckers{')
-premium_checkers = []
-for filename in sorted(glob.glob(os.path.expanduser('~/cppchecksolutions/addon/src/*.cpp'))):
-    for line in open(filename,'rt'):
-        res = re.match(r'[ \t]*logChecker\("([^"]+)"\);.*', line)
-        if res is None:
-            continue
-        if line.find('//') > 0:
-            req = line[line.find('//')+2:].strip()
-        else:
-            req = ''
-        premium_checkers.append('        {"%s","%s"}' % (res.group(1), req))
-print(',\n'.join(sorted(premium_checkers)))
+print_checkers(os.path.expanduser('~/cppchecksolutions/addon/src/*.cpp'))
 print('    };')
 
 
@@ -61,268 +59,79 @@ print("""
     const char Adv[] = "Advisory";
     const char Man[] = "Mandatory";
     const char Doc[] = "Document";
+    const char Dis[] = "Disapplied";""")
 
-    const std::vector<MisraInfo> misraC2012Directives =
-    {
-        {1,1,Req,0},
-        {2,1,Req,0},
-        {3,1,Req,0},
-        {4,1,Req,0},
-        {4,2,Adv,0},
-        {4,3,Req,0},
-        {4,4,Adv,0},
-        {4,5,Adv,0},
-        {4,6,Adv,3},
-        {4,7,Req,0},
-        {4,8,Adv,0},
-        {4,9,Adv,3},
-        {4,10,Req,0},
-        {4,11,Req,3},
-        {4,12,Req,0},
-        {4,13,Adv,0},
-        {4,14,Req,2},
-        {4,15,Req,3},
-        {5,1,Req,4},
-        {5,2,Req,4},
-        {5,3,Req,4},
-    };
+for version in (2012, 2023, 2025):
+    with open(os.path.expanduser('~/cppchecksolutions/addon/coverage/misra-c-%i.txt' % version), 'rt') as f:
+        all_guidelines = f.read()
 
-    const std::vector<MisraInfo> misraC2012Rules =
-    {
-        {1,1,Req,0},
-        {1,2,Adv,0},
-        {1,3,Req,0},
-        {1,4,Req,2}, // amendment 2
-        {1,5,Req,3}, // Amendment 3
-        {2,1,Req,0},
-        {2,2,Req,0},
-        {2,3,Adv,0},
-        {2,4,Adv,0},
-        {2,5,Adv,0},
-        {2,6,Adv,0},
-        {2,7,Adv,0},
-        {2,8,Adv,0},
-        {3,1,Req,0},
-        {3,2,Req,0},
-        {4,1,Req,0},
-        {4,2,Adv,0},
-        {5,1,Req,0},
-        {5,2,Req,0},
-        {5,3,Req,0},
-        {5,4,Req,0},
-        {5,5,Req,0},
-        {5,6,Req,0},
-        {5,7,Req,0},
-        {5,8,Req,0},
-        {5,9,Adv,0},
-        {6,1,Req,0},
-        {6,2,Req,0},
-        {6,3,Req,0},
-        {7,1,Req,0},
-        {7,2,Req,0},
-        {7,3,Req,0},
-        {7,4,Req,0},
-        {7,5,Man,0},
-        {7,6,Req,0},
-        {8,1,Req,0},
-        {8,2,Req,0},
-        {8,3,Req,0},
-        {8,4,Req,0},
-        {8,5,Req,0},
-        {8,6,Req,0},
-        {8,7,Adv,0},
-        {8,8,Req,0},
-        {8,9,Adv,0},
-        {8,10,Req,0},
-        {8,11,Adv,0},
-        {8,12,Req,0},
-        {8,13,Adv,0},
-        {8,14,Req,0},
-        {8,15,Req,0},
-        {8,16,Adv,0},
-        {8,17,Adv,0},
-        {9,1,Man,0},
-        {9,2,Req,0},
-        {9,3,Req,0},
-        {9,4,Req,0},
-        {9,5,Req,0},
-        {9,6,Req,0},
-        {9,7,Man,0},
-        {10,1,Req,0},
-        {10,2,Req,0},
-        {10,3,Req,0},
-        {10,4,Req,0},
-        {10,5,Adv,0},
-        {10,6,Req,0},
-        {10,7,Req,0},
-        {10,8,Req,0},
-        {11,1,Req,0},
-        {11,2,Req,0},
-        {11,3,Req,0},
-        {11,4,Adv,0},
-        {11,5,Adv,0},
-        {11,6,Req,0},
-        {11,7,Req,0},
-        {11,8,Req,0},
-        {11,9,Req,0},
-        {11,10,Req,0},
-        {12,1,Adv,0},
-        {12,2,Req,0},
-        {12,3,Adv,0},
-        {12,4,Adv,0},
-        {12,5,Man,1}, // amendment 1
-        {12,6,Req,4}, // amendment 4
-        {13,1,Req,0},
-        {13,2,Req,0},
-        {13,3,Adv,0},
-        {13,4,Adv,0},
-        {13,5,Req,0},
-        {13,6,Man,0},
-        {14,1,Req,0},
-        {14,2,Req,0},
-        {14,3,Req,0},
-        {14,4,Req,0},
-        {15,1,Adv,0},
-        {15,2,Req,0},
-        {15,3,Req,0},
-        {15,4,Adv,0},
-        {15,5,Adv,0},
-        {15,6,Req,0},
-        {15,7,Req,0},
-        {16,1,Req,0},
-        {16,2,Req,0},
-        {16,3,Req,0},
-        {16,4,Req,0},
-        {16,5,Req,0},
-        {16,6,Req,0},
-        {16,7,Req,0},
-        {17,1,Req,0},
-        {17,2,Req,0},
-        {17,3,Man,0},
-        {17,4,Man,0},
-        {17,5,Adv,0},
-        {17,6,Man,0},
-        {17,7,Req,0},
-        {17,8,Adv,0},
-        {17,9,Man,0},
-        {17,10,Req,0},
-        {17,11,Adv,0},
-        {17,12,Adv,0},
-        {17,13,Req,0},
-        {18,1,Req,0},
-        {18,2,Req,0},
-        {18,3,Req,0},
-        {18,4,Adv,0},
-        {18,5,Adv,0},
-        {18,6,Req,0},
-        {18,7,Req,0},
-        {18,8,Req,0},
-        {18,9,Req,0},
-        {18,10,Man,0},
-        {19,1,Man,0},
-        {19,2,Adv,0},
-        {20,1,Adv,0},
-        {20,2,Req,0},
-        {20,3,Req,0},
-        {20,4,Req,0},
-        {20,5,Adv,0},
-        {20,6,Req,0},
-        {20,7,Req,0},
-        {20,8,Req,0},
-        {20,9,Req,0},
-        {20,10,Adv,0},
-        {20,11,Req,0},
-        {20,12,Req,0},
-        {20,13,Req,0},
-        {20,14,Req,0},
-        {21,1,Req,0},
-        {21,2,Req,0},
-        {21,3,Req,0},
-        {21,4,Req,0},
-        {21,5,Req,0},
-        {21,6,Req,0},
-        {21,7,Req,0},
-        {21,8,Req,0},
-        {21,9,Req,0},
-        {21,10,Req,0},
-        {21,11,Req,0},
-        {21,12,Adv,0},
-        {21,13,Man,1}, // Amendment 1
-        {21,14,Req,1}, // Amendment 1
-        {21,15,Req,1}, // Amendment 1
-        {21,16,Req,1}, // Amendment 1
-        {21,17,Req,1}, // Amendment 1
-        {21,18,Man,1}, // Amendment 1
-        {21,19,Man,1}, // Amendment 1
-        {21,20,Man,1}, // Amendment 1
-        {21,21,Req,3}, // Amendment 3
-        {21,22,Man,3}, // Amendment 3
-        {21,23,Req,3}, // Amendment 3
-        {21,24,Req,3}, // Amendment 3
-        {21,25,Req,4}, // Amendment 4
-        {21,26,Req,4}, // Amendment 4
-        {22,1,Req,0},
-        {22,2,Man,0},
-        {22,3,Req,0},
-        {22,4,Man,0},
-        {22,5,Man,0},
-        {22,6,Man,0},
-        {22,7,Req,1}, // Amendment 1
-        {22,8,Req,1}, // Amendment 1
-        {22,9,Req,1}, // Amendment 1
-        {22,10,Req,1}, // Amendment 1
-        {22,11,Req,4}, // Amendment 4
-        {22,12,Man,4}, // Amendment 4
-        {22,13,Req,4}, // Amendment 4
-        {22,14,Man,4}, // Amendment 4
-        {22,15,Req,4}, // Amendment 4
-        {22,16,Req,4}, // Amendment 4
-        {22,17,Req,4}, // Amendment 4
-        {22,18,Req,4}, // Amendment 4
-        {22,19,Req,4}, // Amendment 4
-        {22,20,Man,4}, // Amendment 4
-        {23,1,Adv,3}, // Amendment 3
-        {23,2,Req,3}, // Amendment 3
-        {23,3,Adv,3}, // Amendment 3
-        {23,4,Req,3}, // Amendment 3
-        {23,5,Adv,3}, // Amendment 3
-        {23,6,Req,3}, // Amendment 3
-        {23,7,Adv,3}, // Amendment 3
-        {23,8,Req,3}, // Amendment 3
-    };
+    if version == 2012:
+        amd = {'4.6':3,'4.9':3,'4.11':3,'4.14':2,'4.15':3,'5.1':4,'5.2':4,'5.3':4}
+    else:
+        amd = {}
 
-    const std::map<std::string, std::string> misraRuleSeverity{
-        {"1.1", "error"}, //{"syntaxError", "unknownMacro"}},
-        {"1.3", "error"}, //most "error"
-        {"2.1", "style"}, //{"alwaysFalse", "duplicateBreak"}},
-        {"2.2", "style"}, //{"alwaysTrue", "redundantCondition", "redundantAssignment", "redundantAssignInSwitch", "unreadVariable"}},
-        {"2.6", "style"}, //{"unusedLabel"}},
-        {"2.8", "style"}, //{"unusedVariable"}},
-        {"5.3", "style"}, //{"shadowVariable"}},
-        {"8.3", "style"}, //{"funcArgNamesDifferent"}}, // inconclusive
-        {"8.13", "style"}, //{"constPointer"}},
-        {"9.1", "error"}, //{"uninitvar"}},
-        {"14.3", "style"}, //{"alwaysTrue", "alwaysFalse", "compareValueOutOfTypeRangeError", "knownConditionTrueFalse"}},
-        {"13.2", "error"}, //{"unknownEvaluationOrder"}},
-        {"13.6", "style"}, //{"sizeofCalculation"}},
-        {"17.4", "error"}, //{"missingReturn"}},
-        {"17.5", "warning"}, //{"argumentSize"}},
-        {"18.1", "error"}, //{"pointerOutOfBounds"}},
-        {"18.2", "error"}, //{"comparePointers"}},
-        {"18.3", "error"}, //{"comparePointers"}},
-        {"18.6", "error"}, //{"danglingLifetime"}},
-        {"19.1", "error"}, //{"overlappingWriteUnion", "overlappingWriteFunction"}},
-        {"20.6", "error"}, //{"preprocessorErrorDirective"}},
-        {"21.13", "error"}, //{"invalidFunctionArg"}},
-        {"21.17", "error"}, //{"bufferAccessOutOfBounds"}},
-        {"21.18", "error"}, //{"bufferAccessOutOfBounds"}},
-        {"22.1", "error"}, //{"memleak", "resourceLeak", "memleakOnRealloc", "leakReturnValNotUsed", "leakNoVarFunctionCall"}},
-        {"22.2", "error"}, //{"autovarInvalidDeallocation"}},
-        {"22.3", "error"}, //{"incompatibleFileOpen"}},
-        {"22.4", "error"}, //{"writeReadOnlyFile"}},
-        {"22.6", "error"}, //{"useClosedFile"}}
-    };
+    print('    const std::vector<MisraInfo> misraC%iDirectives{' % version)
+    for line in all_guidelines.split('\n'):
+        res = re.match(r'Dir\s+(\d+)[.](\d+)\s+(\w+).*', line)
+        if res:
+            a = amd.get('%s.%s' % (res.group(1), res.group(2)), 0)
+            print('        {%s,%s,%s,%i},' % (res.group(1), res.group(2), res.group(3)[:3], a))
+    print('    };')
 
+    if version == 2012:
+        amd = {'1.4':2,
+               '1.5':3,
+               '12.5':1,
+               '12.6':4,
+               '21.13':1,
+               '21.14':1,
+               '21.15':1,
+               '21.16':1,
+               '21.17':1,
+               '21.18':1,
+               '21.19':1,
+               '21.20':1,
+               '21.21':3,
+               '21.22':3,
+               '21.23':3,
+               '21.24':3,
+               '21.25':4,
+               '21.26':4,
+               '22.7':1,
+               '22.8':1,
+               '22.9':1,
+               '22.10':1,
+               '22.11':4,
+               '22.12':4,
+               '22.13':4,
+               '22.14':4,
+               '22.15':4,
+               '22.16':4,
+               '22.17':4,
+               '22.18':4,
+               '22.19':4,
+               '22.20':4,
+               '23.1':3,
+               '23.2':3,
+               '23.3':3,
+               '23.4':3,
+               '23.5':3,
+               '23.6':3,
+               '23.7':3,
+               '23.8':3 }
+    else:
+        amd = {}
+
+    print('    const std::vector<MisraInfo> misraC%iRules{' % version)
+    for line in all_guidelines.split('\n'):
+        res = re.match(r'Rule\s+(\d+)[.](\d+)\s+(\w+).*', line)
+        if res:
+            a = amd.get('%s.%s' % (res.group(1), res.group(2)), 0)
+            comment = '' if a == 0 else ' // Amendment %i' % a
+            print('        {%s,%s,%s,%i},%s' % (res.group(1), res.group(2), res.group(3)[:3], a, comment))
+    print('    };')
+
+print("""
     const std::vector<MisraCppInfo> misraCpp2008Rules =
     {
         {0,1,1,Req},
@@ -553,6 +362,14 @@ print("""
         {27,0,1,Req}
     };
 
+    const std::vector<MisraCppInfo> misraCpp2023Directives =
+    {
+        {0,3,1,Adv},
+        {0,3,2,Req},
+        {5,7,2,Adv},
+        {15,8,1,Req},
+    };
+
     const std::vector<MisraCppInfo> misraCpp2023Rules =
     {
         {0,0,1,Req},
@@ -563,15 +380,12 @@ print("""
         {0,2,2,Req},
         {0,2,3,Adv},
         {0,2,4,Adv},
-        {0,3,1,Adv},
-        {0,3,2,Req},
         {4,1,1,Req},
         {4,1,2,Adv},
         {4,1,3,Req},
         {4,6,1,Req},
         {5,0,1,Adv},
         {5,7,1,Req},
-        {5,7,2,Adv},
         {5,7,3,Req},
         {5,10,1,Req},
         {5,13,1,Req},
@@ -677,7 +491,6 @@ print("""
         {15,1,3,Req},
         {15,1,4,Adv},
         {15,1,5,Req},
-        {15,8,1,Req},
         {16,5,2,Req},
         {16,6,1,Adv},
         {17,8,1,Req},
@@ -1099,195 +912,47 @@ std::vector<checkers::Info> checkers::autosarInfo{
     {"a27-0-2", checkers::Adv},
     {"a27-0-3", checkers::Req},
 };
-
-std::vector<checkers::Info> checkers::certCInfo{
-    {"PRE30-C", "L3"},
-    {"PRE31-C", "L3"},
-    {"PRE32-C", "L3"},
-    {"DCL30-C", "L2"},
-    {"DCL31-C", "L3"},
-    {"DCL36-C", "L2"},
-    {"DCL37-C", "L3"},
-    {"DCL38-C", "L3"},
-    {"DCL39-C", "L3"},
-    {"DCL40-C", "L3"},
-    {"DCL41-C", "L3"},
-    {"EXP30-C", "L2"},
-    {"EXP32-C", "L2"},
-    {"EXP33-C", "L1"},
-    {"EXP34-C", "L1"},
-    {"EXP35-C", "L3"},
-    {"EXP36-C", "L3"},
-    {"EXP37-C", "L3"},
-    {"EXP39-C", "L3"},
-    {"EXP40-C", "L3"},
-    {"EXP42-C", "L2"},
-    {"EXP43-C", "L3"},
-    {"EXP44-C", "L3"},
-    {"EXP45-C", "L2"},
-    {"EXP46-C", "L2"},
-    {"INT30-C", "L2"},
-    {"INT31-C", "L2"},
-    {"INT32-C", "L2"},
-    {"INT33-C", "L2"},
-    {"INT34-C", "L3"},
-    {"INT35-C", "L3"},
-    {"INT36-C", "L3"},
-    {"FLP30-C", "L2"},
-    {"FLP32-C", "L2"},
-    {"FLP34-C", "L3"},
-    {"FLP36-C", "L3"},
-    {"FLP37-C", "L3"},
-    {"ARR30-C", "L2"},
-    {"ARR32-C", "L2"},
-    {"ARR36-C", "L2"},
-    {"ARR37-C", "L2"},
-    {"ARR38-C", "L1"},
-    {"ARR39-C", "L2"},
-    {"STR30-C", "L2"},
-    {"STR31-C", "L1"},
-    {"STR32-C", "L1"},
-    {"STR34-C", "L2"},
-    {"STR37-C", "L3"},
-    {"STR38-C", "L1"},
-    {"MEM30-C", "L1"},
-    {"MEM31-C", "L2"},
-    {"MEM33-C", "L3"},
-    {"MEM34-C", "L1"},
-    {"MEM35-C", "L2"},
-    {"MEM36-C", "L3"},
-    {"FIO30-C", "L1"},
-    {"FIO32-C", "L3"},
-    {"FIO34-C", "L1"},
-    {"FIO37-C", "L1"},
-    {"FIO38-C", "L3"},
-    {"FIO39-C", "L2"},
-    {"FIO40-C", "L3"},
-    {"FIO41-C", "L3"},
-    {"FIO42-C", "L3"},
-    {"FIO44-C", "L3"},
-    {"FIO45-C", "L2"},
-    {"FIO46-C", "L3"},
-    {"FIO47-C", "L2"},
-    {"ENV30-C", "L3"},
-    {"ENV31-C", "L3"},
-    {"ENV32-C", "L1"},
-    {"ENV33-C", "L1"},
-    {"ENV34-C", "L3"},
-    {"SIG30-C", "L1"},
-    {"SIG31-C", "L2"},
-    {"SIG34-C", "L3"},
-    {"SIG35-C", "L3"},
-    {"ERR30-C", "L2"},
-    {"ERR32-C", "L3"},
-    {"ERR33-C", "L1"},
-    {"CON30-C", "L3"},
-    {"CON31-C", "L3"},
-    {"CON32-C", "L2"},
-    {"CON33-C", "L3"},
-    {"CON34-C", "L3"},
-    {"CON35-C", "L3"},
-    {"CON36-C", "L3"},
-    {"CON37-C", "L2"},
-    {"CON38-C", "L3"},
-    {"CON39-C", "L2"},
-    {"CON40-C", "L2"},
-    {"CON41-C", "L3"},
-    {"MSC30-C", "L2"},
-    {"MSC32-C", "L1"},
-    {"MSC33-C", "L1"},
-    {"MSC37-C", "L2"},
-    {"MSC38-C", "L3"},
-    {"MSC39-C", "L3"},
-    {"MSC40-C", "L3"},
-};
-
-std::vector<checkers::Info> checkers::certCppInfo{
-    {"DCL50-CPP", "L1"},
-    {"DCL51-CPP", "L3"},
-    {"DCL52-CPP", "L3"},
-    {"DCL53-CPP", "L3"},
-    {"DCL54-CPP", "L2"},
-    {"DCL55-CPP", "L3"},
-    {"DCL56-CPP", "L3"},
-    {"DCL57-CPP", "L3"},
-    {"DCL58-CPP", "L3"},
-    {"DCL59-CPP", "L3"},
-    {"DCL60-CPP", "L3"},
-    {"EXP50-CPP", "L2"},
-    {"EXP51-CPP", "L3"},
-    {"EXP52-CPP", "L3"},
-    {"EXP53-CPP", "L1"},
-    {"EXP54-CPP", "L2"},
-    {"EXP55-CPP", "L2"},
-    {"EXP56-CPP", "L3"},
-    {"EXP57-CPP", "L3"},
-    {"EXP58-CPP", "L3"},
-    {"EXP59-CPP", "L3"},
-    {"EXP60-CPP", "L1"},
-    {"EXP61-CPP", "L2"},
-    {"EXP62-CPP", "L2"},
-    {"EXP63-CPP", "L2"},
-    {"INT50-CPP", "L3"},
-    {"CTR50-CPP", "L2"},
-    {"CTR51-CPP", "L2"},
-    {"CTR52-CPP", "L1"},
-    {"CTR53-CPP", "L2"},
-    {"CTR54-CPP", "L2"},
-    {"CTR55-CPP", "L1"},
-    {"CTR56-CPP", "L2"},
-    {"CTR57-CPP", "L3"},
-    {"CTR58-CPP", "L3"},
-    {"STR50-CPP", "L1"},
-    {"STR51-CPP", "L1"},
-    {"STR52-CPP", "L2"},
-    {"STR53-CPP", "L2"},
-    {"MEM50-CPP", "L1"},
-    {"MEM51-CPP", "L1"},
-    {"MEM52-CPP", "L1"},
-    {"MEM53-CPP", "L1"},
-    {"MEM54-CPP", "L1"},
-    {"MEM55-CPP", "L1"},
-    {"MEM56-CPP", "L1"},
-    {"MEM57-CPP", "L2"},
-    {"FIO50-CPP", "L2"},
-    {"FIO51-CPP", "L3"},
-    {"ERR50-CPP", "L3"},
-    {"ERR51-CPP", "L3"},
-    {"ERR52-CPP", "L3"},
-    {"ERR53-CPP", "L3"},
-    {"ERR54-CPP", "L1"},
-    {"ERR55-CPP", "L2"},
-    {"ERR56-CPP", "L2"},
-    {"ERR57-CPP", "L3"},
-    {"ERR58-CPP", "L2"},
-    {"ERR59-CPP", "L1"},
-    {"ERR60-CPP", "L3"},
-    {"ERR61-CPP", "L3"},
-    {"ERR62-CPP", "L3"},
-    {"OOP50-CPP", "L3"},
-    {"OOP51-CPP", "L3"},
-    {"OOP52-CPP", "L2"},
-    {"OOP53-CPP", "L3"},
-    {"OOP54-CPP", "L3"},
-    {"OOP55-CPP", "L2"},
-    {"OOP56-CPP", "L3"},
-    {"OOP57-CPP", "L2"},
-    {"OOP58-CPP", "L2"},
-    {"CON50-CPP", "L3"},
-    {"CON51-CPP", "L2"},
-    {"CON52-CPP", "L2"},
-    {"CON53-CPP", "L3"},
-    {"CON54-CPP", "L3"},
-    {"CON55-CPP", "L3"},
-    {"CON56-CPP", "L3"},
-    {"MSC50-CPP", "L2"},
-    {"MSC51-CPP", "L1"},
-    {"MSC52-CPP", "L3"},
-    {"MSC53-CPP", "L2"},
-    {"MSC54-CPP", "L2"},
-};
-
 """)
+
+
+def getCertCInfo(main_url:str):
+    """Fetches CERT C rules information."""
+    # Fetching the CERT C rules page
+    r = requests.get(main_url, timeout=30)
+    mainpage = r.text
+    for line in mainpage.split('\n'):
+        res = re.search(r'<a href="(/confluence/[^"]+)">(Rule|Rec.) \d\d[.] [A-Za-z ]+ [(][A-Z][A-Z][A-Z][)]', line)
+        if res is None:
+            continue
+        r = requests.get('https://wiki.sei.cmu.edu' + res.group(1), timeout=30)
+        text = r.text.replace('\n', '').replace('<tr>', '\n').replace('</tr>', '\n')
+        rules = []
+        for line in text.split('\n'):
+            if not line.startswith('<td'):
+                continue
+            #print(line)
+            res = re.match(r'[^>]+>([A-Z][A-Z][A-Z][0-9][0-9]-CP*)<.*>(L[1-3])<.+', line)
+            if res:
+                if res.group(1) == 'EXP40-C' and 'EXP39-C' not in rules:
+                    print('    {"EXP39-C", "L2"},')
+                print('    {"%s", "%s"},' % (res.group(1), res.group(2)))
+                rules.append(res.group(1))
+        if 'EXP45-C' in rules:
+            if 'EXP46-C' not in rules:
+                print('    {"EXP46-C", "L2"},')
+            if 'EXP47-C' not in rules:
+                print('    {"EXP47-C", "L2"},')
+
+
+print('std::vector<checkers::Info> checkers::certCInfo{')
+getCertCInfo('https://wiki.sei.cmu.edu/confluence/display/c/2+Rules')
+print('    // Recommendations')
+getCertCInfo('https://wiki.sei.cmu.edu/confluence/display/c/3+Recommendations')
+print('};')
+print('')
+print('std::vector<checkers::Info> checkers::certCppInfo{')
+getCertCInfo('https://wiki.sei.cmu.edu/confluence/pages/viewpage.action?pageId=88046682')
+print('};')
+print('')
 
 

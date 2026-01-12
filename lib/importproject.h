@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,12 @@
 #include <string>
 #include <vector>
 
+class Settings;
+struct Suppressions;
+namespace tinyxml2 {
+    class XMLDocument;
+}
+
 /// @addtogroup Core
 /// @{
 
@@ -45,12 +51,11 @@ namespace cppcheck {
     };
 }
 
-class Settings;
-
 /**
  * @brief Importing project settings.
  */
 class CPPCHECKLIB WARN_UNUSED ImportProject {
+    friend class TestImporter;
 public:
     enum class Type : std::uint8_t {
         NONE,
@@ -64,12 +69,12 @@ public:
         CPPCHECK_GUI
     };
 
-    static void fsParseCommand(FileSettings& fs, const std::string& command);
+    static void fsParseCommand(FileSettings& fs, const std::string& command, bool doUnescape);
     static void fsSetDefines(FileSettings& fs, std::string defs);
     static void fsSetIncludePaths(FileSettings& fs, const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
 
     std::list<FileSettings> fileSettings;
-    Type projectType{Type::NONE};
+    std::vector<std::string> errors;
 
     ImportProject() = default;
     virtual ~ImportProject() = default;
@@ -83,7 +88,6 @@ public:
 
     // Cppcheck GUI output
     struct {
-        std::string analyzeAllVsConfigs;
         std::vector<std::string> pathNames;
         std::list<std::string> libraries;
         std::list<std::string> excludedPaths;
@@ -92,14 +96,13 @@ public:
         std::string platform;
     } guiProject;
 
-    void ignorePaths(const std::vector<std::string> &ipaths);
+    void ignorePaths(const std::vector<std::string> &ipaths, bool debug = false);
     void ignoreOtherConfigs(const std::string &cfg);
 
-    Type import(const std::string &filename, Settings *settings=nullptr);
+    Type import(const std::string &filename, Settings *settings=nullptr, Suppressions *supprs=nullptr);
 protected:
     bool importCompileCommands(std::istream &istr);
-    bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
-    virtual bool sourceFileExists(const std::string &file);
+    bool importCppcheckGuiProject(std::istream &istr, Settings &settings, Suppressions &supprs);
 
 private:
     struct SharedItemsProject {
@@ -110,11 +113,10 @@ private:
     };
 
     bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
-    static SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    SharedItemsProject importVcxitems(const std::string &filename, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
+    bool importVcxproj(const std::string &filename, const tinyxml2::XMLDocument &doc, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters, std::vector<SharedItemsProject> &cache);
     bool importBcb6Prj(const std::string &projectFilename);
-
-    static void printError(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
 

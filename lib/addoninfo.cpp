@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include "json.h"
 
@@ -32,6 +33,10 @@ static std::string getFullPath(const std::string &fileName, const std::string &e
         std::cout << "looking for addon '" << fileName << "'" << std::endl;
     if (Path::isFile(fileName))
         return fileName;
+
+    const bool is_abs_path = Path::isAbsolute(fileName);
+    if (is_abs_path)
+        return "";
 
     const std::string exepath = Path::getPathFromFilename(exename);
     if (debug)
@@ -115,10 +120,10 @@ static std::string parseAddonInfo(AddonInfo& addoninfo, const picojson::value &j
             const auto& val = it->second;
             if (!val.is<std::string>())
                 return "Loading " + fileName + " failed. 'executable' must be a string.";
-            const std::string e = val.get<std::string>();
+            std::string e = val.get<std::string>();
             addoninfo.executable = getFullPath(e, fileName);
             if (addoninfo.executable.empty())
-                addoninfo.executable = e;
+                addoninfo.executable = std::move(e);
             return ""; // <- do not load both "executable" and "script".
         }
     }

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,14 @@
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
+#include "filesettings.h"
 #include "settings.h"
 #include "suppressions.h"
 
 #include <atomic>
 #include <cstdint>
+#include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -35,7 +38,6 @@
 #include <QThread>
 
 class ThreadResult;
-struct FileSettings;
 
 /// @addtogroup GUI
 /// @{
@@ -53,15 +55,16 @@ public:
      * @brief Set settings for cppcheck
      *
      * @param settings settings for cppcheck
+     * @param supprs suppressions for cppcheck
      */
-    void setSettings(const Settings &settings);
+    void setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs);
 
     /**
      * @brief Run whole program analysis
      * @param files    All files
      * @param ctuInfo  Ctu info for addons
      */
-    void analyseWholeProgram(const QStringList &files, const std::string& ctuInfo);
+    void analyseWholeProgram(const std::list<FileWithDetails> &files, const std::string& ctuInfo);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
@@ -72,7 +75,7 @@ public:
     }
 
     void setSuppressions(const QList<SuppressionList::Suppression> &s) {
-        mSuppressions = s;
+        mSuppressionsUi = s;
     }
 
     /**
@@ -131,6 +134,7 @@ protected:
     ThreadResult &mResult;
 
     Settings mSettings;
+    std::shared_ptr<Suppressions> mSuppressions;
 
 private:
     void runAddonsAndTools(const Settings& settings, const FileSettings *fileSettings, const QString &fileName);
@@ -139,12 +143,12 @@ private:
 
     bool isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const;
 
-    QStringList mFiles;
+    std::list<FileWithDetails> mFiles;
     bool mAnalyseWholeProgram{};
     std::string mCtuInfo;
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
-    QList<SuppressionList::Suppression> mSuppressions;
+    QList<SuppressionList::Suppression> mSuppressionsUi;
 };
 /// @}
 #endif // CHECKTHREAD_H

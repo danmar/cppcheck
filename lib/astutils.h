@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include <cstdint>
 #include <functional>
 #include <list>
-#include <stack>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -36,10 +35,14 @@
 #include "library.h"
 #include "mathlib.h"
 #include "smallvector.h"
-#include "symboldatabase.h"
 #include "token.h"
 
 class Settings;
+class Variable;
+class ValueType;
+class Function;
+class Scope;
+enum class ScopeType : std::uint8_t;
 
 enum class ChildrenToVisit : std::uint8_t {
     none,
@@ -60,29 +63,29 @@ void visitAstNodes(T *ast, const TFunc &visitor)
 
     // the size of 8 was determined in tests to be sufficient to avoid excess allocations. also add 1 as a buffer.
     // we might need to increase that value in the future.
-    std::stack<T *, SmallVector<T *, 8 + 1>> tokens;
+    SmallVector<T *, 8 + 1> tokens;
     T *tok = ast;
     do {
         const ChildrenToVisit c = visitor(tok);
-
         if (c == ChildrenToVisit::done)
             break;
+
         if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
             T *t2 = tok->astOperand2();
             if (t2)
-                tokens.push(t2);
+                tokens.push_back(t2);
         }
         if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
             T *t1 = tok->astOperand1();
             if (t1)
-                tokens.push(t1);
+                tokens.push_back(t1);
         }
 
         if (tokens.empty())
             break;
 
-        tok = tokens.top();
-        tokens.pop();
+        tok = tokens.back();
+        tokens.pop_back();
     } while (true);
 }
 
@@ -119,7 +122,7 @@ const Token* findExpression(nonneg int exprid,
 const Token* findExpression(const Token* start, nonneg int exprid);
 
 /** Does code execution escape from the given scope? */
-const Token* findEscapeStatement(const Scope* scope, const Library* library);
+const Token* findEscapeStatement(const Scope* scope, const Library& library);
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 std::vector<Token*> astFlatten(Token* tok, const char* op);
@@ -160,8 +163,8 @@ bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
 bool astIsContainerString(const Token* tok);
 
-Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr, const Settings* settings = nullptr);
-Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr, const Settings* settings = nullptr);
+Library::Container::Action astContainerAction(const Token* tok, const Library& library, const Token** ftok = nullptr);
+Library::Container::Yield astContainerYield(const Token* tok, const Library& library, const Token** ftok = nullptr);
 
 Library::Container::Yield astFunctionYield(const Token* tok, const Settings& settings, const Token** ftok = nullptr);
 
@@ -184,6 +187,8 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
 
 bool isVariableDecl(const Token* tok);
 bool isStlStringType(const Token* tok);
+
+bool isVoidCast(const Token* tok);
 
 bool isTemporary(const Token* tok, const Library* library, bool unknown = false);
 
@@ -230,10 +235,10 @@ const Token *findNextTokenFromBreak(const Token *breakToken);
 bool extractForLoopValues(const Token *forToken,
                           nonneg int &varid,
                           bool &knownInitValue,
-                          long long &initValue,
+                          MathLib::bigint &initValue,
                           bool &partialCond,
-                          long long &stepValue,
-                          long long &lastValue);
+                          MathLib::bigint &stepValue,
+                          MathLib::bigint &lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
 bool succeeds(const Token* tok1, const Token* tok2);
@@ -249,11 +254,7 @@ struct ReferenceToken {
     ErrorPath errors;
 };
 
-SmallVector<ReferenceToken> followAllReferences(const Token* tok,
-                                                bool temporary = true,
-                                                bool inconclusive = true,
-                                                ErrorPath errors = ErrorPath{},
-                                                int depth = 20);
+SmallVector<ReferenceToken> followAllReferences(const Token* tok, bool temporary = true);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
 CPPCHECKLIB bool isSameExpression(bool macro, const Token *tok1, const Token *tok2, const Settings& settings, bool pure, bool followVar, ErrorPath* errors=nullptr);
@@ -263,6 +264,11 @@ bool isEqualKnownValue(const Token * tok1, const Token * tok2);
 bool isStructuredBindingVariable(const Variable* var);
 
 const Token* isInLoopCondition(const Token* tok);
+
+/**
+ * Is token the dot of a designated initializer?
+ */
+bool isDesignatedInitializer(const Token* tok);
 
 /**
  * Is token used as boolean, that is to say cast to a bool, or used as a condition in a if/while/for
@@ -294,7 +300,7 @@ bool isWithoutSideEffects(const Token* tok, bool checkArrayAccess = false, bool 
 
 bool isUniqueExpression(const Token* tok);
 
-bool isEscapeFunction(const Token* ftok, const Library* library);
+bool isEscapeFunction(const Token* ftok, const Library& library);
 
 /** Is scope a return scope (scope will unconditionally return) */
 CPPCHECKLIB bool isReturnScope(const Token* endToken,
@@ -305,7 +311,7 @@ CPPCHECKLIB bool isReturnScope(const Token* endToken,
 /** Is tok within a scope of the given type, nested within var's scope? */
 bool isWithinScope(const Token* tok,
                    const Variable* var,
-                   Scope::ScopeType type);
+                   ScopeType type);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
@@ -376,7 +382,7 @@ bool isExpressionChangedAt(const Token* expr,
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);
 
-bool isAliasOf(const Token* tok, const Token* expr, int* indirect = nullptr);
+bool isAliasOf(const Token* tok, const Token* expr, nonneg int* indirect = nullptr);
 
 const Token* getArgumentStart(const Token* ftok);
 

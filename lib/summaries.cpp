@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 
 
 
-std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg)
+std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg, int fileIndex)
 {
     const SymbolDatabase *symbolDatabase = tokenizer.getSymbolDatabase();
     const Settings &settings = tokenizer.getSettings();
@@ -82,7 +82,7 @@ std::string Summaries::create(const Tokenizer &tokenizer, const std::string &cfg
     }
 
     if (!settings.buildDir.empty()) {
-        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer.list.getSourceFilePath(), cfg);
+        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer.list.getSourceFilePath(), cfg, fileIndex);
         const std::string::size_type pos = filename.rfind(".a");
         if (pos != std::string::npos) {
             filename[pos+1] = 's';
@@ -173,9 +173,8 @@ void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &s
             // Get function name
             constexpr std::string::size_type pos1 = 0;
             const std::string::size_type pos2 = line.find(' ', pos1);
-            const std::string functionName = (pos2 == std::string::npos) ? line : line.substr(0, pos2);
+            std::string functionName = (pos2 == std::string::npos) ? line : line.substr(0, pos2);
             std::vector<std::string> call = getSummaryData(line, "call");
-            functionCalls[functionName] = call;
             if (call.empty())
                 return1.push_back(functionName);
             else {
@@ -183,6 +182,7 @@ void Summaries::loadReturn(const std::string &buildDir, std::set<std::string> &s
                     functionCalledBy[c].push_back(functionName);
                 }
             }
+            functionCalls[functionName] = std::move(call);
         }
     }
     summaryReturn.insert(return1.cbegin(), return1.cend());

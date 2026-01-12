@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,10 +35,12 @@ static bool isCppcheckPremium(const Settings& settings) {
 }
 
 static int getMisraCVersion(const Settings& settings) {
-    if (settings.premiumArgs.find("misra-c-2012") != std::string::npos)
-        return 2012;
+    if (settings.premiumArgs.find("misra-c-2025") != std::string::npos)
+        return 2025;
     if (settings.premiumArgs.find("misra-c-2023") != std::string::npos)
         return 2023;
+    if (settings.premiumArgs.find("misra-c-2012") != std::string::npos)
+        return 2012;
     if (settings.addons.count("misra"))
         return 2012;
     const bool misraAddonInfo = std::any_of(settings.addonInfos.cbegin(), settings.addonInfos.cend(), [](const AddonInfo& addonInfo) {
@@ -141,9 +143,13 @@ void CheckersReport::countCheckers()
         ++mAllCheckersCount;
     }
     if (mSettings.premiumArgs.find("misra-c-") != std::string::npos || mSettings.addons.count("misra")) {
+        const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
         for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
             const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
-            const bool active = isMisraRuleActive(mActiveCheckers, rule);
+            // this will return some rules as always active even if they are not in the active checkers.
+            // this leads to a difference in the shown count and in the checkers stored in the builddir
+            // TODO: fix this?
+            const bool active = !doUnusedFunctionOnly && isMisraRuleActive(mActiveCheckers, rule);
             if (active)
                 ++mActiveCheckersCount;
             ++mAllCheckersCount;
@@ -191,11 +197,11 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
     const bool cppcheckPremium = isCppcheckPremium(mSettings);
 
     auto reportSection = [&fout, cppcheckPremium]
-                             (const std::string& title,
-                             const Settings& settings,
-                             const std::set<std::string>& activeCheckers,
-                             const std::map<std::string, std::string>& premiumCheckers,
-                             const std::string& substring) {
+                         (const std::string& title,
+                          const Settings& settings,
+                          const std::set<std::string>& activeCheckers,
+                          const std::map<std::string, std::string>& premiumCheckers,
+                          const std::string& substring) {
         fout << std::endl << std::endl;
         fout << title << std::endl;
         fout << std::string(title.size(), '-') << std::endl;

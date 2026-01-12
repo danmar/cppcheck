@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "filesettings.h"
 #include "fixture.h"
+#include "standards.h"
 
 class TestFileSettings : public TestFixture {
 public:
@@ -30,40 +31,46 @@ private:
 
     void test() const {
         {
-            const FileWithDetails p{"file.cpp"};
-            ASSERT_EQUALS("file.cpp", p.path());
-            ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS(0, p.size());
+            const FileWithDetails p{"file.c", Standards::Language::C, 456};
+            ASSERT_EQUALS("file.c", p.path());
+            ASSERT_EQUALS("file.c", p.spath());
+            ASSERT_EQUALS_ENUM(Standards::Language::C, p.lang());
+            ASSERT_EQUALS(456, p.size());
         }
         {
-            const FileWithDetails p{"file.cpp", 123};
+            const FileWithDetails p{"file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("file.cpp", p.path());
             ASSERT_EQUALS("file.cpp", p.spath());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
             ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in/file.cpp"};
+            const FileWithDetails p{"in/file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in/file.cpp", p.path());
             ASSERT_EQUALS("in/file.cpp", p.spath());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in\\file.cpp"};
+            const FileWithDetails p{"in\\file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in\\file.cpp", p.path());
             ASSERT_EQUALS("in/file.cpp", p.spath());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in/../file.cpp"};
+            const FileWithDetails p{"in/../file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in/../file.cpp", p.path());
             ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
         {
-            const FileWithDetails p{"in\\..\\file.cpp"};
+            const FileWithDetails p{"in\\..\\file.cpp", Standards::Language::CPP, 123};
             ASSERT_EQUALS("in\\..\\file.cpp", p.path());
             ASSERT_EQUALS("file.cpp", p.spath());
-            ASSERT_EQUALS(0, p.size());
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, p.lang());
+            ASSERT_EQUALS(123, p.size());
         }
     }
 };

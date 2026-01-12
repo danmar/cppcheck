@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ static Standards::cstd_t mapC(simplecpp::cstd_t cstd) {
         return Standards::C17;
     case simplecpp::C23:
         return Standards::C23;
+    case simplecpp::C2Y:
+        return Standards::C2Y;
     case simplecpp::CUnknown:
         return Standards::CLatest;
     }
@@ -73,6 +75,8 @@ std::string Standards::getC(cstd_t c_std)
         return "c17";
     case C23:
         return "c23";
+    case C2Y:
+        return "c2y";
     }
     return "";
 }

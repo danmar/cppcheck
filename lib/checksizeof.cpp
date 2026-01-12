@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -379,7 +379,7 @@ void CheckSizeof::sizeofFunction()
             if (const Token *argument = tok->next()->astOperand2()) {
                 const Token *checkToken = argument->previous();
                 if (checkToken->tokType() == Token::eName)
-                    break;
+                    continue;
                 const Function * fun = checkToken->function();
                 // Don't report error if the function is overloaded
                 if (fun && fun->nestedIn->functionMap.count(checkToken->str()) == 1) {
@@ -500,4 +500,36 @@ void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std:
     const std::string message = "'$symbol' is of type '" + vartype + "'. When using void pointers in calculations, the behaviour is undefined.";
     const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
     reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", "$symbol:" + varname + '\n' + message + '\n' + verbose, CWE467, Certainty::normal);
+}
+
+void CheckSizeof::runChecks(const Tokenizer& tokenizer, ErrorLogger* errorLogger)
+{
+    CheckSizeof checkSizeof(&tokenizer, &tokenizer.getSettings(), errorLogger);
+
+    // Checks
+    checkSizeof.sizeofsizeof();
+    checkSizeof.sizeofCalculation();
+    checkSizeof.sizeofFunction();
+    checkSizeof.suspiciousSizeofCalculation();
+    checkSizeof.checkSizeofForArrayParameter();
+    checkSizeof.checkSizeofForPointerSize();
+    checkSizeof.checkSizeofForNumericParameter();
+    checkSizeof.sizeofVoid();
+}
+
+void CheckSizeof::getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const
+{
+    CheckSizeof c(nullptr, settings, errorLogger);
+    c.sizeofForArrayParameterError(nullptr);
+    c.sizeofForPointerError(nullptr, "varname");
+    c.divideBySizeofError(nullptr, "memset");
+    c.sizeofForNumericParameterError(nullptr);
+    c.sizeofsizeofError(nullptr);
+    c.sizeofCalculationError(nullptr, false);
+    c.sizeofFunctionError(nullptr);
+    c.multiplySizeofError(nullptr);
+    c.divideSizeofError(nullptr);
+    c.sizeofVoidError(nullptr);
+    c.sizeofDereferencedVoidPointerError(nullptr, "varname");
+    c.arithOperationsOnVoidPointerError(nullptr, "varname", "vartype");
 }

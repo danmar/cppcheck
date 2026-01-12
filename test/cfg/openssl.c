@@ -7,8 +7,10 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <openssl/ssl.h>
 #include <openssl/bio.h>
+#include <openssl/evp.h>
+//#include <openssl/types.h>
+#include <stdio.h>
 #include <string.h>
 
 void valid_code(BIO * bio)

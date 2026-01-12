@@ -26,10 +26,10 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.63"
+SERVER_VERSION = "1.3.67"
 
 # TODO: fetch from GitHub tags
-OLD_VERSION = '2.16.0'
+OLD_VERSION = '2.19.0'
 
 HEAD_MARKER = 'head results:'
 INFO_MARKER = 'info messages:'
@@ -1449,7 +1449,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             filename = os.path.join(resultPath, res.group(1))
             if truncated_data:
                 print_ts('Data is too large. Removing result.')
-                os.remove(filename)
+                if os.path.exists(filename):
+                    os.remove(filename)
                 continue
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
@@ -1496,7 +1497,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             filename = info_path + '/' + res.group(1)
             if truncated_data:
                 print_ts('Data is too large. Removing result.')
-                os.remove(filename)
+                if os.path.exists(filename):
+                    os.remove(filename)
                 continue
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)

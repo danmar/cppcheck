@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 class Tokenizer;
 
 namespace Summaries {
-    CPPCHECKLIB std::string create(const Tokenizer &tokenizer, const std::string &cfg);
+    CPPCHECKLIB std::string create(const Tokenizer &tokenizer, const std::string &cfg, int fileIndex);
     CPPCHECKLIB void loadReturn(const std::string &buildDir, std::set<std::string> &summaryReturn);
 }
 

@@ -23,6 +23,11 @@ class TestResultsTree : public QObject {
 
 private slots:
     void test1() const;
+    void duplicateResults() const;
+    void multiLineResult() const;
+    void resultsInSameFile() const;
     void testReportType() const;
+    void testReportTypeIcon() const;
     void testGetGuidelineError() const;
+    void misraCReportShowClassifications() const;
 };

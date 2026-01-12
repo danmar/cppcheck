@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ private:
         TEST_CASE(replaceEscapeSequences);
         TEST_CASE(splitString);
         TEST_CASE(as_const);
+        TEST_CASE(memoize);
     }
 
     void isValidGlobPattern() const {
@@ -51,18 +52,32 @@ private:
         ASSERT_EQUALS(true, ::isValidGlobPattern("x*"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("*/x/*"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x/*/z"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("**"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("**x"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("x**"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("**"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("**x"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x**"));
 
         ASSERT_EQUALS(true, ::isValidGlobPattern("?"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("?x"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x?"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("?/x/?"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x/?/z"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("??"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("??x"));
-        ASSERT_EQUALS(false, ::isValidGlobPattern("x??"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("??"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("????"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("??x"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("x??"));
+
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("?**"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("?***"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("???*"));
+        ASSERT_EQUALS(true, ::isValidGlobPattern("???**"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("???***"));
+
+        ASSERT_EQUALS(false, ::isValidGlobPattern("*?"));
+        ASSERT_EQUALS(true,  ::isValidGlobPattern("*x?"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("**?"));
+        ASSERT_EQUALS(false, ::isValidGlobPattern("***"));
+        ASSERT_EQUALS(true,  ::isValidGlobPattern("**x*"));
     }
 
     void matchglob() const {
@@ -75,11 +90,26 @@ private:
         ASSERT_EQUALS(true, ::matchglob("*", "x/y/z"));
         ASSERT_EQUALS(true, ::matchglob("*/y/z", "x/y/z"));
 
+        ASSERT_EQUALS(true, ::matchglob("**", ""));
+        ASSERT_EQUALS(true, ::matchglob("**", "abcdefg"));
+        ASSERT_EQUALS(true, ::matchglob("**", "abcde/foo/bar"));
+        ASSERT_EQUALS(false, ::matchglob("*/**", "abcde"));
+        ASSERT_EQUALS(true, ::matchglob("*/**", "abcde/foo"));
+        ASSERT_EQUALS(true, ::matchglob("*/**", "abcde/foo/bar"));
+
         ASSERT_EQUALS(false, ::matchglob("?", "xyz"));
         ASSERT_EQUALS(false, ::matchglob("x?", "xyz"));
         ASSERT_EQUALS(false, ::matchglob("?z", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("?y?", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("?/?/?", "x/y/z"));
+
+        ASSERT_EQUALS(true, ::matchglob("??", "xy"));
+        ASSERT_EQUALS(false, ::matchglob("??", "x"));
+        ASSERT_EQUALS(false, ::matchglob("??", "xyz"));
+
+        ASSERT_EQUALS(true, ::matchglob("????", "wxyz"));
+        ASSERT_EQUALS(false, ::matchglob("????", "xyz"));
+        ASSERT_EQUALS(false, ::matchglob("????", "vwxyz"));
     }
 
     void isStringLiteral() const {
@@ -491,7 +521,6 @@ private:
             void f() {
                 written = true;
             }
-            // cppcheck-suppress functionStatic - needs to be const
             void f() const {}
         };
 
@@ -517,6 +546,22 @@ private:
             utils::as_const(cp)->f(); // (correctly) calls non-const version
             ASSERT(c.written);
         }
+    }
+
+    void memoize() const {
+        int count = 0;
+        auto f = [&count]() {
+            ++count;
+            return count;
+        };
+        const auto callF = utils::memoize([&]() {
+            return f();
+        });
+        ASSERT_EQUALS(0, count);
+        ASSERT_EQUALS(1, callF());
+        ASSERT_EQUALS(1, count);
+        ASSERT_EQUALS(1, callF());
+        ASSERT_EQUALS(1, count);
     }
 };
 

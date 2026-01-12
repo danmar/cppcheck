@@ -124,7 +124,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -200,6 +200,7 @@
     <addaction name="mActionHelpContents"/>
     <addaction name="mActionLicense"/>
     <addaction name="mActionAuthors"/>
+    <addaction name="mActionEULA"/>
     <addaction name="separator"/>
     <addaction name="mActionAbout"/>
    </widget>
@@ -228,6 +229,7 @@
      <addaction name="mActionC11"/>
      <!--addaction name="mActionC17"/-->
      <!--addaction name="mActionC23"/-->
+     <!--addaction name="mActionC2Y"/-->
     </widget>
     <addaction name="mActionAnalyzeFiles"/>
     <addaction name="mActionAnalyzeDirectory"/>
@@ -827,6 +829,14 @@
     <string>C&amp;23</string>
    </property>
   </action-->
+  <!--action name="mActionC2Y">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C&amp;2y</string>
+   </property>
+  </action-->
   <action name="mActionC89">
    <property name="checkable">
     <bool>true</bool>
@@ -1023,6 +1033,11 @@
    </property>
    <property name="text">
     <string>Autosar</string>
+   </property>
+  </action>
+  <action name="mActionEULA">
+   <property name="text">
+    <string>EULA...</string>
    </property>
   </action>
  </widget>

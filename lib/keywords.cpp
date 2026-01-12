@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,13 @@ static const std::unordered_set<std::string> c23_keywords_all = {
 
 static const std::unordered_set<std::string> c23_keywords = {
     C23_KEYWORDS
+};
+
+static const std::unordered_set<std::string> c2y_keywords_all = {
+    C90_KEYWORDS, C99_KEYWORDS, C11_KEYWORDS, C23_KEYWORDS
+};
+
+static const std::unordered_set<std::string> c2y_keywords = {
 };
 
 // see https://en.cppreference.com/w/cpp/keyword
@@ -166,10 +173,8 @@ static const std::unordered_set<std::string> cpp26_keywords_all = {
     CPP03_KEYWORDS, CPP11_KEYWORDS, CPP20_KEYWORDS
 };
 
-// cppcheck-suppress unusedFunction
 const std::unordered_set<std::string>& Keywords::getAll(Standards::cstd_t cStd)
 {
-    // cppcheck-suppress missingReturn
     switch (cStd) {
     case Standards::cstd_t::C89:
         return c89_keywords_all;
@@ -181,13 +186,13 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cstd_t cStd)
         return c17_keywords_all;
     case Standards::cstd_t::C23:
         return c23_keywords_all;
+    case Standards::cstd_t::C2Y:
+        return c2y_keywords_all;
     }
     cppcheck::unreachable();
 }
 
-// cppcheck-suppress unusedFunction
 const std::unordered_set<std::string>& Keywords::getAll(Standards::cppstd_t cppStd) {
-    // cppcheck-suppress missingReturn
     switch (cppStd) {
     case Standards::cppstd_t::CPP03:
         return cpp03_keywords_all;
@@ -210,7 +215,6 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cppstd_t cppS
 // cppcheck-suppress unusedFunction
 const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
 {
-    // cppcheck-suppress missingReturn
     switch (cStd) {
     case Standards::cstd_t::C89:
         return c89_keywords;
@@ -222,14 +226,14 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
         return c17_keywords;
     case Standards::cstd_t::C23:
         return c23_keywords;
+    case Standards::cstd_t::C2Y:
+        return c2y_keywords;
     }
     cppcheck::unreachable();
 }
 
-// cppcheck-suppress unusedFunction
 const std::unordered_set<std::string>& Keywords::getOnly(Standards::cppstd_t cppStd)
 {
-    // cppcheck-suppress missingReturn
     switch (cppStd) {
     case Standards::cppstd_t::CPP03:
         return cpp03_keywords;

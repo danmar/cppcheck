@@ -27,6 +27,9 @@
             </element>
             <element name="alloc">
               <optional>
+                <attribute name="no-fail"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
                 <attribute name="init"><ref name="DATA-BOOL"/></attribute>
               </optional>
               <optional>
@@ -38,6 +41,9 @@
               <ref name="DATA-EXTNAME"/>
             </element>
             <element name="realloc">
+              <optional>
+                <attribute name="no-fail"><ref name="DATA-BOOL"/></attribute>
+              </optional>
               <optional>
                 <attribute name="init"><ref name="DATA-BOOL"/></attribute>
               </optional>
@@ -70,6 +76,9 @@
             </element>
             <element name="alloc">
               <optional>
+                <attribute name="no-fail"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <optional>
                 <attribute name="init"><ref name="DATA-BOOL"/></attribute>
               </optional>
               <optional>
@@ -78,6 +87,9 @@
               <ref name="DATA-EXTNAME"/>
             </element>
             <element name="realloc">
+              <optional>
+                <attribute name="no-fail"><ref name="DATA-BOOL"/></attribute>
+              </optional>
               <optional>
                 <attribute name="init"><ref name="DATA-BOOL"/></attribute>
               </optional>

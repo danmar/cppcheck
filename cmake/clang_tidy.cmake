@@ -8,10 +8,10 @@ if(NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         set(RUN_CLANG_TIDY_NAMES "run-clang-tidy-${_clang_major}")
         message(STATUS "Clang and clang-tidy version need to match when precompiled headers are enabled - limiting search to '${RUN_CLANG_TIDY_NAMES}'")
     else()
-        message(STATUS "Cannot use non-Clang compiler with clang-tidy when precompiled headers are enabled - skipping 'run-clang-tidy' target generation")
+        message(STATUS "Cannot use non-Clang compiler with clang-tidy when precompiled headers are enabled - skipping 'run-clang-tidy'/'run-clang-tidy-csa' target generation")
     endif()
 else()
-    set(RUN_CLANG_TIDY_NAMES run-clang-tidy run-clang-tidy-19 run-clang-tidy-18 run-clang-tidy-17 run-clang-tidy-16 run-clang-tidy-15 run-clang-tidy-14 run-clang-tidy-13 run-clang-tidy-12 run-clang-tidy-11 run-clang-tidy-10 run-clang-tidy-9 run-clang-tidy-8)
+    set(RUN_CLANG_TIDY_NAMES run-clang-tidy run-clang-tidy-21 run-clang-tidy-20 run-clang-tidy-19 run-clang-tidy-18 run-clang-tidy-17 run-clang-tidy-16 run-clang-tidy-15 run-clang-tidy-14 run-clang-tidy-13 run-clang-tidy-12 run-clang-tidy-11 run-clang-tidy-10 run-clang-tidy-9 run-clang-tidy-8)
 endif()
 
 if(RUN_CLANG_TIDY_NAMES)
@@ -25,12 +25,37 @@ if(RUN_CLANG_TIDY_NAMES)
         endif()
         message(STATUS "NPROC=${NPROC}")
 
+        # most of these are disabled because they are too noisy in our code
+        # clang-analyzer-core.CallAndMessage
+        # clang-analyzer-core.NonNullParamChecker
+        # clang-analyzer-cplusplus.NewDeleteLeaks
+        # clang-analyzer-cplusplus.NewDelete
+        # clang-analyzer-core.NullDereference
+        # clang-analyzer-unix.Stream
+        # clang-analyzer-alpha.clone.CloneChecker
+        # clang-analyzer-alpha.webkit.* - we are not interested in these
+        set(CLANG_TIDY_CSA_CONFIG "-config={InheritParentConfig: true, Checks: '-*,clang-analyzer-*,-clang-analyzer-core.CallAndMessage,-clang-analyzer-core.NonNullParamChecker,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-clang-analyzer-core.NullDereference,-clang-analyzer-unix.Stream,-clang-analyzer-alpha.clone.CloneChecker,-clang-analyzer-alpha.webkit.*'}")
+        if (ENABLE_CSA_ALPHA)
+            set(CLANG_TIDY_CSA_ALPHA_OPTS "-allow-enabling-alpha-checkers" "-extra-arg=-Xclang" "-extra-arg=-analyzer-config" "-extra-arg=-Xclang" "-extra-arg=aggressive-binary-operation-simplification=true")
+        endif()
+
+        # TODO: exclude moc_*.cpp
+        # TODO: exclude mocs_compilation.cpp
         # disable all compiler warnings since we are just interested in the tidy ones
-        add_custom_target(run-clang-tidy ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
+        add_custom_target(run-clang-tidy
+                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet
+                USES_TERMINAL
+                VERBATIM)
+        add_custom_target(run-clang-tidy-csa
+                ${Python_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet ${CLANG_TIDY_CSA_ALPHA_OPTS} ${CLANG_TIDY_CSA_CONFIG}
+                USES_TERMINAL
+                VERBATIM)
         if(BUILD_GUI)
             add_dependencies(run-clang-tidy gui-build-deps)
-            if(BUILD_TESTS)
+            add_dependencies(run-clang-tidy-csa gui-build-deps)
+            if(BUILD_TRIAGE)
                 add_dependencies(run-clang-tidy triage-build-ui-deps)
+                add_dependencies(run-clang-tidy-csa triage-build-ui-deps)
             endif()
         endif()
     endif()

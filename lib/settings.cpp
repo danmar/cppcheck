@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,16 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
+#include "suppressions.h"
+#include "utils.h"
 #include "vfvalue.h"
 
 #include <cctype>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <sstream>
+#include <map>
 #include <utility>
 
 #include "json.h"
@@ -38,6 +42,9 @@
 
 
 std::atomic<bool> Settings::mTerminated;
+
+const int Settings::maxConfigsNotAssigned = 0;
+const int Settings::maxConfigsDefault = 12;
 
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";
 const char Settings::SafeChecks::XmlClasses[] = "class-public";
@@ -65,7 +72,6 @@ Settings::Settings()
 
 std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppressions, bool debug)
 {
-    // TODO: this always needs to be run *after* the Settings has been filled
     static const std::string cfgFilename = "cppcheck.cfg";
     std::string fileName;
 #ifdef FILESDIR
@@ -80,7 +86,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
     // cppcheck-suppress knownConditionTrueFalse
     if (fileName.empty()) {
         // TODO: make sure that exename is set
-        fileName = Path::getPathFromFilename(settings.exename) + cfgFilename;
+        fileName = Path::join(Path::getPathFromFilename(settings.exename), cfgFilename);
         if (debug)
             std::cout << "looking for '" << fileName << "'" << std::endl;
         if (!Path::isFile(fileName))
@@ -103,7 +109,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
     }
     const picojson::object& obj = json.get<picojson::object>();
     {
-        const picojson::object::const_iterator it = obj.find("productName");
+        const auto it = utils::as_const(obj).find("productName");
         if (it != obj.cend()) {
             const auto& v = it->second;
             if (!v.is<std::string>())
@@ -112,7 +118,16 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
         }
     }
     {
-        const picojson::object::const_iterator it = obj.find("about");
+        const auto it = utils::as_const(obj).find("manualUrl");
+        if (it != obj.cend()) {
+            const auto& v = it->second;
+            if (!v.is<std::string>())
+                return "'manualUrl' is not a string";
+            settings.manualUrl = v.get<std::string>();
+        }
+    }
+    {
+        const auto it = utils::as_const(obj).find("about");
         if (it != obj.cend()) {
             const auto& v = it->second;
             if (!v.is<std::string>())
@@ -121,7 +136,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
         }
     }
     {
-        const picojson::object::const_iterator it = obj.find("addons");
+        const auto it = utils::as_const(obj).find("addons");
         if (it != obj.cend()) {
             const auto& entry = it->second;
             if (!entry.is<picojson::array>())
@@ -139,7 +154,7 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
         }
     }
     {
-        const picojson::object::const_iterator it = obj.find("suppressions");
+        const auto it = utils::as_const(obj).find("suppressions");
         if (it != obj.cend()) {
             const auto& entry = it->second;
             if (!entry.is<picojson::array>())
@@ -156,14 +171,16 @@ std::string Settings::loadCppcheckCfg(Settings& settings, Suppressions& suppress
         }
     }
     {
-        const picojson::object::const_iterator it = obj.find("safety");
+        const auto it = utils::as_const(obj).find("safety");
         if (it != obj.cend()) {
             const auto& v = it->second;
             if (!v.is<bool>())
                 return "'safety' is not a bool";
-            settings.safety = settings.safety || v.get<bool>();
+            settings.safety = v.get<bool>();
         }
     }
+
+    settings.settingsFiles.emplace_back(std::move(fileName));
 
     return "";
 }
@@ -280,7 +297,7 @@ std::string Settings::applyEnabled(const std::string &str, bool enable)
     }
     // FIXME: hack to make sure "error" is always enabled
     severity.enable(Severity::error);
-    return errmsg;
+    return {};
 }
 
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
@@ -390,15 +407,21 @@ static const std::set<std::string> autosarCheckers{
 
 static const std::set<std::string> certCCheckers{
     "IOWithoutPositioning",
+    "argumentSize",
+    "arrayIndexOutOfBounds",
+    "arrayIndexOutOfBoundsCond",
+    "arrayIndexThenCheck",
     "autoVariables",
     "autovarInvalidDeallocation",
     "bitwiseOnBoolean",
+    "bufferAccessOutOfBounds",
     "comparePointers",
     "danglingLifetime",
     "deallocret",
     "deallocuse",
     "doubleFree",
     "floatConversionOverflow",
+    "integerOverflow",
     "invalidFunctionArg",
     "invalidLengthModifierError",
     "invalidLifetime",
@@ -410,11 +433,15 @@ static const std::set<std::string> certCCheckers{
     "memleakOnRealloc",
     "mismatchAllocDealloc",
     "missingReturn",
+    "negativeIndex",
     "nullPointer",
     "nullPointerArithmetic",
     "nullPointerArithmeticRedundantCheck",
     "nullPointerDefaultArg",
     "nullPointerRedundantCheck",
+    "objectIndex",
+    "pointerOutOfBounds",
+    "pointerOutOfBoundsCond",
     "preprocessorErrorDirective",
     "resourceLeak",
     "returnDanglingLifetime",
@@ -453,6 +480,8 @@ static const std::set<std::string> certCppCheckers{
     "operatorEqToSelf",
     "returnDanglingLifetime",
     "sizeofCalculation",
+    "uninitStructMember",
+    "uninitdata",
     "uninitvar",
     "virtualCallInConstructor",
     "virtualDestructor"
@@ -465,6 +494,7 @@ static const std::set<std::string> misrac2012Checkers{
     "comparePointers",
     "compareValueOutOfTypeRangeError",
     "constParameterPointer",
+    "constStatement",
     "danglingLifetime",
     "danglingTemporaryLifetime",
     "duplicateBreak",
@@ -507,6 +537,50 @@ static const std::set<std::string> misrac2023Checkers{
     "comparePointers",
     "compareValueOutOfTypeRangeError",
     "constParameterPointer",
+    "constStatement",
+    "danglingLifetime",
+    "danglingTemporaryLifetime",
+    "duplicateBreak",
+    "funcArgNamesDifferent",
+    "incompatibleFileOpen",
+    "invalidFunctionArg",
+    "knownConditionTrueFalse",
+    "leakNoVarFunctionCall",
+    "leakReturnValNotUsed",
+    "memleak",
+    "memleakOnRealloc",
+    "missingReturn",
+    "overlappingWriteFunction",
+    "overlappingWriteUnion",
+    "pointerOutOfBounds",
+    "preprocessorErrorDirective",
+    "redundantAssignInSwitch",
+    "redundantAssignment",
+    "redundantCondition",
+    "resourceLeak",
+    "returnDanglingLifetime",
+    "shadowVariable",
+    "sizeofCalculation",
+    "sizeofwithsilentarraypointer",
+    "syntaxError",
+    "uninitvar",
+    "unknownEvaluationOrder",
+    "unreachableCode",
+    "unreadVariable",
+    "unusedLabel",
+    "unusedVariable",
+    "useClosedFile",
+    "writeReadOnlyFile"
+};
+
+static const std::set<std::string> misrac2025Checkers{
+    "argumentSize",
+    "autovarInvalidDeallocation",
+    "bufferAccessOutOfBounds",
+    "comparePointers",
+    "compareValueOutOfTypeRangeError",
+    "constParameterPointer",
+    "constStatement",
     "danglingLifetime",
     "danglingTemporaryLifetime",
     "duplicateBreak",
@@ -598,6 +672,7 @@ static const std::set<std::string> misracpp2023Checkers{
     "constParameterReference",
     "ctuOneDefinitionRuleViolation",
     "danglingLifetime",
+    "floatConversionOverflow",
     "identicalConditionAfterEarlyExit",
     "identicalInnerCondition",
     "ignoredReturnValue",
@@ -635,58 +710,13 @@ bool Settings::isPremiumEnabled(const char id[]) const
         return true;
     if (premiumArgs.find("cert-c++") != std::string::npos && certCppCheckers.count(id))
         return true;
-    if (premiumArgs.find("misra-c-") != std::string::npos && (misrac2012Checkers.count(id) || misrac2023Checkers.count(id)))
+    if (premiumArgs.find("misra-c-") != std::string::npos && (misrac2012Checkers.count(id) || misrac2023Checkers.count(id) || misrac2025Checkers.count(id)))
         return true;
     if (premiumArgs.find("misra-c++-2008") != std::string::npos && misracpp2008Checkers.count(id))
         return true;
     if (premiumArgs.find("misra-c++-2023") != std::string::npos && misracpp2023Checkers.count(id))
         return true;
     return false;
-}
-
-void Settings::setMisraRuleTexts(const ExecuteCmdFn& executeCommand)
-{
-    if (premiumArgs.find("--misra-c-20") != std::string::npos) {
-        const auto it = std::find_if(addonInfos.cbegin(), addonInfos.cend(), [](const AddonInfo& a) {
-            return a.name == "premiumaddon.json";
-        });
-        if (it != addonInfos.cend()) {
-            std::string arg;
-            if (premiumArgs.find("--misra-c-2023") != std::string::npos)
-                arg = "--misra-c-2023-rule-texts";
-            else
-                arg = "--misra-c-2012-rule-texts";
-            std::string output;
-            executeCommand(it->executable, {std::move(arg)}, "2>&1", output);
-            setMisraRuleTexts(output);
-        }
-    }
-}
-
-void Settings::setMisraRuleTexts(const std::string& data)
-{
-    mMisraRuleTexts.clear();
-    std::istringstream istr(data);
-    std::string line;
-    while (std::getline(istr, line)) {
-        std::string::size_type pos = line.find(' ');
-        if (pos == std::string::npos)
-            continue;
-        std::string id = line.substr(0, pos);
-        std::string text = line.substr(pos + 1);
-        if (id.empty() || text.empty())
-            continue;
-        if (text[text.size() -1] == '\r')
-            text.erase(text.size() -1);
-        mMisraRuleTexts[id] = std::move(text);
-    }
-}
-
-std::string Settings::getMisraRuleText(const std::string& id, const std::string& text) const {
-    if (id.compare(0, 9, "misra-c20") != 0)
-        return text;
-    const auto it = mMisraRuleTexts.find(id.substr(id.rfind('-') + 1));
-    return it != mMisraRuleTexts.end() ? it->second : text;
 }
 
 Settings::ExecutorType Settings::defaultExecutor()
@@ -698,4 +728,10 @@ Settings::ExecutorType Settings::defaultExecutor()
         ExecutorType::Thread;
 #endif
     return defaultExecutor;
+}
+
+bool Settings::unusedFunctionOnly()
+{
+    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
+    return unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
 }

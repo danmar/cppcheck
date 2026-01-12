@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
@@ -49,7 +49,7 @@ unsigned int SingleExecutor::check()
     std::size_t processedsize = 0;
     unsigned int c = 0;
 
-    for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+    for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
         result += mCppcheck.check(*i);
         processedsize += i->size();
         ++c;
@@ -65,14 +65,13 @@ unsigned int SingleExecutor::check()
         ++c;
         if (!mSettings.quiet)
             reportStatus(c, mFileSettings.size(), c, mFileSettings.size());
-        if (mSettings.clangTidy)
-            mCppcheck.analyseClangTidy(fs);
     }
 
+    // TODO: CppCheckExecutor::check_internal() is also invoking the whole program analysis - is it run twice?
     if (mCppcheck.analyseWholeProgram())
         result++;
 
-    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY)
+    if (mSettings.showtime == ShowTime::SUMMARY || mSettings.showtime == ShowTime::TOP5_SUMMARY)
         CppCheck::printTimerResults(mSettings.showtime);
 
     return result;

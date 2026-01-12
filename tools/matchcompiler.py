@@ -206,7 +206,7 @@ class MatchCompiler:
                 arg2 = ', const int varid'
 
             ret = '// pattern: ' + pattern + '\n'
-            ret += 'static inline bool match' + \
+            ret += 'MAYBE_UNUSED static inline bool match' + \
                 str(nr) + '(' + tokenType + '* tok' + arg2 + ') {\n'
             returnStatement = 'return false;\n'
 
@@ -290,7 +290,7 @@ class MatchCompiler:
             more_args += ', int varid'
 
         ret = '// pattern: ' + pattern + '\n'
-        ret += 'template<class T> static inline T * findmatch' + \
+        ret += 'template<class T> MAYBE_UNUSED static inline T * findmatch' + \
             str(findmatchnr) + '(T * start_tok' + more_args + ') {\n'
         ret += '    for (; start_tok' + endCondition + \
             '; start_tok = start_tok->next()) {\n'
@@ -373,7 +373,7 @@ class MatchCompiler:
         if varId:
             more_args = ', const int varid'
 
-        ret = 'static inline bool match_verify' + \
+        ret = 'MAYBE_UNUSED static inline bool match_verify' + \
             str(verifyNumber) + '(const Token *tok' + more_args + ') {\n'
 
         origMatchName = 'Match'
@@ -509,7 +509,7 @@ class MatchCompiler:
         if varId:
             more_args += ', const int varid'
 
-        ret = 'template < class T > static inline T * findmatch_verify' + \
+        ret = 'template < class T > MAYBE_UNUSED static inline T * findmatch_verify' + \
             str(verifyNumber) + '(T * tok' + more_args + ') {\n'
 
         origFindMatchName = 'findmatch'
@@ -721,6 +721,20 @@ class MatchCompiler:
         if len(self._rawMatchFunctions):
             header += '#include "errorlogger.h"\n'
             header += '#include "token.h"\n'
+            header += '#if defined(__clang__)\n'
+            header += '#include "config.h"\n'
+            header += '#define MAYBE_UNUSED [[maybe_unused]]\n'  # this attribute is also available in earlier standards
+            header += 'SUPPRESS_WARNING_CLANG_PUSH("-Wc++17-attribute-extensions")\n'  # suppress waning about using above attribute in earlier standard
+            header += '#else\n'
+            header += '#define MAYBE_UNUSED\n'
+            header += '#endif\n'
+
+        footer = ''
+        if len(self._rawMatchFunctions):
+            footer += '#if defined(__clang__)\n'
+            footer += 'SUPPRESS_WARNING_CLANG_POP\n'
+            footer += '#endif\n'
+            footer += '#undef MAYBE_UNUSED\n'
 
         with io.open(destname, 'wt', encoding="utf-8") as fout:
             if modified or len(self._rawMatchFunctions):
@@ -728,6 +742,8 @@ class MatchCompiler:
                 fout.write(strFunctions)
             fout.write(lineno)
             fout.write(code)
+            if modified or len(self._rawMatchFunctions):
+                fout.write(footer)
 
 
 def main():

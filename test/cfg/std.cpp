@@ -9,7 +9,8 @@
 
 // cppcheck-suppress-file valueFlowBailout
 
-#include <algorithm>
+#include <algorithm> // IWYU pragma: keep
+#include <array>
 #include <bitset>
 #include <cassert>
 #include <cctype>
@@ -27,6 +28,7 @@
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
+#include <cwctype>
 #include <deque>
 #include <exception>
 #include <filesystem>
@@ -36,26 +38,31 @@
     #include <threads.h>
 #endif
 #include <iomanip>
-#include <ios>
+#include <ios> // IWYU pragma: keep
 #include <iostream>
-#include <istream>
+#include <istream> // IWYU pragma: keep
 #include <iterator>
-#include <list>
+#include <list> // IWYU pragma: keep
+#include <locale>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <numeric>
 #include <queue>
 #include <set>
-#include <streambuf>
+#include <sstream>
+#include <stdexcept>
+#include <streambuf> // IWYU pragma: keep
+#include <string>
 #include <string_view>
+#include <system_error>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <variant>
 #include <vector>
-#include <version>
+#include <version> // IWYU pragma: keep
 #ifdef __cpp_lib_span
 #include <span>
 #endif
@@ -72,6 +79,25 @@ void unreachableCode_std_unexpected(int &x)
     x=42;
 }
 #endif
+
+#ifdef __cpp_lib_clamp
+int ignoredReturnValue_std_clamp(const int x)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::clamp(x, 1, -1);
+    return std::clamp(x, 1, -1);
+}
+void knownConditionTrueFalse_std_clamp(const int x)
+{
+    // cppcheck-suppress knownConditionTrueFalse
+    if(std::clamp(-2, -1, 1) == -1){}
+    // cppcheck-suppress knownConditionTrueFalse
+    if(std::clamp(2, -1, 1) == 1){}
+    // cppcheck-suppress knownConditionTrueFalse
+    if(std::clamp(0, -1, 1) == 0){}
+    if(std::clamp(x, 0, 2)){}
+}
+#endif // __cpp_lib_clamp
 
 void unreachableCode_std_terminate(int &x)
 {
@@ -353,9 +379,11 @@ void invalidFunctionArgStr_fopen(const char * const fileName, const char * const
     const char modeBuf[] = {'r'};
     // cppcheck-suppress invalidFunctionArgStr
     FILE *fp = fopen(fileName, modeBuf);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
     // cppcheck-suppress invalidFunctionArgStr
     fp = fopen(fileNameBuf, mode);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -984,6 +1012,11 @@ int std_map_find_constref(std::map<int, int>& m) // #11857
     std::map<int, int>::iterator it = r.find(42);
     int* p = &it->second;
     return ++*p;
+}
+
+void std_rotate_constref(std::vector<int>& v) // #13657
+{
+    std::rotate(v.begin(), v.begin() + 1, v.begin() + 2);
 }
 
 void std_queue_front_ignoredReturnValue(const std::queue<int>& q) {
@@ -1828,6 +1861,7 @@ void uninitar_fopen(void)
     const char *mode;
     // cppcheck-suppress uninitvar
     FILE * fp = std::fopen(filename, mode);
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fp);
 }
 
@@ -2712,7 +2746,6 @@ void bool_isfinite(float f)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isfinite(f)==123) {}
 }
 
@@ -2735,7 +2768,6 @@ void bool_isgreater(float f1, float f2)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreater(f1,f2)==123) {}
 }
 
@@ -2758,7 +2790,6 @@ void bool_isgreaterequal(float f1, float f2)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isgreaterequal(f1, f2)==123) {}
 }
 
@@ -2781,7 +2812,6 @@ void bool_isinf(float f)
 {
     // cppcheck-suppress compareBoolExpressionWithInt
     // cppcheck-suppress compareValueOutOfTypeRangeError
-    // cppcheck-suppress knownConditionTrueFalse
     if (std::isinf(f)==123) {}
 }
 
@@ -5136,6 +5166,22 @@ void constVariablePointer_push_back(std::vector<T*>& d, const std::vector<T*>& s
     }
 }
 
+std::streampos constParameterPointer_istream_tellg(std::istream* p) { // #13801
+    return p->tellg();
+}
+
+void constParameterPointer_unique_ptr_reset(std::unique_ptr<int>& u, int* p) {
+    u.reset(p);
+}
+
+bool constParameterPointer_map_contains(const std::map<int*, int>& m, int* p) {
+#if __cplusplus >= 202002L
+    return m.contains(p);
+#else
+    return m.count(p) > 0;
+#endif
+}
+
 // cppcheck-suppress constParameterReference
 void constParameterReference_push_back(std::vector<std::string>& v, std::string& s) { // #12661
     v.push_back(s);
@@ -5260,4 +5306,16 @@ void containerOutOfBounds_std_string(std::string &var) { // #11403
     std::string s5{x};
     // TODO cppcheck-suppress containerOutOfBounds
     var+= s5[3];
+}
+
+int containerOutOfBounds_std_initializer_list_access(const std::vector<int>& v) {
+    // cppcheck-suppress containerOutOfBounds
+    return v[2];
+}
+
+int containerOutOfBounds_std_initializer_list() { // #14340
+    std::initializer_list<int> x{ 1, 2 };
+    // cppcheck-suppress derefInvalidIterator
+    int i = *x.end();
+    return i + containerOutOfBounds_std_initializer_list_access(x);
 }

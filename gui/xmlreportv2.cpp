@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,9 +32,8 @@
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QStringRef>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
 #endif
 
 static const QString ResultElementName = "results";
@@ -95,6 +94,7 @@ void XmlReportV2::writeHeader()
 {
     const auto nameAndVersion = Settings::getNameAndVersion(mProductName.toStdString());
     const QString name = QString::fromStdString(nameAndVersion.first);
+    // TODO: lacks extraVersion
     const QString version = nameAndVersion.first.empty() ? CppCheck::version() : QString::fromStdString(nameAndVersion.second);
 
     mXmlWriter->setAutoFormatting(true);

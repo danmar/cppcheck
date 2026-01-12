@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have siginfo_t, SIGSTKSZ, kill(), sigaction and others
+#endif
+
 #include "signalhandler.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
+
+#include "utils.h"
 
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
 #include "stacktrace.h"
@@ -52,7 +58,7 @@
 #ifdef __USE_DYNAMIC_STACK_SIZE
 static constexpr size_t MYSTACKSIZE = (16*1024)+32768; // wild guess about a reasonable buffer
 #else
-static constexpr size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
+static constexpr size_t MYSTACKSIZE = (16*1024)+SIGSTKSZ; // wild guess about a reasonable buffer
 #endif
 static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
@@ -102,7 +108,6 @@ static const Signalmap_t listofsignals = {
  * but when ending up here something went terribly wrong anyway.
  * And all which is left is just printing some information and terminate.
  */
-// cppcheck-suppress constParameterCallback
 static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
     int type = -1;
@@ -110,16 +115,16 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
     // TODO: separate these two defines
 #if defined(__linux__) && defined(REG_ERR)
     const auto* const uc = reinterpret_cast<const ucontext_t*>(context);
-    killid = (pid_t) syscall(SYS_gettid);
+    killid = static_cast<pid_t>(syscall(SYS_gettid));
     if (uc) {
-        type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
+        type = static_cast<int>(uc->uc_mcontext.gregs[REG_ERR]) & 2;
     }
 #else
     (void)context;
     killid = getpid();
 #endif
 
-    const Signalmap_t::const_iterator it=listofsignals.find(signo);
+    const auto it = utils::as_const(listofsignals).find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
     bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
@@ -164,7 +169,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (at 0x%lx).\n",
-                (unsigned long)info->si_addr);
+                reinterpret_cast<unsigned long>(info->si_addr));
         break;
     case SIGFPE:
         fputs("Internal error: cppcheck received signal ", output);
@@ -198,7 +203,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (at 0x%lx).\n",
-                (unsigned long)info->si_addr);
+                reinterpret_cast<unsigned long>(info->si_addr));
         break;
     case SIGILL:
         fputs("Internal error: cppcheck received signal ", output);
@@ -232,7 +237,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             break;
         }
         fprintf(output, " (at 0x%lx).%s\n",
-                (unsigned long)info->si_addr,
+                reinterpret_cast<unsigned long>(info->si_addr),
                 (isAddressOnStack)?" Stackoverflow?":"");
         break;
     case SIGINT:
@@ -258,7 +263,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 // cppcheck-suppress knownConditionTrueFalse ; FP
                 (type==-1)? "" :
                 (type==0) ? "reading " : "writing ",
-                (unsigned long)info->si_addr,
+                reinterpret_cast<unsigned long>(info->si_addr),
                 (isAddressOnStack)?" Stackoverflow?":""
                 );
         break;
@@ -320,7 +325,7 @@ void register_signal_handler(FILE * const output)
     memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO|SA_ONSTACK;
     act.sa_sigaction=CppcheckSignalHandler;
-    for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
+    for (auto sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@ public:
 private:
     const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
-#define check(code) check_(code, __FILE__, __LINE__)
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    void check_(const char (&code)[size], const char* file, int line) {
+    void check_(const char* file, int line, const char (&code)[size]) {
         // Tokenize..
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -44,6 +44,7 @@ private:
     }
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
         TEST_CASE(testvolatile);
@@ -83,7 +84,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("struct K {};"
               "void foo()\n"
@@ -91,14 +92,14 @@ private:
               "    K k(0);\n"
               "    k++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("struct K {};\n"
               "void foo(K& k)\n"
               "{\n"
               "    k++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("union K {};"
               "void foo()\n"
@@ -106,7 +107,7 @@ private:
               "    K k(0);\n"
               "    k++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("class K {};"
               "int main()\n"
@@ -119,7 +120,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:9]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("class K {};"
               "int main()\n"
@@ -133,7 +134,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
 
         check("class K {};"
@@ -145,7 +146,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:5:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("class K {};"
               "int main()\n"
@@ -199,7 +200,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:28]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("class K {};\n"
               "int main()\n"
@@ -219,7 +220,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:27]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("class K {};\n"
               "int main(int argc, char *argv[])\n"
@@ -231,7 +232,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout_str());
 
-
+        check("void f(const std::string &s) {\n" // #7731
+              "    for (std::string::const_iterator i = s.begin(), r = s.end() - 1; i != r; r--) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2:78]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
     }
 
     void testvolatile() {
@@ -244,7 +248,7 @@ private:
               "    std::cout << k << std::endl;\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
     }
 
     void testiterator() {
@@ -259,7 +263,7 @@ private:
               "    v.clear();\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:6:64]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("int main() {\n"
               "    std::vector<int> v;\n"
@@ -273,7 +277,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:9:8]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("int main() {\n"
               "    std::vector<int> v;\n"
@@ -286,7 +290,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:8:8]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("int main() {\n"
               "    std::vector<int> v;\n"
@@ -300,7 +304,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:9:8]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
     }
 
@@ -333,7 +337,7 @@ private:
               "    std::vector<FilterConfigCacheEntry>::iterator aIter(aImport.begin());\n"
               "    aIter++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:3:5]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
     }
 
     void testmember() {
@@ -342,7 +346,7 @@ private:
               "    B b;\n"
               "    b.a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:7]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("bool foo() {\n"
               "    class A {}; class B {A a;};\n"
@@ -358,7 +362,7 @@ private:
               "    A a;\n"
               "    i++, a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Prefer prefix ++/-- operators for non-primitive types.\n", errout_str());
+        ASSERT_EQUALS("[test.cpp:4:10]: (performance) Prefer prefix ++/-- operators for non-primitive types. [postfixOperator]\n", errout_str());
 
         check("bool foo(int i) {\n"
               "    class A {};\n"

@@ -4,16 +4,13 @@
 import os
 import sys
 import pytest
+import glob
 import json
+import subprocess
+import shutil
 
-from testutils import cppcheck, assert_cppcheck, cppcheck_ex
-
-
-def __remove_std_lookup_log(l : list, exepath):
-    l.remove("looking for library 'std.cfg'")
-    l.remove("looking for library '{}/std.cfg'".format(exepath))
-    l.remove("looking for library '{}/cfg/std.cfg'".format(exepath))
-    return l
+from testutils import cppcheck, assert_cppcheck, cppcheck_ex, __lookup_cppcheck_exe
+from xml.etree import ElementTree
 
 
 def __remove_verbose_log(l : list):
@@ -28,13 +25,13 @@ def test_missing_include(tmpdir):  # #11283
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write("""
-                #include "test.h"
-                """)
+#include "test.h"
+""")
 
     args = ['--enable=missingInclude', '--template=simple', test_file]
 
     _, _, stderr = cppcheck(args)
-    assert stderr == '{}:2:0: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
+    assert stderr == '{}:2:2: information: Include file: "test.h" not found. [missingInclude]\n'.format(test_file)
 
 
 def __test_missing_include_check_config(tmpdir, use_j):
@@ -97,9 +94,9 @@ def test_color_non_tty(tmpdir, env, color_expected):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env=env)
+    exitcode, stdout, stderr = cppcheck([test_file], env=env)
 
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     assert stderr
     assert (__ANSI_BOLD in stderr) == color_expected
     assert (__ANSI_FG_RED in stderr) == color_expected
@@ -113,9 +110,9 @@ def test_color_tty(tmpdir, env, color_expected):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt') as f:
         f.write('#error test\nx=1;\n')
-    exitcode, _, stderr = cppcheck([test_file], env=env, tty=True)
+    exitcode, stdout, stderr = cppcheck([test_file], env=env, tty=True)
 
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     assert stderr
     assert (__ANSI_BOLD in stderr) == color_expected
     assert (__ANSI_FG_RED in stderr) == color_expected
@@ -158,7 +155,7 @@ def test_progress(tmpdir):
     args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     pos = stdout.find('\n')
     assert(pos != -1)
     pos += 1
@@ -191,12 +188,12 @@ def test_progress_j(tmpdir):
     args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j2', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     assert stdout == "Checking {} ...\n".format(test_file)
     assert stderr == ""
 
 
-def test_execute_addon_failure(tmpdir):
+def test_execute_addon_failure_py_auto(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         f.write("""
@@ -211,19 +208,98 @@ def test_execute_addon_failure(tmpdir):
     assert stderr == '{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to auto detect python [internalError]\n\n^\n'.format(test_file)
 
 
-def test_execute_addon_failure_2(tmpdir):
+def test_execute_addon_failure_py_notexist(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         f.write("""
                 void f();
                 """)
 
-    # specify non-existent python executbale so execution of addon fails
+    # specify non-existent python executable so execution of addon fails
     args = ['--addon=naming', '--addon-python=python5.x', test_file]
 
     _, _, stderr = cppcheck(args)
     ec = 1 if os.name == 'nt' else 127
     assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
+
+
+def test_execute_addon_failure_json_notexist(tmpdir):
+    # specify non-existent python executable so execution of addon fails
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({'executable': 'notexist'}))
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                void f();
+                """)
+
+    args = [
+        '--addon={}'.format(addon_json),
+        test_file
+    ]
+
+    _, _, stderr = cppcheck(args)
+    ec = 1 if os.name == 'nt' else 127
+    assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]\n\n^\n".format(test_file, ec)
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows specific issue")
+def test_execute_addon_path_with_spaces(tmpdir):
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    addon_dir = os.path.join(tmpdir, 'A Folder')
+    addon_script = os.path.join(addon_dir, 'addon.bat')
+
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({'executable': addon_script }))
+
+    os.makedirs(addon_dir, exist_ok=True)
+
+    with open(addon_script, 'wt') as f:
+        f.write('@echo {"file":"1.c","linenr":1,"column":1,"severity":"error","message":"hello world","errorId":"hello","addon":"test"}')
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        pass
+
+    args = [
+        '--addon={}'.format(addon_json),
+        test_file,
+    ]
+
+    _, _, stderr = cppcheck(args)
+
+    # Make sure the full command is used
+    assert '1.c:1:1: error: hello world [test-hello]\n' in stderr
+
+
+def test_execute_addon_failure_json_ctu_notexist(tmpdir):
+    # specify non-existent python executable so execution of addon fails
+    addon_json = os.path.join(tmpdir, 'addon.json')
+    with open(addon_json, 'wt') as f:
+        f.write(json.dumps({
+            'executable': 'notexist',
+            'ctu': True
+        }))
+
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                void f(); """)
+
+    args = [
+        '--template=simple',
+        '--addon={}'.format(addon_json),
+        test_file
+    ]
+
+    _, _, stderr = cppcheck(args)
+    ec = 1 if os.name == 'nt' else 127
+    assert stderr.splitlines() == [
+        "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]".format(test_file, ec),
+        ":0:0: error: Bailing out from analysis: Whole program analysis failed: Failed to execute addon 'addon.json' - exitcode is {} [internalError]".format(ec)
+    ]
 
 
 def test_execute_addon_file0(tmpdir):
@@ -281,7 +357,7 @@ typedef int MISRA_5_6_VIOLATION;
     args = ['--addon=misra', '--enable=all', '--disable=unusedFunction', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -304,7 +380,7 @@ extern void f()
     args = ['--addon=y2038', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -325,7 +401,7 @@ extern const char* f()
     args = ['--addon=threadsafety', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -355,7 +431,7 @@ int Var;
     args = ['--addon={}'.format(addon_file), '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -466,7 +542,7 @@ namespace _invalid_namespace { }
     args = ['--addon='+addon_file, '--verbose', '--enable=all', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = __remove_verbose_log(stdout.splitlines())
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -594,7 +670,7 @@ def test_addon_namingng_config(tmpdir):
     args = ['--addon='+addon_file, '--verbose', '--enable=all', '-j1', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
 
     lines = __remove_verbose_log(stdout.splitlines())
     assert lines == [
@@ -640,7 +716,7 @@ def test_addon_findcasts(tmpdir):
     args = ['--addon=findcasts', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -661,7 +737,7 @@ extern void f()
     args = ['--addon=misc', '--enable=all', '--disable=unusedFunction', '--template=simple', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file)
@@ -813,7 +889,7 @@ def __test_unused_function_include(tmpdir, extra_args):
     args += extra_args
 
     _, _, stderr = cppcheck(args)
-    assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
+    assert stderr == "{}:4:26: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
 
 
 def test_unused_function_include(tmpdir):
@@ -844,7 +920,6 @@ def test_showtime_top5_file(tmpdir):
             assert lines[i].endswith(' - 2 result(s))')
         else:
             assert lines[i].endswith(' result(s))')
-    assert lines[6].startswith('Overall time:')
     assert stderr == ''
 
 
@@ -914,7 +989,7 @@ def test_file_filter_no_match(tmpdir):
 
     args = ['--file-filter=*.c', test_file]
     out_lines = [
-        'cppcheck: error: could not find any files matching the filter.'
+        'cppcheck: error: could not find any files matching the filter:*.c'
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
@@ -937,17 +1012,17 @@ def test_file_order(tmpdir):
     args = [test_file_c, test_file_d, test_file_b, test_file_a, '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_d),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_b),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_a),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -969,13 +1044,13 @@ def test_markup(tmpdir):
     args = ['--library=qt', test_file_1, test_file_2, test_file_3, test_file_4, '-j1']
     out_lines = [
         'Checking {} ...'.format(test_file_2),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_4),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_1),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_3),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
@@ -998,25 +1073,19 @@ def test_markup_j(tmpdir):
     args = ['--library=qt', '-j2', test_file_1, test_file_2, test_file_3, test_file_4]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
-    for i in range(1, 5):
-        lines.remove('{}/4 files checked 0% done'.format(i))
 
-    # this test started to fail in the -j2 injection run when using ThreadExecutor although it always specifies -j2.
-    # the order of the files in the output changed so just check for the file extentions
-    assert len(lines) == 4
-    assert lines[0].endswith('.cpp ...')
-    assert lines[1].endswith('.cpp ...')
-    assert lines[2].endswith('.qml ...')
-    assert lines[3].endswith('.qml ...')
-
-    #assert lines == [
-    #    'Checking {} ...'.format(test_file_2),
-    #    'Checking {} ...'.format(test_file_4),
-    #    'Checking {} ...'.format(test_file_1),
-    #    'Checking {} ...'.format(test_file_3)
-    #]
+    assert sorted(lines) == [
+        '1/4 files checked 25% done',
+        '2/4 files checked 50% done',
+        '3/4 files checked 75% done',
+        '4/4 files checked 100% done',
+        'Checking {} ...'.format(test_file_1),
+        'Checking {} ...'.format(test_file_2),
+        'Checking {} ...'.format(test_file_3),
+        'Checking {} ...'.format(test_file_4)
+    ]
     assert stderr == ''
 
 
@@ -1055,13 +1124,12 @@ inline void f2()
     args = ['--debug', test_file_cpp]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     if sys.platform == "win32":
         stdout = stdout.replace('/', '\\')
-    assert stdout == '''Checking {} ...
-
-
-##file {}
+    assert f'Checking {test_file_cpp} ...' in stdout
+    stdout = stdout.replace(f'Checking {test_file_cpp} ...\n', '').strip()
+    assert stdout == '''##file {}
 2: void f2 ( )
 3: {{
 4: int i@var1 ; i@var1 = 0 ;
@@ -1100,8 +1168,8 @@ Line 5
 File {}
 Line 6
   = always 0
-  0 always 0
-'''.format(test_file_cpp, test_file_h_2, test_file_h, test_file_cpp, test_file_h_2, test_file_h, test_file_cpp)
+  0 always 0'''.format(test_file_h_2, test_file_h, test_file_cpp,
+                       test_file_h_2, test_file_h, test_file_cpp)
     assert stderr == ''
 
 
@@ -1113,7 +1181,7 @@ def test_file_duplicate(tmpdir):
     args = [test_file_a, test_file_a, str(tmpdir)]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_a)
@@ -1135,15 +1203,15 @@ def test_file_duplicate_2(tmpdir):
     args = [test_file_c, test_file_a, test_file_b, str(tmpdir), test_file_b, test_file_c, test_file_a, str(tmpdir), '-j1']
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_b),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -1165,34 +1233,34 @@ def test_file_duplicate_3(tmpdir):
     args.append('-j1') # TODO: remove when fixed
 
     exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     # TODO: only a single file should be checked
     if sys.platform == 'win32':
         assert lines == [
             'Checking {} ...'.format('a.c'),
-            '1/6 files checked 0% done',
+            '1/6 files checked 16% done',
             'Checking {} ...'.format('a.c'),
-            '2/6 files checked 0% done',
+            '2/6 files checked 33% done',
             'Checking {} ...'.format('a.c'),
-            '3/6 files checked 0% done',
+            '3/6 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '4/6 files checked 0% done',
+            '4/6 files checked 66% done',
             'Checking {} ...'.format(test_file_a),
-            '5/6 files checked 0% done',
+            '5/6 files checked 83% done',
             'Checking {} ...'.format(test_file_a),
-            '6/6 files checked 0% done'
+            '6/6 files checked 100% done'
         ]
     else:
         assert lines == [
             'Checking {} ...'.format('a.c'),
-            '1/4 files checked 0% done',
+            '1/4 files checked 25% done',
             'Checking {} ...'.format('a.c'),
-            '2/4 files checked 0% done',
+            '2/4 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '3/4 files checked 0% done',
+            '3/4 files checked 75% done',
             'Checking {} ...'.format(test_file_a),
-            '4/4 files checked 0% done'
+            '4/4 files checked 100% done'
         ]
     assert stderr == ''
 
@@ -1219,22 +1287,22 @@ def test_file_duplicate_4(tmpdir):
     args.append('-j1') # TODO: remove when fixed
 
     exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 0
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     # TODO: only a single file should be checked
     assert lines == [
         'Checking {} ...'.format('a.c'),
-        '1/6 files checked 0% done',
+        '1/6 files checked 16% done',
         'Checking {} ...'.format('a.c'),
-        '2/6 files checked 0% done',
+        '2/6 files checked 33% done',
         'Checking {} ...'.format('a.c'),
-        '3/6 files checked 0% done',
+        '3/6 files checked 50% done',
         'Checking {} ...'.format(test_file_a),
-        '4/6 files checked 0% done',
+        '4/6 files checked 66% done',
         'Checking {} ...'.format(test_file_a),
-        '5/6 files checked 0% done',
+        '5/6 files checked 83% done',
         'Checking {} ...'.format(test_file_a),
-        '6/6 files checked 0% done'
+        '6/6 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -1330,7 +1398,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['-q', test_file])
-    assert exitcode == 0, stderr
+    assert exitcode == 0, stdout if stdout else stderr
     assert stdout == ''
     assert stderr == ''
 
@@ -1368,7 +1436,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), '-DDEF_3', test_file])
-    assert exitcode == 0, stderr
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1402,7 +1470,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), '-DDEF_3', test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1435,7 +1503,7 @@ void f(i32) { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1467,7 +1535,7 @@ void f(i32) { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule-file={}'.format(rule_file), test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1490,7 +1558,7 @@ void f() { }
 ''')
 
     exitcode, stdout, stderr = cppcheck(['--template=simple', '--rule=f', test_file])
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file),
@@ -1500,6 +1568,27 @@ void f() { }
     assert lines == [
         "{}:4:0: style: found 'f' [rule]".format(test_file)
     ]
+
+
+def test_rule_multiple_files(tmpdir):
+    stderr_exp = []
+    for i in range(10):
+        test_file = os.path.join(tmpdir, f'test_{i}.c')
+        stderr_exp.append("{}:4:0: style: found 'f' [rule]".format(test_file))
+        with open(test_file, 'wt') as f:
+            f.write('''
+#define DEF_1
+#define DEF_2
+void f() { }
+''')
+
+    exitcode, stdout, stderr = cppcheck(['-q', '--template=simple', '--rule=f', str(tmpdir)])
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    lines = stderr.splitlines()
+    lines.sort()
+    stderr_exp.sort()
+    assert lines == stderr_exp
 
 
 def test_filelist(tmpdir):
@@ -1547,9 +1636,9 @@ def test_filelist(tmpdir):
         pass
 
     # TODO: -rp is not applied to "Checking" messages
-    #exitcode, stdout, _ = cppcheck(['-j1', '-rp', list_dir])
-    exitcode, stdout, _ = cppcheck(['-j1', '.'], cwd=list_dir)
-    assert exitcode == 0, stdout
+    #exitcode, stdout, stderr = cppcheck(['-j1', '-rp', list_dir])
+    exitcode, stdout, stderr = cppcheck(['-j1', '.'], cwd=list_dir)
+    assert exitcode == 0, stdout if stdout else stderr
     if sys.platform == "win32":
         stdout = stdout.replace('\\', '/')
     lines = stdout.splitlines()
@@ -1568,7 +1657,7 @@ def test_filelist(tmpdir):
     ]
     assert len(expected), len(lines)
     for i in range(1, len(expected)+1):
-        lines.remove('{}/{} files checked 0% done'.format(i, len(expected)))
+        lines.remove('{}/{} files checked {}% done'.format(i, len(expected), int(100 * i // len(expected))))
     assert lines == expected
 
 
@@ -1590,8 +1679,8 @@ def test_markup_lang(tmpdir):
         test_file_2
     ]
 
-    exitcode, stdout, _ = cppcheck(args)
-    assert exitcode == 0, stdout
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
 
 
 def test_cpp_probe(tmpdir):
@@ -1604,7 +1693,7 @@ def test_cpp_probe(tmpdir):
     args = ['-q', '--template=simple', '--cpp-header-probe', '--verbose', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     lines = stdout.splitlines()
     assert lines == []
     lines = stderr.splitlines()
@@ -1627,329 +1716,49 @@ def test_cpp_probe_2(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=[])
 
 
-# TODO: test with FILESDIR
-def test_lib_lookup(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=gnu', test_file])
-    exepath = os.path.dirname(exe)
+def test_config_invalid(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
     if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library 'gnu'",
-        "looking for library 'gnu.cfg'",
-        "looking for library '{}/gnu.cfg'".format(exepath),
-        "looking for library '{}/cfg/gnu.cfg'".format(exepath),
-        'Checking {} ...'.format(test_file)
-    ]
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
 
-
-# TODO: test with FILESDIR
-def test_lib_lookup_notfound(tmpdir):
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=none', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 1, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        # TODO: specify which folder is actually used for lookup here
-        "looking for library 'none'",  # TODO: this could conflict with the platform lookup
-        "looking for library 'none.cfg'",
-        # TODO: lookup of '{exepath}/none' missing - could conflict with the platform lookup though
-        "looking for library '{}/none.cfg'".format(exepath),
-        # TODO: lookup of '{exepath}/cfg/none' missing
-        "looking for library '{}/cfg/none.cfg'".format(exepath),
-        "library not found: 'none'",
-        "cppcheck: Failed to load library configuration file 'none'. File not found"
-    ]
-
-
-def test_lib_lookup_absolute(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    cfg_file = os.path.join(tmpdir, 'test.cfg')
-    with open(cfg_file, 'wt') as f:
-        f.write('''
-<?xml version="1.0"?>
-<def format="2">
-</def>
-        ''')
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library={}'.format(cfg_file), test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library '{}'".format(cfg_file),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-def test_lib_lookup_absolute_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    cfg_file = os.path.join(tmpdir, 'test.cfg')
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library={}'.format(cfg_file), test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 1, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library '{}'".format(cfg_file),
-        "library not found: '{}'".format(cfg_file),
-        "cppcheck: Failed to load library configuration file '{}'. File not found".format(cfg_file)
-    ]
-
-
-def test_lib_lookup_nofile(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    # make sure we do not produce an error when the attempted lookup path is a directory and not a file
-    gtk_dir = os.path.join(tmpdir, 'gtk')
-    os.mkdir(gtk_dir)
-    gtk_cfg_dir = os.path.join(tmpdir, 'gtk.cfg')
-    os.mkdir(gtk_cfg_dir)
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=gtk', test_file], cwd=tmpdir)
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library 'gtk'",
-        "looking for library 'gtk.cfg'",
-        "looking for library '{}/gtk.cfg'".format(exepath),
-        "looking for library '{}/cfg/gtk.cfg'".format(exepath),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-def test_lib_lookup_multi(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=library', '--library=posix,gnu', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
-    lines = __remove_std_lookup_log(stdout.splitlines(), exepath)
-    assert lines == [
-        "looking for library 'posix'",
-        "looking for library 'posix.cfg'",
-        "looking for library '{}/posix.cfg'".format(exepath),
-        "looking for library '{}/cfg/posix.cfg'".format(exepath),
-        "looking for library 'gnu'",
-        "looking for library 'gnu.cfg'",
-        "looking for library '{}/gnu.cfg'".format(exepath),
-        "looking for library '{}/cfg/gnu.cfg'".format(exepath),
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-def test_platform_lookup_builtin(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _ = cppcheck(['--debug-lookup=platform', '--platform=unix64', test_file])
-    assert exitcode == 0, stdout
-    lines = stdout.splitlines()
-    # built-in platform are not being looked up
-    assert lines == [
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: behaves differently when using a CMake build
-# TODO: test with FILESDIR
-@pytest.mark.skip
-def test_platform_lookup_external(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=avr8', test_file])
-    exepath = os.path.dirname(exe)
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-    assert exitcode == 0, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for platform 'avr8' in '{}'".format(os.path.join(exepath, 'cppcheck')),  # TODO: this not not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8",
-        "try to load platform file 'avr8.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=avr8.xml",
-        "try to load platform file 'platforms/avr8' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/avr8",
-        "try to load platform file 'platforms/avr8.xml' ... Success",
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_platform_lookup_external_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=platform', '--platform=none', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_bin = os.path.join(exepath, 'cppcheck')
-    if sys.platform == 'win32':
-        exepath = exepath.replace('\\', '/')
-        exepath_bin += '.exe'
-    assert exitcode == 1, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for platform 'none' in '{}'".format(exepath_bin),  # TODO: this is not the path *of* the executable but the the path *to* the executable
-        "try to load platform file 'none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none",
-        "try to load platform file 'none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=none.xml",
-        "try to load platform file 'platforms/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none",
-        "try to load platform file 'platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename=platforms/none.xml",
-        "try to load platform file '{}/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/none".format(exepath, exepath),
-        # TODO: lookup of '{exepath}/none.xml' missing
-        "try to load platform file '{}/platforms/none' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none".format(exepath, exepath),
-        "try to load platform file '{}/platforms/none.xml' ... Error=XML_ERROR_FILE_NOT_FOUND ErrorID=3 (0x3) Line number=0: filename={}/platforms/none.xml".format(exepath, exepath),
-        "cppcheck: error: unrecognized platform: 'none'."
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'misra.py'",
-        "looking for addon '{}misra.py'".format(exepath_sep),
-        "looking for addon '{}addons/misra.py'".format(exepath_sep),  # TODO: mixed separators
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup_ext(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=misra.py', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'misra.py'",
-        "looking for addon '{}misra.py'".format(exepath_sep),
-        "looking for addon '{}addons/misra.py'".format(exepath_sep),  # TODO: mixed separators
-        'Checking {} ...'.format(test_file)
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 1, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'none.py'",
-        "looking for addon '{}none.py'".format(exepath_sep),
-        "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
-        'Did not find addon none.py'
-    ]
-
-
-# TODO: test with FILESDIR
-def test_addon_lookup_ext_notfound(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=addon', '--addon=none.py', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 1, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for addon 'none.py'",
-        "looking for addon '{}none.py'".format(exepath_sep),
-        "looking for addon '{}addons/none.py'".format(exepath_sep),  # TODO: mixed separators
-        'Did not find addon none.py'
-    ]
-
-
-# TODO: test with FILESDIR
-@pytest.mark.skip
-def test_config_lookup(tmpdir):
-    test_file = os.path.join(tmpdir, 'test.c')
-    with open(test_file, 'wt'):
-        pass
-
-    # TODO: needs to be in exepath so this is found
     config_file = os.path.join(tmpdir, 'cppcheck.cfg')
     with open(config_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=config', '--addon=misra', test_file], cwd=tmpdir)
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for '{}cppcheck.cfg'".format(exepath_sep),
-        'no configuration found',
-        'Checking {} ...'.format(test_file)
+    exitcode, stdout, stderr, exe = cppcheck_ex([test_file], cwd=tmpdir, cppcheck_exe=exe)
+    assert exitcode == 1, stdout if stdout else stderr
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not load cppcheck.cfg - not a valid JSON - syntax error at line 1 near: '
     ]
 
 
-# TODO: test with FILESDIR
-def test_config_lookup_notfound(tmpdir):
+def test_config_override(tmpdir):
+    # cppcheck.cfg needs to be next to executable
+    exe = shutil.copy2(__lookup_cppcheck_exe(), tmpdir)
+    if sys.platform == 'win32':
+        shutil.copy2(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cppcheck-core.dll'), tmpdir)
+    shutil.copytree(os.path.join(os.path.dirname(__lookup_cppcheck_exe()), 'cfg'), os.path.join(tmpdir, 'cfg'))
+
     test_file = os.path.join(tmpdir, 'test.c')
     with open(test_file, 'wt'):
         pass
 
-    exitcode, stdout, _, exe = cppcheck_ex(['--debug-lookup=config', test_file])
-    exepath = os.path.dirname(exe)
-    exepath_sep = exepath + os.path.sep
-    assert exitcode == 0, stdout
-    lines = stdout.splitlines()
-    assert lines == [
-        "looking for '{}cppcheck.cfg'".format(exepath_sep),
-        'no configuration found',
-        'Checking {} ...'.format(test_file)
-    ]
+    config_file = os.path.join(tmpdir, 'cppcheck.cfg')
+    with open(config_file, 'wt') as f:
+        f.write(json.dumps({
+            'safety': False
+        }))
+
+    exitcode, stdout, stderr, exe = cppcheck_ex(['-q', '--safety', test_file], cwd=tmpdir, cppcheck_exe=exe, remove_checkers_report=False)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert 'checkersReport' in stderr
 
 
 def test_checkers_report(tmpdir):
@@ -1958,7 +1767,7 @@ def test_checkers_report(tmpdir):
         f.write('x=1;')
     checkers_report = os.path.join(tmpdir, 'r.txt')
     exitcode, stdout, stderr = cppcheck(['--enable=all', '--checkers-report=' + checkers_report, test_file], remove_checkers_report=False)
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     assert 'Active checkers:' in stderr
     assert '--checkers-report' not in stderr
 
@@ -1972,84 +1781,95 @@ def test_checkers_report_misra_json(tmpdir):
     with open(misra_json, 'wt') as f:
         f.write('{"script":"misra.py"}')
     exitcode, stdout, stderr = cppcheck('--enable=style --addon=misra.json --xml-version=3 test.c'.split(), cwd=tmpdir)
-    assert exitcode == 0, stdout
+    assert exitcode == 0, stdout if stdout else stderr
     assert '<checker id="Misra C 2012: 8.1"/>' in stderr
 
 
-def test_ignore(tmpdir):
+def __test_ignore_file(tmpdir, ign, append=False, inject_path=False):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
     with open(test_file, 'wt'):
         pass
 
+    # TODO: this should say that all paths are ignored
     lines_exp = [
+        'ignored path: {}'.format(test_file),
         'cppcheck: error: could not find or open any of the paths given.',
         'cppcheck: Maybe all paths were ignored?'
     ]
 
     args = [
-        '-itest.cpp',
+        '--debug-ignore',
         test_file
     ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
+    if inject_path:
+        ign = ign.replace('$path', str(test_file))
+
+    if append:
+        args += ['-i{}'.format(ign)]
+    else:
+        args = ['-i{}'.format(ign)] + args
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout if stdout else stderr
     assert stdout.splitlines() == lines_exp
 
-    # make sure it also matches when specified after the file
-    args = [
-        test_file,
-        '-itest.cpp'
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file(tmpdir):
+    __test_ignore_file(tmpdir, 'test.cpp')
 
-    args = [
-        '-isrc/test.cpp',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_append(tmpdir):
+    __test_ignore_file(tmpdir, 'test.cpp', append=True)
 
-    args = [
-        '-isrc\\test.cpp',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_wildcard_back(tmpdir):
+    __test_ignore_file(tmpdir, 'test.c*')
 
-    args = [
-        '-isrc/',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_wildcard_front(tmpdir):
+    __test_ignore_file(tmpdir, '*test.cpp')
 
-    args = [
-        '-isrc\\',
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_placeholder(tmpdir):
+    __test_ignore_file(tmpdir, 't?st.cpp')
 
-    args = [
-        '-i{}'.format(test_file),
-        test_file
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_file_relative(tmpdir):
+    __test_ignore_file(tmpdir, 'src/test.cpp')
+
+
+def test_ignore_file_relative_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src\\test.cpp')
+
+
+def test_ignore_file_relative_wildcard(tmpdir):
+    __test_ignore_file(tmpdir, 'src/test.c*')
+
+
+def test_ignore_file_relative_wildcard_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src\\test.c*')
+
+
+def test_ignore_path_relative(tmpdir):
+    __test_ignore_file(tmpdir, 'src/')
+
+
+def test_ignore_path_relative_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src\\')
+
+
+def test_ignore_path_relative_wildcard(tmpdir):
+    __test_ignore_file(tmpdir, 'src*/')
+
+
+def test_ignore_path_relative_wildcard_backslash(tmpdir):
+    __test_ignore_file(tmpdir, 'src*\\')
+
+
+def test_ignore_abspath(tmpdir):
+    __test_ignore_file(tmpdir, '$path', inject_path=True)
 
 
 def __write_gui_project(tmpdir, test_file, ignore):
@@ -2069,92 +1889,80 @@ def __write_gui_project(tmpdir, test_file, ignore):
     return project_file
 
 
-def test_ignore_project(tmpdir):
+def __test_ignore_project(tmpdir, ign_proj, ign_cli=None, append_cli=False, inject_path_proj=False):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
     with open(test_file, 'wt'):
         pass
 
+    # TODO: this should say that all paths were ignored
     lines_exp = [
+        'ignored path: {}'.format(test_file),
         'cppcheck: error: could not find or open any of the paths given.',
         'cppcheck: Maybe all paths were ignored?'
     ]
 
-    project_file = __write_gui_project(tmpdir, test_file, 'test.cpp')
+    if inject_path_proj:
+        ign_proj = ign_proj.replace('$path', str(test_file))
+
+    project_file = __write_gui_project(tmpdir, test_file, ign_proj)
     args = [
+        '--debug-ignore',
         '--project={}'.format(project_file)
     ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
-
-    # make sure -i works when specified before project
-    project_file = __write_gui_project(tmpdir, test_file, 'test2.cpp')
-    args = [
-        '-itest.cpp',
-        '--project={}'.format(project_file)
-    ]
+    if append_cli:
+        args += ['-i{}'.format(ign_cli)]
+    else:
+        args = ['-i{}'.format(ign_cli)] + args
 
     exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
     assert exitcode == 1, stdout
     assert stdout.splitlines() == lines_exp
 
-    # make sure -i works when specified after project
-    project_file = __write_gui_project(tmpdir, test_file, 'test2.cpp')
-    args = [
-        '--project={}'.format(project_file),
-        '-itest.cpp'
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file(tmpdir):
+    __test_ignore_project(tmpdir, 'test.cpp')
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src/test.cpp')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_cli_prepend(tmpdir):
+    __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp')
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src\\test.cpp')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_cli_append(tmpdir):
+    __test_ignore_project(tmpdir, ign_proj='test2.cpp', ign_cli='test.cpp', append_cli=True)
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src/')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_wildcard_back(tmpdir):
+    __test_ignore_project(tmpdir, 'test.c*')
 
-    project_file = __write_gui_project(tmpdir, test_file, 'src\\')
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_wildcard_front(tmpdir):
+    __test_ignore_project(tmpdir, '*test.cpp')
 
-    project_file = __write_gui_project(tmpdir, test_file, test_file)
-    args = [
-        '--project={}'.format(project_file)
-    ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+def test_ignore_project_file_placeholder(tmpdir):
+    __test_ignore_project(tmpdir, 't?st.cpp')
+
+
+def test_ignore_project_file_relative(tmpdir):
+    __test_ignore_project(tmpdir, 'src/test.cpp')
+
+
+def test_ignore_project_file_relative_backslash(tmpdir):
+    __test_ignore_project(tmpdir, 'src\\test.cpp')
+
+
+def test_ignore_project_path_relative(tmpdir):
+    __test_ignore_project(tmpdir, 'src/')
+
+
+def test_ignore_project_path_relative_backslash(tmpdir):
+    __test_ignore_project(tmpdir, 'src\\')
+
+
+def test_ignore_project_abspath(tmpdir):
+    __test_ignore_project(tmpdir, '$path', inject_path_proj=True)
 
 
 def __write_compdb(tmpdir, test_file):
@@ -2171,89 +1979,91 @@ def __write_compdb(tmpdir, test_file):
     return compile_commands
 
 
-# TODO: -i appears to be ignored
-@pytest.mark.xfail(strict=True)
-def test_ignore_project_2(tmpdir):
+def __test_ignore_project_2(tmpdir, extra_args, append=False, inject_path=False):
     os.mkdir(os.path.join(tmpdir, 'src'))
     test_file = os.path.join(tmpdir, 'src', 'test.cpp')
     with open(test_file, 'wt'):
         pass
 
     lines_exp = [
-        'cppcheck: error: could not find or open any of the paths given.',
-        'cppcheck: Maybe all paths were ignored?'
+        'ignored path: {}'.format(str(test_file).replace('\\', '/')),
+        'cppcheck: error: no C or C++ source files found.',
+        'cppcheck: all paths were ignored'
     ]
-
     project_file = __write_compdb(tmpdir, test_file)
     args = [
-        '-itest.cpp',
+        '--debug-ignore',
         '--project={}'.format(project_file)
     ]
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
+    if inject_path:
+        extra_args = [ extra_args[0].replace('$path', str(test_file)) ]
+    if append:
+        args += extra_args
+    else:
+        args = extra_args + args
+    print(args)
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmpdir)
+    assert exitcode == 1, stdout if stdout else stderr
     assert stdout.splitlines() == lines_exp
 
+
+def test_ignore_project_2_file(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-itest.cpp'])
+
+
+def test_ignore_project_2_file_append(tmpdir):
     # make sure it also matches when specified after project
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '--project={}'.format(project_file),
-        '-itest.cpp'
-    ]
+    __test_ignore_project_2(tmpdir, ['-itest.cpp'], append=True)
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc/test.cpp',
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_file_wildcard_back(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-itest.c*'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc\\test.cpp',
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_file_wildcard_front(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-i*test.cpp'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc/',
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_file_placeholder(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-it?st.cpp'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-isrc\\',
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_file_relative(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc/test.cpp'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
 
-    project_file = __write_compdb(tmpdir, test_file)
-    args = [
-        '-i{}'.format(test_file),
-        '--project={}'.format(project_file)
-    ]
+def test_ignore_project_2_file_relative_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc\\test.cpp'])
 
-    exitcode, stdout, _ = cppcheck(args, cwd=tmpdir)
-    assert exitcode == 1, stdout
-    assert stdout.splitlines() == lines_exp
+
+def test_ignore_project_2_file_relative_wildcard(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc/test.c*'])
+
+
+def test_ignore_project_2_file_relative_wildcard_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc\\test.c*'])
+
+
+def test_ignore_project_2_path_relative(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc/'])
+
+
+def test_ignore_project_2_path_relative_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc\\'])
+
+
+def test_ignore_project_2_path_relative_wildcard(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc*/'])
+
+
+def test_ignore_project_2_path_relative_wildcard_backslash(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-isrc*\\'])
+
+
+def test_ignore_project_2_abspath(tmpdir):
+    __test_ignore_project_2(tmpdir, ['-i$path'], inject_path=True)
 
 
 def test_dumpfile_platform(tmpdir):
@@ -2269,3 +2079,2043 @@ def test_dumpfile_platform(tmpdir):
                 break
     assert ' wchar_t_bit="' in platform
     assert ' size_t_bit="' in platform
+
+
+def test_builddir_hash_check_level(tmp_path):  # #13376
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(bool b)
+{
+    for (int i = 0; i < 2; ++i)
+    {
+        if (i == 0) {}
+        if (b) continue;
+    }
+}
+""")
+
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    args = [ # // #14029
+        '--enable=warning',  # to execute the code which generates the normalCheckLevelMaxBranches message
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stderr == ''
+
+    args = [
+        '--enable=warning',  # to execute the code which generates the normalCheckLevelMaxBranches message
+        '--enable=information',  # to show the normalCheckLevelMaxBranches message
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stderr == '{}:0:0: information: Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches. [normalCheckLevelMaxBranches]\n'.format(test_file)
+
+    cache_file = (build_dir / 'test.a1')
+
+    root = ElementTree.fromstring(cache_file.read_text())
+    hash_1 = root.get('hash')
+
+    args += ['--check-level=exhaustive']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stderr == ''
+
+    root = ElementTree.fromstring(cache_file.read_text())
+    hash_2 = root.get('hash')
+
+    assert hash_1 != hash_2
+
+
+def test_def_undef(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#ifndef DEF_1
+    (void)(*((int*)0));
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-DDEF_1',
+        '-UDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: DEF_1=1...'.format(test_file)  # TODO: should not print DEF_1 - see #13335
+    ]
+    assert stderr.splitlines() == [
+        '{}:5:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+@pytest.mark.xfail(strict=True)
+def test_def_def(tmp_path):  # #13334
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#if DEF_1 == 3
+    (void)(*((int*)0));
+#endif
+#if DEF_1 == 7
+    (void)(*((int*)0));
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-DDEF_1=3',
+        '-DDEF_1=7',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: DEF_1=3;DEF_1=7...'.format(test_file)  # TODO: should not print DEF_1 twice - see #13335
+    ]
+    assert stderr.splitlines() == [
+        '{}:8:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+@pytest.mark.xfail(strict=True)
+def test_def_undef_def(tmp_path):  # #13334
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#ifdef DEF_1
+    (void)(*((int*)0));
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-DDEF_1',
+        '-UDEF_1',
+        '-DDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file),
+        'Checking {}: DEF_1=1;DEF_1=1...'.format(test_file)  # TODO: should not print DEF_1 twice - see #13335
+    ]
+    assert stderr.splitlines() == [
+        '{}:5:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+def test_undef(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f()
+{
+#ifndef DEF_1
+    (void)(*((int*)0));
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-UDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr.splitlines() == [
+        '{}:5:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+@pytest.mark.xfail(strict=True)
+def test_undef_src(tmp_path):  # #13340
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+#define DEF_1
+
+void f()
+{
+#ifdef DEF_1
+    (void)(*((int*)0));
+#endif
+}
+""")
+
+    args = [
+        '--template=simple',
+        '-UDEF_1',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr.splitlines() == [
+        '{}:7:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+
+
+def test_dump_check_config(tmp_path):  # #13432
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--dump',
+        '--check-config',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr == ''
+
+    # no dump file should have been generated
+    assert not os.path.exists(str(test_file) + '.dump')
+
+
+# TODO: remove all overrides when fully fixed
+def __test_inline_suppr(tmp_path, extra_args):  # #13087
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f() {
+  // cppcheck-suppress memleak
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--inline-suppr',
+        str(test_file)
+    ]
+
+    args += extra_args
+
+    exitcode, stdout, stderr, = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:4:0: information: Unmatched suppression: memleak [unmatchedSuppression]'.format(test_file)
+    ]
+
+
+def test_inline_suppr(tmp_path):
+    __test_inline_suppr(tmp_path, ['-j1'])
+
+
+def test_inline_suppr_j(tmp_path):
+    __test_inline_suppr(tmp_path, ['-j2'])
+
+
+def test_inline_suppr_builddir(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+# TODO: the suppressions are generated outside of the scope which captures the analysis information
+@pytest.mark.xfail(strict=True)
+def test_inline_suppr_builddir_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j1'])
+
+
+def test_inline_suppr_builddir_j(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+
+
+# TODO: the suppressions are generated outside of the scope which captures the analysis information
+@pytest.mark.xfail(strict=True)
+def test_inline_suppr_builddir_j_cached(tmp_path):
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+    __test_inline_suppr(tmp_path, ['--cppcheck-build-dir={}'.format(build_dir), '-j2'])
+
+
+def test_duplicate_suppression(tmp_path):
+    test_file = tmp_path / 'file.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    args = [
+        '-q',
+        '--suppress=uninitvar',
+        '--suppress=uninitvar',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'uninitvar' already exists"
+    ]
+    assert stderr == ''
+
+
+def test_duplicate_suppressions_list(tmp_path):
+    suppr_file = tmp_path / 'suppressions'
+    with open(suppr_file, 'wt') as f:
+        f.write('''
+uninitvar
+uninitvar
+''')
+
+    test_file = tmp_path / 'file.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    args = [
+        '-q',
+        '--suppressions-list={}'.format(suppr_file),
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'uninitvar' already exists"
+    ]
+    assert stderr == ''
+
+
+def test_duplicate_suppressions_mixed(tmp_path):
+    suppr_file = tmp_path / 'suppressions'
+    with open(suppr_file, 'wt') as f:
+        f.write('uninitvar')
+
+    test_file = tmp_path / 'file.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    args = [
+        '-q',
+        '--suppress=uninitvar',
+        '--suppressions-list={}'.format(suppr_file),
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        "cppcheck: error: suppression 'uninitvar' already exists"
+    ]
+    assert stderr == ''
+
+
+def test_xml_output(tmp_path):  # #13391 / #13485
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(const void* p)
+{
+    if(p) {}
+    (void)*p; // REMARK: boom
+}
+""")
+
+    _, version_str, _ = cppcheck(['--version'])
+    version_str = version_str.replace('Cppcheck ', '').strip()
+
+    args = [
+        '-q',
+        '--enable=style',
+        '--xml',
+        str(test_file)
+    ]
+    exitcode_1, stdout_1, stderr_1 = cppcheck(args)
+    assert exitcode_1 == 0, stdout_1
+    assert stdout_1 == ''
+    test_file_exp = str(test_file).replace('\\', '/')
+    assert (stderr_1 ==
+'''<?xml version="1.0" encoding="UTF-8"?>
+<results version="2">
+    <cppcheck version="{}"/>
+    <errors>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &apos;p&apos; is redundant or there is possible null pointer dereference: p." verbose="Either the condition &apos;p&apos; is redundant or there is possible null pointer dereference: p." cwe="476" file0="{}" remark="boom">
+            <location file="{}" line="5" column="12" info="Null pointer dereference"/>
+            <location file="{}" line="4" column="8" info="Assuming that condition &apos;p&apos; is not redundant"/>
+            <symbol>p</symbol>
+        </error>
+    </errors>
+</results>
+'''.format(version_str, test_file_exp, test_file_exp, test_file_exp))
+
+
+def test_outputfile(tmp_path): # #14051
+    test_file = tmp_path / 'test.cpp'
+    out_file = tmp_path / 'out.txt'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+int main()
+{
+    int x = 1 / 0;
+}
+""")
+
+    args = [
+        '-q',
+        '--output-file={}'.format(out_file),
+        str(test_file)
+    ]
+
+    out_exp = [
+        '{}:4:15: error: Division by zero. [zerodiv]'.format(test_file),
+        '    int x = 1 / 0;',
+        '              ^',
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr == ''
+
+    with open(out_file, 'rt') as f:
+        out_text = f.read()
+
+    assert out_text.splitlines() == out_exp
+
+
+def test_internal_error_loc_int(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+void f() {
+    int i = 0x10000000000000000;
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:3:13: error: Internal Error. MathLib::toBigUNumber: out_of_range: 0x10000000000000000 [internalError]'.format(test_file)
+    ]
+
+
+def __test_addon_suppr(tmp_path, extra_args):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+// cppcheck-suppress misra-c2012-2.3
+typedef int MISRA_5_6_VIOLATION;
+typedef int MISRA_5_6_VIOLATION_1;
+        """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=style',
+        '--addon=misra',
+        str(test_file)
+    ]
+
+    args += extra_args
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:4:1: style: misra violation (use --rule-texts=<file> to get proper output) [misra-c2012-2.3]'.format(test_file),
+    ]
+
+
+# TODO: remove override when all issues are fixed
+def test_addon_suppr_inline(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j1'])
+
+# TODO: remove override when all issues are fixed
+def test_addon_suppr_inline_j(tmp_path):
+    __test_addon_suppr(tmp_path, ['--inline-suppr', '-j2'])
+
+
+def test_addon_suppr_cli_line(tmp_path):
+    __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:*:3'])
+
+
+def test_addon_suppr_cli_file_line(tmp_path):
+    __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:test.c:3'])
+
+
+def test_addon_suppr_cli_absfile_line(tmp_path):
+    test_file = tmp_path / 'test.c'
+    __test_addon_suppr(tmp_path, ['--suppress=misra-c2012-2.3:{}:3'.format(test_file)])
+
+
+def test_ctu_path_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        str(test_file)
+    ]
+
+    # the CTU path was not properly read leading to missing location information
+    stderr_exp = [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file),
+        'void f(int *p) { *p = 3; }',
+        '                  ^',
+        "{}:4:14: note: Assignment 'p=0', assigned value is 0".format(test_file),
+        '    int *p = 0;',
+        '             ^',
+        '{}:5:2: note: Calling function f, 1st argument is null'.format(test_file),
+        'f(p);',
+        ' ^',
+        '{}:2:19: note: Dereferencing argument p that is null'.format(test_file),
+        'void f(int *p) { *p = 3; }',
+        '                  ^'
+    ]
+
+    exitcode_1, stdout_1, stderr_1 = cppcheck(args)
+    assert exitcode_1 == 0, stdout_1
+    assert stdout_1 == ''
+    assert stderr_1.splitlines() == stderr_exp
+
+    exitcode_2, stdout_2, stderr_2 = cppcheck(args)
+    assert exitcode_2 == 0, stdout_2
+    assert stdout_2 == ''
+    assert stderr_2.splitlines() == stderr_exp
+
+
+@pytest.mark.xfail(strict=True)
+def test_ctu_builddir(tmp_path):  # #11883
+    build_dir = tmp_path / 'b1'
+    os.mkdir(build_dir)
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""
+void f(int *p) { *p = 3; }
+int main() {
+    int *p = 0;
+f(p);
+}
+        """)
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=style',
+        '--suppress=nullPointer',  # we only care about the CTU findings
+        '--cppcheck-build-dir={}'.format(build_dir),
+        '-j1',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    # the CTU was run and then evaluated again from the builddir leading to duplicated findings
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        '{}:2:19: error: Null pointer dereference: p [ctunullpointer]'.format(test_file)
+    ]
+
+
+def test_debug(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_xml(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 0
+
+
+def test_debug_verbose(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--verbose',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') != -1
+    assert stdout.find('##AST') != -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+
+def test_debug_verbose_xml(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--debug',
+        '--verbose',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    assert stdout.find('##file ') != -1  # also exists in CDATA
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    file_elem = debug_xml.findall('file')
+    assert len(file_elem) == 1
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 1
+
+
+# TODO: remove interaction with --debug?
+# TODO: test with --xml
+def __test_debug_template(tmp_path, verbose=False, debug=False):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""template<class T> class TemplCl;
+void f()
+{
+    (void)(*((int*)nullptr));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-template',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+    if debug:
+        args += ['--debug']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    if debug:
+        assert stdout.find('##file ') != -1
+    else:
+        assert stdout.find('##file ') == -1
+    if debug:
+        assert stdout.find('##Value flow') != -1
+    else:
+        assert stdout.find('##Value flow') == -1
+    if debug and verbose:
+        assert stdout.find('### Symbol database ###') != -1
+    else:
+        assert stdout.find('### Symbol database ###') == -1
+    if debug and verbose:
+        assert stdout.find('##AST') != -1
+    else:
+        assert stdout.find('##AST') == -1
+    if debug:
+        assert stdout.count('### Template Simplifier pass ') == 2
+    else:
+        assert stdout.count('### Template Simplifier pass ') == 1
+    assert stderr.splitlines() == [
+        '{}:4:14: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_template(tmp_path):
+    __test_debug_template(tmp_path, verbose=False)
+
+
+def test_debug_template_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_template(tmp_path, verbose=False) == __test_debug_template(tmp_path, verbose=True)
+
+
+def test_debug_template_debug(tmp_path):
+    __test_debug_template(tmp_path, debug=True)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_template_debug_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_template(tmp_path, debug=True, verbose=False) == __test_debug_template(tmp_path, debug=True, verbose=True)
+
+
+def test_file_ignore_2(tmp_path):  # #13570
+    tests_path = tmp_path / 'tests'
+    os.mkdir(tests_path)
+
+    lib_path = tmp_path / 'lib'
+    os.mkdir(lib_path)
+
+    test_file_1 = lib_path / 'test_1.c'
+    with open(test_file_1, 'wt'):
+        pass
+
+    args = [
+        '-itests',
+        '-itest_1.c',
+        '.'
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 1, stdout
+    assert stdout.splitlines() == [
+        'cppcheck: error: could not find or open any of the paths given.',
+        'cppcheck: Maybe all paths were ignored?'
+    ]
+    assert stderr.splitlines() == []
+
+
+def test_debug_valueflow_data(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""int f()
+{
+    double d = 1.0 / 0.5;
+    return d;
+}
+""")
+
+    args = [
+        '-q',
+        '--debug-valueflow',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    # check sections in output
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == []
+
+    # check precision in output - #13607
+    valueflow = stdout[stdout.find('##Value flow'):]
+    assert valueflow.splitlines() == [
+        '##Value flow',
+        'File {}'.format(str(test_file).replace('\\', '/')),
+        'Line 3',
+        '  = always 2.0',
+        '  1.0 always 1.0',
+        '  / always 2.0',
+        '  0.5 always 0.5',
+        'Line 4',
+        '  d always {symbolic=(1.0/0.5),2.0}'
+    ]
+
+
+def test_debug_valueflow_data_xml(tmp_path):  # #13606
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""double f()
+{
+    double d = 0.0000001;
+    return d;
+}
+""")
+
+    args = [
+        '-q',
+        '--debug-valueflow',
+        '--xml',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+
+    assert stderr
+    assert ElementTree.fromstring(stderr) is not None
+
+    # check sections in output
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+
+    # check XML nodes in output
+    debug_xml = ElementTree.fromstring(stdout)
+    assert debug_xml is not None
+    assert debug_xml.tag == 'debug'
+    valueflow_elem = debug_xml.findall('valueflow')
+    assert len(valueflow_elem) == 1
+    scopes_elem = debug_xml.findall('scopes')
+    assert len(scopes_elem) == 1
+    ast_elem = debug_xml.findall('ast')
+    assert len(ast_elem) == 0
+
+    # check precision in output - #13606
+    value_elem = valueflow_elem[0].findall('values/value')
+    assert len(value_elem) == 3
+    assert 'floatvalue' in value_elem[0].attrib
+    assert value_elem[0].attrib['floatvalue'] == '1e-07'
+    assert 'floatvalue' in value_elem[1].attrib
+    assert value_elem[1].attrib['floatvalue'] == '1e-07'
+    assert 'floatvalue' in value_elem[2].attrib
+    assert value_elem[2].attrib['floatvalue'] == '1e-07'
+
+
+def test_dir_ignore(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt'):
+        pass
+
+    lib_dir = tmp_path / 'lib'
+    os.mkdir(lib_dir)
+    lib_test_file = lib_dir / 'test.cpp'
+    with open(lib_test_file, 'wt'):
+        pass
+
+    args = [
+        '-ilib',
+        '--debug-ignore',
+        str(tmp_path)
+    ]
+    # make sure the whole directory is being ignored instead of each of its contents individually
+    out_lines = [
+        'ignored path: {}'.format(lib_dir),
+        'Checking {} ...'.format(test_file)
+    ]
+
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=str(tmp_path))
+
+
+def test_check_headers(tmp_path):
+    test_file_h = tmp_path / 'test.h'
+    with open(test_file_h, 'wt') as f:
+        f.write(
+"""
+inline void hdr()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    test_file_c = tmp_path / 'test.c'
+    with open(test_file_c, 'wt') as f:
+        f.write(
+"""
+#include "test.h"
+
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--no-check-headers',
+        str(test_file_c)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []  # no error since the header is not checked
+
+
+def test_unique_error(tmp_path):  # #6366
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    const long m[9] = {};
+    long a=m[9], b=m[9];
+    (void)a;
+    (void)b;
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        "{}:4:13: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file),
+        "{}:4:21: error: Array 'm[9]' accessed at index 9, which is out of bounds. [arrayIndexOutOfBounds]".format(test_file)
+    ]
+
+
+def test_check_unused_templates_class(tmp_path):
+    test_file_h = tmp_path / 'test.h'
+    with open(test_file_h, 'wt') as f:
+        f.write(
+"""template<class T>
+class HdrCl1
+{
+    HdrCl1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+class HdrCl2
+{
+    HdrCl2()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<class T>
+struct HdrSt1
+{
+    HdrSt1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+struct HdrSt2
+{
+    HdrSt2()
+    {
+        (void)(*((int*)0));
+    }
+};
+""")
+
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include "test.h"
+
+template<class T>
+class Cl1
+{
+    CL1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+class Cl2
+{
+    Cl2()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<class T>
+struct St1
+{
+    St1()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+template<typename T>
+struct St2
+{
+    St2()
+    {
+        (void)(*((int*)0));
+    }
+};
+
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--no-check-unused-templates',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []  # no error since the unused templates are not being checked
+
+
+def test_check_unused_templates_func(tmp_path):  # #13714
+    test_file_h = tmp_path / 'test.h'
+    with open(test_file_h, 'wt') as f:
+        f.write(
+"""template<class T>
+void f_t_hdr_1()
+{
+    (void)(*((int*)0));
+}
+
+template<typename T>
+void f_t_hdr_2()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include "test.h"
+
+template<class T>
+void f_t_1()
+{
+    (void)(*((int*)0));
+}
+
+template<typename T>
+void f_t_2()
+{
+    (void)(*((int*)0));
+}
+
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--no-check-unused-templates',
+        str(test_file)
+    ]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []  # no error since the unused templates are not being checked
+
+try:
+    # TODO: handle exitcode?
+    subprocess.call(['clang-tidy', '--version'])
+    has_clang_tidy = True
+except OSError:
+    has_clang_tidy = False
+
+def __test_clang_tidy(tmpdir, use_compdb):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write(
+"""static void foo() // NOLINT(misc-use-anonymous-namespace)
+{
+    (void)(*((int*)nullptr));
+}""")
+
+    project_file = __write_compdb(tmpdir, test_file) if use_compdb else None
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--clang-tidy'
+    ]
+    if project_file:
+        args += ['--project={}'.format(project_file)]
+    else:
+        args += [str(test_file)]
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+    ]
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)nullptr [nullPointer]'.format(test_file),
+        '{}:3:14: style: C-style casts are discouraged; use static_cast/const_cast/reinterpret_cast [clang-tidy-google-readability-casting]'.format(test_file)
+    ]
+
+
+@pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
+@pytest.mark.xfail(strict=True)  # TODO: clang-tidy is only invoked with FileSettings - see #12053
+def test_clang_tidy(tmpdir):  # #12053
+    __test_clang_tidy(tmpdir, False)
+
+
+@pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
+def test_clang_tidy_project(tmpdir):
+    __test_clang_tidy(tmpdir, True)
+
+
+@pytest.mark.skipif(not has_clang_tidy, reason='clang-tidy is not available')
+def test_clang_tidy_error_exit(tmp_path):  # #13828 / #13829
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#include <string>
+#include <utility>
+
+// cppcheck-suppress clang-tidy-modernize-use-trailing-return-type
+static bool f() // NOLINT(misc-use-anonymous-namespace)
+{
+    std::string str;
+    const std::string str1 = std::move(str);
+    (void)str1;
+    return str.empty();
+}""")
+
+    # TODO: remove project file usage when --clang-tidy works with non-project files
+    project_file = __write_compdb(tmp_path, str(test_file))
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--inline-suppr',
+        '--std=c++11',
+        '--clang-tidy',
+        '--project={}'.format(project_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        "{}:10:12: warning: 'str' used after it was moved [clang-tidy-bugprone-use-after-move]".format(test_file),
+        "{}:10:12: style: 'str' used after it was moved [clang-tidy-hicpp-invalid-access-moved]".format(test_file)
+    ]
+    assert exitcode == 0, stdout
+
+
+def test_suppress_unmatched_wildcard(tmp_path):  # #13660
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    # need to run in the temporary folder because the path of the suppression has to match
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--suppress=nullPointer:test*.c',  # checked and matched
+        '--suppress=id:test*.c',  # checked and unmatched
+        '--suppress=id2:test*.c',  # checked and unmatched
+        '--suppress=id2:tes?.c',  # checked and unmatched
+        '--suppress=*:test*.c',  # checked and unmatched
+        '--suppress=id:test*.cpp',  # unchecked
+        '--suppress=id2:test?.cpp',  # unchecked
+        'test.c'
+    ]
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    # TODO: invalid locations - see #13659
+    assert stderr.splitlines() == [
+        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'test*.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'tes?.c:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]'
+    ]
+
+
+def test_suppress_unmatched_wildcard_unchecked(tmp_path):
+    # make sure that unmatched wildcards suppressions are reported if files matching the expressions were processesd
+    # but isSuppressed() has never been called (i.e. no findings in file at all)
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write("""void f() {}""")
+
+    # need to run in the temporary folder because the path of the suppression has to match
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        '--suppress=id:test*.c',
+        '--suppress=id:tes?.c',
+        '--suppress=id2:*',
+        '--suppress=*:test*.c',
+        'test.c'
+    ]
+    exitcode, stdout, stderr = cppcheck(args, cwd=tmp_path)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    # TODO: invalid locations - see #13659
+    assert stderr.splitlines() == [
+        'test*.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        'tes?.c:-1:0: information: Unmatched suppression: id [unmatchedSuppression]',
+        '*:-1:0: information: Unmatched suppression: id2 [unmatchedSuppression]',
+        'test*.c:-1:0: information: Unmatched suppression: * [unmatchedSuppression]'
+    ]
+
+
+def test_preprocess_enforced_c(tmp_path):  # #10989
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#ifdef __cplusplus
+#error "err"
+#endif""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--language=c',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
+
+
+def test_preprocess_enforced_cpp(tmp_path):  # #10989
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""#ifdef __cplusplus
+#error "err"
+#endif""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--language=c++',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout if stdout else stderr
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:2:2: error: #error "err" [preprocessorErrorDirective]'.format(test_file)
+    ]
+
+
+def test_preprocess_system_include(tmp_path): # #13928
+    g = glob.glob('/usr/include/c++/*/string')
+    if len(g) != 1:
+        pytest.skip('<string> header file not found')
+
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write('#include <string>\n'
+                ';\n')
+
+    def has_missing_include_string_warning(e):
+        return '<string>' in e
+
+    args = [
+        '--enable=missingInclude',
+        str(test_file)
+    ]
+
+    # include path not provided => missing include warning about <string>
+    _, _, stderr = cppcheck(args)
+    assert has_missing_include_string_warning(stderr), stderr
+
+    # include path provided => no missing include warning about <string>
+    args.append('-I' + os.path.dirname(str(g[0])))
+    _, _, stderr = cppcheck(args)
+    assert not has_missing_include_string_warning(stderr), stderr
+
+
+# TODO: test with --xml
+def __test_debug_normal(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    if verbose:
+        assert stdout.find('### Symbol database ###') != -1
+    else:
+        assert stdout.find('### Symbol database ###') == -1
+    if verbose:
+        assert stdout.find('##AST') != -1
+    else:
+        assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_normal(tmp_path):
+    __test_debug_normal(tmp_path, False)
+
+
+@pytest.mark.xfail(strict=True)  # TODO: remove dependency on --verbose
+def test_debug_normal_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_normal(tmp_path, False) == __test_debug_normal(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_simplified(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-simplified',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_simplified(tmp_path):
+    __test_debug_simplified(tmp_path, False)
+
+
+def test_debug_simplified_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_simplified(tmp_path, False) == __test_debug_simplified(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_symdb(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-symdb',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') != -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_symdb(tmp_path):
+    __test_debug_symdb(tmp_path, False)
+
+
+@pytest.mark.skip  # TODO: this contains memory addresses the output will always differ - would require stable identifier
+def test_debug_symdb_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_symdb(tmp_path, False) == __test_debug_symdb(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_ast(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-ast',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') == -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') != -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_ast(tmp_path):
+    __test_debug_ast(tmp_path, False)
+
+
+def test_debug_ast_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_ast(tmp_path, False) == __test_debug_ast(tmp_path, True)
+
+
+# TODO: test with --xml
+def __test_debug_valueflow(tmp_path, verbose):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-valueflow',
+        str(test_file)
+    ]
+
+    if verbose:
+        args += ['--verbose']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') == -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        '{}:3:14: error: Null pointer dereference: (int*)0 [nullPointer]'.format(test_file)
+    ]
+    return stdout
+
+
+def test_debug_valueflow(tmp_path):
+    __test_debug_valueflow(tmp_path, False)
+
+
+def test_debug_valueflow_verbose_nodiff(tmp_path):
+    # make sure --verbose does not change the output
+    assert __test_debug_valueflow(tmp_path, False) == __test_debug_valueflow(tmp_path, True)
+
+
+def test_debug_syntaxerror_c(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+template<class T> class TemplCl;
+void f()
+{
+    (void)(*((int*)0));
+}
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--debug-normal',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.find('##file ') != -1
+    assert stdout.find('##Value flow') != -1
+    assert stdout.find('### Symbol database ###') == -1
+    assert stdout.find('##AST') == -1
+    assert stdout.find('### Template Simplifier pass ') == -1
+    assert stderr.splitlines() == [
+        "{}:2:1: error: Code 'template<...' is invalid C code. [syntaxError]".format(test_file)
+    ]
+
+
+def test_ast_max_depth(tmp_path):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define PTR1 (* (* (* (*
+#define PTR2 PTR1 PTR1 PTR1 PTR1
+#define PTR3 PTR2 PTR2 PTR2 PTR2
+#define PTR4 PTR3 PTR3 PTR3 PTR3
+
+#define RBR1 ) ) ) )
+#define RBR2 RBR1 RBR1 RBR1 RBR1
+#define RBR3 RBR2 RBR2 RBR2 RBR2
+#define RBR4 RBR3 RBR3 RBR3 RBR3
+
+int PTR4 q4_var RBR4 = 0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:12:5: error: maximum AST depth exceeded [internalAstError]'.format(test_file)
+    ]
+
+
+# do not report unmatched misra-* suppressions when misra is not provided
+def test_misra_disabled_unmatched(tmp_path):  #14232
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w"):
+        pass
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--suppress=misra-c2012-20.5',
+        '--suppress=uninitvar',
+        str(test_file)
+    ]
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stderr.splitlines() == [
+        'nofile:0:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+# do not report unmatched premium-* suppressions when application is not premium
+def test_premium_disabled_unmatched(tmp_path):  #13663
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w"):
+        pass
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=warning,information',
+        '--suppress=premium-misra-cpp-2023-12.2.1',
+        '--suppress=uninitvar',
+        str(test_file)
+    ]
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stderr.splitlines() == [
+        'nofile:0:0: information: Unmatched suppression: uninitvar [unmatchedSuppression]'
+    ]
+    assert stdout == ''
+    assert ret == 0, stdout
+
+
+def test_unmatched_file(tmp_path):  # #14248 / #14249
+    lib_path = tmp_path / 'lib'
+    os.makedirs(lib_path)
+
+    test_file = lib_path / 'test.c'
+    with open(test_file, "w"):
+        pass
+
+    suppr_txt = tmp_path / 'suppr.txt'
+    with open(suppr_txt, "w") as f:
+        f.write('''
+error:lib/test.c
+error2:lib\\test.c
+''')
+
+    suppr_xml = tmp_path / 'suppr.xml'
+    with open(suppr_xml, "w") as f:
+        f.write('''
+<suppressions>
+    <suppress>
+        <id>error3</id>
+        <fileName>lib/test.c</fileName>
+    </suppress>
+    <suppress>
+        <id>error4</id>
+        <fileName>lib\\test.c</fileName>
+    </suppress>
+</suppressions>
+''')
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--enable=information',
+        f'--suppressions-list={suppr_txt}',
+        f'--suppress-xml={suppr_xml}',
+        '--suppress=error5:lib/test.c',
+        '--suppress=error6:lib\\test.c',
+        str(test_file)
+    ]
+
+    lib_file = 'lib' + os.path.sep + 'test.c'
+
+    ret, stdout, stderr = cppcheck(args)
+    assert stdout == ''
+    assert stderr.splitlines() == [
+        f'{lib_file}:-1:0: information: Unmatched suppression: error [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error2 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error3 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error4 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error5 [unmatchedSuppression]',
+        f'{lib_file}:-1:0: information: Unmatched suppression: error6 [unmatchedSuppression]'
+    ]
+    assert ret == 0, stdout
+
+
+def test_simplecpp_warning(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""
+#define warning "warn msg"
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == []
+
+
+def test_simplecpp_unhandled_char(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w", encoding='utf-8') as f:
+        f.write(
+"""
+int 你=0;
+""")
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        '{}:2:5: error: The code contains unhandled character(s) (character code=228). Neither unicode nor extended ascii is supported. [unhandledChar]'.format(test_file)
+    ]
+
+
+def test_simplecpp_include_nested_too_deeply(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write('#include "test.h"')
+
+    test_h = tmp_path / 'test.h'
+    with open(test_h, "w") as f:
+        f.write('#include "test_0.h"')
+
+    for i in range(400):
+        test_h = tmp_path / f'test_{i}.h'
+        with open(test_h, "w") as f:
+            f.write('#include "test_{}.h"'.format(i+1))
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    test_h = tmp_path / 'test_398.h'
+    assert stderr.splitlines() == [
+        # TODO: should only report the error once
+        '{}:1:2: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h),
+        '{}:1:2: error: #include nested too deeply [includeNestedTooDeeply]'.format(test_h)
+    ]
+
+
+def test_simplecpp_syntax_error(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write('#include ""')
+
+    args = [
+        '-q',
+        '--template=simple',
+        '--emit-duplicates',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        # TODO: should only report the error once
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file)
+    ]
+
+
+@pytest.mark.parametrize('max_configs,number_of_configs,check_config,expected_warn', [
+    # max configs = default, max configs < number of configs => warn
+    (None, 20, False, True),
+    (None, 20, True, True),
+
+    # max configs != default, max configs < number of configs => warn if --check-config
+    (6, 20, False, False),
+    (6, 20, True, True),
+
+    # max configs >= number of configs => no warning
+    (20, 20, False, False),
+    (20, 20, False, False)
+])
+def test_max_configs(tmp_path, max_configs, number_of_configs, check_config, expected_warn):
+    test_file = tmp_path / 'test.cpp'
+    with open(test_file, "w") as f:
+        for i in range(1,number_of_configs):
+            dir = 'if' if i == 1 else 'elif'
+            f.write(f'#{dir} defined(X{i})\nx = {i};\n')
+        f.write('#endif\n')
+
+    args = ['--enable=information', '--template=simple', str(test_file)]
+
+    if max_configs is None:
+        max_configs = 12  # default value
+    else:
+        args = [f'--max-configs={max_configs}'] + args
+
+    if check_config:
+        args = ['--check-config'] + args
+
+    # default max configs is set to 12, warn if code contains more configurations than that
+    _, _, stderr = cppcheck(args)
+    if not expected_warn:
+        assert stderr.splitlines() == []
+    else:
+        assert stderr.splitlines() == [
+            '{}:0:0: information: Too many #ifdef configurations - cppcheck only checks {} of {} configurations. Use --force to check all configurations. [toomanyconfigs]'
+            .format(test_file, max_configs, number_of_configs)
+        ]
+
+
+def test_no_valid_configuration(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""#include ""
+#ifdef DEF_1
+#include ""
+#endif
+""")
+
+    args = [
+        '--template=simple',
+        '--emit-duplicates',
+        '--enable=information',
+        '--suppress=checkersReport',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file)
+    ]
+    # TODO: this lacks context about the configuration which encounters these errors
+    # TODO: add message when a configuration is dropped?
+    assert stderr.splitlines() == [
+        # TODO: should only report the error once
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:0:0: information: This file is not analyzed. Cppcheck failed to extract a valid configuration. Use -v for more details. [noValidConfiguration]'.format(test_file)
+    ]
+
+
+def test_no_valid_configuration_check_config(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, "w") as f:
+        f.write(
+"""#include ""
+#ifdef DEF_1
+#include ""
+#endif
+""")
+
+    args = [
+        '--template=simple',
+        '--emit-duplicates',
+        '--enable=information',
+        '--suppress=checkersReport',
+        '--check-config',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == [
+        'Checking {} ...'.format(test_file)
+    ]
+    # TODO: this lacks context about the configuration which encounters these errors
+    # TODO: add message when a configuration is dropped
+    assert stderr.splitlines() == [
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file),
+        '{}:1:2: error: No header in #include [syntaxError]'.format(test_file)
+    ]
+
+
+def __test_active_checkers(tmp_path, active_cnt, total_cnt, use_misra=False, use_unusedfunction_only=False, checkers_exp=None):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'w') as f:
+        f.write('int i;')
+
+    build_dir = None
+    if checkers_exp is not None:
+        build_dir = tmp_path / 'b1'
+        os.makedirs(build_dir)
+
+    args = [
+        '-q',
+        '--enable=information',
+        '-j1',
+        str(test_file)
+    ]
+
+    if use_misra:
+        args += ['--addon=misra']
+    if build_dir:
+        args += ['--cppcheck-build-dir={}'.format(build_dir)]
+    else:
+        args += ['--no-cppcheck-build-dir']
+
+    env = {}
+    if use_unusedfunction_only:
+        env = {'UNUSEDFUNCTION_ONLY': '1'}
+        args += ['--enable=unusedFunction']
+    exitcode, stdout, stderr, _ = cppcheck_ex(args, remove_checkers_report=False, env=env)
+    assert exitcode == 0, stdout
+    assert stdout.splitlines() == []
+    assert stderr.splitlines() == [
+        f'nofile:0:0: information: Active checkers: {active_cnt}/{total_cnt} (use --checkers-report=<filename> to see details) [checkersReport]',
+        ''  # TODO: get rid of extra newline
+    ]
+
+    if build_dir:
+        checkers_file = build_dir / 'checkers.txt'
+        with open(checkers_file, 'r') as f:
+            checkers = f.read().splitlines()
+
+        assert checkers == checkers_exp
+        assert len(checkers) == active_cnt
+
+
+def test_active_unusedfunction_only(tmp_path):
+    __test_active_checkers(tmp_path, 1, 975, use_unusedfunction_only=True)
+
+
+def test_active_unusedfunction_only_builddir(tmp_path):
+    checkers_exp = [
+        'CheckUnusedFunctions::check'
+    ]
+    __test_active_checkers(tmp_path, 1, 975, use_unusedfunction_only=True, checkers_exp=checkers_exp)
+
+
+def test_active_unusedfunction_only_misra(tmp_path):
+    __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True)
+
+
+def test_active_unusedfunction_only_misra_builddir(tmp_path):
+    checkers_exp = [
+        'CheckUnusedFunctions::check'
+    ]
+    __test_active_checkers(tmp_path, 1, 1175, use_unusedfunction_only=True, use_misra=True, checkers_exp=checkers_exp)

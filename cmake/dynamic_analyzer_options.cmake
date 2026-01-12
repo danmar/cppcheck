@@ -32,8 +32,8 @@ if(ANALYZE_UNDEFINED)
     endif()
 endif()
 
-if(ANALYZE_DATAFLOW)
-    add_compile_options(-fsanitize=dataflow)
+if(ANALYZE_TYPE)
+    add_compile_options(-fsanitize=type)
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=dataflow")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=type")
 endif()

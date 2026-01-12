@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,15 @@ class QWidget;
 namespace Ui {
     class ProjectFile;
 }
+
+extern const char ADDON_MISRA[];
+extern const char CODING_STANDARD_MISRA_C_2023[];
+extern const char CODING_STANDARD_MISRA_C_2025[];
+extern const char CODING_STANDARD_MISRA_CPP_2008[];
+extern const char CODING_STANDARD_MISRA_CPP_2023[];
+extern const char CODING_STANDARD_CERT_C[];
+extern const char CODING_STANDARD_CERT_CPP[];
+extern const char CODING_STANDARD_AUTOSAR[];
 
 /// @addtogroup GUI
 /// @{
@@ -277,9 +286,6 @@ private slots:
      * @brief Check for all VS configurations
      */
     void checkAllVSConfigs();
-
-    /** @brief Browse for Cppcheck Premium license file */
-    void browseLicenseFile();
 
 protected:
 

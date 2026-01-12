@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__CYGWIN__)
+#define _BSD_SOURCE // required to have popen() and pclose()
+#endif
+
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
@@ -28,10 +32,12 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "filesettings.h"
-#include "json.h"
+#include "path.h"
+#include "sarifreport.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "suppressions.h"
+#include "timer.h"
 #include "utils.h"
 
 #if defined(HAS_THREADING_MODEL_THREAD)
@@ -43,13 +49,13 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <ctime>
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <unordered_set>
@@ -61,164 +67,18 @@
 #endif
 
 #ifdef USE_WINDOWS_SEH
-#include "cppcheckexecutorseh.h"
+#include "sehwrapper.h"
 #endif
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-#if !defined(WIN32) && !defined(__MINGW32__)
+#if !defined(_WIN32) && !defined(__MINGW32__)
 #include <sys/wait.h> // WIFEXITED and friends
 #endif
 
 namespace {
-    class SarifReport {
-    public:
-        void addFinding(ErrorMessage msg) {
-            mFindings.push_back(std::move(msg));
-        }
-
-        picojson::array serializeRules() const {
-            picojson::array ret;
-            std::set<std::string> ruleIds;
-            for (const auto& finding : mFindings) {
-                // github only supports findings with locations
-                if (finding.callStack.empty())
-                    continue;
-                if (ruleIds.insert(finding.id).second) {
-                    picojson::object rule;
-                    rule["id"] = picojson::value(finding.id);
-                    // rule.shortDescription.text
-                    picojson::object shortDescription;
-                    shortDescription["text"] = picojson::value(finding.shortMessage());
-                    rule["shortDescription"] = picojson::value(shortDescription);
-                    // rule.fullDescription.text
-                    picojson::object fullDescription;
-                    fullDescription["text"] = picojson::value(finding.verboseMessage());
-                    rule["fullDescription"] = picojson::value(fullDescription);
-                    // rule.help.text
-                    picojson::object help;
-                    help["text"] = picojson::value(finding.verboseMessage()); // FIXME provide proper help text
-                    rule["help"] = picojson::value(help);
-                    // rule.properties.precision, rule.properties.problem.severity
-                    picojson::object properties;
-                    properties["precision"] = picojson::value(sarifPrecision(finding));
-                    double securitySeverity = 0;
-                    if (finding.severity == Severity::error && !ErrorLogger::isCriticalErrorId(finding.id))
-                        securitySeverity = 9.9; // We see undefined behavior
-                    //else if (finding.severity == Severity::warning)
-                    //    securitySeverity = 5.1; // We see potential undefined behavior
-                    if (securitySeverity > 0.5) {
-                        properties["security-severity"] = picojson::value(securitySeverity);
-                        const picojson::array tags{picojson::value("security")};
-                        properties["tags"] = picojson::value(tags);
-                    }
-                    rule["properties"] = picojson::value(properties);
-
-                    ret.emplace_back(rule);
-                }
-            }
-            return ret;
-        }
-
-        static picojson::array serializeLocations(const ErrorMessage& finding) {
-            picojson::array ret;
-            for (const auto& location : finding.callStack) {
-                picojson::object physicalLocation;
-                picojson::object artifactLocation;
-                artifactLocation["uri"] = picojson::value(location.getfile(false));
-                physicalLocation["artifactLocation"] = picojson::value(artifactLocation);
-                picojson::object region;
-                region["startLine"] = picojson::value(static_cast<int64_t>(location.line));
-                region["startColumn"] = picojson::value(static_cast<int64_t>(location.column));
-                region["endLine"] = region["startLine"];
-                region["endColumn"] = region["startColumn"];
-                physicalLocation["region"] = picojson::value(region);
-                picojson::object loc;
-                loc["physicalLocation"] = picojson::value(physicalLocation);
-                ret.emplace_back(loc);
-            }
-            return ret;
-        }
-
-        picojson::array serializeResults() const {
-            picojson::array results;
-            for (const auto& finding : mFindings) {
-                // github only supports findings with locations
-                if (finding.callStack.empty())
-                    continue;
-                picojson::object res;
-                res["level"] = picojson::value(sarifSeverity(finding));
-                res["locations"] = picojson::value(serializeLocations(finding));
-                picojson::object message;
-                message["text"] = picojson::value(finding.shortMessage());
-                res["message"] = picojson::value(message);
-                res["ruleId"] = picojson::value(finding.id);
-                results.emplace_back(res);
-            }
-            return results;
-        }
-
-        picojson::value serializeRuns(const std::string& productName, const std::string& version) const {
-            picojson::object driver;
-            driver["name"] = picojson::value(productName);
-            driver["semanticVersion"] = picojson::value(version);
-            driver["informationUri"] = picojson::value("https://cppcheck.sourceforge.io");
-            driver["rules"] = picojson::value(serializeRules());
-            picojson::object tool;
-            tool["driver"] = picojson::value(driver);
-            picojson::object run;
-            run["tool"] = picojson::value(tool);
-            run["results"] = picojson::value(serializeResults());
-            picojson::array runs{picojson::value(run)};
-            return picojson::value(runs);
-        }
-
-        std::string serialize(std::string productName) const {
-            const auto nameAndVersion = Settings::getNameAndVersion(productName);
-            productName = nameAndVersion.first.empty() ? "Cppcheck" : nameAndVersion.first;
-            std::string version = nameAndVersion.first.empty() ? CppCheck::version() : nameAndVersion.second;
-            if (version.find(' ') != std::string::npos)
-                version.erase(version.find(' '), std::string::npos);
-
-            picojson::object doc;
-            doc["version"] = picojson::value("2.1.0");
-            doc["$schema"] = picojson::value("https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json");
-            doc["runs"] = serializeRuns(productName, version);
-
-            return picojson::value(doc).serialize(true);
-        }
-    private:
-
-        static std::string sarifSeverity(const ErrorMessage& errmsg) {
-            if (ErrorLogger::isCriticalErrorId(errmsg.id))
-                return "error";
-            switch (errmsg.severity) {
-            case Severity::error:
-            case Severity::warning:
-            case Severity::style:
-            case Severity::portability:
-            case Severity::performance:
-                return "warning";
-            case Severity::information:
-            case Severity::internal:
-            case Severity::debug:
-            case Severity::none:
-                return "note";
-            }
-            return "note";
-        }
-
-        static std::string sarifPrecision(const ErrorMessage& errmsg) {
-            if (errmsg.certainty == Certainty::inconclusive)
-                return "medium";
-            return "high";
-        }
-
-        std::vector<ErrorMessage> mFindings;
-    };
-
     class CmdLineLoggerStd : public CmdLineLogger
     {
     public:
@@ -236,7 +96,7 @@ namespace {
 
         void printRaw(const std::string &message) override
         {
-            std::cout << message << std::endl;
+            std::cout << message << std::endl; // TODO: should not append newline
         }
     };
 
@@ -245,9 +105,13 @@ namespace {
     public:
         explicit StdLogger(const Settings& settings)
             : mSettings(settings)
+            , mGuidelineMapping(createGuidelineMapping(settings.reportType))
         {
             if (!mSettings.outputFile.empty()) {
                 mErrorOutput = new std::ofstream(settings.outputFile);
+            }
+            if (!mSettings.buildDir.empty()) {
+                mCheckersFile = Path::join(settings.buildDir, "checkers.txt");
             }
         }
 
@@ -271,10 +135,27 @@ namespace {
          */
         void reportErr(const std::string &errmsg);
 
+        void reportMetric(const std::string &metric) override
+        {
+            mFileMetrics.push_back(metric);
+        }
+
+        void reportMetrics()
+        {
+            if (!mFileMetrics.empty()) {
+                auto &out = mErrorOutput ? *mErrorOutput : std::cerr;
+                out << "    <metrics>" << std::endl;
+                for (const auto &metric : mFileMetrics) {
+                    out << "        " << metric << std::endl;
+                }
+                out << "    </metrics>" << std::endl;
+            }
+        }
+
         /**
          * @brief Write the checkers report
          */
-        void writeCheckersReport();
+        void writeCheckersReport(const Suppressions& supprs);
 
         bool hasCriticalErrors() const {
             return !mCriticalErrors.empty();
@@ -282,6 +163,25 @@ namespace {
 
         const std::string& getCtuInfo() const {
             return mCtuInfo;
+        }
+
+        void readActiveCheckers() {
+            if (mCheckersFile.empty())
+                return;
+
+            std::ifstream fin(mCheckersFile);
+            if (fin.is_open())
+            {
+                std::set<std::string> activeCheckers;
+                std::string line;
+                // cppcheck-suppress accessMoved - FP
+                while (std::getline(fin, line))
+                {
+                    // cppcheck-suppress accessMoved - FP
+                    activeCheckers.emplace(std::move(line));
+                }
+                mActiveCheckers = std::move(activeCheckers);
+            }
         }
 
     private:
@@ -299,7 +199,7 @@ namespace {
         void reportProgress(const std::string &filename, const char stage[], std::size_t value) override;
 
         /**
-         * Pointer to current settings; set while check() is running for reportError().
+         * Reference to current settings; set while check() is running for reportError().
          */
         const Settings& mSettings;
 
@@ -338,6 +238,21 @@ namespace {
          * SARIF report generator
          */
         SarifReport mSarifReport;
+
+        /**
+         * Coding standard guideline mapping
+         */
+        std::map<std::string, std::string> mGuidelineMapping;
+
+        /**
+         * File metrics
+         */
+        std::vector<std::string> mFileMetrics;
+
+        /**
+         * The file the cached active checkers are stored in
+         */
+        std::string mCheckersFile;
     };
 }
 
@@ -345,7 +260,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     Settings settings;
     CmdLineLoggerStd logger;
-    CmdLineParser parser(logger, settings, settings.supprs);
+    Suppressions supprs;
+    CmdLineParser parser(logger, settings, supprs);
     if (!parser.fillSettingsFromArgs(argc, argv)) {
         return EXIT_FAILURE;
     }
@@ -353,99 +269,156 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         return EXIT_SUCCESS;
     }
 
+    Timer realTimeClock("", settings.showtime, nullptr, Timer::Type::OVERALL);
+
     settings.loadSummaries();
 
     mFiles = parser.getFiles();
     mFileSettings = parser.getFileSettings();
 
-    settings.setMisraRuleTexts(executeCommand);
-
-    const int ret = check_wrapper(settings);
+    const int ret = check_wrapper(settings, supprs);
 
     return ret;
 }
 
-int CppCheckExecutor::check_wrapper(const Settings& settings)
+int CppCheckExecutor::check_wrapper(const Settings& settings, Suppressions& supprs)
 {
 #ifdef USE_WINDOWS_SEH
-    if (settings.exceptionHandling)
-        return check_wrapper_seh(*this, &CppCheckExecutor::check_internal, settings);
+    if (settings.exceptionHandling) {
+        CALL_WITH_SEH_WRAPPER(check_internal(settings, supprs));
+    }
 #elif defined(USE_UNIX_SIGNAL_HANDLING)
     if (settings.exceptionHandling)
         register_signal_handler(settings.exceptionOutput);
 #endif
-    return check_internal(settings);
+    return check_internal(settings, supprs);
 }
 
-bool CppCheckExecutor::reportSuppressions(const Settings &settings, const SuppressionList& suppressions, bool unusedFunctionCheckEnabled, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
-    const auto& suppr = suppressions.getSuppressions();
-    if (std::any_of(suppr.begin(), suppr.end(), [](const SuppressionList::Suppression& s) {
-        return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == SuppressionList::Suppression::NO_LINE;
+/**
+ * Report unmatched suppressions
+ * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
+ * @return true is returned if errors are reported
+ */
+static bool reportUnmatchedSuppressions(const std::list<SuppressionList::Suppression> &unmatched, ErrorLogger &errorLogger, const std::vector<std::string>& filters)
+{
+    bool err = false;
+    // Report unmatched suppressions
+    for (const SuppressionList::Suppression &s : unmatched) {
+        // check if this unmatched suppression is suppressed
+        bool suppressed = false;
+        for (const SuppressionList::Suppression &s2 : unmatched) {
+            if (s2.errorId == "unmatchedSuppression") {
+                if ((s2.fileName.empty() || s2.fileName == "*" || s2.fileName == s.fileName) &&
+                    (s2.lineNumber == SuppressionList::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
+                    suppressed = true;
+                    break;
+                }
+            }
+        }
+
+        if (suppressed)
+            continue;
+
+        const bool skip = std::any_of(filters.cbegin(), filters.cend(), [&s](const std::string& filter) {
+            return matchglob(filter, s.errorId);
+        });
+        if (skip)
+            continue;
+
+        std::list<::ErrorMessage::FileLocation> callStack;
+        if (!s.fileName.empty()) {
+            callStack.emplace_back(s.fileName, s.lineNumber, 0);
+        }
+        errorLogger.reportErr(::ErrorMessage(std::move(callStack), "", Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
+        err = true;
+    }
+    return err;
+}
+
+bool CppCheckExecutor::reportUnmatchedSuppressions(const Settings &settings, const SuppressionList& suppressions, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, ErrorLogger& errorLogger) {
+    // the two inputs may only be used exclusively
+    assert(!(!files.empty() && !fileSettings.empty()));
+
+    // bail out if there is a suppression of unmatchedSuppression which matches any file
+    auto suppr = suppressions.getSuppressions();
+    if (std::any_of(suppr.cbegin(), suppr.cend(), [](const SuppressionList::Suppression& s) {
+        return s.errorId == "unmatchedSuppression" && (s.fileName.empty() || s.fileName == "*") && s.lineNumber == SuppressionList::Suppression::NO_LINE;
     }))
         return false;
 
-    bool err = false;
-    if (settings.useSingleJob()) {
-        // the two inputs may only be used exclusively
-        assert(!(!files.empty() && !fileSettings.empty()));
+    SuppressionList supprlist;
 
-        for (std::list<FileWithDetails>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
-            err |= SuppressionList::reportUnmatchedSuppressions(
-                suppressions.getUnmatchedLocalSuppressions(*i, unusedFunctionCheckEnabled), errorLogger);
-        }
-
-        for (std::list<FileSettings>::const_iterator i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
-            err |= SuppressionList::reportUnmatchedSuppressions(
-                suppressions.getUnmatchedLocalSuppressions(i->file, unusedFunctionCheckEnabled), errorLogger);
-        }
+    const bool doUnusedFunctionOnly = Settings::unusedFunctionOnly();
+    // ignore all other suppressions if we use the unusedFunction hack
+    for (auto&& s : suppr)
+    {
+        // TODO: checkersReport should not be reported - see #13387
+        if (doUnusedFunctionOnly && s.errorId != "unusedFunction" && s.errorId != "checkersReport")
+            continue;
+        supprlist.addSuppression(std::move(s));
     }
-    err |= SuppressionList::reportUnmatchedSuppressions(suppressions.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
+
+    bool err = false;
+
+    for (auto i = files.cbegin(); i != files.cend(); ++i) {
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(*i), errorLogger, settings.unmatchedSuppressionFilters);
+    }
+
+    for (auto i = fileSettings.cbegin(); i != fileSettings.cend(); ++i) {
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedLocalSuppressions(i->file), errorLogger, settings.unmatchedSuppressionFilters);
+    }
+
+    if (settings.inlineSuppressions) {
+        err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedInlineSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
+    }
+
+    err |= ::reportUnmatchedSuppressions(supprlist.getUnmatchedGlobalSuppressions(), errorLogger, settings.unmatchedSuppressionFilters);
     return err;
 }
 
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(const Settings& settings) const
+int CppCheckExecutor::check_internal(const Settings& settings, Suppressions& supprs) const
 {
     StdLogger stdLogger(settings);
 
     if (settings.reportProgress >= 0)
         stdLogger.resetLatestProgressOutputTime();
 
-    if (settings.xml) {
+    if (settings.outputFormat == Settings::OutputFormat::xml) {
         stdLogger.reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName, settings.xml_version));
     }
 
     if (!settings.buildDir.empty()) {
         std::list<std::string> fileNames;
-        for (std::list<FileWithDetails>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
+        for (auto i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->path());
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, mFileSettings);
+
+        stdLogger.readActiveCheckers();
     }
 
     if (!settings.checkersReportFilename.empty())
         std::remove(settings.checkersReportFilename.c_str());
 
-    CppCheck cppcheck(stdLogger, true, executeCommand);
-    cppcheck.settings() = settings; // this is a copy
-    auto& suppressions = cppcheck.settings().supprs.nomsg;
+    CppCheck cppcheck(settings, supprs, stdLogger, true, executeCommand);
 
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, suppressions, stdLogger);
+        SingleExecutor executor(cppcheck, mFiles, mFileSettings, settings, supprs, stdLogger);
         returnValue = executor.check();
     } else {
 #if defined(HAS_THREADING_MODEL_THREAD)
         if (settings.executor == Settings::ExecutorType::Thread) {
-            ThreadExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+            ThreadExecutor executor(mFiles, mFileSettings, settings, supprs, stdLogger, CppCheckExecutor::executeCommand);
             returnValue = executor.check();
         }
 #endif
 #if defined(HAS_THREADING_MODEL_FORK)
         if (settings.executor == Settings::ExecutorType::Process) {
-            ProcessExecutor executor(mFiles, mFileSettings, settings, suppressions, stdLogger, CppCheckExecutor::executeCommand);
+            ProcessExecutor executor(mFiles, mFileSettings, settings, supprs, stdLogger, CppCheckExecutor::executeCommand);
             returnValue = executor.check();
         }
 #endif
@@ -454,18 +427,16 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     returnValue |= cppcheck.analyseWholeProgram(settings.buildDir, mFiles, mFileSettings, stdLogger.getCtuInfo());
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool err = reportSuppressions(settings, suppressions, settings.checks.isEnabled(Checks::unusedFunction), mFiles, mFileSettings, stdLogger);
+        const bool err = reportUnmatchedSuppressions(settings, supprs.nomsg, mFiles, mFileSettings, stdLogger);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }
 
-    if (!settings.checkConfiguration) {
-        cppcheck.tooManyConfigsError(emptyString,0U);
-    }
+    stdLogger.writeCheckersReport(supprs);
 
-    stdLogger.writeCheckersReport();
-
-    if (settings.xml) {
+    if (settings.outputFormat == Settings::OutputFormat::xml) {
+        if (settings.xml_version == 3)
+            stdLogger.reportMetrics();
         stdLogger.reportErr(ErrorMessage::getXMLFooter(settings.xml_version));
     }
 
@@ -477,10 +448,19 @@ int CppCheckExecutor::check_internal(const Settings& settings) const
     return EXIT_SUCCESS;
 }
 
-void StdLogger::writeCheckersReport()
+void StdLogger::writeCheckersReport(const Suppressions& supprs)
 {
+    if (!mCheckersFile.empty())
+    {
+        std::ofstream fout(mCheckersFile);
+        for (const auto& c : mActiveCheckers)
+        {
+            fout << c << std::endl;
+        }
+    }
+
     const bool summary = mSettings.safety || mSettings.severity.isEnabled(Severity::information);
-    const bool xmlReport = mSettings.xml && mSettings.xml_version == 3;
+    const bool xmlReport = mSettings.outputFormat == Settings::OutputFormat::xml && mSettings.xml_version == 3;
     const bool textReport = !mSettings.checkersReportFilename.empty();
 
     if (!summary && !xmlReport && !textReport)
@@ -488,7 +468,7 @@ void StdLogger::writeCheckersReport()
 
     CheckersReport checkersReport(mSettings, mActiveCheckers);
 
-    const auto& suppressions = mSettings.supprs.nomsg.getSuppressions();
+    const auto& suppressions = supprs.nomsg.getSuppressions();
     const bool summarySuppressed = std::any_of(suppressions.cbegin(), suppressions.cend(), [](const SuppressionList::Suppression& s) {
         return s.errorId == "checkersReport";
     });
@@ -521,6 +501,15 @@ void StdLogger::writeCheckersReport()
 
     if (xmlReport) {
         reportErr("    </errors>\n");
+        if (mSettings.safety)
+            reportErr("    <safety/>\n");
+        if (mSettings.inlineSuppressions)
+            reportErr("    <inline-suppr/>\n");
+        if (!suppressions.empty()) {
+            std::ostringstream suppressionsXml;
+            supprs.nomsg.dump(suppressionsXml);
+            reportErr(suppressionsXml.str());
+        }
         reportErr(checkersReport.getXmlReport(mCriticalErrors));
     }
 }
@@ -554,7 +543,7 @@ void StdLogger::reportErr(const std::string &errmsg)
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
-        std::cerr << ansiToOEM(errmsg, !mSettings.xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, mSettings.outputFormat != Settings::OutputFormat::xml) << std::endl;
     }
 }
 
@@ -615,18 +604,26 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::internal)
         return;
 
-    // TODO: we generate a different message here then we log below
+    ErrorMessage msgCopy = msg;
+    msgCopy.guideline = getGuideline(msgCopy.id, mSettings.reportType,
+                                     mGuidelineMapping, msgCopy.severity);
+    msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
+
     // TODO: there should be no need for verbose and default messages here
+    const std::string msgStr =
+        msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+
     // Alert only about unique errors
-    if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
+    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
         return;
 
-    if (mSettings.outputFormat == Settings::OutputFormat::sarif)
-        mSarifReport.addFinding(msg);
-    else if (mSettings.xml)
-        reportErr(msg.toXML());
-    else
-        reportErr(msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
+    if (mSettings.outputFormat == Settings::OutputFormat::sarif) {
+        mSarifReport.addFinding(std::move(msgCopy));
+    } else if (mSettings.outputFormat == Settings::OutputFormat::xml) {
+        reportErr(msgCopy.toXML());
+    } else {
+        reportErr(msgStr);
+    }
 }
 
 /**
@@ -654,9 +651,10 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
             joinedArgs += arg;
     }
 
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+    std::string cmd = exe + " " + joinedArgs + " " + redirect;
 
 #ifdef _WIN32
+    cmd = "\"" + cmd + "\"";
     FILE* p = _popen(cmd.c_str(), "r");
 #else
     FILE *p = popen(cmd.c_str(), "r");
@@ -674,6 +672,9 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
 
 #ifdef _WIN32
     const int res = _pclose(p);
+#elif defined(__APPLE__) && defined(__MACH__)
+    // the W* macros cast to int* on macOS
+    int res = pclose(p);
 #else
     const int res = pclose(p);
 #endif
@@ -683,7 +684,7 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
         //std::cout << "pclose() errno " << std::to_string(err) << std::endl;
         return res;
     }
-#if !defined(WIN32) && !defined(__MINGW32__)
+#if !defined(_WIN32) && !defined(__MINGW32__)
     if (WIFEXITED(res)) {
         return WEXITSTATUS(res);
     }

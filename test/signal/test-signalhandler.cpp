@@ -16,16 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if !defined(__APPLE__)
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE // required to have feenableexcept()
+#endif
+#endif
+
 #include "config.h"
 
 #if defined(USE_UNIX_SIGNAL_HANDLING)
 #include "signalhandler.h"
 
 #include <cassert>
-#include <cfenv>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+#if !defined(__APPLE__)
+#include <cfenv>
+#endif
 
 // static functions are omitted from trace
 
@@ -42,17 +51,19 @@
 /*static*/ void my_segv() // NOLINT(misc-use-internal-linkage)
 {
     // cppcheck-suppress nullPointer
-    ++*(int*)nullptr;
+    ++*static_cast<int*>(nullptr); // NOLINT(clang-analyzer-core.NullDereference)
 }
 
-/*static*/ void my_fpe() // NOLINT(misc-use-internal-linkage)
+#if !defined(__APPLE__) && !defined(_AIX)
+/*static*/ int my_fpe() // NOLINT(misc-use-internal-linkage)
 {
-#if !defined(__APPLE__)
-    feenableexcept(FE_ALL_EXCEPT); // TODO: check result
-#endif
-    std::feraiseexcept(FE_UNDERFLOW | FE_DIVBYZERO); // TODO: check result
-    // TODO: to generate this via code
+    if (feenableexcept(FE_ALL_EXCEPT) == -1)
+        return 2;
+    if (std::feraiseexcept(FE_ALL_EXCEPT) != 0)
+        return 3;
+    return 1 % -1;
 }
+#endif
 #endif
 
 int main(int argc, const char * const argv[])
@@ -67,10 +78,12 @@ int main(int argc, const char * const argv[])
         my_assert();
     else if (strcmp(argv[1], "abort") == 0)
         my_abort();
-    else if (strcmp(argv[1], "fpe") == 0)
-        my_fpe();
     else if (strcmp(argv[1], "segv") == 0)
         my_segv();
+#if !defined(__APPLE__) && !defined(_AIX)
+    else if (strcmp(argv[1], "fpe") == 0)
+        return my_fpe();
+#endif
 
     return 0;
 #else

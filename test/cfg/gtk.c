@@ -7,9 +7,9 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
-#include <stdlib.h>
-#include <gtk/gtk.h>
+#include <stdio.h>
 #include <glib.h>
+#include <glib/gtypes.h>
 #include <glib/gi18n.h>
 
 
@@ -36,6 +36,7 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
         // cppcheck-suppress checkLibraryNoReturn
         g_assert_not_reached();
     }
+    // cppcheck-suppress constVariablePointer
     gpointer p = GINT_TO_POINTER(1);
     int i = GPOINTER_TO_INT(p);
     // cppcheck-suppress knownConditionTrueFalse
@@ -292,7 +293,6 @@ void g_new_if_test()
     };
 
     const struct a * pNew3;
-    // cppcheck-suppress valueFlowBailoutIncompleteVar
     if (pNew3 = g_new(struct a, 6)) {
         printf("%p", pNew3);
     }
@@ -305,7 +305,6 @@ void g_new0_test()
         int b;
     };
     // valid
-    // cppcheck-suppress valueFlowBailoutIncompleteVar
     struct a * pNew1 = g_new0(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
@@ -324,7 +323,6 @@ void g_try_new_test()
         int b;
     };
     // valid
-    // cppcheck-suppress valueFlowBailoutIncompleteVar
     struct a * pNew1 = g_try_new(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
@@ -342,7 +340,6 @@ void g_try_new0_test()
         int b;
     };
     // valid
-    // cppcheck-suppress valueFlowBailoutIncompleteVar
     struct a * pNew1 = g_try_new0(struct a, 5);
     printf("%p", pNew1);
     g_free(pNew1);
@@ -360,7 +357,7 @@ void g_renew_test()
     struct a {
         int b;
     };
-    // cppcheck-suppress [leakReturnValNotUsed,valueFlowBailoutIncompleteVar]
+    // cppcheck-suppress leakReturnValNotUsed
     g_renew(struct a, NULL, 1);
 
     struct a * pNew = g_new(struct a, 1);
@@ -375,7 +372,7 @@ void g_try_renew_test()
     struct a {
         int b;
     };
-    // cppcheck-suppress [leakReturnValNotUsed,valueFlowBailoutIncompleteVar]
+    // cppcheck-suppress leakReturnValNotUsed
     g_try_renew(struct a, NULL, 1);
 
     struct a * pNew = g_try_new(struct a, 1);
@@ -456,4 +453,123 @@ gchar* g_strchug_string_free_test(GString* t) // #12301
 {
     gchar* p = g_strchug(g_string_free(t, FALSE));
     return p;
+}
+
+void g_variant_test() {
+    // valid
+    GVariant *pGvariant = g_variant_new("i", 1);
+    printf("%p\n", pGvariant);
+    g_variant_unref(pGvariant);
+
+    // cppcheck-suppress leakReturnValNotUsed
+    g_variant_new("i", 1);
+
+    const GVariant *pGvariant1 = g_variant_new("i", 1);
+    printf("%p\n", pGvariant1);
+
+    GVariant *pGvariant2 = g_variant_parse(
+        NULL, "{'Test': <{'Test1': <uint32 1>}>}", NULL, NULL, NULL);
+    printf("%p\n", pGvariant2);
+    g_variant_unref(pGvariant2);
+
+    GVariantBuilder builder;
+    g_variant_builder_init(&builder, G_VARIANT_TYPE_VARDICT);
+    g_variant_builder_add(&builder, "{sv}", "String",
+                          g_variant_new_string("String"));
+    g_variant_builder_add(&builder, "{sv}", "Byte", g_variant_new_byte(8));
+    g_variant_builder_add(&builder, "{sv}", "Int16", g_variant_new_int16(-16));
+    g_variant_builder_add(&builder, "{sv}", "Int32", g_variant_new_int32(-32));
+    g_variant_builder_add(&builder, "{sv}", "Int64", g_variant_new_int64(-64));
+    g_variant_builder_add(&builder, "{sv}", "Double", g_variant_new_double(1.0));
+    g_variant_builder_add(&builder, "{sv}", "UInt16", g_variant_new_uint16(16));
+    g_variant_builder_add(&builder, "{sv}", "UInt32", g_variant_new_uint32(32));
+    g_variant_builder_add(&builder, "{sv}", "UInt64", g_variant_new_uint64(64));
+    g_variant_builder_add(&builder, "{sv}", "Boolean",
+                            g_variant_new_boolean(TRUE));
+    g_variant_builder_add(&builder, "{sv}", "TakenString",
+                            g_variant_new_take_string(g_strdup("Owned string")));
+    g_variant_builder_add(&builder, "{sv}", "PrintfString",
+                            g_variant_new_printf("Formatted %d", 1));
+    g_variant_builder_add_value(
+        &builder, g_variant_new("{sv}", "String",
+                                g_variant_new_string("Owned string 2")));
+    g_variant_builder_add_parsed(&builder, "{'String', <'Owned string 3'>}");
+    GVariant *variant_dict = g_variant_builder_end(&builder);
+    printf("%p\n", variant_dict);
+    g_variant_unref(variant_dict);
+
+    GVariantBuilder builder_complex;
+    g_variant_builder_init(&builder_complex, G_VARIANT_TYPE("(sa(sa(sis)))"));
+    g_variant_builder_add(&builder_complex, "s", "OuterTest");
+    g_variant_builder_open(&builder_complex, G_VARIANT_TYPE("a(sa(sis))"));
+    g_variant_builder_open(&builder_complex, G_VARIANT_TYPE("(sa(sis))"));
+    g_variant_builder_add(&builder_complex, "s", "MiddelTest");
+    g_variant_builder_open(&builder_complex, G_VARIANT_TYPE("a(sis)"));
+    g_variant_builder_add(&builder_complex, "(sis)", "InnerTest", 1, "Value");
+    g_variant_builder_close(&builder_complex); // "a(sis)"
+    g_variant_builder_close(&builder_complex); // "(sa(sis))"
+    g_variant_builder_close(&builder_complex); // "a(sa(sis))"
+    GVariant *variant_complex =
+        g_variant_builder_end(&builder_complex); // "(sa(sa(sis)))"
+    printf("%p\n", variant_complex);
+    g_variant_unref(variant_complex);
+
+    // leak from pGvariant1
+    // cppcheck-suppress memleak
+}
+
+void g_queue_test() {
+    // cppcheck-suppress leakReturnValNotUsed
+    g_queue_new();
+
+    GQueue *queue = g_queue_new();
+    g_queue_push_head(queue, "test");
+    g_queue_push_tail(queue, "test");
+    // cppcheck-suppress ignoredReturnValue
+    g_queue_get_length(queue);
+    // cppcheck-suppress ignoredReturnValue
+    g_queue_is_empty(queue);
+    // cppcheck-suppress ignoredReturnValue
+    g_queue_peek_head(queue);
+    // cppcheck-suppress ignoredReturnValue
+    g_queue_peek_tail(queue);
+    // cppcheck-suppress ignoredReturnValue
+    g_queue_pop_head(queue);
+    // cppcheck-suppress ignoredReturnValue
+    g_queue_pop_tail(queue);
+
+    GQueue *copy_queue = g_queue_copy(queue);
+    g_queue_free(queue);
+    printf("%p\n", copy_queue);
+    g_queue_free(copy_queue);
+
+    GQueue *queue2 = g_queue_new();
+    g_queue_push_head(queue2, g_strdup("test"));
+    g_queue_push_tail(queue2, g_strdup("test"));
+    printf("%p\n", queue2);
+    g_queue_free_full(queue2, g_free);
+
+    const GQueue *queue3 = g_queue_new();
+    printf("%p\n", queue3);
+    // cppcheck-suppress memleak
+}
+
+void g_tree_test() {
+    // cppcheck-suppress leakReturnValNotUsed
+    g_tree_new((GCompareFunc)g_strcmp0);
+
+    GTree *tree = g_tree_new((GCompareFunc)g_strcmp0);
+    g_tree_insert(tree, "banana", "yellow");
+    g_tree_insert(tree, "apple", "red");
+    g_tree_insert(tree, "grape", "purple");
+    // cppcheck-suppress ignoredReturnValue
+    g_tree_nnodes(tree);
+    g_tree_remove(tree, "test");
+    // cppcheck-suppress ignoredReturnValue
+    g_tree_lookup(tree, "banana");
+    g_tree_destroy(tree);
+
+    const GTree *tree2 = g_tree_new((GCompareFunc)g_strcmp0);
+    printf("%p\n", tree2);
+    // cppcheck-suppress memleak
 }

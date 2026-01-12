@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,9 +65,24 @@ namespace CTU {
             nonneg int column{};
         };
 
+        struct Value {
+            Value& operator=(const ValueFlow::Value& val) & {
+                value = val.intvalue;
+                unknownFunctionReturn = val.unknownFunctionReturn;
+                return *this;
+            }
+            MathLib::bigint value{};
+            ValueFlow::Value::UnknownFunctionReturn unknownFunctionReturn{};
+        };
+
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, MathLib::bigint value) : myId(std::move(myId)), myArgNr(myArgNr), myArgumentName(std::move(myArgumentName)), location(std::move(location)), value(value) {}
+            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, MathLib::bigint value)
+                : myId(std::move(myId))
+                , myArgNr(myArgNr)
+                , myArgumentName(std::move(myArgumentName))
+                , location(std::move(location))
+                , value(value) {}
             std::string myId;
             nonneg int myArgNr{};
             std::string myArgumentName;
@@ -97,7 +112,7 @@ namespace CTU {
         class FunctionCall : public CallBase {
         public:
             std::string callArgumentExpression;
-            MathLib::bigint callArgValue;
+            Value callArgValue;
             ValueFlow::Value::ValueType callValueType;
             std::vector<ErrorMessage::FileLocation> callValuePath;
             bool warning;
@@ -136,7 +151,8 @@ namespace CTU {
                                                                   const char info[],
                                                                   const FunctionCall ** functionCallPtr,
                                                                   bool warning,
-                                                                  int maxCtuDepth);
+                                                                  int maxCtuDepth,
+                                                                  ValueFlow::Value::UnknownFunctionReturn *unknownFunctionReturn = nullptr);
     };
 
     CPPCHECKLIB std::string toString(const std::list<FileInfo::UnsafeUsage> &unsafeUsage);
@@ -146,7 +162,7 @@ namespace CTU {
     /** @brief Parse current TU and extract file info */
     CPPCHECKLIB RET_NONNULL FileInfo *getFileInfo(const Tokenizer &tokenizer);
 
-    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value));
+    CPPCHECKLIB std::list<FileInfo::UnsafeUsage> getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, FileInfo::Value *value));
 
     CPPCHECKLIB std::list<FileInfo::UnsafeUsage> loadUnsafeUsageListFromXml(const tinyxml2::XMLElement *xmlElement);
 }

@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ -n "$1" ]; then
   testrunner_bin=$1
 else
-  make -s -C "$SCRIPT_DIR/../.." -j"$(nproc)" testrunner # CXXFLAGS="-g -O2 -w -DHAVE_BOOST"
+  make -s -C "$SCRIPT_DIR/../.." -j"$(nproc)" testrunner # CXXOPTS="-g -O2 -w" CPPOPTS="-DHAVE_BOOST"
   testrunner_bin=$SCRIPT_DIR/../../testrunner
 fi
 

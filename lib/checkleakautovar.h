@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "library.h"
-#include "tokenize.h"
 
 #include <cstdint>
 #include <map>
@@ -36,7 +35,7 @@
 class ErrorLogger;
 class Settings;
 class Token;
-
+class Tokenizer;
 
 class CPPCHECKLIB VarInfo {
 public:
@@ -86,7 +85,7 @@ public:
     void reallocToAlloc(nonneg int varid) {
         const AllocInfo& alloc = alloctype[varid];
         if (alloc.reallocedFromType >= 0) {
-            const std::map<int, VarInfo::AllocInfo>::iterator it = alloctype.find(alloc.reallocedFromType);
+            const auto it = alloctype.find(alloc.reallocedFromType);
             if (it != alloctype.end() && it->second.status == REALLOC) {
                 it->second.status = ALLOC;
             }
@@ -115,15 +114,14 @@ private:
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckLeakAutoVar checkLeakAutoVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkLeakAutoVar.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** check for leaks in all scopes */
     void check();
 
-    /** check for leaks in a function scope */
+    /** check for leaks in a function scope
+     * @throws InternalError thrown if recursion count is exceeded
+     */
     bool checkScope(const Token * startToken,
                     VarInfo &varInfo,
                     std::set<int> notzero,
@@ -160,12 +158,7 @@ private:
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::pair<const Token*, VarInfo::Usage>& functionUsage);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckLeakAutoVar c(nullptr, settings, errorLogger);
-        c.deallocReturnError(nullptr, nullptr, "p");
-        c.configurationInfo(nullptr, { nullptr, VarInfo::USED });  // user configuration is needed to complete analysis
-        c.doubleFreeError(nullptr, nullptr, "varname", 0);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Leaks (auto variables)";

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <cassert>
 #include <algorithm>
@@ -349,7 +350,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
         std::vector<const ValueFlow::Value*> refs;
         std::vector<bool> r = Interval::compare(op, lhs, rhs, &refs);
         if (!r.empty()) {
-            ValueFlow::Value value(r.front());
+            ValueFlow::Value value(static_cast<int>(r.front()));
             addToErrorPath(value, refs);
             setValueKind(value, refs);
             result.push_back(std::move(value));

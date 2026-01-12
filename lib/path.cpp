@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
-#undef __STRICT_ANSI__
-#endif
-
 //#define LOG_EMACS_MARKER
+
+#if defined(__CYGWIN__)
+#define _POSIX_C_SOURCE 200112L // required to have readlink()
+#define _BSD_SOURCE // required to have realpath()
+#endif
 
 #include "path.h"
 #include "utils.h"
@@ -38,6 +39,7 @@
 #include <simplecpp.h>
 
 #ifndef _WIN32
+#include <stdexcept>
 #include <sys/types.h>
 #include <unistd.h>
 #else
@@ -173,16 +175,17 @@ std::string Path::getCurrentExecutablePath(const char* fallback)
 
 bool Path::isAbsolute(const std::string& path)
 {
-    const std::string& nativePath = toNativeSeparators(path);
-
 #ifdef _WIN32
     if (path.length() < 2)
         return false;
 
+    if ((path[0] == '\\' || path[0] == '/') && (path[1] == '\\' || path[1] == '/'))
+        return true;
+
     // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
-    return startsWith(nativePath, "\\\\") || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0);
+    return std::isalpha(path[0]) && path[1] == ':' && (path[2] == '\\' || path[2] == '/');
 #else
-    return !nativePath.empty() && nativePath[0] == '/';
+    return !path.empty() && path[0] == '/';
 #endif
 }
 
@@ -215,10 +218,13 @@ static const std::unordered_set<std::string> header_exts = {
     ".h", ".hpp", ".h++", ".hxx", ".hh"
 };
 
-bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra)
+bool Path::acceptFile(const std::string &path, const std::set<std::string> &extra, Standards::Language* lang)
 {
     bool header = false;
-    return (identify(path, false, &header) != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
+    Standards::Language l = identify(path, false, &header);
+    if (lang)
+        *lang = l;
+    return (l != Standards::Language::None && !header) || extra.find(getFilenameExtension(path)) != extra.end();
 }
 
 static bool hasEmacsCppMarker(const char* path)
@@ -236,8 +242,15 @@ static bool hasEmacsCppMarker(const char* path)
         return false;
     std::string buf(128, '\0');
     {
+#if __cplusplus >= 201703L
+        // C++17 provides an overload with non-const data()
+        #define CONST_CAST(x) (x)
+#else
+        #define CONST_CAST(x) const_cast<char*>(x)
+#endif
         // TODO: read the whole first line only
-        const char * const res = fgets(const_cast<char*>(buf.data()), buf.size(), fp);
+        const char * const res = fgets(CONST_CAST(buf.data()), buf.size(), fp);
+#undef CONST_CAST
         fclose(fp);
         fp = nullptr;
         if (!res)
@@ -312,7 +325,6 @@ static bool hasEmacsCppMarker(const char* path)
 
 Standards::Language Path::identify(const std::string &path, bool cppHeaderProbe, bool *header)
 {
-    // cppcheck-suppress uninitvar - TODO: FP
     if (header)
         *header = false;
 
@@ -330,7 +342,6 @@ Standards::Language Path::identify(const std::string &path, bool cppHeaderProbe,
         return Standards::Language::CPP;
     if (c_src_exts.find(ext) != c_src_exts.end())
         return Standards::Language::C;
-    // cppcheck-suppress knownConditionTrueFalse - TODO: FP
     if (!caseInsensitiveFilesystem())
         strTolower(ext);
     if (ext == ".h") {
@@ -422,15 +433,27 @@ bool Path::isDirectory(const std::string &path)
     return file_type(path) == S_IFDIR;
 }
 
-bool Path::exists(const std::string &path)
+bool Path::exists(const std::string &path, bool* isdir)
 {
     const auto type = file_type(path);
-    return type == S_IFREG || type == S_IFDIR;
+    if (type == S_IFDIR)
+    {
+        if (isdir)
+            *isdir = true;
+        return true;
+    }
+    if (isdir)
+        *isdir = false;
+    return type == S_IFREG;
 }
 
-std::string Path::join(const std::string& path1, const std::string& path2) {
+std::string Path::join(std::string path1, std::string path2)
+{
+    path1 = fromNativeSeparators(std::move(path1));
+    path2 = fromNativeSeparators(std::move(path2));
     if (path1.empty() || path2.empty())
         return path1 + path2;
+    // this matches the behavior of std::filesystem::path::operator/=() and os.path.join()
     if (path2.front() == '/')
         return path2;
     return ((path1.back() == '/') ? path1 : (path1 + "/")) + path2;

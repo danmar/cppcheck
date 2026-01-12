@@ -2,6 +2,8 @@
 // ~/cppcheck/cppcheck --dump misra/misra-test.h --std=c89
 // ~/cppcheck/cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
 
+#pragma ghs section rodata=default // no warning
+
 #include "path\file.h" // 20.2
 #include "file//.h" // 20.2
 #include "file/*.h" // 20.2
@@ -35,8 +37,8 @@
 
 #include <setjmp.h> // 21.4
 #include <signal.h> // 21.5
-#include <stdio.h> //21.6
-#include <wchar.h> //21.6
+#include <stdio.h>
+#include <wchar.h>
 #include <time.h> // 21.10
 #include <tgmath.h> // 21.11
 #include <fenv.h>
@@ -68,7 +70,7 @@ static _Atomic int misra_1_4_var; // 1.4
 static _Noreturn void misra_1_4_func(void) // 1.4
 {
     if (0 != _Generic(misra_1_4_var)) {} // 1.4 17.3
-    printf_s("hello"); // 1.4
+    printf_s("hello"); // 1.4 17.3
 }
 
 #define MISRA_2_2 (1*60)
@@ -119,22 +121,6 @@ static void misra_2_7_b(int a, int b, int c, // 2.7
 static void misra_2_7_c(int a, ...) { (void)a; }
 static void misra_2_7_d(int) { } // 2.7 8.2
 
-static void misra_3_2(int enable)
-{
-    // This won't generate a violation because of subsequent blank line \
-
-    int y = 0;
-    int x = 0;  // 3.2 non-compliant comment ends with backslash \
-    if (enable != 0)
-    {
-        ++x;    // This is always executed
-        // 3.2 potentially non-compliant comment ends with trigraph resolved to backslash ??/
-        ++y;    // This is hidden if trigraph replacement is active
-    }
-
-    (void)printf("x=%i, y=%i\n", x, y);
-}
-
 extern int misra_5_1_extern_var_hides_var_x;
 extern int misra_5_1_extern_var_hides_var_y; //5.1
 int misra_5_1_var_hides_var________a; // 8.4
@@ -152,7 +138,7 @@ static void misra_5_2_function_hides_var_31y(void) {}//5.2
 static void foo(void)
 {
   int i;
-  switch(misra_5_2_func1()) //16.4 16.6
+  switch(misra_5_2_func1()) //16.4 16.6 17.3
   {
     case 1:
     {
@@ -207,9 +193,9 @@ int c41_15         = 'a'; // 10.3 8.4
 
 static void misra_4_1(void)
 {
-    (void)printf("\x41g"); // 4.1
-    (void)printf("\x41\x42");
-    (void)printf("\x41" "g");
+    (void)printf("\x41g"); // 4.1 21.6
+    (void)printf("\x41\x42"); //21.6
+    (void)printf("\x41" "g"); //21.6
 }
 
 const char *s42_1 = "String containing trigraphs ??-??-??";   // 4.2 8.4
@@ -218,8 +204,8 @@ const char *s42_3 = "No trigraph?(?'?)"; // 8.4
 
 static void misra_4_2(void)
 {
-    (void)printf("??=Trigraph\n");   // 4.2
-    (void)printf("No?/Trigraph\n");
+    (void)printf("??=Trigraph\n");   // 4.2 21.6
+    (void)printf("No?/Trigraph\n"); //21.6
 }
 
 #define misra_5_4_macro_hides_macro__31x 1
@@ -246,7 +232,7 @@ int x;
 };
 static void misra_5_5_func1(void)
 {
-  switch(misra_5_5_func2()) //16.4 16.6
+  switch(misra_5_5_func2()) //16.4 16.6 17.3
   {
     case 1:
     {
@@ -300,6 +286,20 @@ struct misra_7_3_s
 {
   uint32_t ul_clka;
   uint32_t test123l;
+  float t = 6.02E23l; // 7.3
+  float t1 = 6.02E23L;
+  float u = 0xa1B2.p12l; // 7.3
+  float u1 = 0xa1B2.p12L;
+  float v = 0xa1B2.P12l; // 7.3
+  float v1 = 0xa1B2.P12L;
+  float w = 6.02e23l; // 7.3
+  float w1 = 6.02e23L;
+  unsigned long  x = 0xabcul; // 7.3
+  unsigned long x1 = 0xabcuL;
+  unsigned long y = 0xABCUl; // 7.3
+  unsigned long y1 = 0xABCUL;
+  unsigned long z = 0XdeadBeEfUl; // 7.3
+  unsigned long z1 = 0XdeadBeEfUL;
 };
 
 static void misra_7_3(void) {
@@ -678,21 +678,21 @@ static void misra_10_1_ternary(void)
     int16_t i16;
 
     a = ui16 << ui16; // 10.6
-    a = ui16 << (get_bool(42) ? ui16 : ui16);
-    a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16));
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16);
-    a = ui16 << (get_bool(42) ? i16 : (get_bool(34) ? ui16 : ui16)); // 10.1 10.4
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : i16) : ui16); // 10.1 10.4
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : i16); // 10.1 10.4
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8); // 10.4
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8); // 10.1 10.4
-    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << ui16; // 10.4
-    a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << ui16; // 10.1 10.4
-    a = (get_bool(42) ? (get_bool(34) ? ui16 : i8) : ui8) << ui16; // 10.1 10.4
-    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : i8) << ui16; // 10.1
-    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.4
-    a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.1 10.4
-    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? i16 : ui8); // 10.1 10.4
+    a = ui16 << (get_bool(42) ? ui16 : ui16); // 17.3
+    a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16)); // 17.3
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16); // 17.3
+    a = ui16 << (get_bool(42) ? i16 : (get_bool(34) ? ui16 : ui16)); // 10.1 10.4 17.3
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : i16) : ui16); // 10.1 10.4 17.3
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : i16); // 10.1 10.4 17.3
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8); // 10.4 17.3
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8); // 10.1 10.4 17.3
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << ui16; // 10.4 17.3
+    a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << ui16; // 10.1 10.4 17.3
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : i8) : ui8) << ui16; // 10.1 10.4 17.3
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : i8) << ui16; // 10.1 17.3
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.4 17.3
+    a = (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8) << (get_bool(19) ? ui16 : ui8); // 10.1 10.4 17.3
+    a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << (get_bool(19) ? i16 : ui8); // 10.1 10.4 17.3
 }
 
 static void misra_10_2(void) {
@@ -797,7 +797,7 @@ static void misra_10_7(uint16_t u16a, uint16_t u16b) {
     res = u32a * (u16a + u16b); // 10.7
     u32a *= u16a + u16b; // 10.7
     u32a = ((uint32_t)4 * (uint32_t)2 * (uint32_t)4 ); // no-warning (#10488)
-    dostuff(&t, (2*60*1000)); // no-warning
+    dostuff(&t, (2*60*1000)); // 17.3 no-warning
 }
 
 static void misra_10_8(u8 x, s32 a, s32 b) {
@@ -963,9 +963,9 @@ void misra_12_3(int a, int b, int c) {
   int a41 = MISRA_12_3_FN3_2(a34, a35), a42; // 12.3
   int a43, a44 = MISRA_12_3_FN3_2(a34, a35); // 12.3
 
-  MISRA_12_3_FN3_2_MSG(fprintf(stderr, "test\n")); // 12.3
-
-  f((1,2),3); // TODO
+  MISRA_12_3_FN3_2_MSG(fprintf(stderr, "test\n")); // 12.3 21.6
+  // TODO
+  f((1,2),3);  // 17.3
 
   // third clause: 2 persistent side effects instead of 1 (14.2)
   for (i=0; i<10; i++, j++){} // 12.3 14.2
@@ -979,8 +979,8 @@ void misra_12_3(int a, int b, int c) {
   misra_12_3_fn4(misra_12_3_fn7(&a1, 32), &a1);
   misra_12_3_fn6(misra_12_3_fn5(&a1, 32), &a1);
   misra_12_3_fn6(misra_12_3_fn7(&a1, 32), &a1);
-  misra_12_3_fn7(maxlen, fn(va, unsigned long), false);
-  misra_12_3_fn8(maxlen, (unsigned long)((uintptr_t)fn(va, void*)), false);
+  misra_12_3_fn7(maxlen, fn(va, unsigned long), false); // 17.3 
+  misra_12_3_fn8(maxlen, (unsigned long)((uintptr_t)fn(va, void*)), false); // 17.3
 
   const struct fun_t
   {
@@ -1266,7 +1266,7 @@ static void misra_14_2_init_value_1(int32_t *var);
 
 static void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
-  for (;i<10;dostuff()) {} // 14.2
+  for (;i<10;dostuff()) {} // 14.2 17.3
   int32_t g = 0;
   int g_arr[42];
   g += 2; // no-warning
@@ -1284,7 +1284,7 @@ static void misra_14_2_fn1(bool b) {
   int i2;
   for (misra_14_2_init_value(&i1); i1 < 10; ++i1) {} // no-warning
   for (misra_14_2_init_value_1(&i2); i2 < 10; ++i2) {} // no-warning
-  for (misra_14_2_init_value_2(&i2); i2 < 10; ++i2) {} // no-warning
+  for (misra_14_2_init_value_2(&i2); i2 < 10; ++i2) {} // 17.3 no-warning
 
   bool abort = false;
   for (i = 0; (i < 10) && !abort; ++i) { // 14.2 as 'i' is not a variable
@@ -1774,7 +1774,7 @@ static void misra_17_1(void) {
   va_arg(); // 17.1
   va_start(); // 17.1
   va_end(); // 17.1
-  va_copy(); // 17.1
+  va_copy(); // 17.1 17.3
 }
 
 static void misra_17_2_ok_1(void) { ; }
@@ -1805,8 +1805,15 @@ static void misra_17_2_5(void) {
 }
 
 bool (*dostuff)(); //8.2 8.4
+struct s173{
+  int a;
+  int b;
+}
 static void misra_17_3(void) {
-  if (dostuff()) {}
+  if (dostuff()) {} // no-warning
+  bool a = dostuff(); // no-warning
+  dostuff2(); // 17.3
+  s173 ( *misra_8_2_p_a ) (void); // no-warning
 }
 
 static void misra_config(const char* str) {
@@ -1952,7 +1959,7 @@ static int misra_21_1(void) {
     int _a = 42; // no warning: only directives affected
     errno = EINVAL; // no warning
     _a ++; // no warning
-    _exit(1); // no warning
+    _exit(1); // 17.3 no warning
     return _a; // no warning
 }
 static int _misra_21_1_2(void); // no warning

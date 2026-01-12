@@ -1,10 +1,12 @@
 macro(use_cxx11)
-  # some GitHub Action Windows runners randomly fail with a complaint that Qt6 requires a C++17 compiler
-  if(MSVC AND USE_QT6)
-    # CMAKE_CXX_STANDARD 17 was added in CMake 3.8
-    set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ standard to use")
-  elseif(USE_BOOST AND USE_BOOST_INT128)
+  if(CMAKE_CXX_STANDARD EQUAL 98)
+    message(FATAL_ERROR "C++ standard was set to ${CMAKE_CXX_STANDARD} but 11 is required as minimum")
+  endif()
+  if(USE_BOOST AND USE_BOOST_INT128)
     # Boost.Math requires C++14
+    if(CMAKE_CXX_STANDARD LESS 14)
+      message(FATAL_ERROR "C++ standard was set to ${CMAKE_CXX_STANDARD} but 14 is required as minimum")
+    endif()
     set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ standard to use")
   else()
     set(CMAKE_CXX_STANDARD 11 CACHE STRING "C++ standard to use")

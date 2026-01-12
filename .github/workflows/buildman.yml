@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   convert_via_pandoc:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,15 +26,15 @@ jobs:
       - run: |
           mkdir output
 
-      - uses: docker://pandoc/latex:2.9
+      - uses: docker://pandoc/latex:3.6.3
         with:
           args: --output=output/manual.html man/manual.md
 
-      - uses: docker://pandoc/latex:2.9
+      - uses: docker://pandoc/latex:3.6.3
         with:
           args: --output=output/manual.pdf man/manual.md
 
-      - uses: docker://pandoc/latex:2.9
+      - uses: docker://pandoc/latex:3.6.3
         with:
           args: --output=output/manual-premium.pdf man/manual-premium.md
 

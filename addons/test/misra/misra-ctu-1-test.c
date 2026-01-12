@@ -7,6 +7,9 @@ extern MISRA_2_3_A  misra_2_3_a;
 
 x = MISRA_2_5_OK_1;
 
+// cppcheck-suppress misra-c2012-20.5
+#undef MISRA_2_5_OK_3
+
 // cppcheck-suppress misra-c2012-2.3
 // cppcheck-suppress misra-c2012-5.6
 typedef int MISRA_5_6_VIOLATION;

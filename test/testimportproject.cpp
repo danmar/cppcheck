@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "importproject.h"
-#include "settings.h"
 #include "filesettings.h"
 #include "fixture.h"
+#include "importproject.h"
 #include "redirect.h"
+#include "settings.h"
+#include "standards.h"
+#include "suppressions.h"
+#include "xml.h"
 
 #include <list>
 #include <map>
@@ -33,10 +36,8 @@ class TestImporter : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
-
-    bool sourceFileExists(const std::string & /*file*/) override {
-        return true;
-    }
+    using ImportProject::importVcxproj;
+    using ImportProject::SharedItemsProject;
 };
 
 
@@ -63,14 +64,21 @@ private:
         TEST_CASE(importCompileCommands10); // #10887: include path with space
         TEST_CASE(importCompileCommands11); // include path order
         TEST_CASE(importCompileCommands12); // #13040: "directory" is parent directory, relative include paths
+        TEST_CASE(importCompileCommands13); // #13333: duplicate file entries
+        TEST_CASE(importCompileCommands14); // #14156
+        TEST_CASE(importCompileCommands15); // #14306
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
+        TEST_CASE(importCompileCommandsDirectoryMissing); // 'directory' field missing
+        TEST_CASE(importCompileCommandsDirectoryInvalid); // 'directory' field not a string
         TEST_CASE(importCppcheckGuiProject);
+        TEST_CASE(importCppcheckGuiProjectPremiumMisra);
         TEST_CASE(ignorePaths);
+        TEST_CASE(testVcxprojUnicode);
     }
 
     void setDefines() const {
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
 
         ImportProject::fsSetDefines(fs, "A");
         ASSERT_EQUALS("A=1", fs.defines);
@@ -86,7 +94,7 @@ private:
     }
 
     void setIncludePaths1() const {
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "../include");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         ImportProject::fsSetIncludePaths(fs, "abc/def/", in, variables);
@@ -95,7 +103,7 @@ private:
     }
 
     void setIncludePaths2() const {
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "$(SolutionDir)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -105,7 +113,7 @@ private:
     }
 
     void setIncludePaths3() const { // macro names are case insensitive
-        FileSettings fs{"test.cpp"};
+        FileSettings fs{"test.cpp", Standards::Language::CPP, 0};
         std::list<std::string> in(1, "$(SOLUTIONDIR)other");
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         variables["SolutionDir"] = "c:/abc/";
@@ -337,6 +345,71 @@ private:
         ASSERT_EQUALS("/x/", fs.includePaths.front());
     }
 
+    void importCompileCommands13() const { // #13333
+        REDIRECT;
+        constexpr char json[] =
+            R"([{
+               "file": "/x/src/1.c" ,
+               "directory": "/x",
+               "command": "cc -c -I. src/1.c"
+            },{
+               "file": "/x/src/1.c" ,
+               "directory": "/x",
+               "command": "cc -c -I. src/1.c"
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(2, importer.fileSettings.size());
+        const FileSettings &fs1 = importer.fileSettings.front();
+        const FileSettings &fs2 = importer.fileSettings.back();
+        ASSERT_EQUALS(0, fs1.fileIndex);
+        ASSERT_EQUALS(1, fs2.fileIndex);
+    }
+
+    void importCompileCommands14() const { // #14156
+        REDIRECT;
+        constexpr char json[] =
+            R"([{
+                "arguments": [
+                  "/usr/bin/g++",
+                  "-DTFS_LINUX_MODULE_NAME=\"tfs_linux\"",
+                  "-g",
+                  "-c",
+                  "cli/main.cpp"
+                ],
+                "directory": "/home/daniel/cppcheck",
+                "file": "/home/daniel/cppcheck/cli/main.cpp",
+                "output": "/home/daniel/cppcheck/cli/main.o"
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS("TFS_LINUX_MODULE_NAME=\"tfs_linux\"", fs.defines);
+    }
+
+    void importCompileCommands15() const { // #14306
+        REDIRECT;
+        constexpr char json[] =
+            R"([
+                 {
+                   "directory": "C:\\Users\\abcd\\efg\\hijk",
+                   "command": "gcc \"-Ipath\\123\" \"-c\" test.c",
+                   "file": "test.c",
+                   "output": "test.obj"
+                 }
+               ])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS(1, fs.includePaths.size());
+        ASSERT_EQUALS("C:/Users/abcd/efg/hijk/path/123/", fs.includePaths.front());
+    }
+
     void importCompileCommandsArgumentsSection() const {
         REDIRECT;
         constexpr char json[] = "[ { \"directory\": \"/tmp/\","
@@ -357,7 +430,31 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
-        ASSERT_EQUALS("cppcheck: error: no 'arguments' or 'command' field found in compilation database entry\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(1, importer.errors.size());
+        ASSERT_EQUALS("no 'arguments' or 'command' field found in compilation database entry", importer.errors[0]);
+    }
+
+    void importCompileCommandsDirectoryMissing() const {
+        REDIRECT;
+        constexpr char json[] = "[ { \"file\": \"src.mm\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(false, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS(1, importer.errors.size());
+        ASSERT_EQUALS("'directory' field in compilation database entry missing", importer.errors[0]);
+    }
+
+    void importCompileCommandsDirectoryInvalid() const {
+        REDIRECT;
+        constexpr char json[] = "[ { \"directory\": 123,"
+                                "\"file\": \"src.mm\" } ]";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(false, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(0, importer.fileSettings.size());
+        ASSERT_EQUALS(1, importer.errors.size());
+        ASSERT_EQUALS("'directory' field in compilation database entry is not a string", importer.errors[0]);
     }
 
     void importCppcheckGuiProject() const {
@@ -381,8 +478,9 @@ private:
                                "</project>\n";
         std::istringstream istr(xml);
         Settings s;
+        Suppressions supprs;
         TestImporter project;
-        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, &s));
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
         ASSERT_EQUALS(1, project.guiProject.pathNames.size());
         ASSERT_EQUALS("cli/", project.guiProject.pathNames[0]);
         ASSERT_EQUALS(1, s.includePaths.size());
@@ -390,14 +488,35 @@ private:
         ASSERT_EQUALS(true, s.inlineSuppressions);
     }
 
+    void importCppcheckGuiProjectPremiumMisra() const {
+        REDIRECT;
+        constexpr char xml[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                               "<project>\n"
+                               "    <paths>\n"
+                               "        <dir name=\"m1.c\"/>\n"
+                               "    </paths>\n"
+                               "    <addons>\n"
+                               "        <addon>misra</addon>\n"  // <- Premium: add premium argument misra-c-2012
+                               "    </addons>\n"
+                               "</project>";
+        std::istringstream istr(xml);
+        Settings s;
+        s.premium = true;
+        Suppressions supprs;
+        TestImporter project;
+        ASSERT_EQUALS(true, project.importCppcheckGuiProject(istr, s, supprs));
+        ASSERT_EQUALS("--misra-c-2012", s.premiumArgs);
+        ASSERT(s.addons.empty());
+    }
+
     void ignorePaths() const {
-        FileSettings fs1{"foo/bar"};
-        FileSettings fs2{"qwe/rty"};
+        FileSettings fs1{"foo/bar", Standards::Language::CPP, 0};
+        FileSettings fs2{"qwe/rty", Standards::Language::CPP, 0};
         TestImporter project;
         project.fileSettings = {std::move(fs1), std::move(fs2)};
 
         project.ignorePaths({"*foo", "bar*"});
-        ASSERT_EQUALS(2, project.fileSettings.size());
+        ASSERT_EQUALS(1, project.fileSettings.size());
 
         project.ignorePaths({"foo/*"});
         ASSERT_EQUALS(1, project.fileSettings.size());
@@ -405,6 +524,59 @@ private:
 
         project.ignorePaths({ "*e/r*" });
         ASSERT_EQUALS(0, project.fileSettings.size());
+    }
+
+    void testVcxprojUnicode() const
+    {
+        const char vcxproj[] = R"-(
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <!-- Only to test that the last configuration entry overwrites this -->
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+</Project>
+)-";
+        tinyxml2::XMLDocument doc;
+        ASSERT_EQUALS(tinyxml2::XML_SUCCESS, doc.Parse(vcxproj, sizeof(vcxproj)));
+        TestImporter project;
+        std::map<std::string, std::string, cppcheck::stricmp> variables;
+        std::vector<TestImporter::SharedItemsProject> cache;
+        ASSERT_EQUALS(project.importVcxproj("test.vcxproj", doc, variables, {}, {}, cache), true);
+        ASSERT_EQUALS(project.fileSettings.size(), 2);
+        ASSERT(project.fileSettings.front().defines.find(";UNICODE=1;") != std::string::npos);
+        ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1") != std::string::npos);
+        ASSERT(project.fileSettings.front().defines.find(";_UNICODE=1;") == std::string::npos); // No duplicates
+        ASSERT_EQUALS(project.fileSettings.front().useMfc, false);
+        ASSERT(project.fileSettings.back().defines.find(";UNICODE=1;") == std::string::npos);
+        ASSERT(project.fileSettings.back().defines.find(";_UNICODE=1") == std::string::npos);
+        ASSERT_EQUALS(project.fileSettings.back().useMfc, true);
     }
 
     // TODO: test fsParseCommand()

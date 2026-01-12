@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,15 @@
 #include "helpers.h"
 #include "standards.h"
 
+#include <initializer_list>
 #include <list>
 #include <set>
 #include <string>
 #include <vector>
+
+#ifndef _WIN32
+#include <stdexcept>
+#endif
 
 class TestPath : public TestFixture {
 public:
@@ -51,6 +56,7 @@ private:
         TEST_CASE(simplifyPath);
         TEST_CASE(getAbsolutePath);
         TEST_CASE(exists);
+        TEST_CASE(fromNativeSeparators);
     }
 
     void removeQuotationMarks() const {
@@ -76,6 +82,16 @@ private:
         ASSERT(Path::acceptFile("index")==false);
         ASSERT(Path::acceptFile("")==false);
         ASSERT(Path::acceptFile("C")==false);
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.c", &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::C, lang);
+        }
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.cpp", &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, lang);
+        }
 
         // don't accept any headers
         ASSERT_EQUALS(false, Path::acceptFile("index.h"));
@@ -88,6 +104,21 @@ private:
         ASSERT(Path::acceptFile("index.header", extra));
         ASSERT(Path::acceptFile("index.h", extra)==false);
         ASSERT(Path::acceptFile("index.hpp", extra)==false);
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.c", extra, &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::C, lang);
+        }
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.cpp", extra, &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::CPP, lang);
+        }
+        {
+            Standards::Language lang;
+            ASSERT(Path::acceptFile("index.extra", extra, &lang));
+            ASSERT_EQUALS_ENUM(Standards::Language::None, lang);
+        }
     }
 
     void getCurrentPath() const {
@@ -141,11 +172,36 @@ private:
     }
 
     void join() const {
+        ASSERT_EQUALS("", Path::join("", ""));
+        ASSERT_EQUALS("b", Path::join("", "b"));
+        ASSERT_EQUALS("/b", Path::join("", "/b"));
+        ASSERT_EQUALS("/b", Path::join("", "\\b"));
+
         ASSERT_EQUALS("a", Path::join("a", ""));
-        ASSERT_EQUALS("a", Path::join("", "a"));
         ASSERT_EQUALS("a/b", Path::join("a", "b"));
-        ASSERT_EQUALS("a/b", Path::join("a/", "b"));
         ASSERT_EQUALS("/b", Path::join("a", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a", "\\b"));
+
+        ASSERT_EQUALS("a/", Path::join("a/", ""));
+        ASSERT_EQUALS("a/b", Path::join("a/", "b"));
+        ASSERT_EQUALS("/b", Path::join("a/", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a/", "\\b"));
+
+        ASSERT_EQUALS("a/", Path::join("a\\", ""));
+        ASSERT_EQUALS("a/b", Path::join("a\\", "b"));
+        ASSERT_EQUALS("/b", Path::join("a\\", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a\\", "\\b"));
+
+        // TODO: how to absolute Windows path in path2?
+        //ASSERT_EQUALS("", Path::join("a", "s:/b"));
+
+        //ASSERT_EQUALS("", Path::join("S:\\a", "S:/b"));
+        //ASSERT_EQUALS("", Path::join("S:\\a", "S:\\b"));
+        //ASSERT_EQUALS("", Path::join("S:\\a", "/b"));
+
+        //ASSERT_EQUALS("", Path::join("S:/a", "S:/b"));
+        //ASSERT_EQUALS("", Path::join("S:/a", "S:\\b"));
+        //ASSERT_EQUALS("", Path::join("S:/a", "/b"));
     }
 
     void isDirectory() const {
@@ -526,13 +582,41 @@ private:
     void exists() const {
         ScopedFile file("testpath.txt", "", "testpath");
         ScopedFile file2("testpath2.txt", "");
+
         ASSERT_EQUALS(true, Path::exists("testpath"));
-        ASSERT_EQUALS(true, Path::exists("testpath/testpath.txt"));
         ASSERT_EQUALS(true, Path::exists("testpath2.txt"));
 
         ASSERT_EQUALS(false, Path::exists("testpath2"));
-        ASSERT_EQUALS(false, Path::exists("testpath/testpath2.txt"));
-        ASSERT_EQUALS(false, Path::exists("testpath.txt"));
+
+        bool b = false;
+
+        ASSERT_EQUALS(true, Path::exists("testpath", &b));
+        ASSERT_EQUALS(true, b);
+        ASSERT_EQUALS(true, Path::exists("testpath/testpath.txt", &b));
+        ASSERT_EQUALS(false, b);
+        ASSERT_EQUALS(true, Path::exists("testpath2.txt", &b));
+        ASSERT_EQUALS(false, b);
+
+        ASSERT_EQUALS(false, Path::exists("testpath2", &b));
+        ASSERT_EQUALS(false, b);
+        ASSERT_EQUALS(false, Path::exists("testpath/testpath2.txt", &b));
+        ASSERT_EQUALS(false, b);
+        ASSERT_EQUALS(false, Path::exists("testpath.txt", &b));
+        ASSERT_EQUALS(false, b);
+    }
+
+    void fromNativeSeparators() const {
+        ASSERT_EQUALS("lib/file.c", Path::fromNativeSeparators("lib/file.c"));
+        ASSERT_EQUALS("lib//file.c", Path::fromNativeSeparators("lib//file.c"));
+        ASSERT_EQUALS("/lib/file.c", Path::fromNativeSeparators("/lib/file.c"));
+        ASSERT_EQUALS("//lib/file.c", Path::fromNativeSeparators("//lib/file.c"));
+        ASSERT_EQUALS("./lib/file.c", Path::fromNativeSeparators("./lib/file.c"));
+
+        ASSERT_EQUALS("lib/file.c", Path::fromNativeSeparators("lib\\file.c"));
+        ASSERT_EQUALS("lib//file.c", Path::fromNativeSeparators("lib\\\\file.c"));
+        ASSERT_EQUALS("/lib/file.c", Path::fromNativeSeparators("\\lib\\file.c"));
+        ASSERT_EQUALS("//lib/file.c", Path::fromNativeSeparators("\\\\lib\\file.c"));
+        ASSERT_EQUALS("./lib/file.c", Path::fromNativeSeparators(".\\lib\\file.c"));
     }
 };
 

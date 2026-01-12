@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,20 @@
 
 #include "vfvalue.h"
 
-#include "errortypes.h"
+#include "mathlib.h"
 #include "token.h"
+#include "utils.h"
 
 #include <sstream>
 #include <string>
 
 namespace ValueFlow {
-    Value::Value(const Token *c, long long val, Bound b)
+    Value::Value(const Token *c, MathLib::bigint val, Bound b)
         : bound(b),
+        safe(false),
+        conditional(false),
+        macro(false),
+        defaultArg(false),
         intvalue(val),
         varvalue(val),
         condition(c) {
@@ -54,7 +59,7 @@ namespace ValueFlow {
             ss << this->tokvalue->str();
             break;
         case ValueType::FLOAT:
-            ss << this->floatValue;
+            ss << MathLib::toString(this->floatValue);
             break;
         case ValueType::MOVED:
             ss << toString(this->moveKind);
@@ -96,7 +101,7 @@ namespace ValueFlow {
     std::string Value::infoString() const {
         switch (valueType) {
         case ValueType::INT:
-            return std::to_string(intvalue);
+            return MathLib::toString(intvalue);
         case ValueType::TOK:
             return tokvalue->str();
         case ValueType::FLOAT:
@@ -107,24 +112,24 @@ namespace ValueFlow {
             return "<Uninit>";
         case ValueType::BUFFER_SIZE:
         case ValueType::CONTAINER_SIZE:
-            return "size=" + std::to_string(intvalue);
+            return "size=" + MathLib::toString(intvalue);
         case ValueType::ITERATOR_START:
-            return "start=" + std::to_string(intvalue);
+            return "start=" + MathLib::toString(intvalue);
         case ValueType::ITERATOR_END:
-            return "end=" + std::to_string(intvalue);
+            return "end=" + MathLib::toString(intvalue);
         case ValueType::LIFETIME:
             return "lifetime=" + tokvalue->str();
         case ValueType::SYMBOLIC:
         {
             std::string result = "symbolic=" + tokvalue->expressionString();
             if (intvalue > 0)
-                result += "+" + std::to_string(intvalue);
+                result += "+" + MathLib::toString(intvalue);
             else if (intvalue < 0)
-                result += "-" + std::to_string(-intvalue);
+                result += "-" + MathLib::toString(-intvalue);
             return result;
         }
         }
-        throw InternalError(nullptr, "Invalid ValueFlow Value type");
+        cppcheck::unreachable();
     }
 
     const char *Value::toString(MoveKind moveKind) {

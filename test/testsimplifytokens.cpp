@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ private:
     const Settings settings_windows = settingsBuilder().library("windows.cfg").severity(Severity::portability).build();
 
     void run() override {
+        mNewTemplate = true;
         TEST_CASE(combine_strings);
         TEST_CASE(combine_wstrings);
         TEST_CASE(combine_ustrings);
@@ -163,36 +164,48 @@ private:
         TEST_CASE(simplifyVarDeclInitLists);
     }
 
+    struct TokOptions
+    {
+        bool cpp = true;
+        Platform::Type type = Platform::Type::Native;
+    };
+
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tok_(const char* file, int line, const char (&code)[size], bool cpp = true, Platform::Type type = Platform::Type::Native) {
-        const Settings settings = settingsBuilder(settings0).platform(type).build();
-        SimpleTokenizer tokenizer(settings, *this);
+    std::string tok_(const char* file, int line, const char (&code)[size], const TokOptions& options = make_default_obj()) {
+        const Settings settings = settingsBuilder(settings0).platform(options.type).build();
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
 
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
+    struct TokenizeAndStringifyOptions
+    {
+        Platform::Type platform = Platform::Type::Native;
+        bool cpp = true;
+    };
+
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], bool expand = true, Platform::Type platform = Platform::Type::Native, bool cpp = true, bool cpp11 = true) {
-        const Settings settings = settingsBuilder(settings1).debugwarnings().platform(platform).cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).build();
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char (&code)[size], const TokenizeAndStringifyOptions& options = make_default_obj()) {
+        const Settings settings = settingsBuilder(settings1).debugwarnings().platform(options.platform).cpp(Standards::CPP03).build();
 
         // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, linenr);
+        SimpleTokenizer tokenizer(settings, *this, options.cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, linenr);
 
         if (tokenizer.tokens())
-            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
+            return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
         return "";
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string tokenizeDebugListing_(const char* file, int line, const char (&code)[size], bool cpp = true) {
+    std::string tokenizeDebugListing_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer tokenizer(settings0, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
@@ -220,10 +233,10 @@ private:
         ASSERT_EQUALS(tok(code2), tok(code1));
 
         const char code3[] = "x = L\"1\" TEXT(\"2\") L\"3\";";
-        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, true, Platform::Type::Win64));
+        ASSERT_EQUALS("x = L\"123\" ;", tok(code3, dinit(TokOptions, $.type = Platform::Type::Win64)));
 
         const char code4[] = "x = TEXT(\"1\") L\"2\";";
-        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, true, Platform::Type::Win64));
+        ASSERT_EQUALS("x = L\"1\" L\"2\" ;", tok(code4, dinit(TokOptions, $.type = Platform::Type::Win64)));
     }
 
     void combine_wstrings() {
@@ -591,71 +604,71 @@ private:
     }
 
     void not1() {
-        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", false));
-        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", false));
-        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", false));
+        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", dinit(TokOptions, $.cpp = false)));
         // Don't simplify 'not' or 'compl' if they are defined as a type;
         // in variable declaration and in function declaration/definition
-        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", false));
-        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", false));
-        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", false));
-        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", false));
+        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", dinit(TokOptions, $.cpp = false)));
     }
 
     void and1() {
         ASSERT_EQUALS("void f ( ) { if ( p && q ) { ; } }",
-                      tok("void f() { if (p and q) ; }", false));
+                      tok("void f() { if (p and q) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) && q ) { ; } }",
-                      tok("void f() { if (foo() and q) ; }", false));
+                      tok("void f() { if (foo() and q) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) && bar ( ) ) { ; } }",
-                      tok("void f() { if (foo() and bar()) ; }", false));
+                      tok("void f() { if (foo() and bar()) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( p && bar ( ) ) { ; } }",
-                      tok("void f() { if (p and bar()) ; }", false));
+                      tok("void f() { if (p and bar()) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }",
-                      tok("void f() { if (p and not q) ; }", false));
+                      tok("void f() { if (p and not q) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { r = a && b ; }",
-                      tok("void f() { r = a and b; }", false));
+                      tok("void f() { r = a and b; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { r = ( a || b ) && ( c || d ) ; }",
-                      tok("void f() { r = (a || b) and (c || d); }", false));
+                      tok("void f() { r = (a || b) and (c || d); }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( test1 [ i ] == 'A' && test2 [ i ] == 'C' ) { } }",
-                      tok("void f() { if (test1[i] == 'A' and test2[i] == 'C') {} }", false));
+                      tok("void f() { if (test1[i] == 'A' and test2[i] == 'C') {} }", dinit(TokOptions, $.cpp = false)));
     }
 
     void or1() {
         ASSERT_EQUALS("void f ( ) { if ( p || q ) { ; } }",
-                      tok("void f() { if (p or q) ; }", false));
+                      tok("void f() { if (p or q) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) || q ) { ; } }",
-                      tok("void f() { if (foo() or q) ; }", false));
+                      tok("void f() { if (foo() or q) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) || bar ( ) ) { ; } }",
-                      tok("void f() { if (foo() or bar()) ; }", false));
+                      tok("void f() { if (foo() or bar()) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( p || bar ( ) ) { ; } }",
-                      tok("void f() { if (p or bar()) ; }", false));
+                      tok("void f() { if (p or bar()) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { if ( p || ! q ) { ; } }",
-                      tok("void f() { if (p or not q) ; }", false));
+                      tok("void f() { if (p or not q) ; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { r = a || b ; }",
-                      tok("void f() { r = a or b; }", false));
+                      tok("void f() { r = a or b; }", dinit(TokOptions, $.cpp = false)));
 
         ASSERT_EQUALS("void f ( ) { r = ( a && b ) || ( c && d ) ; }",
-                      tok("void f() { r = (a && b) or (c && d); }", false));
+                      tok("void f() { r = (a && b) or (c && d); }", dinit(TokOptions, $.cpp = false)));
     }
 
     void cAlternativeTokens() {
         ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
-                      tok("void f() { err or_eq ((r bitand s) and not t); }", false));
+                      tok("void f() { err or_eq ((r bitand s) and not t); }", dinit(TokOptions, $.cpp = false)));
         ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 0x0F , ~ c , ! d ) ; }",
-                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", false));
+                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", dinit(TokOptions, $.cpp = false)));
 
     }
 
@@ -1027,7 +1040,7 @@ private:
         // ticket #980
         {
             const char code[] = "void f() { int A(1),B(2),C=3,D,E(5),F=6; }";
-            const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
+            const char expected[] = "void f ( ) { int A ( 1 ) ; int B ( 2 ) ; int C ; C = 3 ; int D ; int E ( 5 ) ; int F ; F = 6 ; }";
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -1285,20 +1298,20 @@ private:
         ASSERT_EQUALS("constexpr int foo ( ) { }", tok("consteval int foo() { }"));
         ASSERT_EQUALS("int x ; x = 0 ;", tok("constinit int x = 0;"));
         ASSERT_EQUALS("void f ( ) { int final [ 10 ] ; }", tok("void f() { int final[10]; }"));
-        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", false));
-        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", false));
-        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", false));
-        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", false));
-        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", false));
-        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", false));
+        ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("int * p ;", tok("int * restrict p;", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("int * * p ;", tok("int * restrict * p;", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * restrict a, float * restrict b);", dinit(TokOptions, $.cpp = false)));
         ASSERT_EQUALS("void foo ( int restrict ) ;", tok("void foo(int restrict);"));
-        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", false));
+        ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", dinit(TokOptions, $.cpp = false)));
 
         // don't remove struct members:
         ASSERT_EQUALS("a = b . _inline ;", tok("a = b._inline;"));
 
-        ASSERT_EQUALS("int i ; i = 0 ;", tok("auto int i = 0;", false));
-        ASSERT_EQUALS("auto i ; i = 0 ;", tok("auto i = 0;", true));
+        ASSERT_EQUALS("int i ; i = 0 ;", tok("auto int i = 0;", dinit(TokOptions, $.cpp = false)));
+        ASSERT_EQUALS("auto i ; i = 0 ;", tok("auto i = 0;"));
     }
 
     void simplifyCallingConvention() {
@@ -1318,12 +1331,12 @@ private:
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __syscall f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __pascal f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int __far __fortran f();"));
-        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", true, Platform::Type::Win32A));
-        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", true, Platform::Type::Win32A));
-        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", true, Platform::Type::Win32A));
+        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", dinit(TokOptions, $.type = Platform::Type::Win32A)));
+        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", dinit(TokOptions, $.type = Platform::Type::Win32A)));
+        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", dinit(TokOptions, $.type = Platform::Type::Win32A)));
 
         // don't simplify Microsoft defines in unix code (#7554)
-        ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", true, Platform::Type::Unix32));
+        ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", dinit(TokOptions, $.type = Platform::Type::Unix32)));
     }
 
     void simplifyAttribute() {
@@ -1517,9 +1530,9 @@ private:
                           "}\n"));
     }
 
-#define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
+#define simplifyKnownVariables(...) simplifyKnownVariables_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string simplifyKnownVariables_(const char (&code)[size], const char* file, int line) {
+    std::string simplifyKnownVariables_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer tokenizer(settings0, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
@@ -2022,7 +2035,7 @@ private:
                                 "iterator it2 ; it2 = it1 ;\n"
                                 "for ( ++ it2 ; it2 != ints . end ( ) ; ++ it2 ) { ; }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void simplifyKnownVariables34() {
@@ -2036,9 +2049,9 @@ private:
                                 "do { cin >> x ; } while ( x > 5 ) ;\n"
                                 "a [ x ] = 0 ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n",
+            "[test.cpp:3:10]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2050,7 +2063,7 @@ private:
                              "    memset(buf, 0, 10);"
                              "}";
         const char expected2[] = "void f ( ) { char buf [ 10 ] = \"ab\" ; memset ( buf , 0 , 10 ) ; }";
-        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
     }
 
     void simplifyKnownVariables42() {
@@ -2065,7 +2078,7 @@ private:
                                     "strcpy ( a , \"hello\" ) ;\n"
                                     "strcat ( a , \"!\" ) ;\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, dinit(TokenizeAndStringifyOptions, $.cpp = false)));
         }
 
         {
@@ -2079,7 +2092,7 @@ private:
                                     " strcpy ( s , \"\" ) ;"
                                     " free ( s ) ; "
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
 
         {
@@ -2091,7 +2104,7 @@ private:
                                     " strcpy ( p , \"abc\" ) ;"
                                     " q = p ; "
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
 
         // 3538
@@ -2106,7 +2119,7 @@ private:
                                     "strcpy ( s , \"123\" ) ;\n"
                                     "if ( s [ 6 ] == ' ' ) { ; }\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
             ASSERT_EQUALS("", filter_valueflow(errout_str()));
         }
     }
@@ -2121,7 +2134,7 @@ private:
                                     "int a ; int * p ; p = & a ;\n"
                                     "{ int a ; a = * p ; }\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
 
         {
@@ -2133,7 +2146,7 @@ private:
                                     "int * a ; int * * p ; p = & a ;\n"
                                     "{ int * a ; a = * p ; }\n"
                                     "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
     }
 
@@ -2146,7 +2159,7 @@ private:
                                 "static int i = 10 ;\n"
                                 "b ( i ++ ) ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void simplifyKnownVariables46() {
@@ -2161,9 +2174,9 @@ private:
                                 "cin >> x ;\n"
                                 "return x ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n",
+            "[test.cpp:3:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2177,9 +2190,9 @@ private:
                                 "int x ; x = 0 ;\n"
                                 "cin >> std :: hex >> x ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin\n",
+            "[test.cpp:3:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable cin [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2193,7 +2206,7 @@ private:
                                 "int i ;\n"
                                 "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, dinit(TokenizeAndStringifyOptions, $.cpp = false)));
     }
 
     void simplifyKnownVariables49() { // #3691
@@ -2209,9 +2222,9 @@ private:
                                 "case 2 : ; x = sz ; break ;\n"
                                 "}\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, Platform::Type::Native, false));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, dinit(TokenizeAndStringifyOptions, $.cpp = false)));
         ASSERT_EQUALS(
-            "[test.c:2]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n",
+            "[test.c:2:13]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2234,9 +2247,9 @@ private:
                                 "const char x7 = 'b' ;\n"
                                 "return & x7 ;\n"
                                 "}";
-            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(code, tokenizeAndStringify(code));
             ASSERT_EQUALS(
-                "[test.cpp:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+                "[test.cpp:5:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y [valueFlowBailoutIncompleteVar]\n",
                 errout_str());
         }
         {
@@ -2257,9 +2270,9 @@ private:
                                 "const int x7 = 1 ;\n"
                                 "return & x7 ;\n"
                                 "}";
-            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(code, tokenizeAndStringify(code));
             ASSERT_EQUALS(
-                "[test.cpp:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y\n",
+                "[test.cpp:5:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable y [valueFlowBailoutIncompleteVar]\n",
                 errout_str());
         }
     }
@@ -2270,18 +2283,18 @@ private:
                             "  BENCH1(q = _mhz_M(n); n = 1;)\n"
                             "  use_pointer(q);\n"
                             "}";
-        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code, true), UNKNOWN_MACRO);
+        ASSERT_THROW_INTERNAL(tokenizeAndStringify(code), UNKNOWN_MACRO);
     }
 
     void simplifyKnownVariables54() { // #4913
-        ASSERT_EQUALS("void f ( int * p ) { * -- p = 0 ; * p = 0 ; }", tokenizeAndStringify("void f(int*p) { *--p=0; *p=0; }", true));
+        ASSERT_EQUALS("void f ( int * p ) { * -- p = 0 ; * p = 0 ; }", tokenizeAndStringify("void f(int*p) { *--p=0; *p=0; }"));
     }
 
     void simplifyKnownVariables56() { // ticket #5301 - >>
         ASSERT_EQUALS("void f ( ) { int a ; a = 0 ; int b ; b = 0 ; * p >> a >> b ; return a / b ; }",
-                      tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }", true));
+                      tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }"));
         ASSERT_EQUALS(
-            "[test.cpp:1]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p\n",
+            "[test.cpp:1:26]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable p [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2302,7 +2315,7 @@ private:
                       "} "
                       "int baz ( ) { "
                       "return sizeof ( char [ VAL2 ] ) ; "
-                      "}", tokenizeAndStringify(code, true));
+                      "}", tokenizeAndStringify(code));
     }
 
     void simplifyKnownVariables59() { // #5062 - for head
@@ -2317,7 +2330,7 @@ private:
                       "for ( i = 0 , j = 1 ; i < 3 , j < 12 ; i ++ , j ++ ) {\n"
                       "a [ i ] = 0 ;\n"
                       "}\n"
-                      "}", tokenizeAndStringify(code, true));
+                      "}", tokenizeAndStringify(code));
     }
 
     void simplifyKnownVariables61() { // #7805
@@ -2329,7 +2342,7 @@ private:
                                              "    Other\n"
                                              "  };\n"
                                              "  enum { XX };\n"
-                                             "};", /*expand=*/ true));
+                                             "};"));
         ASSERT_EQUALS("", errout_str());
     }
 
@@ -2341,7 +2354,7 @@ private:
                       tokenizeAndStringify("void foo(std::string str) {\n"
                                            "  char *p = &str[0];\n"
                                            "  *p = 0;\n"
-                                           "}", /*expand=*/ true));
+                                           "}"));
     }
 
     void simplifyKnownVariables63() { // #10798
@@ -2361,9 +2374,9 @@ private:
                                 "if ( x ) { i = 10 ; }\n"
                                 "return i ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n",
+            "[test.cpp:3:9]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n",
             filter_valueflow(errout_str()));
     }
 
@@ -2377,9 +2390,9 @@ private:
                                 "struct ABC * last ; last = NULL ;\n"
                                 "nr = ( last = list . prev ) . nr ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable nr\n",
+            "[test.cpp:3:5]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable nr [valueFlowBailoutIncompleteVar]\n",
             errout_str());
     }
 
@@ -2390,7 +2403,7 @@ private:
         const char expected[] = "void foo ( ) {\n"
                                 "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout_str());    // debug warnings
     }
 
@@ -2403,7 +2416,7 @@ private:
                                 "int i ; i = 0 ;\n"
                                 "while ( i < 10 ) { ++ i ; }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout_str());    // debug warnings
     }
 
@@ -2416,7 +2429,7 @@ private:
                                 "for ( std :: string :: size_type pos = 0 ; pos < 10 ; ++ pos )\n"
                                 "{ }\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout_str());    // debug warnings
     }
 
@@ -2429,7 +2442,7 @@ private:
                                 "obj b ; b = a ;\n"
                                 "b . f ( ) ;\n"
                                 "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void simplifyKnownVariablesBailOutConditionalIncrement() {
@@ -2440,9 +2453,9 @@ private:
                             "    }\n"
                             "    return a;\n"
                             "}\n";
-        (void)tokenizeAndStringify(code,true);
+        (void)tokenizeAndStringify(code);
         ASSERT_EQUALS(
-            "[test.cpp:3]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x\n",
+            "[test.cpp:3:9]: (debug) valueFlowConditionExpressions bailout: Skipping function due to incomplete variable x [valueFlowBailoutIncompleteVar]\n",
             filter_valueflow(errout_str())); // no debug warnings
     }
 
@@ -2482,7 +2495,7 @@ private:
                                 "}\n"
                                 "}";
 
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void simplifyKnownVariablesFunctionCalls() {
@@ -2493,7 +2506,7 @@ private:
                                 "    a(x);"       // <- don't replace with a(123);
                                 "}";
             const char expected[] = "void a ( int & x ) ; void b ( ) { int x ; x = 123 ; a ( x ) ; }";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
     }
 
@@ -2504,7 +2517,7 @@ private:
                             "    x = 123;"
                             "    while (!x) { dostuff(); }"
                             "}";
-        ASSERT_EQUALS("static int x ; void f ( ) { x = 123 ; while ( ! x ) { dostuff ( ) ; } }", tokenizeAndStringify(code,true));
+        ASSERT_EQUALS("static int x ; void f ( ) { x = 123 ; while ( ! x ) { dostuff ( ) ; } }", tokenizeAndStringify(code));
         ASSERT_EQUALS("", filter_valueflow(errout_str()));
     }
 
@@ -2526,10 +2539,10 @@ private:
                                 "3: namespace M { const int m@2 = 0 ; }\n"
                                 "4: }\n"
                                 "5: using namespace N ;\n"
-                                "6: int i ; i = n@1 ;\n"
+                                "6: int i ( n@1 ) ;\n"
                                 "7: int j ( M :: m@2 ) ;\n"
                                 "8: using namespace N :: M ;\n"
-                                "9: int k ; k = m@2 ;\n"
+                                "9: int k ( m@2 ) ;\n"
                                 "10: int l ( N :: M :: m@2 ) ;\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
@@ -2581,7 +2594,7 @@ private:
                                 "    memcpy(a, s, 10);\n"   // <- don't simplify "a" here
                                 "}\n";
 
-            const std::string s(tokenizeAndStringify(code, true));
+            const std::string s(tokenizeAndStringify(code));
             ASSERT_EQUALS(true, s.find("memcpy ( a , s , 10 ) ;") != std::string::npos);
         }
 
@@ -2593,7 +2606,7 @@ private:
                                 "    memcpy(a, s, 10);\n"   // <- simplify "a"
                                 "}\n";
 
-            const std::string s(tokenizeAndStringify(code, true));
+            const std::string s(tokenizeAndStringify(code));
             TODO_ASSERT_EQUALS(true, false, s.find("memcpy ( 0 , s , 10 ) ;") != std::string::npos);
         }
     }

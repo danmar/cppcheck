@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
-#include "symboldatabase.h"
 
 #include <cstdint>
 #include <list>
@@ -35,7 +33,14 @@
 
 class ErrorLogger;
 class Settings;
+class Tokenizer;
 class Token;
+class Scope;
+class SymbolDatabase;
+class Function;
+class Variable;
+class Type;
+enum class FunctionType : std::uint8_t;
 
 /// @addtogroup Checks
 /// @{
@@ -59,35 +64,7 @@ private:
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (tokenizer.isC())
-            return;
-
-        CheckClass checkClass(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // can't be a simplified check .. the 'sizeof' is used.
-        checkClass.checkMemset();
-        checkClass.constructors();
-        checkClass.privateFunctions();
-        checkClass.operatorEqRetRefThis();
-        checkClass.thisSubtraction();
-        checkClass.operatorEqToSelf();
-        checkClass.initializerListOrder();
-        checkClass.initializationListUsage();
-        checkClass.checkSelfInitialization();
-        checkClass.virtualDestructor();
-        checkClass.checkConst();
-        checkClass.copyconstructors();
-        checkClass.checkVirtualFunctionCallInConstructor();
-        checkClass.checkDuplInheritedMembers();
-        checkClass.checkExplicitConstructors();
-        checkClass.checkCopyCtorAndEqOperator();
-        checkClass.checkOverride();
-        checkClass.checkUselessOverride();
-        checkClass.checkReturnByReference();
-        checkClass.checkThisUseAfterFree();
-        checkClass.checkUnsafeClassRefMember();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief %Check that all class constructors are ok */
     void constructors();
@@ -161,12 +138,12 @@ private:
     void checkUnsafeClassRefMember();
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& currentConfig) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
+    bool analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     const SymbolDatabase* mSymbolDatabase{};
 
@@ -178,11 +155,11 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, FunctionType functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
-    void missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname);
+    void missingMemberCopyError(const Token *tok, FunctionType functionType, const std::string& classname, const std::string& varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
-    void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
+    void unusedPrivateFunctionError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer = false);
     void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
     void memsetErrorFloat(const Token *tok, const std::string &type);
@@ -210,48 +187,7 @@ private:
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
     void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckClass c(nullptr, settings, errorLogger);
-        c.noConstructorError(nullptr, "classname", false);
-        c.noExplicitConstructorError(nullptr, "classname", false);
-        //c.copyConstructorMallocError(nullptr, 0, "var");
-        c.copyConstructorShallowCopyError(nullptr, "var");
-        c.noCopyConstructorError(nullptr, false, nullptr, false);
-        c.noOperatorEqError(nullptr, false, nullptr, false);
-        c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
-        c.missingMemberCopyError(nullptr, Function::eConstructor, "classname", "varnamepriv");
-        c.operatorEqVarError(nullptr, "classname", emptyString, false);
-        c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
-        c.memsetError(nullptr, "memfunc", "classname", "class");
-        c.memsetErrorReference(nullptr, "memfunc", "class");
-        c.memsetErrorFloat(nullptr, "class");
-        c.mallocOnClassWarning(nullptr, "malloc", nullptr);
-        c.mallocOnClassError(nullptr, "malloc", nullptr, "std::string");
-        c.virtualDestructorError(nullptr, "Base", "Derived", false);
-        c.thisSubtractionError(nullptr);
-        c.operatorEqRetRefThisError(nullptr);
-        c.operatorEqMissingReturnStatementError(nullptr, true);
-        c.operatorEqShouldBeLeftUnimplementedError(nullptr);
-        c.operatorEqToSelfError(nullptr);
-        c.checkConstError(nullptr, "class", "function", false);
-        c.checkConstError(nullptr, "class", "function", true);
-        c.initializerListError(nullptr, nullptr, "class", "variable");
-        c.suggestInitializationList(nullptr, "variable");
-        c.selfInitializationError(nullptr, "var");
-        c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
-        c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
-        c.overrideError(nullptr, nullptr);
-        c.uselessOverrideError(nullptr, nullptr);
-        c.returnByReferenceError(nullptr, nullptr);
-        c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
-        c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
-        c.thisUseAfterFree(nullptr, nullptr, nullptr);
-        c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Class";

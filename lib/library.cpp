@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,10 +35,10 @@
 #include <iostream>
 #include <list>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <utility>
 
 #include "xml.h"
 
@@ -46,7 +46,7 @@ struct Library::LibraryData
 {
     struct Platform {
         const PlatformType *platform_type(const std::string &name) const {
-            const std::map<std::string, PlatformType>::const_iterator it = mPlatformTypes.find(name);
+            const auto it = utils::as_const(mPlatformTypes).find(name);
             return (it != mPlatformTypes.end()) ? &(it->second) : nullptr;
         }
         std::map<std::string, PlatformType> mPlatformTypes;
@@ -143,6 +143,8 @@ struct Library::LibraryData
     std::unordered_set<std::string> mEntrypoints;
 };
 
+const std::string Library::mEmptyString;
+
 Library::Library()
     : mData(new LibraryData())
 {}
@@ -155,6 +157,9 @@ Library::Library(const Library& other)
 
 Library& Library::operator=(const Library& other) &
 {
+    if (this == &other)
+        return *this;
+
     mData.reset(new LibraryData(*other.mData));
     return *this;
 }
@@ -170,10 +175,10 @@ static std::vector<std::string> getnames(const char *names)
     return ret;
 }
 
-static void gettokenlistfromvalid(const std::string& valid, bool cpp, TokenList& tokenList)
+static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList)
 {
-    std::istringstream istr(valid + ',');
-    tokenList.createTokens(istr, cpp ? Standards::Language::CPP : Standards::Language::C); // TODO: check result?
+    const std::string str(valid + ',');
+    tokenList.createTokensFromBuffer(str.data(), str.size()); // TODO: check result?
     for (Token *tok = tokenList.front(); tok; tok = tok->next()) {
         if (Token::Match(tok,"- %num%")) {
             tok->str("-" + tok->strAt(1));
@@ -190,24 +195,20 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
 
     const bool is_abs_path = Path::isAbsolute(path);
 
+    std::string fullfilename(path);
+
+    // TODO: what if the extension is not .cfg?
+    // only append extension when we provide the library name and not a path - TODO: handle relative paths?
+    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
+        fullfilename += ".cfg";
+
     std::string absolute_path;
     // open file..
     tinyxml2::XMLDocument doc;
     if (debug)
-        std::cout << "looking for library '" + std::string(path) + "'" << std::endl;
-    tinyxml2::XMLError error = xml_LoadFile(doc, path);
+        std::cout << "looking for library '" + fullfilename + "'" << std::endl;
+    tinyxml2::XMLError error = xml_LoadFile(doc, fullfilename.c_str());
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND) {
-        // failed to open file.. is there no extension?
-        std::string fullfilename(path);
-        if (Path::getFilenameExtension(fullfilename).empty()) {
-            fullfilename += ".cfg";
-            if (debug)
-                std::cout << "looking for library '" + fullfilename + "'" << std::endl;
-            error = xml_LoadFile(doc, fullfilename.c_str());
-            if (error != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
-                absolute_path = Path::getAbsoluteFilePath(fullfilename);
-        }
-
         // only perform further lookups when the given path was not absolute
         if (!is_abs_path && error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         {
@@ -216,9 +217,9 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
             cfgfolders.emplace_back(FILESDIR "/cfg");
     #endif
             if (exename) {
-                const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
+                std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
                 cfgfolders.push_back(exepath + "cfg");
-                cfgfolders.push_back(exepath);
+                cfgfolders.push_back(std::move(exepath));
             }
 
             while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
@@ -234,13 +235,13 @@ Library::Error Library::load(const char exename[], const char path[], bool debug
             }
         }
     } else
-        absolute_path = Path::getAbsoluteFilePath(path);
+        absolute_path = Path::getAbsoluteFilePath(fullfilename);
 
     if (error == tinyxml2::XML_SUCCESS) {
         if (mData->mFiles.find(absolute_path) == mData->mFiles.end()) {
             Error err = load(doc);
             if (err.errorcode == ErrorCode::OK)
-                mData->mFiles.insert(absolute_path);
+                mData->mFiles.insert(std::move(absolute_path));
             return err;
         }
 
@@ -308,6 +309,66 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
     return Container::Action::NO_ACTION;
 }
 
+std::string Library::Container::toString(Library::Container::Yield yield)
+{
+    switch (yield) {
+    case Library::Container::Yield::AT_INDEX:
+        return "at_index";
+    case Library::Container::Yield::ITEM:
+        return "item";
+    case Library::Container::Yield::BUFFER:
+        return "buffer";
+    case Library::Container::Yield::BUFFER_NT:
+        return "buffer-nt";
+    case Library::Container::Yield::START_ITERATOR:
+        return "start-iterator";
+    case Library::Container::Yield::END_ITERATOR:
+        return "end-iterator";
+    case Library::Container::Yield::ITERATOR:
+        return "iterator";
+    case Library::Container::Yield::SIZE:
+        return "size";
+    case Library::Container::Yield::EMPTY:
+        return "empty";
+    case Library::Container::Yield::NO_YIELD:
+        break;
+    }
+    return "";
+}
+
+std::string Library::Container::toString(Library::Container::Action action)
+{
+    switch (action) {
+    case Library::Container::Action::RESIZE:
+        return "resize";
+    case Library::Container::Action::CLEAR:
+        return "clear";
+    case Library::Container::Action::PUSH:
+        return "push";
+    case Library::Container::Action::POP:
+        return "pop";
+    case Library::Container::Action::FIND:
+        return "find";
+    case Library::Container::Action::FIND_CONST:
+        return "find-const";
+    case Library::Container::Action::INSERT:
+        return "insert";
+    case Library::Container::Action::ERASE:
+        return "erase";
+    case Library::Container::Action::APPEND:
+        return "append";
+    case Library::Container::Action::CHANGE_CONTENT:
+        return "change-content";
+    case Library::Container::Action::CHANGE:
+        return "change";
+    case Library::Container::Action::CHANGE_INTERNAL:
+        return "change-internal";
+    case Library::Container::Action::NO_ACTION:
+        break;
+    }
+    return "";
+}
+
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
@@ -336,7 +397,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 if (strcmp(memorynode->Name(),"dealloc")==0) {
                     const auto names = getnames(memorynode->GetText());
                     for (const auto& n : names) {
-                        const std::map<std::string, AllocFunc>::const_iterator it = mData->mDealloc.find(n);
+                        const auto it = utils::as_const(mData->mDealloc).find(n);
                         if (it != mData->mDealloc.end()) {
                             allocationId = it->second.groupId;
                             break;
@@ -364,6 +425,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     AllocFunc temp;
                     temp.groupId = allocationId;
 
+                    temp.noFail = memorynode->BoolAttribute("no-fail", false);
                     temp.initData = memorynode->BoolAttribute("init", true);
                     temp.arg = memorynode->IntAttribute("arg", -1);
 
@@ -544,7 +606,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
             const char* const inherits = node->Attribute("inherits");
             if (inherits) {
-                const std::unordered_map<std::string, Container>::const_iterator i = mData->mContainers.find(inherits);
+                const auto i = utils::as_const(mData->mContainers).find(inherits);
                 if (i != mData->mContainers.end())
                     container = i->second; // Take values from parent and overwrite them if necessary
                 else
@@ -751,7 +813,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     unknown_elements.insert(typenodename);
             }
             if (platform.empty()) {
-                const PlatformType * const type_ptr = platform_type(type_name, emptyString);
+                const PlatformType * const type_ptr = platform_type(type_name, "");
                 if (type_ptr) {
                     if (*type_ptr == type)
                         return Error(ErrorCode::DUPLICATE_PLATFORM_TYPE, type_name);
@@ -783,7 +845,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     }
     if (!unknown_elements.empty()) {
         std::string str;
-        for (std::set<std::string>::const_iterator i = unknown_elements.cbegin(); i != unknown_elements.cend();) {
+        for (auto i = unknown_elements.cbegin(); i != unknown_elements.cend();) {
             str += *i;
             if (++i != unknown_elements.end())
                 str += ", ";
@@ -934,7 +996,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         const char *argattr = argnode->Attribute("arg");
                         if (!argattr)
                             return Error(ErrorCode::MISSING_ATTRIBUTE, "arg");
-                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]>'9')
+                        if (strlen(argattr) != 1 || argattr[0]<'0' || argattr[0]> '9')
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, argattr);
 
                         ac.minsizes.reserve(type == ArgumentChecks::MinSize::Type::MUL ? 2 : 1);
@@ -943,7 +1005,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             const char *arg2attr = argnode->Attribute("arg2");
                             if (!arg2attr)
                                 return Error(ErrorCode::MISSING_ATTRIBUTE, "arg2");
-                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]>'9')
+                            if (strlen(arg2attr) != 1 || arg2attr[0]<'0' || arg2attr[0]> '9')
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, arg2attr);
                             ac.minsizes.back().arg2 = arg2attr[0] - '0';
                         }
@@ -1049,41 +1111,41 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(ErrorCode::OK);
 }
 
-bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
+bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue, const Settings& settings) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
     if (ac->valid.find('.') != std::string::npos)
-        return isFloatArgValid(ftok, argnr, argvalue);
-    TokenList tokenList(nullptr);
-    gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
+        return isFloatArgValid(ftok, argnr, static_cast<double>(argvalue), settings);
+    TokenList tokenList(settings, ftok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+    gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (tok->isNumber() && argvalue == MathLib::toBigNumber(tok->str()))
+        if (tok->isNumber() && argvalue == MathLib::toBigNumber(tok))
             return true;
-        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toBigNumber(tok->str()) && argvalue <= MathLib::toBigNumber(tok->strAt(2)))
+        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toBigNumber(tok) && argvalue <= MathLib::toBigNumber(tok->tokAt(2)))
             return true;
-        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toBigNumber(tok->str()))
+        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toBigNumber(tok))
             return true;
-        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toBigNumber(tok->tokAt(1)))
             return true;
     }
     return false;
 }
 
-bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) const
+bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue, const Settings& settings) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
-    TokenList tokenList(nullptr);
-    gettokenlistfromvalid(ac->valid, ftok->isCpp(), tokenList);
+    TokenList tokenList(settings, ftok->isCpp() ? Standards::Language::CPP : Standards::Language::C);
+    gettokenlistfromvalid(ac->valid, tokenList);
     for (const Token *tok = tokenList.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok->str()) && argvalue <= MathLib::toDoubleNumber(tok->strAt(2)))
+        if (Token::Match(tok, "%num% : %num%") && argvalue >= MathLib::toDoubleNumber(tok) && argvalue <= MathLib::toDoubleNumber(tok->tokAt(2)))
             return true;
-        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toDoubleNumber(tok->str()))
+        if (Token::Match(tok, "%num% : ,") && argvalue >= MathLib::toDoubleNumber(tok))
             return true;
-        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
+        if ((!tok->previous() || tok->strAt(-1) == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->tokAt(1)))
             return true;
         if (Token::Match(tok, "%num%") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
             return true;
@@ -1177,7 +1239,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     if (!arg) {
         // scan format string argument should not be null
         const std::string funcname = getFunctionName(ftok);
-        const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(funcname);
+        const auto it = utils::as_const(mData->mFunctions).find(funcname);
         if (it != mData->mFunctions.cend() && it->second.formatstr && it->second.formatstr_scan)
             return true;
     }
@@ -1190,7 +1252,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
     if (!arg) {
         // non-scan format string argument should not be uninitialized
         const std::string funcname = getFunctionName(ftok);
-        const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(funcname);
+        const auto it = utils::as_const(mData->mFunctions).find(funcname);
         if (it != mData->mFunctions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
     }
@@ -1205,6 +1267,8 @@ const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    if (!tok)
+        return nullptr;
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mAlloc, funcname);
 }
@@ -1214,6 +1278,8 @@ const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    if (!tok)
+        return nullptr;
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mDealloc, funcname);
 }
@@ -1223,6 +1289,8 @@ const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
 {
     while (Token::simpleMatch(tok, "::"))
         tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
+    if (!tok)
+        return nullptr;
     const std::string funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && mData->mFunctions.find(funcname) != mData->mFunctions.end() ? nullptr : getAllocDealloc(mData->mRealloc, funcname);
 }
@@ -1254,10 +1322,10 @@ const Library::ArgumentChecks * Library::getarg(const Token *ftok, int argnr) co
     const Function* func = nullptr;
     if (isNotLibraryFunction(ftok, &func))
         return nullptr;
-    const std::map<int,ArgumentChecks>::const_iterator it2 = func->argumentChecks.find(argnr);
+    const auto it2 = utils::as_const(func->argumentChecks).find(argnr);
     if (it2 != func->argumentChecks.cend())
         return &it2->second;
-    const std::map<int,ArgumentChecks>::const_iterator it3 = func->argumentChecks.find(-1);
+    const auto it3 = utils::as_const(func->argumentChecks).find(-1);
     if (it3 != func->argumentChecks.cend())
         return &it3->second;
     return nullptr;
@@ -1315,6 +1383,8 @@ const std::unordered_map<std::string, Library::Container>& Library::containers()
 const Library::Container* Library::detectContainerInternal(const Token* const typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
 {
     if (!typeStart)
+        return nullptr;
+    if (typeStart->isKeyword())
         return nullptr;
     const Token* firstLinkedTok = nullptr;
     for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
@@ -1423,7 +1493,7 @@ bool Library::isNotLibraryFunction(const Token *ftok, const Function **func) con
     if (ftok->isKeyword() || ftok->isStandardType())
         return true;
 
-    if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
+    if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != ScopeType::eGlobal)
         return true;
 
     // variables are not library functions.
@@ -1437,7 +1507,7 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName,
 {
     if (functionName.empty())
         return false;
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(functionName);
+    const auto it = utils::as_const(mData->mFunctions).find(functionName);
     if (it == mData->mFunctions.cend())
         return false;
     const int callargs = numberOfArgumentsWithoutAst(ftok);
@@ -1470,7 +1540,7 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const std::map<std::string, WarnInfo>::const_iterator i =  mData->mFunctionwarn.find(getFunctionName(ftok));
+    const auto i = utils::as_const(mData->mFunctionwarn).find(getFunctionName(ftok));
     if (i ==  mData->mFunctionwarn.cend())
         return nullptr;
     return &i->second;
@@ -1526,7 +1596,7 @@ bool Library::formatstr_function(const Token* ftok) const
     if (isNotLibraryFunction(ftok))
         return false;
 
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
     if (it != mData->mFunctions.cend())
         return it->second.formatstr;
     return false;
@@ -1555,7 +1625,7 @@ const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *f
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const std::unordered_map<std::string, NonOverlappingData>::const_iterator it = mData->mNonOverlappingData.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mNonOverlappingData).find(getFunctionName(ftok));
     return (it != mData->mNonOverlappingData.cend()) ? &it->second : nullptr;
 }
 
@@ -1565,15 +1635,15 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             const Token* contTok = ftok->astParent()->astOperand1();
             using Yield = Library::Container::Yield;
-            const Yield yield = astContainerYield(contTok);
+            const Yield yield = astContainerYield(contTok, *this);
             if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
                 yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok) == Library::Container::Action::NO_ACTION))
+                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok, *this) == Library::Container::Action::NO_ACTION))
                 return Library::UseRetValType::DEFAULT;
         }
         return Library::UseRetValType::NONE;
     }
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
     if (it != mData->mFunctions.cend())
         return it->second.useretval;
     return Library::UseRetValType::NONE;
@@ -1582,30 +1652,34 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 const std::string& Library::returnValue(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
-        return emptyString;
-    const std::map<std::string, std::string>::const_iterator it = mData->mReturnValue.find(getFunctionName(ftok));
-    return it != mData->mReturnValue.cend() ? it->second : emptyString;
+        return mEmptyString;
+    const auto it = utils::as_const(mData->mReturnValue).find(getFunctionName(ftok));
+    return it != mData->mReturnValue.cend() ? it->second : mEmptyString;
 }
 
 const std::string& Library::returnValueType(const Token *ftok) const
 {
+    while (Token::simpleMatch(ftok, "::"))
+        ftok = ftok->astOperand2() ? ftok->astOperand2() : ftok->astOperand1();
+    if (!ftok)
+        return mEmptyString;
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
             const Token* contTok = ftok->astParent()->astOperand1();
             if (contTok->valueType() && contTok->valueType()->container)
                 return contTok->valueType()->container->getReturnType(ftok->str());
         }
-        return emptyString;
+        return mEmptyString;
     }
-    const std::map<std::string, std::string>::const_iterator it = mData->mReturnValueType.find(getFunctionName(ftok));
-    return it != mData->mReturnValueType.cend() ? it->second : emptyString;
+    const auto it = utils::as_const(mData->mReturnValueType).find(getFunctionName(ftok));
+    return it != mData->mReturnValueType.cend() ? it->second : mEmptyString;
 }
 
 int Library::returnValueContainer(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return -1;
-    const std::map<std::string, int>::const_iterator it = mData->mReturnValueContainer.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mReturnValueContainer).find(getFunctionName(ftok));
     return it != mData->mReturnValueContainer.cend() ? it->second : -1;
 }
 
@@ -1613,7 +1687,7 @@ std::vector<MathLib::bigint> Library::unknownReturnValues(const Token *ftok) con
 {
     if (isNotLibraryFunction(ftok))
         return std::vector<MathLib::bigint>();
-    const std::map<std::string, std::vector<MathLib::bigint>>::const_iterator it = mData->mUnknownReturnValues.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mUnknownReturnValues).find(getFunctionName(ftok));
     return (it == mData->mUnknownReturnValues.cend()) ? std::vector<MathLib::bigint>() : it->second;
 }
 
@@ -1621,7 +1695,7 @@ const Library::Function *Library::getFunction(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    const std::unordered_map<std::string, Function>::const_iterator it1 = mData->mFunctions.find(getFunctionName(ftok));
+    const auto it1 = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
     if (it1 == mData->mFunctions.cend())
         return nullptr;
     return &it1->second;
@@ -1632,7 +1706,7 @@ bool Library::hasminsize(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
     if (it == mData->mFunctions.cend())
         return false;
     return std::any_of(it->second.argumentChecks.cbegin(), it->second.argumentChecks.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
@@ -1661,7 +1735,7 @@ Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, i
 
 bool Library::ignorefunction(const std::string& functionName) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(functionName);
+    const auto it = utils::as_const(mData->mFunctions).find(functionName);
     if (it != mData->mFunctions.cend())
         return it->second.ignore;
     return false;
@@ -1672,21 +1746,21 @@ const std::unordered_map<std::string, Library::Function>& Library::functions() c
 }
 bool Library::isUse(const std::string& functionName) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(functionName);
+    const auto it = utils::as_const(mData->mFunctions).find(functionName);
     if (it != mData->mFunctions.cend())
         return it->second.use;
     return false;
 }
 bool Library::isLeakIgnore(const std::string& functionName) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(functionName);
+    const auto it = utils::as_const(mData->mFunctions).find(functionName);
     if (it != mData->mFunctions.cend())
         return it->second.leakignore;
     return false;
 }
 bool Library::isFunctionConst(const std::string& functionName, bool pure) const
 {
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(functionName);
+    const auto it = utils::as_const(mData->mFunctions).find(functionName);
     if (it != mData->mFunctions.cend())
         return pure ? it->second.ispure : it->second.isconst;
     return false;
@@ -1698,13 +1772,13 @@ bool Library::isFunctionConst(const Token *ftok) const
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             using Yield = Library::Container::Yield;
-            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            const Yield yield = astContainerYield(ftok->astParent()->astOperand1(), *this);
             if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
                 return true;
         }
         return false;
     }
-    const std::unordered_map<std::string, Function>::const_iterator it = mData->mFunctions.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mFunctions).find(getFunctionName(ftok));
     return (it != mData->mFunctions.cend() && it->second.isconst);
 }
 
@@ -1717,13 +1791,13 @@ bool Library::isnoreturn(const Token *ftok) const
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
             const Token* contTok = ftok->astParent()->astOperand1();
-            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION ||
-                astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
+            if (astContainerAction(contTok, *this) != Library::Container::Action::NO_ACTION ||
+                astContainerYield(contTok, *this) != Library::Container::Yield::NO_YIELD)
                 return false;
         }
         return false;
     }
-    const std::unordered_map<std::string, LibraryData::FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mNoReturn).find(getFunctionName(ftok));
     if (it == mData->mNoReturn.end())
         return false;
     if (it->second == LibraryData::FalseTrueMaybe::Maybe)
@@ -1737,7 +1811,7 @@ bool Library::isnotnoreturn(const Token *ftok) const
         return false;
     if (isNotLibraryFunction(ftok))
         return hasAnyTypeCheck(getFunctionName(ftok));
-    const std::unordered_map<std::string, LibraryData::FalseTrueMaybe>::const_iterator it = mData->mNoReturn.find(getFunctionName(ftok));
+    const auto it = utils::as_const(mData->mNoReturn).find(getFunctionName(ftok));
     if (it == mData->mNoReturn.end())
         return false;
     if (it->second == LibraryData::FalseTrueMaybe::Maybe)
@@ -1752,27 +1826,27 @@ bool Library::markupFile(const std::string &path) const
 
 bool Library::processMarkupAfterCode(const std::string &path) const
 {
-    const std::map<std::string, bool>::const_iterator it = mData->mProcessAfterCode.find(Path::getFilenameExtensionInLowerCase(path));
+    const auto it = utils::as_const(mData->mProcessAfterCode).find(Path::getFilenameExtensionInLowerCase(path));
     return (it == mData->mProcessAfterCode.cend() || it->second);
 }
 
 bool Library::reportErrors(const std::string &path) const
 {
-    const std::map<std::string, bool>::const_iterator it = mData->mReportErrors.find(Path::getFilenameExtensionInLowerCase(path));
+    const auto it = utils::as_const(mData->mReportErrors).find(Path::getFilenameExtensionInLowerCase(path));
     return (it == mData->mReportErrors.cend() || it->second);
 }
 
 bool Library::isexecutableblock(const std::string &file, const std::string &token) const
 {
-    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator it = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const auto it = utils::as_const(mData->mExecutableBlocks).find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mData->mExecutableBlocks.cend() && it->second.isBlock(token));
 }
 
 int Library::blockstartoffset(const std::string &file) const
 {
     int offset = -1;
-    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator map_it
-        = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const auto map_it
+        = utils::as_const(mData->mExecutableBlocks).find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mData->mExecutableBlocks.end()) {
         offset = map_it->second.offset();
@@ -1782,37 +1856,37 @@ int Library::blockstartoffset(const std::string &file) const
 
 const std::string& Library::blockstart(const std::string &file) const
 {
-    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator map_it
-        = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const auto map_it
+        = utils::as_const(mData->mExecutableBlocks).find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mData->mExecutableBlocks.end()) {
         return map_it->second.start();
     }
-    return emptyString;
+    return mEmptyString;
 }
 
 const std::string& Library::blockend(const std::string &file) const
 {
-    const std::unordered_map<std::string, LibraryData::CodeBlock>::const_iterator map_it
-        = mData->mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const auto map_it
+        = utils::as_const(mData->mExecutableBlocks).find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mData->mExecutableBlocks.end()) {
         return map_it->second.end();
     }
-    return emptyString;
+    return mEmptyString;
 }
 
 bool Library::iskeyword(const std::string &file, const std::string &keyword) const
 {
-    const std::map<std::string, std::set<std::string>>::const_iterator it =
-        mData->mKeywords.find(Path::getFilenameExtensionInLowerCase(file));
+    const auto it =
+        utils::as_const(mData->mKeywords).find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mData->mKeywords.end() && it->second.count(keyword));
 }
 
 bool Library::isimporter(const std::string& file, const std::string &importer) const
 {
-    const std::map<std::string, std::set<std::string>>::const_iterator it =
-        mData->mImporters.find(Path::getFilenameExtensionInLowerCase(file));
+    const auto it =
+        utils::as_const(mData->mImporters).find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mData->mImporters.end() && it->second.count(importer) > 0);
 }
 
@@ -1877,10 +1951,20 @@ bool Library::isSmartPointer(const Token* tok) const
 
 const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
+    if (!tok)
+        return nullptr;
+    if (tok->isKeyword())
+        return nullptr;
     std::string typestr = withoutStd ? "std::" : "";
-    while (Token::Match(tok, "%name%|::")) {
-        typestr += tok->str();
+    if (tok->str() == "::")
         tok = tok->next();
+    while (Token::Match(tok, "%name% ::")) {
+        typestr += tok->str();
+        typestr += "::";
+        tok = tok->tokAt(2);
+    }
+    if (tok && tok->isName()) {
+        typestr += tok->str();
     }
     auto it = mData->mSmartPointers.find(typestr);
     if (it == mData->mSmartPointers.end())
@@ -1916,7 +2000,7 @@ Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeNam
 
 bool Library::hasAnyTypeCheck(const std::string& typeName) const
 {
-    return std::any_of(mData->mTypeChecks.begin(), mData->mTypeChecks.end(), [&](const std::pair<std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
+    return std::any_of(mData->mTypeChecks.begin(), mData->mTypeChecks.end(), [&](const std::pair<const std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
         return tc.first.second == typeName;
     });
 }
@@ -1956,13 +2040,13 @@ bool Library::isexporter(const std::string &prefix) const
 
 bool Library::isexportedprefix(const std::string &prefix, const std::string &token) const
 {
-    const std::map<std::string, LibraryData::ExportedFunctions>::const_iterator it = mData->mExporters.find(prefix);
+    const auto it = utils::as_const(mData->mExporters).find(prefix);
     return (it != mData->mExporters.end() && it->second.isPrefix(token));
 }
 
 bool Library::isexportedsuffix(const std::string &prefix, const std::string &token) const
 {
-    const std::map<std::string, LibraryData::ExportedFunctions>::const_iterator it = mData->mExporters.find(prefix);
+    const auto it = utils::as_const(mData->mExporters).find(prefix);
     return (it != mData->mExporters.end() && it->second.isSuffix(token));
 }
 
@@ -1973,7 +2057,7 @@ bool Library::isreflection(const std::string &token) const
 
 int Library::reflectionArgument(const std::string &token) const
 {
-    const std::map<std::string, int>::const_iterator it = mData->mReflection.find(token);
+    const auto it = utils::as_const(mData->mReflection).find(token);
     if (it != mData->mReflection.end())
         return it->second;
     return -1;
@@ -1991,19 +2075,19 @@ const std::set<std::string>& Library::defines() const
 
 const Library::PodType *Library::podtype(const std::string &name) const
 {
-    const std::unordered_map<std::string, struct PodType>::const_iterator it = mData->mPodTypes.find(name);
+    const auto it = utils::as_const(mData->mPodTypes).find(name);
     return (it != mData->mPodTypes.end()) ? &(it->second) : nullptr;
 }
 
 const Library::PlatformType *Library::platform_type(const std::string &name, const std::string & platform) const
 {
-    const std::map<std::string, LibraryData::Platform>::const_iterator it = mData->mPlatforms.find(platform);
+    const auto it = utils::as_const(mData->mPlatforms).find(platform);
     if (it != mData->mPlatforms.end()) {
         const PlatformType * const type = it->second.platform_type(name);
         if (type)
             return type;
     }
 
-    const std::map<std::string, PlatformType>::const_iterator it2 = mData->mPlatformTypes.find(name);
+    const auto it2 = utils::as_const(mData->mPlatformTypes).find(name);
     return (it2 != mData->mPlatformTypes.end()) ? &(it2->second) : nullptr;
 }

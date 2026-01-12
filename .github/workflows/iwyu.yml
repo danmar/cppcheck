@@ -15,23 +15,31 @@ jobs:
 
     strategy:
       matrix:
-        image: ["fedora:latest"] # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
-        stdlib: [libstdc++, libc++]
+        # "opensuse/tumbleweed:latest" / "fedora:latest" / "debian:unstable" / "archlinux:latest"
         include:
-          - stdlib: libstdc++
-            use_libcxx: Off
-          - stdlib: libc++
-            use_libcxx: On
+          - os: ubuntu-22.04
+            image: "fedora:latest"
+            stdlib: libstdc++
+            clang_inc: '-isystem/usr/lib/clang/20/include'
+          # TODO: disable because it currently fails with "error: <cstddef> tried including <stddef.h> but didn't find libc++'s <stddef.h> header."
+          #- os: ubuntu-22.04
+          #  image: "fedora:latest"
+          #  stdlib: libc++
+          #  clang_inc: '-isystem/usr/lib/clang/20/include'
+          - os: macos-13
+            image: ""
+            stdlib: libc++  # no libstdc++ on macOS
+            mapping_file_opt: '-Xiwyu --mapping_file=$(realpath ./macos.imp)'
       fail-fast: false
 
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     if: ${{ github.repository_owner == 'danmar' }}
 
     container:
       image: ${{ matrix.image }}
 
     env:
-      QT_VERSION: 6.8.1
+      QT_VERSION: 6.10.0
 
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +52,6 @@ jobs:
           apt-get update
           apt-get install -y cmake clang make libpcre3-dev
           apt-get install -y libgl-dev  # fixes missing dependency for Qt in CMake
-          apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
           apt-get install -y iwyu
 
       - name: Install missing software on archlinux
@@ -70,7 +77,9 @@ jobs:
           dnf install -y cmake clang pcre-devel
           dnf install -y libglvnd-devel  # fixes missing dependency for Qt in CMake
           dnf install -y p7zip-plugins  # required as fallback for py7zr in Qt installation
-          dnf install -y cups-devel  # required for Qt6PrintSupport in CMake since Qt 6.7.3
+          dnf install -y python3-pip  # fixes missing pip module in jurplel/install-qt-action
+          dnf install -y python3-devel  # fixes building of wheels for jurplel/install-qt-action
+          dnf install -y cairo-devel gtk3-devel libcurl-devel lua-devel openssl-devel python3-devel sqlite-devel boost-devel cppunit-devel libsigc++20-devel  # for strict cfg checks
           dnf install -y iwyu
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
@@ -86,6 +95,13 @@ jobs:
           zypper install -y include-what-you-use-tools
           ln -s iwyu_tool.py /usr/bin/iwyu_tool
 
+      # coreutils contains "nproc"
+      - name: Install missing software on macOS
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install include-what-you-use pcre coreutils
+          ln -s iwyu_tool.py /usr/local/bin/iwyu_tool
+
       # Fails on OpenSUSE:
       # Warning: Failed to restore: Tar failed with error: Unable to locate executable file: tar. Please verify either the file path exists or the file can be found within a directory specified by the PATH environment variable. Also check the file mode to verify the file is executable.
       # Also the shell is broken afterwards:
@@ -95,13 +111,21 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
           install-deps: false
           cache: true
 
+      - name: Generate macOS mappings
+        if: contains(matrix.os, 'macos')
+        run: |
+          set -x
+
+          wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-apple-libc.py
+          python3 iwyu-mapgen-apple-libc.py $(xcrun --show-sdk-path)/usr/include > macos.imp
+
       - name: Prepare CMake
         run: |
-          # TODO: why does it build dmake in the next step?
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.stdlib == 'libc++' }}
         env:
           CC: clang
           CXX: clang++
@@ -123,21 +147,37 @@ jobs:
 
       - name: iwyu_tool
         run: |
-          PWD=$(pwd)
-          # -isystem/usr/lib/clang/17/include
           # TODO: remove -stdlib= - it should have been taken from the compilation database
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} > iwyu.log
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --max_line_length=1024 -Xiwyu --comment_style=long -Xiwyu --quoted_includes_first -Xiwyu --update_comments -stdlib=${{ matrix.stdlib }} ${{ matrix.mapping_file_opt }} ${{ matrix.clang_inc }} > iwyu.log
+
+      # TODO: run with all configurations
+      - name: test/cfg
+        if: matrix.stdlib == 'libstdc++'
+        run: |
+          # TODO: redirect to log
+          ./test/cfg/runtests.sh
+        env:
+          IWYU: include-what-you-use
+          IWYU_CLANG_INC: ${{ matrix.clang_inc }}
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: Compilation Database (include-what-you-use - ${{ matrix.stdlib }})
+          name: Compilation Database (include-what-you-use - ${{ matrix.os }} ${{ matrix.stdlib }})
           path: ./cmake.output/compile_commands.json
 
       - uses: actions/upload-artifact@v4
+        if: ${{ contains(matrix.os, 'macos') && (success() || failure()) }}
+        with:
+          name: macOS Mappings
+          path: |
+            ./iwyu-mapgen-apple-libc.py
+            ./macos.imp
+
+      - uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: Logs (include-what-you-use - ${{ matrix.stdlib }})
+          name: Logs (include-what-you-use - ${{ matrix.os }} ${{ matrix.stdlib }})
           path: ./*.log
 
   clang-include-cleaner:
@@ -156,7 +196,7 @@ jobs:
     if: ${{ github.repository_owner == 'danmar' }}
 
     env:
-      QT_VERSION: 6.8.1
+      QT_VERSION: 6.10.0
 
     steps:
       - uses: actions/checkout@v4
@@ -167,7 +207,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake make libpcre3-dev
-          sudo apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
           sudo apt-get install -y libgl-dev  # missing dependency for using Qt in CMake
 
       - name: Install clang
@@ -175,29 +214,29 @@ jobs:
           sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 19
-          sudo apt-get install -y clang-tools-19
+          sudo ./llvm.sh 21
+          sudo apt-get install -y clang-tools-21
 
       - name: Install libc++
         if: matrix.stdlib == 'libc++'
         run: |
-          sudo apt-get install -y libc++-19-dev
+          sudo apt-get install -y libc++-21-dev
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
           install-deps: false
           cache: true
 
       - name: Prepare CMake
         run: |
-          # TODO: why does it build dmake in the next step?
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off -DEXTERNALS_AS_SYSTEM=On -DUSE_LIBCXX=${{ matrix.use_libcxx }}
         env:
-          CC: clang-19
-          CXX: clang++-19
+          CC: clang-21
+          CXX: clang++-21
 
       - name: Prepare CMake dependencies
         run: |
@@ -214,7 +253,7 @@ jobs:
       - name: clang-include-cleaner
         run: |
           # TODO: run multi-threaded
-          find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-19 --print=changes --extra-arg=-w --extra-arg=-stdlib=${{ matrix.stdlib }} -p cmake.output > clang-include-cleaner.log 2>&1
+          find $PWD/cli $PWD/lib $PWD/test $PWD/gui -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-21 --print=changes --extra-arg=-w --extra-arg=-stdlib=${{ matrix.stdlib }} -p cmake.output > clang-include-cleaner.log 2>&1
 
       - uses: actions/upload-artifact@v4
         if: success() || failure()

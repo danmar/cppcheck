@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,9 @@ bool isZero(T x)
     return isEqual(x, T(0));
 }
 
+/**
+ * @throws InternalError thrown in case of unknown operator
+ */
 template<class R, class T>
 R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
@@ -63,14 +66,14 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
     case '*':
         return wrap(x * y);
     case '/':
-        if (isZero(y) || (std::is_integral<T>{} && std::is_signed<T>{} && isEqual(y, T(-1)) && isEqual(x, std::numeric_limits<T>::min()))) {
+        if (isZero(y) || (std::is_signed<T>{} && y < 0)) {
             if (error)
                 *error = true;
             return R{};
         }
         return wrap(x / y);
     case '%':
-        if (isZero(MathLib::bigint(y)) || (std::is_integral<T>{} && std::is_signed<T>{} && isEqual(y, T(-1)) && isEqual(x, std::numeric_limits<T>::min()))) {
+        if (isZero(MathLib::bigint(y)) || (std::is_signed<T>{} && MathLib::bigint(y) < 0)) {
             if (error)
                 *error = true;
             return R{};

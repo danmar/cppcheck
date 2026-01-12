@@ -295,7 +295,13 @@ def test_clang_tidy(tmpdir):
     assert stderr == ''
 
 
-def test_project_file_filter(tmpdir):
+@pytest.mark.parametrize("file_filter", [
+    ['--file-filter=test.cpp'],
+    ['--file-filter=*.cpp'],
+    ['--file-filter=+', 'test.cpp'],
+    ['--file-filter=+', '*.cpp'],
+])
+def test_project_file_filter(tmpdir, file_filter):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
         pass
@@ -310,7 +316,7 @@ def test_project_file_filter(tmpdir):
     </paths>
 </project>""".format(test_file))
 
-    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    args = file_filter + ['--project={}'.format(project_file)]
     out_lines = [
         'Checking {} ...'.format(test_file)
     ]
@@ -318,7 +324,11 @@ def test_project_file_filter(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-def test_project_file_filter_2(tmpdir):
+@pytest.mark.parametrize("file_filter", [
+    ['--file-filter=*.cpp'],
+    ['--file-filter=+', '*.cpp'],
+])
+def test_project_file_filter_cpp(tmpdir, file_filter):
     test_file_1 = os.path.join(tmpdir, 'test.cpp')
     with open(test_file_1, 'wt') as f:
         pass
@@ -337,7 +347,7 @@ def test_project_file_filter_2(tmpdir):
     </paths>
 </project>""".format(test_file_1, test_file_2))
 
-    args = ['--file-filter=*.cpp', '--project={}'.format(project_file)]
+    args = file_filter + ['--project={}'.format(project_file)]
     out_lines = [
         'Checking {} ...'.format(test_file_1)
     ]
@@ -345,7 +355,11 @@ def test_project_file_filter_2(tmpdir):
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
 
 
-def test_project_file_filter_3(tmpdir):
+@pytest.mark.parametrize("file_filter", [
+    ['--file-filter=*.c'],
+    ['--file-filter=+', '*.c'],
+])
+def test_project_file_filter_c(tmpdir, file_filter):
     test_file_1 = os.path.join(tmpdir, 'test.cpp')
     with open(test_file_1, 'wt') as f:
         pass
@@ -364,12 +378,143 @@ def test_project_file_filter_3(tmpdir):
     </paths>
 </project>""".format(test_file_1, test_file_2))
 
-    args = ['--file-filter=*.c', '--project={}'.format(project_file)]
+    args = file_filter + ['--project={}'.format(project_file)]
     out_lines = [
         'Checking {} ...'.format(test_file_2)
     ]
 
     assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines)
+
+
+def test_project_relpath_file_filter_abspath(tmpdir):
+    """
+    relative paths in project file, absolute path in file filter
+    """
+    test_file_cpp = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        pass
+    test_file_c = os.path.join(tmpdir, 'test.c')
+    with open(test_file_c, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="test.cpp"/>
+        <dir name="test.c"/>
+    </paths>
+</project>""")
+
+    out_lines = [
+        'Checking test.c ...'
+    ]
+
+    args = ['--file-filter={}'.format(test_file_c), '--project=test.cppcheck']
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=tmpdir)
+
+
+def test_project_abspath_file_filter_relpath(tmpdir):
+    """
+    absolute paths in project file, relative path in file filter
+    """
+    test_file_cpp = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file_cpp, 'wt') as f:
+        pass
+    test_file_c = os.path.join(tmpdir, 'test.c')
+    with open(test_file_c, 'wt') as f:
+        pass
+
+    project_file = os.path.join(tmpdir, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <paths>
+        <dir name="{}"/>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file_c, test_file_cpp))
+
+    out_lines = [
+        'Checking {} ...'.format(test_file_c)
+    ]
+
+    args = ['--file-filter=test.c', '--project=test.cppcheck']
+    assert_cppcheck(args, ec_exp=0, err_exp=[], out_exp=out_lines, cwd=tmpdir)
+
+
+def test_project_pathmatch_other_cwd(tmpdir):
+    """
+    mixed relative and absolute paths in project file and on command line, executed in a different directory
+    """
+    test_root = tmpdir
+    test_cwd = os.path.join(test_root, 'cwd')
+    test_dir_1 = os.path.join(test_root, 'a')
+    test_dir_2 = os.path.join(test_root, 'b')
+    test_dir_3 = os.path.join(test_cwd, 'b')
+
+    os.mkdir(test_cwd)
+    os.mkdir(test_dir_1)
+    os.mkdir(test_dir_2)
+    os.mkdir(test_dir_3)
+
+    test_file_1 = os.path.join(test_dir_1, 'a-abs.c')
+    with open(test_file_1, 'wt') as f:
+        pass
+
+    test_file_2 = os.path.join(test_dir_1, 'a-rel.c')
+    with open(test_file_2, 'wt') as f:
+        pass
+
+    test_file_3 = os.path.join(test_dir_2, 'b-abs.c')
+    with open(test_file_3, 'wt') as f:
+        pass
+
+    test_file_4 = os.path.join(test_dir_2, 'b-rel.c')
+    with open(test_file_4, 'wt') as f:
+        pass
+
+    test_file_5 = os.path.join(test_dir_3, 'b-abs.c')
+    with open(test_file_5, 'wt') as f:
+        pass
+
+    test_file_6 = os.path.join(test_dir_3, 'b-rel.c')
+    with open(test_file_6, 'wt') as f:
+        pass
+
+    project_file = os.path.join(test_root, 'test.cppcheck')
+    with open(project_file, 'wt') as f:
+        f.write(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <exclude>
+        <path name="./?/"/>
+    </exclude>
+    <paths>
+        <dir name="{}"/>
+        <dir name="a/a-rel.c"/>
+        <dir name="{}"/>
+        <dir name="b/b-rel.c"/>
+        <dir name="{}"/>
+        <dir name="cwd/b/b-rel.c"/>
+    </paths>
+</project>""".format(test_file_1, test_file_3, test_file_5))
+
+    out_lines = [
+        'Checking {} ...'.format(test_file_5),
+        'Checking {} ...'.format(os.path.join("..", "cwd", "b", "b-rel.c")),
+    ]
+
+    args = ['--file-filter={}/*/?/**.c*'.format(test_root), '--project=../test.cppcheck']
+    exitcode, stdout, stderr = cppcheck(args, cwd=test_cwd)
+    stdout_lines = stdout.splitlines()
+    assert 0 == exitcode
+    assert '' == stderr
+    assert 4 == len(stdout_lines)
+    assert set(out_lines) <= set(stdout_lines)
 
 
 def test_project_file_filter_no_match(tmpdir):
@@ -389,7 +534,7 @@ def test_project_file_filter_no_match(tmpdir):
 
     args = ['--file-filter=*.c', '--project={}'.format(project_file)]
     out_lines = [
-        'cppcheck: error: could not find any files matching the filter.'
+        'cppcheck: error: could not find any files matching the filter:*.c'
     ]
 
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
@@ -429,13 +574,13 @@ def test_project_file_order(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/4 files checked 0% done',
+        '1/4 files checked 25% done',
         'Checking {} ...'.format(test_file_d),
-        '2/4 files checked 0% done',
+        '2/4 files checked 50% done',
         'Checking {} ...'.format(test_file_b),
-        '3/4 files checked 0% done',
+        '3/4 files checked 75% done',
         'Checking {} ...'.format(test_file_a),
-        '4/4 files checked 0% done'
+        '4/4 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -503,11 +648,11 @@ def test_project_file_duplicate_2(tmpdir):
     lines = stdout.splitlines()
     assert lines == [
         'Checking {} ...'.format(test_file_c),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_b),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -551,18 +696,18 @@ def test_project_file_duplicate_3(tmpdir):
     if sys.platform == 'win32':
         assert lines == [
             'Checking {} ...'.format(test_file_a),
-            '1/3 files checked 0% done',
+            '1/3 files checked 33% done',
             'Checking {} ...'.format(test_file_a),
-            '2/3 files checked 0% done',
+            '2/3 files checked 66% done',
             'Checking {} ...'.format(test_file_a),
-            '3/3 files checked 0% done'
+            '3/3 files checked 100% done'
         ]
     else:
         assert lines == [
             'Checking {} ...'.format(test_file_a),
-            '1/2 files checked 0% done',
+            '1/2 files checked 50% done',
             'Checking {} ...'.format(test_file_a),
-            '2/2 files checked 0% done'
+            '2/2 files checked 100% done'
         ]
     assert stderr == ''
 
@@ -619,11 +764,11 @@ def test_project_file_duplicate_4(tmpdir):
     # TODO: only a single file should be checked
     assert lines == [
         'Checking {} ...'.format(test_file_a),
-        '1/3 files checked 0% done',
+        '1/3 files checked 33% done',
         'Checking {} ...'.format(test_file_a),
-        '2/3 files checked 0% done',
+        '2/3 files checked 66% done',
         'Checking {} ...'.format(test_file_a),
-        '3/3 files checked 0% done'
+        '3/3 files checked 100% done'
     ]
     assert stderr == ''
 
@@ -705,7 +850,6 @@ def test_project_file_ignore_3(tmpdir):
     assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
 
 
-@pytest.mark.xfail
 def test_json_file_ignore(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
@@ -861,3 +1005,95 @@ def test_shared_items_project():
     # Assume no errors, and that shared items code files have been checked as well
     assert '2/2 files checked ' in stdout  # only perform partial check since -j2 does not report a percentage right now
     assert stderr == ''
+
+
+def test_project_file_nested(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt'):
+        pass
+
+    level3_file = tmp_path / 'level3.cppcheck'
+    with open(level3_file, 'wt') as f:
+        f.write(
+"""<project>
+    <paths>
+        <dir name="{}"/>
+    </paths>
+</project>""".format(test_file))
+
+    level2_file = tmp_path / 'level2.cppcheck'
+    with open(level2_file, 'wt') as f:
+        f.write(
+"""<project>
+    <importproject>level3.cppcheck</importproject>
+</project>""")
+
+    level1_file = tmp_path / 'level1.cppcheck'
+    with open(level1_file, 'wt') as f:
+        f.write(
+"""<project>
+    <importproject>level2.cppcheck</importproject>
+</project>""")
+
+    args = ['--project={}'.format(level1_file)]
+    out_lines = [
+        'cppcheck: error: nested Cppcheck GUI projects are not supported.'
+    ]
+
+    assert_cppcheck(args, ec_exp=1, err_exp=[], out_exp=out_lines)
+
+
+def test_project_file_no_analyze_all_vs_configs(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt'):
+        pass
+
+    project_path = tmp_path / 'project.cppcheck'
+    with open(project_path, 'wt') as f:
+        f.write(
+"""<project>
+    <analyze-all-vs-configs>false</analyze-all-vs-configs>
+    <paths>
+        <dir name="."/>
+    </paths>
+</project>""")
+
+    ret, stdout, stderr = cppcheck(['--project=' + str(project_path)])
+    assert ret == 0, stdout
+    assert stderr == ''
+
+
+@pytest.mark.parametrize("j,executor", [
+    (1, "thread"),
+    (2, "thread"),
+    (2, "process"),
+])
+def test_project_progress(tmp_path, j, executor):
+    if sys.platform == 'win32' and executor == "process":
+        pytest.skip("process executor not supported on Windows")
+
+    code = 'x = 1;'
+    with open(tmp_path / 'test1.c', 'wt') as f:
+        f.write(code)
+    with open(tmp_path / 'test2.c', 'wt') as f:
+        f.write(code)
+
+    compilation_db = [
+        {"directory": str(tmp_path),
+         "command": "gcc -c test1.c",
+         "file": "test1.c",
+         "output": "test1.o"},
+        {"directory": str(tmp_path),
+         "command": "gcc -c test2.c",
+         "file": "test2.c",
+         "output": "test2.o"},
+    ]
+
+    project_file = tmp_path / 'compile_commands.json'
+
+    with open(project_file, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    _, stdout, _ = cppcheck([f'--project={project_file}', f'-j{j}', f'--executor={executor}'])
+    assert '1/2 files checked 50% done' in stdout
+    assert '2/2 files checked 100% done' in stdout

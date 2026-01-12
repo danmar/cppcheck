@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,10 +62,6 @@
 #include <QRegularExpression>
 #include <QTextStream>
 #include <QValueAxis>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-QT_CHARTS_USE_NAMESPACE
-#endif
 
 static QLineSeries *numberOfReports(const QString &fileName, const QString &severity);
 static QChartView *createChart(const QString &statsFile, const QString &tool);
@@ -149,7 +145,7 @@ void StatsDialog::setNumberOfFilesScanned(int num)
 void StatsDialog::setScanDuration(double seconds)
 {
     // Factor the duration into units (days/hours/minutes/seconds)
-    int secs = seconds;
+    int secs = static_cast<int>(seconds);
     const int days = secs / (24 * 60 * 60);
     secs -= days * (24 * 60 * 60);
     const int hours = secs / (60 * 60);
@@ -199,7 +195,7 @@ void StatsDialog::pdfExport()
                          .arg(tr("Information messages"))
                          .arg(mStatistics->getCount(CPPCHECK,ShowTypes::ShowInformation));
 
-    QString fileName = QFileDialog::getSaveFileName((QWidget*)nullptr, tr("Export PDF"), QString(), "*.pdf");
+    QString fileName = QFileDialog::getSaveFileName(nullptr, tr("Export PDF"), QString(), "*.pdf");
     if (QFileInfo(fileName).suffix().isEmpty()) {
         fileName.append(".pdf");
     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,17 @@
 
 #include "threadexecutor.h"
 
+#ifdef HAS_THREADING_MODEL_THREAD
+
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "filesettings.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "timer.h"
 
 #include <cassert>
-#include <cstdint>
 #include <cstdlib>
 #include <future>
 #include <iostream>
@@ -38,7 +40,7 @@
 #include <utility>
 #include <vector>
 
-ThreadExecutor::ThreadExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, SuppressionList &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
+ThreadExecutor::ThreadExecutor(const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, CppCheck::ExecuteCmdFn executeCommand)
     : Executor(files, fileSettings, settings, suppressions, errorLogger)
     , mExecuteCommand(std::move(executeCommand))
 {
@@ -66,6 +68,11 @@ public:
         mErrorLogger.reportErr(msg);
     }
 
+    void reportMetric(const std::string &metric) override {
+        std::lock_guard<std::mutex> lg(mReportSync);
+        mErrorLogger.reportMetric(metric);
+    }
+
     void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal) {
         std::lock_guard<std::mutex> lg(mReportSync);
         mThreadExecutor.reportStatus(fileindex, filecount, sizedone, sizetotal);
@@ -80,8 +87,8 @@ private:
 class ThreadData
 {
 public:
-    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
-        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
+    ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, Suppressions& supprs, const std::list<FileWithDetails> &files, const std::list<FileSettings> &fileSettings, CppCheck::ExecuteCmdFn executeCommand)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), mSuppressions(supprs), mExecuteCommand(std::move(executeCommand)), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -113,19 +120,32 @@ public:
     }
 
     unsigned int check(ErrorLogger &errorLogger, const FileWithDetails *file, const FileSettings *fs) const {
-        CppCheck fileChecker(errorLogger, false, mExecuteCommand);
-        fileChecker.settings() = mSettings; // this is a copy
+        CppCheck fileChecker(mSettings, mSuppressions, errorLogger, false, mExecuteCommand);
 
         unsigned int result;
         if (fs) {
             // file settings..
             result = fileChecker.check(*fs);
-            if (fileChecker.settings().clangTidy)
-                fileChecker.analyseClangTidy(*fs);
         } else {
             // Read file from a file
             result = fileChecker.check(*file);
-            // TODO: call analyseClangTidy()?
+        }
+        for (const auto& suppr : mSuppressions.nomsg.getSuppressions()) {
+            // need to transfer all inline suppressions because these are used later on
+            if (suppr.isInline) {
+                const std::string err = mSuppressions.nomsg.addSuppression(suppr);
+                if (!err.empty()) {
+                    // TODO: only update state if it doesn't exist - otherwise propagate error
+                    mSuppressions.nomsg.updateSuppressionState(suppr); // TODO: check result
+                }
+                continue;
+            }
+
+            // propagate state of global suppressions
+            if (!suppr.isLocal()) {
+                mSuppressions.nomsg.updateSuppressionState(suppr); // TODO: check result
+                continue;
+            }
         }
         return result;
     }
@@ -151,6 +171,7 @@ private:
 
     std::mutex mFileSync;
     const Settings &mSettings;
+    Suppressions &mSuppressions;
     CppCheck::ExecuteCmdFn mExecuteCommand;
 
 public:
@@ -179,7 +200,7 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    ThreadData data(*this, mErrorLogger, mSettings, mFiles, mFileSettings, mExecuteCommand);
+    ThreadData data(*this, mErrorLogger, mSettings, mSuppressions, mFiles, mFileSettings, mExecuteCommand);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
@@ -195,8 +216,10 @@ unsigned int ThreadExecutor::check()
         return v + f.get();
     });
 
-    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY)
+    if (mSettings.showtime == ShowTime::SUMMARY || mSettings.showtime == ShowTime::TOP5_SUMMARY)
         CppCheck::printTimerResults(mSettings.showtime);
 
     return result;
 }
+
+#endif // HAS_THREADING_MODEL_THREAD

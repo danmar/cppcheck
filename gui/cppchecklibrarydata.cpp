@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,27 +22,23 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <QObject>
 #include <QVariant>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-#include <QtGlobal>
-
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QStringRef>
-#endif
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
 
-static std::string unhandledElement(const QXmlStreamReader &xmlReader)
+NORETURN static void unhandledElement(const QXmlStreamReader &xmlReader)
 {
     throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
 }
 
-static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
+NORETURN static void mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())
@@ -147,7 +143,7 @@ static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReade
             continue;
         const QString elementName = xmlReader.name().toString();
         if (elementName == "suppress" || elementName == "check") {
-            QPair<QString, QString> entry(elementName, xmlReader.readElementText());
+            std::pair<QString, QString> entry(elementName, xmlReader.readElementText());
             typeChecks.append(entry);
         }
     }
@@ -271,6 +267,7 @@ static CppcheckLibraryData::MemoryResource loadMemoryResource(QXmlStreamReader &
         if (elementName == "alloc" || elementName == "realloc") {
             CppcheckLibraryData::MemoryResource::Alloc alloc;
             alloc.isRealloc = (elementName == "realloc");
+            alloc.noFail = (xmlReader.attributes().value("no-fail").toString() == "true");
             alloc.init = (xmlReader.attributes().value("init").toString() == "true");
             if (xmlReader.attributes().hasAttribute("arg")) {
                 alloc.arg = xmlReader.attributes().value("arg").toInt();
@@ -722,6 +719,8 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
             xmlWriter.writeStartElement("alloc");
         }
         xmlWriter.writeAttribute("init", bool_to_string(alloc.init));
+        if (alloc.noFail)
+            xmlWriter.writeAttribute("no-fail", bool_to_string(alloc.noFail));
         if (alloc.arg != -1) {
             xmlWriter.writeAttribute("arg", QString("%1").arg(alloc.arg));
         }
@@ -756,7 +755,7 @@ static void writeTypeChecks(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDa
     if (!typeChecks.isEmpty()) {
         xmlWriter.writeStartElement("unusedvar");
     }
-    for (const QPair<QString, QString> &check : typeChecks) {
+    for (const std::pair<QString, QString> &check : typeChecks) {
         xmlWriter.writeStartElement(check.first);
         xmlWriter.writeCharacters(check.second);
         xmlWriter.writeEndElement();

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,34 +22,32 @@
 //---------------------------------------------------------------------------
 
 #include "check.h"
-#include "color.h"
 #include "config.h"
-#include "errorlogger.h"
-#include "settings.h"
 
 #include <cstddef>
 #include <cstdint>
-#include <fstream>
 #include <functional>
 #include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
 class TokenList;
-enum class SHOWTIME_MODES : std::uint8_t;
+enum class ShowTime : std::uint8_t;
 struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
 class FileWithDetails;
-class RemarkComment;
 class AnalyzerInformation;
+class ErrorLogger;
+class Settings;
+struct Suppressions;
+class Preprocessor;
 
-namespace simplecpp { class TokenList; }
+namespace simplecpp {
+    class TokenList;
+    struct Output;
+}
 
 /// @addtogroup Core
 /// @{
@@ -60,21 +58,26 @@ namespace simplecpp { class TokenList; }
  * errors or places that could be improved.
  * Usage: See check() for more info.
  */
-class CPPCHECKLIB CppCheck : ErrorLogger {
+class CPPCHECKLIB CppCheck {
+    friend class TestCppcheck;
+
 public:
+    // exe, args, redirect, output
     using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
 
     /**
      * @brief Constructor.
      */
-    CppCheck(ErrorLogger &errorLogger,
+    CppCheck(const Settings& settings,
+             Suppressions& supprs,
+             ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
              ExecuteCmdFn executeCommand);
 
     /**
      * @brief Destructor.
      */
-    ~CppCheck() override;
+    ~CppCheck();
 
     /**
      * @brief This starts the actual checking. Note that you must call
@@ -99,18 +102,13 @@ public:
      * the disk but the content is given in @p content. In errors the @p path
      * is used as a filename.
      * @param file The file to check.
-     * @param content File content as a string.
+     * @param data File content as a buffer.
+     * @param size Size of buffer.
      * @return amount of errors found or 0 if none were found.
      * @note You must set settings before calling this function (by calling
      *  settings()).
      */
-    unsigned int check(const FileWithDetails &file, const std::string &content);
-
-    /**
-     * @brief Get reference to current settings.
-     * @return a reference to current settings
-     */
-    Settings &settings();
+    unsigned int checkBuffer(const FileWithDetails &file, const char* data, std::size_t size);
 
     /**
      * @brief Returns current version number as a string.
@@ -133,7 +131,6 @@ public:
     static void getErrorMessages(ErrorLogger &errorlogger);
 
     void tooManyConfigsError(const std::string &file, int numberOfConfigurations);
-    void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
@@ -142,14 +139,14 @@ public:
      */
     bool analyseWholeProgram();
 
-    /** Analyze all files using clang-tidy */
-    void analyseClangTidy(const FileSettings &fileSettings);
-
     /** analyse whole program use .analyzeinfo files or ctuinfo string */
     unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
 
     static void resetTimerResults();
-    static void printTimerResults(SHOWTIME_MODES mode);
+    static void printTimerResults(ShowTime mode);
+
+private:
+    void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
     bool isPremiumCodingStandardId(const std::string& id) const;
 
@@ -160,7 +157,9 @@ public:
 
     std::string getLibraryDumpData() const;
 
-private:
+    /** Analyze all files using clang-tidy */
+    void analyseClangTidy(const FileSettings &fileSettings);
+
 #ifdef HAVE_RULES
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
@@ -170,19 +169,51 @@ private:
     void internalError(const std::string &filename, const std::string &msg);
 
     /**
+     * @brief Calculate hash used to detect when a file needs to be reanalyzed.
+     *
+     * @param preprocessor  Preprocessor used to calculate the hash.
+     * @return hash
+     */
+    std::size_t calculateHash(const Preprocessor &preprocessor, const std::string& filePath = {}) const;
+
+    /**
+     * @brief Check a file
+     * @param file the file
+     * @param cfgname  cfg name
+     * @return number of errors found
+     */
+    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, int fileIndex);
+
+    void checkPlistOutput(const FileWithDetails& file, const std::vector<std::string>& files);
+
+    /**
+     * @brief Check a file using buffer
+     * @param file the file
+     * @param cfgname  cfg name
+     * @param data the data to be read
+     * @param size the size of the data to be read
+     * @return number of errors found
+     */
+    unsigned int checkBuffer(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const char* data, std::size_t size);
+
+    // TODO: should use simplecpp::OutputList
+    using CreateTokenListFn = std::function<simplecpp::TokenList (std::vector<std::string>&, std::list<simplecpp::Output>*)>;
+
+    /**
      * @brief Check a file using stream
      * @param file the file
      * @param cfgname  cfg name
-     * @param fileStream stream the file content can be read from
+     * @param createTokenList a function to create the simplecpp::TokenList with
      * @return number of errors found
      */
-    unsigned int checkFile(const FileWithDetails& file, const std::string &cfgname, std::istream* fileStream = nullptr);
+    unsigned int checkInternal(const FileWithDetails& file, const std::string &cfgname, int fileIndex, const CreateTokenListFn& createTokenList);
 
     /**
      * @brief Check normal tokens
      * @param tokenizer tokenizer instance
+     * @param analyzerInformation the analyzer infomation
      */
-    void checkNormalTokens(const Tokenizer &tokenizer);
+    void checkNormalTokens(const Tokenizer &tokenizer, AnalyzerInformation* analyzerInformation, const std::string& currentConfig);
 
     /**
      * Execute addons
@@ -204,58 +235,27 @@ private:
     void executeRules(const std::string &tokenlist, const TokenList &list);
 #endif
 
-    unsigned int checkClang(const FileWithDetails &file);
+    unsigned int checkClang(const FileWithDetails &file, int fileIndex);
 
-    /**
-     * @brief Errors and warnings are directed here.
-     *
-     * @param msg Errors messages are normally in format
-     * "[filepath:line number] Message", e.g.
-     * "[main.cpp:4] Uninitialized member variable"
-     */
-    void reportErr(const ErrorMessage &msg) override;
+    const Settings& mSettings;
+    Suppressions& mSuppressions;
 
-    /**
-     * @brief Information about progress is directed here.
-     *
-     * @param outmsg Message to show, e.g. "Checking main.cpp..."
-     */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
-
-    // TODO: store hashes instead of the full messages
-    std::unordered_set<std::string> mErrorList;
-    Settings mSettings;
-
-    void reportProgress(const std::string &filename, const char stage[], std::size_t value) override;
-
-    ErrorLogger &mErrorLogger;
-
-    /** @brief Current preprocessor configuration */
-    std::string mCurrentConfig;
-
-    using Location = std::pair<std::string, int>;
-    std::map<Location, std::set<std::string>> mLocationMacros; // What macros are used on a location?
-
-    unsigned int mExitCode{};
+    class CppCheckLogger;
+    std::unique_ptr<CppCheckLogger> mLogger;
+    /** the internal ErrorLogger */
+    ErrorLogger& mErrorLogger;
+    /** the ErrorLogger provided to this instance */
+    ErrorLogger& mErrorLoggerDirect;
 
     bool mUseGlobalSuppressions;
-
-    /** Are there too many configs? */
-    bool mTooManyConfigs{};
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
 
-    std::unique_ptr<AnalyzerInformation> mAnalyzerInformation;
-
     /** Callback for executing a shell command (exe, args, output) */
     ExecuteCmdFn mExecuteCommand;
 
-    std::ofstream mPlistFile;
-
     std::unique_ptr<CheckUnusedFunctions> mUnusedFunctionsCheck;
-
-    std::vector<RemarkComment> mRemarkComments;
 };
 
 /// @}

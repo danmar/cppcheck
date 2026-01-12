@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -137,21 +137,23 @@ public:
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param filename filename to check. path info is optional
+     * @param lang the detected language
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &filename) {
+    static bool acceptFile(const std::string &filename, Standards::Language* lang = nullptr) {
         const std::set<std::string> extra;
-        return acceptFile(filename, extra);
+        return acceptFile(filename, extra, lang);
     }
 
     /**
      * @brief Check if the file extension indicates that it's a C/C++ source file.
      * Check if the file has source file extension: *.c;*.cpp;*.cxx;*.c++;*.cc;*.txx
      * @param path filename to check. path info is optional
-     * @param extra    extra file extensions
+     * @param extra extra file extensions
+     * @param lang the detected language
      * @return true if the file extension indicates it should be checked
      */
-    static bool acceptFile(const std::string &path, const std::set<std::string> &extra);
+    static bool acceptFile(const std::string &path, const std::set<std::string> &extra, Standards::Language* lang = nullptr);
 
     /**
      * @brief Is filename a header based on file extension
@@ -193,14 +195,17 @@ public:
     /**
      * @brief Checks if a given path exists (i.e. is a file or directory)
      * @param path Path to be checked
+     * @param isdir Optional parameter which indicates if the existing path is a directory
      * @return true if given path exists
      */
-    static bool exists(const std::string &path);
+    static bool exists(const std::string &path, bool* isdir = nullptr);
 
     /**
-     * join 2 paths with '/' separators
+     * @brief join 2 paths with '/' separators
+     * if path2 is an absolute path path1 will be dismissed.
+     * @return the joined path with normalized slashes
      */
-    static std::string join(const std::string& path1, const std::string& path2);
+    static std::string join(std::string path1, std::string path2);
 };
 
 /// @}

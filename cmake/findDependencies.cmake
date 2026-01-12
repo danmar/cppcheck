@@ -6,27 +6,21 @@ if(BUILD_GUI)
     if(BUILD_TESTS)
         list(APPEND qt_components Test)
     endif()
-    if(USE_QT6)
-        find_package(Qt6 COMPONENTS ${qt_components} REQUIRED)
-        set(QT_VERSION "${Qt6Core_VERSION}")
-        if(NOT QT_VERSION)
-            # TODO: remove fallback
-            message(WARNING "'Qt6Core_VERSION' is not set - using 6.0.0 as fallback")
-            set(QT_VERSION "6.0.0")
-        endif()
-        if(MSVC)
-            # disable Visual Studio C++ memory leak detection since it causes compiler errors with Qt 6
-            # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): warning C4003: not enough arguments for function-like macro invocation 'free' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
-            # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): error C2059: syntax error: ',' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
-            # this is supposed to be fixed according to the following tickets but it still happens
-            # https://bugreports.qt.io/browse/QTBUG-40575
-            # https://bugreports.qt.io/browse/QTBUG-86395
-            set(DISABLE_CRTDBG_MAP_ALLOC ON)
-        endif()
-    else()
-        message(WARNING "Building with Qt5 is deprecated (it went EOL in May 2023) and will be removed in a future release - please use Qt6 instead")
-        find_package(Qt5 COMPONENTS ${qt_components} REQUIRED)
-        set(QT_VERSION "${Qt5Core_VERSION_STRING}")
+    find_package(Qt6 COMPONENTS ${qt_components} REQUIRED)
+    set(QT_VERSION "${Qt6Core_VERSION}")
+    if(NOT QT_VERSION)
+        # TODO: remove fallback
+        message(WARNING "'Qt6Core_VERSION' is not set - using 6.0.0 as fallback")
+        set(QT_VERSION "6.0.0")
+    endif()
+    if(MSVC)
+        # disable Visual Studio C++ memory leak detection since it causes compiler errors with Qt 6
+        # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): warning C4003: not enough arguments for function-like macro invocation 'free' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
+        # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): error C2059: syntax error: ',' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
+        # this is supposed to be fixed according to the following tickets but it still happens
+        # https://bugreports.qt.io/browse/QTBUG-40575
+        # https://bugreports.qt.io/browse/QTBUG-86395
+        set(DISABLE_CRTDBG_MAP_ALLOC ON)
     endif()
 
     if(BUILD_ONLINE_HELP)
@@ -53,16 +47,7 @@ endif()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-if(CMAKE_VERSION VERSION_EQUAL "3.12" OR CMAKE_VERSION VERSION_GREATER "3.12")
-    find_package(Python COMPONENTS Interpreter)
-else()
-    find_package(PythonInterp 3 QUIET)
-    if(PYTHONINTERP_FOUND)
-        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
-        set(Python_VERSION ${PYTHON_VERSION_STRING})
-        set(Python_Interpreter_FOUND ${PYTHONINTERP_FOUND})
-    endif()
-endif()
+find_package(Python COMPONENTS Interpreter)
 
 if(NOT Python_Interpreter_FOUND)
     if(NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
@@ -70,16 +55,16 @@ if(NOT Python_Interpreter_FOUND)
         set(USE_MATCHCOMPILER_OPT "Off")
     endif()
 else()
-    if(${Python_VERSION} VERSION_LESS 3.6)
-        message(FATAL_ERROR "The minimum supported Python version is 3.6 - found ${Python_VERSION}")
+    if(${Python_VERSION} VERSION_LESS 3.7)
+        message(FATAL_ERROR "The minimum supported Python version is 3.7 - found ${Python_VERSION}")
     endif()
 endif()
 
 if(NOT USE_BUNDLED_TINYXML2)
+    add_library(tinyxml2 INTERFACE)
     find_package(tinyxml2 QUIET)
     if(TARGET tinyxml2::tinyxml2)
-        set(tinyxml2_LIBRARIES "tinyxml2::tinyxml2")
-        set(tinyxml2_INCLUDE_DIRS $<TARGET_PROPERTY:tinyxml2::tinyxml2,INTERFACE_INCLUDE_DIRECTORIES>)
+        target_link_libraries(tinyxml2 INTERFACE tinyxml2::tinyxml2)
     else()
         find_library(tinyxml2_LIBRARIES tinyxml2)
         find_path(tinyxml2_INCLUDE_DIRS tinyxml2.h)
@@ -88,14 +73,38 @@ if(NOT USE_BUNDLED_TINYXML2)
         else()
             set(tinyxml2_FOUND 1)
         endif()
+        target_link_libraries(tinyxml2 INTERFACE ${tinyxml2_LIBRARIES})
+        target_include_directories(tinyxml2 INTERFACE ${tinyxml2_INCLUDE_DIRS})
     endif()
 endif()
 
 find_package(Threads REQUIRED)
 
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
+    # avoid legacy warning about Boost lookup in CMake
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 if(USE_BOOST)
-    # we are using the header-only "container" component
-    find_package(Boost QUIET)
+    # with Visual Studio Boost is not detected by CMake unless you provide a full release even if only used header-only.
+    # to work around this we allow to externally set BOOST_INCLUDEDIR.
+    # see https://trac.cppcheck.net/ticket/13822 for more details.
+    if(BOOST_INCLUDEDIR)
+        if(NOT MSVC)
+            message(FATAL_ERROR "BOOST_INCLUDEDIR hack only allowed for Visual Studio")
+        endif()
+        message(STATUS "Using BOOST_INCLUDEDIR hack for Visual Studio")
+        if(NOT IS_READABLE "${BOOST_INCLUDEDIR}/boost/container/small_vector.hpp")
+            message(FATAL_ERROR "Provided BOOST_INCLUDEDIR does not appear to contain Boost includes")
+        endif()
+        set(Boost_FOUND ON)
+        set(Boost_INCLUDE_DIRS "${BOOST_INCLUDEDIR}")
+        # TODO: set Boost_VERSION_STRING
+    elseif(USE_BOOST STREQUAL "Auto")
+        find_package(Boost)
+    else()
+        find_package(Boost REQUIRED)
+    endif()
 endif()
 
 find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)

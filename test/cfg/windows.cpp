@@ -498,8 +498,10 @@ void bufferAccessOutOfBounds()
     FillMemory(byteBuf, sizeof(byteBuf)+1, 0x01);
 
     char * pAlloc1 = static_cast<char*>(_malloca(32));
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 32);
     // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(pAlloc1, 0, 33);
     _freea(pAlloc1);
 }
@@ -823,7 +825,7 @@ void invalidFunctionArg()
     CloseHandle(hMutex);
 
     //Incorrect: 2. parameter to LoadLibraryEx() must be NULL
-    // cppcheck-suppress [invalidFunctionArg, cstyleCast]
+    // cppcheck-suppress [invalidFunctionArg, intToPointerCast]
     HINSTANCE hInstLib = LoadLibraryEx(L"My.dll", HANDLE(1), 0);
     FreeLibrary(hInstLib);
 

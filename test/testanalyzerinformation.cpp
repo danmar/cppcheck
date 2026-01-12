@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,28 +18,221 @@
 
 
 #include "analyzerinfo.h"
+#include "errorlogger.h"
+#include "filesettings.h"
 #include "fixture.h"
+#include "standards.h"
 
+#include <list>
 #include <sstream>
 
-class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
+#include "xml.h"
+
+class TestAnalyzerInformation : public TestFixture {
 public:
     TestAnalyzerInformation() : TestFixture("TestAnalyzerInformation") {}
 
 private:
+    class AnalyzerInformationTest : public AnalyzerInformation
+    {
+        friend class TestAnalyzerInformation;
+    };
 
     void run() override {
         TEST_CASE(getAnalyzerInfoFile);
+        TEST_CASE(duplicateFile);
+        TEST_CASE(filesTextDuplicateFile);
+        TEST_CASE(parse);
+        TEST_CASE(skipAnalysis);
     }
 
     void getAnalyzerInfoFile() const {
-        constexpr char filesTxt[] = "file1.a4::file1.c\n";
+        constexpr char filesTxt[] = "file1.a4:::file1.c\n";
         std::istringstream f1(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", ""));
+        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 0));
         std::istringstream f2(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", ""));
-        ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "file1.c", ""));
-        ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "some/path/file1.c", ""));
+        ASSERT_EQUALS("file1.a4", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", "", 0));
+        ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "file1.c", "", 0));
+        ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "some/path/file1.c", "", 0));
+    }
+
+    void filesTextDuplicateFile() const {
+        std::list<FileSettings> fileSettings;
+        fileSettings.emplace_back("a.c", Standards::Language::C, 10);
+        fileSettings.back().fileIndex = 0;
+        fileSettings.emplace_back("a.c", Standards::Language::C, 10);
+        fileSettings.back().fileIndex = 1;
+
+        const char expected[] = "a.a1:::a.c\n"
+                                "a.a2::1:a.c\n";
+
+        ASSERT_EQUALS(expected, AnalyzerInformationTest::getFilesTxt({}, "", fileSettings));
+    }
+
+    void duplicateFile() const {
+        // same file duplicated
+        constexpr char filesTxt[] = "file1.a1::1:file1.c\n"
+                                    "file1.a2::2:file1.c\n";
+        std::istringstream f1(filesTxt);
+        ASSERT_EQUALS("file1.a1", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", "", 1));
+        std::istringstream f2(filesTxt);
+        ASSERT_EQUALS("file1.a2", AnalyzerInformationTest::getAnalyzerInfoFileFromFilesTxt(f2, "file1.c", "", 2));
+    }
+
+    void parse() const {
+        AnalyzerInformation::Info info;
+
+        ASSERT_EQUALS(false, info.parse("a"));
+        ASSERT_EQUALS(false, info.parse("a:b"));
+        ASSERT_EQUALS(false, info.parse("a:b:c"));
+        ASSERT_EQUALS(false, info.parse("a:b:c:d"));
+
+        ASSERT_EQUALS(true, info.parse("a:b::d"));
+        ASSERT_EQUALS("a", info.afile);
+        ASSERT_EQUALS("b", info.cfg);
+        ASSERT_EQUALS(0, info.fileIndex);
+        ASSERT_EQUALS("d", info.sourceFile);
+
+        ASSERT_EQUALS(true, info.parse("e:f:12:g"));
+        ASSERT_EQUALS("e", info.afile);
+        ASSERT_EQUALS("f", info.cfg);
+        ASSERT_EQUALS(12, info.fileIndex);
+        ASSERT_EQUALS("g", info.sourceFile);
+
+        ASSERT_EQUALS(true, info.parse("odr1.a1:::C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp"));
+        ASSERT_EQUALS("odr1.a1", info.afile);
+        ASSERT_EQUALS("", info.cfg);
+        ASSERT_EQUALS(0, info.fileIndex);
+        ASSERT_EQUALS("C:/dm/cppcheck-fix-13333/test/cli/whole-program/odr1.cpp", info.sourceFile);
+    }
+
+    void skipAnalysis() const {
+        // Matching hash with license error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"premium-invalidLicense\" severity=\"error\" msg=\"Invalid license: No license file was found, contact sales@cppchecksolutions.com\" verbose=\"Invalid license: No license file was found, contact sales@cppchecksolutions.com\" file0=\"test.c\">"
+                "<location file=\"Cppcheck Premium\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Matching hash with premium internal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"premium-internalError\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
+                "<location file=\"Cppcheck\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Matching hash with internal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"internalError\" severity=\"error\" msg=\"Something went wrong\" verbose=\"Something went wrong\" file0=\"test.c\">"
+                "<location file=\"Cppcheck\" line=\"0\" column=\"0\"/>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Matching hash with normal error (skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"nullPointer\" severity=\"error\" msg=\"Null pointer dereference: ptr\" verbose=\"Null pointer dereference: ptr\" cwe=\"476\" file0=\"test.c\">"
+                "<location file=\"test.c\" line=\"4\" column=\"3\" info=\"Null pointer dereference\"/>"
+                "<location file=\"test.c\" line=\"3\" column=\"12\" info=\"Assignment &apos;ptr=NULL&apos;, assigned value is 0\"/>"
+                "<symbol>ptr</symbol>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(true, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(1, errorList.size());
+        }
+
+        // Matching hash with no error (skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(true, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Different hash with normal error (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse(
+                "<?xml version=\"1.0\"?>"
+                "<analyzerinfo hash=\"100\">"
+                "<error id=\"nullPointer\" severity=\"error\" msg=\"Null pointer dereference: ptr\" verbose=\"Null pointer dereference: ptr\" cwe=\"476\" file0=\"test.c\">"
+                "<location file=\"test.c\" line=\"4\" column=\"3\" info=\"Null pointer dereference\"/>"
+                "<location file=\"test.c\" line=\"3\" column=\"12\" info=\"Assignment &apos;ptr=NULL&apos;, assigned value is 0\"/>"
+                "<symbol>ptr</symbol>"
+                "</error>"
+                "</analyzerinfo>"
+                );
+            ASSERT_EQUALS(tinyxml2::XML_SUCCESS, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 99, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
+
+        // Empty document (don't skip)
+        {
+            std::list<ErrorMessage> errorList;
+            tinyxml2::XMLDocument doc;
+
+            const tinyxml2::XMLError xmlError = doc.Parse("");
+            ASSERT_EQUALS(tinyxml2::XML_ERROR_EMPTY_DOCUMENT, xmlError);
+
+            ASSERT_EQUALS(false, AnalyzerInformationTest::skipAnalysis(doc, 100, errorList));
+            ASSERT_EQUALS(0, errorList.size());
+        }
     }
 };
 

@@ -1,21 +1,20 @@
-Release Notes for Cppcheck 2.17
+
+Release Notes for Cppcheck 2.20
+
+Major bug fixes & crashes:
+-
 
 New checks:
 -
 
-Improved checking:
+C/C++ support:
 -
 
 GUI:
 -
 
 Changed interface:
--Added `reduced` check level. It can be activated with `--check-level=reduced`. You get faster analysis
-but some fewer results. The motivation is to be able to make analysis time "acceptable" for direct usage.
-
-Deprecations:
 -
 
-Other:
-- Removed deperecated support for builds via qmake.
+Infrastructure & dependencies:
 -

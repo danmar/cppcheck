@@ -17,7 +17,6 @@ disable=
         unused-wildcard-import,
         wildcard-import,
         unused-argument,
-        deprecated-module,
         pointless-string-statement,
         arguments-renamed,
         duplicate-string-formatting-argument,
@@ -64,4 +63,3 @@ reports=no
 ignored-classes=SQLObject,_socketobject
 [MASTER]
 init-hook='import sys; sys.path.append("./addons")'
-suggestion-mode=yes

@@ -18,8 +18,7 @@ permissions:
 jobs:
   build:
 
-    # 'ubuntu-22.04' removes Python 3.6 so keep the previous LTS version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -40,19 +39,18 @@ jobs:
       - name: build cppcheck
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) -s CXXFLAGS="-w"
+          make -j$(nproc) CXXOPTS="-Werror"
           strip -s ./cppcheck
 
   scriptcheck:
 
     needs: build
-    # 'ubuntu-22.04' removes Python 3.6 so keep the previous LTS version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9, '3.10', '3.11', '3.12', '3.13']
+        python-version: [3.7, 3.8, 3.9, '3.10', '3.11', '3.12', '3.13', '3.14']
         include:
-          - python-version: '3.13'
+          - python-version: '3.14'
             python-latest: true
 
       fail-fast: false
@@ -89,9 +87,10 @@ jobs:
           python -m pip install pip --upgrade
           python -m pip install natsort
           python -m pip install pexpect
-          python -m pip install 'pylint<=3.3.0'
+          python -m pip install 'pylint<4.1.0'
           python -m pip install unittest2
           python -m pip install pytest
+          python -m pip install pytest-xdist
           python -m pip install pygments
           python -m pip install requests
           python -m pip install psutil
@@ -106,7 +105,7 @@ jobs:
         if: matrix.python-latest
         run: |
           shopt -s globstar
-          pylint --jobs $(nproc) --py-version 3.6 addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
+          pylint --jobs $(nproc) --py-version 3.7 addons/**/*.py htmlreport/cppcheck-htmlreport htmlreport/**/*.py test/**/*.py tools/**/*.py
 
       - name: check .json files
         if: matrix.python-latest
@@ -133,32 +132,33 @@ jobs:
 
       - name: test matchcompiler
         run: |
-          python tools/test_matchcompiler.py
+          python test/tools/test_matchcompiler.py
+        env:
+          PYTHONPATH: ./tools
 
+      # TODO: run with "-n auto" when misra_test.py can be run in parallel
       # we cannot specify -Werror since xml/etree/ElementTree.py in Python 3.9/3.10 contains an unclosed file
       - name: test addons
         if: matrix.python-version == '3.9' || matrix.python-version == '3.10'
         run: |
-          python -m pytest --strict-markers -vv addons/test
+          python -m pytest --strict-markers -vv -n 1 addons/test
         env:
           PYTHONPATH: ./addons
 
+      # TODO: run with "-n auto" when misra_test.py can be run in parallel
       - name: test addons
         if: matrix.python-version != '3.9' && matrix.python-version != '3.10'
         run: |
-          python -m pytest -Werror --strict-markers -vv addons/test
+          python -m pytest -Werror --strict-markers -vv -n 1 addons/test
         env:
           PYTHONPATH: ./addons
 
       - name: test htmlreport (standalone)
         run: |
           test/tools/htmlreport/test_htmlreport.py
-          cd test/tools/htmlreport
-          ./check.sh
-      # Python 3.5 and 3.6 are excluded as they are not supported by setuptools-scm package for getting
-      # package version
+          test/tools/htmlreport/check.sh
+
       - name: test htmlreport (pip)
-        if: matrix.python-version != '3.5' && matrix.python-version != '3.6'
         run: |
           python -m venv venv
           source venv/bin/activate
@@ -166,31 +166,44 @@ jobs:
           pip install ./htmlreport/
           which cppcheck-htmlreport
           PIP_PACKAGE_TEST=1 test/tools/htmlreport/test_htmlreport.py
-          cd test/tools/htmlreport
-          ./check.sh
+          # TODO: does not test the pip binary
+          test/tools/htmlreport/check.sh
 
       - name: test reduce
         run: |
-          python -m pytest -Werror --strict-markers -vv tools/reduce_test.py
+          python -m pytest -Werror --strict-markers -vv test/tools/reduce_test.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_lib
         run: |
-          python -m pytest -Werror --strict-markers -vv tools/donate_cpu_lib_test.py
+          python -m pytest -Werror --strict-markers -vv test/tools/donate_cpu_lib_test.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_server
         run: |
-          python -m pytest -Werror --strict-markers -vv tools/donate_cpu_server_test.py
+          python -m pytest -Werror --strict-markers -vv test/tools/donate_cpu_server_test.py
+          # TODO: why is this file generated? also should be in a temporary folder if possible
+          rm -f test/tools/donate-cpu-server.log
         env:
           PYTHONPATH: ./tools
+
+      - name: Show all ignored files
+        if: false  # TODO: currently lists all the contents of ignored folders - we only need what actually matched
+        run: |
+          git ls-files --others --ignored --exclude-standard
+
+      - name: Check for changed and unversioned files
+        run: |
+          # TODO: how to do this with a single command?
+          git status --ignored=no
+          git status --ignored=no | grep -q 'working tree clean'
 
   dmake:
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, windows-2022]
+        os: [ubuntu-22.04, macos-15, windows-2025]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -202,7 +215,7 @@ jobs:
 
       - name: run dmake
         run: |
-          make -j2 CXXFLAGS="-w" run-dmake
+          make -j3 CXXOPTS="-Werror" run-dmake
 
       - name: check diff
         run: |

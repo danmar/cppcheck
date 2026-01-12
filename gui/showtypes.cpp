@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,42 +54,6 @@ ShowTypes::ShowType ShowTypes::SeverityToShowType(Severity severity)
     default:
         return ShowTypes::ShowNone;
     }
-}
-
-Severity ShowTypes::ShowTypeToSeverity(ShowTypes::ShowType type)
-{
-    switch (type) {
-    case ShowTypes::ShowStyle:
-        return Severity::style;
-
-    case ShowTypes::ShowErrors:
-        return Severity::error;
-
-    case ShowTypes::ShowWarnings:
-        return Severity::warning;
-
-    case ShowTypes::ShowPerformance:
-        return Severity::performance;
-
-    case ShowTypes::ShowPortability:
-        return Severity::portability;
-
-    case ShowTypes::ShowInformation:
-        return Severity::information;
-
-    case ShowTypes::ShowNone:
-    default:
-        return Severity::none;
-    }
-}
-
-ShowTypes::ShowType ShowTypes::VariantToShowType(const QVariant &data)
-{
-    const int value = data.toInt();
-    if (value < ShowTypes::ShowStyle || value > ShowTypes::ShowErrors) {
-        return ShowTypes::ShowNone;
-    }
-    return (ShowTypes::ShowType)value;
 }
 
 void ShowTypes::load()

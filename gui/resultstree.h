@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,15 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include "common.h"
 #include "showtypes.h"
+#include "checkers.h"
+#include "resultitem.h"
 
 #include <cstdint>
+#include <map>
+#include <string>
 
 #include <QObject>
-#include <QStandardItemModel>
 #include <QString>
 #include <QStringList>
 #include <QTreeView>
@@ -34,17 +36,16 @@
 class ApplicationList;
 class Report;
 class ErrorItem;
-class ErrorLine;
 class QModelIndex;
 class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
 class QSettings;
+class QStandardItemModel;
 enum class Severity : std::uint8_t;
 
 /// @addtogroup GUI
 /// @{
-
 
 /**
  * @brief Cppcheck's results are shown in this tree
@@ -60,9 +61,9 @@ public:
     /**
      * @brief Add a new item to the tree
      *
-     * @param item Error item data
+     * @param errorItem Error item data
      */
-    bool addErrorItem(const ErrorItem &item);
+    bool addErrorItem(const ErrorItem& errorItem);
 
     /**
      * @brief Clear all errors from the tree
@@ -138,6 +139,24 @@ public:
     const QString& getCheckDirectory() const;
 
     /**
+     * @brief Results source for analysis results in the results tree.
+     */
+    enum class ResultsSource : std::uint8_t {
+        /** Results from a project, files, or directory check */
+        Analysis,
+        /** Saved results from a log file */
+        Log,
+    };
+
+    /**
+     * @brief Set the source type of the current results. This
+     * affects the actions that are allowed on them.
+     *
+     * @param source The results source type.
+     */
+    void setResultsSource(ResultsSource source);
+
+    /**
      * @brief Check if there are any visible results in view.
      * @return true if there is at least one visible warning/error.
      */
@@ -187,6 +206,13 @@ public:
 
     void setReportType(ReportType reportType);
 
+    /**
+     * @brief should errorItem be hidden by filter/severity/etc?
+     * @param errorItem error item
+     * @return true if error item should be hidden
+     */
+    bool isErrorItemHidden(const QSharedPointer<ErrorItem>& errorItem) const;
+
 signals:
     /**
      * @brief Signal that results have been hidden or shown
@@ -206,11 +232,10 @@ signals:
 
     /**
      * @brief Signal for selection change in result tree.
-     *
-     * @param current Model index to specify new selected item.
+     * @param selectedItem item that was selected
      */
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
-    void treeSelectionChanged(const QModelIndex &current);
+    void treeSelectionChanged(const ResultItem *selectedItem);
 
     /** Suppress Ids */
     // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
@@ -311,9 +336,9 @@ protected:
 
     /**
      * @brief Hides/shows full file path on all error file items according to mShowFullPath
-     * @param item Parent item whose children's paths to change
+     * @param fileItem Parent item whose children's paths to change
      */
-    void refreshFilePaths(QStandardItem *item);
+    void refreshFilePaths(ResultItem *fileItem);
 
 
     /**
@@ -331,7 +356,7 @@ protected:
      * @param report Report that errors are saved to
      * @param fileItem Item whose errors to save
      */
-    void saveErrors(Report *report, const QStandardItem *fileItem) const;
+    void saveErrors(Report *report, const ResultItem *fileItem) const;
 
     /**
      * @brief Convert a severity string to a icon filename
@@ -347,15 +372,7 @@ protected:
      * @param application Index of the application to open with. Giving -1
      *  (default value) will open the default application.
      */
-    void startApplication(const QStandardItem *target, int application = -1);
-
-    /**
-     * @brief Helper function returning the filename/full path of the error tree item \a target.
-     *
-     * @param target The error tree item containing the filename/full path
-     * @param fullPath Whether or not to retrieve the full path or only the filename.
-     */
-    static QString getFilePath(const QStandardItem *target, bool fullPath);
+    void startApplication(const ResultItem *target, int application = -1);
 
     /**
      * @brief Context menu event (user right clicked on the tree)
@@ -368,17 +385,19 @@ protected:
      * @brief Add a new error item beneath a file or a backtrace item beneath an error
      *
      * @param parent Parent for the item. Either a file item or an error item
-     * @param item Error line data
+     * @param errorItem Error item
      * @param hide Should this be hidden (true) or shown (false)
      * @param icon Should a default backtrace item icon be added
-     * @param childOfMessage Is this a child element of a message?
-     * @return newly created QStandardItem *
+     * @param type type of items to create file/message/note
+     * @param errorPathIndex errorPathIndex
+     * @return newly created ResultItem *
      */
-    QStandardItem *addBacktraceFiles(QStandardItem *parent,
-                                     const ErrorLine &item,
-                                     bool hide,
-                                     const QString &icon,
-                                     bool childOfMessage);
+    ResultItem *addBacktraceFiles(ResultItem *parent,
+                                  const QSharedPointer<ErrorItem>& errorItem,
+                                  bool hide,
+                                  const QString &icon,
+                                  ResultItem::Type type,
+                                  int errorPathIndex);
 
     /**
      * @brief Convert Severity to translated string for GUI.
@@ -403,29 +422,50 @@ protected:
     /**
      * @brief Create new normal item.
      *
-     * Normal item has left alignment and text set also as tooltip.
-     * @param name name for the item
-     * @return new QStandardItem
+     * Normal item has left alignment.
+     * @param text text for the item
+     * @param errorItem errorItem pointer
+     * @param type (file/message)
+     * @param errorPathIndex error path index
+     * @return new ResultItem
      */
-    static QStandardItem *createNormalItem(const QString &name);
+    static ResultItem *createNormalItem(const QString &text, QSharedPointer<ErrorItem> errorItem, ResultItem::Type type, int errorPathIndex);
 
     /**
-     * @brief Create new normal item.
+     * @brief Create filename item.
      *
-     * Normal item has left alignment and text set also as tooltip.
-     * @param checked checked
-     * @return new QStandardItem
+     * filename item has left alignment. Path is stripped and converted to native path separators.
+     * @param errorItem errorItem pointer
+     * @param type (file/message)
+     * @param errorPathIndex error path index
+     *
+     * @return new ResultItem
      */
-    static QStandardItem *createCheckboxItem(bool checked);
+    ResultItem *createFilenameItem(const QSharedPointer<ErrorItem>& errorItem, ResultItem::Type type, int errorPathIndex);
+
+    /**
+     * @brief Create new checkbox item.
+     *
+     * Checkbox item can be checked or unchecked.
+     * @param checked checked
+     * @param errorItem errorItem pointer
+     * @param type (file/message)
+     * @param errorPathIndex error path index
+     * @return new ResultItem
+     */
+    static ResultItem *createCheckboxItem(bool checked, QSharedPointer<ErrorItem> errorItem, ResultItem::Type type, int errorPathIndex);
 
     /**
      * @brief Create new line number item.
      *
-     * Line number item has right align and text set as tooltip.
-     * @param linenumber name for the item
-     * @return new QStandardItem
+     * Line number item has right align.
+     * @param linenumber line number
+     * @param errorItem errorItem pointer
+     * @param type (file/message)
+     * @param errorPathIndex error path index
+     * @return new ResultItem
      */
-    static QStandardItem *createLineNumberItem(const QString &linenumber);
+    static ResultItem *createLineNumberItem(int linenumber, QSharedPointer<ErrorItem> errorItem, ResultItem::Type type, int errorPathIndex);
 
     /**
      * @brief Finds a file item
@@ -433,24 +473,22 @@ protected:
      * @param name name of the file item to find
      * @return pointer to file item or null if none found
      */
-    QStandardItem *findFileItem(const QString &name) const;
-
+    ResultItem *findFileItem(const QString &name) const;
 
     /**
      * @brief Ensures there's a item in the model for the specified file
      *
-     * @param fullpath Full path to the file item.
-     * @param file0 Source file
+     * @param errorItem Error item
      * @param hide is the error (we want this file item for) hidden?
-     * @return QStandardItem to be used as a parent for all errors for specified file
+     * @return ResultItem to be used as a parent for all errors for specified file
      */
-    QStandardItem *ensureFileItem(const QString &fullpath, const QString &file0, bool hide);
+    ResultItem *ensureFileItem(const QSharedPointer<ErrorItem>& errorItem, bool hide);
 
     /**
      * @brief Item model for tree
      *
      */
-    QStandardItemModel mModel;
+    QStandardItemModel* mModel;
 
     /**
      * @brief Program settings
@@ -474,7 +512,7 @@ protected:
      * @brief Right clicked item (used by context menu slots)
      *
      */
-    QStandardItem* mContextItem{};
+    ResultItem* mContextItem{};
 
     /**
      * @brief Should full path of files be shown (true) or relative (false)
@@ -507,6 +545,12 @@ protected:
     QString mCheckPath;
 
     /**
+     * @brief The type of source of the current results
+     *
+     */
+    ResultsSource mResultsSource{ResultsSource::Analysis};
+
+    /**
      * @brief Are there any visible errors
      *
      */
@@ -516,21 +560,14 @@ private:
     /** tag selected items */
     void tagSelectedItems(const QString &tag);
 
-    /** @brief Convert GUI error item into data error item */
-    void readErrorItem(const QStandardItem *error, ErrorItem *item) const;
+    bool isCertReport() const;
 
-    bool isCertReport() const {
-        return mReportType == ReportType::certC || mReportType == ReportType::certCpp;
-    }
-
-    bool isAutosarMisraReport() const {
-        return mReportType == ReportType::autosar ||
-               mReportType == ReportType::misraC ||
-               mReportType == ReportType::misraCpp2008 ||
-               mReportType == ReportType::misraCpp2023;
-    }
+    bool isAutosarMisraReport() const;
 
     QStringList mHiddenMessageId;
+
+    // List of existing errors so we can avoid duplicates
+    QStringList mErrorList;
 
     QItemSelectionModel* mSelectionModel{};
     ThreadHandler *mThread{};
@@ -540,7 +577,7 @@ private:
 
     ReportType mReportType = ReportType::normal;
 
-    QMap<QString,QString> mGuideline;
+    std::map<std::string, std::string> mGuideline;
 };
 /// @}
 #endif // RESULTSTREE_H

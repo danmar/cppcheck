@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "config.h"
 #include "mathlib.h"
 #include "standards.h"
+#include "utils.h"
 
 #include <array>
 #include <cstdint>
@@ -35,6 +36,7 @@
 #include <vector>
 
 class Token;
+class Settings; // TODO: remove dependency on settings
 enum class Severity : std::uint8_t;
 
 namespace tinyxml2 {
@@ -50,6 +52,8 @@ namespace tinyxml2 {
  */
 class CPPCHECKLIB Library {
     friend struct LibraryHelper; // for testing
+
+    static const std::string mEmptyString;
 
 public:
     Library();
@@ -85,6 +89,7 @@ public:
         int bufferSizeArg2{};
         int reallocArg{};
         bool initData{};
+        bool noFail{};
     };
 
     /** get allocation info for function */
@@ -236,26 +241,28 @@ public:
         bool view{};
 
         Action getAction(const std::string& function) const {
-            const std::map<std::string, Function>::const_iterator i = functions.find(function);
+            const auto i = utils::as_const(functions).find(function);
             if (i != functions.end())
                 return i->second.action;
             return Action::NO_ACTION;
         }
 
         Yield getYield(const std::string& function) const {
-            const std::map<std::string, Function>::const_iterator i = functions.find(function);
+            const auto i = utils::as_const(functions).find(function);
             if (i != functions.end())
                 return i->second.yield;
             return Yield::NO_YIELD;
         }
 
         const std::string& getReturnType(const std::string& function) const {
-            auto i = functions.find(function);
-            return (i != functions.end()) ? i->second.returnType : emptyString;
+            const auto i = utils::as_const(functions).find(function);
+            return (i != functions.end()) ? i->second.returnType : mEmptyString;
         }
 
-        static Yield yieldFrom(const std::string& yieldName);
-        static Action actionFrom(const std::string& actionName);
+        CPPCHECKLIB static Yield yieldFrom(const std::string& yieldName);
+        CPPCHECKLIB static Action actionFrom(const std::string& actionName);
+        CPPCHECKLIB static std::string toString(Yield yield);
+        CPPCHECKLIB static std::string toString(Action action);
     };
     const std::unordered_map<std::string, Container>& containers() const;
     const Container* detectContainer(const Token* typeStart) const;
@@ -342,12 +349,12 @@ public:
         return arg && arg->strz;
     }
 
-    bool isIntArgValid(const Token *ftok, int argnr, MathLib::bigint argvalue) const;
-    bool isFloatArgValid(const Token *ftok, int argnr, double argvalue) const;
+    bool isIntArgValid(const Token *ftok, int argnr, MathLib::bigint argvalue, const Settings& settings) const;
+    bool isFloatArgValid(const Token *ftok, int argnr, double argvalue, const Settings& settings) const;
 
     const std::string& validarg(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
-        return arg ? arg->valid : emptyString;
+        return arg ? arg->valid : mEmptyString;
     }
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
@@ -394,7 +401,7 @@ public:
     const Token* getContainerFromYield(const Token* tok, Container::Yield yield) const;
     const Token* getContainerFromAction(const Token* tok, Container::Action action) const;
 
-    static bool isContainerYield(const Token* cond, Library::Container::Yield y, const std::string& fallback = emptyString);
+    static bool isContainerYield(const Token* cond, Library::Container::Yield y, const std::string& fallback = "");
     static Library::Container::Yield getContainerYield(const Token* cond);
 
     bool isreflection(const std::string &token) const;
@@ -474,7 +481,7 @@ private:
     std::string getFunctionName(const Token *ftok, bool &error) const;
 
     static const AllocFunc* getAllocDealloc(const std::map<std::string, AllocFunc> &data, const std::string &name) {
-        const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);
+        const auto it = utils::as_const(data).find(name);
         return (it == data.end()) ? nullptr : &it->second;
     }
 

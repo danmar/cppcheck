@@ -21,8 +21,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.8.1
+      QT_VERSION: 6.10.0
       ASAN_OPTIONS: detect_stack_use_after_return=1
+      LSAN_OPTIONS: suppressions=lsan-suppr.txt:print_suppressions=0
       # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
@@ -36,10 +37,10 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
-      - name: Set up Python 3.13
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           check-latest: true
 
       - name: Install missing software on ubuntu
@@ -53,13 +54,14 @@ jobs:
           sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 19
+          sudo ./llvm.sh 21
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
           cache: true
 
       - name: Install missing Python packages
@@ -67,15 +69,15 @@ jobs:
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
           python3 -m pip install pytest-timeout
+          python3 -m pip install pytest-xdist
           python3 -m pip install psutil
 
-      # TODO: disable all warnings
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_ADDRESS=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_ADDRESS=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DFILESDIR= -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         env:
-          CC: clang-19
-          CXX: clang++-19
+          CC: clang-21
+          CXX: clang++-21
 
       - name: Build cppcheck
         run: |
@@ -98,17 +100,18 @@ jobs:
 
       - name: Run CTest
         run: |
+          cp lsan-suppr.txt cmake.output/bin
           ctest --test-dir cmake.output --output-on-failure -j$(nproc)
 
       - name: Run test/cli
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
 
       - name: Run test/cli (-j2)
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -116,14 +119,14 @@ jobs:
         if: false
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
       - name: Run test/cli (--cppcheck-build-dir)
         run: |
           pwd=$(pwd)
-          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv test/cli
+          TEST_CPPCHECK_EXE_LOOKUP_PATH="$pwd/cmake.output" python3 -m pytest -Werror --strict-markers -vv -n auto test/cli
         env:
           TEST_CPPCHECK_INJECT_BUILDDIR: injected
 
@@ -139,13 +142,17 @@ jobs:
       - name: Self check
         if: false
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude,information --exception-handling --debug-warnings --check-level=exhaustive"
           cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
+          gui_options="-DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt"
+          gui_options="$gui_options --suppress=autoNoType:*/moc_*.cpp --suppress=symbolDatabaseWarning:*/moc_*.cpp"
           ec=0
-          ./cmake.output/bin/cppcheck $selfcheck_options externals/simplecpp || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json cli || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options externals || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json frontend || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json -Ifrontend cli || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options --addon=naming.json --enable=internal lib || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt --addon=naming.json -Icmake.output/gui -Igui gui/*.cpp cmake.output/gui/*.cpp || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -Icli test/*.cpp tools/dmake/*.cpp || ec=1
-          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -DQ_MOC_OUTPUT_REVISION=68 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options $gui_options --addon=naming.json --suppress=constVariablePointer:*/moc_*.cpp -Icmake.output/gui -Ifrontend -Igui gui/*.cpp cmake.output/gui || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -Icli -Ifrontend test/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options -Icli tools/dmake/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options $cppcheck_options $gui_options -Icmake.output/tools/triage -Igui tools/triage/*.cpp cmake.output/tools/triage || ec=1
           exit $ec

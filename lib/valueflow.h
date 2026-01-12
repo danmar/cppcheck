@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "mathlib.h"
-#include "vfvalue.h"
 
-#include <cstdlib>
 #include <functional>
 #include <list>
 #include <string>
@@ -39,9 +37,13 @@ class SymbolDatabase;
 class TimerResultsIntf;
 class Token;
 class TokenList;
-class ValueType;
 class Variable;
 class Scope;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 namespace ValueFlow {
     /// Constant folding of expression. This can be used before the full ValueFlow has been executed (ValueFlow::setValues).
@@ -55,8 +57,6 @@ namespace ValueFlow {
                    TimerResultsIntf* timerResults);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
-
-    size_t getSizeOf(const ValueType &vt, const Settings &settings, int maxRecursion = 0);
 
     const Value* findValue(const std::list<Value>& values,
                            const Settings& settings,

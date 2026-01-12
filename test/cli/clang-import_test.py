@@ -47,9 +47,8 @@ def __check_symbol_database(tmpdir, code):
     testfile = os.path.join(tmpdir, 'test.cpp')
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, _ = cppcheck(['--clang', '--debug', '-v', testfile])
-    ret2, stdout2, _ = cppcheck(['--debug', '-v', testfile])
-    os.remove(testfile)
+    ret1, stdout1, _ = cppcheck(['-q', '--clang', '--debug-symdb', testfile])
+    ret2, stdout2, _ = cppcheck(['-q', '--debug-symdb', testfile])
     assert 0 == ret1, stdout1
     assert 0 == ret2, stdout2
     assert __get_debug_section('### Symbol database', stdout1) == __get_debug_section('### Symbol database', stdout2)
@@ -59,9 +58,8 @@ def __check_ast(tmpdir, code):
     testfile = os.path.join(tmpdir, 'test.cpp')
     with open(testfile, 'w+t') as f:
         f.write(code)
-    ret1, stdout1, _ = cppcheck(['--clang', '--debug', '-v', testfile])
-    ret2, stdout2, _ = cppcheck(['--debug', '-v', testfile])
-    os.remove(testfile)
+    ret1, stdout1, _ = cppcheck(['-q', '--clang', '--debug-ast', testfile])
+    ret2, stdout2, _ = cppcheck(['-q', '--debug-ast', testfile])
     assert 0 == ret1, stdout1
     assert 0 == ret2, stdout1
     assert __get_debug_section('##AST', stdout1) == __get_debug_section('##AST', stdout2)
@@ -141,10 +139,10 @@ def test_warning(tmpdir):  # #12424
     assert stderr == ''
 
 
-def __test_cmd(tmp_path, file_name, extra_args, stdout_exp_1):
+def __test_cmd(tmp_path, file_name, extra_args, stdout_exp_1, content=''):
     test_file = tmp_path / file_name
     with open(test_file, 'wt') as f:
-        f.write('')
+        f.write(content)
 
     args = [
         '--enable=information',
@@ -175,6 +173,20 @@ def test_cmd_cpp(tmp_path):
     __test_cmd(tmp_path, 'test.cpp', [], '-x c++')
 
 
+# files with unknown extensions are treated as C++
+def test_cmd_unk(tmp_path):
+    __test_cmd(tmp_path, 'test.cplusplus', [], '-x c++')
+
+
+# headers are treated as C by default
+def test_cmd_hdr(tmp_path):
+    __test_cmd(tmp_path, 'test.h', [], '-x c')
+
+
+def test_cmd_hdr_probe(tmp_path):
+    __test_cmd(tmp_path, 'test.h', ['--cpp-header-probe'], '-x c++', '// -*- C++ -*-')
+
+
 def test_cmd_inc(tmp_path):
     inc_path = tmp_path / 'inc'
     os.makedirs(inc_path)
@@ -183,6 +195,13 @@ def test_cmd_inc(tmp_path):
 
 def test_cmd_def(tmp_path):
     __test_cmd(tmp_path, 'test.cpp',['-DDEF'], '-x c++ -DDEF=1')
+
+
+def test_cmd_include(tmp_path):
+    inc_file = tmp_path / 'inc.h'
+    with open(inc_file, 'wt'):
+        pass
+    __test_cmd(tmp_path, 'test.cpp',['--include=inc.h'], '-x c++ --include inc.h')
 
 
 def test_cmd_enforce_c(tmp_path):  # #13128
@@ -226,3 +245,61 @@ def test_cmd_std_c_enforce_alias_2(tmp_path):  # #13128/#13129/#13130
 
 def test_cmd_std_cpp_enforce_alias(tmp_path):  # #13128/#13129/#13130
     __test_cmd(tmp_path, 'test.c',['--language=c++', '--std=gnu99', '--std=gnu++11'], '-x c++ -std=gnu++11')
+
+
+def test_debug_clang_output(tmp_path):
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""
+void f() {}
+""")
+
+    args = [
+        '-q',
+        '--clang',
+        '--debug-clang-output',
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr if not stdout else stdout
+    assert stderr == ''
+    assert stdout.startswith('TranslationUnitDecl'), stdout
+    assert stdout.find(str(test_file)) != -1, stdout
+
+
+def test_debug_clang_output_failure_exitcode(tmp_path):
+    # the given code will cause clang to fail with an exitcode
+    #
+    # Failed to execute 'clang -fsyntax-only -Xclang -ast-dump -fno-color-diagnostics -x c++ a.cpp 2>&1' - (exitcode: 1 / output: a.cpp:3:12: error: indirection requires pointer operand ('int' invalid)
+    # 3 |     (void)(*0);
+    # |            ^~
+    # 1 error generated.
+    # TranslationUnitDecl 0x6127d5d9d4e8 <<invalid sloc>> <invalid sloc>
+    # ...
+    test_file = tmp_path / 'test.c'
+    with open(test_file, 'wt') as f:
+        f.write(
+"""void f()
+{
+    (void)(*0);
+}
+""")
+
+    args = [
+        '-q',
+        '--clang',
+        '--debug-clang-output',
+        '--no-cppcheck-build-dir',  # TODO: test without this?
+        str(test_file)
+    ]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0, stderr if not stdout else stdout
+    stderr_lines = stderr.splitlines()
+    assert len(stderr_lines) > 5, stderr_lines
+    assert (stderr_lines[0] ==
+            "Failed to execute 'clang -fsyntax-only -Xclang -ast-dump -fno-color-diagnostics -x c {} 2>&1' - (exitcode: 1 / output: {}:3:12: error: indirection requires pointer operand ('int' invalid)".format(test_file, test_file))
+    assert stdout.find('TranslationUnitDecl') != -1, stdout
+    assert stdout.find(str(test_file)) != -1, stdout

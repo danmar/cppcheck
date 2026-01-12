@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 
 #include "cmdlinelogger.h"
 #include "filesettings.h"
+#include "standards.h"
 #include "utils.h"
 
 class Settings;
@@ -69,17 +70,14 @@ public:
     bool fillSettingsFromArgs(int argc, const char* const argv[]);
 
     /**
-     * Parse given command line.
-     * @return true if command line was ok, false if there was an error.
+     * @brief Filter files
+     *
+     * @param fileFilters file filters
+     * @param filesResolved all the files in project
+     * @return the files in filesResolved that match filters
      */
-    Result parseFromArgs(int argc, const char* const argv[]);
-
-    /**
-     * Return the path names user gave to command line.
-     */
-    const std::vector<std::string>& getPathNames() const {
-        return mPathNames;
-    }
+    static std::list<FileWithDetails> filterFiles(const std::vector<std::string>& fileFilters,
+                                                  const std::list<FileWithDetails>& filesResolved);
 
     /**
      * Return the files user gave to command line.
@@ -95,27 +93,23 @@ public:
         return mFileSettings;
     }
 
+protected:
     /**
-     * Return a list of paths user wants to ignore.
+     * Parse given command line.
+     * @return true if command line was ok, false if there was an error.
      */
-    const std::vector<std::string>& getIgnoredPaths() const {
-        return mIgnoredPaths;
-    }
+    Result parseFromArgs(int argc, const char* const argv[]);
 
     /**
      * Get Cppcheck version
      */
     std::string getVersion() const;
 
-protected:
-
+private:
     /**
      * Print help text to the console.
      */
-    void printHelp() const;
-
-private:
-    bool isCppcheckPremium() const;
+    void printHelp(bool premium) const;
 
     template<typename T>
     bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
@@ -156,15 +150,21 @@ private:
 
     bool loadCppcheckCfg();
 
+    void outputFormatOptionMixingError() const;
+
     CmdLineLogger &mLogger;
 
+    Settings &mSettings;
+    Suppressions &mSuppressions;
+
+protected:
     std::vector<std::string> mPathNames;
     std::list<FileWithDetails> mFiles;
     std::list<FileSettings> mFileSettings;
     std::vector<std::string> mIgnoredPaths;
-    Settings &mSettings;
-    Suppressions &mSuppressions;
-    std::string mVSConfig;
+    bool mAnalyzeAllVsConfigsSetOnCmdLine = false;
+    /** @brief Name of the language that is enforced. Empty per default. */
+    Standards::Language mEnforcedLang{Standards::Language::None};
 };
 
 /// @}

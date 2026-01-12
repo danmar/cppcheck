@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@
 #include "config.h"
 
 #include <cstdint>
+#include <utility>
 
 #include <QList>
 #include <QMap>
-#include <QPair>
 #include <QString>
 #include <QStringList>
 
@@ -142,6 +142,7 @@ public:
         struct Alloc {
             bool isRealloc{};
             bool init{};
+            bool noFail{};
             int arg = -1; // -1: Has no optional "realloc-arg" attribute
             int reallocArg = -1; // -1: Has no optional "arg" attribute
             QString bufferSize;
@@ -171,7 +172,7 @@ public:
         QStringList platforms;  // Keeps "type" attribute of each "platform" element
     };
 
-    using TypeChecks = QList<QPair<QString, QString>>;
+    using TypeChecks = QList<std::pair<QString, QString>>;
 
     struct Reflection {
         struct Call {

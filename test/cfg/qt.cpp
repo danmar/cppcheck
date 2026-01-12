@@ -15,7 +15,6 @@
 #include <QStack>
 #include <QByteArray>
 #include <QList>
-#include <QLinkedList>
 #include <QMap>
 #include <QMultiMap>
 #include <QQueue>
@@ -33,6 +32,11 @@
 #include <QPointF>
 #include <QRegion>
 #include <QTransform>
+
+// TODO: this is actually avilable via Core5Compat but I could not get it to work with pkg-config
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QLinkedList>
+#endif
 
 #include <cstdio>
 
@@ -323,6 +327,7 @@ QList<int>::iterator QList3()
     return it;
 }
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 void QLinkedList1()
 {
     // cppcheck-suppress unreadVariable
@@ -359,6 +364,7 @@ QLinkedList<int>::iterator QLinkedList3()
     // cppcheck-suppress returnDanglingLifetime
     return it;
 }
+#endif
 
 void QStringList1(QStringList stringlistArg)
 {
@@ -569,10 +575,12 @@ void MacroTest2_test()
     QByteArray ba = str.toLatin1();
     printf(ba.data());
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #ifndef QT_NO_DEPRECATED
     str = MacroTest2::trUtf8("test2");
     ba = str.toLatin1();
     printf(ba.data());
+#endif
 #endif
 }
 
@@ -617,7 +625,7 @@ void validCode(int * pIntPtr, QString & qstrArg, double d)
         if (qstr1.length() == 1) {}
     }
     if (qstr1.length() == 1) {} else {
-        qstr1.remove(1);
+        qstr1.remove(1, 0);
         if (qstr1.length() == 1) {}
     }
 }
@@ -665,9 +673,9 @@ namespace {
     class Fred : public QObject {
         Q_OBJECT
     private slots:
-        // cppcheck-suppress functionStatic
         void foo();
     };
+    // cppcheck-suppress functionStatic
     void Fred::foo() {}
 
     // bitfields14
@@ -799,8 +807,58 @@ void constVariablePointer_QVector(QVector<int*>& qv, int* p)
     qv.push_back(p); // #12661
 }
 
+void constParameterPointer_QHash_insert(QHash<int*, int*>& qh, int* k, int* v)
+{
+    qh.insert(k, v); // #13902
+}
+
+bool constParameterPointer_QHash_find(const QHash<int*, int*>& qh, int* k)
+{
+    auto it = qh.find(k);
+    return it != qh.end();
+}
+
+bool constParameterPointer_QHash_contains(const QHash<int*, int*>& qh, int* k)
+{
+    return qh.contains(k);
+}
+
+int constParameterPointer_QHash_count(const QHash<int*, int*>& qh, int* k)
+{
+    return qh.count(k);
+}
+
 const QString& unassignedVariable_static_QString() // #12935
 {
     static QString qs;
     return qs;
+}
+
+struct BQObject_missingOverride { // #13406
+    Q_OBJECT
+};
+
+struct DQObject_missingOverride : BQObject_missingOverride {
+    Q_OBJECT
+};
+
+namespace {
+    class TestUnusedFunction : public QObject { // #13236
+        TestUnusedFunction();
+        void doStuff();
+    };
+
+    TestUnusedFunction::TestUnusedFunction() {
+        QObject::connect(this, SIGNAL(doStuff()), SLOT(doStuff()));
+    }
+
+    // cppcheck-suppress functionStatic
+    void TestUnusedFunction::doStuff() {} // Should not warn here with unusedFunction
+}
+
+int qdateIsValid()
+{
+    QDate qd(1,1,2025);
+    Q_ASSERT(qd.isValid()); // Should not warn here with assertWithSideEffect
+    return qd.month(); 
 }

@@ -36,7 +36,6 @@
     <ClCompile Include="checkassert.cpp" />
     <ClCompile Include="checkautovariables.cpp" />
     <ClCompile Include="checkbool.cpp" />
-    <ClCompile Include="checkboost.cpp" />
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
@@ -66,6 +65,7 @@
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
     <ClCompile Include="errortypes.cpp" />
+    <ClCompile Include="findtoken.cpp" />
     <ClCompile Include="forwardanalyzer.cpp" />
     <ClCompile Include="fwdanalysis.cpp" />
     <ClCompile Include="importproject.cpp" />
@@ -79,7 +79,9 @@
     <ClCompile Include="platform.cpp" />
     <ClCompile Include="preprocessor.cpp" />
     <ClCompile Include="programmemory.cpp" />
+    <ClCompile Include="regex.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
+    <ClCompile Include="sarifreport.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="standards.cpp" />
     <ClCompile Include="summaries.cpp" />
@@ -107,7 +109,6 @@
     <ClInclude Include="checkassert.h" />
     <ClInclude Include="checkautovariables.h" />
     <ClInclude Include="checkbool.h" />
-    <ClInclude Include="checkboost.h" />
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
@@ -156,7 +157,9 @@
     <ClInclude Include="precompiled.h" />
     <ClInclude Include="preprocessor.h" />
     <ClInclude Include="programmemory.h" />
+    <ClInclude Include="regex.h" />
     <ClInclude Include="reverseanalyzer.h" />
+    <ClInclude Include="sarifreport.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="smallvector.h" />
     <ClInclude Include="sourcelocation.h" />
@@ -257,9 +260,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;$(HaveBoost);_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;$(BoostInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -278,9 +281,12 @@
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">
@@ -288,9 +294,9 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;$(HaveBoost);HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;$(BoostInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -310,9 +316,12 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -325,9 +334,9 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;$(BoostInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;$(HaveBoost);NDEBUG;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -350,9 +359,12 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">
@@ -365,9 +377,9 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\externals;..\externals\picojson;..\externals\simplecpp;..\externals\tinyxml2;$(BoostInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4127;4146;4244;4251;4267;4389;4701;4706;4800;4805</DisableSpecificWarnings>
-      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;NDEBUG;WIN32;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPCHECKLIB_EXPORT;TINYXML2_EXPORT;SIMPLECPP_EXPORT;$(HaveBoost);NDEBUG;HAVE_RULES;_CRT_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -391,9 +403,12 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons/*.py" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)addons/*.json" "$(OutDir)addons" /E /I /D /Y
 xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
-xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
+xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y
+if exist "$(OutDir)platforms\unix32-unsigned.xml" del /q "$(OutDir)platforms\unix32-unsigned.xml"
+if exist "$(OutDir)platforms\unix64-unsigned.xml" del /q "$(OutDir)platforms\unix64-unsigned.xml"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,15 +27,12 @@
 #include "library.h"
 #include "platform.h"
 #include "standards.h"
-#include "suppressions.h"
+#include "checkers.h"
 
 #include <algorithm>
 #include <atomic>
-#include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <tuple>
@@ -47,7 +44,14 @@
 #include <cstdio>
 #endif
 
-enum class SHOWTIME_MODES : std::uint8_t;
+#ifdef HAVE_RULES
+#include <memory>
+
+class Regex;
+#endif
+
+struct Suppressions;
+enum class ShowTime : std::uint8_t;
 namespace ValueFlow {
     class Value;
 }
@@ -69,16 +73,16 @@ public:
         mFlags = 0xFFFFFFFF;
     }
     bool isEnabled(T flag) const {
-        return (mFlags & (1U << (uint32_t)flag)) != 0;
+        return (mFlags & (1U << static_cast<uint32_t>(flag))) != 0;
     }
     void enable(T flag) {
-        mFlags |= (1U << (uint32_t)flag);
+        mFlags |= (1U << static_cast<uint32_t>(flag));
     }
     void enable(SimpleEnableGroup<T> group) {
         mFlags |= group.intValue();
     }
     void disable(T flag) {
-        mFlags &= ~(1U << (uint32_t)flag);
+        mFlags &= ~(1U << static_cast<uint32_t>(flag));
     }
     void disable(SimpleEnableGroup<T> group) {
         mFlags &= ~(group.intValue());
@@ -97,6 +101,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
+// NOLINTNEXTLINE(clang-analyzer-optin.performance.Padding)
 class CPPCHECKLIB WARN_UNUSED Settings {
 private:
 
@@ -110,6 +115,9 @@ public:
 
     static std::pair<std::string, std::string> getNameAndVersion(const std::string& productName);
 
+    /** @brief Report type */
+    ReportType reportType = ReportType::normal;
+
     /** @brief addons, either filename of python/json file or json data */
     std::unordered_set<std::string> addons;
 
@@ -119,14 +127,14 @@ public:
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;
 
+    /** @brief Analyze all configuration in Visual Studio project. */
+    bool analyzeAllVsConfigs{true};
+
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 
     /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
-
-    /** @brief check all configurations (false if -D or --max-configs is used */
-    bool checkAllConfigurations = true;
 
     /** Is the 'configuration checking' wanted? */
     bool checkConfiguration{};
@@ -146,7 +154,7 @@ public:
     std::string checkersReportFilename;
 
     /** @brief check unknown function return values */
-    std::set<std::string> checkUnknownFunctionReturn;
+    std::set<std::string> checkUnknownFunctionReturn; // TODO: move to Library?
 
     /** Check unused/uninstantiated templates */
     bool checkUnusedTemplates = true;
@@ -160,8 +168,11 @@ public:
     /** Use clang-tidy */
     bool clangTidy{};
 
+    /** Custom clang-tidy executable */
+    std::string clangTidyExecutable = "clang-tidy";
+
     /** Internal: Clear the simplecpp non-existing include cache */
-    bool clearIncludeCache{};
+    bool clearIncludeCache{}; // internal
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -177,6 +188,15 @@ public:
 
     /** @brief Are we running from DACA script? */
     bool daca{};
+
+    /** @brief Is --debug-ast given? */
+    bool debugast{};
+
+    /** @brief Is --debug-clang-output given? */
+    bool debugClangOutput{};
+
+    /** @brief Is --debug-ignore given? */
+    bool debugignore{};
 
     /** @brief Internal: Is --debug-lookup or --debug-lookup=all given? */
     bool debuglookup{};
@@ -199,18 +219,23 @@ public:
     /** @brief Is --debug-simplified given? */
     bool debugSimplified{};
 
+    /** @brief Is --debug-symdb given? */
+    bool debugsymdb{};
+
     /** @brief Is --debug-template given? */
     bool debugtemplate{};
+
+    /** @brief Is --debug-valueflow given? */
+    bool debugvalueflow{};
 
     /** @brief Is --debug-warnings given? */
     bool debugwarnings{};
 
     /** @brief Is --dump given? */
     bool dump{};
-    std::string dumpFile;
 
-    /** @brief Name of the language that is enforced. Empty per default. */
-    Standards::Language enforcedLang{};
+    /** @brief Do not filter duplicated errors. */
+    bool emitDuplicates{};
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */
@@ -261,12 +286,38 @@ public:
     /** Library */
     Library library;
 
+#ifdef HAS_THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage{};
+#endif
 
-    /** @brief Maximum number of configurations to check before bailing.
-        Default is 12. (--max-configs=N) */
-    int maxConfigs = 12;
+    std::string manualUrl{"https://cppcheck.sourceforge.io/manual.pdf"};
+
+    /** --max-configs value */
+    int maxConfigsOption = 0; // "Not Assigned" value
+
+    /** max configs from --project option */
+    int maxConfigsProject = 0; // "Not Assigned" value
+
+    static const int maxConfigsNotAssigned;
+    static const int maxConfigsDefault;
+
+    bool isMaxConfigsAssigned() const {
+        return maxConfigsOption != maxConfigsNotAssigned || maxConfigsProject != maxConfigsNotAssigned;
+    }
+
+    /** @brief Maximum number of configurations to check before bailing. */
+    int getMaxConfigs() const {
+        if (force)
+            return 0x7fffffff;
+        if (maxConfigsOption != maxConfigsNotAssigned)
+            return maxConfigsOption;
+        if (maxConfigsProject != maxConfigsNotAssigned)
+            return maxConfigsProject;
+        if (!userDefines.empty())
+            return 1;
+        return maxConfigsDefault;
+    }
 
     /** @brief --max-ctu-depth */
     int maxCtuDepth = 2;
@@ -283,10 +334,13 @@ public:
     Platform platform;
 
     /** @brief pid of cppcheck. Intention is that this is set in the main process. */
-    int pid;
+    int pid; // internal
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
+
+    /** @brief Are we Cppcheck Premium */
+    bool premium{};
 
     /** @brief Extra arguments for Cppcheck Premium addon */
     std::string premiumArgs;
@@ -314,6 +368,7 @@ public:
         std::string id = "rule"; // default id
         std::string summary;
         Severity severity = Severity::style; // default severity
+        std::shared_ptr<Regex> regex;
     };
 
     /**
@@ -374,18 +429,18 @@ public:
 
     SafeChecks safeChecks;
 
+    /** @brief the files we successfully loaded settings from */
+    std::vector<std::string> settingsFiles;
+
     SimpleEnableGroup<Severity> severity;
     SimpleEnableGroup<Certainty> certainty;
     SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
-    SHOWTIME_MODES showtime{};
+    ShowTime showtime{};
 
     /** Struct contains standards settings */
     Standards standards;
-
-    /** @brief suppressions */
-    Suppressions supprs;
 
     /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */
@@ -400,6 +455,9 @@ public:
 
     /** @brief The maximum time in seconds for the typedef simplification */
     std::size_t typedefMaxTime{};
+
+    /** @brief Error IDs which should not be reported as unmatchedSuppression */
+    std::vector<std::string> unmatchedSuppressionFilters;
 
     /** @brief defines given by the user */
     std::string userDefines;
@@ -450,11 +508,8 @@ public:
     /** @brief Is --verbose given? */
     bool verbose{};
 
-    /** @brief write XML results (--xml) */
-    bool xml{};
-
     /** @brief XML version (--xml-version=..) */
-    int xml_version = 2;
+    int xml_version = 2; // TODO: integrate into outputFormat enum?
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
@@ -520,17 +575,13 @@ public:
 
     void setCheckLevel(CheckLevel level);
 
-    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
-    void setMisraRuleTexts(const ExecuteCmdFn& executeCommand);
-    void setMisraRuleTexts(const std::string& data);
-    std::string getMisraRuleText(const std::string& id, const std::string& text) const;
-
     static ExecutorType defaultExecutor();
+
+    static bool unusedFunctionOnly();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity>, SimpleEnableGroup<Checks>> &groups);
     std::string applyEnabled(const std::string &str, bool enable);
-    std::map<std::string, std::string> mMisraRuleTexts;
 };
 
 /// @}

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,10 +51,6 @@
 #include <QTextStream>
 #include <QVariant>
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-#include <QCharRef>
-#endif
-
 static QString unquote(QString s) {
     if (s.startsWith("\""))
         s = s.mid(1, s.size() - 2);
@@ -62,7 +58,7 @@ static QString unquote(QString s) {
 }
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress [passedByValue,passedByValueCallback]
+int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValueCallback
 {
     output.clear();
 
@@ -89,7 +85,10 @@ int CheckThread::executeCommand(std::string exe, std::vector<std::string> args, 
     }
 
     process.start(e, args2);
-    process.waitForFinished();
+    while (!Settings::terminated() && !process.waitForFinished(1000)) {
+        if (process.state() == QProcess::ProcessState::NotRunning)
+            break;
+    }
 
     if (redirect == "2>&1") {
         QString s1 = process.readAllStandardOutput();
@@ -110,13 +109,14 @@ CheckThread::CheckThread(ThreadResult &result) :
     mResult(result)
 {}
 
-void CheckThread::setSettings(const Settings &settings)
+void CheckThread::setSettings(const Settings &settings, std::shared_ptr<Suppressions> supprs)
 {
     mFiles.clear();
     mSettings = settings; // this is a copy
+    mSuppressions = std::move(supprs);
 }
 
-void CheckThread::analyseWholeProgram(const QStringList &files, const std::string& ctuInfo)
+void CheckThread::analyseWholeProgram(const std::list<FileWithDetails> &files, const std::string& ctuInfo)
 {
     mFiles = files;
     mAnalyseWholeProgram = true;
@@ -124,48 +124,45 @@ void CheckThread::analyseWholeProgram(const QStringList &files, const std::strin
     start();
 }
 
-// cppcheck-suppress unusedFunction - TODO: false positive
 void CheckThread::run()
 {
     mState = Running;
 
-    CppCheck cppcheck(mResult, true, executeCommand);
-    cppcheck.settings() = std::move(mSettings);
+    CppCheck cppcheck(mSettings, *mSuppressions, mResult, true, executeCommand);
 
-    if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
+    if (!mFiles.empty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         std::string ctuInfo;
         ctuInfo.swap(mCtuInfo);
         qDebug() << "Whole program analysis";
-        std::list<FileWithDetails> files2;
-        std::transform(mFiles.cbegin(), mFiles.cend(), std::back_inserter(files2), [&](const QString& file) {
-            return FileWithDetails{file.toStdString(), 0};
-        });
-        cppcheck.analyseWholeProgram(cppcheck.settings().buildDir, files2, {}, ctuInfo);
+        cppcheck.analyseWholeProgram(mSettings.buildDir, mFiles, {}, ctuInfo);
         mFiles.clear();
         emit done();
         return;
     }
 
-    QString file = mResult.getNextFile();
-    while (!file.isEmpty() && mState == Running) {
-        qDebug() << "Checking file" << file;
-        cppcheck.check(FileWithDetails(file.toStdString()));
-        runAddonsAndTools(cppcheck.settings(), nullptr, file);
-        emit fileChecked(file);
+    // TODO: apply enforcedLanguage
+    const FileWithDetails* file = nullptr;
+    mResult.getNextFile(file);
+    while (file && mState == Running) {
+        const std::string& fname = file->spath();
+        qDebug() << "Checking file" << QString::fromStdString(fname);
+        cppcheck.check(*file);
+        runAddonsAndTools(mSettings, nullptr, QString::fromStdString(fname));
+        emit fileChecked(QString::fromStdString(fname));
 
         if (mState == Running)
-            file = mResult.getNextFile();
+            mResult.getNextFile(file);
     }
 
     const FileSettings* fileSettings = nullptr;
     mResult.getNextFileSettings(fileSettings);
     while (fileSettings && mState == Running) {
-        file = QString::fromStdString(fileSettings->filename());
-        qDebug() << "Checking file" << file;
+        const std::string& fname = fileSettings->filename();
+        qDebug() << "Checking file" << QString::fromStdString(fname);
         cppcheck.check(*fileSettings);
-        runAddonsAndTools(cppcheck.settings(), fileSettings, QString::fromStdString(fileSettings->filename()));
-        emit fileChecked(file);
+        runAddonsAndTools(mSettings, fileSettings, QString::fromStdString(fname));
+        emit fileChecked(QString::fromStdString(fname));
 
         if (mState == Running)
             mResult.getNextFileSettings(fileSettings);
@@ -190,9 +187,9 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.cbegin(); incIt != fileSettings->includePaths.cend(); ++incIt)
+            for (auto incIt = fileSettings->includePaths.cbegin(); incIt != fileSettings->includePaths.cend(); ++incIt)
                 args << ("-I" + QString::fromStdString(*incIt));
-            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.cbegin(); i != fileSettings->systemIncludePaths.cend(); ++i)
+            for (auto i = fileSettings->systemIncludePaths.cbegin(); i != fileSettings->systemIncludePaths.cend(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
             for (const QString& def : QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + def);
@@ -241,7 +238,7 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
 
             const std::string &buildDir = settings.buildDir;
             if (!buildDir.empty()) {
-                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg));
+                analyzerInfoFile = QString::fromStdString(AnalyzerInformation::getAnalyzerInfoFile(buildDir, fileSettings->filename(), fileSettings->cfg, fileSettings->fileIndex));
 
                 QStringList args2(args);
                 args2.insert(0,"-E");
@@ -250,11 +247,7 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
                 process.start(clangCmd(),args2);
                 process.waitForFinished();
                 const QByteArray &ba = process.readAllStandardOutput();
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
                 const quint16 chksum = qChecksum(QByteArrayView(ba));
-#else
-                const quint16 chksum = qChecksum(ba.data(), ba.length());
-#endif
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -270,7 +263,7 @@ void CheckThread::runAddonsAndTools(const Settings& settings, const FileSettings
                     }
                     f1.close();
                 }
-                f1.open(QIODevice::WriteOnly | QIODevice::Text);
+                (void)f1.open(QIODevice::WriteOnly | QIODevice::Text); // TODO: check result
                 QTextStream out1(&f1);
                 out1 << chksum;
 
@@ -432,15 +425,15 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
         const std::string id = e.errorId.toStdString();
-        ErrorMessage errmsg(callstack, f0, e.severity, msg, id, Certainty::normal);
+        ErrorMessage errmsg(std::move(callstack), f0, e.severity, msg, id, Certainty::normal);
         mResult.reportErr(errmsg);
     }
 }
 
 bool CheckThread::isSuppressed(const SuppressionList::ErrorMessage &errorMessage) const
 {
-    return std::any_of(mSuppressions.cbegin(), mSuppressions.cend(), [&](const SuppressionList::Suppression& s) {
-        return s.isSuppressed(errorMessage);
+    return std::any_of(mSuppressionsUi.cbegin(), mSuppressionsUi.cend(), [&](const SuppressionList::Suppression& s) -> bool {
+        return s.isSuppressed(errorMessage) == SuppressionList::Suppression::Result::Matched;
     });
 }
 

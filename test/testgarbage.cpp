@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,8 @@ private:
     void run() override {
         settings.severity.fill();
         settings.certainty.fill();
+
+        mNewTemplate = true;
 
         // don't freak out when the syntax is wrong
 
@@ -254,6 +256,8 @@ private:
         TEST_CASE(garbageCode225);
         TEST_CASE(garbageCode226);
         TEST_CASE(garbageCode227);
+        TEST_CASE(garbageCode228);
+        TEST_CASE(garbageCode229);
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -271,7 +275,21 @@ private:
         TEST_CASE(nonGarbageCode1); // #8346
     }
 
-#define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
+#define checkCodeInternal(...) checkCodeInternal_(__FILE__, __LINE__, __VA_ARGS__)
+    template<size_t size>
+    std::string checkCodeInternal_(const char* file, int line, const char (&code)[size], bool cpp) {
+        // tokenize..
+        SimpleTokenizer tokenizer(settings, *this, cpp);
+        ASSERT_LOC(tokenizer.tokenize(code), file, line);
+
+        // call all "runChecks" in all registered Check classes
+        for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
+            (*it)->runChecks(tokenizer, this);
+        }
+
+        return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
+    }
+
     template<size_t size>
     std::string checkCode(const char (&code)[size], bool cpp = true) {
         // double the tests - run each example as C as well as C++
@@ -284,23 +302,9 @@ private:
         return checkCodeInternal(code, cpp);
     }
 
+#define getSyntaxError(...) getSyntaxError_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
-    std::string checkCodeInternal_(const char (&code)[size], bool cpp, const char* file, int line) {
-        // tokenize..
-        SimpleTokenizer tokenizer(settings, *this);
-        ASSERT_LOC(tokenizer.tokenize(code, cpp), file, line);
-
-        // call all "runChecks" in all registered Check classes
-        for (auto it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
-            (*it)->runChecks(tokenizer, this);
-        }
-
-        return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
-    }
-
-#define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
-    template<size_t size>
-    std::string getSyntaxError_(const char (&code)[size], const char* file, int line) {
+    std::string getSyntaxError_(const char* file, int line, const char (&code)[size]) {
         SimpleTokenizer tokenizer(settings, *this);
         try {
             ASSERT_LOC(tokenizer.tokenize(code), file, line);
@@ -395,14 +399,14 @@ private:
         const char code[] = "class x y { };";
 
         {
-            SimpleTokenizer tokenizer(settings, *this);
-            ASSERT(tokenizer.tokenize(code, false));
+            SimpleTokenizer tokenizer(settings, *this, false);
+            ASSERT(tokenizer.tokenize(code));
             ASSERT_EQUALS("", errout_str());
         }
         {
             SimpleTokenizer tokenizer(settings, *this);
             ASSERT(tokenizer.tokenize(code));
-            ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout_str());
+            ASSERT_EQUALS("[test.cpp:1:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code. [class_X_Y]\n", errout_str());
         }
     }
 
@@ -879,8 +883,7 @@ private:
     }
 
     void garbageCode102() { // #6846 (segmentation fault)
-        (void)checkCode("struct Object { ( ) ; Object & operator= ( Object ) { ( ) { } if ( this != & b ) } }");
-        ignore_errout(); // we do not care about the output
+        ASSERT_THROW_INTERNAL(checkCode("struct Object { ( ) ; Object & operator= ( Object ) { ( ) { } if ( this != & b ) } }"), SYNTAX);
     }
 
     void garbageCode103() { // #6824
@@ -1247,8 +1250,7 @@ private:
         const char code[] = "template <bool foo = std::value &&>\n"
                             "static std::string foo(char *Bla) {\n"
                             "    while (Bla[1] && Bla[1] != ',') }\n";
-        (void)checkCode(code);
-        ignore_errout(); // we are not interested in the output
+        ASSERT_THROW_INTERNAL(checkCode(code), SYNTAX);
     }
 
     void garbageCode153() {
@@ -1337,9 +1339,9 @@ private:
 
         // #8352
         ASSERT_THROW_INTERNAL(checkCode("else return % name5 name2 - =name1 return enum | { - name3 1 enum != >= 1 >= ++ { { || "
-                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { name6 | ; ++}}}}}}}"), SYNTAX);
+                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { name6 | ; ++}}}}}}}"), UNKNOWN_MACRO);
         ASSERT_THROW_INTERNAL(checkCode("else return % name5 name2 - =name1 return enum | { - name3 1 enum != >= 1 >= ++ { { || "
-                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { { || ; ++}}}}}}}}"), SYNTAX);
+                                        "{ return return { | { - name3 1 enum != >= 1 >= ++ { { || ; ++}}}}}}}}"), UNKNOWN_MACRO);
     }
 
     void templateSimplifierCrashes() {
@@ -1423,7 +1425,7 @@ private:
 
     void garbageCode162() {
         //7208
-        ASSERT_THROW_INTERNAL(checkCode("return <<  >>  x return <<  >>  x ", false), SYNTAX);
+        ASSERT_THROW_INTERNAL(checkCode("return <<  >>  x return <<  >>  x ", false), UNKNOWN_MACRO);
     }
 
     void garbageCode163() {
@@ -1761,6 +1763,15 @@ private:
     void garbageCode227() { // #12615
         ASSERT_NO_THROW(checkCode("f(&S::operator=);"));
     }
+    void garbageCode228() {
+        ASSERT_NO_THROW(checkCode("void f() { enum { A = [=]() mutable { return 0; }() }; }"));
+        ASSERT_NO_THROW(checkCode("enum { A = [=](void) mutable -> int { return 0; }() };"));
+    }
+    void garbageCode229() { // #14126
+        ASSERT_THROW_INTERNAL(checkCode("void f() {} [[maybe_unused]]"), SYNTAX);
+        ASSERT_THROW_INTERNAL(checkCode("void f() {} [[unused]]"), SYNTAX);
+    }
+
 
     void syntaxErrorFirstToken() {
         ASSERT_THROW_INTERNAL(checkCode("&operator(){[]};"), SYNTAX); // #7818
@@ -1875,6 +1886,9 @@ private:
                             "    auto fn = []() -> foo* { return new foo(); };\n"
                             "}"));
         ignore_errout(); // we do not care about the output
+
+        // #13892
+        ASSERT_NO_THROW(checkCode("void foovm(int x[const *]);"));
     }
 };
 

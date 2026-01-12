@@ -33,7 +33,6 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <time.h>
 #include <string.h>
 #include <strings.h>
 #if defined(__APPLE__)
@@ -47,6 +46,7 @@
 #include <wchar.h>
 #include <sys/stat.h>
 #include <utime.h>
+#include <stddef.h>
 
 
 #if !defined(__APPLE__)
@@ -144,6 +144,7 @@ void nullPointer_pthread_attr_setstack(const pthread_attr_t *attr) {
     (void) pthread_attr_setstack(NULL, NULL, 0);
     (void) pthread_attr_setstack(attr, NULL, 0);
     // cppcheck-suppress nullPointer
+    // cppcheck-suppress intToPointerCast
     (void) pthread_attr_setstack(NULL, (void*) 1, 0);
 }
 
@@ -224,6 +225,7 @@ int nullPointer_getpwnam_r(const char *name, struct passwd *pwd, char *buffer, s
     return getpwnam_r(name, pwd, buffer, bufsize, result);
 }
 
+#if !defined(__APPLE__)
 int nullPointer_fgetpwent_r(FILE *restrict stream, const struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
 {
     // cppcheck-suppress nullPointer
@@ -247,6 +249,7 @@ int nullPointer_getpwent_r(const struct passwd *restrict pwbuf, char *restrict b
     (void) getpwent_r(pwbuf, buf, buflen, NULL);
     return getpwent_r(pwbuf, buf, buflen, pwbufp);
 }
+#endif
 
 int nullPointer_getgrgid_r(gid_t gid, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
 {
@@ -921,11 +924,13 @@ typedef struct {
 
 S_memalign* posix_memalign_memleak(size_t n) { // #12248
     S_memalign* s = malloc(sizeof(*s));
+    // cppcheck-suppress nullPointerOutOfMemory
     s->N = n;
     if (0 != posix_memalign((void**)&s->data, 16, n * sizeof(int))) {
         free(s);
         return NULL;
     }
+    // cppcheck-suppress nullPointerOutOfMemory
     memset(s->data, 0, n * sizeof(int));
     return s;
 }
@@ -989,7 +994,6 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
     mkdir(p, 0);
     getcwd(0, 0);
     // cppcheck-suppress nullPointer
-    // cppcheck-suppress readdirCalled
     readdir(0);
     // cppcheck-suppress nullPointer
     // cppcheck-suppress utimeCalled
@@ -1155,13 +1159,16 @@ int munmap_no_double_free(int tofd, // #11396
         return -1;
     }
 
+    // cppcheck-suppress nullPointerOutOfMemory
     memcpy(tptr,fptr,len);
 
+    // cppcheck-suppress nullPointerOutOfMemory
     if ((rc = munmap(fptr,len)) != 0) {
         // cppcheck-suppress memleak
         return -1;
     }
 
+    // cppcheck-suppress nullPointerOutOfMemory
     if ((rc = munmap(tptr,len)) != 0) {
         return -1;
     }
@@ -1181,6 +1188,7 @@ void resourceLeak_fdopen2(const char* fn) // #2767
     // cppcheck-suppress valueFlowBailoutIncompleteVar
     int fi = open(fn, O_RDONLY);
     FILE* fd = fdopen(fi, "r");
+    // cppcheck-suppress nullPointerOutOfResources
     fclose(fd);
 }
 
@@ -1240,8 +1248,10 @@ void resourceLeak_open2(void)
 void noleak(int x, int y, int z)
 {
     DIR *p1 = fdopendir(x);
+    // cppcheck-suppress nullPointerOutOfResources
     closedir(p1);
     DIR *p2 = opendir("abc");
+    // cppcheck-suppress nullPointerOutOfResources
     closedir(p2);
     int s = socket(AF_INET,SOCK_STREAM,0);
     close(s);
@@ -1381,7 +1391,7 @@ void uninitvar_types(void)
     b + 1;
 
     struct dirent d;
-    // cppcheck-suppress constStatement - TODO: uninitvar
+    // cppcheck-suppress [uninitvar,constStatement]
     d.d_ino + 1;
 }
 
@@ -1487,4 +1497,14 @@ void ctime_r_test(const time_t * timep, char * bufSizeUnknown)
 
     // cppcheck-suppress ctime_rCalled
     ctime_r(timep, bufSizeUnknown);
+}
+
+void invalidFunctionArg_nice(int inc)
+{
+    // cppcheck-suppress invalidFunctionArg
+    nice(-21);
+    nice(-20);
+    nice(19);
+    // cppcheck-suppress invalidFunctionArg
+    nice(+20);
 }

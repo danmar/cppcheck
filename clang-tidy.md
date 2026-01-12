@@ -33,7 +33,6 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 
 `readability-braces-around-statements`<br/>
 `readability-isolate-declaration`<br/>
-`modernize-use-trailing-return-type`<br/>
 `readability-uppercase-literal-suffix`<br/>
 `readability-identifier-length`<br/>
 
@@ -112,7 +111,11 @@ Also reports a false positive about templates which deduce the array length: htt
 
 `misc-include-cleaner`<br/>
 
-We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them. 
+We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them.
+
+`readability-use-concise-preprocessor-directives`<br/>
+
+Does not improve the readability.
 
 `bugprone-branch-clone`<br/>
 `modernize-return-braced-init-list`<br/>
@@ -126,6 +129,7 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `readability-avoid-nested-conditional-operator`<br/>
 `modernize-use-designated-initializers`<br/>
 `readability-enum-initial-value`<br/>
+`modernize-use-trailing-return-type`<br/>
 
 To be evaluated (need to remove exclusion).
 
@@ -144,12 +148,13 @@ To be evaluated (need to enable explicitly).
 
 `modernize-type-traits`<br/>
 `modernize-use-nodiscard`<br/>
+`modernize-use-scoped-lock`<br/>
 
 These apply to codebases which use later standards then C++11 (C++17 is used when building with Qt6) so we cannot simply apply them.
 
-`modernize-use-auto`<br/>
+`portability-avoid-pragma-once`<br/>
 
-This cannot be enabled as it might lead to changes in the constness of iterators - see https://github.com/llvm/llvm-project/issues/84324.
+We are not interested in this.
 
 ### Disabled for performance reasons
 

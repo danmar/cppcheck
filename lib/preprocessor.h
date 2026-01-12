@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "standards.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <istream>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <utility>
@@ -68,8 +68,7 @@ struct CPPCHECKLIB Directive {
     std::vector<DirectiveToken> strTokens;
 
     /** record a directive (possibly filtering src) */
-    Directive(const simplecpp::Location & _loc, std::string _str);
-    Directive(std::string _file, int _linenr, std::string _str);
+    Directive(const simplecpp::TokenList &tokens, const simplecpp::Location & _loc, std::string _str);
 };
 
 class CPPCHECKLIB RemarkComment {
@@ -99,46 +98,39 @@ public:
  * configurations that exist in a source file.
  */
 class CPPCHECKLIB WARN_UNUSED Preprocessor {
-    // TODO: get rid of this
-    friend class PreprocessorHelper;
-    friend class TestPreprocessor;
-    friend class TestUnusedVar;
-
 public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, ErrorLogger &errorLogger);
-    virtual ~Preprocessor();
+    Preprocessor(simplecpp::TokenList& tokens, const Settings& settings, ErrorLogger &errorLogger, Standards::Language lang);
 
-    void inlineSuppressions(const simplecpp::TokenList &tokens, SuppressionList &suppressions);
+    void inlineSuppressions(SuppressionList &suppressions);
 
-    std::list<Directive> createDirectives(const simplecpp::TokenList &tokens) const;
+    std::list<Directive> createDirectives() const;
 
-    std::set<std::string> getConfigs(const simplecpp::TokenList &tokens) const;
+    std::set<std::string> getConfigs() const;
 
-    std::vector<RemarkComment> getRemarkComments(const simplecpp::TokenList &tokens) const;
+    std::vector<RemarkComment> getRemarkComments() const;
 
-    bool loadFiles(const simplecpp::TokenList &rawtokens, std::vector<std::string> &files);
+    bool loadFiles(std::vector<std::string> &files);
 
-    void removeComments(simplecpp::TokenList &tokens);
+    void removeComments();
 
-    static void setPlatformInfo(simplecpp::TokenList &tokens, const Settings& settings);
+    void setPlatformInfo();
 
-    simplecpp::TokenList preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError = false);
+    simplecpp::TokenList preprocess(const std::string &cfg, std::vector<std::string> &files, simplecpp::OutputList& outputList);
 
-    std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool writeLocations);
+    std::string getcode(const std::string &cfg, std::vector<std::string> &files, bool writeLocations);
 
     /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
      *
-     * @param tokens1    Sourcefile tokens
      * @param toolinfo   Arbitrary extra toolinfo
      * @return HASH
      */
-    std::size_t calculateHash(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
+    std::size_t calculateHash(const std::string &toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList &tokenList) const;
+    void simplifyPragmaAsm();
 
     static void getErrorMessages(ErrorLogger &errorLogger, const Settings &settings);
 
@@ -147,13 +139,13 @@ public:
      */
     void dump(std::ostream &out) const;
 
-    static bool hasErrors(const simplecpp::Output &output);
+    const simplecpp::Output* reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
+    void error(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg, simplecpp::Output::Type type);
+
+    const simplecpp::Output* handleErrors(const simplecpp::OutputList &outputList);
 
 private:
-    void handleErrors(const simplecpp::OutputList &outputList, bool throwError);
-
-    void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
-
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList &tokenList);
 
     /**
@@ -164,22 +156,24 @@ private:
         SystemHeader
     };
 
-    void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
-    void error(const std::string &filename, unsigned int linenr, const std::string &msg);
-
-    static bool hasErrors(const simplecpp::OutputList &outputList);
+    void missingInclude(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &header, HeaderTypes headerType);
+    void invalidSuppression(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg);
+    void error(const std::string &filename, unsigned int linenr, unsigned int col, const std::string &msg, const std::string& id);
 
     void addRemarkComments(const simplecpp::TokenList &tokens, std::vector<RemarkComment> &remarkComments) const;
+
+    simplecpp::TokenList& mTokens;
 
     const Settings& mSettings;
     ErrorLogger &mErrorLogger;
 
     /** list of all directives met while preprocessing file */
 
-    std::map<std::string, simplecpp::TokenList *> mTokenLists;
+    simplecpp::FileDataCache mFileCache;
 
     /** filename for cpp/c file - useful when reporting errors */
-    std::string mFile0;
+    std::string mFile0; // TODO: this is never set
+    Standards::Language mLang{Standards::Language::None};
 
     /** simplecpp tracking info */
     std::list<simplecpp::MacroUsage> mMacroUsage;

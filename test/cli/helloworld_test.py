@@ -5,7 +5,10 @@ import os
 import re
 import glob
 import json
+import shutil
 import xml.etree.ElementTree as ET
+
+import pytest
 
 from testutils import create_gui_project_file, cppcheck
 
@@ -68,7 +71,7 @@ def test_addon_local_path():
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
     assert stderr == ('[main.c:5]: (error) Division by zero.\n'
-                      '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
+                      '[main.c:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
 def test_addon_local_path_not_enable():
     args = [
@@ -91,7 +94,7 @@ def test_addon_absolute_path():
     filename = os.path.join(__proj_dir, 'main.c')
     assert ret == 0, stdout
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+                      '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
 def test_addon_relative_path():
     args = [
@@ -106,22 +109,26 @@ def test_addon_relative_path():
     assert stdout == ('Checking %s ...\n'
                       'Checking %s: SOME_CONFIG...\n' % (filename, filename))
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+                      '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
-def test_addon_with_gui_project():
+def test_addon_with_gui_project(tmp_path):
+    shutil.copytree(os.path.join(__script_dir, 'helloworld'), tmp_path / 'helloworld')
     project_file = os.path.join('helloworld', 'test.cppcheck')
-    create_gui_project_file(os.path.join(__script_dir, project_file), paths=['.'], addon='misra')
+    create_gui_project_file(tmp_path / project_file, paths=['.'], addon='misra')
     args = [
         '--template=cppcheck1',
         '--enable=style',
-        '--project=' + project_file
+        '--project={}'.format(project_file)
     ]
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    ret, stdout, stderr = cppcheck(args, cwd=tmp_path)
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
-    assert stdout == 'Checking %s ...\n' % filename
+    assert stdout.strip().split('\n') == [
+        'Checking %s ...' % filename,
+        'Checking %s: SOME_CONFIG...' % filename
+    ]
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
-                      '[%s:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
+                      '[%s:4]: (style) misra violation (use --rule-texts=<file> to get proper output)\n' % (filename, filename))
 
 def test_basepath_relative_path():
     args = [
@@ -143,15 +150,29 @@ def test_basepath_absolute_path():
     assert ret == 0, stdout
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
 
-def test_vs_project_local_path():
+def __test_vs_project_local_path(extra_args=None, exp_vs_cfg='Debug|Win32 Debug|x64 Release|Win32 Release|x64'):
     args = [
         '--template=cppcheck1',
         '--project=helloworld.vcxproj'
     ]
+    if extra_args:
+        args += extra_args
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
-    assert __getVsConfigs(stdout, 'main.c') == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
+    assert __getVsConfigs(stdout, 'main.c') == exp_vs_cfg
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
+
+def test_vs_project_local_path():
+    __test_vs_project_local_path()
+
+def test_vs_project_local_path_select_one():
+    __test_vs_project_local_path(['--project-configuration=Release|Win32'], 'Release|Win32')
+
+def test_vs_project_local_path_select_one_multiple():
+    __test_vs_project_local_path(['--project-configuration=Debug|Win32', '--project-configuration=Release|Win32'], 'Release|Win32')
+
+def test_vs_project_local_path_no_analyze_all():
+    __test_vs_project_local_path(['--no-analyze-all-vs-configs'], 'Debug|Win32')
 
 def test_vs_project_relative_path():
     args = [
@@ -175,16 +196,32 @@ def test_vs_project_absolute_path():
     assert __getVsConfigs(stdout, filename) == 'Debug|Win32 Debug|x64 Release|Win32 Release|x64'
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
-def test_cppcheck_project_local_path():
+def __test_cppcheck_project_local_path(extra_args=None, exp_vs_cfg='Debug|x64'):
     args = [
         '--template=cppcheck1',
         '--platform=win64',
         '--project=helloworld.cppcheck'
     ]
+    if extra_args:
+        args += extra_args
     ret, stdout, stderr = cppcheck(args, cwd=__proj_dir)
     assert ret == 0, stdout
-    assert __getVsConfigs(stdout, 'main.c') == 'Debug|x64'
+    assert __getVsConfigs(stdout, 'main.c') == exp_vs_cfg
     assert stderr == '[main.c:5]: (error) Division by zero.\n'
+
+def test_cppcheck_project_local_path():
+    __test_cppcheck_project_local_path()
+
+@pytest.mark.xfail  # TODO: no source files found
+def test_cppcheck_project_local_path_select_one():
+    __test_cppcheck_project_local_path(['--project-configuration=Release|Win32'], 'Release|Win32')
+
+@pytest.mark.xfail  # TODO: no source files found
+def test_cppcheck_project_local_path_select_one_multiple():
+    __test_cppcheck_project_local_path(['--project-configuration=Debug|Win32', '--project-configuration=Release|Win32'], 'Release|Win32')
+
+def test_cppcheck_project_local_path_analyze_all():
+    __test_cppcheck_project_local_path(['--analyze-all-vs-configs'], 'Debug|Win32 Debug|x64 Release|Win32 Release|x64')
 
 def test_cppcheck_project_relative_path():
     args = [
@@ -228,29 +265,31 @@ def test_suppress_command_line_absolute():
     assert ret == 0, stdout
     assert stderr == ''
 
-def test_suppress_project_relative():
+def test_suppress_project_relative(tmp_path):
+    shutil.copytree(os.path.join(__script_dir, 'helloworld'), tmp_path / 'helloworld')
     project_file = os.path.join('helloworld', 'test.cppcheck')
-    create_gui_project_file(os.path.join(__script_dir, project_file),
+    create_gui_project_file(tmp_path / project_file,
                             paths=['.'],
                             suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
 
     args = [
-        '--project=' + project_file
+        '--project={}'.format(project_file)
     ]
 
-    ret, stdout, stderr = cppcheck(args, cwd=__script_dir)
+    ret, stdout, stderr = cppcheck(args, cwd=tmp_path)
     assert ret == 0, stdout
     assert stderr == ''
 
 
-def test_suppress_project_absolute():
-    project_file = os.path.join('helloworld', 'test.cppcheck')
-    create_gui_project_file(os.path.join(__script_dir, project_file),
+def test_suppress_project_absolute(tmp_path):
+    shutil.copytree(os.path.join(__script_dir, 'helloworld'), tmp_path / 'helloworld')
+    project_file = tmp_path / 'helloworld' / 'test.cppcheck'
+    create_gui_project_file(project_file,
                             paths=['.'],
                             suppressions=[{'fileName':'main.c', 'id':'zerodiv'}])
 
     args = [
-        '--project=' + os.path.join(__script_dir, 'helloworld', 'test.cppcheck')
+        '--project={}'.format(project_file)
     ]
 
     ret, stdout, stderr = cppcheck(args)
@@ -321,7 +360,7 @@ def test_missing_include_system():  # #11283
     ]
 
     _, _, stderr = cppcheck(args, cwd=__script_dir)
-    assert stderr.replace('\\', '/') == 'helloworld/main.c:1:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
+    assert stderr.replace('\\', '/') == 'helloworld/main.c:1:2: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
 
 
 def test_sarif():
@@ -337,9 +376,13 @@ def test_sarif():
     assert res['runs'][0]['results'][0]['ruleId'] == 'zerodiv'
     assert res['runs'][0]['tool']['driver']['rules'][0]['id'] == 'zerodiv'
     assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['precision'] == 'high'
-    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] > 9.5
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['security-severity'] == '9.9'
     assert 'security' in res['runs'][0]['tool']['driver']['rules'][0]['properties']['tags']
     assert re.match(r'[0-9]+(.[0-9]+)+', res['runs'][0]['tool']['driver']['semanticVersion'])
+    assert 'level' in res['runs'][0]['tool']['driver']['rules'][0]['defaultConfiguration'] # #13885
+    assert res['runs'][0]['tool']['driver']['rules'][0]['shortDescription']['text'] == ''
+    assert res['runs'][0]['results'][0]['message']['text'] == 'Division by zero.'
+    assert res['runs'][0]['tool']['driver']['rules'][0]['properties']['problem.severity'] == 'error'
 
 
 def test_xml_checkers_report():

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "tokenize.h"
 
 #include <set>
 #include <string>
@@ -40,6 +39,8 @@ class Token;
 class Function;
 class Variable;
 class ErrorLogger;
+class Tokenizer;
+struct UnionMember;
 
 /// @addtogroup Checks
 /// @{
@@ -69,53 +70,7 @@ private:
 
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckOther checkOther(&tokenizer, &tokenizer.getSettings(), errorLogger);
-
-        // Checks
-        checkOther.warningOldStylePointerCast();
-        checkOther.suspiciousFloatingPointCast();
-        checkOther.invalidPointerCast();
-        checkOther.checkCharVariable();
-        checkOther.redundantBitwiseOperationInSwitchError();
-        checkOther.checkSuspiciousCaseInSwitch();
-        checkOther.checkDuplicateBranch();
-        checkOther.checkDuplicateExpression();
-        checkOther.checkRedundantAssignment();
-        checkOther.checkUnreachableCode();
-        checkOther.checkSuspiciousSemicolon();
-        checkOther.checkVariableScope();
-        checkOther.checkSignOfUnsignedVariable();  // don't ignore casts (#3574)
-        checkOther.checkIncompleteArrayFill();
-        checkOther.checkVarFuncNullUB();
-        checkOther.checkNanInArithmeticExpression();
-        checkOther.checkCommaSeparatedReturn();
-        checkOther.checkRedundantPointerOp();
-        checkOther.checkZeroDivision();
-        checkOther.checkNegativeBitwiseShift();
-        checkOther.checkInterlockedDecrement();
-        checkOther.checkUnusedLabel();
-        checkOther.checkEvaluationOrder();
-        checkOther.checkFuncArgNamesDifferent();
-        checkOther.checkShadowVariables();
-        checkOther.checkKnownArgument();
-        checkOther.checkKnownPointerToBool();
-        checkOther.checkComparePointers();
-        checkOther.checkIncompleteStatement();
-        checkOther.checkRedundantCopy();
-        checkOther.clarifyCalculation();
-        checkOther.checkPassByReference();
-        checkOther.checkConstVariable();
-        checkOther.checkConstPointer();
-        checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
-        checkOther.checkInvalidFree();
-        checkOther.clarifyStatement();
-        checkOther.checkCastIntToCharAndBack();
-        checkOther.checkMisusedScopedObject();
-        checkOther.checkAccessOfMovedVariable();
-        checkOther.checkModuloOfOne();
-        checkOther.checkOverlappingWrite();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
@@ -125,6 +80,12 @@ private:
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
+
+    /** @brief Dangerous type cast */
+    void warningDangerousTypeCast();
+
+    /** @brief Casting non-hexadecimal integer literal to pointer */
+    void warningIntToPointerCast();
 
     void suspiciousFloatingPointCast();
 
@@ -234,9 +195,14 @@ private:
 
     void checkModuloOfOne();
 
+    /**
+     * @throws InternalError thrown if largest union member could not be found
+     */
+    void checkUnionZeroInit();
+
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
-    void overlappingWriteFunction(const Token *tok);
+    void overlappingWriteFunction(const Token *tok, const std::string& funcname);
 
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, bool result);
@@ -244,6 +210,8 @@ private:
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok, bool isPtr = true);
+    void dangerousTypeCastError(const Token *tok, bool isPtr);
+    void intToPointerCastError(const Token *tok, const std::string& format);
     void suspiciousFloatingPointCastError(const Token *tok);
     void invalidPointerCastError(const Token* tok, const std::string& from, const std::string& to, bool inconclusive, bool toIsInt);
     void passedByValueError(const Variable* var, bool inconclusive, bool isRangeBasedFor = false);
@@ -295,81 +263,9 @@ private:
     void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
+    void unionZeroInitError(const Token *tok, const UnionMember& largestMember);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckOther c(nullptr, settings, errorLogger);
-
-        // error
-        c.zerodivError(nullptr, nullptr);
-        c.misusedScopeObjectError(nullptr, "varname");
-        c.invalidPointerCastError(nullptr,  "float *", "double *", false, false);
-        c.negativeBitwiseShiftError(nullptr, 1);
-        c.negativeBitwiseShiftError(nullptr, 2);
-        c.raceAfterInterlockedDecrementError(nullptr);
-        c.invalidFreeError(nullptr, "malloc", false);
-        c.overlappingWriteUnion(nullptr);
-        c.overlappingWriteFunction(nullptr);
-
-        //performance
-        c.redundantCopyError(nullptr,  "varname");
-        c.redundantCopyError(nullptr, nullptr, "var");
-
-        // style/warning
-        c.checkComparisonFunctionIsAlwaysTrueOrFalseError(nullptr, "isless","varName",false);
-        c.checkCastIntToCharAndBackError(nullptr, "func_name");
-        c.cstyleCastError(nullptr);
-        c.suspiciousFloatingPointCastError(nullptr);
-        c.passedByValueError(nullptr, false);
-        c.constVariableError(nullptr, nullptr);
-        c.constStatementError(nullptr, "type", false);
-        c.signedCharArrayIndexError(nullptr);
-        c.unknownSignCharArrayIndexError(nullptr);
-        c.charBitOpError(nullptr);
-        c.variableScopeError(nullptr,  "varname");
-        c.redundantAssignmentInSwitchError(nullptr, nullptr, "var");
-        c.suspiciousCaseInSwitchError(nullptr,  "||");
-        c.selfAssignmentError(nullptr,  "varname");
-        c.clarifyCalculationError(nullptr,  "+");
-        c.clarifyStatementError(nullptr);
-        c.duplicateBranchError(nullptr, nullptr, ErrorPath{});
-        c.duplicateAssignExpressionError(nullptr, nullptr, true);
-        c.oppositeExpressionError(nullptr, ErrorPath{});
-        c.duplicateExpressionError(nullptr, nullptr, nullptr, ErrorPath{});
-        c.duplicateValueTernaryError(nullptr);
-        c.duplicateExpressionTernaryError(nullptr, ErrorPath{});
-        c.duplicateBreakError(nullptr,  false);
-        c.unreachableCodeError(nullptr, nullptr,  false);
-        c.unsignedLessThanZeroError(nullptr, nullptr, "varname");
-        c.unsignedPositiveError(nullptr, nullptr, "varname");
-        c.pointerLessThanZeroError(nullptr, nullptr);
-        c.pointerPositiveError(nullptr, nullptr);
-        c.suspiciousSemicolonError(nullptr);
-        c.incompleteArrayFillError(nullptr,  "buffer", "memset", false);
-        c.varFuncNullUBError(nullptr);
-        c.nanInArithmeticExpressionError(nullptr);
-        c.commaSeparatedReturnError(nullptr);
-        c.redundantPointerOpError(nullptr,  "varname", false, /*addressOfDeref*/ true);
-        c.unusedLabelError(nullptr, false, false);
-        c.unusedLabelError(nullptr, false, true);
-        c.unusedLabelError(nullptr, true, false);
-        c.unusedLabelError(nullptr, true, true);
-        c.unknownEvaluationOrder(nullptr);
-        c.accessMovedError(nullptr, "v", nullptr, false);
-        c.funcArgNamesDifferent("function", 1, nullptr, nullptr);
-        c.redundantBitwiseOperationInSwitchError(nullptr, "varname");
-        c.shadowError(nullptr, nullptr, "variable");
-        c.shadowError(nullptr, nullptr, "function");
-        c.shadowError(nullptr, nullptr, "argument");
-        c.knownArgumentError(nullptr, nullptr, nullptr, "x", false);
-        c.knownPointerToBoolError(nullptr, nullptr);
-        c.comparePointersError(nullptr, nullptr, nullptr);
-        c.redundantAssignmentError(nullptr, nullptr, "var", false);
-        c.redundantInitializationError(nullptr, nullptr, "var", false);
-
-        const std::vector<const Token *> nullvec;
-        c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
-        c.checkModuloOfOneError(nullptr);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     static std::string myName() {
         return "Other";
@@ -392,6 +288,7 @@ private:
                // warning
                "- either division by zero or useless condition\n"
                "- access of moved or forwarded variable.\n"
+               "- potentially dangerous C style type cast of pointer/reference to object.\n"
 
                // performance
                "- redundant data copying for const variable\n"
@@ -400,6 +297,8 @@ private:
 
                // portability
                "- Passing NULL pointer to function with variable number of arguments leads to UB.\n"
+               "- Casting non-zero integer literal in decimal or octal format to pointer.\n"
+               "- Incorrect zero initialization of unions can lead to access of uninitialized memory.\n"
 
                // style
                "- C-style pointer cast in C++ code\n"

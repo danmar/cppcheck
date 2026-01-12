@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,10 +48,10 @@ namespace {
         std::pair<bool, bool> evalCond(const Token* tok) const {
             std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
             // TODO: We should convert to bool
-            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x == 1;
             });
-            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x == 0;
             });
             return std::make_pair(checkThen, checkElse);
@@ -195,6 +195,9 @@ namespace {
             return nullptr;
         }
 
+        /**
+         * @throws InternalError thrown on cyclic analysis
+         */
         void traverse(Token* start, const Token* end = nullptr) {
             if (start == end)
                 return;
@@ -203,8 +206,8 @@ namespace {
                 if (tok->index() >= i)
                     throw InternalError(tok, "Cyclic reverse analysis.");
                 i = tok->index();
-                if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
-                                                           tok->scope()->type == Scope::ScopeType::eLambda))) {
+                if (tok == start || (tok->str() == "{" && (tok->scope()->type == ScopeType::eFunction ||
+                                                           tok->scope()->type == ScopeType::eLambda))) {
                     const Function* f = tok->scope()->function;
                     if (f && f->isConstructor()) {
                         if (const Token* initList = f->constructorMemberInitialization())
@@ -367,9 +370,9 @@ namespace {
                 }
                 if (tok->str() == "case") {
                     const Scope* scope = tok->scope();
-                    while (scope && scope->type != Scope::eSwitch)
+                    while (scope && scope->type != ScopeType::eSwitch)
                         scope = scope->nestedIn;
-                    if (!scope || scope->type != Scope::eSwitch)
+                    if (!scope || scope->type != ScopeType::eSwitch)
                         break;
                     tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
                     continue;

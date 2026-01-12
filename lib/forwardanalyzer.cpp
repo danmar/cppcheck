@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueptr.h"
-#include "vfvalue.h"
 
 #include <algorithm>
 #include <cassert>
@@ -111,10 +110,10 @@ namespace {
                 return std::make_pair(false, false);
             std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
             // TODO: We should convert to bool
-            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x != 0;
             });
-            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](int x) {
+            const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](MathLib::bigint x) {
                 return x == 0;
             });
             return std::make_pair(checkThen, checkElse);
@@ -143,7 +142,7 @@ namespace {
                 traverseRecursive(tok->astOperand2(), f, traverseUnknown);
                 traverseRecursive(tok->astOperand1(), f, traverseUnknown);
                 return Break(Analyzer::Terminate::Escape);
-            } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings.library)) {
+            } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, settings.library)) {
                 // Traverse the parameters of the function before escaping
                 traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
                 return Break(Analyzer::Terminate::Escape);
@@ -202,13 +201,14 @@ namespace {
 
         template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
         Progress traverseConditional(T* tok, F f, bool traverseUnknown) {
-            if (Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
+            Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
+            if (action.isNone() && Token::Match(tok, "?|&&|%oror%") && tok->astOperand1() && tok->astOperand2()) {
                 const T* condTok = tok->astOperand1();
                 T* childTok = tok->astOperand2();
                 bool checkThen, checkElse;
                 std::tie(checkThen, checkElse) = evalCond(condTok);
                 if (!checkThen && !checkElse) {
-                    if (!traverseUnknown && stopOnCondition(condTok) && stopUpdates()) {
+                    if (!traverseUnknown && stopOnCondition(condTok) && tok->str() != "?" && stopUpdates()) {
                         return Progress::Continue;
                     }
                     checkThen = true;
@@ -227,12 +227,19 @@ namespace {
                     if (traverseRecursive(childTok, f, traverseUnknown) == Progress::Break)
                         return Break();
                 }
+            } else {
+                return f(tok, action);
             }
             return Progress::Continue;
         }
 
         Progress update(Token* tok) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
+            return update(tok, action);
+        }
+
+        Progress update(Token* tok, Analyzer::Action action)
+        {
             actions |= action;
             if (!action.isNone() && !analyzeOnly)
                 analyzer->update(tok, action, Analyzer::Direction::Forward);
@@ -246,29 +253,54 @@ namespace {
             return Progress::Continue;
         }
 
+        struct AsUpdate {
+            ForwardTraversal* self = nullptr;
+
+            explicit AsUpdate(ForwardTraversal* self) : self(self) {}
+
+            template<class... Ts>
+            Progress operator()(Ts... xs) const
+            {
+                assert(self);
+                return self->update(xs ...);
+            }
+        };
+
         Progress updateTok(Token* tok, Token** out = nullptr) {
-            auto f = [this](Token* tok2) {
-                return update(tok2);
-            };
-            return traverseTok(tok, f, false, out);
+            return traverseTok(tok, AsUpdate{this}, false, out);
         }
 
         Progress updateRecursive(Token* tok) {
-            auto f = [this](Token* tok2) {
-                return update(tok2);
-            };
-            return traverseRecursive(tok, f, false);
+            return traverseRecursive(tok, AsUpdate{this}, false);
         }
+
+        struct AsAnalyze {
+            ForwardTraversal* self = nullptr;
+            Analyzer::Action* result = nullptr;
+
+            AsAnalyze(ForwardTraversal* self, Analyzer::Action* result) : self(self), result(result) {}
+
+            Progress operator()(const Token* tok) const
+            {
+                assert(self);
+                assert(result);
+                return (*this)(tok, self->analyzer->analyze(tok, Analyzer::Direction::Forward));
+            }
+
+            Progress operator()(const Token* /*unused*/, Analyzer::Action action) const
+            {
+                assert(self);
+                assert(result);
+                *result = action;
+                if (result->isModified() || result->isInconclusive())
+                    return self->Break();
+                return Progress::Continue;
+            }
+        };
 
         Analyzer::Action analyzeRecursive(const Token* start) {
             Analyzer::Action result = Analyzer::Action::None;
-            auto f = [&](const Token* tok) {
-                result = analyzer->analyze(tok, Analyzer::Direction::Forward);
-                if (result.isModified() || result.isInconclusive())
-                    return Break();
-                return Progress::Continue;
-            };
-            traverseRecursive(start, f, true);
+            traverseRecursive(start, AsAnalyze{this, &result}, true);
             return result;
         }
 
@@ -543,6 +575,9 @@ namespace {
             return updateRange(endBlock->link(), endBlock, depth);
         }
 
+        /**
+         * @throws InternalError thrown on cyclic analysis
+         */
         Progress updateRange(Token* start, const Token* end, int depth = 20) {
             if (depth < 0)
                 return Break(Analyzer::Terminate::Bail);
@@ -607,17 +642,17 @@ namespace {
                         return Break(Analyzer::Terminate::Bail);
                 } else if (tok->link() && tok->str() == "}" && tok == tok->scope()->bodyEnd) { // might be an init list
                     const Scope* scope = tok->scope();
-                    if (contains({Scope::eDo, Scope::eFor, Scope::eWhile, Scope::eIf, Scope::eElse, Scope::eSwitch}, scope->type)) {
-                        const bool inElse = scope->type == Scope::eElse;
-                        const bool inDoWhile = scope->type == Scope::eDo;
-                        const bool inLoop = contains({Scope::eDo, Scope::eFor, Scope::eWhile}, scope->type);
+                    if (contains({ScopeType::eDo, ScopeType::eFor, ScopeType::eWhile, ScopeType::eIf, ScopeType::eElse, ScopeType::eSwitch}, scope->type)) {
+                        const bool inElse = scope->type == ScopeType::eElse;
+                        const bool inDoWhile = scope->type == ScopeType::eDo;
+                        const bool inLoop = contains({ScopeType::eDo, ScopeType::eFor, ScopeType::eWhile}, scope->type);
                         Token* condTok = getCondTokFromEnd(tok);
                         if (!condTok)
                             return Break();
                         if (!condTok->hasKnownIntValue() || inLoop) {
                             if (!analyzer->lowerToPossible())
                                 return Break(Analyzer::Terminate::Bail);
-                        } else if (condTok->values().front().intvalue == inElse) {
+                        } else if (condTok->getKnownIntValue() == inElse) {
                             return Break();
                         }
                         // Handle loop
@@ -642,17 +677,19 @@ namespace {
                         assert(!inDoWhile || Token::simpleMatch(tok, "} while ("));
                         if (Token::simpleMatch(tok, "} else {") || inDoWhile)
                             tok = tok->linkAt(2);
-                    } else if (contains({Scope::eTry, Scope::eCatch}, scope->type)) {
+                    } else if (contains({ScopeType::eTry, ScopeType::eCatch}, scope->type)) {
                         if (!analyzer->lowerToPossible())
                             return Break(Analyzer::Terminate::Bail);
-                    } else if (scope->type == Scope::eLambda) {
+                    } else if (scope->type == ScopeType::eLambda) {
                         return Break();
                     }
                 } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
                            Token::simpleMatch(tok->linkAt(1), ") {")) {
                     if ((settings.vfOptions.maxForwardBranches > 0) && (++branchCount > settings.vfOptions.maxForwardBranches)) {
                         // TODO: should be logged on function-level instead of file-level
-                        reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        if (settings.severity.isEnabled(Severity::information)) {
+                            reportError(Severity::information, "normalCheckLevelMaxBranches", "Limiting analysis of branches. Use --check-level=exhaustive to analyze all branches.");
+                        }
                         return Break(Analyzer::Terminate::Bail);
                     }
                     Token* endCond = tok->linkAt(1);

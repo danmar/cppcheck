@@ -23,10 +23,12 @@
 #include <QFile>
 #include <QIODevice>
 #include <QList>
-#include <QPair>
 #include <QStringList>
 #include <QTextStream>
 #include <QtTest>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+#include <QtLogging>
+#endif
 
 const QString TestCppcheckLibraryData::TempCfgFile = "./tmp.cfg";
 
@@ -285,7 +287,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.memoryresource.size(), 2);
     QCOMPARE(libraryData.memoryresource[0].type, QString("memory"));
-    QCOMPARE(libraryData.memoryresource[0].alloc.size(), 4);
+    QCOMPARE(libraryData.memoryresource[0].alloc.size(), 5);
     QCOMPARE(libraryData.memoryresource[0].dealloc.size(), 1);
     QCOMPARE(libraryData.memoryresource[0].use.size(), 0);
 
@@ -293,6 +295,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     QCOMPARE(libraryData.memoryresource[0].alloc[0].bufferSize, QString("malloc"));
     QCOMPARE(libraryData.memoryresource[0].alloc[0].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[0].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].noFail, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[0].arg, -1);
     QCOMPARE(libraryData.memoryresource[0].alloc[0].reallocArg, -1);
 
@@ -300,6 +303,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     QCOMPARE(libraryData.memoryresource[0].alloc[1].bufferSize, QString("calloc"));
     QCOMPARE(libraryData.memoryresource[0].alloc[1].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[1].init, true);
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].noFail, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[1].arg, -1);
     QCOMPARE(libraryData.memoryresource[0].alloc[1].reallocArg, -1);
 
@@ -307,6 +311,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     QCOMPARE(libraryData.memoryresource[0].alloc[2].bufferSize, QString("malloc:2"));
     QCOMPARE(libraryData.memoryresource[0].alloc[2].isRealloc, true);
     QCOMPARE(libraryData.memoryresource[0].alloc[2].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].noFail, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[2].arg, -1);
     QCOMPARE(libraryData.memoryresource[0].alloc[2].reallocArg, -1);
 
@@ -314,8 +319,17 @@ void TestCppcheckLibraryData::memoryResourceValid()
     QCOMPARE(libraryData.memoryresource[0].alloc[3].bufferSize.isEmpty(), true);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].noFail, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].arg, 2);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].reallocArg, -1);
+
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].name, QString("g_malloc"));
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].bufferSize, QString("malloc"));
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].isRealloc, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].init, false);
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].noFail, true);
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].arg, -1);
+    QCOMPARE(libraryData.memoryresource[0].alloc[4].reallocArg, -1);
 
     QCOMPARE(libraryData.memoryresource[0].dealloc[0].name, QString("HeapFree"));
     QCOMPARE(libraryData.memoryresource[0].dealloc[0].arg, 3);
@@ -329,6 +343,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
     QCOMPARE(libraryData.memoryresource[1].alloc[0].bufferSize.isEmpty(), true);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].init, true);
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].noFail, false);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].arg, 1);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].reallocArg, -1);
 
@@ -363,6 +378,7 @@ void TestCppcheckLibraryData::memoryResourceValid()
             QCOMPARE(lhs.alloc[num].bufferSize, rhs.alloc[num].bufferSize);
             QCOMPARE(lhs.alloc[num].isRealloc, rhs.alloc[num].isRealloc);
             QCOMPARE(lhs.alloc[num].init, rhs.alloc[num].init);
+            QCOMPARE(lhs.alloc[num].noFail, rhs.alloc[num].noFail);
             QCOMPARE(lhs.alloc[num].arg, rhs.alloc[num].arg);
             QCOMPARE(lhs.alloc[num].reallocArg, rhs.alloc[num].reallocArg);
         }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <cstring>
 #include <iostream>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "xml.h"
@@ -56,10 +57,7 @@ bool Platform::set(Type t)
             defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
         }
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Win32W:
     case Type::Win32A:
@@ -77,10 +75,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 4;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Win64:
         type = t;
@@ -97,10 +92,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 8;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Unix32:
         type = t;
@@ -117,10 +109,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 4;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::Unix64:
         type = t;
@@ -137,10 +126,7 @@ bool Platform::set(Type t)
         sizeof_pointer = 8;
         defaultSign = '\0';
         char_bit = 8;
-        short_bit = char_bit * sizeof_short;
-        int_bit = char_bit * sizeof_int;
-        long_bit = char_bit * sizeof_long;
-        long_long_bit = char_bit * sizeof_long_long;
+        calculateBitMembers();
         return true;
     case Type::File:
         // sizes are not set.
@@ -170,64 +156,76 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
     }
-    else {
-        bool found = false;
-        for (const std::string& path : paths) {
-            if (debug)
-                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
-            if (loadFromFile(path.c_str(), platformstr, debug)) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            errstr = "unrecognized platform: '" + platformstr + "'.";
-            return false;
-        }
+    else if (!loadFromFile(paths, platformstr, debug)) {
+        errstr = "unrecognized platform: '" + platformstr + "'.";
+        return false;
     }
 
     return true;
 }
 
-bool Platform::loadFromFile(const char exename[], const std::string &filename, bool debug)
+bool Platform::loadFromFile(const std::vector<std::string>& paths, const std::string &filename, bool debug)
 {
-    // TODO: only append .xml if missing
+    if (debug)
+        std::cout << "looking for platform '" + filename + "'" << std::endl;
+
+    const bool is_abs_path = Path::isAbsolute(filename);
+
+    std::string fullfilename(filename);
+    // TODO: what if extension is not .xml?
+    // only append extension when we provide the library name is not a path - TODO: handle relative paths?
+    if (!is_abs_path && Path::getFilenameExtension(fullfilename).empty())
+        fullfilename += ".xml";
+
     // TODO: use native separators
-    std::vector<std::string> filenames{
-        filename,
-        filename + ".xml",
-        "platforms/" + filename,
-        "platforms/" + filename + ".xml"
-    };
-    if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
+    std::vector<std::string> filenames;
+    if (is_abs_path)
+    {
+        filenames.push_back(std::move(fullfilename));
     }
+    else {
+        // TODO: drop duplicated paths
+        for (const std::string& path : paths)
+        {
+            if (path.empty())
+                continue; // TODO: error out instead?
+
+            std::string ppath = Path::fromNativeSeparators(path);
+            if (ppath.back() != '/')
+                ppath += '/';
+            // TODO: look in platforms first?
+            filenames.push_back(ppath + fullfilename);
+            filenames.push_back(ppath + "platforms/" + fullfilename);
+        }
 #ifdef FILESDIR
-    std::string filesdir = FILESDIR;
-    if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
-        filesdir += '/';
-    filenames.push_back(filesdir + ("platforms/" + filename));
-    filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
+        std::string filesdir = FILESDIR;
+        if (!filesdir.empty()) {
+            if (filesdir.back() != '/')
+                filesdir += '/';
+            // TODO: look in filesdir?
+            filenames.push_back(filesdir + "platforms/" + fullfilename);
+        }
 #endif
+    }
 
     // open file..
     tinyxml2::XMLDocument doc;
-    bool success = false;
+    tinyxml2::XMLError err = tinyxml2::XML_SUCCESS;
     for (const std::string & f : filenames) {
         if (debug)
             std::cout << "try to load platform file '" << f << "' ... ";
-        if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
+        err = doc.LoadFile(f.c_str());
+        if (err == tinyxml2::XML_SUCCESS) {
             if (debug)
                 std::cout << "Success" << std::endl;
-            success = true;
             break;
         }
         if (debug)
             std::cout << doc.ErrorStr() << std::endl;
+        if (err != tinyxml2::XML_ERROR_FILE_NOT_FOUND)
+            break;
     }
-    if (!success)
+    if (err != tinyxml2::XML_SUCCESS)
         return false;
 
     return loadFromXmlDocument(&doc);
@@ -287,12 +285,7 @@ bool Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
             }
         }
     }
-
-    short_bit = char_bit * sizeof_short;
-    int_bit = char_bit * sizeof_int;
-    long_bit = char_bit * sizeof_long;
-    long_long_bit = char_bit * sizeof_long_long;
-
+    calculateBitMembers();
     type = Type::File;
     return !error;
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 #include "astutils.h"
 #include "errortypes.h"
-#include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
@@ -45,6 +44,7 @@ static constexpr char ATTR_CALL_ARGNR[] = "call-argnr";
 static constexpr char ATTR_CALL_ARGEXPR[] = "call-argexpr";
 static constexpr char ATTR_CALL_ARGVALUETYPE[] = "call-argvaluetype";
 static constexpr char ATTR_CALL_ARGVALUE[] = "call-argvalue";
+static constexpr char ATTR_CALL_UNKNOWN_FUNCTION_RETURN[] = "call-argvalue-ufr";
 static constexpr char ATTR_WARNING[] = "warning";
 static constexpr char ATTR_LOC_FILENAME[] = "file";
 static constexpr char ATTR_LOC_LINENR[] = "line";
@@ -102,7 +102,8 @@ std::string CTU::FileInfo::FunctionCall::toXmlString() const
         << toBaseXmlString()
         << " " << ATTR_CALL_ARGEXPR << "=\"" << ErrorLogger::toxml(callArgumentExpression) << "\""
         << " " << ATTR_CALL_ARGVALUETYPE << "=\"" << static_cast<int>(callValueType) << "\""
-        << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue << "\"";
+        << " " << ATTR_CALL_ARGVALUE << "=\"" << callArgValue.value << "\""
+        << " " << ATTR_CALL_UNKNOWN_FUNCTION_RETURN << "=\"" << static_cast<int>(callArgValue.unknownFunctionReturn) << "\"";
     if (warning)
         out << " " << ATTR_WARNING << "=\"true\"";
     if (callValuePath.empty())
@@ -200,8 +201,11 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
         return false;
     bool error=false;
     callArgumentExpression = readAttrString(xmlElement, ATTR_CALL_ARGEXPR, &error);
-    callValueType = (ValueFlow::Value::ValueType)readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error);
-    callArgValue = readAttrInt(xmlElement, ATTR_CALL_ARGVALUE, &error);
+    callValueType = static_cast<ValueFlow::Value::ValueType>(readAttrInt(xmlElement, ATTR_CALL_ARGVALUETYPE, &error));
+    callArgValue.value = readAttrInt(xmlElement, ATTR_CALL_ARGVALUE, &error);
+    const auto ufr = readAttrInt(xmlElement, ATTR_CALL_UNKNOWN_FUNCTION_RETURN, &error);
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange) - TODO: fix this - #13726
+    callArgValue.unknownFunctionReturn = static_cast<ValueFlow::Value::UnknownFunctionReturn>(ufr>=0 && ufr <=0xff ? ufr : 0xff);
     const char *w = xmlElement->Attribute(ATTR_WARNING);
     warning = w && std::strcmp(w, "true") == 0;
     for (const tinyxml2::XMLElement *e2 = xmlElement->FirstChildElement(); !error && e2; e2 = e2->NextSiblingElement()) {
@@ -212,7 +216,7 @@ bool CTU::FileInfo::FunctionCall::loadFromXml(const tinyxml2::XMLElement *xmlEle
         const int line = readAttrInt(e2, ATTR_LOC_LINENR, &error);
         const int column = readAttrInt(e2, ATTR_LOC_COLUMN, &error);
         ErrorMessage::FileLocation loc(file, std::move(info), line, column);
-        (void)loc; // TODO: loc is unused
+        callValuePath.emplace_back(std::move(loc));
     }
     return !error;
 }
@@ -227,6 +231,7 @@ bool CTU::FileInfo::NestedCall::loadFromXml(const tinyxml2::XMLElement *xmlEleme
     return !error;
 }
 
+// TODO: bail out on unexpected data
 void CTU::FileInfo::loadFromXml(const tinyxml2::XMLElement *xmlElement)
 {
     for (const tinyxml2::XMLElement *e = xmlElement->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -313,7 +318,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
 
     // Parse all functions in TU
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
+        if (!scope.isExecutable() || scope.type != ScopeType::eFunction || !scope.function)
             continue;
         const Function *const scopeFunction = scope.function;
 
@@ -342,7 +347,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer,tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    functionCall.callArgValue = value.intvalue;
+                    functionCall.callArgValue = value;
                     functionCall.warning = !value.errorSeverity();
                     for (const ErrorPathItem &i : value.errorPath) {
                         const std::string& file = tokenizer.list.file(i.first);
@@ -363,8 +368,8 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    const auto typeSize = argtok->valueType()->typeSize(tokenizer.getSettings().platform);
-                    functionCall.callArgValue = typeSize > 0 ? argtok->variable()->dimension(0) * typeSize : -1;
+                    const auto typeSize = argtok->valueType()->getSizeOf(tokenizer.getSettings(), ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
+                    functionCall.callArgValue.value = typeSize > 0 ? argtok->variable()->dimension(0) * typeSize : -1;
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
                 }
@@ -377,7 +382,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    functionCall.callArgValue = argtok->astOperand1()->valueType()->typeSize(tokenizer.getSettings().platform);
+                    functionCall.callArgValue.value = argtok->astOperand1()->valueType()->getSizeOf(tokenizer.getSettings(), ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
                 }
@@ -411,7 +416,8 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
-                    functionCall.callArgValue = 0;
+                    functionCall.callArgValue = v;
+                    functionCall.callArgValue.value = 0;
                     functionCall.callArgumentExpression = argtok->expressionString();
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
@@ -436,9 +442,9 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
     return fileInfo;
 }
 
-static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Settings &settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value))
+static std::vector<std::pair<const Token *, CTU::FileInfo::Value>> getUnsafeFunction(const Settings &settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *value))
 {
-    std::list<std::pair<const Token *, MathLib::bigint>> ret;
+    std::vector<std::pair<const Token *, CTU::FileInfo::Value>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
     if (!argvar->isArrayOrPointer() && !argvar->isReference())
         return ret;
@@ -459,7 +465,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
         }
         if (tok2->variable() != argvar)
             continue;
-        MathLib::bigint value = 0;
+        CTU::FileInfo::Value value;
         if (!isUnsafeUsage(settings, tok2, &value))
             return ret; // TODO: Is this a read? then continue..
         ret.emplace_back(tok2, value);
@@ -468,7 +474,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
     return ret;
 }
 
-std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value))
+std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, CTU::FileInfo::Value *value))
 {
     std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
@@ -476,15 +482,15 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer &token
     const SymbolDatabase * const symbolDatabase = tokenizer.getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
+        if (!scope.isExecutable() || scope.type != ScopeType::eFunction || !scope.function)
             continue;
         const Function *const function = scope.function;
 
         // "Unsafe" functions unconditionally reads data before it is written..
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
-            for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(settings, &scope, argnr, isUnsafeUsage)) {
+            for (const std::pair<const Token *, CTU::FileInfo::Value> &v : getUnsafeFunction(settings, &scope, argnr, isUnsafeUsage)) {
                 const Token *tok = v.first;
-                const MathLib::bigint val = v.second;
+                const MathLib::bigint val = v.second.value;
                 unsafeUsage.emplace_back(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok), val);
             }
         }
@@ -506,7 +512,7 @@ static bool findPath(const std::string &callId,
     if (index >= maxCtuDepth)
         return false; // TODO: add bailout message?
 
-    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>>::const_iterator it = callsMap.find(callId);
+    const auto it = utils::as_const(callsMap).find(callId);
     if (it == callsMap.end())
         return false;
 
@@ -518,9 +524,11 @@ static bool findPath(const std::string &callId,
         if (functionCall) {
             if (!warning && functionCall->warning)
                 continue;
+            if (!warning && functionCall->callArgValue.unknownFunctionReturn != ValueFlow::Value::UnknownFunctionReturn::no)
+                continue;
             switch (invalidValue) {
             case CTU::FileInfo::InvalidValueType::null:
-                if (functionCall->callValueType != ValueFlow::Value::ValueType::INT || functionCall->callArgValue != 0)
+                if (functionCall->callValueType != ValueFlow::Value::ValueType::INT || functionCall->callArgValue.value != 0)
                     continue;
                 break;
             case CTU::FileInfo::InvalidValueType::uninit:
@@ -530,7 +538,7 @@ static bool findPath(const std::string &callId,
             case CTU::FileInfo::InvalidValueType::bufferOverflow:
                 if (functionCall->callValueType != ValueFlow::Value::ValueType::BUFFER_SIZE)
                     continue;
-                if (unsafeValue < 0 || (unsafeValue >= functionCall->callArgValue && functionCall->callArgValue >= 0))
+                if (unsafeValue < 0 || (unsafeValue >= functionCall->callArgValue.value && functionCall->callArgValue.value >= 0))
                     break;
                 continue;
             }
@@ -557,14 +565,21 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
                                                                   const char info[],
                                                                   const FunctionCall ** const functionCallPtr,
                                                                   bool warning,
-                                                                  int maxCtuDepth)
+                                                                  int maxCtuDepth,
+                                                                  ValueFlow::Value::UnknownFunctionReturn *unknownFunctionReturn)
 {
-    std::list<ErrorMessage::FileLocation> locationList;
-
     const CTU::FileInfo::CallBase *path[10] = {nullptr};
 
     if (!findPath(unsafeUsage.myId, unsafeUsage.myArgNr, unsafeUsage.value, invalidValue, callsMap, path, 0, warning, maxCtuDepth))
-        return locationList;
+        return {};
+
+    if (unknownFunctionReturn && path[0]) {
+        const auto* functionCall = dynamic_cast<const CTU::FileInfo::FunctionCall *>(path[0]);
+        if (functionCall)
+            *unknownFunctionReturn = functionCall->callArgValue.unknownFunctionReturn;
+    }
+
+    std::list<ErrorMessage::FileLocation> locationList;
 
     const std::string value1 = (invalidValue == InvalidValueType::null) ? "null" : "uninitialized";
 

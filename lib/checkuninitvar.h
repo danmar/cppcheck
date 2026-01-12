@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@
 #include "config.h"
 #include "mathlib.h"
 #include "errortypes.h"
-#include "tokenize.h"
-#include "vfvalue.h"
 
 #include <cstdint>
 #include <map>
@@ -40,6 +38,11 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
+class Tokenizer;
+namespace ValueFlow
+{
+    class Value;
+}
 
 struct VariableValue {
     explicit VariableValue(MathLib::bigint val = 0) : value(val) {}
@@ -71,11 +74,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckUninitVar checkUninitVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkUninitVar.valueFlowUninit();
-        checkUninitVar.check();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     bool diag(const Token* tok);
     /** Check for uninitialized variables */
@@ -97,12 +96,12 @@ private:
     void valueFlowUninit();
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
+    bool analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     void uninitvarError(const Token* tok, const ValueFlow::Value& v);
     void uninitdataError(const Token *tok, const std::string &varname);
@@ -120,16 +119,7 @@ private:
 
     std::set<const Token*> mUninitDiags;
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
-    {
-        CheckUninitVar c(nullptr, settings, errorLogger);
-
-        ValueFlow::Value v{};
-
-        c.uninitvarError(nullptr, v);
-        c.uninitdataError(nullptr, "varname");
-        c.uninitStructMemberError(nullptr, "a.b");
-    }
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override;
 
     static std::string myName() {
         return "Uninitialized variables";

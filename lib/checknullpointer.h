@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
-#include "vfvalue.h"
 
 #include <list>
 #include <string>
@@ -34,6 +32,12 @@ class ErrorLogger;
 class Library;
 class Settings;
 class Token;
+class Tokenizer;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 /// @addtogroup Checks
 /// @{
@@ -77,12 +81,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckNullPointer checkNullPointer(&tokenizer, &tokenizer.getSettings(), errorLogger);
-        checkNullPointer.nullPointer();
-        checkNullPointer.arithmetic();
-        checkNullPointer.nullConstantDereference();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
     /** @brief possible null pointer dereference */
     void nullPointer();
@@ -90,28 +89,19 @@ private:
     /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
     void nullConstantDereference();
 
-    void nullPointerError(const Token *tok) {
-        ValueFlow::Value v(0);
-        v.setKnown();
-        nullPointerError(tok, emptyString, &v, false);
-    }
+    void nullPointerError(const Token *tok);
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const override;
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
+    bool analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     /** Get error messages. Used by --errorlist */
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckNullPointer c(nullptr, settings, errorLogger);
-        c.nullPointerError(nullptr, "pointer", nullptr, false);
-        c.pointerArithmeticError(nullptr, nullptr, false);
-        c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     /** Name of check */
     static std::string myName() {

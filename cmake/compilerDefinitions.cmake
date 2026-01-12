@@ -4,10 +4,8 @@ if(MSVC)
     # Visual Studio only sets _DEBUG
     add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
 
-    add_definitions(-DWIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-DWIN32_LEAN_MEAN)
-    add_definitions(-D_WIN64)
 endif()
 
 # TODO: this should probably apply to the compiler and not the platform - I think it is only "broken" with MinGW
@@ -16,7 +14,7 @@ endif()
 if(CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if(USE_LIBCXX)
-            if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 18 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 18)
+            if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 18)
                 add_definitions(-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_DEBUG)
             else()
                 add_definitions(-D_LIBCPP_ENABLE_ASSERTIONS=1)
@@ -27,6 +25,10 @@ if(CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
         # TODO: check if this can be enabled again for Clang - also done in Makefile
         add_definitions(-D_GLIBCXX_DEBUG)
     endif()
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND USE_LIBCXX)
+    add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
 endif()
 
 if(HAVE_RULES)
@@ -46,6 +48,10 @@ endif()
 
 if(DISALLOW_THREAD_EXECUTOR)
     add_definitions(-DDISALLOW_THREAD_EXECUTOR)
+endif()
+
+if(DISALLOW_PROCESS_EXECUTOR)
+    add_definitions(-DDISALLOW_PROCESS_EXECUTOR)
 endif()
 
 if(MSVC AND DISABLE_CRTDBG_MAP_ALLOC)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cppcheck.h"
+#include "errorlogger.h"
+#include "errortypes.h"
+#include "filesettings.h"
+#include "settings.h"
+#include "suppressions.h"
+#include "version.h"
+
+#include <algorithm>
 #include <ctime>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
 
-#include "cppcheck.h"
-#include "filesettings.h"
-#include "version.h"
+enum class Color : std::uint8_t;
 
 static void unencode(const char *src, char *dest)
 {
@@ -48,30 +57,31 @@ static FILE *logfile = nullptr;
 class CppcheckExecutor : public ErrorLogger {
 private:
     const std::time_t stoptime;
+    Suppressions supprs;
     CppCheck cppcheck;
 
 public:
-    CppcheckExecutor()
-        : ErrorLogger()
-        , stoptime(std::time(nullptr)+2U)
-        , cppcheck(*this, false, nullptr) {
-        cppcheck.settings().addEnabled("all");
-        cppcheck.settings().certainty.enable(Certainty::inconclusive);
-    }
+    CppcheckExecutor(const Settings& settings)
+        : stoptime(std::time(nullptr)+2U)
+        , cppcheck(settings, supprs, *this, false, nullptr)
+    {}
 
-    void run(const char code[]) {
-        cppcheck.check(FileWithDetails("test.cpp"), code);
+    void run(const char* code) {
+        cppcheck.checkBuffer(FileWithDetails("test.cpp", Standards::Language::CPP, 0), code, strlen(code));
     }
 
     void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}
     void reportErr(const ErrorMessage &msg) override {
-        const std::string s = msg.toString(true);
+        static const std::string templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
+        static const std::string templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
+        const std::string s = msg.toString(true, templateFormat, templateLocation);
 
         std::cout << s << std::endl;
 
         if (logfile != nullptr)
             std::fprintf(logfile, "%s\n", s.c_str());
     }
+    void reportMetric(const std::string & /*metric*/) override {}
 
     void reportProgress(const std::string& /*filename*/,
                         const char /*stage*/[],
@@ -119,7 +129,10 @@ int main()
 
     std::cout << "<html><body>Cppcheck " CPPCHECK_VERSION_STRING "<pre>";
 
-    CppcheckExecutor cppcheckExecutor;
+    Settings s;
+    s.addEnabled("all");
+    s.certainty.enable(Certainty::inconclusive);
+    CppcheckExecutor cppcheckExecutor(s);
     cppcheckExecutor.run(code);
 
     std::fclose(logfile);

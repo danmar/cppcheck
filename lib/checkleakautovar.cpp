@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include "vfvalue.h"
 
 #include <algorithm>
 #include <array>
@@ -106,7 +105,7 @@ static bool isVarTokComparison(const Token * tok, const Token ** vartok,
 void VarInfo::possibleUsageAll(const std::pair<const Token*, Usage>& functionUsage)
 {
     possibleUsage.clear();
-    for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it)
+    for (auto it = alloctype.cbegin(); it != alloctype.cend(); ++it)
         possibleUsage[it->first] = functionUsage;
 }
 
@@ -397,6 +396,16 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             }
         }
 
+        if (tok->isCpp11init() == Token::Cpp11init::CPP11INIT) {
+            const Token *newTok = tok->astOperand1();
+            const Token *oldTok = tok->astOperand2();
+            if (newTok && newTok->varId() && oldTok && oldTok->varId()) {
+                leakIfAllocated(newTok, varInfo);
+                // no multivariable checking currently => bail out for rhs variables
+                varInfo.erase(oldTok->varId());
+            }
+        }
+
         auto isAssignment = [](const Token* varTok) -> const Token* {
             if (varTok->varId()) {
                 const Token* top = varTok;
@@ -414,8 +423,6 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         // assignment..
         if (const Token* const tokAssignOp = isInit ? varTok : isAssignment(varTok)) {
 
-            if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
-                continue;
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% +|;|?|%comp%")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
@@ -474,7 +481,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // Assigning non-zero value variable. It might be used to
             // track the execution for a later if condition.
-            if (Token::Match(varTok->tokAt(2), "%num% ;") && MathLib::toBigNumber(varTok->strAt(2)) != 0)
+            if (Token::Match(varTok->tokAt(2), "%num% ;") && MathLib::toBigNumber(varTok->tokAt(2)) != 0)
                 notzero.insert(varTok->varId());
             else if (Token::Match(varTok->tokAt(2), "- %type% ;") && varTok->tokAt(3)->isUpperCaseName())
                 notzero.insert(varTok->varId());
@@ -627,9 +634,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 VarInfo old;
                 old.swap(varInfo);
 
-                std::map<int, VarInfo::AllocInfo>::const_iterator it;
-
-                for (it = old.alloctype.cbegin(); it != old.alloctype.cend(); ++it) {
+                for (auto it = old.alloctype.cbegin(); it != old.alloctype.cend(); ++it) {
                     const int varId = it->first;
                     if (old.conditionalAlloc.find(varId) == old.conditionalAlloc.end())
                         continue;
@@ -641,7 +646,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // Conditional allocation in varInfo1
-                for (it = varInfo1.alloctype.cbegin(); it != varInfo1.alloctype.cend(); ++it) {
+                for (auto it = varInfo1.alloctype.cbegin(); it != varInfo1.alloctype.cend(); ++it) {
                     if (varInfo2.alloctype.find(it->first) == varInfo2.alloctype.end() &&
                         old.alloctype.find(it->first) == old.alloctype.end()) {
                         varInfo.conditionalAlloc.insert(it->first);
@@ -649,7 +654,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // Conditional allocation in varInfo2
-                for (it = varInfo2.alloctype.cbegin(); it != varInfo2.alloctype.cend(); ++it) {
+                for (auto it = varInfo2.alloctype.cbegin(); it != varInfo2.alloctype.cend(); ++it) {
                     if (varInfo1.alloctype.find(it->first) == varInfo1.alloctype.end() &&
                         old.alloctype.find(it->first) == old.alloctype.end()) {
                         varInfo.conditionalAlloc.insert(it->first);
@@ -657,13 +662,13 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // Conditional allocation/deallocation
-                for (it = varInfo1.alloctype.cbegin(); it != varInfo1.alloctype.cend(); ++it) {
+                for (auto it = varInfo1.alloctype.cbegin(); it != varInfo1.alloctype.cend(); ++it) {
                     if (it->second.managed() && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
                         varInfo.conditionalAlloc.erase(it->first);
                         varInfo2.erase(it->first);
                     }
                 }
-                for (it = varInfo2.alloctype.cbegin(); it != varInfo2.alloctype.cend(); ++it) {
+                for (auto it = varInfo2.alloctype.cbegin(); it != varInfo2.alloctype.cend(); ++it) {
                     if (it->second.managed() && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
                         varInfo.conditionalAlloc.erase(it->first);
                         varInfo1.erase(it->first);
@@ -695,7 +700,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             bool tryFound = false;
             const Scope* scope = tok->scope();
             while (scope && scope->isExecutable()) {
-                if (scope->type == Scope::eTry)
+                if (scope->type == ScopeType::eTry)
                     tryFound = true;
                 scope = scope->nestedIn;
             }
@@ -720,7 +725,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 tok = tok->next();
             while (Token::Match(tok, "%name% ::|.") || (startparen && Token::Match(tok, "%name% ,")))
                 tok = tok->tokAt(2);
-            const bool isnull = tok->hasKnownIntValue() && tok->values().front().intvalue == 0;
+            const bool isnull = tok->hasKnownIntValue() && tok->getKnownIntValue() == 0;
             if (!isnull && tok->varId() && tok->strAt(1) != "[") {
                 const VarInfo::AllocInfo allocation(arrayDelete ? NEW_ARRAY : NEW, VarInfo::DEALLOC, delTok);
                 changeAllocStatus(varInfo, allocation, tok, tok);
@@ -733,8 +738,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC, ftok);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
-            if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
-                continue;
+
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
             tok = ftok->linkAt(1);
@@ -867,7 +871,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
     // Deallocation and then dereferencing pointer..
     if (tok->varId() > 0) {
         // TODO : Write a separate checker for this that uses valueFlowForward.
-        const std::map<int, VarInfo::AllocInfo>::const_iterator var = varInfo.alloctype.find(tok->varId());
+        const auto var = utils::as_const(varInfo.alloctype).find(tok->varId());
         if (var != varInfo.alloctype.end()) {
             bool unknown = false;
             if (var->second.status == VarInfo::DEALLOC && tok->valueType() && tok->valueType()->pointer &&
@@ -889,7 +893,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 while (rhs->isCast()) {
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
-                if (rhs->varId() == tok->varId() && isAssignment) {
+                if ((rhs->str() == "." || rhs->varId() == tok->varId()) && isAssignment) {
                     // simple assignment
                     varInfo.erase(tok->varId());
                 } else if (rhs->astParent() && rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
@@ -955,7 +959,7 @@ void CheckLeakAutoVar::changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocIn
 void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg)
 {
     std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
-    const std::map<int, VarInfo::AllocInfo>::iterator var = alloctype.find(arg->varId());
+    const auto var = alloctype.find(arg->varId());
     if (var != alloctype.end()) {
         // bailout if function is also allocating, since the argument might be moved
         // to the return value, such as in fdopen
@@ -1027,6 +1031,9 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
         const Token * const argTypeStartTok = arg;
 
+        if (Token::simpleMatch(arg, "."))
+            arg = arg->next();
+
         while (Token::Match(arg, "%name% .|:: %name%"))
             arg = arg->tokAt(2);
 
@@ -1037,7 +1044,7 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             if (isAddressOf)
                 arg = arg->next();
 
-            const bool isnull = !isAddressOf && (arg->hasKnownIntValue() && arg->values().front().intvalue == 0);
+            const bool isnull = !isAddressOf && (arg->hasKnownIntValue() && arg->getKnownIntValue() == 0);
 
             // Is variable allocated?
             if (!isnull && (!af || af->arg == argNr)) {
@@ -1131,7 +1138,7 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
     const auto& possibleUsage = varInfo.possibleUsage;
 
-    const std::map<int, VarInfo::AllocInfo>::const_iterator var = alloctype.find(vartok->varId());
+    const auto var = utils::as_const(alloctype).find(vartok->varId());
     if (var != alloctype.cend() && var->second.status == VarInfo::ALLOC) {
         const auto use = possibleUsage.find(vartok->varId());
         if (use == possibleUsage.end()) {
@@ -1142,6 +1149,12 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     }
 }
 
+static bool isSafeCast(const ValueType* vt, const Settings& settings)
+{
+    const size_t sizeOf = vt->getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointee);
+    return sizeOf == 0 || sizeOf >= settings.platform.sizeof_pointer;
+}
+
 void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
@@ -1149,7 +1162,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
     std::vector<int> toRemove;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::map<int, VarInfo::AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
+    for (auto it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
         // don't warn if variable is conditionally allocated, unless it leaves the scope
         if (!isEndOfScope && !it->second.managed() && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
             continue;
@@ -1172,10 +1185,10 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     continue;
 
                 const Token* tok3 = tok2->next();
-                while (tok3 && tok3->isCast() && tok3->valueType() &&
-                       (tok3->valueType()->pointer ||
-                        (tok3->valueType()->typeSize(mSettings->platform) == 0) ||
-                        (tok3->valueType()->typeSize(mSettings->platform) >= mSettings->platform.sizeof_pointer)))
+                while (tok3 && tok3->isCast() &&
+                       (!tok3->valueType() ||
+                        tok3->valueType()->pointer ||
+                        isSafeCast(tok3->valueType(), *mSettings)))
                     tok3 = tok3->astOperand2() ? tok3->astOperand2() : tok3->astOperand1();
                 if (tok3 && tok3->varId() == varid)
                     tok2 = tok3->next();
@@ -1197,10 +1210,10 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
 
             // don't warn when returning after checking return value of outparam allocation
             const Token* outparamFunc{};
-            if ((tok->scope()->type == Scope::ScopeType::eIf || tok->scope()->type== Scope::ScopeType::eElse) &&
+            if ((tok->scope()->type == ScopeType::eIf || tok->scope()->type== ScopeType::eElse) &&
                 (outparamFunc = getOutparamAllocation(it->second.allocTok, *mSettings))) {
                 const Scope* scope = tok->scope();
-                if (scope->type == Scope::ScopeType::eElse) {
+                if (scope->type == ScopeType::eElse) {
                     scope = scope->bodyStart->tokAt(-2)->scope();
                 }
                 const Token* const ifEnd = scope->bodyStart->previous();
@@ -1242,4 +1255,18 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
     }
     for (const int varId : toRemove)
         varInfo.erase(varId);
+}
+
+void CheckLeakAutoVar::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckLeakAutoVar checkLeakAutoVar(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkLeakAutoVar.check();
+}
+
+void CheckLeakAutoVar::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckLeakAutoVar c(nullptr, settings, errorLogger);
+    c.deallocReturnError(nullptr, nullptr, "p");
+    c.configurationInfo(nullptr, { nullptr, VarInfo::USED });  // user configuration is needed to complete analysis
+    c.doubleFreeError(nullptr, nullptr, "varname", 0);
 }

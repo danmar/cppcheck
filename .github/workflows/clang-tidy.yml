@@ -11,6 +11,9 @@ on:
     tags:
       - '2.*'
   pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,7 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 6.8.1
+      QT_VERSION: 6.10.0
 
     steps:
       - uses: actions/checkout@v4
@@ -33,34 +36,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake make
           sudo apt-get install -y libpcre3-dev
-          sudo apt-get install -y libffi7 # work around missing dependency for Qt install step
-          sudo apt-get install -y libcups2-dev  # required for Qt6PrintSupport in CMake since Qt 6.7.3
+          sudo apt-get install -y libgl-dev  # fixes missing dependency for Qt in CMake
 
       - name: Install clang
         run: |
           sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 19
-          sudo apt-get install -y clang-tidy-19
+          sudo ./llvm.sh 21
+          sudo apt-get install -y clang-tidy-21
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          setup-python: 'false'
+          install-deps: false
           cache: true
 
       - name: Verify clang-tidy configuration
         run: |
-          clang-tidy-19 --verify-config
+          clang-tidy-21 --verify-config
 
       - name: Prepare CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off -DWARNINGS_ARE_ERRORS=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCPPCHK_GLIBCXX_DEBUG=Off -DWARNINGS_ARE_ERRORS=On
         env:
-          CC: clang-19
-          CXX: clang++-19
+          CC: clang-21
+          CXX: clang++-21
 
       - name: Prepare CMake dependencies
         run: |
@@ -73,5 +77,17 @@ jobs:
           make -C cmake.output/test cmake_pch.hxx.pch
 
       - name: Clang-Tidy
+        if: ${{ github.event.schedule == '' && github.event_name != 'workflow_dispatch' }}
         run: |
           cmake --build cmake.output --target run-clang-tidy 2> /dev/null
+
+      - name: Clang Static Analyzer
+        if: ${{ github.event.schedule != '' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          cmake --build cmake.output --target run-clang-tidy-csa 2> /dev/null
+
+      - uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: Compilation Database
+          path: ./cmake.output/compile_commands.json

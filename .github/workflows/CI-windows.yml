@@ -19,15 +19,13 @@ defaults:
   run:
     shell: cmd
 
-# TODO: choose/add a step to bail out on compiler warnings (maybe even the release build)
-
 jobs:
 
   build_qt:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.8.1]
+        os: [windows-2022, windows-2025]
+        qt_ver: [6.10.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -47,22 +45,18 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
+          setup-python: 'false'
           cache: true
+          aqtversion: '==3.1.*'  # TODO: remove when aqtinstall 3.2.2 is available
 
-      - name: Build GUI release (Qt 5)
-        if: startsWith(matrix.qt_ver, '5')
+      - name: Run CMake
         run: |
-          ; TODO: enable rules?
-          ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On  -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
+          rem TODO: enable rules?
+          rem specify Release build so matchcompiler is used
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DWITH_QCHART=On -DBUILD_TRIAGE=On -DBUILD_ONLINE_HELP=On -DCMAKE_INSTALL_PREFIX=cppcheck-cmake-install -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
 
-      - name: Build GUI release (Qt 6)
-        if: startsWith(matrix.qt_ver, '6')
+      - name: Build GUI release
         run: |
-          ; TODO: enable rules?
-          ; specify Release build so matchcompiler is used
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DBUILD_ONLINE_HELP=On || exit /b !errorlevel!
           cmake --build build --target cppcheck-gui --config Release || exit /b !errorlevel!
 
       - name: Deploy GUI
@@ -73,10 +67,41 @@ jobs:
 
       # TODO: run GUI tests
 
+      - name: Run CMake install
+        run: |
+          cmake --build build --target install
+
+  build_cmake_cxxstd:
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2025]
+        cxxstd: [14, 17]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Run CMake
+        run: |
+          cmake -S . -B build.cxxstd -G "Visual Studio 17 2022" -A x64 -DCMAKE_CXX_STANDARD=${{ matrix.cxxstd }} -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
+
+      - name: Build
+        run: |
+          cmake --build build.cxxstd --config Debug || exit /b !errorlevel!
+
   build:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
         config: [debug, release]
       fail-fast: false
 
@@ -91,11 +116,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.13
+      - name: Set up Python
         if: matrix.config == 'release'
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
           check-latest: true
 
       - name: Set up Visual Studio environment
@@ -121,9 +146,11 @@ jobs:
       - name: Install PCRE
         if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
+          @echo on
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
-          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
+          git apply --ignore-space-change ..\externals\pcre.patch || exit /b !errorlevel!
+          cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
           nmake || exit /b !errorlevel!
           copy pcre.h ..\externals || exit /b !errorlevel!
           copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
@@ -137,9 +164,8 @@ jobs:
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
           python -m pip install pytest-timeout || exit /b !errorlevel!
+          python -m pip install pytest-xdist || exit /b !errorlevel!
           python -m pip install psutil || exit /b !errorlevel!
-
-      # TODO: build with CMake
 
       - name: Build CLI debug configuration using MSBuild
         if: matrix.config == 'debug'
@@ -176,12 +202,12 @@ jobs:
       - name: Run test/cli
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
 
       - name: Run test/cli (-j2)
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_J: 2
 
@@ -189,16 +215,27 @@ jobs:
       - name: Run test/cli (--clang)
         if: false # matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_CLANG: clang
 
       - name: Run test/cli (--cppcheck-build-dir)
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv test/cli || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n auto test/cli || exit /b !errorlevel!
         env:
           TEST_CPPCHECK_INJECT_BUILDDIR: injected
+
+      # TODO: test with Release configuration?
+      - name: Test SEH wrapper
+        if: matrix.config == 'release'
+        run: |
+          cmake -S . -B build.cmake.seh -DBUILD_TESTS=On -DCMAKE_COMPILE_WARNING_AS_ERROR=On || exit /b !errorlevel!
+          cmake --build build.cmake.seh --target test-sehwrapper || exit /b !errorlevel!
+          :: TODO: how to run this without copying the file?
+          copy build.cmake.seh\bin\Debug\test-sehwrapper.exe . || exit /b !errorlevel!
+          python3 -m pytest -Werror --strict-markers -vv test/seh/test-sehwrapper.py || exit /b !errorlevel!
+          del test-sehwrapper.exe || exit /b !errorlevel!
 
       - name: Test addons
         if: matrix.config == 'release'
@@ -231,10 +268,11 @@ jobs:
           ..\..\cppcheck --dump naming_test.cpp || exit /b !errorlevel!
           python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump || exit /b !errorlevel!
 
+      # TODO: run with "-n auto" when misra_test.py can be run in parallel
       - name: test addons (Python)
         if: matrix.config == 'release'
         run: |
-          python -m pytest -Werror --strict-markers -vv addons/test || exit /b !errorlevel!
+          python -m pytest -Werror --strict-markers -vv -n 1 addons/test || exit /b !errorlevel!
         env:
           PYTHONPATH: ./addons
 
@@ -244,3 +282,15 @@ jobs:
           cd test\cfg
           cl.exe windows.cpp -DUNICODE=1 -D_UNICODE=1 /Zs || exit /b !errorlevel!
           cl.exe mfc.cpp /EHsc /Zs || exit /b !errorlevel!
+
+      - name: Show all ignored files
+        if: false  # TODO: currently lists all the contents of ignored folders - we only need what actually matched
+        run: |
+          git ls-files --others --ignored --exclude-standard || exit /b !errorlevel!
+
+      - name: Check for changed and unversioned files
+        run: |
+          :: TODO: how to do this with a single command?
+          git status --ignored=no
+          :: TODO: make this work
+          :: git status --ignored=no | grep -q 'working tree clean'

@@ -1,6 +1,6 @@
 /* -*- C++ -*-
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,18 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "vfvalue.h"
 
 #include <list>
 #include <string>
 #include <vector>
 
+class Token;
 template<class T> class ValuePtr;
+
+namespace ValueFlow
+{
+    class Value;
+}
 
 struct InferModel {
     virtual bool match(const ValueFlow::Value& value) const = 0;

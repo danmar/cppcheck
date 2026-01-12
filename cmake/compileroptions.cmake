@@ -24,6 +24,28 @@ function(target_externals_include_directories TARGET)
     endif()
 endfunction()
 
+function(target_dll_compile_definitions TARGET)
+    set(options)
+    set(oneValueArgs IMPORT EXPORT)
+    set(multiValueArgs)
+
+    cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(PARSE_UNPARSED_ARGUMENTS)
+        message(
+            FATAL_ERROR "Unknown keywords given to target_dll_compile_definitions(): \"${PARSE_UNPARSED_ARGUMENTS}\"")
+    endif()
+
+
+    if (BUILD_SHARED_LIBS AND MSVC)
+        if(PARSE_EXPORT)
+            target_compile_definitions(${TARGET} PRIVATE ${PARSE_EXPORT})
+        endif()
+        if(PARSE_IMPORT)
+            target_compile_definitions(${TARGET} INTERFACE ${PARSE_IMPORT})
+        endif()
+    endif()
+endfunction()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()
@@ -33,7 +55,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
         # "Release" uses -O3 by default
         add_compile_options(-O2)
     endif()
-    if(WARNINGS_ARE_ERRORS)
+    if(CMAKE_COMPILE_WARNING_AS_ERROR)
         add_compile_options(-Werror)
     endif()
     add_compile_options(-pedantic) # TODO: is this implied by -Weverything?
@@ -86,7 +108,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     #add_compile_options_safe(-Wunused-macros)
     #add_compile_options_safe(-Wpedantic)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 14)
         # TODO: verify this regression still exists in clang-15
         if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
@@ -100,6 +122,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_compile_options(-gdwarf-4)
     endif()
 
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        add_compile_options(-Wno-poison-system-directories)
+    endif()
+
     if(USE_LIBCXX)
         add_compile_options(-stdlib=libc++)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lc++")
@@ -108,7 +134,6 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # TODO: fix and enable these warnings - or move to suppression list below
     add_compile_options_safe(-Wno-documentation-unknown-command) # TODO: Clang currently does not support all commands
     add_compile_options_safe(-Wno-unused-exception-parameter)
-    add_compile_options_safe(-Wno-old-style-cast)
     add_compile_options_safe(-Wno-sign-conversion)
     add_compile_options_safe(-Wno-shadow-field-in-constructor)
     add_compile_options_safe(-Wno-covered-switch-default)
@@ -119,11 +144,10 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options_safe(-Wno-shadow-uncaptured-local)
     add_compile_options_safe(-Wno-implicit-float-conversion)
     add_compile_options_safe(-Wno-switch-enum)
-    add_compile_options_safe(-Wno-float-conversion)
     add_compile_options_safe(-Wno-date-time)
     add_compile_options(-Wno-disabled-macro-expansion)
-    add_compile_options_safe(-Wno-bitwise-instead-of-logical)
     add_compile_options(-Wno-sign-compare)
+    add_compile_options_safe(-Wno-ms-bitfield-padding) # TODO: fix this
 
     # these cannot be fixed properly without adopting later C++ standards
     add_compile_options_safe(-Wno-unsafe-buffer-usage)
@@ -132,6 +156,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     # can only be partially addressed
     add_compile_options(-Wno-padded)
+    add_compile_options_safe(-Wno-nrvo)
 
     # no need for C++98 compatibility
     add_compile_options(-Wno-c++98-compat)
@@ -159,7 +184,7 @@ if(MSVC)
     # General
     add_compile_options(/W4) # Warning Level
     add_compile_options(/Zi) # Debug Information Format - Program Database
-    if(WARNINGS_ARE_ERRORS)
+    if(CMAKE_COMPILE_WARNING_AS_ERROR)
         add_compile_options(/WX) # Treat Warning As Errors
     endif()
     add_compile_options(/MP) # Multi-processor Compilation

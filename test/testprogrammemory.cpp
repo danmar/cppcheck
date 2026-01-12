@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,10 @@
 #include "helpers.h"
 #include "token.h"
 #include "programmemory.h"
+#include "utils.h"
 #include "vfvalue.h"
+
+#include <stdexcept>
 
 class TestProgramMemory : public TestFixture {
 public:
@@ -30,6 +33,9 @@ public:
 private:
     void run() override {
         TEST_CASE(copyOnWrite);
+        TEST_CASE(hasValue);
+        TEST_CASE(getValue);
+        TEST_CASE(at);
     }
 
     void copyOnWrite() const {
@@ -78,6 +84,22 @@ private:
         v = pm.getValue(id);
         ASSERT(v);
         ASSERT_EQUALS(41, v->intvalue);
+    }
+
+    void hasValue() const {
+        ProgramMemory pm;
+        ASSERT(!pm.hasValue(123));
+    }
+
+    void getValue() const {
+        ProgramMemory pm;
+        ASSERT(!pm.getValue(123));
+    }
+
+    void at() const {
+        ProgramMemory pm;
+        ASSERT_THROW_EQUALS_2(pm.at(123), std::out_of_range, "ProgramMemory::at");
+        ASSERT_THROW_EQUALS_2(utils::as_const(pm).at(123), std::out_of_range, "ProgramMemory::at");
     }
 };
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,11 +130,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     mSampleEditor = new CodeEditor(this);
     QFont sampleFont("Monospace");
     QFontMetrics fm(sampleFont);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
     mSampleEditor->setMinimumWidth(fm.horizontalAdvance(QString(40, 'W')));
-#else
-    mSampleEditor->setMinimumWidth(fm.width(QString(40, 'W')));
-#endif
     // designate highlight, errors, and symbols
     mSampleEditor->setError(mSampleDocument, mErrLineNum, mErrSymbolsList);
     // End Controls

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
 #include "astutils.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "settings.h"
-#include "simplecpp.h"
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -33,6 +33,7 @@
 #include <cassert>
 #include <cctype>
 #include <climits>
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -46,6 +47,8 @@
 #include <unordered_set>
 #include <utility>
 
+#include <simplecpp.h>
+
 namespace {
     struct less {
         template<class T, class U>
@@ -55,18 +58,19 @@ namespace {
     };
 }
 
-const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
+const std::list<ValueFlow::Value> Token::mEmptyValueList;
+const std::string Token::mEmptyString;
 
-Token::Token(TokensFrontBack &tokensFrontBack)
-    : mTokensFrontBack(tokensFrontBack)
-    , mIsC(mTokensFrontBack.list.isC())
-    , mIsCpp(mTokensFrontBack.list.isCPP())
-{
-    mImpl = new TokenImpl();
-}
+Token::Token(const TokenList& tokenlist, std::shared_ptr<TokensFrontBack> tokensFrontBack)
+    : mList(tokenlist)
+    , mTokensFrontBack(std::move(tokensFrontBack))
+    , mImpl(new Impl)
+    , mIsC(mList.isC())
+    , mIsCpp(mList.isCPP())
+{}
 
 Token::Token(const Token* tok)
-    : Token(const_cast<Token*>(tok)->mTokensFrontBack)
+    : Token(tok->mList, const_cast<Token*>(tok)->mTokensFrontBack)
 {
     fileIndex(tok->fileIndex());
     linenr(tok->linenr());
@@ -104,12 +108,22 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
 
 void Token::update_property_info()
 {
-    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+    assert(mImpl);
+
+    setFlag(fIsControlFlowKeyword, false);
+    // TODO: clear fIsLong
     isStandardType(false);
 
     if (!mStr.empty()) {
-        if (mStr == "true" || mStr == "false")
-            tokType(eBoolean);
+        if (mStr == "true" || mStr == "false") {
+            if (mImpl->mVarId) {
+                if (mIsCpp)
+                    throw InternalError(this, "Internal error. VarId set for bool literal.");
+                tokType(eVariable);
+            }
+            else
+                tokType(eBoolean);
+        }
         else if (isStringLiteral(mStr)) {
             tokType(eString);
             isLong(isPrefixStringCharLiteral(mStr, '"', "L"));
@@ -118,18 +132,28 @@ void Token::update_property_info()
             tokType(eChar);
             isLong(isPrefixStringCharLiteral(mStr, '\'', "L"));
         }
-        else if (std::isalpha((unsigned char)mStr[0]) || mStr[0] == '_' || mStr[0] == '$') { // Name
+        else if (std::isalpha(static_cast<unsigned char>(mStr[0])) || mStr[0] == '_' || mStr[0] == '$') { // Name
             if (mImpl->mVarId)
                 tokType(eVariable);
-            else if (mTokensFrontBack.list.isKeyword(mStr) || mStr == "asm") // TODO: not a keyword
+            else if (mList.isKeyword(mStr)) {
                 tokType(eKeyword);
-            else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
+                update_property_isStandardType();
+                if (mTokType != eType) // cannot be a control-flow keyword when it is a type
+                    setFlag(fIsControlFlowKeyword, controlFlowKeywords.find(mStr) != controlFlowKeywords.end());
+            }
+            else if (mStr == "asm") { // TODO: not a keyword
+                tokType(eKeyword);
+            }
+            else {
                 tokType(eName);
+                // some types are not being treated as keywords
+                update_property_isStandardType();
+            }
         } else if (simplecpp::Token::isNumberLike(mStr)) {
-            if (MathLib::isInt(mStr) || MathLib::isFloat(mStr))
+            if ((MathLib::isInt(mStr) || MathLib::isFloat(mStr)) && mStr.find('_') == std::string::npos)
                 tokType(eNumber);
             else
-                tokType(eName); // assume it is a user defined literal
+                tokType(eLiteral); // assume it is a user defined literal
         } else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                    (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
@@ -144,6 +168,7 @@ void Token::update_property_info()
                   mStr == "||" ||
                   mStr == "!"))
             tokType(eLogicalOp);
+        // TODO: should link check only apply to < and >? Token::link() suggests so
         else if (mStr.size() <= 2 && !mLink &&
                  (mStr == "==" ||
                   mStr == "!=" ||
@@ -164,11 +189,11 @@ void Token::update_property_info()
             tokType(eEllipsis);
         else
             tokType(eOther);
-
-        update_property_isStandardType();
     } else {
         tokType(eNone);
     }
+    assert(!mImpl->mVarId || mTokType == eVariable);
+    // TODO: validate type for linked token?
 }
 
 static const std::unordered_set<std::string> stdTypes = { "bool"
@@ -182,14 +207,21 @@ static const std::unordered_set<std::string> stdTypes = { "bool"
                                                           , "size_t"
                                                           , "void"
                                                           , "wchar_t"
+                                                          , "signed"
+                                                          , "unsigned"
 };
+
+bool Token::isStandardType(const std::string& str)
+{
+    return stdTypes.find(str) != stdTypes.end();
+}
 
 void Token::update_property_isStandardType()
 {
     if (mStr.size() < 3 || mStr.size() > 7)
         return;
 
-    if (stdTypes.find(mStr)!=stdTypes.end()) {
+    if (isStandardType(mStr)) {
         isStandardType(true);
         tokType(eType);
     }
@@ -254,7 +286,7 @@ void Token::deleteNext(nonneg int count)
     if (mNext)
         mNext->previous(this);
     else
-        mTokensFrontBack.back = this;
+        mTokensFrontBack->back = this;
 }
 
 void Token::deletePrevious(nonneg int count)
@@ -274,7 +306,7 @@ void Token::deletePrevious(nonneg int count)
     if (mPrevious)
         mPrevious->next(this);
     else
-        mTokensFrontBack.front = this;
+        mTokensFrontBack->front = this;
 }
 
 void Token::swapWithNext()
@@ -357,10 +389,10 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-    if (end->mTokensFrontBack.back == end) {
+    if (end->mTokensFrontBack->back == end) {
         while (end->next())
             end = end->next();
-        end->mTokensFrontBack.back = end;
+        end->mTokensFrontBack->back = end;
     }
 
     // Update mProgressValue, fileIndex and linenr
@@ -371,6 +403,9 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     delete replaceThis;
 }
 
+/**
+ * @throws InternalError thrown on unexpected command or missing varid with %varid%
+ */
 static
 #if defined(__GNUC__)
 // GCC does not inline this by itself
@@ -737,7 +772,7 @@ nonneg int Token::getStrArraySize(const Token *tok)
     // cppcheck-suppress shadowFunction - TODO: fix this
     const std::string str(getStringLiteral(tok->str()));
     int sizeofstring = 1;
-    for (int i = 0; i < (int)str.size(); i++) {
+    for (int i = 0; i < static_cast<int>(str.size()); i++) {
         if (str[i] == '\\')
             ++i;
         ++sizeofstring;
@@ -752,7 +787,7 @@ nonneg int Token::getStrSize(const Token *tok, const Settings &settings)
     if (tok->valueType()) {
         ValueType vt(*tok->valueType());
         vt.pointer = 0;
-        sizeofType = ValueFlow::getSizeOf(vt, settings);
+        sizeofType = vt.getSizeOf(settings, ValueType::Accuracy::ExactOrZero, ValueType::SizeOf::Pointer);
     }
     return getStrArraySize(tok) * sizeofType;
 }
@@ -1028,16 +1063,14 @@ void Token::function(const Function *f)
         tokType(eName);
 }
 
-Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend)
+Token* Token::insertToken(const std::string& tokenStr, bool prepend)
 {
     Token *newToken;
     if (mStr.empty())
         newToken = this;
     else
-        newToken = new Token(mTokensFrontBack);
+        newToken = new Token(mList, mTokensFrontBack);
     newToken->str(tokenStr);
-    newToken->originalName(originalNameStr);
-    newToken->setMacroName(macroNameStr);
 
     if (newToken != this) {
         newToken->mImpl->mLineNumber = mImpl->mLineNumber;
@@ -1049,7 +1082,7 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                 newToken->previous(this->previous());
                 newToken->previous()->next(newToken);
             } else {
-                mTokensFrontBack.front = newToken;
+                mTokensFrontBack->front = newToken;
             }
             this->previous(newToken);
             newToken->next(this);
@@ -1058,7 +1091,7 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                 newToken->next(this->next());
                 newToken->next()->previous(newToken);
             } else {
-                mTokensFrontBack.back = newToken;
+                mTokensFrontBack->back = newToken;
             }
             this->next(newToken);
             newToken->previous(this);
@@ -1154,12 +1187,28 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                             nameSpace += tok1->str();
                             tok1 = tok1->next();
                         }
-                        mImpl->mScopeInfo->usingNamespaces.insert(nameSpace);
+                        mImpl->mScopeInfo->usingNamespaces.insert(std::move(nameSpace));
                     }
                 }
             }
         }
     }
+    return newToken;
+}
+
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend)
+{
+    Token* const newToken = insertToken(tokenStr, prepend);
+    if (!originalNameStr.empty())
+        newToken->originalName(originalNameStr);
+    return newToken;
+}
+
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, const std::string& macroNameStr, bool prepend)
+{
+    Token* const newToken = insertToken(tokenStr, originalNameStr, prepend);
+    if (!macroNameStr.empty())
+        newToken->setMacroName(macroNameStr);
     return newToken;
 }
 
@@ -1194,11 +1243,21 @@ void Token::printOut(std::ostream& out, const char *title) const
     out << stringifyList(stringifyOptions::forPrintOut(), nullptr, nullptr) << std::endl;
 }
 
-void Token::printOut(std::ostream& out, const char *title, const std::vector<std::string> &fileNames) const
+void Token::printOut(std::ostream& out, bool xml, const char *title, const std::vector<std::string> &fileNames) const
 {
+    if (xml)
+    {
+        out << "<file>" << std::endl;
+        out << "<![CDATA[";
+    }
     if (title && title[0])
         out << "\n### " << title << " ###\n";
     out << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
+    if (xml)
+    {
+        out << "]]>" << std::endl;
+        out << "</file>" << std::endl;
+    }
 }
 
 // cppcheck-suppress unusedFunction - used for debugging
@@ -1562,8 +1621,8 @@ static std::string stringFromTokenRange(const Token* start, const Token* end)
                 else if (c >= ' ' && c <= 126)
                     ret += c;
                 else {
-                    char str[10];
-                    sprintf(str, "\\x%02x", c);
+                    char str[5];
+                    snprintf(str, sizeof(str), "\\x%02x", c);
                     ret += str;
                 }
             }
@@ -1611,7 +1670,7 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
     }
 }
 
-void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
+void Token::printAst(bool xml, const std::vector<std::string> &fileNames, std::ostream &out) const
 {
     if (!xml)
         out << "\n\n##AST" << std::endl;
@@ -1628,10 +1687,8 @@ void Token::printAst(bool verbose, bool xml, const std::vector<std::string> &fil
                     << "\" column=\"" << tok->column() << "\">" << std::endl;
                 astStringXml(tok, 2U, out);
                 out << "</ast>" << std::endl;
-            } else if (verbose)
+            } else
                 out << "[" << fileNames[tok->fileIndex()] << ":" << tok->linenr() << "]" << std::endl << tok->astStringVerbose() << std::endl;
-            else
-                out << tok->astString(" ") << std::endl;
             if (tok->str() == "(")
                 tok = tok->link();
         }
@@ -1695,7 +1752,7 @@ std::string Token::astStringZ3() const
     return "(" + str() + " " + astOperand1()->astStringZ3() + " " + astOperand2()->astStringZ3() + ")";
 }
 
-void Token::printValueFlow(bool xml, std::ostream &out) const
+void Token::printValueFlow(const std::vector<std::string>& files, bool xml, std::ostream &out) const
 {
     std::string outs;
 
@@ -1722,7 +1779,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
         else {
             if (fileIndex != tok->fileIndex()) {
                 outs += "File ";
-                outs += tok->mTokensFrontBack.list.getFiles()[tok->fileIndex()];
+                outs += files[tok->fileIndex()];
                 outs += '\n';
                 line = 0;
             }
@@ -1766,12 +1823,12 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                 case ValueFlow::Value::ValueType::INT:
                     if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED) {
                         outs += "intvalue=\"";
-                        outs += std::to_string(static_cast<MathLib::biguint>(value.intvalue));
+                        outs += MathLib::toString(static_cast<MathLib::biguint>(value.intvalue));
                         outs += '\"';
                     }
                     else {
                         outs += "intvalue=\"";
-                        outs += std::to_string(value.intvalue);
+                        outs += MathLib::toString(value.intvalue);
                         outs += '\"';
                     }
                     break;
@@ -1782,7 +1839,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::FLOAT:
                     outs += "floatvalue=\"";
-                    outs += std::to_string(value.floatValue); // TODO: should this be MathLib::toString()?
+                    outs += MathLib::toString(value.floatValue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::MOVED:
@@ -1795,22 +1852,22 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::BUFFER_SIZE:
                     outs += "buffer-size=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += "\"";
                     break;
                 case ValueFlow::Value::ValueType::CONTAINER_SIZE:
                     outs += "container-size=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_START:
                     outs +=  "iterator-start=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_END:
                     outs +=  "iterator-end=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
@@ -1829,7 +1886,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     outs += id_string(value.tokvalue);
                     outs += '\"';
                     outs += " symbolic-delta=\"";
-                    outs += std::to_string(value.intvalue);
+                    outs += MathLib::toString(value.intvalue);
                     outs += '\"';
                     break;
                 }
@@ -1851,12 +1908,11 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     outs += " inconclusive=\"true\"";
 
                 outs += " path=\"";
-                outs += std::to_string(value.path);
+                outs += MathLib::toString(value.path);
                 outs += "\"";
 
                 outs += "/>\n";
             }
-
             else {
                 if (&value != &values->front())
                     outs += ",";
@@ -1909,11 +1965,11 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     if (!mImpl->mValues)
         return nullptr;
     const ValueFlow::Value *ret = nullptr;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isImpossible())
             continue;
-        if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue)) ||
-            (it->isFloatValue() && !settings.library.isFloatArgValid(ftok, argnr, it->floatValue))) {
+        if ((it->isIntValue() && !settings.library.isIntArgValid(ftok, argnr, it->intvalue, settings)) ||
+            (it->isFloatValue() && !settings.library.isFloatArgValid(ftok, argnr, it->floatValue, settings))) {
             if (!ret || ret->isInconclusive() || (ret->condition && !it->isInconclusive()))
                 ret = &(*it);
             if (!ret->isInconclusive() && !ret->condition)
@@ -1935,7 +1991,7 @@ const Token *Token::getValueTokenMinStrSize(const Settings &settings, MathLib::b
         return nullptr;
     const Token *ret = nullptr;
     int minsize = INT_MAX;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int size = getStrSize(it->tokvalue, settings);
             if (!ret || size < minsize) {
@@ -1955,7 +2011,7 @@ const Token *Token::getValueTokenMaxStrLength() const
         return nullptr;
     const Token *ret = nullptr;
     int maxlength = 0;
-    for (std::list<ValueFlow::Value>::const_iterator it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+    for (auto it = mImpl->mValues->cbegin(); it != mImpl->mValues->end(); ++it) {
         if (it->isTokValue() && it->tokvalue && it->tokvalue->tokType() == Token::eString) {
             const int length = getStrLength(it->tokvalue);
             if (!ret || length > maxlength) {
@@ -2198,8 +2254,8 @@ bool Token::addValue(const ValueFlow::Value &value)
             return false;
 
         // if value already exists, don't add it again
-        std::list<ValueFlow::Value>::iterator it;
-        for (it = mImpl->mValues->begin(); it != mImpl->mValues->end(); ++it) {
+        auto it = mImpl->mValues->begin();
+        for (; it != mImpl->mValues->end(); ++it) {
             // different types => continue
             if (it->valueType != value.valueType)
                 continue;
@@ -2406,7 +2462,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     typeBeg = previousBeforeAstLeftmostLeaf(tok2);
                     typeEnd = tok2;
                 }
-                if (typeBeg)
+                if (typeBeg && typeBeg != typeEnd)
                     result = { typeBeg->next(), typeEnd }; // handle smart pointers/iterators first
             }
             if (astIsRangeBasedForDecl(var->nameToken()) && astIsContainer(var->nameToken()->astParent()->astOperand2())) { // range-based for
@@ -2468,13 +2524,15 @@ std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
     return mImpl->mScopeInfo;
 }
 
+// if there is a known INT value it will always be the first entry
 bool Token::hasKnownIntValue() const
 {
     if (!mImpl->mValues)
         return false;
-    return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
-        return value.isKnown() && value.isIntValue();
-    });
+    if (mImpl->mValues->empty())
+        return false;
+    const ValueFlow::Value& value = mImpl->mValues->front();
+    return value.isIntValue() && value.isKnown();
 }
 
 bool Token::hasKnownValue() const
@@ -2497,7 +2555,7 @@ bool Token::hasKnownSymbolicValue(const Token* tok) const
     return mImpl->mValues &&
            std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
         return value.isKnown() && value.isSymbolicValue() && value.tokvalue &&
-        value.tokvalue->exprId() == tok->exprId();
+               value.tokvalue->exprId() == tok->exprId();
     });
 }
 
@@ -2505,6 +2563,15 @@ const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) cons
 {
     if (!mImpl->mValues)
         return nullptr;
+    if (mImpl->mValues->empty())
+        return nullptr;
+    // known INT values are always the first entry
+    if (t == ValueFlow::Value::ValueType::INT) {
+        const auto& v = mImpl->mValues->front();
+        if (!v.isKnown() || !v.isIntValue())
+            return nullptr;
+        return &v;
+    }
     auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& value) {
         return value.isKnown() && value.valueType == t;
     });
@@ -2561,12 +2628,11 @@ const ValueFlow::Value* Token::getMovedValue() const
         return nullptr;
     const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
         return value.isMovedValue() && !value.isImpossible() &&
-        value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
+               value.moveKind != ValueFlow::Value::MoveKind::NonMovedVariable;
     });
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-// cppcheck-suppress unusedFunction
 const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)
@@ -2577,15 +2643,16 @@ const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) 
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-TokenImpl::~TokenImpl()
+Token::Impl::~Impl()
 {
+    delete mMacroName;
     delete mOriginalName;
     delete mValueType;
     delete mValues;
 
     if (mTemplateSimplifierPointers) {
-        for (auto *templateSimplifierPointer : *mTemplateSimplifierPointers) {
-            templateSimplifierPointer->token(nullptr);
+        for (auto *p : *mTemplateSimplifierPointers) {
+            p->token(nullptr);
         }
     }
     delete mTemplateSimplifierPointers;
@@ -2597,7 +2664,7 @@ TokenImpl::~TokenImpl()
     }
 }
 
-void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value)
+void Token::Impl::setCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint value)
 {
     CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
@@ -2613,9 +2680,9 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     }
 }
 
-bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
+bool Token::Impl::getCppcheckAttribute(CppcheckAttributesType type, MathLib::bigint &value) const
 {
-    CppcheckAttributes *attr = mCppcheckAttributes;
+    const CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
@@ -2667,6 +2734,22 @@ const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
 }
 
-const std::string& Token::fileName() const {
-    return mTokensFrontBack.list.getFiles()[mImpl->mFileIndex];
+void Token::templateArgFrom(const Token* fromToken) {
+    setFlag(fIsTemplateArg, fromToken != nullptr);
+    mImpl->mTemplateArgFileIndex = fromToken ? fromToken->mImpl->mFileIndex : -1;
+    mImpl->mTemplateArgLineNumber = fromToken ? fromToken->mImpl->mLineNumber : -1;
+    mImpl->mTemplateArgColumn = fromToken ? fromToken->mImpl->mColumn : -1;
+}
+
+const SmallVector<ReferenceToken>& Token::refs(bool temporary) const
+{
+    if (temporary) {
+        if (!mImpl->mRefsTemp)
+            mImpl->mRefsTemp.reset(new SmallVector<ReferenceToken>(followAllReferences(this, true)));
+        return *mImpl->mRefsTemp;
+    }
+
+    if (!mImpl->mRefs)
+        mImpl->mRefs.reset(new SmallVector<ReferenceToken>(followAllReferences(this, false)));
+    return *mImpl->mRefs;
 }

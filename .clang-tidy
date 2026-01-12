@@ -48,13 +48,14 @@ Checks: >
         -modernize-replace-auto-ptr,
         -modernize-return-braced-init-list,
         -modernize-type-traits,
-        -modernize-use-auto,
         -modernize-use-designated-initializers,
         -modernize-use-nodiscard,
+        -modernize-use-scoped-lock,
         -modernize-use-trailing-return-type,
         -performance-avoid-endl,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,
+        -portability-avoid-pragma-once,
         -portability-simd-intrinsics,
         -portability-std-allocator-const,
         -readability-avoid-nested-conditional-operator,
@@ -69,11 +70,15 @@ Checks: >
         -readability-isolate-declaration,
         -readability-magic-numbers,
         -readability-suspicious-call-argument,
-        -readability-uppercase-literal-suffix
+        -readability-uppercase-literal-suffix,
+        -readability-use-concise-preprocessor-directives
 WarningsAsErrors: '*'
-HeaderFilterRegex: '(cli|gui|lib|oss-fuzz|test|triage)\/[a-z]+\.h'
+HeaderFilterRegex: '(cli|gui|frontend|lib|oss-fuzz|test|triage)\/[a-z_]+\.h'
+ExcludeHeaderFilterRegex: 'ui_.*.h'
 CheckOptions:
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
   - key:             readability-simplify-boolean-expr.SimplifyDeMorgan
     value:           '0'
+  - key:             modernize-use-trailing-return-type.TransformFunctions
+    value:           false

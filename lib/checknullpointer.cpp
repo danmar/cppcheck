@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2024 Cppcheck team.
+ * Copyright (C) 2007-2025 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,17 +26,19 @@
 #include "errortypes.h"
 #include "findtoken.h"
 #include "library.h"
-#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cctype>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -98,14 +100,14 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         const bool scan = library.formatstr_scan(&tok);
 
         bool percent = false;
-        for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
+        for (auto i = formatString.cbegin(); i != formatString.cend(); ++i) {
             if (*i == '%') {
                 percent = !percent;
             } else if (percent) {
                 percent = false;
 
                 bool _continue = false;
-                while (!std::isalpha((unsigned char)*i)) {
+                while (!std::isalpha(static_cast<unsigned char>(*i))) {
                     if (*i == '*') {
                         if (scan)
                             _continue = true;
@@ -391,7 +393,7 @@ void CheckNullPointer::nullConstantDereference()
                     const Token *argtok = args[argnr];
                     if (!argtok->hasKnownIntValue())
                         continue;
-                    if (argtok->values().front().intvalue != 0)
+                    if (argtok->getKnownIntValue() != 0)
                         continue;
                     if (mSettings->library.isnullargbad(tok, argnr+1))
                         nullPointerError(argtok);
@@ -433,6 +435,13 @@ void CheckNullPointer::nullConstantDereference()
     }
 }
 
+void CheckNullPointer::nullPointerError(const Token *tok)
+{
+    ValueFlow::Value v(0);
+    v.setKnown();
+    nullPointerError(tok, "", &v, false);
+}
+
 void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
 {
     const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: $symbol.");
@@ -442,6 +451,8 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
         reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+        reportError(tok, Severity::warning, "nullPointerOutOfMemory", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+        reportError(tok, Severity::warning, "nullPointerOutOfResources", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         return;
     }
 
@@ -453,20 +464,31 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     if (!mSettings->isEnabled(value, inconclusive) && !mSettings->isPremiumEnabled("nullPointer"))
         return;
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
+
+        std::string id = "nullPointer";
+        if (value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+            errmsg = "If memory allocation fails, then there is a " + (static_cast<char>(std::tolower(errmsg[0])) + errmsg.substr(1));
+            id += "OutOfMemory";
+        }
+        else if (value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+            errmsg = "If resource allocation fails, then there is a " + (static_cast<char>(std::tolower(errmsg[0])) + errmsg.substr(1));
+            id += "OutOfResources";
+        }
+
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
-        reportError(errorPath,
+        reportError(std::move(errorPath),
                     value->isKnown() ? Severity::error : Severity::warning,
-                    "nullPointer",
+                    id.c_str(),
                     errmsg,
                     CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     }
@@ -529,10 +551,21 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
     } else {
         errmsg = "Pointer " + arithmetic + " with NULL pointer.";
     }
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-    reportError(errorPath,
+
+    std::string id = "nullPointerArithmetic";
+    if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+        errmsg = "If memory allocation fails: " + (static_cast<char>(std::tolower(errmsg[0])) + errmsg.substr(1));
+        id += "OutOfMemory";
+    }
+    else if (value && value->unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+        errmsg = "If resource allocation fails: " + (static_cast<char>(std::tolower(errmsg[0])) + errmsg.substr(1));
+        id += "OutOfResources";
+    }
+
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(std::move(errorPath),
                 Severity::error,
-                "nullPointerArithmetic",
+                id.c_str(),
                 errmsg,
                 CWE_INCORRECT_CALCULATION,
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
@@ -548,8 +581,8 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
     } else {
         errmsg = ValueFlow::eitherTheConditionIsRedundant(condition) + " or there is pointer arithmetic with NULL pointer.";
     }
-    const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
-    reportError(errorPath,
+    ErrorPath errorPath = getErrorPath(tok, value, "Null pointer " + arithmetic);
+    reportError(std::move(errorPath),
                 Severity::warning,
                 "nullPointerArithmeticRedundantCheck",
                 errmsg,
@@ -558,7 +591,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isUnsafeUsage(const Settings &settings, const Token *vartok, MathLib::bigint *value)
+static bool isUnsafeUsage(const Settings &settings, const Token *vartok, CTU::FileInfo::Value *value)
 {
     (void)value;
     bool unknown = false;
@@ -576,6 +609,7 @@ namespace
     /* data for multifile checking */
     class MyFileInfo : public Check::FileInfo {
     public:
+        using Check::FileInfo::FileInfo;
         /** function arguments that are dereferenced without checking if they are null */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
@@ -587,13 +621,13 @@ namespace
     };
 }
 
-Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
+Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer &tokenizer, const Settings &settings, const std::string& /*currentConfig*/) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
     if (unsafeUsage.empty())
         return nullptr;
 
-    auto *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo(tokenizer.list.getFiles()[0]);
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -609,18 +643,20 @@ Check::FileInfo * CheckNullPointer::loadFileInfoFromXml(const tinyxml2::XMLEleme
     return fileInfo;
 }
 
-bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
+bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo &ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger)
 {
-    if (!ctu)
-        return false;
-    bool foundErrors = false;
-    (void)settings; // This argument is unused
+    (void)settings;
 
     CheckNullPointer dummy(nullptr, &settings, &errorLogger);
     dummy.
     logChecker("CheckNullPointer::analyseWholeProgram"); // unusedfunctions
 
-    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
+    if (fileInfo.empty())
+        return false;
+
+    const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu.getCallsMap();
+
+    bool foundErrors = false;
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const auto *fi = dynamic_cast<const MyFileInfo*>(fi1);
@@ -631,23 +667,35 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                 if (warning == 1 && !settings.severity.isEnabled(Severity::warning))
                     break;
 
-                const std::list<ErrorMessage::FileLocation> &locationList =
+                ValueFlow::Value::UnknownFunctionReturn unknownFunctionReturn = ValueFlow::Value::UnknownFunctionReturn::no;
+                std::list<ErrorMessage::FileLocation> locationList =
                     CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::null,
                                                 unsafeUsage,
                                                 callsMap,
                                                 "Dereferencing argument ARG that is null",
                                                 nullptr,
                                                 warning,
-                                                settings.maxCtuDepth);
+                                                settings.maxCtuDepth,
+                                                &unknownFunctionReturn);
                 if (locationList.empty())
                     continue;
 
-                const ErrorMessage errmsg(locationList,
-                                          emptyString,
-                                          warning ? Severity::warning : Severity::error,
-                                          "Null pointer dereference: " + unsafeUsage.myArgumentName,
-                                          "ctunullpointer",
-                                          CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+                std::string id = "ctunullpointer";
+                std::string message = "Null pointer dereference: " + unsafeUsage.myArgumentName;
+                if (unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfMemory) {
+                    id += "OutOfMemory";
+                    message = "If memory allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
+                } else if (unknownFunctionReturn == ValueFlow::Value::UnknownFunctionReturn::outOfResources) {
+                    id += "OutOfResources";
+                    message = "If resource allocation fails, then there is a possible null pointer dereference: " + unsafeUsage.myArgumentName;
+                }
+
+                ErrorMessage errmsg(std::move(locationList),
+                                    fi->file0,
+                                    warning ? Severity::warning : Severity::error,
+                                    message,
+                                    std::move(id),
+                                    CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
                 errorLogger.reportErr(errmsg);
 
                 foundErrors = true;
@@ -657,4 +705,24 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     }
 
     return foundErrors;
+}
+
+void CheckNullPointer::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckNullPointer checkNullPointer(&tokenizer, &tokenizer.getSettings(), errorLogger);
+    checkNullPointer.nullPointer();
+    checkNullPointer.arithmetic();
+    checkNullPointer.nullConstantDereference();
+}
+
+void CheckNullPointer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckNullPointer c(nullptr, settings, errorLogger);
+    c.nullPointerError(nullptr, "pointer", nullptr, false);
+    c.pointerArithmeticError(nullptr, nullptr, false);
+    // TODO: nullPointerArithmeticOutOfMemory
+    c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
+    // TODO: ctunullpointer
+    // TODO: ctunullpointerOutOfMemory
+    // TODO: ctunullpointerOutOfResources
 }
