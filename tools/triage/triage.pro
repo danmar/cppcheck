@@ -1,8 +1,7 @@
-lessThan(QT_MAJOR_VERSION, 5): error(requires >= Qt 5 (You used: $$QT_VERSION))
 QT += core gui widgets
 TARGET = triage
 TEMPLATE = app
-QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -std=c++17
 INCLUDEPATH += ../../gui
 MOC_DIR = temp
 OBJECTS_DIR = temp
