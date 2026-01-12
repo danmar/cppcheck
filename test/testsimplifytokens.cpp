@@ -256,7 +256,7 @@ private:
         const char code[] = "const auto* f() {\n"
                             "    return _T(\"abc\") _T(\"def\") _T(\"ghi\");\n"
                             "}";
-        ASSERT_EQUALS("const auto * f ( ) { return L\"abcdefghi\" ; }", tok(code, /*simplify*/ true, Platform::Type::Native));
+        ASSERT_EQUALS("const auto * f ( ) { return L\"abcdefghi\" ; }", tok(code, dinit(TokOptions, $.type = Platform::Type::Native));
 #endif
     }
 
