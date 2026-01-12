@@ -8782,7 +8782,7 @@ void Tokenizer::findGarbageCode() const
                 if (tok2->str() == "{")
                     tok2 = tok2->link();
                 else if (tok2->isKeyword() && nonGlobalKeywords.count(tok2->str()) && !Token::Match(tok2->tokAt(-2), "operator %str%"))
-                    syntaxError(tok2, "keyword '" + tok2->str() + "' is not allowed in class/struct/union scope");
+                    syntaxError(tok2, "keyword '" + tok2->str() + "' is not allowed in class/struct/union/enum scope");
             }
         }
     }
