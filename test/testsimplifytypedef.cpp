@@ -229,6 +229,7 @@ private:
         TEST_CASE(simplifyTypedef156);
         TEST_CASE(simplifyTypedef157);
         TEST_CASE(simplifyTypedef158);
+        TEST_CASE(simplifyTypedef159);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3801,6 +3802,13 @@ private:
         const char exp[] = "void f ( ) { static const char * const data [ ] [ 3 ] = { { \"a\" , \"b\" , \"c\" } } ; }";
         const char cur[] = "void f ( ) { static const char * const const data [ ] [ 3 ] = { { \"a\" , \"b\" , \"c\" } } ; }";
         TODO_ASSERT_EQUALS(exp, cur, tok(code));
+    }
+
+    void simplifyTypedef159() {
+        const char code[] = "typedef void (*const func_t)();\n" // #14387
+                            "func_t g() { return nullptr; }\n";
+        const char exp[] = "void * const g ( ) { return nullptr ; }";
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyTypedefFunction1() {
