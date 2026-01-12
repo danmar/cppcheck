@@ -208,7 +208,7 @@ private:
 
     void valid_config_native() const {
         Platform platform;
-        PLATFORM(platform, cppcheck::Platform::Type::Native);
+        PLATFORM(platform, Platform::Type::Native);
 #ifdef _WIN32
         ASSERT(platform.isWindows());
 #else
