@@ -8837,6 +8837,8 @@ void Tokenizer::findGarbageCode() const
             if (tok->str() == ";") { // do the counting
                 semicolons++;
             } else if (tok->str() == ":") {
+                if (tok->strAt(-1) == ",")
+                    syntaxError(tok);
                 colons++;
             } else if (tok->str() == ")") { // skip pairs of ( )
                 tok = tok->link();
@@ -8959,8 +8961,6 @@ void Tokenizer::findGarbageCode() const
         if (Token::Match(tok, "^ %op%") && !Token::Match(tok->next(), "[>*+-!~]"))
             syntaxError(tok);
         if (Token::Match(tok, ": [)]=]"))
-            syntaxError(tok);
-        if (Token::simpleMatch(tok, ", :"))
             syntaxError(tok);
         if (Token::Match(tok, "typedef [,;:]"))
             syntaxError(tok);

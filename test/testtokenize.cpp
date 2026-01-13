@@ -7681,6 +7681,8 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("enum { E = sizeof(struct { int i; }) };")); // #13249
 
+        ASSERT_NO_THROW(tokenizeAndStringify("struct S { unsigned u:2, :30; };")); // #14393
+
         ignore_errout();
     }
 
