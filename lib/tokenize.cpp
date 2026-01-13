@@ -108,7 +108,7 @@ static bool isClassStructUnionEnumStart(const Token * tok)
     if (!Token::Match(tok->previous(), "class|struct|union|enum|%name%|>|>> {"))
         return false;
     const Token * tok2 = tok->previous();
-    while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|;"))
+    while (tok2 && !Token::Match(tok2, "class|struct|union|enum|{|}|)|;|>|>>"))
         tok2 = tok2->previous();
     return Token::Match(tok2, "class|struct|union|enum");
 }
@@ -8781,6 +8781,16 @@ void Tokenizer::findGarbageCode() const
             tok = tok->link();
         else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
+    }
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "{" && isClassStructUnionEnumStart(tok)) {
+            for (const Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+                if (tok2->str() == "{")
+                    tok2 = tok2->link();
+                else if (tok2->isKeyword() && nonGlobalKeywords.count(tok2->str()) && !Token::Match(tok2->tokAt(-2), "operator %str%"))
+                    syntaxError(tok2, "keyword '" + tok2->str() + "' is not allowed in class/struct/union/enum scope");
+            }
+        }
     }
 
     // case keyword must be inside switch
