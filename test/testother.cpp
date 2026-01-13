@@ -196,6 +196,7 @@ private:
         TEST_CASE(duplicateExpression17); // #12036
         TEST_CASE(duplicateExpression18);
         TEST_CASE(duplicateExpression19);
+        TEST_CASE(duplicateExpression20);
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateValueTernarySizeof); // #13773
@@ -8007,6 +8008,12 @@ private:
                "void f() {\n"
                "    assert(i == 0);\n"
                "}\n");
+        ASSERT_EQUALS("", errout_str());
+    }
+
+    void duplicateExpression20() {
+        check("enum { N = 1 };\n" // #14202
+              "int f() { return N - 1; }");
         ASSERT_EQUALS("", errout_str());
     }
 
