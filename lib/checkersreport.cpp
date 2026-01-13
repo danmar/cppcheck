@@ -30,10 +30,6 @@
 #include <unordered_set>
 #include <vector>
 
-static bool isCppcheckPremium(const Settings& settings) {
-    return (settings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0);
-}
-
 static int getMisraCVersion(const Settings& settings) {
     if (settings.premiumArgs.find("misra-c-2025") != std::string::npos)
         return 2025;
@@ -194,7 +190,7 @@ std::string CheckersReport::getReport(const std::string& criticalErrors) const
         fout << std::endl;
     }
 
-    const bool cppcheckPremium = isCppcheckPremium(mSettings);
+    const bool cppcheckPremium = mSettings.premium;
 
     auto reportSection = [&fout, cppcheckPremium]
                          (const std::string& title,

@@ -353,7 +353,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
         return Result::Fail;
 
     if (argc <= 1) {
-        printHelp(mSettings.premium);
+        printHelp();
         return Result::Exit;
     }
 
@@ -388,7 +388,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
 
         // Print help
         if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
-            printHelp(mSettings.premium);
+            printHelp();
             return Result::Exit;
         }
 
@@ -1700,7 +1700,7 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
     return Result::Success;
 }
 
-void CmdLineParser::printHelp(bool premium) const
+void CmdLineParser::printHelp() const
 {
     std::ostringstream oss;
     // TODO: display product name
@@ -1901,7 +1901,7 @@ void CmdLineParser::printHelp(bool premium) const
         "    --plist-output=<path>\n"
         "                         Generate Clang-plist output files in folder.\n";
 
-    if (premium) {
+    if (mSettings.premium) {
         oss <<
             "    --premium=<option>\n"
             "                         Coding standards:\n"
