@@ -2287,6 +2287,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         } else if (tok->str() == "]") {
             tok = tok->link()->previous();
             again = true;
+        } else if (Token::Match(tok, "%name% ::")) {
+            tok = tok->tokAt(2);
+            again = true;
         }
     } while (again);
 

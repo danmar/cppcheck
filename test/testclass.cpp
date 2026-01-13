@@ -6816,6 +6816,17 @@ private:
         ASSERT_EQUALS("[test.cpp:4:7]: (style) Either there is a missing 'override', or the member function 'S::g' can be static. [functionStatic]\n"
                       "[test.cpp:7:9]: (style) Either there is a missing 'override', or the member function 'S::h' can be static. [functionStatic]\n",
                       errout_str());
+
+        checkConst("namespace N {\n" // #14391
+                   "    void f();\n"
+                   "}\n"
+                   "struct S : U {\n"
+                   "    void g() { N::f(); }\n"
+                   "    void h() { ::N::f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5:10]: (style) Either there is a missing 'override', or the member function 'S::g' can be static. [functionStatic]\n"
+                      "[test.cpp:6:10]: (style) Either there is a missing 'override', or the member function 'S::h' can be static. [functionStatic]\n",
+                      errout_str());
     }
 
     void const97() { // #13301
