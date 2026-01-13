@@ -4256,7 +4256,7 @@ static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap
 {
     const Token* const tok1 = tok;
     Token* tok2 = tok;
-    if (!tok2->isName())
+    if (!tok2->isName() || (tok2->tokType() != Token::eType && tok2->tokType() != Token::eName && tok2->tokType() != Token::eKeyword))
         return false;
 
     nonneg int typeCount = 0;
