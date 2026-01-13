@@ -965,7 +965,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                 return nullptr;
             }
 
-            bool alwaysReturnsUnused;
+            bool alwaysReturnsUnused = false;
             const Token *errorToken1 = checkLoopBodyRecursive(tok, var, alloc, membervar, bailout, alwaysReturnsUnused);
             tok = tok->link();
             if (Token::simpleMatch(tok, "} else {")) {
