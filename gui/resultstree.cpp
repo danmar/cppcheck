@@ -713,7 +713,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 {
                     auto *action = new QAction(tr("No tag"), tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=]() {
+                    connect(action, &QAction::triggered, [this]() {
                         tagSelectedItems(QString());
                     });
                 }
@@ -721,7 +721,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 for (const QString& tagstr : currentProject->getTags()) {
                     auto *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
-                    connect(action, &QAction::triggered, [=]() {
+                    connect(action, &QAction::triggered, [tagstr, this]() {
                         tagSelectedItems(tagstr);
                     });
                 }

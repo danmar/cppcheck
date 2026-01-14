@@ -196,7 +196,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-15]
-        cxxstd: [14, 17]
+        cxxstd: [14, 17, 20]
+        # FIXME: macos-15 fails to compile with C++20
+        #
+        # /Users/runner/work/cppcheck/cppcheck/cmake.output/gui/test/projectfile/moc_testprojectfile.cpp:84:1: error: 'constinit' specifier is incompatible with C++ standards before C++20 [-Werror,-Wc++20-compat]
+        #    84 | Q_CONSTINIT const QMetaObject TestProjectFile::staticMetaObject = { {
+        #       | ^
+        # /opt/homebrew/opt/qt/lib/QtCore.framework/Headers/qcompilerdetection.h:1409:23: note: expanded from macro 'Q_CONSTINIT'
+        exclude:
+          - os: macos-15
+            cxxstd: 20
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
