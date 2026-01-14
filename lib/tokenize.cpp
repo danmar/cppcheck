@@ -8830,17 +8830,17 @@ void Tokenizer::findGarbageCode() const
             continue;
         // count number of semicolons
         int semicolons = 0, colons = 0;
-        const Token* const startTok = tok;
-        tok = tok->linkAt(1)->previous(); // find ")" of the for-loop
-        // walk backwards until we find the beginning (startTok) of the for() again
-        for (; tok != startTok; tok = tok->previous()) {
+        const Token* const endTok = tok->linkAt(1);
+        for (tok = tok->tokAt(2); tok != endTok; tok = tok->next()) {
+            if (const Token* lam = findLambdaEndTokenWithoutAST(tok)) {
+                tok = lam;
+                continue;
+            }
             if (tok->str() == ";") { // do the counting
                 semicolons++;
             } else if (tok->str() == ":") {
-                if (tok->strAt(-1) == ",")
-                    syntaxError(tok);
                 colons++;
-            } else if (tok->str() == ")") { // skip pairs of ( )
+            } else if (tok->str() == "(") { // skip pairs of ( )
                 tok = tok->link();
             }
         }
