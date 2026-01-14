@@ -105,6 +105,7 @@ private:
         s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: remove when we only longer rely on toString() in unique message handling?
 
         Suppressions supprs;
+        TimerResults timerResults;
 
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
         auto executeFn = [](std::string,std::vector<std::string>,std::string,std::string&){
@@ -120,7 +121,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        ThreadExecutor executor(filelist, fileSettings, s, supprs, *this, executeFn);
+        ThreadExecutor executor(filelist, fileSettings, s, supprs, *this, &timerResults, executeFn);
         ASSERT_EQUALS(result, executor.check());
     }
 #endif // HAS_THREADING_MODEL_THREAD

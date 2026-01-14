@@ -25,7 +25,6 @@
 #include "config.h"
 
 #include <cstddef>
-#include <cstdint>
 #include <functional>
 #include <list>
 #include <memory>
@@ -33,7 +32,6 @@
 #include <vector>
 
 class TokenList;
-enum class ShowTime : std::uint8_t;
 struct FileSettings;
 class CheckUnusedFunctions;
 class Tokenizer;
@@ -43,6 +41,7 @@ class ErrorLogger;
 class Settings;
 struct Suppressions;
 class Preprocessor;
+class TimerResults;
 
 namespace simplecpp {
     class TokenList;
@@ -71,6 +70,7 @@ public:
     CppCheck(const Settings& settings,
              Suppressions& supprs,
              ErrorLogger &errorLogger,
+             TimerResults* timerResults,
              bool useGlobalSuppressions,
              ExecuteCmdFn executeCommand);
 
@@ -141,9 +141,6 @@ public:
 
     /** analyse whole program use .analyzeinfo files or ctuinfo string */
     unsigned int analyseWholeProgram(const std::string &buildDir, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const std::string& ctuInfo);
-
-    static void resetTimerResults();
-    static void printTimerResults(ShowTime mode);
 
 private:
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
@@ -246,6 +243,7 @@ private:
     ErrorLogger& mErrorLogger;
     /** the ErrorLogger provided to this instance */
     ErrorLogger& mErrorLoggerDirect;
+    TimerResults* mTimerResults;
 
     bool mUseGlobalSuppressions;
 

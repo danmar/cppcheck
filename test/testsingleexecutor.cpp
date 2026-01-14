@@ -97,9 +97,10 @@ private:
         s.templateFormat = "{callstack}: ({severity}) {inconclusive:inconclusive: }{message}"; // TODO: remove when we only longer rely on toString() in unique message handling?
 
         Suppressions supprs;
+        TimerResults timerResults;
 
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        CppCheck cppcheck(s, supprs, *this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
+        CppCheck cppcheck(s, supprs, *this, &timerResults, true, [](std::string,std::vector<std::string>,std::string,std::string&){
             return EXIT_SUCCESS;
         });
 
@@ -112,7 +113,7 @@ private:
         if (useFS)
             filelist.clear();
 
-        SingleExecutor executor(cppcheck, filelist, fileSettings, s, supprs, *this);
+        SingleExecutor executor(cppcheck, filelist, fileSettings, s, supprs, *this, &timerResults);
         ASSERT_EQUALS(result, executor.check());
     }
 

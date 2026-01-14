@@ -18,7 +18,6 @@
 
 #include "fixture.h"
 
-#include "cppcheck.h"
 #include "errortypes.h"
 #include "helpers.h"
 #include "library.h"
@@ -94,7 +93,6 @@ bool TestFixture::prepareTest(const char testname[])
 {
     mTemplateFormat.clear();
     mTemplateLocation.clear();
-    CppCheck::resetTimerResults();
 
     prepareTestInternal();
 

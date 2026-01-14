@@ -30,8 +30,8 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
-    : Executor(files, fileSettings, settings, suppressions, errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::list<FileWithDetails> &files, const std::list<FileSettings>& fileSettings, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger, TimerResults* timerResults)
+    : Executor(files, fileSettings, settings, suppressions, errorLogger, timerResults)
     , mCppcheck(cppcheck)
 {
     assert(mSettings.jobs == 1);
@@ -71,8 +71,8 @@ unsigned int SingleExecutor::check()
     if (mCppcheck.analyseWholeProgram())
         result++;
 
-    if (mSettings.showtime == ShowTime::SUMMARY || mSettings.showtime == ShowTime::TOP5_SUMMARY)
-        CppCheck::printTimerResults(mSettings.showtime);
+    if (mTimerResults && (mSettings.showtime == ShowTime::SUMMARY || mSettings.showtime == ShowTime::TOP5_SUMMARY))
+        mTimerResults->showResults(mSettings.showtime);
 
     return result;
 }
