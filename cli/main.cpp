@@ -56,16 +56,7 @@
  * When errors are found, they are reported back to the CppCheckExecutor through the ErrorLogger interface.
  */
 
-
 #include "cppcheckexecutor.h"
-
-#ifdef NDEBUG
-#include "errortypes.h"
-
-#include <cstdlib>
-#include <exception>
-#include <iostream>
-#endif
 
 /**
  * Main function of cppcheck
@@ -82,21 +73,5 @@ int main(int argc, char* argv[])
 #endif
 
     CppCheckExecutor exec;
-
-// *INDENT-OFF*
-#ifdef NDEBUG
-    try {
-#endif
-        return exec.check(argc, argv);
-#ifdef NDEBUG
-    } catch (const InternalError& e) {
-        std::cout << e.errorMessage << std::endl;
-    } catch (const std::exception& error) {
-        std::cout << error.what() << std::endl;
-    } catch (...) {
-        std::cout << "Unknown exception" << std::endl;
-    }
-    return EXIT_FAILURE;
-#endif
-// *INDENT-ON*
+    return exec.check(argc, argv);
 }
