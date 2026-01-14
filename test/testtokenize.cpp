@@ -7683,6 +7683,10 @@ private:
 
         ASSERT_NO_THROW(tokenizeAndStringify("struct S { unsigned u:2, :30; };")); // #14393
 
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #14395
+                                             "    for (int i : [](int a, int b) { ++a; ++b; return std::vector<int>{a, b}; }(1, 2)) {}\n"
+                                             "}\n"));
+
         ignore_errout();
     }
 
