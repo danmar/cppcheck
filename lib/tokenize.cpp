@@ -8839,6 +8839,8 @@ void Tokenizer::findGarbageCode() const
             if (tok->str() == ";") { // do the counting
                 semicolons++;
             } else if (tok->str() == ":") {
+                if (tok->strAt(-1) == ",")
+                    syntaxError(tok);
                 colons++;
             } else if (tok->str() == "(") { // skip pairs of ( )
                 tok = tok->link();
