@@ -1143,109 +1143,99 @@ unsigned int CppCheck::checkInternal(const FileWithDetails& file, const std::str
                 continue;
             }
 
-            try {
-                TokenList tokenlist{mSettings, file.lang()};
+            TokenList tokenlist{mSettings, file.lang()};
 
-                {
-                    bool skipCfg = false;
-                    // Create tokens, skip rest of iteration if failed
-                    Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
-                        simplecpp::OutputList outputList_cfg;
-                        simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, outputList_cfg);
-                        const simplecpp::Output* o = preprocessor.handleErrors(outputList_cfg);
-                        if (!o) {
-                            tokenlist.createTokens(std::move(tokensP));
-                        }
-                        else {
-                            // #error etc during preprocessing
-                            configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + tokensP.file(o->location) + ':' + std::to_string(o->location.line) + "] " + o->msg);
-                            --checkCount; // don't count invalid configurations
-
-                            if (!hasValidConfig && currCfg == *configurations.rbegin()) {
-                                // If there is no valid configuration then report error..
-                                preprocessor.error(tokensP.file(o->location), o->location.line, o->location.col, o->msg, o->type);
-                            }
-                            skipCfg = true;
-                        }
-                    });
-                    if (skipCfg)
-                        continue;
-                }
-                hasValidConfig = true;
-
-                Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
-                try {
-                    if (mSettings.showtime != ShowTime::NONE)
-                        tokenizer.setTimerResults(&s_timerResults);
-                    tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
-
-                    // locations macros
-                    mLogger->setLocationMacros(tokenizer.tokens(), files);
-
-                    // If only errors are printed, print filename after the check
-                    if (!mSettings.quiet && (!currentConfig.empty() || checkCount > 1)) {
-                        std::string fixedpath = Path::toNativeSeparators(file.spath());
-                        mErrorLogger.reportOut("Checking " + fixedpath + ": " + currentConfig + "...", Color::FgGreen);
+            {
+                bool skipCfg = false;
+                // Create tokens, skip rest of iteration if failed
+                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
+                    simplecpp::OutputList outputList_cfg;
+                    simplecpp::TokenList tokensP = preprocessor.preprocess(currentConfig, files, outputList_cfg);
+                    const simplecpp::Output* o = preprocessor.handleErrors(outputList_cfg);
+                    if (!o) {
+                        tokenlist.createTokens(std::move(tokensP));
                     }
+                    else {
+                        // #error etc during preprocessing
+                        configurationError.push_back((currentConfig.empty() ? "\'\'" : currentConfig) + " : [" + tokensP.file(o->location) + ':' + std::to_string(o->location.line) + "] " + o->msg);
+                        --checkCount; // don't count invalid configurations
 
-                    if (!tokenizer.tokens())
-                        continue;
+                        if (!hasValidConfig && currCfg == *configurations.rbegin()) {
+                            // If there is no valid configuration then report error..
+                            preprocessor.error(tokensP.file(o->location), o->location.line, o->location.col, o->msg, o->type);
+                        }
+                        skipCfg = true;
+                    }
+                });
+                if (skipCfg)
+                    continue;
+            }
+            hasValidConfig = true;
 
-                    // skip rest of iteration if just checking configuration
-                    if (mSettings.checkConfiguration)
-                        continue;
+            Tokenizer tokenizer(std::move(tokenlist), mErrorLogger);
+            try {
+                if (mSettings.showtime != ShowTime::NONE)
+                    tokenizer.setTimerResults(&s_timerResults);
+                tokenizer.setDirectives(directives); // TODO: how to avoid repeated copies?
+
+                // locations macros
+                mLogger->setLocationMacros(tokenizer.tokens(), files);
+
+                // If only errors are printed, print filename after the check
+                if (!mSettings.quiet && (!currentConfig.empty() || checkCount > 1)) {
+                    std::string fixedpath = Path::toNativeSeparators(file.spath());
+                    mErrorLogger.reportOut("Checking " + fixedpath + ": " + currentConfig + "...", Color::FgGreen);
+                }
+
+                if (!tokenizer.tokens())
+                    continue;
+
+                // skip rest of iteration if just checking configuration
+                if (mSettings.checkConfiguration)
+                    continue;
 
 #ifdef HAVE_RULES
-                    // Execute rules for "raw" code
-                    executeRules("raw", tokenizer.list);
+                // Execute rules for "raw" code
+                executeRules("raw", tokenizer.list);
 #endif
 
-                    // Simplify tokens into normal form, skip rest of iteration if failed
-                    if (!tokenizer.simplifyTokens1(currentConfig, fileIndex))
-                        continue;
+                // Simplify tokens into normal form, skip rest of iteration if failed
+                if (!tokenizer.simplifyTokens1(currentConfig, fileIndex))
+                    continue;
 
-                    // dump xml if --dump
-                    if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
-                        fdump << "<dump cfg=\"" << ErrorLogger::toxml(currentConfig) << "\">" << std::endl;
-                        fdump << "  <standards>" << std::endl;
-                        fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
-                        fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
-                        fdump << "  </standards>" << std::endl;
-                        fdump << getLibraryDumpData();
-                        preprocessor.dump(fdump);
-                        tokenizer.dump(fdump);
-                        fdump << "</dump>" << std::endl;
-                    }
-
-                    if (mSettings.inlineSuppressions) {
-                        // Need to call this even if the hash will skip this configuration
-                        mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
-                    }
-
-                    // Skip if we already met the same simplified token list
-                    if (maxConfigs > 1) {
-                        const std::size_t hash = tokenizer.list.calculateHash();
-                        if (hashes.find(hash) != hashes.end()) {
-                            if (mSettings.debugwarnings)
-                                purgedConfigurationMessage(file.spath(), currentConfig);
-                            continue;
-                        }
-                        hashes.insert(hash);
-                    }
-
-                    // Check normal tokens
-                    checkNormalTokens(tokenizer, analyzerInformation.get(), currentConfig);
-                } catch (const InternalError &e) {
-                    ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
-                    mErrorLogger.reportErr(errmsg);
+                // dump xml if --dump
+                if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
+                    fdump << "<dump cfg=\"" << ErrorLogger::toxml(currentConfig) << "\">" << std::endl;
+                    fdump << "  <standards>" << std::endl;
+                    fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
+                    fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
+                    fdump << "  </standards>" << std::endl;
+                    fdump << getLibraryDumpData();
+                    preprocessor.dump(fdump);
+                    tokenizer.dump(fdump);
+                    fdump << "</dump>" << std::endl;
                 }
-            } catch (const TerminateException &) {
-                // Analysis is terminated
-                if (analyzerInformation)
-                    mLogger->setAnalyzerInfo(nullptr);
-                return mLogger->exitcode();
+
+                if (mSettings.inlineSuppressions) {
+                    // Need to call this even if the hash will skip this configuration
+                    mSuppressions.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+                }
+
+                // Skip if we already met the same simplified token list
+                if (maxConfigs > 1) {
+                    const std::size_t hash = tokenizer.list.calculateHash();
+                    if (hashes.find(hash) != hashes.end()) {
+                        if (mSettings.debugwarnings)
+                            purgedConfigurationMessage(file.spath(), currentConfig);
+                        continue;
+                    }
+                    hashes.insert(hash);
+                }
+
+                // Check normal tokens
+                checkNormalTokens(tokenizer, analyzerInformation.get(), currentConfig);
             } catch (const InternalError &e) {
-                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, file.spath());
+                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, file.spath());
                 mErrorLogger.reportErr(errmsg);
             }
         }
