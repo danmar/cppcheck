@@ -109,7 +109,6 @@ if(USE_BUNDLED_TINYXML2)
     add_subdirectory(externals/tinyxml2)
 endif()
 add_subdirectory(externals/simplecpp)
-add_subdirectory(externals/picojson)
 add_subdirectory(lib)   # CppCheck Library
 add_subdirectory(frontend)
 add_subdirectory(cli)   # Client application
