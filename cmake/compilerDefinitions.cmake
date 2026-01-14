@@ -54,10 +54,6 @@ if(DISALLOW_PROCESS_EXECUTOR)
     add_definitions(-DDISALLOW_PROCESS_EXECUTOR)
 endif()
 
-if(MSVC AND DISABLE_CRTDBG_MAP_ALLOC)
-    add_definitions(-DDISABLE_CRTDBG_MAP_ALLOC)
-endif()
-
 if(NO_UNIX_SIGNAL_HANDLING)
     add_definitions(-DNO_UNIX_SIGNAL_HANDLING)
 endif()
