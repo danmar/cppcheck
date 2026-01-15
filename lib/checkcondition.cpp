@@ -1653,7 +1653,7 @@ static std::string getConditionString(const Token* condition)
 {
     if (Token::simpleMatch(condition, "return"))
         return "Return value";
-    if (Token::simpleMatch(condition, "(") && Token::Match(condition->astParent(), "%assign"))
+    if (Token::simpleMatch(condition, "(") && Token::Match(condition->astParent(), "%assign%"))
         return "Assigned value";
     return "Condition";
 }
